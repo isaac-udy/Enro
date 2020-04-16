@@ -10,7 +10,9 @@ import nav.enro.example.feature.*
 class ExampleApplication : Application(), NavigationApplication {
     override val navigationController = NavigationController(
         navigators = listOf(
-            activityNavigator<LoginKey, LoginActivity>(LoginKey()),
+            activityNavigator<LoginKey, LoginActivity>{
+                defaultKey(LoginKey())
+            },
             fragmentNavigator<LoginErrorKey, LoginErrorFragment>(),
 
             activityNavigator<DashboardKey, DashboardActivity>(),

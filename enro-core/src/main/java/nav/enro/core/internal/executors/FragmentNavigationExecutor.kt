@@ -27,14 +27,7 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
         navigator as FragmentNavigator
 
         if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
-            fromContext.controller.open(
-                fromContext,
-                NavigationInstruction.Open(
-                    NavigationDirection.REPLACE_ROOT,
-                    SingleFragmentKey(instruction.navigationKey),
-                    instruction.children
-                )
-            )
+            openAsSingleFragment(fromContext, instruction)
             return
         }
 
@@ -49,9 +42,10 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
             }
         }
 
-        val host = when (fromContext) {
-            is FragmentContext -> fromContext.childFragmentHost ?: fromContext.fragmentHost
-            is ActivityContext -> fromContext.fragmentHost
+        val host = fromContext.fragmentHostFor(instruction.navigationKey)
+        if(host == null) {
+            openAsSingleFragment(fromContext, instruction)
+            return
         }
 
         val activity = when (fromContext) {
@@ -91,7 +85,7 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
         val host = context.fragmentHost
         val parentKey = context.parentKey
         if (parentKey != null) {
-            val previousNavigator = context.controller.navigators[parentKey.key::class]
+            val previousNavigator = context.controller.navigatorFromKeyType(parentKey.key::class)
             previousNavigator as FragmentNavigator
 
             val previousFragment = host.fragmentManager.fragmentFactory.instantiate(
@@ -123,5 +117,19 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
                     .commitNow()
             }
         }
+    }
+
+    private fun openAsSingleFragment(
+            fromContext: NavigationContext<*>,
+            instruction: NavigationInstruction.Open
+    ) {
+        fromContext.controller.open(
+            fromContext,
+            NavigationInstruction.Open(
+                instruction.navigationDirection,
+                SingleFragmentKey(instruction.navigationKey),
+                instruction.children
+            )
+        )
     }
 }

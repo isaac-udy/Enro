@@ -15,9 +15,21 @@ import kotlin.reflect.KClass
 class NavigationController(
     navigators: List<Navigator<*>>
 ) {
-    internal val navigators = navigators
+    private val defaultNavigators = listOf(
+        activityNavigator<SingleFragmentKey, SingleFragmentActivity> {
+            fragmentHost(android.R.id.content) { true }
+        }
+    )
+
+    private val navigatorsByKeyType = (navigators + defaultNavigators)
         .map {
             it.keyType to it
+        }
+        .toMap()
+
+    private val navigatorsByContextType = (navigators + defaultNavigators)
+        .map {
+            it.contextType to it
         }
         .toMap()
 
@@ -55,18 +67,13 @@ class NavigationController(
     internal fun navigatorFromContextType(
         contextType: KClass<*>
     ): Navigator<*>? {
-        return navigators.values.firstOrNull {
-            contextType == it.contextType
-        }
+        return navigatorsByContextType[contextType]
     }
 
     internal fun navigatorFromKeyType(
         keyType: KClass<out NavigationKey>
     ): Navigator<*>? {
-        return when (keyType) {
-            SingleFragmentKey::class -> activityNavigator<SingleFragmentKey, SingleFragmentActivity>()
-            else -> navigators[keyType]
-        }
+        return navigatorsByKeyType[keyType]
     }
 
     companion object {

@@ -70,20 +70,7 @@ class LoginViewModel(
 
         when(user) {
             null -> navigationHandle.forward(LoginErrorKey(state.username))
-//            else -> navigationHandle.execute(
-//                NavigationInstruction.Open(
-//                    NavigationDirection.REPLACE_ROOT,
-//                    DashboardKey(user),
-//                    listOf(
-//                        UserKey(user),
-//                        ListKey(user, ListFilterType.ALL),
-//                        DetailKey(user, "ONE"),
-//                        UserKey(user),
-//                        DetailKey(user, "TWO")
-//                    )
-//                )
-//            )
-            else -> navigationHandle.replaceRoot(DashboardKey(user))
+            else -> navigationHandle.forward(UserKey(user))
         }
     }
 }

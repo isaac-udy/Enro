@@ -31,15 +31,15 @@ internal fun NavigationContext<*>.parentContext(): NavigationContext<*> {
 internal fun NavigationContext<out NavigationKey>.leafContext(): NavigationContext<out NavigationKey> {
     when (this) {
         is ActivityContext -> {
-            val fragment = fragmentHost.fragmentManager.findFragmentById(
-                fragmentHost.containerView
-            ) ?: return this
+            val fragment = activeFragmentHost?.let {
+                it.fragmentManager.findFragmentById(it.containerView)
+            } ?: return this
 
             val childContext = fragment.navigationContext
             return childContext.leafContext()
         }
         is FragmentContext -> {
-            val childHost = childFragmentHost ?: return this
+            val childHost = activeFragmentHost ?: return this
             val fragment = childHost.fragmentManager.findFragmentById(childHost.containerView)
                 ?: return this
 

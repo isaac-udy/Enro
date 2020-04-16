@@ -1,14 +1,12 @@
 package nav.enro.core.internal.context
 
-import android.R
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
-import nav.enro.core.NavigationController
-import nav.enro.core.NavigationKey
-import nav.enro.core.navigationController
 import kotlinx.android.parcel.Parcelize
+import nav.enro.core.*
+import nav.enro.core.navigationController
 import kotlin.reflect.KClass
 
 internal sealed class NavigationContext<T : NavigationKey> {
@@ -21,11 +19,35 @@ internal sealed class NavigationContext<T : NavigationKey> {
         arguments?.getParcelable(ARG_NAVIGATION_KEY)
             ?: controller.navigatorFromContextType(contextType)?.defaultKey as? T
             ?: TODO()
+    }
 
+    internal open val navigator: Navigator<T> by lazy {
+        controller.navigatorFromKeyType(key::class) as Navigator<T>
     }
 
     internal val pendingKeys: List<NavigationKey> by lazy {
         arguments?.getParcelableArrayList<NavigationKey>(ARG_CHILDREN).orEmpty()
+    }
+
+    internal val activeFragmentHost: FragmentHost? get() {
+        val definition = navigator.fragmentHosts.firstOrNull() ?: return null
+        return when (this) {
+            is ActivityContext -> definition.createFragmentHost(activity)
+            is FragmentContext -> definition.createFragmentHost(fragment)
+        }
+    }
+
+    internal fun fragmentHostFor(navigationKey: NavigationKey): FragmentHost? {
+        val definition = navigator.fragmentHosts.firstOrNull { it.accepts(navigationKey) }
+        if(definition == null) {
+            val parentContext = parentContext()
+            if(parentContext == this) return null
+            return parentContext.fragmentHostFor(navigationKey)
+        }
+        return when(this) {
+            is ActivityContext -> definition.createFragmentHost(activity)
+            is FragmentContext -> definition.createFragmentHost(fragment)
+        }
     }
 
     companion object {
@@ -41,11 +63,7 @@ internal class ActivityContext<T : NavigationKey>(
     override val lifecycle get() = activity.lifecycle
     override val arguments get() = activity.intent.extras
     override val contextType get() = activity::class
-
-    val fragmentHost: FragmentHost = FragmentHost(
-        R.id.content,
-        activity.supportFragmentManager
-    )
+    override val navigator get() = super.navigator as ActivityNavigator<T>
 }
 
 
@@ -62,6 +80,7 @@ internal class FragmentContext<T : NavigationKey>(
     override val lifecycle get() = fragment.lifecycle
     override val arguments  get() = fragment.arguments
     override val contextType get() = fragment::class
+    override val navigator get() = super.navigator as FragmentNavigator<T>
 
     internal val parentKey by lazy {
         arguments?.getParcelable<ParentKey>(ARG_PARENT_KEY)
@@ -73,13 +92,8 @@ internal class FragmentContext<T : NavigationKey>(
             else -> fragment.requireActivity().navigationContext
         }
 
-        return@run when (parentContext) {
-            is FragmentContext -> parentContext.childFragmentHost!!
-            is ActivityContext -> parentContext.fragmentHost
-        }
+        return@run parentContext.fragmentHostFor(key)!!
     }
-
-    internal val childFragmentHost: FragmentHost? = null
 
     companion object {
         internal const val ARG_PARENT_KEY = "nav.enro.core.ARG_PARENT_KEY"
