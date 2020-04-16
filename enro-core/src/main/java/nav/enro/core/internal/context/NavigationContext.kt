@@ -2,6 +2,7 @@ package nav.enro.core.internal.context
 
 import android.os.Bundle
 import android.os.Parcelable
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import kotlinx.android.parcel.Parcelize
@@ -37,12 +38,12 @@ internal sealed class NavigationContext<T : NavigationKey> {
         }
     }
 
-    internal fun fragmentHostFor(navigationKey: NavigationKey): FragmentHost? {
-        val definition = navigator.fragmentHosts.firstOrNull { it.accepts(navigationKey) }
+    internal fun fragmentHostFor(navigatorToHost: Navigator<*>): FragmentHost? {
+        val definition = navigator.fragmentHosts.firstOrNull { it.accepts(navigatorToHost) }
         if(definition == null) {
             val parentContext = parentContext()
             if(parentContext == this) return null
-            return parentContext.fragmentHostFor(navigationKey)
+            return parentContext.fragmentHostFor(navigatorToHost)
         }
         return when(this) {
             is ActivityContext -> definition.createFragmentHost(activity)
@@ -92,7 +93,7 @@ internal class FragmentContext<T : NavigationKey>(
             else -> fragment.requireActivity().navigationContext
         }
 
-        return@run parentContext.fragmentHostFor(key)!!
+        return@run parentContext.fragmentHostFor(navigator) ?: FragmentHost(0, fragment.parentFragmentManager)
     }
 
     companion object {

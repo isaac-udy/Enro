@@ -12,6 +12,10 @@ class ExampleApplication : Application(), NavigationApplication {
         navigators = listOf(
             activityNavigator<LoginKey, LoginActivity>{
                 defaultKey(LoginKey())
+
+                fragmentHost(R.id.containerView) {
+                    it.contextType == UserFragment::class
+                }
             },
             fragmentNavigator<LoginErrorKey, LoginErrorFragment>(),
 

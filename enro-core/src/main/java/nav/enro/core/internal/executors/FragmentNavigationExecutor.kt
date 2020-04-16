@@ -2,15 +2,14 @@ package nav.enro.core.internal.executors
 
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import nav.enro.core.*
 import nav.enro.core.internal.context.ActivityContext
 import nav.enro.core.internal.context.FragmentContext
 import nav.enro.core.internal.context.NavigationContext
 import nav.enro.core.internal.context.ParentKey
 import nav.enro.core.internal.context.navigationContext
-import nav.enro.core.FragmentNavigator
-import nav.enro.core.NavigationDirection
-import nav.enro.core.NavigationInstruction
-import nav.enro.core.Navigator
 import nav.enro.core.internal.*
 import nav.enro.core.internal.SingleFragmentActivity
 import nav.enro.core.internal.SingleFragmentKey
@@ -30,20 +29,7 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
             openAsSingleFragment(fromContext, instruction)
             return
         }
-
-        val parentKey = when (fromContext) {
-            is ActivityContext -> null
-            is FragmentContext -> when (instruction.navigationDirection) {
-                NavigationDirection.REPLACE_ROOT -> null
-                NavigationDirection.FORWARD -> ParentKey(fromContext.key, fromContext.parentKey)
-                NavigationDirection.REPLACE -> fromContext.parentKey?.let {
-                    ParentKey(it.key, it.parent)
-                }
-            }
-        }
-
-        val host = fromContext.fragmentHostFor(instruction.navigationKey)
-        if(host == null) {
+        if (instruction.navigationDirection == NavigationDirection.REPLACE && fromContext is ActivityContext) {
             openAsSingleFragment(fromContext, instruction)
             return
         }
@@ -53,24 +39,32 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
             is ActivityContext -> fromContext.activity
         }
 
-        val fragment = host.fragmentManager.fragmentFactory.instantiate(
-            navigator.contextType.java.classLoader!!,
-            navigator.contextType.java.name
-        )
-        fragment.arguments = Bundle().apply {
-            putParcelable(FragmentContext.ARG_PARENT_KEY, parentKey)
-            putParcelable(NavigationContext.ARG_NAVIGATION_KEY, instruction.navigationKey)
-            putParcelableArrayList(NavigationContext.ARG_CHILDREN, ArrayList(instruction.children))
+        if(navigator.isDialog){
+            val fragment = createFragment(
+                activity.supportFragmentManager,
+                fromContext,
+                navigator,
+                instruction
+            ) as DialogFragment
+
+            fragment.show(activity.supportFragmentManager, "")
+            return
         }
 
-        if (fragment is DialogFragment) {
-            fragment.show(host.fragmentManager, null)
+        val host = fromContext.fragmentHostFor(navigator)
+        if(host == null) {
+            openAsSingleFragment(fromContext, instruction)
             return
         }
 
         host.fragmentManager.beginTransaction()
             .setCustomAnimations(activity.openEnterAnimation, activity.openExitAnimation)
-            .replace(host.containerView, fragment)
+            .replace(host.containerView, createFragment(
+                host.fragmentManager,
+                fromContext,
+                navigator,
+                instruction
+            ))
             .commitNow()
     }
 
@@ -119,6 +113,37 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
         }
     }
 
+    private fun createFragment(
+        fragmentManager: FragmentManager,
+        fromContext: NavigationContext<*>,
+        navigator: Navigator<*>,
+        instruction: NavigationInstruction.Open
+    ) : Fragment {
+        val parentKey = when (fromContext) {
+            is ActivityContext -> null
+            is FragmentContext -> when (instruction.navigationDirection) {
+                NavigationDirection.REPLACE_ROOT -> null
+                NavigationDirection.FORWARD -> ParentKey(fromContext.key, fromContext.parentKey)
+                NavigationDirection.REPLACE -> fromContext.parentKey?.let {
+                    ParentKey(it.key, it.parent)
+                }
+            }
+        }
+
+        val fragment = fragmentManager.fragmentFactory.instantiate(
+            navigator.contextType.java.classLoader!!,
+            navigator.contextType.java.name
+        )
+
+        fragment.arguments = Bundle().apply {
+            putParcelable(FragmentContext.ARG_PARENT_KEY, parentKey)
+            putParcelable(NavigationContext.ARG_NAVIGATION_KEY, instruction.navigationKey)
+            putParcelableArrayList(NavigationContext.ARG_CHILDREN, ArrayList(instruction.children))
+        }
+
+        return fragment
+    }
+
     private fun openAsSingleFragment(
             fromContext: NavigationContext<*>,
             instruction: NavigationInstruction.Open
@@ -127,8 +152,8 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
             fromContext,
             NavigationInstruction.Open(
                 instruction.navigationDirection,
-                SingleFragmentKey(instruction.navigationKey),
-                instruction.children
+                SingleFragmentKey(),
+                listOf(instruction.navigationKey) + instruction.children
             )
         )
     }

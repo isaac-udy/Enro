@@ -11,10 +11,7 @@ import nav.enro.example.base.SingleStateViewModel
 import nav.enro.example.data.UserRepository
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.login.*
-import nav.enro.core.NavigationHandle
-import nav.enro.core.NavigationKey
-import nav.enro.core.forward
-import nav.enro.core.replaceRoot
+import nav.enro.core.*
 
 @Parcelize
 class LoginKey : NavigationKey
@@ -67,10 +64,9 @@ class LoginViewModel(
         val user = userRepo.getUsers().firstOrNull {
             it.equals(state.username, ignoreCase = true)
         }
-
         when(user) {
             null -> navigationHandle.forward(LoginErrorKey(state.username))
-            else -> navigationHandle.forward(UserKey(user))
+            else -> navigationHandle.replaceRoot(DashboardKey(user))
         }
     }
 }

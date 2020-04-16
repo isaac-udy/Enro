@@ -19,7 +19,7 @@ internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCa
 
         val handle by activity.viewModels<NavigationHandleViewModel<NavigationKey>>()
         handle.navigationContext = ActivityContext(activity = activity)
-        if(savedInstanceState != null) handle.executeDeeplink()
+        if(savedInstanceState  == null) handle.executeDeeplink()
     }
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}

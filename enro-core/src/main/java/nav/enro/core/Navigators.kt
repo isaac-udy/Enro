@@ -1,5 +1,6 @@
 package nav.enro.core
 
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.internal.context.FragmentHost
@@ -25,7 +26,9 @@ class FragmentNavigator<T : NavigationKey>(
     override val contextType: KClass<out Fragment>,
     override val defaultKey: NavigationKey?,
     override val fragmentHosts: List<FragmentHostDefinition>
-) : Navigator<T>
+) : Navigator<T> {
+    internal val isDialog by lazy { DialogFragment::class.java.isAssignableFrom(contextType.java) }
+}
 
 inline fun <reified T : NavigationKey, reified A : FragmentActivity> activityNavigator(block: ActivityNavigatorBuilder<T>.() -> Unit = {}) =
     ActivityNavigatorBuilder(
@@ -43,24 +46,22 @@ class ActivityNavigatorBuilder<T: NavigationKey>(
     private val keyType: KClass<T>,
     private val contextType: KClass<out FragmentActivity>
 ) {
-    private val fragmentHosts = mutableListOf<FragmentHostDefinition>()
-    private var defaultKey: T? = null
+    private var fragmentHost: FragmentHostDefinition? = null
+    private var defaultKey: NavigationKey? = null
 
     fun defaultKey(key: T) {
         defaultKey = key
     }
 
-    fun fragmentHost(containerView: Int, accept: (navigationKey: NavigationKey) -> Boolean) {
-        fragmentHosts.add (
-            FragmentHostDefinition(containerView, accept)
-        )
+    fun fragmentHost(containerView: Int, accept: (navigator: Navigator<*>) -> Boolean) {
+        fragmentHost = FragmentHostDefinition(containerView, accept)
     }
 
     fun build() = ActivityNavigator(
         keyType = keyType,
         contextType = contextType,
         defaultKey = defaultKey,
-        fragmentHosts = fragmentHosts
+        fragmentHosts = listOfNotNull(fragmentHost)
     )
 }
 
@@ -71,7 +72,7 @@ class FragmentNavigatorBuilder<T: NavigationKey>(
     private var fragmentHost: FragmentHostDefinition? = null
     private var defaultKey: NavigationKey? = null
 
-    fun fragmentHost(containerView: Int, accept: (navigationKey: NavigationKey) -> Boolean) {
+    fun fragmentHost(containerView: Int, accept: (navigator: Navigator<*>) -> Boolean) {
         fragmentHost = FragmentHostDefinition(containerView, accept)
     }
 

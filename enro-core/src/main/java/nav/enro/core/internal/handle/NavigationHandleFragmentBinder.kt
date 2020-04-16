@@ -1,6 +1,7 @@
 package nav.enro.core.internal.handle
 
 import android.os.Bundle
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -11,7 +12,7 @@ internal object NavigationHandleFragmentBinder: FragmentManager.FragmentLifecycl
     override fun onFragmentCreated(fm: FragmentManager, fragment: Fragment, savedInstanceState: Bundle?) {
         val handle = fragment.viewModels<NavigationHandleViewModel<NavigationKey>>().value
         handle.navigationContext = FragmentContext(fragment)
-        if(savedInstanceState != null) handle.executeDeeplink()
+        if(savedInstanceState == null) handle.executeDeeplink()
     }
 
     override fun onFragmentSaveInstanceState(fm: FragmentManager, fragment: Fragment, outState: Bundle) {}
