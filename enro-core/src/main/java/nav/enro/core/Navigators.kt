@@ -68,19 +68,17 @@ class FragmentNavigatorBuilder<T: NavigationKey>(
     private val keyType: KClass<T>,
     private val contextType: KClass<out Fragment>
 ) {
-    private val fragmentHosts = mutableListOf<FragmentHostDefinition>()
+    private var fragmentHost: FragmentHostDefinition? = null
     private var defaultKey: NavigationKey? = null
 
     fun fragmentHost(containerView: Int, accept: (navigationKey: NavigationKey) -> Boolean) {
-        fragmentHosts.add (
-            FragmentHostDefinition(containerView, accept)
-        )
+        fragmentHost = FragmentHostDefinition(containerView, accept)
     }
 
     fun build() = FragmentNavigator(
         keyType = keyType,
         contextType = contextType,
         defaultKey = defaultKey,
-        fragmentHosts = fragmentHosts
+        fragmentHosts = listOfNotNull(fragmentHost)
     )
 }
