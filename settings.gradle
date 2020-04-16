@@ -1,0 +1,3 @@
+include ':enro-core'
+include ':example'
+rootProject.name = "Enro"

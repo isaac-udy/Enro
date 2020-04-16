@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/title"
+        style="@style/Widget.MaterialComponents.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="48dp"
+        android:fontFamily="serif-monospace"
+        android:text="Dashboard"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/subtitle"
+        style="@style/Widget.MaterialComponents.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="serif-monospace"
+        android:text="Welcome back, user"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/title"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="32dp"
+        app:layout_constraintStart_toStartOf="@+id/title"
+        app:layout_constraintTop_toBottomOf="@+id/subtitle" />
+
+    <TextView
+        android:id="@+id/privateMessagesTitle"
+        style="@style/Widget.MaterialComponents.TextView"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:text="My private messages"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/divider"
+        app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+    <TextView
+        android:id="@+id/privateMessagesAmount"
+        style="@style/Widget.MaterialComponents.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:text="10"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/divider"
+        app:layout_constraintTop_toTopOf="@+id/privateMessagesTitle" />
+
+    <TextView
+        android:id="@+id/publicMessagesTitle"
+        style="@style/Widget.MaterialComponents.TextView"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:text="My public messages"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/divider"
+        app:layout_constraintTop_toBottomOf="@+id/privateMessagesTitle" />
+
+    <TextView
+        android:id="@+id/publicMessagesAmount"
+        style="@style/Widget.MaterialComponents.TextView"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical|end"
+        android:text="47"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/divider"
+        app:layout_constraintTop_toTopOf="@+id/publicMessagesTitle" />
+
+    <TextView
+        android:id="@+id/otherMessagesTitle"
+        style="@style/Widget.MaterialComponents.TextView"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:text="Other public messages"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/divider"
+        app:layout_constraintTop_toBottomOf="@+id/publicMessagesTitle" />
+
+    <TextView
+        android:id="@+id/otherMessagesAmount"
+        style="@style/Widget.MaterialComponents.TextView"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical|end"
+        android:text="47"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/divider"
+        app:layout_constraintTop_toTopOf="@+id/otherMessagesTitle" />
+
+    <View
+        android:id="@+id/allMessagesDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_marginTop="12dp"
+        android:background="@color/colorOnBackground"
+        app:layout_constraintStart_toStartOf="@+id/divider"
+        app:layout_constraintTop_toBottomOf="@+id/otherMessagesTitle"/>
+
+    <TextView
+        android:id="@+id/allMessagesTitle"
+        style="@style/Widget.MaterialComponents.TextView"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:text="All Messages"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/divider"
+        app:layout_constraintTop_toBottomOf="@+id/allMessagesDivider" />
+
+    <TextView
+        android:id="@+id/allMessagesAmount"
+        style="@style/Widget.MaterialComponents.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:text="57"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/divider"
+        app:layout_constraintTop_toTopOf="@+id/allMessagesTitle" />
+
+    <Button
+        android:id="@+id/userInfoButton"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:text="User info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
