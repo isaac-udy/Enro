@@ -45,13 +45,13 @@ class MyFragment : Fragment() { ... }
 #### 3. In your Application, define Navigators for your NavigationKeys
 ```kotlin
 class YourApplication : Application(), NavigationApplication {
-	override val navigationController = NavigationController(
-		navigators = listOf(
-			activityNavigator<MyActvityKey, MyActivity>(),
-			fragmentNavigator<MyFragmentKey, MyFragment>()
-		)
-	)
-	// ...
+    override val navigationController = NavigationController(
+        navigators = listOf(
+            activityNavigator<MyActvityKey, MyActivity>(),
+            fragmentNavigator<MyFragmentKey, MyFragment>()
+        )
+    )
+    // ...
 ```
 
 #### 4. Interact with your Navigatiors! 
@@ -59,29 +59,29 @@ class YourApplication : Application(), NavigationApplication {
 @Parcelize
 data class MyActvityKey(val userId: String): NavigationKey
 class MyActivity : AppCompatActivity() { 
-	val navigation by navigationHandle<MyActvityKey>()
-	// ... 
-	fun updateViews() {
-		myTextView.setText(navigation.key.activityData)
-	}
-	
-	fun onButtonPressed() {
-		navigation.forward(MyFragmentKey("Wow!"))
-	}
+    val navigation by navigationHandle<MyActvityKey>()
+    // ... 
+    fun updateViews() {
+        myTextView.setText(navigation.key.activityData)
+    }
+    
+    fun onButtonPressed() {
+        navigation.forward(MyFragmentKey("Wow!"))
+    }
 }
 
 @Parcelize
 data class MyFragmentKey(val userId: String): NavigationKey
 class MyFragment : Fragment() { 
-	val navigation by navigationHandle<MyFragmentKey>()
-	// ... 
-	fun updateViews() {
-		myTextView.setText(navigation.key.fragmentData)
-	}
-	
-	fun onButtonPressed() {
-		navigation.forward(MyActivityKey("Wow!"))
-	}
+    val navigation by navigationHandle<MyFragmentKey>()
+    // ... 
+    fun updateViews() {
+        myTextView.setText(navigation.key.fragmentData)
+    }
+    
+    fun onButtonPressed() {
+        navigation.forward(MyActivityKey("Wow!"))
+    }
 }
 ```
 
@@ -112,16 +112,16 @@ Luckily, there's an easy solution! When you declare a navigator for your Activit
 Example: 
 ```kotlin
 class YourApplication : Application(), NavigationApplication {
-	override val navigationController = NavigationController(
-		navigators = listOf(
-			activityNavigator<MyActvityKey, MyActivity> {
-				defaultKey(MyActivityKey("Direct from the launcher!"))
-			},
-			fragmentNavigator<MyFragmentKey, MyFragment>(),
-			// ...
-		)
-	)
-	// ...
+    override val navigationController = NavigationController(
+        navigators = listOf(
+            activityNavigator<MyActvityKey, MyActivity> {
+                defaultKey(MyActivityKey("Direct from the launcher!"))
+            },
+            fragmentNavigator<MyFragmentKey, MyFragment>(),
+            // ...
+        )
+    )
+    // ...
 ```
 
 ## Why would I want to use Enro? 
