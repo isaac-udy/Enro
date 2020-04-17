@@ -9,9 +9,11 @@ A simple navigation library for Android
 
 - Navigate between Fragments or Activities seamlessly
 
-- Describe your navigation destinations through a simple DSL
+- Describe navigation destinations through a simple DSL
 
 - Create beautiful transitions between specific destinations
+
+- Remove navigation logic from Fragment or Activity implementations
 
 ## Using Enro
 #### 0. Gradle: 
