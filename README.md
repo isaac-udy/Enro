@@ -14,12 +14,12 @@ A simple navigation library for Android
 - Create beautiful transitions between specific destinations
 
 ## Using Enro
-0. Gradle: 
+####0. Gradle: 
 ```gradle
 // TODO
 ```
-<br></br>
-1. Install Enro into your Application 
+
+####1. Install Enro into your Application 
 ```kotlin
 class YourApplication : Application(), NavigationApplication {
     override val navigationController =  // See Step 3    
@@ -30,8 +30,8 @@ class YourApplication : Application(), NavigationApplication {
     // ...
 }
 ```
-<br></br>
-2. Define some NavigationKeys
+
+####2. Define some NavigationKeys
 ```kotlin
 @Parcelize
 data class MyActvityKey(val activityData: String): NavigationKey
@@ -41,8 +41,8 @@ class MyActivity : AppCompatActivity() { ... }
 data class MyFragmentKey(val fragmentData: String): NavigationKey
 class MyFragment : Fragment() { ... }
 ```
-<br></br>
-3. In your application, define Navigators for your NavigationKeys
+
+####3. In your application, define Navigators for your NavigationKeys
 ```kotlin
 class YourApplication : Application(), NavigationApplication {
 	override val navigationController = NavigationController(
@@ -53,8 +53,8 @@ class YourApplication : Application(), NavigationApplication {
 	)
 	// ...
 ```
-<br></br>
-4. Interact with your Navigatiors! 
+
+####4. Interact with your Navigatiors! 
 ```kotlin
 @Parcelize
 data class MyActvityKey(val userId: String): NavigationKey
@@ -119,7 +119,7 @@ class YourApplication : Application(), NavigationApplication {
 	)
 	// ...
 ```
-<br></br>
+
 ### Why would I want to use Enro? 
 #### Support the navigation requirements of large multi-module Applications, while allowing flexibility to define rich transitions between specific destinations
 
