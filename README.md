@@ -31,7 +31,7 @@ class YourApplication : Application(), NavigationApplication {
 }
 ```
 
-#### 2. Define some NavigationKeys
+#### 2. Define your NavigationKeys
 ```kotlin
 @Parcelize
 data class MyActvityKey(val activityData: String): NavigationKey
@@ -42,7 +42,7 @@ data class MyFragmentKey(val fragmentData: String): NavigationKey
 class MyFragment : Fragment() { ... }
 ```
 
-#### 3. In your application, define Navigators for your NavigationKeys
+#### 3. In your Application, define Navigators for your NavigationKeys
 ```kotlin
 class YourApplication : Application(), NavigationApplication {
 	override val navigationController = NavigationController(
@@ -89,11 +89,26 @@ class MyFragment : Fragment() {
 #### What kind of navigation instructions does Enro support?
 Enro  supports three kinds of navigation instructions: `forward`, `replace` and `replaceRoot`
 
-`forward` moves to another destination, but leaves the current destination on the navigation stack. If the navigation stack is `A -> B -> C ->` and we execute the action `C.forward(D)` the navigation stack would become `A -> B -> C -> D ->`
+**forward** 
+```
+A -> B -> C 
+forward(D) 
+A -> B -> C -> D ->
+```
 
-`replace` moves to another destination, and replaces the current destination on the navigation stack. If the navigation stack is `A -> B -> C ->` and we execute the action `C.replace(D)` the navigation stack would become `A -> B -> D ->`
+**replace** 
+```
+A -> B -> C
+replace(D) 
+A -> B -> D ->
+```
 
-`replaceRoot` moves to another destination, and treats the new destination as the root of the entire navigation stack. If the navigation stack is `A -> B -> C ->` and we execute the action `C.replaceRoot(D)` the navigation stack would become `D ->`
+**replaceRoot** 
+```
+A -> B -> C
+C.replaceRoot(D) 
+D ->
+```
 
 #### How does Enro support Activities navigating to Fragments? 
 When an Activity executes a navigation instruction that resolves to a Fragment, one of two things will happen: 
