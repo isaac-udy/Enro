@@ -52,6 +52,7 @@ class YourApplication : Application(), NavigationApplication {
         )
     )
     // ...
+}
 ```
 
 #### 4. Interact with your Navigatiors! 
