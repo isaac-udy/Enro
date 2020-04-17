@@ -1,6 +1,7 @@
 package nav.enro.core.internal.executors
 
 import android.content.Intent
+import nav.enro.core.*
 import nav.enro.core.internal.closeEnterAnimation
 import nav.enro.core.internal.closeExitAnimation
 import nav.enro.core.internal.context.ActivityContext
@@ -8,10 +9,6 @@ import nav.enro.core.internal.context.FragmentContext
 import nav.enro.core.internal.context.NavigationContext
 import nav.enro.core.internal.openEnterAnimation
 import nav.enro.core.internal.openExitAnimation
-import nav.enro.core.ActivityNavigator
-import nav.enro.core.NavigationDirection
-import nav.enro.core.NavigationInstruction
-import nav.enro.core.Navigator
 
 internal class ActivityNavigationExecutor : NavigationExecutor {
     override fun open(
@@ -31,10 +28,8 @@ internal class ActivityNavigationExecutor : NavigationExecutor {
             is ActivityContext -> fromContext.activity::startActivity
         }
 
-        val intent = Intent(activity, navigator.contextType.java).apply {
-            putExtra(NavigationContext.ARG_NAVIGATION_KEY, instruction.navigationKey)
-            putParcelableArrayListExtra(NavigationContext.ARG_CHILDREN, ArrayList(instruction.children))
-        }
+        val intent = Intent(activity, navigator.contextType.java)
+            .addOpenInstruction(instruction)
 
         if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)

@@ -77,19 +77,17 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
         }
 
         val host = context.fragmentHost
-        val parentKey = context.parentKey
-        if (parentKey != null) {
-            val previousNavigator = context.controller.navigatorFromKeyType(parentKey.key::class)
+        val parentInstruction = context.parentInstruction
+        if (parentInstruction != null) {
+            val previousNavigator = context.controller.navigatorFromKeyType(parentInstruction.navigationKey::class)
             previousNavigator as FragmentNavigator
 
             val previousFragment = host.fragmentManager.fragmentFactory.instantiate(
                 previousNavigator.contextType.java.classLoader!!,
                 previousNavigator.contextType.java.name
             )
-            previousFragment.arguments = Bundle().apply {
-                putParcelable(FragmentContext.ARG_PARENT_KEY, parentKey.parent)
-                putParcelable(NavigationContext.ARG_NAVIGATION_KEY, parentKey.key)
-            }
+            previousFragment.arguments = Bundle().addOpenInstruction(parentInstruction)
+
             host.fragmentManager.beginTransaction()
                 .setCustomAnimations(
                     context.fragment.requireActivity().closeEnterAnimation,
@@ -119,27 +117,17 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
         navigator: Navigator<*>,
         instruction: NavigationInstruction.Open
     ) : Fragment {
-        val parentKey = when (fromContext) {
+        val parentInstruction = when(fromContext) {
             is ActivityContext -> null
-            is FragmentContext -> when (instruction.navigationDirection) {
-                NavigationDirection.REPLACE_ROOT -> null
-                NavigationDirection.FORWARD -> ParentKey(fromContext.key, fromContext.parentKey)
-                NavigationDirection.REPLACE -> fromContext.parentKey?.let {
-                    ParentKey(it.key, it.parent)
-                }
-            }
+            is FragmentContext -> fromContext.instruction
         }
-
         val fragment = fragmentManager.fragmentFactory.instantiate(
             navigator.contextType.java.classLoader!!,
             navigator.contextType.java.name
         )
 
-        fragment.arguments = Bundle().apply {
-            putParcelable(FragmentContext.ARG_PARENT_KEY, parentKey)
-            putParcelable(NavigationContext.ARG_NAVIGATION_KEY, instruction.navigationKey)
-            putParcelableArrayList(NavigationContext.ARG_CHILDREN, ArrayList(instruction.children))
-        }
+        fragment.arguments = Bundle()
+            .addOpenInstruction(instruction.copy(parentInstruction = parentInstruction))
 
         return fragment
     }

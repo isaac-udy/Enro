@@ -16,8 +16,10 @@ internal sealed class NavigationContext<T : NavigationKey> {
     protected abstract val contextType: KClass<*>
     protected abstract val arguments: Bundle?
 
+    internal val instruction by lazy { arguments?.readOpenInstruction() }
+
     internal val key: T by lazy {
-        arguments?.getParcelable(ARG_NAVIGATION_KEY)
+        instruction?.navigationKey as? T
             ?: controller.navigatorFromContextType(contextType)?.defaultKey as? T
             ?: TODO()
     }
@@ -27,7 +29,11 @@ internal sealed class NavigationContext<T : NavigationKey> {
     }
 
     internal val pendingKeys: List<NavigationKey> by lazy {
-        arguments?.getParcelableArrayList<NavigationKey>(ARG_CHILDREN).orEmpty()
+        instruction?.children.orEmpty()
+    }
+
+    internal val parentInstruction by lazy {
+        instruction?.parentInstruction
     }
 
     internal val activeFragmentHost: FragmentHost? get() {
@@ -49,11 +55,6 @@ internal sealed class NavigationContext<T : NavigationKey> {
             is ActivityContext -> definition.createFragmentHost(activity)
             is FragmentContext -> definition.createFragmentHost(fragment)
         }
-    }
-
-    companion object {
-        internal const val ARG_NAVIGATION_KEY = "nav.enro.core.ARG_NAVIGATION_KEY"
-        internal const val ARG_CHILDREN = "nav.enro.core.ARG_CHILDREN"
     }
 }
 
@@ -83,10 +84,6 @@ internal class FragmentContext<T : NavigationKey>(
     override val contextType get() = fragment::class
     override val navigator get() = super.navigator as FragmentNavigator<T>
 
-    internal val parentKey by lazy {
-        arguments?.getParcelable<ParentKey>(ARG_PARENT_KEY)
-    }
-
     internal val fragmentHost: FragmentHost = run {
         val parentContext: NavigationContext<*> = when {
             fragment.parentFragment != null -> fragment.requireParentFragment().navigationContext
@@ -94,9 +91,5 @@ internal class FragmentContext<T : NavigationKey>(
         }
 
         return@run parentContext.fragmentHostFor(navigator) ?: FragmentHost(0, fragment.parentFragmentManager)
-    }
-
-    companion object {
-        internal const val ARG_PARENT_KEY = "nav.enro.core.ARG_PARENT_KEY"
     }
 }

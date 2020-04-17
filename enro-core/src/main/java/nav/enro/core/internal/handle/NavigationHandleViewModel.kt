@@ -1,6 +1,8 @@
 package nav.enro.core.internal.handle
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import nav.enro.core.internal.addOnBackPressedListener
@@ -56,6 +58,10 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
     }
 
     private fun executePendingInstruction() {
+        if(Looper.getMainLooper() != Looper.myLooper()) {
+            Handler(Looper.getMainLooper()).post { executePendingInstruction() }
+            return
+        }
         val context = navigationContext ?: return
         val instruction = pendingInstruction ?: return
         pendingInstruction = null
