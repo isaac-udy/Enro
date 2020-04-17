@@ -14,12 +14,12 @@ A simple navigation library for Android
 - Create beautiful transitions between specific destinations
 
 ## Using Enro
-####0. Gradle: 
+#### 0. Gradle: 
 ```gradle
 // TODO
 ```
 
-####1. Install Enro into your Application 
+#### 1. Install Enro into your Application 
 ```kotlin
 class YourApplication : Application(), NavigationApplication {
     override val navigationController =  // See Step 3    
@@ -31,7 +31,7 @@ class YourApplication : Application(), NavigationApplication {
 }
 ```
 
-####2. Define some NavigationKeys
+#### 2. Define some NavigationKeys
 ```kotlin
 @Parcelize
 data class MyActvityKey(val activityData: String): NavigationKey
@@ -42,7 +42,7 @@ data class MyFragmentKey(val fragmentData: String): NavigationKey
 class MyFragment : Fragment() { ... }
 ```
 
-####3. In your application, define Navigators for your NavigationKeys
+#### 3. In your application, define Navigators for your NavigationKeys
 ```kotlin
 class YourApplication : Application(), NavigationApplication {
 	override val navigationController = NavigationController(
@@ -54,7 +54,7 @@ class YourApplication : Application(), NavigationApplication {
 	// ...
 ```
 
-####4. Interact with your Navigatiors! 
+#### 4. Interact with your Navigatiors! 
 ```kotlin
 @Parcelize
 data class MyActvityKey(val userId: String): NavigationKey
@@ -120,7 +120,7 @@ class YourApplication : Application(), NavigationApplication {
 	// ...
 ```
 
-### Why would I want to use Enro? 
+## Why would I want to use Enro? 
 #### Support the navigation requirements of large multi-module Applications, while allowing flexibility to define rich transitions between specific destinations
 
 A multi-module application has different requirements to a single-module application. 	Individual modules will define Activities and Fragments, and other modules will want to navigate to these Activities and Fragments. By detatching the NavigationKeys from the destinations themselves, this allows NavigationKeys to be defined in a common/shared module which all other modules depend on.  Any module is then able to navigate to another by using one of the NavigationKeys, without knowing about the Activity or Fragment that it is going to. FeatureOneActivity and FeatureTwoActivity don't know about each other, but they both know that FeatureOneKey and FeatureTwoKey exist. A simple version of this solution can be created in less than 20 lines of code.  
