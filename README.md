@@ -93,7 +93,7 @@ If the current navigation stack is `A -> B -> C ->` then:
 `forward(D)` = `A -> B -> C -> D ->`  
 `replace(D)` = `A -> B -> D ->`  
 `replaceRoot(D)` = `D ->`  
-  
+
 Enro supports multiple arguments to these instructions.  
 `forward(X, Y, Z)` = `A -> B -> C -> X -> Y -> Z ->`  
 `replace(X, Y, Z)` = `A -> B -> X -> Y -> Z ->`  
@@ -115,7 +115,7 @@ class YourApplication : Application(), NavigationApplication {
 	override val navigationController = NavigationController(
 		navigators = listOf(
 			activityNavigator<MyActvityKey, MyActivity> {
-                defaultKey(MyActivityKey("Direct from the launcher!"))
+				defaultKey(MyActivityKey("Direct from the launcher!"))
 			},
 			fragmentNavigator<MyFragmentKey, MyFragment>(),
 			// ...
