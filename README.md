@@ -143,12 +143,10 @@ class YourApplication : Application(), NavigationApplication {
 	// ...
 ```
 
-#### Why would I want to use Enro? 
+### Why would I want to use Enro? 
 Enro was written with a few specific goals:
 
-##### Support the navigation requirements of large multi-module Applications, while allowing flexibility to define rich transitions between specific destinations
-<details>
-  <summary>More info...</summary>
+#### Support the navigation requirements of large multi-module Applications, while allowing flexibility to define rich transitions between specific destinations <details><summary>More info...</summary>
 
 A multi-module application has different requirements to a single-module application. 	Individual modules will define Activities and Fragments, and other modules will want to navigate to these Activities and Fragments. By detatching the NavigationKeys from the destinations themselves, this allows NavigationKeys to be defined in a common/shared module which all other modules depend on.  Any module is then able to navigate to another by using one of the NavigationKeys, without knowing about the Activity or Fragment that it is going to. FeatureOneActivity and FeatureTwoActivity don't know about each other, but they both know that FeatureOneKey and FeatureTwoKey exist. A simple version of this solution can be created in less than 20 lines of code.  
 
