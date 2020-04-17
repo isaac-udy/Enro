@@ -87,28 +87,17 @@ class MyFragment : Fragment() {
 
 ## FAQ
 #### What kind of navigation instructions does Enro support?
-Enro  supports three kinds of navigation instructions: `forward`, `replace` and `replaceRoot`
+Enro  supports three navigation instructions: `forward`, `replace` and `replaceRoot`.
 
-**forward** 
-```
-A -> B -> C 
-forward(D) 
-A -> B -> C -> D ->
-```
+If the current navigation stack is `A -> B -> C ->` then:
+`forward(D)` = `A -> B -> C -> D ->`
+`replace(D)` = `A -> B -> D ->`
+`replaceRoot(D)` = `D ->`
 
-**replace** 
-```
-A -> B -> C
-replace(D) 
-A -> B -> D ->
-```
-
-**replaceRoot** 
-```
-A -> B -> C
-C.replaceRoot(D) 
-D ->
-```
+Enro supports multiple arguments to these instructions.
+`forward(X, Y, Z)` = `A -> B -> C -> X -> Y -> Z ->`
+`replace(X, Y, Z)` = `A -> B -> X -> Y -> Z ->`
+`replaceRoot(X, Y, Z)` = `X -> Y -> Z ->`
 
 #### How does Enro support Activities navigating to Fragments? 
 When an Activity executes a navigation instruction that resolves to a Fragment, one of two things will happen: 
