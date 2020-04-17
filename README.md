@@ -5,7 +5,6 @@ A simple navigation library for Android
 
 *"The novices’ eyes followed the wriggling path up from the well as it swept a great meandering arc around the hillside. Its stones were green with moss and beset with weeds. Where the path disappeared through the gate they noticed that it joined a second track of bare earth, where the grass appeared to have been trampled so often that it ceased to grow. The dusty track ran straight from the gate to the well, marred only by a fresh set of sandal-prints that went down, and then up, and ended at the feet of the young monk who had fetched their water." - [The Garden Path](http://thecodelesscode.com/case/156)*
 
-<br></br>
 ## Features
 
 - Navigate between Fragments or Activities seamlessly
@@ -14,13 +13,11 @@ A simple navigation library for Android
 
 - Create beautiful transitions between specific destinations
 
-<br></br>
 ## Using Enro
 0. Gradle: 
 ```gradle
 // TODO
 ```
-<br></br>
 <br></br>
 1. Install Enro into your Application 
 ```kotlin
@@ -34,7 +31,6 @@ class YourApplication : Application(), NavigationApplication {
 }
 ```
 <br></br>
-<br></br>
 2. Define some NavigationKeys
 ```kotlin
 @Parcelize
@@ -45,7 +41,6 @@ class MyActivity : AppCompatActivity() { ... }
 data class MyFragmentKey(val fragmentData: String): NavigationKey
 class MyFragment : Fragment() { ... }
 ```
-<br></br>
 <br></br>
 3. In your application, define Navigators for your NavigationKeys
 ```kotlin
@@ -58,7 +53,6 @@ class YourApplication : Application(), NavigationApplication {
 	)
 	// ...
 ```
-<br></br>
 <br></br>
 4. Interact with your Navigatiors! 
 ```kotlin
@@ -91,9 +85,7 @@ class MyFragment : Fragment() {
 }
 ```
 
-<br></br>
 ## FAQ
-
 #### What kind of navigation instructions does Enro support?
 Enro  supports three kinds of navigation instructions: `forward`, `replace` and `replaceRoot`
 
@@ -103,13 +95,11 @@ Enro  supports three kinds of navigation instructions: `forward`, `replace` and 
 
 `replaceRoot` moves to another destination, and treats the new destination as the root of the entire navigation stack. If the navigation stack is `A -> B -> C ->` and we execute the action `C.replaceRoot(D)` the navigation stack would become `D ->`
 
-<br></br>
 #### How does Enro support Activities navigating to Fragments? 
 When an Activity executes a navigation instruction that resolves to a Fragment, one of two things will happen: 
 1. The Activity's navigator defines a "fragment host" that accepts the Fragment's type, in which case, the Fragment will be opened into the container view defined by that fragment host.
 2. The Activity's navigation **does not** define a fragment host that acccepts the Fragment's type, in which case, the Fragment will be opened as if it was an Activity. 
 
-<br></br>
 #### My Activity crashes on launch, what's going on?!
 It's possible for an Activity to be launched from multiple places. Most of these can be controlled by Enro, but some of them cannot. For example, an Activity that's declared in the manifest as a MAIN/LAUNCHER Activity might be launched by the Android operating system when the user opens your application for the first time. Because Enro hasn't launched the Activity, it's not going to know what the NavigationKey for that Activity is, and won't be able to read it from the Activity's intent. 
 
@@ -129,7 +119,6 @@ class YourApplication : Application(), NavigationApplication {
 	)
 	// ...
 ```
-
 <br></br>
 ### Why would I want to use Enro? 
 #### Support the navigation requirements of large multi-module Applications, while allowing flexibility to define rich transitions between specific destinations
@@ -138,6 +127,6 @@ A multi-module application has different requirements to a single-module applica
 
 However, truly beautiful navigation requires knowledge of both the originator and the destination. Material design's shared element transitions are an example of this. If FeatureOneActivity and FeatureTwoActivity don't know about each other, how can they collaborate on a shared element transition? Enro allows transitions between two navigation destinations to be overridden for that specific case, meaning that FeatureOneActivity and FeatureTwoActivity might know nothing about each other, but the application that uses them will be able to define a navigation override that adds shared element transitions between the two.
 
-##### Allow navigation to be triggered at the ViewModel layer of an Application
+#### Allow navigation to be triggered at the ViewModel layer of an Application
 
 
