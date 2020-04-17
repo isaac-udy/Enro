@@ -27,7 +27,7 @@ class YourApplication : Application(), NavigationApplication {
         super.onCreate()
         NavigationController.install(this)
     }
-    // ...
+    ...
 }
 ```
 
@@ -51,7 +51,7 @@ class YourApplication : Application(), NavigationApplication {
             fragmentNavigator<MyFragmentKey, MyFragment>()
         )
     )
-    // ...
+    ...
 }
 ```
 
@@ -61,7 +61,7 @@ class YourApplication : Application(), NavigationApplication {
 data class MyActvityKey(val userId: String): NavigationKey
 class MyActivity : AppCompatActivity() { 
     val navigation by navigationHandle<MyActvityKey>()
-    // ... 
+    
     fun updateViews() {
         myTextView.setText(navigation.key.activityData)
     }
@@ -75,7 +75,7 @@ class MyActivity : AppCompatActivity() {
 data class MyFragmentKey(val userId: String): NavigationKey
 class MyFragment : Fragment() { 
     val navigation by navigationHandle<MyFragmentKey>()
-    // ... 
+    
     fun updateViews() {
         myTextView.setText(navigation.key.fragmentData)
     }
@@ -119,7 +119,7 @@ class YourApplication : Application(), NavigationApplication {
                 defaultKey(MyActivityKey("Direct from the launcher!"))
             },
             fragmentNavigator<MyFragmentKey, MyFragment>(),
-            // ...
+            ...
         )
     )
     // ...
