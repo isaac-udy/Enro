@@ -10,7 +10,7 @@
         style="@style/Widget.MaterialComponents.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="CNC"
+        android:text="Enro"
         android:textSize="32sp"
         android:fontFamily="serif-monospace"
         android:textStyle="bold"
