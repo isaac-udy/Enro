@@ -18,9 +18,12 @@ A simple navigation library for Android
 - Remove navigation logic from Fragment or Activity implementations
 
 ## Using Enro
-#### 0. Gradle: 
+#### Gradle:
+Enro is published to [JCenter](https://bintray.com/beta/#/isaac-udy/Enro/enro-core?tab=overview). Make sure your project includes the jcenter repository, and then include the following in your module's build.gradle: 
 ```gradle
-// TODO
+dependencies {
+    implementation "nav.enro.enro-core:enro-core:0.0.2"
+}
 ```
 
 #### 1. Install Enro into your Application 
