@@ -1,4 +1,4 @@
-![Download](https://api.bintray.com/packages/isaac-udy/Enro/enro-core/images/download.svg) ](https://bintray.com/isaac-udy/Enro/enro-core/_latestVersion)
+[![Download](https://api.bintray.com/packages/isaac-udy/Enro/enro-core/images/download.svg) ](https://bintray.com/isaac-udy/Enro/enro-core/_latestVersion)
 
 # Enro 🗺️
  🚧  Work in progress 🚧  
