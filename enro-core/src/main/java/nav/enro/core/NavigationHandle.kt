@@ -12,14 +12,14 @@ interface NavigationHandle<T : NavigationKey> {
     fun setOnCloseRequested(onCloseRequested: () -> Unit)
 }
 
-fun NavigationHandle<*>.forward(key: NavigationKey) =
-    execute(NavigationInstruction.Open(NavigationDirection.FORWARD, key))
+fun NavigationHandle<*>.forward(key: NavigationKey, vararg childKeys: NavigationKey) =
+    execute(NavigationInstruction.Open(NavigationDirection.FORWARD, key, childKeys.toList()))
 
-fun NavigationHandle<*>.replace(key: NavigationKey) =
-    execute(NavigationInstruction.Open(NavigationDirection.REPLACE, key))
+fun NavigationHandle<*>.replace(key: NavigationKey, vararg childKeys: NavigationKey) =
+    execute(NavigationInstruction.Open(NavigationDirection.REPLACE, key, childKeys.toList()))
 
-fun NavigationHandle<*>.replaceRoot(key: NavigationKey) =
-    execute(NavigationInstruction.Open(NavigationDirection.REPLACE_ROOT, key))
+fun NavigationHandle<*>.replaceRoot(key: NavigationKey, vararg childKeys: NavigationKey) =
+    execute(NavigationInstruction.Open(NavigationDirection.REPLACE_ROOT, key, childKeys.toList()))
 
 fun NavigationHandle<*>.close() =
     execute(NavigationInstruction.Close)

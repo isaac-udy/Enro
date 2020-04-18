@@ -1,6 +1,8 @@
 package nav.enro.core.internal.executors
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -15,8 +17,10 @@ import nav.enro.core.internal.SingleFragmentActivity
 import nav.enro.core.internal.SingleFragmentKey
 import nav.enro.core.internal.openEnterAnimation
 import nav.enro.core.internal.openExitAnimation
+import java.lang.IllegalStateException
 
 internal class FragmentNavigationExecutor : NavigationExecutor {
+    private val mainThreadHandler = Handler(Looper.getMainLooper())
 
     override fun open(
         navigator: Navigator<*>,
@@ -39,7 +43,7 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
             is ActivityContext -> fromContext.activity
         }
 
-        if(navigator.isDialog){
+        if (navigator.isDialog) {
             val fragment = createFragment(
                 activity.supportFragmentManager,
                 fromContext,
@@ -52,19 +56,38 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
         }
 
         val host = fromContext.fragmentHostFor(navigator)
-        if(host == null) {
+        if (host == null) {
             openAsSingleFragment(fromContext, instruction)
+            return
+        }
+
+        try {
+            val pending = host.fragmentManager.executePendingTransactions()
+        } catch (ex: IllegalStateException) {
+            mainThreadHandler.post {
+                when (fromContext) {
+                    is ActivityContext -> fromContext.activity.navigationHandle<Nothing>().value.execute(
+                        instruction
+                    )
+                    is FragmentContext -> fromContext.fragment.navigationHandle<Nothing>().value.execute(
+                        instruction
+                    )
+                }
+            }
             return
         }
 
         host.fragmentManager.beginTransaction()
             .setCustomAnimations(activity.openEnterAnimation, activity.openExitAnimation)
-            .replace(host.containerView, createFragment(
-                host.fragmentManager,
-                fromContext,
-                navigator,
-                instruction
-            ))
+            .replace(
+                host.containerView,
+                createFragment(
+                    host.fragmentManager,
+                    fromContext,
+                    navigator,
+                    instruction
+                )
+            )
             .commitNow()
     }
 
@@ -79,7 +102,8 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
         val host = context.fragmentHost
         val parentInstruction = context.parentInstruction
         if (parentInstruction != null) {
-            val previousNavigator = context.controller.navigatorFromKeyType(parentInstruction.navigationKey::class)
+            val previousNavigator =
+                context.controller.navigatorFromKeyType(parentInstruction.navigationKey::class)
             previousNavigator as FragmentNavigator
 
             val previousFragment = host.fragmentManager.fragmentFactory.instantiate(
@@ -116,8 +140,8 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
         fromContext: NavigationContext<*>,
         navigator: Navigator<*>,
         instruction: NavigationInstruction.Open
-    ) : Fragment {
-        val parentInstruction = when(fromContext) {
+    ): Fragment {
+        val parentInstruction = when (fromContext) {
             is ActivityContext -> null
             is FragmentContext -> fromContext.instruction
         }
@@ -133,8 +157,8 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
     }
 
     private fun openAsSingleFragment(
-            fromContext: NavigationContext<*>,
-            instruction: NavigationInstruction.Open
+        fromContext: NavigationContext<*>,
+        instruction: NavigationInstruction.Open
     ) {
         fromContext.controller.open(
             fromContext,
