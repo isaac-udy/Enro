@@ -1,7 +1,7 @@
 [![Download](https://api.bintray.com/packages/isaac-udy/Enro/enro-core/images/download.svg) ](https://bintray.com/isaac-udy/Enro/enro-core/_latestVersion)
 
 # Enro 🗺️
- 🚧  Work in progress 🚧  
+ 🚧  Work in progress. Broadly the library works, but there are some known issues that are being solved. 🚧  
 
 A simple navigation library for Android 
 
