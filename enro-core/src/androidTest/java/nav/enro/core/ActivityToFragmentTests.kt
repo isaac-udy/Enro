@@ -20,9 +20,7 @@ class ActivityToFragmentTests {
         handle.forward(GenericFragmentKey(id))
 
         val activity = expectActivity<SingleFragmentActivity>()
-        val host = activity.navigationContext.activeFragmentHost!!
-
-        val activeFragment = host.fragmentManager.findFragmentById(host.containerView)!!
+        val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
         val fragmentHandle by activeFragment.navigationHandle<GenericFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }
@@ -40,9 +38,7 @@ class ActivityToFragmentTests {
         )
 
         val activity = expectActivity<SingleFragmentActivity>()
-        val host = activity.navigationContext.activeFragmentHost!!
-
-        val activeFragment = host.fragmentManager.findFragmentById(host.containerView)!!
+        val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
         val fragmentHandle by activeFragment.navigationHandle<GenericFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }
@@ -89,9 +85,7 @@ class ActivityToFragmentTests {
         handle.forward(GenericFragmentKey(id))
 
         val activity = expectActivity<SingleFragmentActivity>()
-        val host = activity.navigationContext.activeFragmentHost!!
-
-        val activeFragment = host.fragmentManager.findFragmentById(host.containerView)!!
+        val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
         val fragmentHandle by activeFragment.navigationHandle<GenericFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }
@@ -105,9 +99,7 @@ class ActivityToFragmentTests {
         handle.replace(ActivityChildFragmentKey(id))
 
         val activity = expectActivity<SingleFragmentActivity>()
-        val host = activity.navigationContext.activeFragmentHost!!
-
-        val activeFragment = host.fragmentManager.findFragmentById(host.containerView)!!
+        val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
         val fragmentHandle by activeFragment.navigationHandle<ActivityChildFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }

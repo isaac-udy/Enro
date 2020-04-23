@@ -26,6 +26,11 @@ internal fun FragmentActivity.addOnBackPressedListener(block: () -> Unit) {
     })
 }
 
+fun Activity.getAttributeResourceId(attr: Int) = TypedValue().let {
+    theme.resolveAttribute(attr, it, true)
+    it.resourceId
+}
+
 internal val Activity.openEnterAnimation
     get() = TypedValue().let {
         theme.resolveAttribute(android.R.attr.activityOpenEnterAnimation, it, true)

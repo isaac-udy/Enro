@@ -4,17 +4,15 @@ import nav.enro.core.NavigationInstruction
 import nav.enro.core.Navigator
 import nav.enro.core.internal.context.NavigationContext
 
-internal interface NavigationExecutor {
-
-    fun open(
+internal abstract class NavigationExecutor {
+    internal abstract fun open(
         navigator: Navigator<*>,
-        fromContext: NavigationContext<*>,
-        instruction: NavigationInstruction.Open
+        fromContext: NavigationContext<out Any, *>,
+        instruction: NavigationInstruction.Open<*>
     )
 
-    fun close(
-        context: NavigationContext<*>
+    internal abstract fun close(
+        context: NavigationContext<out Any, *>
     )
-
 }
 

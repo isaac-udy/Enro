@@ -46,22 +46,22 @@ class ActivityNavigatorBuilder<T: NavigationKey>(
     private val keyType: KClass<T>,
     private val contextType: KClass<out FragmentActivity>
 ) {
-    private var fragmentHost: FragmentHostDefinition? = null
+    private var fragmentHosts = mutableListOf<FragmentHostDefinition>()
     private var defaultKey: NavigationKey? = null
 
     fun defaultKey(key: T) {
         defaultKey = key
     }
 
-    fun fragmentHost(containerView: Int, accept: (navigator: Navigator<*>) -> Boolean) {
-        fragmentHost = FragmentHostDefinition(containerView, accept)
+    fun fragmentHost(containerView: Int, accept: (fragmentType: KClass<out Fragment>) -> Boolean) {
+        fragmentHosts.add(FragmentHostDefinition(containerView, accept))
     }
 
     fun build() = ActivityNavigator(
         keyType = keyType,
         contextType = contextType,
         defaultKey = defaultKey,
-        fragmentHosts = listOfNotNull(fragmentHost)
+        fragmentHosts = fragmentHosts
     )
 }
 
@@ -69,17 +69,17 @@ class FragmentNavigatorBuilder<T: NavigationKey>(
     private val keyType: KClass<T>,
     private val contextType: KClass<out Fragment>
 ) {
-    private var fragmentHost: FragmentHostDefinition? = null
+    private var fragmentHosts = mutableListOf<FragmentHostDefinition>()
     private var defaultKey: NavigationKey? = null
 
-    fun fragmentHost(containerView: Int, accept: (navigator: Navigator<*>) -> Boolean) {
-        fragmentHost = FragmentHostDefinition(containerView, accept)
+    fun fragmentHost(containerView: Int, accept: (fragmentType: KClass<out Fragment>) -> Boolean) {
+        fragmentHosts.add(FragmentHostDefinition(containerView, accept))
     }
 
     fun build() = FragmentNavigator(
         keyType = keyType,
         contextType = contextType,
         defaultKey = defaultKey,
-        fragmentHosts = listOfNotNull(fragmentHost)
+        fragmentHosts = fragmentHosts
     )
 }

@@ -3,143 +3,213 @@ package nav.enro.core.internal.executors
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
+import android.view.ViewParent
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import nav.enro.core.*
-import nav.enro.core.internal.context.ActivityContext
-import nav.enro.core.internal.context.FragmentContext
-import nav.enro.core.internal.context.NavigationContext
-import nav.enro.core.internal.context.ParentKey
-import nav.enro.core.internal.context.navigationContext
 import nav.enro.core.internal.*
 import nav.enro.core.internal.SingleFragmentActivity
 import nav.enro.core.internal.SingleFragmentKey
+import nav.enro.core.internal.context.*
+import nav.enro.core.internal.context.ActivityContext
+import nav.enro.core.internal.context.FragmentContext
+import nav.enro.core.internal.context.NavigationContext
+import nav.enro.core.internal.context.navigationContext
+import nav.enro.core.internal.executors.override.NavigationExecutorOverride
+import nav.enro.core.internal.executors.override.PendingNavigationOverride
+import nav.enro.core.internal.executors.override.activityToFragmentOverride
+import nav.enro.core.internal.executors.override.fragmentToFragmentOverride
 import nav.enro.core.internal.openEnterAnimation
 import nav.enro.core.internal.openExitAnimation
+import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
 
-internal class FragmentNavigationExecutor : NavigationExecutor {
+internal class FragmentNavigationExecutor : NavigationExecutor() {
     private val mainThreadHandler = Handler(Looper.getMainLooper())
+
+    val defaultActivityToFragment = activityToFragmentOverride<FragmentActivity, Fragment>(
+        launch = { from, instruction, to ->
+
+            if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT
+                || instruction.navigationDirection == NavigationDirection.REPLACE) {
+                openAsSingleFragment(from.navigationContext, instruction)
+                return@activityToFragmentOverride
+            }
+
+            if(to is DialogFragment) {
+                to.show(from.supportFragmentManager, "")
+                return@activityToFragmentOverride
+            }
+
+            val host = from.navigationContext.fragmentHostFor(to::class)
+            if (host == null) {
+                openAsSingleFragment(from.navigationContext, instruction)
+                return@activityToFragmentOverride
+            }
+
+            host.fragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    from.openEnterAnimation,
+                    from.openExitAnimation
+                )
+                .replace(host.containerView, to)
+                .setPrimaryNavigationFragment(to)
+                .commitNow()
+        },
+        close = { from, to ->
+            when (from) {
+                is SingleFragmentActivity -> from.navigationContext.controller.close(from.navigationContext)
+                else -> to.parentFragmentManager.beginTransaction()
+                    .setPrimaryNavigationFragment(null)
+                    .setCustomAnimations(
+                        from.closeEnterAnimation,
+                        from.closeExitAnimation
+                    )
+                    .remove(to)
+                    .commitNow()
+            }
+        }
+    )
+
+    val defaultFragmentToFragment = fragmentToFragmentOverride<Fragment, Fragment>(
+        launch = { from, instruction, to ->
+            if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
+                openAsSingleFragment(from.navigationContext, instruction)
+                return@fragmentToFragmentOverride
+            }
+
+            if(to is DialogFragment) {
+                to.show(from.childFragmentManager, "")
+                return@fragmentToFragmentOverride
+            }
+
+            val host = from.navigationContext.fragmentHostFor(to::class)
+            if (host == null) {
+                openAsSingleFragment(from.navigationContext, instruction)
+                return@fragmentToFragmentOverride
+            }
+
+            val activeFragment = host.fragmentManager.findFragmentById(host.containerView)
+            activeFragment?.view?.z = -1.0f
+
+            host.fragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    from.requireActivity().openEnterAnimation,
+                    from.requireActivity().openExitAnimation
+                )
+                .replace(host.containerView, to)
+                .setPrimaryNavigationFragment(to)
+                .commitNow()
+        },
+        close = { from, to ->
+            val container = (to.requireView().parent as View).id
+
+            val transaction = to.parentFragmentManager
+                .beginTransaction()
+                .setCustomAnimations(
+                    to.requireActivity().closeEnterAnimation,
+                    to.requireActivity().closeExitAnimation
+                )
+
+            if (!from.isAdded) {
+                transaction.replace(container, from)
+            } else {
+                transaction.remove(to)
+            }
+            transaction.setPrimaryNavigationFragment(from)
+            transaction.commitNow()
+        }
+    )
 
     override fun open(
         navigator: Navigator<*>,
-        fromContext: NavigationContext<*>,
-        instruction: NavigationInstruction.Open
+        fromContext: NavigationContext<out Any, *>,
+        instruction: NavigationInstruction.Open<*>
     ) {
         navigator as FragmentNavigator
+        if (!tryExecutePendingTransitions(navigator, fromContext, instruction)) return
 
-        if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
-            openAsSingleFragment(fromContext, instruction)
-            return
-        }
-        if (instruction.navigationDirection == NavigationDirection.REPLACE && fromContext is ActivityContext) {
-            openAsSingleFragment(fromContext, instruction)
-            return
-        }
-
-        val activity = when (fromContext) {
-            is FragmentContext -> fromContext.fragment.requireActivity()
-            is ActivityContext -> fromContext.activity
+        val override = fromContext.controller.pendingOverrideFor(
+            from = fromContext.contextReference,
+            toType = navigator.contextType
+        ) ?: when(fromContext.contextReference) {
+            is Fragment -> PendingNavigationOverride(fromContext.contextReference, defaultFragmentToFragment)
+            is FragmentActivity -> PendingNavigationOverride(fromContext.contextReference, defaultActivityToFragment)
+            else -> throw IllegalArgumentException("Unknown from context!")
         }
 
-        if (navigator.isDialog) {
-            val fragment = createFragment(
-                activity.supportFragmentManager,
+        override.launchFragment(
+            instruction,
+            createFragment(
+                fromContext.activityFromContext.supportFragmentManager,
                 fromContext,
                 navigator,
                 instruction
-            ) as DialogFragment
-
-            fragment.show(activity.supportFragmentManager, "")
-            return
-        }
-
-        val host = fromContext.fragmentHostFor(navigator)
-        if (host == null) {
-            openAsSingleFragment(fromContext, instruction)
-            return
-        }
-
-        try {
-            val pending = host.fragmentManager.executePendingTransactions()
-        } catch (ex: IllegalStateException) {
-            mainThreadHandler.post {
-                when (fromContext) {
-                    is ActivityContext -> fromContext.activity.navigationHandle<Nothing>().value.execute(
-                        instruction
-                    )
-                    is FragmentContext -> fromContext.fragment.navigationHandle<Nothing>().value.execute(
-                        instruction
-                    )
-                }
-            }
-            return
-        }
-
-        host.fragmentManager.beginTransaction()
-            .setCustomAnimations(activity.openEnterAnimation, activity.openExitAnimation)
-            .replace(
-                host.containerView,
-                createFragment(
-                    host.fragmentManager,
-                    fromContext,
-                    navigator,
-                    instruction
-                )
             )
-            .commitNow()
+        )
     }
 
-    override fun close(context: NavigationContext<*>) {
-        context as FragmentContext
+    override fun close(context: NavigationContext<out Any, *>) {
+        context as FragmentContext<out Fragment, *>
 
         if (context.fragment is DialogFragment) {
             context.fragment.dismiss()
             return
         }
 
-        val host = context.fragmentHost
+        val containerView = (context.fragment.requireView().parent as View).id
         val parentInstruction = context.parentInstruction
-        if (parentInstruction != null) {
+
+        val previousFragment = run {
+            parentInstruction ?: return@run null
+
             val previousNavigator =
-                context.controller.navigatorFromKeyType(parentInstruction.navigationKey::class)
+                context.controller.navigatorForKeyType(parentInstruction.navigationKey::class)
             previousNavigator as FragmentNavigator
+            val previousHost = context.fragmentHostFor(previousNavigator.contextType)
 
-            val previousFragment = host.fragmentManager.fragmentFactory.instantiate(
-                previousNavigator.contextType.java.classLoader!!,
-                previousNavigator.contextType.java.name
-            )
-            previousFragment.arguments = Bundle().addOpenInstruction(parentInstruction)
-
-            host.fragmentManager.beginTransaction()
-                .setCustomAnimations(
-                    context.fragment.requireActivity().closeEnterAnimation,
-                    context.fragment.requireActivity().closeExitAnimation
-                )
-                .replace(host.containerView, previousFragment)
-                .commitNow()
-        } else {
-            when (val activity = context.fragment.requireActivity()) {
-                is SingleFragmentActivity -> context.controller.close(activity.navigationContext)
-                else -> host.fragmentManager.beginTransaction()
-                    .setCustomAnimations(
-                        activity.closeEnterAnimation,
-                        activity.closeExitAnimation
+            return@run when (previousHost?.containerView) {
+                containerView -> previousHost.fragmentManager.fragmentFactory
+                    .instantiate(
+                        previousNavigator.contextType.java.classLoader!!,
+                        previousNavigator.contextType.java.name
                     )
-                    .remove(
-                        host.fragmentManager.findFragmentById(host.containerView) ?: return
-                    )
-                    .commitNow()
+                    .apply {
+                        arguments = Bundle().addOpenInstruction(parentInstruction)
+                    }
+                else -> previousHost?.fragmentManager?.findFragmentById(previousHost.containerView)
             }
+        }
+
+        if (previousFragment == null) {
+            val activity = context.fragment.requireActivity()
+            val override = context.controller.overrideFor(
+                fromType = activity::class,
+                toType = context.fragment::class
+            ) ?: defaultActivityToFragment
+
+            override as NavigationExecutorOverride<Any, Any>
+            override.closeFragment(context.fragment.requireActivity(), context.fragment)
+            return
+        } else {
+            val override = context.controller.overrideFor(
+                fromType = previousFragment::class,
+                toType = context.fragment::class
+            ) ?: defaultFragmentToFragment
+
+            override as NavigationExecutorOverride<Any, Any>
+            override.closeFragment(previousFragment, context.fragment)
         }
     }
 
     private fun createFragment(
         fragmentManager: FragmentManager,
-        fromContext: NavigationContext<*>,
+        fromContext: NavigationContext<out Any, *>,
         navigator: Navigator<*>,
-        instruction: NavigationInstruction.Open
+        instruction: NavigationInstruction.Open<*>
     ): Fragment {
         val parentInstruction = when (fromContext) {
             is ActivityContext -> null
@@ -156,9 +226,32 @@ internal class FragmentNavigationExecutor : NavigationExecutor {
         return fragment
     }
 
+    private fun tryExecutePendingTransitions(
+        navigator: FragmentNavigator<*>,
+        fromContext: NavigationContext<out Any, *>,
+        instruction: NavigationInstruction.Open<*>
+    ): Boolean {
+        try {
+            fromContext.fragmentHostFor(navigator.contextType)?.fragmentManager?.executePendingTransactions()
+            return true
+        } catch (ex: IllegalStateException) {
+            mainThreadHandler.post {
+                when (fromContext) {
+                    is ActivityContext<out FragmentActivity, *> -> fromContext.activity.navigationHandle<Nothing>().value.execute(
+                        instruction
+                    )
+                    is FragmentContext<out Fragment, *> -> fromContext.fragment.navigationHandle<Nothing>().value.execute(
+                        instruction
+                    )
+                }
+            }
+            return false
+        }
+    }
+
     private fun openAsSingleFragment(
-        fromContext: NavigationContext<*>,
-        instruction: NavigationInstruction.Open
+        fromContext: NavigationContext<out Any, *>,
+        instruction: NavigationInstruction.Open<*>
     ) {
         fromContext.controller.open(
             fromContext,

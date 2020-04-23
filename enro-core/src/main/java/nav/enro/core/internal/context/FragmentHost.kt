@@ -5,19 +5,16 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import nav.enro.core.NavigationKey
 import nav.enro.core.Navigator
+import kotlin.reflect.KClass
 
 class FragmentHostDefinition(
-    private val containerView: Int,
-    private val acceptFunction: (navigator: Navigator<*>) -> Boolean
+    internal val containerView: Int,
+    private val acceptFunction: (fragmentType: KClass<out Fragment>) -> Boolean
 ) {
-    fun accepts(navigator: Navigator<*>) = acceptFunction(navigator)
+    fun accepts(fragmentType: KClass<out Fragment>) = acceptFunction(fragmentType)
 
-    internal fun createFragmentHost(fragment: Fragment) =
-        FragmentHost(containerView, fragment.childFragmentManager)
-
-    internal fun createFragmentHost(activity: FragmentActivity) =
-        FragmentHost(containerView, activity.supportFragmentManager)
-
+    internal fun createFragmentHost(fragmentManager: FragmentManager) =
+        FragmentHost(containerView, fragmentManager)
 }
 
 internal class FragmentHost(

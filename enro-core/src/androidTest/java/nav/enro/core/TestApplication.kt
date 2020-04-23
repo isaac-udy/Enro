@@ -19,7 +19,7 @@ class TestApplication : Application(), NavigationApplication {
                 defaultKey(ActivityWithFragmentsKey("default"))
                 fragmentHost(android.R.id.content) {
                     listOf(ActivityChildFragment::class, ActivityChildFragmentTwo::class)
-                        .contains(it.contextType)
+                        .contains(it)
                 }
             },
             fragmentNavigator<ActivityChildFragmentKey, ActivityChildFragment>(),
