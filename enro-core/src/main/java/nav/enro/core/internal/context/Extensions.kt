@@ -12,14 +12,13 @@ internal fun NavigationContext<*, *>.rootContext(): NavigationContext<*, *> {
     var parent = this
     while (true) {
         val currentContext = parent
-        parent = parent.parentContext()
-        if (parent == currentContext) return parent
+        parent = parent.parentContext() ?: return currentContext
     }
 }
 
-internal fun NavigationContext<*, *>.parentContext(): NavigationContext<*, *> {
+internal fun NavigationContext<*, *>.parentContext(): NavigationContext<*, *>? {
     return when (this) {
-        is ActivityContext -> this
+        is ActivityContext -> null
         is FragmentContext<out Fragment, *> ->
             when (val parentFragment = fragment.parentFragment) {
                 null -> fragment.requireActivity().navigationContext

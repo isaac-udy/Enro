@@ -71,7 +71,9 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
 
         when (instruction) {
             NavigationInstruction.Close -> context.controller.close(context.leafContext())
-            is NavigationInstruction.Open<*> -> context.controller.open(context, instruction)
+            is NavigationInstruction.Open<*> -> {
+                context.controller.open(context, instruction)
+            }
         }
     }
 

@@ -18,7 +18,7 @@ internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCa
         )
 
         val handle by activity.viewModels<NavigationHandleViewModel<NavigationKey>>()
-        handle.navigationContext = ActivityContext(activity = activity)
+        handle.navigationContext = ActivityContext(activity)
         if(savedInstanceState  == null) handle.executeDeeplink()
     }
 

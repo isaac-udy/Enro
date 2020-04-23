@@ -1,0 +1,167 @@
+package nav.enro.core.internal.executors
+
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.View
+import androidx.fragment.app.*
+import nav.enro.core.*
+import nav.enro.core.internal.*
+import nav.enro.core.internal.context.*
+
+object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey>(
+    fromType = Any::class,
+    opensType = Fragment::class,
+    keyType = NavigationKey::class
+) {
+    private val mainThreadHandler = Handler(Looper.getMainLooper())
+
+    override fun open(
+        fromContext: NavigationContext<out Any, *>,
+        navigator: Navigator<out Fragment, out NavigationKey>,
+        instruction: NavigationInstruction.Open<out NavigationKey>
+    ) {
+        navigator as FragmentNavigator<*, *>
+        if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
+            openFragmentAsActivity(fromContext, instruction)
+            return
+        }
+        if (instruction.navigationDirection == NavigationDirection.REPLACE && fromContext.contextReference is FragmentActivity) {
+            openFragmentAsActivity(fromContext, instruction)
+            return
+        }
+
+        val host = fromContext.fragmentHostFor(navigator.contextType)
+        if (host == null) {
+            openFragmentAsActivity(fromContext, instruction)
+            return
+        }
+
+        if (!tryExecutePendingTransitions(navigator, fromContext, instruction)) return
+        val fragment = createFragment(
+            fromContext.childFragmentManager,
+            navigator,
+            instruction
+        )
+
+        if(fragment is DialogFragment) {
+            fragment.show(fromContext.childFragmentManager, instruction.id)
+            return
+        }
+
+        val activeFragment = host.fragmentManager.findFragmentById(host.containerView)
+        activeFragment?.view?.z = -1.0f
+
+        host.fragmentManager.beginTransaction()
+            .setCustomAnimations(
+                fromContext.requireActivity().openEnterAnimation,
+                fromContext.requireActivity().openExitAnimation
+            )
+            .replace(host.containerView, fragment)
+            .setPrimaryNavigationFragment(fragment)
+            .commitNow()
+    }
+
+    override fun close(context: NavigationContext<out Fragment, out NavigationKey>) {
+        if (context.contextReference is DialogFragment) {
+            context.contextReference.dismiss()
+            return
+        }
+
+        val previousFragment = context.getParentFragment()
+        if (previousFragment == null && context.requireActivity() is SingleFragmentActivity) {
+            context.controller.close(context.requireActivity().navigationContext)
+            return
+        }
+
+        context.fragment.parentFragmentManager.commitNow {
+            setCustomAnimations(
+                context.requireActivity().closeEnterAnimation,
+                context.requireActivity().closeExitAnimation
+            )
+
+            if (previousFragment != null && !previousFragment.isAdded) {
+                replace((context.fragment.requireView().parent as View).id, previousFragment)
+            } else {
+                remove(context.fragment)
+            }
+            setPrimaryNavigationFragment(previousFragment)
+        }
+    }
+
+    fun createFragment(
+        fragmentManager: FragmentManager,
+        navigator: Navigator<*, *>,
+        instruction: NavigationInstruction.Open<*>
+    ): Fragment {
+        val fragment = fragmentManager.fragmentFactory.instantiate(
+            navigator.contextType.java.classLoader!!,
+            navigator.contextType.java.name
+        )
+
+        fragment.arguments = Bundle()
+            .addOpenInstruction(instruction)
+
+        return fragment
+    }
+
+    private fun tryExecutePendingTransitions(
+        navigator: FragmentNavigator<*, *>,
+        fromContext: NavigationContext<out Any, *>,
+        instruction: NavigationInstruction.Open<*>
+    ): Boolean {
+        try {
+            fromContext.fragmentHostFor(navigator.contextType)?.fragmentManager?.executePendingTransactions()
+            return true
+        } catch (ex: IllegalStateException) {
+            mainThreadHandler.post {
+                when (fromContext) {
+                    is ActivityContext -> fromContext.activity.navigationHandle<Nothing>().value.execute(
+                        instruction
+                    )
+                    is FragmentContext -> fromContext.fragment.navigationHandle<Nothing>().value.execute(
+                        instruction
+                    )
+                }
+            }
+            return false
+        }
+    }
+
+    fun openFragmentAsActivity(
+        fromContext: NavigationContext<out Any, *>,
+        instruction: NavigationInstruction.Open<*>
+    ) {
+        fromContext.controller.open(
+            fromContext,
+            NavigationInstruction.Open(
+                instruction.navigationDirection,
+                SingleFragmentKey(),
+                listOf(instruction.navigationKey) + instruction.children
+            )
+        )
+    }
+}
+
+fun NavigationContext<out Fragment, *>.getParentFragment(): Fragment? {
+    val containerView = (contextReference.requireView().parent as View).id
+    val parentInstruction = parentInstruction
+    parentInstruction ?: return null
+
+    val previousNavigator = controller.navigatorForKeyType(parentInstruction.navigationKey::class)
+    if(previousNavigator is ActivityNavigator) return null
+    previousNavigator as FragmentNavigator<*, *>
+    val previousHost = fragmentHostFor(previousNavigator.contextType)
+
+    return when (previousHost?.containerView) {
+        containerView -> previousHost.fragmentManager.fragmentFactory
+            .instantiate(
+                previousNavigator.contextType.java.classLoader!!,
+                previousNavigator.contextType.java.name
+            )
+            .apply {
+                arguments = Bundle().addOpenInstruction(parentInstruction)
+            }
+        else -> previousHost?.fragmentManager?.findFragmentById(previousHost.containerView)
+    }
+}

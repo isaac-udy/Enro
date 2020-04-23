@@ -7,26 +7,26 @@ import nav.enro.core.internal.context.FragmentHost
 import nav.enro.core.internal.context.FragmentHostDefinition
 import kotlin.reflect.KClass
 
-interface Navigator<T : NavigationKey> {
+interface Navigator<C: Any, T : NavigationKey> {
     val keyType: KClass<T>
     val defaultKey: NavigationKey?
-    val contextType: KClass<*>
+    val contextType: KClass<C>
     val fragmentHosts: List<FragmentHostDefinition>
 }
 
-data class ActivityNavigator<T : NavigationKey>(
+data class ActivityNavigator<C: FragmentActivity, T : NavigationKey>(
     override val keyType: KClass<T>,
-    override val contextType: KClass<out FragmentActivity>,
+    override val contextType: KClass<C>,
     override val defaultKey: NavigationKey?,
     override val fragmentHosts: List<FragmentHostDefinition>
-) : Navigator<T>
+) : Navigator<C, T>
 
-class FragmentNavigator<T : NavigationKey>(
+class FragmentNavigator<C: Fragment, T : NavigationKey>(
     override val keyType: KClass<T>,
-    override val contextType: KClass<out Fragment>,
+    override val contextType: KClass<C>,
     override val defaultKey: NavigationKey?,
     override val fragmentHosts: List<FragmentHostDefinition>
-) : Navigator<T> {
+) : Navigator<C, T> {
     internal val isDialog by lazy { DialogFragment::class.java.isAssignableFrom(contextType.java) }
 }
 

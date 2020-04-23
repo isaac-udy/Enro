@@ -2,18 +2,21 @@ package nav.enro.example
 
 import android.app.Application
 import nav.enro.core.*
+import nav.enro.core.internal.context.activity
+import nav.enro.core.internal.context.requireActivity
 import nav.enro.core.internal.executors.override.activityToActivityOverride
 import nav.enro.core.internal.executors.override.activityToFragmentOverride
+import nav.enro.core.internal.executors.override.fragmentToFragmentOverride
 import nav.enro.core.internal.getAttributeResourceId
 import nav.enro.example.feature.*
 
 val override =
     activityToActivityOverride<LoginActivity, DashboardActivity>(
         launch = { it, _, intent ->
-            it.startActivity(intent)
-            it.overridePendingTransition(
-                it.getAttributeResourceId(android.R.attr.taskOpenEnterAnimation),
-                it.getAttributeResourceId(android.R.attr.taskOpenExitAnimation)
+            it.activity.startActivity(intent)
+            it.activity.overridePendingTransition(
+                it.activity.getAttributeResourceId(android.R.attr.taskOpenEnterAnimation),
+                it.activity.getAttributeResourceId(android.R.attr.taskOpenExitAnimation)
             )
         },
         close = {
@@ -27,8 +30,9 @@ val override =
 
 val masterDetailOverride = activityToFragmentOverride<MasterDetailActivity, ListFragment>(
     launch = { activity, _, fragment ->
-        activity.supportFragmentManager.beginTransaction()
+        activity.childFragmentManager.beginTransaction()
             .replace(R.id.master, fragment)
+            .setPrimaryNavigationFragment(fragment)
             .commitNow()
     },
     close = { activity, _ ->
@@ -38,12 +42,16 @@ val masterDetailOverride = activityToFragmentOverride<MasterDetailActivity, List
 
 val masterDetailOverride2 = activityToFragmentOverride<MasterDetailActivity, DetailFragment>(
     launch = { activity, _, fragment ->
-        activity.supportFragmentManager.beginTransaction()
+        activity.childFragmentManager.beginTransaction()
             .replace(R.id.detail, fragment)
+            .setPrimaryNavigationFragment(fragment)
             .commitNow()
     },
-    close = { activity, _ ->
-        activity.finish()
+    close = { activity, fragment ->
+        activity.supportFragmentManager.beginTransaction()
+            .remove(fragment)
+            .setPrimaryNavigationFragment(activity.supportFragmentManager.findFragmentById(R.id.master))
+            .commitNow()
     }
 )
 

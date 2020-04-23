@@ -5,82 +5,95 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.NavigationInstruction
 import nav.enro.core.NavigationKey
-import nav.enro.core.internal.getAttributeResourceId
-import java.lang.IllegalArgumentException
-import java.lang.IllegalStateException
-import kotlin.reflect.KClass
+import nav.enro.core.Navigator
+import nav.enro.core.addOpenInstruction
+import nav.enro.core.internal.context.NavigationContext
+import nav.enro.core.internal.context.activity
+import nav.enro.core.internal.context.fragment
+import nav.enro.core.internal.context.requireActivity
+import nav.enro.core.internal.executors.DefaultActivityExecutor
+import nav.enro.core.internal.executors.DefaultFragmentExecutor
+import nav.enro.core.internal.executors.NavigationExecutor
+import nav.enro.core.internal.executors.getParentFragment
 
-class NavigationExecutorOverride<From : Any, To : Any>(
-    val fromType: KClass<From>,
-    val toType: KClass<To>,
-
-    private val launchActivity: ((From, NavigationInstruction.Open<*>, Intent) -> Unit)? = null,
-    private val closeActivity: ((To) -> Unit)? = null,
-    private val launchFragment: ((From, NavigationInstruction.Open<*>, To) -> Unit)? = null,
-    private val closeFragment: ((From, To) -> Unit)? = null
-) {
-
-    fun launchActivity(from: From, instruction: NavigationInstruction.Open<*>, intent: Intent) {
-        launchActivity?.invoke(from, instruction, intent)
-            ?: throw IllegalArgumentException("${this::class.java.simpleName} cannot launch Activity")
-    }
-
-    fun closeActivity(activity: To) {
-        closeActivity?.invoke(activity)
-            ?: throw IllegalArgumentException("${this::class.java.simpleName} cannot close Activity")
-    }
-
-    fun launchFragment(from: From, instruction: NavigationInstruction.Open<*>, fragment: To) {
-        launchFragment?.invoke(from, instruction, fragment)
-            ?: throw IllegalArgumentException("${this::class.java.simpleName} cannot launch Fragment")
-    }
-
-    fun closeFragment(from: From, fragment: To) {
-        closeFragment?.invoke(from, fragment)
-            ?: throw IllegalArgumentException("${this::class.java.simpleName} cannot close Fragment")
-    }
-}
-
-class PendingNavigationOverride(
-    private val from: Any,
-    private val override: NavigationExecutorOverride<*,*>
-) {
-    fun launchActivity(instruction: NavigationInstruction.Open<*>, intent: Intent) {
-        (override as NavigationExecutorOverride<Any, Any>).launchActivity(from, instruction, intent)
-    }
-
-    fun launchFragment(instruction: NavigationInstruction.Open<*>, fragment: Fragment) {
-        (override as NavigationExecutorOverride<Any, Any>).launchFragment(from, instruction, fragment)
-    }
-}
-
-inline fun <reified From : FragmentActivity, reified To : FragmentActivity> activityToActivityOverride(
-    noinline launch: ((fromActivity: From, instruction: NavigationInstruction.Open<*>, toIntent: Intent) -> Unit),
-    noinline close: ((toActivity: To) -> Unit)
-): NavigationExecutorOverride<From, To> =
-    NavigationExecutorOverride(
+inline fun <reified From : FragmentActivity, reified Opens : FragmentActivity> activityToActivityOverride(
+    noinline launch: ((fromActivity: NavigationContext<out From, *>, instruction: NavigationInstruction.Open<*>, toIntent: Intent) -> Unit),
+    noinline close: ((toActivity: Opens) -> Unit)
+): NavigationExecutor<From, Opens, NavigationKey> =
+    object : NavigationExecutor<From, Opens, NavigationKey>(
         fromType = From::class,
-        toType = To::class,
-        launchActivity = launch,
-        closeActivity = close
-    )
+        opensType = Opens::class,
+        keyType = NavigationKey::class
+    ) {
+        override fun open(
+            fromContext: NavigationContext<out From, *>,
+            navigator: Navigator<out Opens, out NavigationKey>,
+            instruction: NavigationInstruction.Open<out NavigationKey>
+        ) {
+            val intent = Intent(fromContext.requireActivity(), navigator.contextType.java)
+                .addOpenInstruction(instruction)
+            launch(fromContext, instruction, intent)
+        }
 
-inline fun <reified From : FragmentActivity, reified To : Fragment> activityToFragmentOverride(
-    noinline launch: (fromActivity: From, instruction: NavigationInstruction.Open<*>, toFragment: To) -> Unit,
-    noinline close: (fromActivity: From, toFragment: To) -> Unit
-): NavigationExecutorOverride<From, To> = NavigationExecutorOverride(
-    fromType = From::class,
-    toType = To::class,
-    launchFragment = launch,
-    closeFragment = close
-)
+        override fun close(context: NavigationContext<out Opens, out NavigationKey>) {
+            when (context.activity) {
+                !is Opens -> DefaultActivityExecutor.close(context)
+                else -> close(context.activity as Opens)
+            }
+        }
+    }
 
-inline fun <reified From : Fragment, reified To : Fragment> fragmentToFragmentOverride(
-    noinline launch: (fromFragment: From, instruction: NavigationInstruction.Open<*>, toFragment: To) -> Unit,
-    noinline close: (fromFragment: From, toFragment: To) -> Unit
-): NavigationExecutorOverride<From, To> = NavigationExecutorOverride(
-    fromType = From::class,
-    toType = To::class,
-    launchFragment = launch,
-    closeFragment = close
-)
+inline fun <reified From : FragmentActivity, reified Opens : Fragment> activityToFragmentOverride(
+    noinline launch: (fromActivity: NavigationContext<out From, *>, instruction: NavigationInstruction.Open<*>, toFragment: Opens) -> Unit,
+    noinline close: (fromActivity: From, toFragment: Opens) -> Unit
+): NavigationExecutor<From, Opens, NavigationKey> =
+    object : NavigationExecutor<From, Opens, NavigationKey>(
+        fromType = From::class,
+        opensType = Opens::class,
+        keyType = NavigationKey::class
+    ) {
+        override fun open(
+            fromContext: NavigationContext<out From, *>,
+            navigator: Navigator<out Opens, out NavigationKey>,
+            instruction: NavigationInstruction.Open<out NavigationKey>
+        ) {
+            val fragment = DefaultFragmentExecutor.createFragment(fromContext.childFragmentManager, navigator, instruction)
+            launch(fromContext, instruction, fragment as Opens)
+        }
+
+        override fun close(context: NavigationContext<out Opens, out NavigationKey>) {
+            when {
+                context.requireActivity() !is From -> DefaultFragmentExecutor.close(context)
+                context.fragment !is Opens -> DefaultFragmentExecutor.close(context)
+                else -> close.invoke(context.requireActivity() as From, context.fragment as Opens)
+            }
+        }
+    }
+
+inline fun <reified From : Fragment, reified Opens : Fragment> fragmentToFragmentOverride(
+    noinline launch: (fromFragment: NavigationContext<out From, *>, instruction: NavigationInstruction.Open<*>, toFragment: Opens) -> Unit,
+    noinline close: (fromFragment: From, toFragment: Opens) -> Unit
+): NavigationExecutor<From, Opens, NavigationKey> =
+    object : NavigationExecutor<From, Opens, NavigationKey>(
+        fromType = From::class,
+        opensType = Opens::class,
+        keyType = NavigationKey::class
+    ) {
+        override fun open(
+            fromContext: NavigationContext<out From, *>,
+            navigator: Navigator<out Opens, out NavigationKey>,
+            instruction: NavigationInstruction.Open<out NavigationKey>
+        ) {
+            val fragment = DefaultFragmentExecutor.createFragment(fromContext.childFragmentManager, navigator, instruction)
+            launch(fromContext, instruction, fragment as Opens)
+        }
+
+        override fun close(context: NavigationContext<out Opens, out NavigationKey>) {
+            val parent = context.getParentFragment()
+            when {
+                parent !is From -> DefaultFragmentExecutor.close(context)
+                context.fragment !is Opens -> DefaultFragmentExecutor.close(context)
+                else -> close(parent, context.fragment as Opens)
+            }
+        }
+    }

@@ -1,6 +1,5 @@
 package nav.enro.core.internal.context
 
-import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -12,25 +11,24 @@ import nav.enro.core.navigationController
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
-sealed class NavigationContext<ContextType: Any, T : NavigationKey>(
-    internal val contextReference: ContextType
+sealed class NavigationContext<ContextType : Any, T : NavigationKey>(
+    val contextReference: ContextType
 ) {
-    internal abstract val controller: NavigationController
-    internal abstract val lifecycle: Lifecycle
-    internal abstract val childFragmentManager: FragmentManager
-    internal abstract val contextType: KClass<*>
+    abstract val controller: NavigationController
+    abstract val lifecycle: Lifecycle
+    abstract val childFragmentManager: FragmentManager
     protected abstract val arguments: Bundle?
 
-    internal val instruction by lazy { arguments?.readOpenInstruction<T>() }
+    val instruction by lazy { arguments?.readOpenInstruction<T>() }
 
-    internal val key: T by lazy {
+    val key: T by lazy {
         instruction?.navigationKey
-            ?: controller.navigatorForContextType(contextType)?.defaultKey as? T
+            ?: controller.navigatorForContextType(contextReference::class)?.defaultKey as? T
             ?: throw IllegalStateException("Navigation Context's bound arguments did not contain a NavigationKey!")
     }
 
-    internal open val navigator: Navigator<T> by lazy {
-        controller.navigatorForKeyType(key::class) as Navigator<T>
+    internal open val navigator: Navigator<ContextType, T> by lazy {
+        controller.navigatorForKeyType(key::class) as Navigator<ContextType, T>
     }
 
     internal val pendingKeys: List<NavigationKey> by lazy {
@@ -44,41 +42,42 @@ sealed class NavigationContext<ContextType: Any, T : NavigationKey>(
     internal fun fragmentHostFor(fragmentToHost: KClass<out Fragment>): FragmentHost? {
         val primaryFragment = childFragmentManager.primaryNavigationFragment
         val activeContainerId = (primaryFragment?.view?.parent as? View)?.id
-        val primaryDefinition = navigator.fragmentHosts.firstOrNull { it.containerView == activeContainerId && it.accepts(fragmentToHost) }
-        val definition = primaryDefinition ?: navigator.fragmentHosts.firstOrNull { it.accepts(fragmentToHost) }
-        if (definition == null) {
-            val parentContext = parentContext()
-            if (parentContext == this) return null
-            return parentContext.fragmentHostFor(fragmentToHost)
+        val primaryDefinition = navigator.fragmentHosts.firstOrNull {
+            it.containerView == activeContainerId && it.accepts(fragmentToHost)
         }
-        return definition.createFragmentHost(childFragmentManager)
+        val definition = primaryDefinition
+            ?: navigator.fragmentHosts.firstOrNull { it.accepts(fragmentToHost) }
+
+        return definition?.createFragmentHost(childFragmentManager)
+            ?: parentContext()?.fragmentHostFor(fragmentToHost)
     }
 }
 
-internal class ActivityContext<ContextType: FragmentActivity, T : NavigationKey>(
-    val activity: ContextType
-) : NavigationContext<ContextType, T>(activity) {
-    override val controller get() = activity.application.navigationController
-    override val lifecycle get() = activity.lifecycle
-    override val arguments get() = activity.intent.extras
-    override val contextType get() = activity::class
-    override val navigator get() = super.navigator as ActivityNavigator<T>
+internal class ActivityContext<ContextType : FragmentActivity, T : NavigationKey>(
+    contextReference: ContextType
+) : NavigationContext<ContextType, T>(contextReference) {
+    override val controller get() = contextReference.application.navigationController
+    override val lifecycle get() = contextReference.lifecycle
+    override val arguments get() = contextReference.intent.extras
+    override val navigator get() = super.navigator as ActivityNavigator<ContextType, T>
     override val childFragmentManager get() = contextReference.supportFragmentManager
 }
 
-internal class FragmentContext<ContextType: Fragment, T : NavigationKey>(
-    val fragment: ContextType
-) : NavigationContext<ContextType, T>(fragment) {
-    override val controller get() = fragment.requireActivity().application.navigationController
-    override val lifecycle get() = fragment.lifecycle
-    override val arguments get() = fragment.arguments
-    override val contextType get() = fragment::class
-    override val navigator get() = super.navigator as FragmentNavigator<T>
-    override val childFragmentManager get() = fragment.childFragmentManager
+internal class FragmentContext<ContextType : Fragment, T : NavigationKey>(
+    contextReference: ContextType
+) : NavigationContext<ContextType, T>(contextReference) {
+    override val controller get() = contextReference.requireActivity().application.navigationController
+    override val lifecycle get() = contextReference.lifecycle
+    override val arguments get() = contextReference.arguments
+    override val navigator get() = super.navigator as FragmentNavigator<ContextType, T>
+    override val childFragmentManager get() = contextReference.childFragmentManager
 }
 
-internal val NavigationContext<*, *>.activityFromContext: FragmentActivity
-    get() = when (this) {
-        is ActivityContext<out FragmentActivity, *> -> activity
-        is FragmentContext<out Fragment, *> -> fragment.requireActivity()
-    }
+val NavigationContext<out FragmentActivity, *>.activity get() = contextReference
+val NavigationContext<out Fragment, *>.fragment get() = contextReference
+
+fun NavigationContext<*, *>.requireActivity(): FragmentActivity = when (contextReference) {
+    is FragmentActivity -> contextReference
+    is Fragment -> contextReference.requireActivity()
+    else -> throw IllegalStateException()
+}
