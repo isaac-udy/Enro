@@ -5,7 +5,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import junit.framework.TestCase.*
 import nav.enro.core.internal.SingleFragmentActivity
-import nav.enro.core.internal.context.navigationContext
+import nav.enro.core.context.navigationContext
 import org.junit.Test
 import java.util.*
 

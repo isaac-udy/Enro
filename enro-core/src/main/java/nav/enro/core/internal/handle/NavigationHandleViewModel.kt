@@ -1,7 +1,5 @@
 package nav.enro.core.internal.handle
 
-import android.app.Activity
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.fragment.app.Fragment
@@ -9,14 +7,13 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import nav.enro.core.internal.addOnBackPressedListener
-import nav.enro.core.internal.context.*
 import nav.enro.core.internal.onEvent
 import nav.enro.core.*
-import nav.enro.core.internal.context.*
-import nav.enro.core.internal.context.ActivityContext
-import nav.enro.core.internal.context.FragmentContext
-import nav.enro.core.internal.context.NavigationContext
-import nav.enro.core.internal.context.leafContext
+import nav.enro.core.context.*
+import nav.enro.core.context.ActivityContext
+import nav.enro.core.context.FragmentContext
+import nav.enro.core.context.NavigationContext
+import nav.enro.core.context.leafContext
 
 internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), NavigationHandle<T> {
 

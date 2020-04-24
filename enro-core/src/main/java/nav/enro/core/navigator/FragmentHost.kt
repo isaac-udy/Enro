@@ -1,13 +1,10 @@
-package nav.enro.core.internal.context
+package nav.enro.core.navigator
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import nav.enro.core.NavigationKey
-import nav.enro.core.Navigator
 import kotlin.reflect.KClass
 
-class FragmentHostDefinition(
+class FragmentHostDefinition internal constructor(
     internal val containerView: Int,
     private val acceptFunction: (fragmentType: KClass<out Fragment>) -> Boolean
 ) {

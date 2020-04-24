@@ -13,7 +13,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
-import nav.enro.core.internal.context.navigationContext
+import nav.enro.core.context.navigationContext
 import java.lang.IllegalStateException
 import kotlin.concurrent.thread
 

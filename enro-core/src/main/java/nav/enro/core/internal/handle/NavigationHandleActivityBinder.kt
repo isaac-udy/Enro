@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.NavigationKey
-import nav.enro.core.internal.context.ActivityContext
+import nav.enro.core.context.ActivityContext
 
 internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCallbacks {
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {

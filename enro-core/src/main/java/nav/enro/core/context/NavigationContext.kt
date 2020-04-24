@@ -1,13 +1,20 @@
-package nav.enro.core.internal.context
+package nav.enro.core.context
 
 import android.os.Bundle
 import android.view.View
+import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import nav.enro.core.*
-import nav.enro.core.navigationController
+import nav.enro.core.controller.NavigationController
+import nav.enro.core.internal.handle.NavigationHandleViewModel
+import nav.enro.core.controller.navigationController
+import nav.enro.core.navigator.ActivityNavigator
+import nav.enro.core.navigator.FragmentNavigator
+import nav.enro.core.navigator.Navigator
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
@@ -38,19 +45,6 @@ sealed class NavigationContext<ContextType : Any, T : NavigationKey>(
     internal val parentInstruction by lazy {
         instruction?.parentInstruction
     }
-
-    internal fun fragmentHostFor(fragmentToHost: KClass<out Fragment>): FragmentHost? {
-        val primaryFragment = childFragmentManager.primaryNavigationFragment
-        val activeContainerId = (primaryFragment?.view?.parent as? View)?.id
-        val primaryDefinition = navigator.fragmentHosts.firstOrNull {
-            it.containerView == activeContainerId && it.accepts(fragmentToHost)
-        }
-        val definition = primaryDefinition
-            ?: navigator.fragmentHosts.firstOrNull { it.accepts(fragmentToHost) }
-
-        return definition?.createFragmentHost(childFragmentManager)
-            ?: parentContext()?.fragmentHostFor(fragmentToHost)
-    }
 }
 
 internal class ActivityContext<ContextType : FragmentActivity, T : NavigationKey>(
@@ -73,11 +67,4 @@ internal class FragmentContext<ContextType : Fragment, T : NavigationKey>(
     override val childFragmentManager get() = contextReference.childFragmentManager
 }
 
-val NavigationContext<out FragmentActivity, *>.activity get() = contextReference
-val NavigationContext<out Fragment, *>.fragment get() = contextReference
 
-fun NavigationContext<*, *>.requireActivity(): FragmentActivity = when (contextReference) {
-    is FragmentActivity -> contextReference
-    is Fragment -> contextReference.requireActivity()
-    else -> throw IllegalStateException()
-}
