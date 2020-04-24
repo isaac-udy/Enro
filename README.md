@@ -22,23 +22,11 @@ A simple navigation library for Android
 Enro is published to [JCenter](https://bintray.com/beta/#/isaac-udy/Enro/enro-core?tab=overview). Make sure your project includes the jcenter repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
-    implementation "nav.enro.enro-core:enro-core:0.0.2"
+    implementation "nav.enro.enro-core:enro-core:0.0.3"
 }
 ```
 
-#### 1. Install Enro into your Application 
-```kotlin
-class YourApplication : Application(), NavigationApplication {
-    override val navigationController =  // See Step 3    
-    override fun onCreate() {
-        super.onCreate()
-        NavigationController.install(this)
-    }
-    ...
-}
-```
-
-#### 2. Define your NavigationKeys
+#### 1. Define your NavigationKeys
 ```kotlin
 @Parcelize
 data class MyActvityKey(val activityData: String): NavigationKey
@@ -49,20 +37,18 @@ data class MyFragmentKey(val fragmentData: String): NavigationKey
 class MyFragment : Fragment() { ... }
 ```
 
-#### 3. In your Application, define Navigators for your NavigationKeys
+#### 2. In your Application, define Navigators for your NavigationKeys
 ```kotlin
 class YourApplication : Application(), NavigationApplication {
-    override val navigationController = NavigationController(
-        navigators = listOf(
-            activityNavigator<MyActvityKey, MyActivity>(),
-            fragmentNavigator<MyFragmentKey, MyFragment>()
-        )
-    )
+    override val navigationController = navigationController {
+        activityNavigator<MyActvityKey, MyActivity>()
+        fragmentNavigator<MyFragmentKey, MyFragment>()
+    }
     ...
 }
 ```
 
-#### 4. Interact with your Navigatiors! 
+#### 3. Interact with your Navigatiors! 
 ```kotlin
 @Parcelize
 data class MyActvityKey(val userId: String): NavigationKey
@@ -94,6 +80,12 @@ class MyFragment : Fragment() {
 ```
 
 ## FAQ
+#### How well does Enro work alongside "normal" Android Activity/Fragment navigation?  
+Enro is designed to integrate well with Android's default navigation. It's easily possible to manually open a Fragment or Activity that will act as if Enro itself had done the navigation. All that needs to be done is for an appropriate NavigationInstruction to be added to the Fragment's arguments or the Activity's extras. 
+
+#### How does Enro decide if a Fragment, or the Activity should receive a back button press?
+Enro considers the primaryNavigationFragment to be the "active" navigation target, or the current Activity if there is no primaryNavigationFragment. In a nested Fragment situation, the primaryNavigationFragment of the primaryNavigationFragment of the ... is considered "active".
+
 #### What kind of navigation instructions does Enro support?
 Enro  supports three navigation instructions: `forward`, `replace` and `replaceRoot`.  
 
@@ -111,6 +103,40 @@ Enro supports multiple arguments to these instructions.
 When an Activity executes a navigation instruction that resolves to a Fragment, one of two things will happen: 
 1. The Activity's navigator defines a "fragment host" that accepts the Fragment's type, in which case, the Fragment will be opened into the container view defined by that fragment host.
 2. The Activity's navigation **does not** define a fragment host that acccepts the Fragment's type, in which case, the Fragment will be opened as if it was an Activity. 
+
+#### I'd like to do shared element transitions, or do something special when navigating between certain screens
+Enro allows you to define "NavigationExecutors" as overrides for the default behaviour, which handle these situations. 
+
+There will be an example project that shows how this all works in the future, but for now, here's a basic explanation: 
+1. A NavigationExecutor is typed for a "From", an "Opens", and a NavigationKey type. 
+2. Enro performs navigation on a "NavigationContext", which is basically either a Fragment or a FragmentActivity
+3. A NavigationExecutor defines two methods
+  a. `open`, which takes a NavigationContext of the "From" type, a Navigator for the "Opens" type, and a NavigationInstruction (i.e. the From context is attempting to open the Navigator with the input NavigationInstruction)
+  b. `close`, which takes a NavigationContext of the "Opens" type (i.e. you're closing what you've already opened)
+4. By creating a NavigationExecutor between two specific screens and registering this with the NavigationController, you're able to override the default navigation behaviour (although you're still able to call back to the DefaultActivityExecutor or DefaultFragmentExecutor if you need to)
+5. See the methods in NavigationControllerBuilder for activityToActivityOverride, activityToFragmentOverride and fragmentToFragmentOverride
+6. When a NavigationContext decides what NavigationExecutor to execute an instruction on, Enro will look at the NavigationContext originating the NavigationInstruction and then walk up toward's it's root NavigationContext (i.e. a Fragment will check itself, then its parent Fragment, and then that parent Fragment's Activity), checking for an appropriate override along the way. If it finds no override, the default will be used. NavigationContexts that are the children of the current NavigationContext will not be searched, only the parents. 
+
+Example: 
+```kotlin
+// This override will place the "DetailFragment" into the container R.id.detail, 
+// and when it's closed, will set whatever Fragment is in the R.id.master container as the primary navigation fragment
+activityToFragmentOverride<MasterDetailActivity, DetailFragment>(
+    launch = {
+        val fragment =  DetailFragment().addOpenInstruction(it.instruction)
+        it.fromContext.childFragmentManager.beginTransaction()
+            .replace(R.id.detail, fragment)
+            .setPrimaryNavigationFragment(fragment)
+            .commitNow()
+    },
+    close = { context ->
+        context.fragment.parentFragmentManager.beginTransaction()
+            .remove(context.fragment)
+            .setPrimaryNavigationFragment(context.parentActivity.supportFragmentManager.findFragmentById(R.id.master))
+            .commitNow()
+    }
+)
+```
 
 #### My Activity crashes on launch, what's going on?!
 It's possible for an Activity to be launched from multiple places. Most of these can be controlled by Enro, but some of them cannot. For example, an Activity that's declared in the manifest as a MAIN/LAUNCHER Activity might be launched by the Android operating system when the user opens your application for the first time. Because Enro hasn't launched the Activity, it's not going to know what the NavigationKey for that Activity is, and won't be able to read it from the Activity's intent. 
@@ -135,7 +161,7 @@ class YourApplication : Application(), NavigationApplication {
 ## Why would I want to use Enro? 
 #### Support the navigation requirements of large multi-module Applications, while allowing flexibility to define rich transitions between specific destinations
 
-A multi-module application has different requirements to a single-module application. 	Individual modules will define Activities and Fragments, and other modules will want to navigate to these Activities and Fragments. By detatching the NavigationKeys from the destinations themselves, this allows NavigationKeys to be defined in a common/shared module which all other modules depend on.  Any module is then able to navigate to another by using one of the NavigationKeys, without knowing about the Activity or Fragment that it is going to. FeatureOneActivity and FeatureTwoActivity don't know about each other, but they both know that FeatureOneKey and FeatureTwoKey exist. A simple version of this solution can be created in less than 20 lines of code.  
+A multi-module application has different requirements to a single-module application. Individual modules will define Activities and Fragments, and other modules will want to navigate to these Activities and Fragments. By detatching the NavigationKeys from the destinations themselves, this allows NavigationKeys to be defined in a common/shared module which all other modules depend on.  Any module is then able to navigate to another by using one of the NavigationKeys, without knowing about the Activity or Fragment that it is going to. FeatureOneActivity and FeatureTwoActivity don't know about each other, but they both know that FeatureOneKey and FeatureTwoKey exist. A simple version of this solution can be created in less than 20 lines of code.  
 
 However, truly beautiful navigation requires knowledge of both the originator and the destination. Material design's shared element transitions are an example of this. If FeatureOneActivity and FeatureTwoActivity don't know about each other, how can they collaborate on a shared element transition? Enro allows transitions between two navigation destinations to be overridden for that specific case, meaning that FeatureOneActivity and FeatureTwoActivity might know nothing about each other, but the application that uses them will be able to define a navigation override that adds shared element transitions between the two.
 
