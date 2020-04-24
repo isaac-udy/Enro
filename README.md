@@ -111,8 +111,8 @@ There will be an example project that shows how this all works in the future, bu
 1. A NavigationExecutor is typed for a "From", an "Opens", and a NavigationKey type. 
 2. Enro performs navigation on a "NavigationContext", which is basically either a Fragment or a FragmentActivity
 3. A NavigationExecutor defines two methods
-    a. `open`, which takes a NavigationContext of the "From" type, a Navigator for the "Opens" type, and a NavigationInstruction (i.e. the From context is attempting to open the Navigator with the input NavigationInstruction)
-    b. `close`, which takes a NavigationContext of the "Opens" type (i.e. you're closing what you've already opened)
+    * `open`, which takes a NavigationContext of the "From" type, a Navigator for the "Opens" type, and a NavigationInstruction (i.e. the From context is attempting to open the Navigator with the input NavigationInstruction)
+    * `close`, which takes a NavigationContext of the "Opens" type (i.e. you're closing what you've already opened)
 4. By creating a NavigationExecutor between two specific screens and registering this with the NavigationController, you're able to override the default navigation behaviour (although you're still able to call back to the DefaultActivityExecutor or DefaultFragmentExecutor if you need to)
 5. See the methods in NavigationControllerBuilder for activityToActivityOverride, activityToFragmentOverride and fragmentToFragmentOverride
 6. When a NavigationContext decides what NavigationExecutor to execute an instruction on, Enro will look at the NavigationContext originating the NavigationInstruction and then walk up toward's it's root NavigationContext (i.e. a Fragment will check itself, then its parent Fragment, and then that parent Fragment's Activity), checking for an appropriate override along the way. If it finds no override, the default will be used. NavigationContexts that are the children of the current NavigationContext will not be searched, only the parents. 
