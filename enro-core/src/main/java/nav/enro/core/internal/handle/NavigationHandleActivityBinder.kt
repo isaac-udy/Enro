@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.NavigationKey
-import nav.enro.core.internal.context.ActivityContext
+import nav.enro.core.context.ActivityContext
 
 internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCallbacks {
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
@@ -18,7 +18,7 @@ internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCa
         )
 
         val handle by activity.viewModels<NavigationHandleViewModel<NavigationKey>>()
-        handle.navigationContext = ActivityContext(activity = activity)
+        handle.navigationContext = ActivityContext(activity)
         if(savedInstanceState  == null) handle.executeDeeplink()
     }
 

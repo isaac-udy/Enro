@@ -52,7 +52,8 @@ class UserFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         subtitle.text = navigation.key.userId
         logOutButton.setOnClickListener {
-            navigation.replaceRoot(LoginKey())
+//            navigation.replaceRoot(LoginKey())
+            navigation.forward(UserKey(userId = navigation.key.userId.repeat(2)))
         }
     }
 }

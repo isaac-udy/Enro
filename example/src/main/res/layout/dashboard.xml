@@ -144,6 +144,16 @@
         app:layout_constraintTop_toTopOf="@+id/allMessagesTitle" />
 
     <Button
+        android:id="@+id/multiStackButton"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:text="Multistack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/userInfoButton"/>
+
+    <Button
         android:id="@+id/userInfoButton"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:text="User info"

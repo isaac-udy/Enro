@@ -5,7 +5,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
-import nav.enro.core.internal.context.FragmentContext
+import nav.enro.core.context.FragmentContext
 import nav.enro.core.NavigationKey
 
 internal object NavigationHandleFragmentBinder: FragmentManager.FragmentLifecycleCallbacks() {

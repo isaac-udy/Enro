@@ -1,32 +1,38 @@
 package nav.enro.core
 
+import android.R
 import android.app.Application
+import nav.enro.core.controller.NavigationApplication
+import nav.enro.core.controller.NavigationController
+import nav.enro.core.navigator.createActivityNavigator
+import nav.enro.core.navigator.createFragmentNavigator
 
-class TestApplication : Application(), NavigationApplication {
+class TestApplication : Application(),
+    NavigationApplication {
 
-    override val navigationController = NavigationController(
-        navigators = listOf(
-            activityNavigator<DefaultActivityKey, DefaultActivity> {
-                defaultKey(defaultKey)
-            },
+    override val navigationController =
+        NavigationController(
+            navigators = listOf(
+                createActivityNavigator<DefaultActivityKey, DefaultActivity> {
+                    defaultKey(defaultKey)
+                },
 
+                createActivityNavigator<GenericActivityKey, GenericActivity>(),
+                createFragmentNavigator<GenericFragmentKey, GenericFragment>(),
 
-            activityNavigator<GenericActivityKey, GenericActivity>(),
-            fragmentNavigator<GenericFragmentKey, GenericFragment>(),
+                createActivityNavigator<ActivityWithFragmentsKey, ActivityWithFragments> {
+                    defaultKey(ActivityWithFragmentsKey("default"))
+                    acceptFragments(
+                        R.id.content,
+                        ActivityChildFragment::class,
+                        ActivityChildFragmentTwo::class
+                    )
+                },
+                createFragmentNavigator<ActivityChildFragmentKey, ActivityChildFragment>(),
+                createFragmentNavigator<ActivityChildFragmentTwoKey, ActivityChildFragmentTwo>()
 
-
-            activityNavigator<ActivityWithFragmentsKey, ActivityWithFragments> {
-                defaultKey(ActivityWithFragmentsKey("default"))
-                fragmentHost(android.R.id.content) {
-                    listOf(ActivityChildFragment::class, ActivityChildFragmentTwo::class)
-                        .contains(it.contextType)
-                }
-            },
-            fragmentNavigator<ActivityChildFragmentKey, ActivityChildFragment>(),
-            fragmentNavigator<ActivityChildFragmentTwoKey, ActivityChildFragmentTwo>()
-
+            )
         )
-    )
 
     override fun onCreate() {
         super.onCreate()

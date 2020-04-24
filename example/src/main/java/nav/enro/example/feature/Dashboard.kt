@@ -43,6 +43,7 @@ class DashboardActivity : AppCompatActivity() {
         otherMessagesTitle.setOnClickListener { viewModel.onOtherMessagesSelected() }
         allMessagesTitle.setOnClickListener { viewModel.onAllMessagesSelected() }
         userInfoButton.setOnClickListener { viewModel.onUserInfoSelected() }
+        multiStackButton.setOnClickListener { viewModel.onMultiStackSelected() }
 
         viewModel.observableState.observe(this) {
             subtitle.text = "Welcome back, ${it.userId}"
@@ -125,7 +126,7 @@ class DashboardViewModel(
 
     fun onAllMessagesSelected() {
         navigationHandle.forward(
-            ListKey(
+            MasterDetailKey(
                 userId = navigationHandle.key.userId,
                 filter = ListFilterType.ALL
             )
@@ -140,6 +141,10 @@ class DashboardViewModel(
         )
     }
 
+    fun onMultiStackSelected() {
+        navigationHandle.forward(MultiStackKey())
+    }
+
     fun onCloseAccepted() {
         navigationHandle.close()
     }
@@ -147,4 +152,5 @@ class DashboardViewModel(
     fun onCloseDismissed() {
         state = state.copy(closeRequested = false)
     }
+
 }

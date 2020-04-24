@@ -14,7 +14,7 @@ internal data class SingleFragmentKey(
     internal val id: Int = 0
 ) : NavigationKey
 
-internal class SingleFragmentActivity : AppCompatActivity() {
+class SingleFragmentActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         overridePendingTransition(0, 0)
         super.onCreate(savedInstanceState)

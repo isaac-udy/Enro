@@ -13,7 +13,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
-import nav.enro.core.internal.context.navigationContext
+import nav.enro.core.context.navigationContext
 import java.lang.IllegalStateException
 import kotlin.concurrent.thread
 
@@ -46,8 +46,7 @@ inline fun <reified T: FragmentActivity> expectActivity(crossinline selector: (F
 internal inline fun <reified T: Fragment> expectFragment(crossinline selector: (Fragment) -> Boolean = { it is T }): T {
     val activity = expectActivity<FragmentActivity>()
     return waitOnMain {
-        val host = activity.navigationContext.activeFragmentHost ?: return@waitOnMain null
-        val fragment = host.fragmentManager.findFragmentById(host.containerView) ?: return@waitOnMain null
+        val fragment = activity.supportFragmentManager.primaryNavigationFragment ?: return@waitOnMain null
         if(selector(fragment)) return@waitOnMain fragment as T else null
     }
 }

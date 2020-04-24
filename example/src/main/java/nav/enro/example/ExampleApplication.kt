@@ -1,34 +1,30 @@
 package nav.enro.example
 
 import android.app.Application
-import nav.enro.core.NavigationApplication
-import nav.enro.core.NavigationController
-import nav.enro.core.activityNavigator
-import nav.enro.core.fragmentNavigator
+import nav.enro.core.controller.NavigationApplication
+import nav.enro.core.controller.navigationController
 import nav.enro.example.feature.*
 
 class ExampleApplication : Application(), NavigationApplication {
-    override val navigationController = NavigationController(
-        navigators = listOf(
-            activityNavigator<LoginKey, LoginActivity>{
-                defaultKey(LoginKey())
+    override val navigationController = navigationController {
+        withComponent(masterDetailComponent)
 
-                fragmentHost(R.id.containerView) {
-                    it.contextType == UserFragment::class
-                }
-            },
-            fragmentNavigator<LoginErrorKey, LoginErrorFragment>(),
+        activityNavigator<LoginKey, LoginActivity> {
+            defaultKey(LoginKey())
+            acceptFragments(R.id.containerView, UserFragment::class)
+        }
 
-            activityNavigator<DashboardKey, DashboardActivity>(),
-            activityNavigator<SearchKey, SearchActivity>(),
-            activityNavigator<DetailKey, DetailActivity>(),
-            activityNavigator<ListKey, ListActivity>(),
-            fragmentNavigator<UserKey, UserFragment>()
-        )
-    )
+        fragmentNavigator<LoginErrorKey, LoginErrorFragment>()
 
-    override fun onCreate() {
-        super.onCreate()
-        NavigationController.install(this)
+        activityNavigator<DashboardKey, DashboardActivity>()
+        activityNavigator<MultiStackKey, MultiStackActivity> {
+            acceptFragments(R.id.redFrame, UserFragment::class)
+            acceptFragments(R.id.greenFrame, UserFragment::class)
+            acceptFragments(R.id.blueFrame, UserFragment::class)
+        }
+        activityNavigator<SearchKey, SearchActivity>()
+        fragmentNavigator<DetailKey, DetailFragment>()
+        fragmentNavigator<ListKey, ListFragment>()
+        fragmentNavigator<UserKey, UserFragment>()
     }
 }

@@ -1,12 +1,16 @@
 package nav.enro.example.feature
 
+import android.content.Context
 import android.os.Bundle
+import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -49,6 +53,25 @@ class ListActivity : AppCompatActivity() {
         viewModel.observableState.observe(this) {
             adapter.submitList(it.items)
         }
+    }
+}
+
+class ListFragment : Fragment() {
+    private val viewModel by viewModels<ListViewModel> { NavigationViewModelFactory(this) }
+    private val adapter = SimpleDataAdapter { viewModel.onItemSelected(it) }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        viewModel.observableState.observe(viewLifecycleOwner) {
+            adapter.submitList(it.items)
+        }
+        return RecyclerView(requireContext()).apply {
+                layoutManager = LinearLayoutManager(context)
+                adapter = this@ListFragment.adapter
+            }
     }
 }
 
