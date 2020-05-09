@@ -14,6 +14,8 @@ import nav.enro.core.navigator.*
 class NavigationControllerBuilder {
     @PublishedApi internal val navigators: MutableList<NavigatorDefinition<*, *>> = mutableListOf()
     @PublishedApi internal val overrides: MutableList<NavigationExecutor<*, *, *>> = mutableListOf()
+    @PublishedApi internal val plugins: MutableList<EnroPlugin> = mutableListOf()
+
 
     inline fun <reified T : NavigationKey, reified A : FragmentActivity> activityNavigator(
         block: ActivityNavigatorBuilder<T, A>.() -> Unit = {}
@@ -28,21 +30,21 @@ class NavigationControllerBuilder {
     }
 
     inline fun <reified From : FragmentActivity, reified Opens : FragmentActivity> activityToActivityOverride(
-        noinline launch: ((ExecutorArgs<From, Opens, NavigationKey>) -> Unit),
+        noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
         noinline close: ((context: NavigationContext<out Opens, out NavigationKey>) -> Unit)
     ) {
         overrides.add(createActivityToActivityOverride(launch, close))
     }
 
     inline fun <reified From : FragmentActivity, reified Opens : Fragment> activityToFragmentOverride(
-        noinline launch: ((ExecutorArgs<From, Opens, NavigationKey>) -> Unit),
+        noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
         noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit
     ) {
         overrides.add(createActivityToFragmentOverride(launch, close))
     }
 
     inline fun <reified From : Fragment, reified Opens : Fragment> fragmentToFragmentOverride(
-        noinline launch: ((ExecutorArgs<From, Opens, NavigationKey>) -> Unit),
+        noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
         noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit
     ) {
         overrides.add(createFragmentToFragmentOverride(launch, close))
@@ -59,9 +61,14 @@ class NavigationControllerBuilder {
     fun withComponent(builder: NavigationControllerBuilder) {
         navigators.addAll(builder.navigators)
         overrides.addAll(builder.overrides)
+        plugins.addAll(builder.plugins)
     }
 
-    internal fun build() = NavigationController(navigators, overrides)
+    fun withPlugin(enroPlugin: EnroPlugin) {
+        plugins.add(enroPlugin)
+    }
+
+    internal fun build() = NavigationController(navigators, overrides, plugins)
 }
 
 /**

@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 fun <From : FragmentActivity, Opens : FragmentActivity> createActivityToActivityOverride(
     fromClass: KClass<From>,
     opensClass: KClass<Opens>,
-    launch: ((ExecutorArgs<From, Opens, NavigationKey>) -> Unit),
+    launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
     close: ((context: NavigationContext<out Opens, out NavigationKey>) -> Unit)
 ): NavigationExecutor<From, Opens, NavigationKey> =
     object : NavigationExecutor<From, Opens, NavigationKey>(
@@ -18,7 +18,7 @@ fun <From : FragmentActivity, Opens : FragmentActivity> createActivityToActivity
         opensType = opensClass,
         keyType = NavigationKey::class
     ) {
-        override fun open(args: ExecutorArgs<From, Opens, NavigationKey>) {
+        override fun open(args: ExecutorArgs<out From, out Opens, out NavigationKey>) {
             launch(args)
         }
 
@@ -29,7 +29,7 @@ fun <From : FragmentActivity, Opens : FragmentActivity> createActivityToActivity
 
 
 inline fun <reified From : FragmentActivity, reified Opens : FragmentActivity> createActivityToActivityOverride(
-    noinline launch: ((ExecutorArgs<From, Opens, NavigationKey>) -> Unit),
+    noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
     noinline close: ((context: NavigationContext<out Opens, out NavigationKey>) -> Unit)
 ): NavigationExecutor<From, Opens, NavigationKey> =
     createActivityToActivityOverride(From::class, Opens::class, launch, close)

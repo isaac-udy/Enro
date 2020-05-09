@@ -1,3 +1,5 @@
+include ':enro'
+include ':enro-result'
 include ':enro-core'
 include ':example'
 rootProject.name = "Enro"

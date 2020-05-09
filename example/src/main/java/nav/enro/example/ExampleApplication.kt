@@ -1,13 +1,17 @@
 package nav.enro.example
 
 import android.app.Application
+import nav.enro.core.controller.EnroLogger
 import nav.enro.core.controller.NavigationApplication
 import nav.enro.core.controller.navigationController
 import nav.enro.example.feature.*
+import nav.enro.result.EnroResult
 
 class ExampleApplication : Application(), NavigationApplication {
     override val navigationController = navigationController {
         withComponent(masterDetailComponent)
+        withPlugin(EnroResult())
+        withPlugin(EnroLogger())
 
         activityNavigator<LoginKey, LoginActivity> {
             defaultKey(LoginKey())

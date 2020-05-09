@@ -20,7 +20,7 @@ abstract class NavigationExecutor<FromContext: Any, OpensContext: Any, KeyType: 
     val keyType: KClass<KeyType>
 ) {
     abstract fun open(
-        args: ExecutorArgs<FromContext, OpensContext, KeyType>
+        args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>
     )
 
     abstract fun close(

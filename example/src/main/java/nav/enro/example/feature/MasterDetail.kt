@@ -44,10 +44,7 @@ val masterDetailComponent = createNavigationComponent {
                 .commitNow()
         },
         close = {
-            it.fragment.parentFragmentManager.beginTransaction()
-                .remove(it.fragment)
-                .setPrimaryNavigationFragment(it.parentActivity.supportFragmentManager.findFragmentById(R.id.master))
-                .commitNow()
+            it.parentActivity.finish()
         }
     )
 

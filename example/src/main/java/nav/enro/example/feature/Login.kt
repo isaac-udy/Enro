@@ -66,7 +66,15 @@ class LoginViewModel(
         }
         when(user) {
             null -> navigationHandle.forward(LoginErrorKey(state.username))
-            else -> navigationHandle.replaceRoot(DashboardKey(user))
+            else -> navigationHandle.replaceRoot(DashboardKey(user)
+//                DashboardKey("Second!"),
+//                ListKey("Isaac", ListFilterType.ALL),
+//                DetailKey("Isaac","12211221"),
+//                DashboardKey("Third!"),
+//                UserKey("Isaac 1"),
+//                UserKey("Isaac 2"),
+//                DashboardKey("Last")
+                )
         }
     }
 }

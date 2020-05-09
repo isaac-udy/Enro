@@ -22,7 +22,8 @@ sealed class NavigationInstruction {
         val navigationKey: T,
         val children: List<NavigationKey> = emptyList(),
         val parentInstruction: Open<*>? = null,
-        val id: String = UUID.randomUUID().toString()
+        val id: String = UUID.randomUUID().toString(),
+        val additionalData: Bundle = Bundle()
     ) : NavigationInstruction(), Parcelable
 
     object Close : NavigationInstruction()

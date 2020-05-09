@@ -3,7 +3,6 @@ package nav.enro.core.executors
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.View
 import androidx.fragment.app.*
 import nav.enro.core.*
 import nav.enro.core.context.*
@@ -19,7 +18,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 ) {
     private val mainThreadHandler = Handler(Looper.getMainLooper())
 
-    override fun open(args: ExecutorArgs<Any, Fragment, NavigationKey>) {
+    override fun open(args: ExecutorArgs<out Any, out Fragment, out NavigationKey>) {
         val fromContext = args.fromContext
         val navigator = args.navigator
         val instruction = args.instruction
@@ -55,15 +54,13 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         val activeFragment = host.fragmentManager.findFragmentById(host.containerView)
         activeFragment?.view?.z = -1.0f
 
-        val animations = navigator.animations
-            .toResource(fromContext.parentActivity)
-            .animationsForOpen(instruction.navigationDirection)
+        val animations = navigator.animationsFor(fromContext.parentActivity.theme, instruction)
 
-        host.fragmentManager.beginTransaction()
-            .setCustomAnimations(animations.first, animations.second)
-            .replace(host.containerView, fragment)
-            .setPrimaryNavigationFragment(fragment)
-            .commitNow()
+        host.fragmentManager.commitNow {
+            setCustomAnimations(animations.enter, animations.exit)
+            replace(host.containerView, fragment)
+            setPrimaryNavigationFragment(fragment)
+        }
     }
 
     override fun close(context: NavigationContext<out Fragment, out NavigationKey>) {
@@ -78,15 +75,13 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             return
         }
 
-        val animations = context.navigator.animations
-            .toResource(context.parentActivity)
-            .animationsForClose()
+        val animations = context.navigator.animationsFor(context.parentActivity.theme, NavigationInstruction.Close)
 
         context.fragment.parentFragmentManager.commitNow {
-            setCustomAnimations(animations.first, animations.second)
+            setCustomAnimations(animations.enter, animations.exit)
 
             if (previousFragment != null && !previousFragment.isAdded) {
-                replace((context.fragment.requireView().parent as View).id, previousFragment)
+                replace(context.fragment.getContainerId(), previousFragment)
             } else {
                 remove(context.fragment)
             }
@@ -121,10 +116,10 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         } catch (ex: IllegalStateException) {
             mainThreadHandler.post {
                 when (fromContext) {
-                    is ActivityContext -> fromContext.activity.navigationHandle<Nothing>().value.execute(
+                    is ActivityContext -> fromContext.activity.navigationHandle<Nothing>().value.executeInstruction(
                         instruction
                     )
-                    is FragmentContext -> fromContext.fragment.navigationHandle<Nothing>().value.execute(
+                    is FragmentContext -> fromContext.fragment.navigationHandle<Nothing>().value.executeInstruction(
                         instruction
                     )
                 }
@@ -141,9 +136,35 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             fromContext,
             NavigationInstruction.Open(
                 instruction.navigationDirection,
-                SingleFragmentKey(),
-                listOf(instruction.navigationKey) + instruction.children
+                SingleFragmentKey(instruction)
             )
         )
+    }
+}
+
+fun NavigationContext<out Fragment, *>.getParentFragment(): Fragment? {
+    val containerView = contextReference.getContainerId()
+    val parentInstruction = parentInstruction
+    parentInstruction ?: return null
+
+    val previousNavigator = controller.navigatorForKeyType(parentInstruction.navigationKey::class)
+    if(previousNavigator is ActivityNavigator) return null
+    previousNavigator as FragmentNavigator<*, *>
+    val previousHost = fragmentHostFor(previousNavigator.contextType)
+
+    return when (previousHost?.containerView) {
+        containerView -> previousHost.fragmentManager.fragmentFactory
+            .instantiate(
+                previousNavigator.contextType.java.classLoader!!,
+                previousNavigator.contextType.java.name
+            )
+            .apply {
+                arguments = Bundle().addOpenInstruction(parentInstruction?.let {
+                    it.copy(
+                        children = emptyList()
+                    )
+                })
+            }
+        else -> previousHost?.fragmentManager?.findFragmentById(previousHost.containerView)
     }
 }

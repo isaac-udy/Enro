@@ -3,10 +3,17 @@ package nav.enro.core.internal
 import android.app.Activity
 import android.util.TypedValue
 import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import nav.enro.core.NavigationKey
+import nav.enro.core.context.*
+import nav.enro.core.context.ActivityContext
+import nav.enro.core.context.FragmentContext
+import nav.enro.core.internal.handle.NavigationHandleViewModel
+import nav.enro.core.navigationHandle
 
 internal fun Lifecycle.onEvent(on: Lifecycle.Event, block: () -> Unit) {
     addObserver(object : LifecycleEventObserver {
@@ -24,4 +31,11 @@ internal fun FragmentActivity.addOnBackPressedListener(block: () -> Unit) {
             block()
         }
     })
+}
+
+internal fun NavigationContext<out Any, *>.navigationHandle(): NavigationHandleViewModel<*> {
+    return when (this) {
+        is FragmentContext<out Fragment, *> -> fragment.navigationHandle<NavigationKey>().value
+        is ActivityContext<out FragmentActivity, *> -> activity.navigationHandle<NavigationKey>().value
+    } as NavigationHandleViewModel<*>
 }

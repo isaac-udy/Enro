@@ -2,6 +2,7 @@ package nav.enro.example.feature
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -12,13 +13,11 @@ import nav.enro.example.base.SingleStateViewModel
 import nav.enro.example.data.SimpleDataRepository
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.dashboard.*
-import nav.enro.core.NavigationHandle
-import nav.enro.core.NavigationKey
-import nav.enro.core.close
-import nav.enro.core.forward
+import nav.enro.core.*
+import nav.enro.result.registerForNavigationResult
 
 @Parcelize
-class DashboardKey(val userId: String) : NavigationKey
+data class DashboardKey(val userId: String) : NavigationKey
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -81,6 +80,14 @@ class DashboardViewModel(
 
     private val repo = SimpleDataRepository()
 
+    private val viewDetail by navigationHandle.registerForNavigationResult<Boolean> {
+        state = state.copy(userId = "${state.userId} FIRST($it)")
+    }
+
+    private val viewDetail2 by navigationHandle.registerForNavigationResult<Boolean> {
+        state = state.copy(userId = "${state.userId} WOW($it)")
+    }
+
     init {
         val userId = navigationHandle.key.userId
         val data = repo.getList(userId)
@@ -92,13 +99,17 @@ class DashboardViewModel(
             otherPublicMessageCount = data.count { it.isPublic && it.ownerId != userId }
         )
 
-        navigationHandle.setOnCloseRequested {
+        navigationHandle.onCloseRequested {
             state = state.copy(closeRequested = true)
         }
     }
 
+    fun test(boolean: Boolean) {
+        Log.e("ASDASD", "ASASDDAS")
+    }
+
     fun onMyPrivateMessagesSelected() {
-        navigationHandle.forward(
+        viewDetail.open(
             ListKey(
                 userId = navigationHandle.key.userId,
                 filter = ListFilterType.MY_PRIVATE
@@ -107,7 +118,7 @@ class DashboardViewModel(
     }
 
     fun onMyPublicMessagesSelected() {
-        navigationHandle.forward(
+        viewDetail.open(
             ListKey(
                 userId = navigationHandle.key.userId,
                 filter = ListFilterType.MY_PUBLIC
@@ -116,7 +127,7 @@ class DashboardViewModel(
     }
 
     fun onOtherMessagesSelected() {
-        navigationHandle.forward(
+        viewDetail2.open(
             ListKey(
                 userId = navigationHandle.key.userId,
                 filter = ListFilterType.NOT_MY_PUBLIC

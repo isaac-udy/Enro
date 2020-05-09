@@ -1,20 +1,9 @@
 package nav.enro.core
 
-import android.app.Activity
-import android.app.Application
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import junit.framework.TestCase.*
-import nav.enro.core.navigator.Navigator
 import org.junit.Test
 import java.util.*
 
@@ -55,7 +44,7 @@ class ActivityToActivityTests {
 
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.navigationHandle<DefaultActivityKey>()
-        handle.execute(
+        handle.executeInstruction(
             NavigationInstruction.Open(
                 NavigationDirection.FORWARD,
                 GenericActivityKey(UUID.randomUUID().toString()),

@@ -15,7 +15,7 @@ import nav.enro.core.navigationHandle
 import nav.enro.core.replaceRoot
 
 @Parcelize
-class UserKey(
+data class UserKey(
     val userId: String
 ) : NavigationKey
 

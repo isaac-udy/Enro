@@ -3,6 +3,7 @@ package nav.enro.core.executors
 import android.content.Intent
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.NavigationDirection
+import nav.enro.core.NavigationInstruction
 import nav.enro.core.NavigationKey
 import nav.enro.core.addOpenInstruction
 import nav.enro.core.context.NavigationContext
@@ -15,7 +16,7 @@ object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, Navig
     opensType = FragmentActivity::class,
     keyType = NavigationKey::class
 ) {
-    override fun open(args: ExecutorArgs<Any, FragmentActivity, NavigationKey>) {
+    override fun open(args: ExecutorArgs<out Any, out FragmentActivity, out NavigationKey>) {
         val fromContext = args.fromContext
         val navigator = args.navigator
         val instruction = args.instruction
@@ -33,21 +34,20 @@ object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, Navig
         if (instruction.navigationDirection == NavigationDirection.REPLACE || instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
             activity.finish()
         }
-        val animations = navigator.animations
-            .toResource(fromContext.parentActivity)
-            .animationsForOpen(instruction.navigationDirection)
+        val animations = navigator.animationsFor(activity.theme, instruction)
 
         activity.startActivity(intent)
-        activity.overridePendingTransition(animations.first, animations.second)
+        if(instruction.children.isEmpty()) {
+            activity.overridePendingTransition(animations.enter, animations.exit)
+        }
+        else {
+            activity.overridePendingTransition(0, 0)
+        }
     }
 
     override fun close(context: NavigationContext<out FragmentActivity, out NavigationKey>) {
         context.activity.finish()
-
-        val animations = context.navigator.animations
-            .toResource(context.parentActivity)
-            .animationsForClose()
-
-        context.activity.overridePendingTransition(animations.first, animations.second)
+        val animations = context.navigator.animationsFor(context.contextReference.theme, NavigationInstruction.Close)
+        context.activity.overridePendingTransition(animations.enter, animations.exit)
     }
 }

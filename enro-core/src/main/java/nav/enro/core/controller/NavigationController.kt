@@ -5,6 +5,7 @@ import android.app.Application
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.NavigationDirection
+import nav.enro.core.NavigationHandle
 import nav.enro.core.NavigationInstruction
 import nav.enro.core.NavigationKey
 import nav.enro.core.context.ActivityContext
@@ -18,14 +19,25 @@ import nav.enro.core.executors.DefaultFragmentExecutor
 import nav.enro.core.executors.ExecutorArgs
 import nav.enro.core.executors.NavigationExecutor
 import nav.enro.core.internal.handle.NavigationHandleActivityBinder
+import nav.enro.core.internal.handle.NavigationHandleViewModel
 import nav.enro.core.navigator.*
 import kotlin.reflect.KClass
 
 
 class NavigationController(
     navigators: List<NavigatorDefinition<*, *>>,
-    overrides: List<NavigationExecutor<*, *, *>> = listOf()
+    overrides: List<NavigationExecutor<*, *, *>> = listOf(),
+    private val plugins: List<EnroPlugin> = listOf()
 ) {
+    internal var active: NavigationHandle<*>? = null
+        set(value) {
+            if(value == field) return
+            field = value
+            if(value != null) {
+                plugins.forEach { it.onActive(value) }
+            }
+        }
+
     private val defaultNavigators = listOf(
         createActivityNavigator<SingleFragmentKey, SingleFragmentActivity> {
             acceptAllFragments(R.id.content)
@@ -46,6 +58,12 @@ class NavigationController(
 
     private val overrides = (overrides + navigators.flatMap { it.executors })
         .map { (it.fromType to it.opensType) to it }.toMap()
+
+    internal val handles = mutableMapOf<String, NavigationHandleViewModel<*>>()
+
+    init {
+        plugins.forEach { it.onAttached(this) }
+    }
 
     internal fun open(
         navigationContext: NavigationContext<out Any, out NavigationKey>,
@@ -75,11 +93,20 @@ class NavigationController(
     internal fun close(
         navigationContext: NavigationContext<out Any, out NavigationKey>
     ) {
-        if (closeOverrideFor(navigationContext)) return
-        when (navigationContext) {
-            is ActivityContext -> DefaultActivityExecutor.close(navigationContext)
-            is FragmentContext -> DefaultFragmentExecutor.close(navigationContext)
+        if (!closeOverrideFor(navigationContext)) {
+            when (navigationContext) {
+                is ActivityContext -> DefaultActivityExecutor.close(navigationContext)
+                is FragmentContext -> DefaultFragmentExecutor.close(navigationContext)
+            }
         }
+    }
+
+    internal fun onOpened(navigationHandle: NavigationHandle<*>) {
+        plugins.forEach { it.onOpened(navigationHandle) }
+    }
+
+    internal fun onClosed(navigationHandle: NavigationHandle<*>) {
+        plugins.forEach { it.onClosed(navigationHandle) }
     }
 
     internal fun navigatorForContextType(
@@ -148,9 +175,6 @@ class NavigationController(
 
         fun findCorrectParentInstructionFor(instruction: NavigationInstruction.Open<*>?): NavigationInstruction.Open<*>? {
             if (navigator is FragmentNavigator) {
-                instruction ?: return null
-                val parentType = navigatorForKeyType(instruction.navigationKey::class) ?: return null
-                if (FragmentActivity::class.java.isAssignableFrom(parentType.contextType.java)) return null
                 return instruction
             }
 

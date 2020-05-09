@@ -1,0 +1,7 @@
+androidLibrary()
+publishModule("nav.enro", "enro")
+
+dependencies {
+    api project(":enro-core")
+    api project(":enro-result")
+}

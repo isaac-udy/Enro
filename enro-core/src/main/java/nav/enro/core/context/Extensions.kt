@@ -37,28 +37,7 @@ internal fun NavigationContext<*, *>.fragmentHostFor(fragmentToHost: KClass<out 
         ?: parentContext()?.fragmentHostFor(fragmentToHost)
 }
 
-fun NavigationContext<out Fragment, *>.getParentFragment(): Fragment? {
-    val containerView = (contextReference.requireView().parent as View).id
-    val parentInstruction = parentInstruction
-    parentInstruction ?: return null
-
-    val previousNavigator = controller.navigatorForKeyType(parentInstruction.navigationKey::class)
-    if(previousNavigator is ActivityNavigator) return null
-    previousNavigator as FragmentNavigator<*, *>
-    val previousHost = fragmentHostFor(previousNavigator.contextType)
-
-    return when (previousHost?.containerView) {
-        containerView -> previousHost.fragmentManager.fragmentFactory
-            .instantiate(
-                previousNavigator.contextType.java.classLoader!!,
-                previousNavigator.contextType.java.name
-            )
-            .apply {
-                arguments = Bundle().addOpenInstruction(parentInstruction)
-            }
-        else -> previousHost?.fragmentManager?.findFragmentById(previousHost.containerView)
-    }
-}
+internal fun Fragment.getContainerId() = (requireView().parent as View).id
 
 fun NavigationContext<*, *>.rootContext(): NavigationContext<*, *> {
     var parent = this

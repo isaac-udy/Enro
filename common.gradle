@@ -1,3 +1,45 @@
+ext.androidLibrary = {
+    apply plugin: 'com.android.library'
+    apply plugin: 'kotlin-android'
+    apply plugin: 'kotlin-android-extensions'
+
+    android {
+        def versionProperties = new Properties()
+        versionProperties.load(new FileInputStream(rootProject.file("version.properties")))
+
+        compileSdkVersion 29
+
+        defaultConfig {
+            minSdkVersion 21
+            targetSdkVersion 29
+            versionCode versionProperties.getProperty("versionCode").toInteger()
+            versionName versionProperties.getProperty("versionName")
+
+            testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+            consumerProguardFiles "consumer-rules.pro"
+        }
+
+        buildTypes {
+            release {
+                minifyEnabled false
+                proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            }
+        }
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+
+        kotlinOptions {
+            jvmTarget = JavaVersion.VERSION_1_8.toString()
+        }
+    }
+
+    dependencies {
+        implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    }
+}
+
 ext.publishModule = { String groupName, String moduleName ->
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.bintray'

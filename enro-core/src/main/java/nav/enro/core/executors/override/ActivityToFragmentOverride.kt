@@ -11,7 +11,7 @@ import nav.enro.core.executors.ExecutorArgs
 import nav.enro.core.executors.NavigationExecutor
 
 inline fun <reified From : FragmentActivity, reified Opens : Fragment> createActivityToFragmentOverride(
-    noinline launch: ((ExecutorArgs<From, Opens, NavigationKey>) -> Unit),
+    noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
     noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit
 ): NavigationExecutor<From, Opens, NavigationKey> =
     object : NavigationExecutor<From, Opens, NavigationKey>(
@@ -19,7 +19,7 @@ inline fun <reified From : FragmentActivity, reified Opens : Fragment> createAct
         opensType = Opens::class,
         keyType = NavigationKey::class
     ) {
-        override fun open(args: ExecutorArgs<From, Opens, NavigationKey>) {
+        override fun open(args: ExecutorArgs<out From, out Opens, out NavigationKey>) {
             launch(args)
         }
 

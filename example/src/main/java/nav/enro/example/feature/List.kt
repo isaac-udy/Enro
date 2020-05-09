@@ -1,13 +1,10 @@
 package nav.enro.example.feature
 
-import android.content.Context
 import android.os.Bundle
-import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -16,15 +13,16 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.parcel.Parcelize
+import nav.enro.core.NavigationHandle
+import nav.enro.result.ResultNavigationKey
+import nav.enro.result.closeWithResult
+import nav.enro.result.registerForNavigationResult
 import nav.enro.example.R
 import nav.enro.example.base.NavigationViewModelFactory
 import nav.enro.example.base.SingleStateViewModel
 import nav.enro.example.data.SimpleData
 import nav.enro.example.data.SimpleDataRepository
-import kotlinx.android.parcel.Parcelize
-import nav.enro.core.NavigationHandle
-import nav.enro.core.NavigationKey
-import nav.enro.core.forward
 
 enum class ListFilterType {
     ALL, MY_PUBLIC, MY_PRIVATE, ALL_PUBLIC, NOT_MY_PUBLIC
@@ -34,31 +32,37 @@ enum class ListFilterType {
 data class ListKey(
     val userId: String,
     val filter: ListFilterType
-) : NavigationKey
+) : ResultNavigationKey<Boolean>
 
 class ListActivity : AppCompatActivity() {
 
-    private val viewModel by viewModels<ListViewModel> { NavigationViewModelFactory(this) }
-    private val adapter = SimpleDataAdapter { viewModel.onItemSelected(it) }
+//    private val viewModel by viewModels<ListViewModel> { NavigationViewModelFactory(this) }
+//    private val adapter = SimpleDataAdapter { viewModel.onItemSelected(it) }
 
     override  fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(
-            RecyclerView(this).apply {
-                layoutManager = LinearLayoutManager(this@ListActivity)
-                adapter = this@ListActivity.adapter
-            }
-        )
-
-        viewModel.observableState.observe(this) {
-            adapter.submitList(it.items)
-        }
+//        setContentView(
+//            RecyclerView(this).apply {
+//                layoutManager = LinearLayoutManager(this@ListActivity)
+//                adapter = this@ListActivity.adapter
+//            }
+//        )
+//
+//        viewModel.observableState.observe(this) {
+//            adapter.submitList(it.items)
+//        }
     }
 }
 
 class ListFragment : Fragment() {
     private val viewModel by viewModels<ListViewModel> { NavigationViewModelFactory(this) }
-    private val adapter = SimpleDataAdapter { viewModel.onItemSelected(it) }
+    private val adapter = SimpleDataAdapter {
+        call.open(DetailKey(userId = viewModel.state.userId, id = it))
+    }
+
+    private val call by registerForNavigationResult<Boolean> {
+        viewModel.setResult(it)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -78,7 +82,8 @@ class ListFragment : Fragment() {
 data class ListState(
     val userId: String,
     val filter: ListFilterType,
-    val items: List<SimpleData>
+    val items: List<SimpleData>,
+    val result: Boolean = true
 )
 
 class ListViewModel(
@@ -103,10 +108,16 @@ class ListViewModel(
                     }
                 }
         )
+
+        navigation.onCloseRequested {
+            navigation.closeWithResult(state.result)
+        }
     }
 
-    fun onItemSelected(id: String) {
-        navigation.forward(DetailKey(userId = state.userId, id = id))
+    fun setResult(it: Boolean) {
+        state = state.copy(
+            result = it
+        )
     }
 }
 

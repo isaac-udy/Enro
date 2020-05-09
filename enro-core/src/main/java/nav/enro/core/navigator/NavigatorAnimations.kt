@@ -2,9 +2,12 @@ package nav.enro.core.navigator
 
 import android.R
 import android.app.Activity
+import android.content.res.Resources
 import android.util.TypedValue
+import android.view.ContextThemeWrapper
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.NavigationDirection
+import nav.enro.core.NavigationInstruction
 
 sealed class NavigatorAnimations {
     data class Resource(
@@ -51,34 +54,43 @@ sealed class NavigatorAnimations {
     }
 }
 
-fun NavigatorAnimations.Resource.animationsForOpen(navigationDirection: NavigationDirection): Pair<Int, Int> {
-    return when(navigationDirection) {
-        NavigationDirection.FORWARD -> forwardEnter to forwardExit
-        NavigationDirection.REPLACE -> replaceEnter to replaceExit
-        NavigationDirection.REPLACE_ROOT -> replaceRootEnter to replaceRootExit
+data class AnimationPair(
+    val enter: Int,
+    val exit: Int
+)
+
+fun Navigator<*, *>.animationsFor(theme: Resources.Theme, navigationInstruction: NavigationInstruction): AnimationPair {
+    if(navigationInstruction is NavigationInstruction.Open<*> && navigationInstruction.children.isNotEmpty()) {
+        return AnimationPair(0, 0)
+    }
+
+    val animations = animations.toResource(theme)
+    return when(navigationInstruction) {
+        is NavigationInstruction.Open<*> -> when(navigationInstruction.navigationDirection) {
+            NavigationDirection.FORWARD -> AnimationPair(animations.forwardEnter, animations.forwardExit)
+            NavigationDirection.REPLACE -> AnimationPair(animations.replaceEnter, animations.replaceExit)
+            NavigationDirection.REPLACE_ROOT -> AnimationPair(animations.replaceRootEnter, animations.replaceRootExit)
+        }
+        NavigationInstruction.Close -> AnimationPair(animations.closeEnter, animations.closeExit)
     }
 }
 
-fun NavigatorAnimations.Resource.animationsForClose(): Pair<Int, Int> {
-    return closeEnter to closeExit
-}
-
-fun NavigatorAnimations.toResource(activity: FragmentActivity): NavigatorAnimations.Resource =
+fun NavigatorAnimations.toResource(theme: Resources.Theme): NavigatorAnimations.Resource =
     when(this) {
         is NavigatorAnimations.Resource -> this
         is NavigatorAnimations.Attr -> NavigatorAnimations.Resource(
-            forwardEnter = activity.getAttributeResourceId(forwardEnter),
-            forwardExit = activity.getAttributeResourceId(forwardExit),
-            closeEnter = activity.getAttributeResourceId(closeEnter),
-            closeExit = activity.getAttributeResourceId(closeExit),
-            replaceEnter = activity.getAttributeResourceId(replaceEnter),
-            replaceExit = activity.getAttributeResourceId(replaceExit),
-            replaceRootEnter = activity.getAttributeResourceId(replaceRootEnter),
-            replaceRootExit = activity.getAttributeResourceId(replaceRootExit)
+            forwardEnter = theme.getAttributeResourceId(forwardEnter),
+            forwardExit = theme.getAttributeResourceId(forwardExit),
+            closeEnter = theme.getAttributeResourceId(closeEnter),
+            closeExit = theme.getAttributeResourceId(closeExit),
+            replaceEnter = theme.getAttributeResourceId(replaceEnter),
+            replaceExit = theme.getAttributeResourceId(replaceExit),
+            replaceRootEnter = theme.getAttributeResourceId(replaceRootEnter),
+            replaceRootExit = theme.getAttributeResourceId(replaceRootExit)
         )
     }
 
-private fun Activity.getAttributeResourceId(attr: Int) = TypedValue().let {
-    theme.resolveAttribute(attr, it, true)
+private fun  Resources.Theme.getAttributeResourceId(attr: Int) = TypedValue().let {
+    resolveAttribute(attr, it, true)
     it.resourceId
 }
