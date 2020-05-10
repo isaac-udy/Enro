@@ -12,15 +12,15 @@ import nav.enro.example.base.SingleStateViewModel
 import nav.enro.example.data.SimpleDataRepository
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.dashboard.*
+import nav.enro.annotations.NavigationDestination
 import nav.enro.core.*
-import nav.enro.example.EnroNavigationFrom
 import nav.enro.result.registerForNavigationResult
 import nav.enro.viewmodel.NavigationViewModelFactory
 
 @Parcelize
 data class DashboardKey(val userId: String) : NavigationKey
 
-@EnroNavigationFrom(DashboardKey::class)
+@NavigationDestination(DashboardKey::class)
 class DashboardActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<DashboardViewModel> { NavigationViewModelFactory(this) }

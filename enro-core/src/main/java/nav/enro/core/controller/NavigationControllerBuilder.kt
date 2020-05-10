@@ -11,6 +11,7 @@ import nav.enro.core.executors.override.createActivityToFragmentOverride
 import nav.enro.core.executors.override.createFragmentToFragmentOverride
 import nav.enro.core.executors.override.createOverride
 import nav.enro.core.navigator.*
+import java.util.*
 
 class NavigationControllerBuilder {
     @PublishedApi internal val navigators: MutableList<NavigatorDefinition<*, *>> = mutableListOf()
@@ -76,7 +77,18 @@ class NavigationControllerBuilder {
         plugins.add(enroPlugin)
     }
 
+    fun withServiceLoader() {
+        val serviceLoader = ServiceLoader.load(NavigationControllerBuilderAction::class.java)
+        serviceLoader.forEach {
+            it.apply(this)
+        }
+    }
+
     internal fun build() = NavigationController(navigators, overrides, plugins)
+}
+
+interface NavigationControllerBuilderAction {
+    fun apply(builder: NavigationControllerBuilder)
 }
 
 /**

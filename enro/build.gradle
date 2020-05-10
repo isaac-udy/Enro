@@ -16,5 +16,8 @@ dependencies {
 
     releaseApi "nav.enro:enro-multistack:$versionName"
     debugApi project(":enro-multistack")
+
+    releaseApi "nav.enro:enro-annotations:$versionName"
+    debugApi project(":enro-annotations")
 }
 

@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import kotlinx.android.parcel.Parcelize
+import nav.enro.annotations.NavigationDestination
 import nav.enro.core.navigationHandle
 import nav.enro.result.ResultNavigationKey
 import nav.enro.result.closeWithResult
@@ -18,6 +19,7 @@ data class DetailKey(
     val id: String
 ) : ResultNavigationKey<Boolean>
 
+@NavigationDestination(DetailKey::class)
 class DetailActivity : AppCompatActivity() {
     private val navigation by navigationHandle<DetailKey>()
 

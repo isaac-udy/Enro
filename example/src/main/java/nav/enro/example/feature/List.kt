@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.parcel.Parcelize
+import nav.enro.annotations.NavigationDestination
 import nav.enro.core.NavigationHandle
 import nav.enro.result.ResultNavigationKey
 import nav.enro.result.closeWithResult
@@ -28,14 +29,13 @@ enum class ListFilterType {
     ALL, MY_PUBLIC, MY_PRIVATE, ALL_PUBLIC, NOT_MY_PUBLIC
 }
 
-
 @Parcelize
 data class ListKey(
     val userId: String,
     val filter: ListFilterType
 ) : ResultNavigationKey<Boolean>
 
-
+@NavigationDestination(ListKey::class)
 class ListFragment : Fragment() {
     private val viewModel by viewModels<ListViewModel> { NavigationViewModelFactory(this) }
     private val adapter = SimpleDataAdapter {

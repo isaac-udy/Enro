@@ -24,17 +24,13 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         val instruction = args.instruction
 
         navigator as FragmentNavigator<*, *>
+
         if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
             openFragmentAsActivity(fromContext, instruction)
             return
         }
-        if (instruction.navigationDirection == NavigationDirection.REPLACE && fromContext.contextReference is FragmentActivity) {
-            openFragmentAsActivity(fromContext, instruction)
-            return
-        }
 
-        val host = fromContext.fragmentHostFor(navigator.contextType)
-        if (host == null) {
+        if (instruction.navigationDirection == NavigationDirection.REPLACE && fromContext.contextReference is FragmentActivity) {
             openFragmentAsActivity(fromContext, instruction)
             return
         }
@@ -48,6 +44,12 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
         if(fragment is DialogFragment) {
             fragment.show(fromContext.childFragmentManager, instruction.id)
+            return
+        }
+
+        val host = fromContext.fragmentHostFor(navigator.contextType)
+        if (host == null) {
+            openFragmentAsActivity(fromContext, instruction)
             return
         }
 

@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import nav.enro.example.R
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.user.*
+import nav.enro.annotations.NavigationDestination
 import nav.enro.core.NavigationKey
 import nav.enro.core.forward
 import nav.enro.core.navigationHandle
@@ -35,6 +36,7 @@ class UserActivity : AppCompatActivity() {
     }
 }
 
+@NavigationDestination(UserKey::class)
 class UserFragment : Fragment() {
 
     private val navigation by navigationHandle<UserKey>()

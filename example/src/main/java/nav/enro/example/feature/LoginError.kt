@@ -7,11 +7,13 @@ import androidx.fragment.app.DialogFragment
 import nav.enro.core.NavigationKey
 import nav.enro.core.navigationHandle
 import kotlinx.android.parcel.Parcelize
+import nav.enro.annotations.NavigationDestination
 
 
 @Parcelize
 data class LoginErrorKey(val errorUser: String): NavigationKey
 
+@NavigationDestination(LoginErrorKey::class)
 class LoginErrorFragment : DialogFragment() {
 
     private val navigation by navigationHandle<LoginErrorKey>()

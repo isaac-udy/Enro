@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 29
@@ -33,6 +34,8 @@ android {
 
 dependencies {
     implementation project(":enro")
+    kapt project(":enro-processor")
+
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.2.0'
@@ -43,7 +46,6 @@ dependencies {
     implementation 'androidx.activity:activity-ktx:1.1.0'
 
     implementation 'com.google.android.material:material:1.2.0-alpha06'
-
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
