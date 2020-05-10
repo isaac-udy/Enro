@@ -22,7 +22,7 @@ A simple navigation library for Android
 Enro is published to [JCenter](https://bintray.com/beta/#/isaac-udy/Enro/enro-core?tab=overview). Make sure your project includes the jcenter repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
-    implementation "nav.enro.enro-core:enro-core:0.0.3"
+    implementation "nav.enro:enro:1.0.0-beta06"
 }
 ```
 
