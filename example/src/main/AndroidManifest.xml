@@ -18,7 +18,6 @@
         </activity>
         <activity android:name=".feature.DashboardActivity" />
         <activity android:name=".feature.DetailActivity" />
-        <activity android:name=".feature.ListActivity" />
         <activity android:name=".feature.SearchActivity" />
         <activity android:name=".feature.UserActivity" />
         <activity android:name=".feature.MultiStackActivity" />

@@ -2,6 +2,19 @@ androidLibrary()
 publishModule("nav.enro", "enro")
 
 dependencies {
-    api project(":enro-core")
-    api project(":enro-result")
+    releaseApi "nav.enro:enro-core:$versionName"
+    debugApi project(":enro-core")
+
+    releaseApi "nav.enro:enro-result:$versionName"
+    debugApi project(":enro-result")
+
+    releaseApi "nav.enro:enro-viewmodel:$versionName"
+    debugApi project(":enro-viewmodel")
+
+    releaseApi "nav.enro:enro-masterdetail:$versionName"
+    debugApi project(":enro-masterdetail")
+
+    releaseApi "nav.enro:enro-multistack:$versionName"
+    debugApi project(":enro-multistack")
 }
+

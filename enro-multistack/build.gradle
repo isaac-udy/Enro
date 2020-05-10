@@ -1,13 +1,12 @@
 androidLibrary()
-publishModule("nav.enro", "enro-result")
+publishModule("nav.enro", "enro-multistack")
 
 dependencies {
     releaseImplementation "nav.enro:enro-core:$versionName"
     debugImplementation project(":enro-core")
 
-    implementation 'androidx.activity:activity:1.1.0'
-    implementation 'androidx.fragment:fragment-ktx:1.2.4'
-    implementation "androidx.lifecycle:lifecycle-runtime:2.2.0"
+    implementation 'androidx.core:core-ktx:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
 
     testImplementation 'junit:junit:4.12'
 

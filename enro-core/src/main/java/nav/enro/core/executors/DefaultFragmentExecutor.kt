@@ -136,7 +136,9 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             fromContext,
             NavigationInstruction.Open(
                 instruction.navigationDirection,
-                SingleFragmentKey(instruction)
+                SingleFragmentKey(instruction.copy(
+                    parentInstruction = null
+                ))
             )
         )
     }

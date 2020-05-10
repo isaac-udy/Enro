@@ -19,7 +19,7 @@ import nav.enro.result.ResultNavigationKey
 import nav.enro.result.closeWithResult
 import nav.enro.result.registerForNavigationResult
 import nav.enro.example.R
-import nav.enro.example.base.NavigationViewModelFactory
+import nav.enro.viewmodel.NavigationViewModelFactory
 import nav.enro.example.base.SingleStateViewModel
 import nav.enro.example.data.SimpleData
 import nav.enro.example.data.SimpleDataRepository
@@ -28,31 +28,13 @@ enum class ListFilterType {
     ALL, MY_PUBLIC, MY_PRIVATE, ALL_PUBLIC, NOT_MY_PUBLIC
 }
 
+
 @Parcelize
 data class ListKey(
     val userId: String,
     val filter: ListFilterType
 ) : ResultNavigationKey<Boolean>
 
-class ListActivity : AppCompatActivity() {
-
-//    private val viewModel by viewModels<ListViewModel> { NavigationViewModelFactory(this) }
-//    private val adapter = SimpleDataAdapter { viewModel.onItemSelected(it) }
-
-    override  fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-//        setContentView(
-//            RecyclerView(this).apply {
-//                layoutManager = LinearLayoutManager(this@ListActivity)
-//                adapter = this@ListActivity.adapter
-//            }
-//        )
-//
-//        viewModel.observableState.observe(this) {
-//            adapter.submitList(it.items)
-//        }
-    }
-}
 
 class ListFragment : Fragment() {
     private val viewModel by viewModels<ListViewModel> { NavigationViewModelFactory(this) }

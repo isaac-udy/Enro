@@ -8,17 +8,19 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.observe
 import nav.enro.example.R
-import nav.enro.example.base.NavigationViewModelFactory
 import nav.enro.example.base.SingleStateViewModel
 import nav.enro.example.data.SimpleDataRepository
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.dashboard.*
 import nav.enro.core.*
+import nav.enro.example.EnroNavigationFrom
 import nav.enro.result.registerForNavigationResult
+import nav.enro.viewmodel.NavigationViewModelFactory
 
 @Parcelize
 data class DashboardKey(val userId: String) : NavigationKey
 
+@EnroNavigationFrom(DashboardKey::class)
 class DashboardActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<DashboardViewModel> { NavigationViewModelFactory(this) }

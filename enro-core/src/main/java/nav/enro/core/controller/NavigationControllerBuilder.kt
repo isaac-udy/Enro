@@ -9,6 +9,7 @@ import nav.enro.core.executors.NavigationExecutor
 import nav.enro.core.executors.override.createActivityToActivityOverride
 import nav.enro.core.executors.override.createActivityToFragmentOverride
 import nav.enro.core.executors.override.createFragmentToFragmentOverride
+import nav.enro.core.executors.override.createOverride
 import nav.enro.core.navigator.*
 
 class NavigationControllerBuilder {
@@ -48,6 +49,13 @@ class NavigationControllerBuilder {
         noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit
     ) {
         overrides.add(createFragmentToFragmentOverride(launch, close))
+    }
+
+    inline fun <reified From : Any, reified Opens : Any> override(
+        noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
+        noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit
+    ) {
+        overrides.add(createOverride(launch, close))
     }
 
     fun add(navigator: NavigatorDefinition<*, *>) {

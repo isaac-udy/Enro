@@ -1,0 +1,9 @@
+androidLibrary()
+publishModule("nav.enro", "enro-viewmodel")
+
+dependencies {
+    releaseImplementation "nav.enro:enro-core:$versionName"
+    debugImplementation project(":enro-core")
+
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+}

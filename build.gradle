@@ -3,6 +3,7 @@ buildscript {
     repositories {
         google()
         jcenter()
+        maven { url System.getProperty("user.home") + "/.m2/repository/"  }
     }
     dependencies {
         classpath "com.android.tools.build:gradle:4.0.0-beta01"
@@ -18,6 +19,7 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven { url System.getProperty("user.home") + "/.m2/repository/"  }
     }
 }
 

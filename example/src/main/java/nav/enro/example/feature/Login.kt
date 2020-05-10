@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.observe
 import nav.enro.example.R
-import nav.enro.example.base.NavigationViewModelFactory
+import nav.enro.viewmodel.NavigationViewModelFactory
 import nav.enro.example.base.SingleStateViewModel
 import nav.enro.example.data.UserRepository
 import kotlinx.android.parcel.Parcelize

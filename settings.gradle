@@ -1,3 +1,6 @@
+include ':enro-masterdetail'
+include ':enro-multistack'
+include ':enro-viewmodel'
 include ':enro'
 include ':enro-result'
 include ':enro-core'

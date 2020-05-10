@@ -109,16 +109,16 @@ class NavigationController(
         plugins.forEach { it.onClosed(navigationHandle) }
     }
 
-    internal fun navigatorForContextType(
+    fun navigatorForContextType(
         contextType: KClass<*>
     ): Navigator<*, *>? {
-        return navigatorsByContextType.getValue(contextType).navigator
+        return navigatorsByContextType[contextType]?.navigator
     }
 
-    internal fun navigatorForKeyType(
+    fun navigatorForKeyType(
         keyType: KClass<out NavigationKey>
     ): Navigator<*, *>? {
-        return navigatorsByKeyType.getValue(keyType).navigator
+        return navigatorsByKeyType[keyType]?.navigator
     }
 
     private fun openOverrideFor(
@@ -126,11 +126,23 @@ class NavigationController(
         navigator: Navigator<out Any, out NavigationKey>,
         instruction: NavigationInstruction.Open<out NavigationKey>
     ): Boolean {
-        @Suppress("UNCHECKED_CAST") // higher level logic dictates that this cast should succeed
         val override = overrides[fromContext.contextReference::class to navigator.contextType]
-                as? NavigationExecutor<Any, Any, NavigationKey>
+            ?: when(fromContext.contextReference) {
+                is FragmentActivity -> overrides[FragmentActivity::class to navigator.contextType]
+                is Fragment -> overrides[Fragment::class to navigator.contextType]
+                else -> null
+            }
+            ?: overrides[Any::class to navigator.contextType]
+            ?: when(navigator) {
+                is ActivityNavigator<*, *> -> overrides[fromContext.contextReference::class to FragmentActivity::class]
+                is FragmentNavigator<*, *> -> overrides[fromContext.contextReference::class to Fragment::class]
+                else -> null
+            }
+            ?: overrides[fromContext.contextReference::class to Any::class]
 
         if (override != null) {
+            @Suppress("UNCHECKED_CAST") // higher level logic dictates that this cast should succeed
+            override as NavigationExecutor<Any, Any, NavigationKey>
             override.open(
                 ExecutorArgs(
                     fromContext,

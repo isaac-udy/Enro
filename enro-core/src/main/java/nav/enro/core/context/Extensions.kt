@@ -3,6 +3,7 @@ package nav.enro.core.context
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
@@ -26,11 +27,20 @@ val NavigationContext<*, *>.parentActivity: FragmentActivity get() = when (conte
 
 internal fun NavigationContext<*, *>.fragmentHostFor(fragmentToHost: KClass<out Fragment>): FragmentHost? {
     val primaryFragment = childFragmentManager.primaryNavigationFragment
-    val activeContainerId = (primaryFragment?.view?.parent as? View)?.id
+    val activeContainerId = primaryFragment?.getContainerId()
     val primaryDefinition = navigator.fragmentHosts.firstOrNull {
         it.containerView == activeContainerId && it.accepts(fragmentToHost)
     }
     val definition = primaryDefinition
+        ?: navigator.fragmentHosts.firstOrNull {
+            val isVisible = when(contextReference) {
+                is FragmentActivity -> contextReference.findViewById<View>(it.containerView).isVisible
+                is Fragment -> contextReference.requireView().findViewById<View>(it.containerView).isVisible
+                else -> false
+            }
+
+            return@firstOrNull isVisible && it.accepts(fragmentToHost)
+        }
         ?: navigator.fragmentHosts.firstOrNull { it.accepts(fragmentToHost) }
 
     return definition?.createFragmentHost(childFragmentManager)
