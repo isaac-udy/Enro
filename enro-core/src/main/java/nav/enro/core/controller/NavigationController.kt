@@ -59,6 +59,8 @@ class NavigationController(
     private val overrides = (overrides + navigators.flatMap { it.executors })
         .map { (it.fromType to it.opensType) to it }.toMap()
 
+    private val temporaryOverrides = mutableMapOf<Pair<KClass<out Any>, KClass<out Any>>, NavigationExecutor<*,*,*>>()
+
     internal val handles = mutableMapOf<String, NavigationHandleViewModel<*>>()
 
     init {
@@ -121,24 +123,29 @@ class NavigationController(
         return navigatorsByKeyType[keyType]?.navigator
     }
 
+    private fun overrideFor(types: Pair<KClass<out Any>, KClass<out Any>>): NavigationExecutor<out Any, out Any, out NavigationKey>? {
+        return temporaryOverrides[types] ?: overrides[types]
+    }
+
     private fun openOverrideFor(
         fromContext: NavigationContext<out Any, *>,
         navigator: Navigator<out Any, out NavigationKey>,
         instruction: NavigationInstruction.Open<out NavigationKey>
     ): Boolean {
-        val override = overrides[fromContext.contextReference::class to navigator.contextType]
+
+        val override = overrideFor(fromContext.contextReference::class to navigator.contextType)
             ?: when(fromContext.contextReference) {
-                is FragmentActivity -> overrides[FragmentActivity::class to navigator.contextType]
-                is Fragment -> overrides[Fragment::class to navigator.contextType]
+                is FragmentActivity -> overrideFor(FragmentActivity::class to navigator.contextType)
+                is Fragment -> overrideFor(Fragment::class to navigator.contextType)
                 else -> null
             }
-            ?: overrides[Any::class to navigator.contextType]
+            ?: overrideFor(Any::class to navigator.contextType)
             ?: when(navigator) {
-                is ActivityNavigator<*, *> -> overrides[fromContext.contextReference::class to FragmentActivity::class]
-                is FragmentNavigator<*, *> -> overrides[fromContext.contextReference::class to Fragment::class]
+                is ActivityNavigator<*, *> -> overrideFor(fromContext.contextReference::class to FragmentActivity::class)
+                is FragmentNavigator<*, *> -> overrideFor(fromContext.contextReference::class to Fragment::class)
                 else -> null
             }
-            ?: overrides[fromContext.contextReference::class to Any::class]
+            ?: overrideFor(fromContext.contextReference::class to Any::class)
 
         if (override != null) {
             @Suppress("UNCHECKED_CAST") // higher level logic dictates that this cast should succeed
@@ -171,7 +178,7 @@ class NavigationController(
             ?.contextType ?: return false
 
         @Suppress("UNCHECKED_CAST") // higher level logic dictates that this cast should succeed
-        val override = overrides[parentType to navigationContext.navigator.contextType]
+        val override = overrideFor(parentType to navigationContext.navigator.contextType)
                 as? NavigationExecutor<Any, Any, NavigationKey>
             ?: return false
 
@@ -204,6 +211,14 @@ class NavigationController(
         }
 
         return copy(parentInstruction = parentInstruction)
+    }
+
+    fun addOverride(navigationExecutor: NavigationExecutor<*,*,*>) {
+        temporaryOverrides[navigationExecutor.fromType to navigationExecutor.opensType] = navigationExecutor
+    }
+
+    fun removeOverride(navigationExecutor: NavigationExecutor<*,*,*>) {
+        temporaryOverrides.remove(navigationExecutor.fromType to navigationExecutor.opensType)
     }
 
     companion object {

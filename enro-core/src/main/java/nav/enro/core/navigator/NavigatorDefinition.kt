@@ -27,7 +27,7 @@ class ActivityNavigatorBuilder<T: NavigationKey, C: FragmentActivity>(
     @PublishedApi internal val executors = mutableListOf<NavigationExecutor<C, *, *>>()
     private var defaultKey: NavigationKey? = null
 
-    fun acceptFragments(containerView: Int, vararg types: KClass<out Fragment>) {
+    fun acceptFragments(containerView: Int, vararg types: KClass<out NavigationKey>) {
         fragmentHosts.add(
             FragmentHostDefinition(
                 containerView
@@ -72,7 +72,7 @@ class FragmentNavigatorBuilder<C: Fragment, T: NavigationKey>(
     private val fragmentHosts = mutableListOf<FragmentHostDefinition>()
     private val executors = mutableListOf<NavigationExecutor<C, *, *>>()
 
-    fun acceptFragments(containerView: Int, vararg types: KClass<out Fragment>) {
+    fun acceptFragments(containerView: Int, vararg types: KClass<out NavigationKey>) {
         fragmentHosts.add(
             FragmentHostDefinition(
                 containerView

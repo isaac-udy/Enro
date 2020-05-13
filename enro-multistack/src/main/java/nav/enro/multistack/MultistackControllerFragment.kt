@@ -24,12 +24,9 @@ import java.lang.Exception
 
 
 @PublishedApi
-internal class MultiStackControllerFragment : Fragment(), ViewTreeObserver.OnGlobalLayoutListener {
+internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlobalLayoutListener {
 
-    private val containers: Array<MultiStackContainer> by lazy {
-        requireArguments().getParcelableArray("containers")
-                as Array<MultiStackContainer>
-    }
+    internal lateinit var containers: Array<out MultiStackContainer>
 
     private var listenForEvents = true
     private lateinit var activeContainer: MultiStackContainer
@@ -81,7 +78,7 @@ internal class MultiStackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
         openStack(newActive)
     }
 
-    private fun openStack(container: MultiStackContainer) {
+    internal fun openStack(container: MultiStackContainer) {
         listenForEvents = false
         activeContainer = container
 
@@ -89,7 +86,6 @@ internal class MultiStackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
         val navigator = controller.navigatorForKeyType(container.rootKey::class)
 
         if(navigator is ActivityNavigator<*,*>) {
-
             listenForEvents = true
             return
         }

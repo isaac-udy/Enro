@@ -47,7 +47,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             return
         }
 
-        val host = fromContext.fragmentHostFor(navigator.contextType)
+        val host = fromContext.fragmentHostFor(navigator.keyType)
         if (host == null) {
             openFragmentAsActivity(fromContext, instruction)
             return
@@ -113,7 +113,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         instruction: NavigationInstruction.Open<*>
     ): Boolean {
         try {
-            fromContext.fragmentHostFor(navigator.contextType)?.fragmentManager?.executePendingTransactions()
+            fromContext.fragmentHostFor(navigator.keyType)?.fragmentManager?.executePendingTransactions()
             return true
         } catch (ex: IllegalStateException) {
             mainThreadHandler.post {
@@ -139,6 +139,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             NavigationInstruction.Open(
                 instruction.navigationDirection,
                 SingleFragmentKey(instruction.copy(
+                    navigationDirection = NavigationDirection.FORWARD,
                     parentInstruction = null
                 ))
             )
@@ -154,7 +155,7 @@ fun NavigationContext<out Fragment, *>.getParentFragment(): Fragment? {
     val previousNavigator = controller.navigatorForKeyType(parentInstruction.navigationKey::class)
     if(previousNavigator is ActivityNavigator) return null
     previousNavigator as FragmentNavigator<*, *>
-    val previousHost = fragmentHostFor(previousNavigator.contextType)
+    val previousHost = fragmentHostFor(previousNavigator.keyType)
 
     return when (previousHost?.containerView) {
         containerView -> previousHost.fragmentManager.fragmentFactory

@@ -1,6 +1,5 @@
 package nav.enro.core.context
 
-import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
@@ -8,11 +7,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import nav.enro.core.NavigationKey
-import nav.enro.core.addOpenInstruction
 import nav.enro.core.internal.handle.NavigationHandleViewModel
-import nav.enro.core.navigator.ActivityNavigator
 import nav.enro.core.navigator.FragmentHost
-import nav.enro.core.navigator.FragmentNavigator
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
 
@@ -25,11 +21,11 @@ val NavigationContext<*, *>.parentActivity: FragmentActivity get() = when (conte
     else -> throw IllegalStateException()
 }
 
-internal fun NavigationContext<*, *>.fragmentHostFor(fragmentToHost: KClass<out Fragment>): FragmentHost? {
+internal fun NavigationContext<*, *>.fragmentHostFor(keyType: KClass<out NavigationKey>): FragmentHost? {
     val primaryFragment = childFragmentManager.primaryNavigationFragment
     val activeContainerId = primaryFragment?.getContainerId()
     val primaryDefinition = navigator.fragmentHosts.firstOrNull {
-        it.containerView == activeContainerId && it.accepts(fragmentToHost)
+        it.containerView == activeContainerId && it.accepts(keyType)
     }
     val definition = primaryDefinition
         ?: navigator.fragmentHosts.firstOrNull {
@@ -39,12 +35,12 @@ internal fun NavigationContext<*, *>.fragmentHostFor(fragmentToHost: KClass<out 
                 else -> false
             }
 
-            return@firstOrNull isVisible && it.accepts(fragmentToHost)
+            return@firstOrNull isVisible && it.accepts(keyType)
         }
-        ?: navigator.fragmentHosts.firstOrNull { it.accepts(fragmentToHost) }
+        ?: navigator.fragmentHosts.firstOrNull { it.accepts(keyType) }
 
     return definition?.createFragmentHost(childFragmentManager)
-        ?: parentContext()?.fragmentHostFor(fragmentToHost)
+        ?: parentContext()?.fragmentHostFor(keyType)
 }
 
 internal fun Fragment.getContainerId() = (requireView().parent as View).id
