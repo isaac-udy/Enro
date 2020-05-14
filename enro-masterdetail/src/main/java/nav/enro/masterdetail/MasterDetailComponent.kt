@@ -1,5 +1,6 @@
 package nav.enro.masterdetail
 
+import android.util.Log
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -11,6 +12,8 @@ import nav.enro.core.context.fragment
 import nav.enro.core.context.parentActivity
 import nav.enro.core.controller.NavigationController
 import nav.enro.core.controller.navigationController
+import nav.enro.core.executors.DefaultActivityExecutor
+import nav.enro.core.executors.ExecutorArgs
 import nav.enro.core.executors.override.createOverride
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -59,6 +62,13 @@ class MasterDetailProperty(
             owningType,
             detailType,
             launch = {
+                if(!Fragment::class.java.isAssignableFrom(it.navigator.contextType.java)) {
+                    Log.e("Enro", "Attempted to open ${detailKey::class.java} as a Detail in ${it.fromContext.contextReference}, " +
+                            "but ${detailKey::class.java}'s NavigationDestination is not a Fragment! Defaulting to standard navigation")
+                    DefaultActivityExecutor.open(it as ExecutorArgs<out Any, out FragmentActivity, out NavigationKey>)
+                    return@createOverride
+                }
+
                 val fragment =  it.fromContext.childFragmentManager.fragmentFactory.instantiate(
                     detailType.java.classLoader!!,
                     detailType.java.name
@@ -93,7 +103,12 @@ class MasterDetailProperty(
                     (lifecycleOwner as FragmentActivity).getNavigationHandle<Nothing>().forward(initialMasterKey())
                 }
 
-                if(event == Lifecycle.Event.ON_DESTROY){
+                if(event == Lifecycle.Event.ON_START) {
+                    navigationController.addOverride(masterOverride)
+                    navigationController.addOverride(detailOverride)
+                }
+
+                if(event == Lifecycle.Event.ON_STOP){
                     navigationController.removeOverride(masterOverride)
                     navigationController.removeOverride(detailOverride)
                 }

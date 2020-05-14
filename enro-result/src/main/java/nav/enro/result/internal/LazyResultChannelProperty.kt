@@ -45,12 +45,15 @@ internal class LazyResultChannelProperty<T>(
         })
 
         lifecycle.lifecycle.addObserver(object: LifecycleEventObserver {
+            private var enroResult: EnroResult? = null
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if(event != Lifecycle.Event.ON_DESTROY) return
-                lifecycle.lifecycle.removeObserver(this)
-
-                EnroResult.from(handle.value.controller)
-                    .deregisterChannel(resultChannel)
+                if(event == Lifecycle.Event.ON_STOP) {
+                    enroResult = EnroResult.from(handle.value.controller)
+                }
+                if(event == Lifecycle.Event.ON_DESTROY) {
+                    enroResult?.deregisterChannel(resultChannel)
+                    enroResult = null
+                }
             }
         })
     }

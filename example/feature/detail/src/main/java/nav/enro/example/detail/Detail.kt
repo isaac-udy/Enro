@@ -14,7 +14,6 @@ import nav.enro.example.core.navigation.DetailKey
 import nav.enro.result.ResultNavigationKey
 import nav.enro.result.closeWithResult
 
-@NavigationDestination(DetailKey::class)
 class DetailActivity : AppCompatActivity() {
     private val navigation by navigationHandle<DetailKey>()
 
@@ -32,6 +31,7 @@ class DetailActivity : AppCompatActivity() {
     }
 }
 
+@NavigationDestination(DetailKey::class)
 class DetailFragment : Fragment() {
     private val navigation by navigationHandle<DetailKey>()
 

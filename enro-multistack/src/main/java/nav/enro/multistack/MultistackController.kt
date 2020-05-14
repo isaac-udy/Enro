@@ -41,16 +41,20 @@ class MultistackControllerProperty @PublishedApi internal constructor(
         lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (event == Lifecycle.Event.ON_CREATE) {
-                    val fragment =
-                        fragmentManager().findFragmentByTag(MULTISTACK_CONTROLLER_TAG) as? MultistackControllerFragment
-                            ?: MultistackControllerFragment()
+                    val fragment = fragmentManager().findFragmentByTag(MULTISTACK_CONTROLLER_TAG)
+                            ?: run {
+                                val fragment = MultistackControllerFragment()
+
+                                fragmentManager()
+                                    .beginTransaction()
+                                    .add(fragment, MULTISTACK_CONTROLLER_TAG)
+                                    .commit()
+
+                                return@run fragment
+                            }
+
+                    fragment as MultistackControllerFragment
                     fragment.containers = containers
-
-                    fragmentManager()
-                        .beginTransaction()
-                        .add(fragment, MULTISTACK_CONTROLLER_TAG)
-                        .commit()
-
                     controller = MultistackController(fragment)
                 }
             }
