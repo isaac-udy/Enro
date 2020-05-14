@@ -14,7 +14,9 @@ internal data class SingleFragmentKey(
 
 class SingleFragmentActivity : AppCompatActivity() {
 
-    private val handle by navigationHandle<SingleFragmentKey>()
+    private val handle by navigationHandle<SingleFragmentKey> {
+        container(android.R.id.content)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         overridePendingTransition(0, 0)

@@ -6,15 +6,12 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import nav.enro.core.NavigationKey
-import nav.enro.core.addOpenInstruction
+import nav.enro.core.*
 import nav.enro.core.context.fragment
 import nav.enro.core.context.parentActivity
 import nav.enro.core.controller.NavigationController
 import nav.enro.core.controller.navigationController
 import nav.enro.core.executors.override.createOverride
-import nav.enro.core.forward
-import nav.enro.core.navigationHandle
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -93,7 +90,7 @@ class MasterDetailProperty(
                     navigationController.addOverride(masterOverride)
                     navigationController.addOverride(detailOverride)
 
-                    (lifecycleOwner as FragmentActivity).navigationHandle<Nothing>().value.forward(initialMasterKey())
+                    (lifecycleOwner as FragmentActivity).getNavigationHandle<Nothing>().forward(initialMasterKey())
                 }
 
                 if(event == Lifecycle.Event.ON_DESTROY){

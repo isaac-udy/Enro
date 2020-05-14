@@ -10,37 +10,41 @@ import nav.enro.core.NavigationKey
 import nav.enro.core.internal.handle.NavigationHandleViewModel
 import nav.enro.core.navigator.FragmentHost
 import java.lang.IllegalStateException
-import kotlin.reflect.KClass
 
 val NavigationContext<out FragmentActivity, *>.activity get() = contextReference
 val NavigationContext<out Fragment, *>.fragment get() = contextReference
 
-val NavigationContext<*, *>.parentActivity: FragmentActivity get() = when (contextReference) {
-    is FragmentActivity -> contextReference
-    is Fragment -> contextReference.requireActivity()
-    else -> throw IllegalStateException()
-}
+val NavigationContext<*, *>.parentActivity: FragmentActivity
+    get() = when (contextReference) {
+        is FragmentActivity -> contextReference
+        is Fragment -> contextReference.requireActivity()
+        else -> throw IllegalStateException()
+    }
 
-internal fun NavigationContext<*, *>.fragmentHostFor(keyType: KClass<out NavigationKey>): FragmentHost? {
+internal fun NavigationContext<*, *>.fragmentHostFor(key: NavigationKey): FragmentHost? {
     val primaryFragment = childFragmentManager.primaryNavigationFragment
     val activeContainerId = primaryFragment?.getContainerId()
-    val primaryDefinition = navigator.fragmentHosts.firstOrNull {
-        it.containerView == activeContainerId && it.accepts(keyType)
+    val primaryDefinition = childContainers.firstOrNull {
+        it.containerId == activeContainerId && it.accept(key)
     }
     val definition = primaryDefinition
-        ?: navigator.fragmentHosts.firstOrNull {
-            val isVisible = when(contextReference) {
-                is FragmentActivity -> contextReference.findViewById<View>(it.containerView).isVisible
-                is Fragment -> contextReference.requireView().findViewById<View>(it.containerView).isVisible
+        ?: childContainers.firstOrNull {
+            val isVisible = when (contextReference) {
+                is FragmentActivity -> contextReference.findViewById<View>(it.containerId).isVisible
+                is Fragment -> contextReference.requireView().findViewById<View>(it.containerId).isVisible
                 else -> false
             }
 
-            return@firstOrNull isVisible && it.accepts(keyType)
+            return@firstOrNull isVisible && it.accept(key)
         }
-        ?: navigator.fragmentHosts.firstOrNull { it.accepts(keyType) }
+        ?: childContainers.firstOrNull { it.accept(key) }
 
-    return definition?.createFragmentHost(childFragmentManager)
-        ?: parentContext()?.fragmentHostFor(keyType)
+    return definition?.let {
+        FragmentHost(
+            containerId = it.containerId,
+            fragmentManager = childFragmentManager
+        )
+    } ?: parentContext()?.fragmentHostFor(key)
 }
 
 internal fun Fragment.getContainerId() = (requireView().parent as View).id
@@ -66,14 +70,15 @@ fun NavigationContext<*, *>.parentContext(): NavigationContext<*, *>? {
 
 fun NavigationContext<*, out NavigationKey>.leafContext(): NavigationContext<*, out NavigationKey> {
     val primaryNavigationFragment = childFragmentManager.primaryNavigationFragment ?: return this
+    primaryNavigationFragment.view ?: return this
     val childContext = primaryNavigationFragment.navigationContext
     return childContext.leafContext()
 }
 
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
-internal val <T: FragmentActivity> T.navigationContext: ActivityContext<T, Nothing>
+internal val <T : FragmentActivity> T.navigationContext: ActivityContext<T, Nothing>
     get() = viewModels<NavigationHandleViewModel<Nothing>>().value.navigationContext as ActivityContext<T, Nothing>
 
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
-internal val <T: Fragment> T.navigationContext: FragmentContext<T, Nothing>
+internal val <T : Fragment> T.navigationContext: FragmentContext<T, Nothing>
     get() = viewModels<NavigationHandleViewModel<Nothing>>().value.navigationContext as FragmentContext<T, Nothing>

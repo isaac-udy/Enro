@@ -23,23 +23,8 @@ class ActivityNavigatorBuilder<T: NavigationKey, C: FragmentActivity>(
     private val keyType: KClass<T>,
     @PublishedApi internal val contextType: KClass<C>
 ) {
-    private val fragmentHosts = mutableListOf<FragmentHostDefinition>()
     @PublishedApi internal val executors = mutableListOf<NavigationExecutor<C, *, *>>()
     private var defaultKey: NavigationKey? = null
-
-    fun acceptFragments(containerView: Int, vararg types: KClass<out NavigationKey>) {
-        fragmentHosts.add(
-            FragmentHostDefinition(
-                containerView
-            ) { types.contains(it) })
-    }
-
-    fun acceptAllFragments(containerView: Int) {
-        fragmentHosts.add(
-            FragmentHostDefinition(
-                containerView
-            ) { true })
-    }
 
     fun defaultKey(key: T) {
         defaultKey = key
@@ -49,8 +34,7 @@ class ActivityNavigatorBuilder<T: NavigationKey, C: FragmentActivity>(
         navigator = ActivityNavigator(
             keyType = keyType,
             contextType = contextType,
-            defaultKey = defaultKey,
-            fragmentHosts = fragmentHosts
+            defaultKey = defaultKey
         ),
         executors = executors
     )
@@ -69,29 +53,13 @@ class FragmentNavigatorBuilder<C: Fragment, T: NavigationKey>(
     private val keyType: KClass<T>,
     private val contextType: KClass<C>
 ) {
-    private val fragmentHosts = mutableListOf<FragmentHostDefinition>()
     private val executors = mutableListOf<NavigationExecutor<C, *, *>>()
-
-    fun acceptFragments(containerView: Int, vararg types: KClass<out NavigationKey>) {
-        fragmentHosts.add(
-            FragmentHostDefinition(
-                containerView
-            ) { types.contains(it) })
-    }
-
-    fun acceptAllFragments(containerView: Int) {
-        fragmentHosts.add(
-            FragmentHostDefinition(
-                containerView
-            ) { true })
-    }
 
     fun build() = NavigatorDefinition(
         navigator = FragmentNavigator(
             keyType = keyType,
             contextType = contextType,
-            defaultKey = null,
-            fragmentHosts = fragmentHosts
+            defaultKey = null
         ),
         executors = executors
     )

@@ -1,25 +1,28 @@
 package nav.enro.example.multistack
 
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.multistack.*
 import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationKey
+import nav.enro.core.navigationHandle
 import nav.enro.example.core.navigation.MultiStackKey
 import nav.enro.example.core.navigation.UserKey
-import nav.enro.multistack.MultiStackContainer
-import nav.enro.multistack.MultistackControllerProperty
+import nav.enro.multistack.MultistackContainer
 import nav.enro.multistack.multistackController
 
 @NavigationDestination(MultiStackKey::class)
 class MultiStackActivity : AppCompatActivity() {
 
+    private val navigation by navigationHandle<MultiStackKey> {
+        container(R.id.redFrame)
+        container(R.id.greenFrame)
+        container(R.id.blueFrame)
+    }
+
     private val multistack by multistackController(
-        MultiStackContainer(R.id.redFrame, UserKey("Red")),
-        MultiStackContainer(R.id.greenFrame, UserKey("Green")),
-        MultiStackContainer(R.id.blueFrame, UserKey("Blue"))
+        MultistackContainer(R.id.redFrame, UserKey("Red")),
+        MultistackContainer(R.id.greenFrame, UserKey("Green")),
+        MultistackContainer(R.id.blueFrame, UserKey("Blue"))
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,43 +1,30 @@
 package nav.enro.multistack
 
-import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.animation.AnimationUtils
-import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import nav.enro.core.*
 import nav.enro.core.controller.navigationController
 import nav.enro.core.executors.DefaultFragmentExecutor
 import nav.enro.core.navigator.ActivityNavigator
 import nav.enro.core.navigator.FragmentNavigator
 import nav.enro.core.navigator.animationsFor
-import java.lang.Exception
 
 
 @PublishedApi
 internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlobalLayoutListener {
 
-    internal lateinit var containers: Array<out MultiStackContainer>
+    internal lateinit var containers: Array<out MultistackContainer>
 
     private var listenForEvents = true
-    private lateinit var activeContainer: MultiStackContainer
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return null // this is a headless fragment
-    }
+    private lateinit var activeContainer: MultistackContainer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,9 +33,17 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
             .viewTreeObserver.addOnGlobalLayoutListener(this)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         openStack(activeContainer)
+        return null // this is a headless fragment
+    }
+
+    override fun onStart() {
+        super.onStart()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -78,7 +73,7 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
         openStack(newActive)
     }
 
-    internal fun openStack(container: MultiStackContainer) {
+    internal fun openStack(container: MultistackContainer) {
         listenForEvents = false
         activeContainer = container
 
@@ -110,7 +105,7 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
                     .commitNow()
 
                 val enter = AnimationUtils.loadAnimation(requireContext(), animations.enter)
-                existingFragment.requireView().startAnimation(enter)
+                existingFragment.view?.startAnimation(enter)
             }
         } else {
             val newFragment = DefaultFragmentExecutor.createFragment(
@@ -145,10 +140,10 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
         listenForEvents = true
     }
 
-    private fun onStackClosed(container: MultiStackContainer) {
+    private fun onStackClosed(container: MultistackContainer) {
         listenForEvents = false
         if (container == containers.first()) {
-            requireActivity().navigationHandle<Nothing>().value.close()
+            requireActivity().getNavigationHandle<Nothing>().close()
         } else {
             openStack(containers.first())
         }

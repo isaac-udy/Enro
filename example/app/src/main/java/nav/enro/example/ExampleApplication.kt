@@ -17,11 +17,5 @@ class ExampleApplication : Application(), NavigationApplication {
     override val navigationController = navigationController {
         withPlugin(EnroResult())
         withPlugin(EnroLogger())
-
-        activityNavigator<MultiStackKey, MultiStackActivity> {
-            acceptFragments(R.id.redFrame, UserKey::class)
-            acceptFragments(R.id.greenFrame, UserKey::class)
-            acceptFragments(R.id.blueFrame, UserKey::class)
-        }
     }
 }

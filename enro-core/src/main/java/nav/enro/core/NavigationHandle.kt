@@ -30,11 +30,3 @@ fun NavigationHandle<*>.replaceRoot(key: NavigationKey, vararg childKeys: Naviga
 fun NavigationHandle<*>.close() =
     executeInstruction(NavigationInstruction.Close)
 
-fun <T : NavigationKey> FragmentActivity.navigationHandle(): Lazy<NavigationHandle<T>> = lazy {
-    viewModels<NavigationHandleViewModel<T>>().value as NavigationHandle<T>
-}
-
-fun <T : NavigationKey> Fragment.navigationHandle(): Lazy<NavigationHandle<T>> = lazy {
-    viewModels<NavigationHandleViewModel<T>>().value as NavigationHandle<T>
-}
-

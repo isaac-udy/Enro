@@ -13,14 +13,14 @@ abstract class EnroPlugin {
 
 class EnroLogger : EnroPlugin() {
     override fun onOpened(navigationHandle: NavigationHandle<*>) {
-        Log.d("NavigationController", "Opened: ${navigationHandle.key}")
+        Log.d("Enro", "Opened: ${navigationHandle.key}")
     }
 
     override fun onActive(navigationHandle: NavigationHandle<*>) {
-        Log.d("NavigationController", "Active: ${navigationHandle.key}")
+        Log.d("Enro", "Active: ${navigationHandle.key}")
     }
 
     override fun onClosed(navigationHandle: NavigationHandle<*>) {
-        Log.d("NavigationController", "Closed: ${navigationHandle.key}")
+        Log.d("Enro", "Closed: ${navigationHandle.key}")
     }
 }

@@ -28,6 +28,12 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
     override lateinit var controller: NavigationController
     override lateinit var additionalData: Bundle
 
+    internal var childContainers = listOf<ChildContainer>()
+        set(value) {
+            field = value
+            navigationContext?.childContainers = value
+        }
+
     private val lifecycle = LifecycleRegistry(this).apply {
         addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
@@ -49,6 +55,7 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
             }
             field = value
             value?.let {
+                it.childContainers = childContainers
                 controller = it.controller
                 key = it.key
                 additionalData = it.instruction?.additionalData ?: Bundle()

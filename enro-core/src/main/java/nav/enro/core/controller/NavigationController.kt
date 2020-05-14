@@ -39,9 +39,7 @@ class NavigationController(
         }
 
     private val defaultNavigators = listOf(
-        createActivityNavigator<SingleFragmentKey, SingleFragmentActivity> {
-            acceptAllFragments(R.id.content)
-        }
+        createActivityNavigator<SingleFragmentKey, SingleFragmentActivity>()
     )
 
     private val navigatorsByKeyType = (navigators + defaultNavigators)

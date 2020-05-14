@@ -3,6 +3,7 @@ package nav.enro.core.context
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
+import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -17,6 +18,11 @@ import nav.enro.core.navigator.FragmentNavigator
 import nav.enro.core.navigator.Navigator
 import java.lang.IllegalStateException
 import kotlin.reflect.KClass
+
+data class ChildContainer(
+    @IdRes val containerId: Int,
+    val accept: (NavigationKey) -> Boolean
+)
 
 sealed class NavigationContext<ContextType : Any, T : NavigationKey>(
     val contextReference: ContextType
@@ -45,6 +51,8 @@ sealed class NavigationContext<ContextType : Any, T : NavigationKey>(
     internal val parentInstruction by lazy {
         instruction?.parentInstruction
     }
+
+    internal var childContainers = listOf<ChildContainer>()
 }
 
 internal class ActivityContext<ContextType : FragmentActivity, T : NavigationKey>(

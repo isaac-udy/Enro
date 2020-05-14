@@ -6,6 +6,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import nav.enro.core.NavigationHandle
+import nav.enro.core.getNavigationHandle
 import nav.enro.core.navigationHandle
 import nav.enro.result.EnroResult
 import java.lang.IllegalArgumentException
@@ -22,12 +23,12 @@ internal class LazyResultChannelProperty<T>(
     lateinit var resultChannel: ResultChannelImpl<T>
 
     init {
-        val handle = when(owner) {
-            is FragmentActivity -> owner.navigationHandle()
-            is Fragment -> owner.navigationHandle()
-            is NavigationHandle<*> -> lazy { owner as NavigationHandle<Nothing> }
-            else -> throw IllegalArgumentException("Owner must be a Fragment or FragmentActivity")
-        }
+        val handle = when (owner) {
+                is FragmentActivity -> lazy { owner.getNavigationHandle<Nothing>() }
+                is Fragment ->lazy { owner.getNavigationHandle<Nothing>() }
+                is NavigationHandle<*> -> lazy { owner as NavigationHandle<Nothing> }
+                else -> throw IllegalArgumentException("Owner must be a Fragment or FragmentActivity")
+            }
         val lifecycle = owner as LifecycleOwner
 
         lifecycle.lifecycle.addObserver(object : LifecycleEventObserver {
