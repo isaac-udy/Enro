@@ -29,59 +29,60 @@ dependencies {
 #### 1. Define your NavigationKeys
 ```kotlin
 @Parcelize
-data class MyActvityKey(val activityData: String): NavigationKey
-class MyActivity : AppCompatActivity() { ... }
+data class MyListKey(val listType: String): NavigationKey
 
 @Parcelize
-data class MyFragmentKey(val fragmentData: String): NavigationKey
-class MyFragment : Fragment() { ... }
+data class MyDetailKey(val itemId: String, val isReadOnly): NavigationKey
 ```
 
-#### 2. In your Application, define Navigators for your NavigationKeys
+#### 2. Define your NavigationDestinations
+```kotlin 
+@NavigationDestination(MyListKey::class)
+class ListFragment : Fragment()
+
+@NavigationDestination(MyDetailKey::class)
+class DetailActivity : AppCompatActivity() 
+```
+
+#### 3. Annotate your Application as a NavigationComponent, and implement the NavigationApplication interface
 ```kotlin
-class YourApplication : Application(), NavigationApplication {
-    override val navigationController = navigationController {
-        activityNavigator<MyActvityKey, MyActivity>()
-        fragmentNavigator<MyFragmentKey, MyFragment>()
-    }
-    ...
+@NavigationComponent
+class MyApplication : Application(), NavigationApplication {
+    override val navigationController = navigationController()
 }
 ```
 
-#### 3. Interact with your Navigatiors! 
+#### 4. Navigate!
 ```kotlin
-@Parcelize
-data class MyActvityKey(val userId: String): NavigationKey
-class MyActivity : AppCompatActivity() { 
-    val navigation by navigationHandle<MyActvityKey>()
+@NavigationDestination(MyListKey::class)
+class ListFragment : ListFragment() { 
+    val navigation by navigationHandle<MyListKey>()
     
-    fun updateViews() {
-        myTextView.setText(navigation.key.activityData)
+    fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val listType = navigation.key.listType
+        view.findViewById<TextView>(R.id.list_title_text).text = "List: $listType"
     }
     
-    fun onButtonPressed() {
-        navigation.forward(MyFragmentKey("Wow!"))
-    }
-}
-
-@Parcelize
-data class MyFragmentKey(val userId: String): NavigationKey
-class MyFragment : Fragment() { 
-    val navigation by navigationHandle<MyFragmentKey>()
-    
-    fun updateViews() {
-        myTextView.setText(navigation.key.fragmentData)
-    }
-    
-    fun onButtonPressed() {
-        navigation.forward(MyActivityKey("Wow!"))
+    fun onListItemSelected(selectedId: String) {
+        val key = MyDetailKey(itemId = selectedId)
+        navigation.forward(key)
     }
 }
 ```
 
 ## FAQ
 #### How well does Enro work alongside "normal" Android Activity/Fragment navigation?  
-Enro is designed to integrate well with Android's default navigation. It's easily possible to manually open a Fragment or Activity that will act as if Enro itself had done the navigation. All that needs to be done is for an appropriate NavigationInstruction to be added to the Fragment's arguments or the Activity's extras. 
+Enro is designed to integrate well with Android's default navigation. It's easy to manually open a Fragment or Activity as if Enro itself had performed the navigation. Create a NavigationInstruction object that represents the navigation, and then add it to the arguments of a Fragment, or the Intent for an Activity, and then open the Fragment/Activity as you normally would. 
+
+Example:
+```kotlin
+val instruction = NavigationInstruction.Open(
+    navigationDirection = NavigationDirection.Open,
+    navigationKey = MyNavigationKey(...)
+)
+val intent = Intent(this, MyActivity::class).addOpenInstruction(instruction)
+startActivity(intent)
+```
 
 #### How does Enro decide if a Fragment, or the Activity should receive a back button press?
 Enro considers the primaryNavigationFragment to be the "active" navigation target, or the current Activity if there is no primaryNavigationFragment. In a nested Fragment situation, the primaryNavigationFragment of the primaryNavigationFragment of the ... is considered "active".
@@ -101,8 +102,43 @@ Enro supports multiple arguments to these instructions.
 
 #### How does Enro support Activities navigating to Fragments? 
 When an Activity executes a navigation instruction that resolves to a Fragment, one of two things will happen: 
-1. The Activity's navigator defines a "fragment host" that accepts the Fragment's type, in which case, the Fragment will be opened into the container view defined by that fragment host.
-2. The Activity's navigation **does not** define a fragment host that acccepts the Fragment's type, in which case, the Fragment will be opened as if it was an Activity. 
+1. The Activity's navigator defines a "container" that accepts the Fragment's type, in which case, the Fragment will be opened into the container view defined by that container.
+2. The Activity's navigation **does not** define a fragment host that acccepts the Fragment's type, in which case, the Fragment will be opened into a new, full screen Activity. 
+
+#### How do I deal with Activity results? 
+Enro supports any NavigationKey/NavigationDestination providing a result. Instead of implementing the NavigationKey interface on the NavigationKey that provides the result, implement ResultNavigationKey<T> where T is the type of the result. Once you're ready to navigate to that NavigationKey and consume a result, you'll want to call "registerForNavigationResult" in your Fragment/Activity/ViewModel. This API is very similar to the AndroidX Activity 1.2.0 ActivityResultLauncher. 
+
+Example:
+```kotlin
+@Parcelize
+class RequestDataKey(...) : ResultNavigationKey<Boolean>()
+
+@NavigationDestination(RequestDataKey::class)
+class MyResultActivity : AppCompatActivity() {
+    val navigation by navigationHandle<RequestSomeData>()
+
+    fun onSendResultButtonClicked() {
+        navigation.closeWithResult(false)
+    }
+}
+
+@NavigationDestination(...)
+class MyActivity : AppCompatActivity() {
+    val requestData by registerForNavigationResult<Boolean> {
+        // do something!
+    }
+
+    fun onRequestDataButtonClicked() {
+        requestData.open(RequestDataKey(/*arguments*/))
+    }
+}
+```
+
+#### How do I do Master/Detail navigation 
+Enro has a built in component for this.  If you want to build something more complex than what the built-in component provides, you'll be able to use the built-in component as a reference/starting point, as it is built purely on Enro's public API
+
+#### How do I handle multiple backstacks on each page of a BottomNavigationView? 
+Enro has a built in component for this. If you want to build something more complex than what the built-in component provides, you'll be able to use the built-in component as a reference/starting point, as it is built purely on Enro's public API
 
 #### I'd like to do shared element transitions, or do something special when navigating between certain screens
 Enro allows you to define "NavigationExecutors" as overrides for the default behaviour, which handle these situations. 
@@ -141,21 +177,15 @@ activityToFragmentOverride<MasterDetailActivity, DetailFragment>(
 #### My Activity crashes on launch, what's going on?!
 It's possible for an Activity to be launched from multiple places. Most of these can be controlled by Enro, but some of them cannot. For example, an Activity that's declared in the manifest as a MAIN/LAUNCHER Activity might be launched by the Android operating system when the user opens your application for the first time. Because Enro hasn't launched the Activity, it's not going to know what the NavigationKey for that Activity is, and won't be able to read it from the Activity's intent. 
 
-Luckily, there's an easy solution! When you declare a navigator for your Activity, provide a "defaultKey" if you expect that Activity to be launched from somewhere outside of Enro's control. 
+Luckily, there's an easy solution! When you declare an Activty or Fragment as a NavigationDestination, and the NavigationKey for that Activity or Fragment has a no-args constructor available, you can add "allowDefault = true" to the NavigationDestination arguments, and the no-args constructor will be used to construct a NavigationKey for that Activity/Fragment if there isn't one in the intent extras/fragment arguments.
 
 Example: 
 ```kotlin
-class YourApplication : Application(), NavigationApplication {
-    override val navigationController = NavigationController(
-        navigators = listOf(
-            activityNavigator<MyActvityKey, MyActivity> {
-                defaultKey(MyActivityKey("Direct from the launcher!"))
-            },
-            fragmentNavigator<MyFragmentKey, MyFragment>(),
-            ...
-        )
-    )
-    // ...
+@Parcelize
+class MainKey(someOptionalArgument: Boolean = false) : NavigationKey
+
+@NavigationDestination(MainKey::class, allowDefault = true)
+class MainActivity : AppCompatActivity() {}
 ```
 
 ## Why would I want to use Enro? 
