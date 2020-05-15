@@ -1,8 +1,6 @@
 [![Download](https://api.bintray.com/packages/isaac-udy/Enro/enro-core/images/download.svg) ](https://bintray.com/isaac-udy/Enro/enro-core/_latestVersion)
 
 # Enro 🗺️
- 🚧  Work in progress. Broadly the library works, but there are some known issues that are being solved. 🚧  
-
 A simple navigation library for Android 
 
 *"The novices’ eyes followed the wriggling path up from the well as it swept a great meandering arc around the hillside. Its stones were green with moss and beset with weeds. Where the path disappeared through the gate they noticed that it joined a second track of bare earth, where the grass appeared to have been trampled so often that it ceased to grow. The dusty track ran straight from the gate to the well, marred only by a fresh set of sandal-prints that went down, and then up, and ended at the feet of the young monk who had fetched their water." - [The Garden Path](http://thecodelesscode.com/case/156)*
