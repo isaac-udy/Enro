@@ -15,7 +15,7 @@ import nav.enro.example.core.navigation.LaunchKey
 import nav.enro.example.core.navigation.LoginKey
 
 class MainActivity : AppCompatActivity() {
-    private val navigation by getNavigationHandle<Nothing>()
+    private val navigation by navigationHandle<Nothing>()
 
     override fun onResume() {
         super.onResume()

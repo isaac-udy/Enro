@@ -55,7 +55,6 @@ class EnroProcessor : AbstractProcessor() {
         components += roundEnv.getElementsAnnotatedWith(NavigationComponent::class.java)
 
         if (roundEnv.processingOver()) {
-            processingEnv.messager.printMessage(Diagnostic.Kind.WARNING, "${components?.toString()}")
             components.forEach { generateComponent(it, destinations) }
         }
         return false
@@ -179,10 +178,6 @@ class EnroProcessor : AbstractProcessor() {
 
     private fun Element.implements(superName: String): Boolean {
         val typeMirror = processingEnv.typeUtils.erasure(processingEnv.elementUtils.getTypeElement(superName).asType())
-        processingEnv.messager.printMessage(Diagnostic.Kind.WARNING, """
-            Isaac's Debugger @$simpleName!
-            $typeMirror
-        """.trimIndent())
         return processingEnv.typeUtils.isAssignable(asType(), typeMirror)
     }
 

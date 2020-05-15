@@ -15,7 +15,9 @@ import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.multistack.*
 import nav.enro.annotations.NavigationDestination
 import nav.enro.core.NavigationKey
+import nav.enro.core.forward
 import nav.enro.core.getNavigationHandle
+import nav.enro.core.navigationHandle
 import nav.enro.example.core.navigation.MultiStackKey
 import nav.enro.multistack.MultistackContainer
 import nav.enro.multistack.multistackController
@@ -29,7 +31,7 @@ class MultiStackItem(
 @NavigationDestination(MultiStackKey::class)
 class MultiStackActivity : AppCompatActivity() {
 
-    private val navigation by getNavigationHandle<MultiStackKey> {
+    private val navigation by navigationHandle<MultiStackKey> {
         container(R.id.redFrame)
         container(R.id.greenFrame)
         container(R.id.blueFrame)
@@ -62,7 +64,7 @@ class MultiStackActivity : AppCompatActivity() {
 @NavigationDestination(MultiStackItem::class)
 class MultiStackFragment : Fragment() {
 
-    private val navigation by getNavigationHandle<MultiStackItem>()
+    private val navigation by navigationHandle<MultiStackItem>()
 
     override fun onCreateView(
         inflater: LayoutInflater,

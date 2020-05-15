@@ -59,7 +59,7 @@ class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal co
 }
 
 
-fun <T : NavigationKey> FragmentActivity.getNavigationHandle(
+fun <T : NavigationKey> FragmentActivity.navigationHandle(
     config: NavigationHandleConfiguration<T>.() -> Unit = {}
 ): NavigationHandleProperty<T> = NavigationHandleProperty(
     lifecycleOwner = this,
@@ -67,7 +67,7 @@ fun <T : NavigationKey> FragmentActivity.getNavigationHandle(
     configBuilder = config
 )
 
-fun <T : NavigationKey> Fragment.getNavigationHandle(
+fun <T : NavigationKey> Fragment.navigationHandle(
     config: NavigationHandleConfiguration<T>.() -> Unit = {}
 ): NavigationHandleProperty<T> = NavigationHandleProperty(
     lifecycleOwner = this,

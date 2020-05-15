@@ -14,7 +14,7 @@ class GenericActivity : TestActivity()
 @Parcelize
 data class ActivityWithFragmentsKey(val id: String) : NavigationKey
 class ActivityWithFragments : TestActivity() {
-    private val navigation by getNavigationHandle<Nothing>() {
+    private val navigation by navigationHandle<Nothing>() {
         container(R.id.content) {
             it is ActivityChildFragmentKey || it is ActivityChildFragmentTwoKey
         }

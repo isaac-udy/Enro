@@ -17,8 +17,8 @@ abstract class AbstractNavigationViewModelFactory(
 ) : AbstractSavedStateViewModelFactory(owner, defaultArgs) {
 
     private val navigationHandle by when (owner) {
-        is FragmentActivity -> owner.getNavigationHandle<Nothing>()
-        is Fragment -> owner.getNavigationHandle<Nothing>()
+        is FragmentActivity -> lazy { owner.getNavigationHandle<Nothing>() }
+        is Fragment -> lazy { owner.getNavigationHandle<Nothing>() }
         else -> throw IllegalArgumentException("The 'owner' argument for a NavigationViewModelFactory must be a Fragment activity or a Fragment")
     }
 

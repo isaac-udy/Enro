@@ -10,12 +10,13 @@ import nav.enro.core.NavigationKey
 import nav.enro.core.context.NavigationContext
 import nav.enro.core.context.activity
 import nav.enro.core.getNavigationHandle
+import nav.enro.core.navigationHandle
 import nav.enro.core.navigator.SyntheticDestination
 import nav.enro.example.core.navigation.LoginErrorKey
 
 class LoginErrorFragment : DialogFragment() {
 
-    private val navigation by getNavigationHandle<LoginErrorKey>()
+    private val navigation by navigationHandle<LoginErrorKey>()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val key = navigation.key

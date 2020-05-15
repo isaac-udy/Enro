@@ -14,7 +14,7 @@ import nav.enro.example.core.navigation.UserKey
 @NavigationDestination(UserKey::class)
 class UserFragment : Fragment() {
 
-    private val navigation by getNavigationHandle<UserKey>()
+    private val navigation by navigationHandle<UserKey>()
 
     override fun onCreateView(
         inflater: LayoutInflater,

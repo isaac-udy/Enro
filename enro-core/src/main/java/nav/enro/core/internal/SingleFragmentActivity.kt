@@ -1,11 +1,12 @@
 package nav.enro.core.internal
 
+import android.R
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.parcel.Parcelize
 import nav.enro.core.NavigationInstruction
 import nav.enro.core.NavigationKey
-import nav.enro.core.getNavigationHandle
+import nav.enro.core.navigationHandle
 
 @Parcelize
 internal data class SingleFragmentKey(
@@ -14,8 +15,8 @@ internal data class SingleFragmentKey(
 
 class SingleFragmentActivity : AppCompatActivity() {
 
-    private val handle by getNavigationHandle<SingleFragmentKey> {
-        container(android.R.id.content)
+    private val handle by navigationHandle<SingleFragmentKey> {
+        container(R.id.content)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
