@@ -9,7 +9,7 @@ A simple navigation library for Android
 
 - Navigate between Fragments or Activities seamlessly
 
-- Describe navigation destinations through a simple DSL
+- Describe navigation destinations through annotations or a simple DSL
 
 - Create beautiful transitions between specific destinations
 
