@@ -1,9 +1,0 @@
-androidLibrary()
-apply plugin: 'kotlin-kapt'
-
-dependencies {
-    implementation project(":example:core")
-    implementation project(":enro")
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    kapt project(":enro-processor")
-}

@@ -1,0 +1,8 @@
+androidLibrary()
+apply plugin: 'kotlin-kapt'
+
+dependencies {
+    implementation project(":modularised-example:core")
+    implementation project(":enro")
+    kapt project(":enro-processor")
+}
