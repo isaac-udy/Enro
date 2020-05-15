@@ -36,6 +36,12 @@ class NavigationComponentBuilder {
         navigators.add(createFragmentNavigator(block))
     }
 
+    inline fun <reified T : NavigationKey> syntheticNavigator(
+        destination: SyntheticDestination<T>
+    ) {
+        navigators.add(createSyntheticNavigator(destination))
+    }
+
     inline fun <reified From : FragmentActivity, reified Opens : FragmentActivity> activityToActivityOverride(
         noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
         noinline close: ((context: NavigationContext<out Opens, out NavigationKey>) -> Unit)

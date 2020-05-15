@@ -5,6 +5,9 @@ import nav.enro.core.NavigationKey
 import nav.enro.result.ResultNavigationKey
 
 @Parcelize
+object LaunchKey: NavigationKey
+
+@Parcelize
 data class DashboardKey(val userId: String) : NavigationKey
 
 @Parcelize

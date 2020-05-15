@@ -36,8 +36,12 @@ sealed class NavigationContext<ContextType : Any, T : NavigationKey>(
 
     val key: T by lazy {
         instruction?.navigationKey
-            ?: controller.navigatorForContextType(contextReference::class)?.defaultKey as? T
+            ?: defaultKey
             ?: throw IllegalStateException("Navigation Context's bound arguments did not contain a NavigationKey!")
+    }
+
+    internal val defaultKey: T? by lazy {
+        controller.navigatorForContextType(contextReference::class)?.defaultKey as? T
     }
 
     internal open val navigator: Navigator<ContextType, T> by lazy {

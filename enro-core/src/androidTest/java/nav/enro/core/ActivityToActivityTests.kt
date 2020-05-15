@@ -12,14 +12,14 @@ class ActivityToActivityTests {
     @Test
     fun givenDefaultActivityOpenedWithoutNavigationKeySet_thenDefaultKeyIsUsed() {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.navigationHandle<DefaultActivityKey>()
+        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
         assertEquals(defaultKey, handle.key)
     }
 
     @Test
     fun givenDefaultActivity_whenCloseInstructionIsExecuted_thenNoActivitiesAreOpen() {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.navigationHandle<DefaultActivityKey>()
+        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
         handle.close()
         expectNoActivity()
     }
@@ -29,11 +29,11 @@ class ActivityToActivityTests {
         val id = UUID.randomUUID().toString()
 
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.navigationHandle<DefaultActivityKey>()
+        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
         handle.forward(GenericActivityKey(id))
 
         val next = expectActivity<GenericActivity>()
-        val nextHandle by next.navigationHandle<GenericActivityKey>()
+        val nextHandle = next.getNavigationHandle<GenericActivityKey>()
 
         assertEquals(id, nextHandle.key.id)
     }
@@ -43,7 +43,7 @@ class ActivityToActivityTests {
         val id = UUID.randomUUID().toString()
 
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.navigationHandle<DefaultActivityKey>()
+        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
         handle.executeInstruction(
             NavigationInstruction.Open(
                 NavigationDirection.FORWARD,
@@ -58,29 +58,29 @@ class ActivityToActivityTests {
         )
 
         expectActivity<GenericActivity> {
-            it.navigationHandle<GenericActivityKey>().value.key.id == id
+            it.getNavigationHandle<GenericActivityKey>().key.id == id
         }
     }
 
     @Test
     fun givenDefaultActivity_whenSpecificActivityIsOpened_andThenSpecificActivityIsClosed_thenDefaultActivityIsOpen() {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.navigationHandle<DefaultActivityKey>()
+        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
         handle.forward(GenericActivityKey("close"))
 
         val next = expectActivity<GenericActivity>()
-        val nextHandle by next.navigationHandle<GenericActivityKey>()
+        val nextHandle = next.getNavigationHandle<GenericActivityKey>()
         nextHandle.close()
 
         val activeActivity = expectActivity<DefaultActivity>()
-        val activeHandle by activeActivity.navigationHandle<DefaultActivityKey>()
+        val activeHandle = activeActivity.getNavigationHandle<DefaultActivityKey>()
         assertEquals(defaultKey, activeHandle.key)
     }
 
     @Test(expected = Throwable::class)
     fun givenActivityDoesNotHaveDefaultKey_whenActivityOpenedWithoutNavigationKeySet_thenNavigationHandleCannotRetrieveKey() {
         val scenario = ActivityScenario.launch(GenericActivity::class.java)
-        val handle = scenario.navigationHandle<GenericActivityKey>()
+        val handle = scenario.getNavigationHandle<GenericActivityKey>()
         assertNotNull(handle.key)
     }
 
@@ -100,7 +100,7 @@ class ActivityToActivityTests {
                 )
 
         val scenario = ActivityScenario.launch<GenericActivity>(intent)
-        val handle = scenario.navigationHandle<GenericActivityKey>()
+        val handle = scenario.getNavigationHandle<GenericActivityKey>()
 
         assertEquals(id, handle.key.id)
     }
@@ -110,11 +110,11 @@ class ActivityToActivityTests {
         val id = UUID.randomUUID().toString()
 
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.navigationHandle<DefaultActivityKey>()
+        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
         handle.replace(GenericActivityKey(id))
 
         val next = expectActivity<GenericActivity>()
-        val nextHandle by next.navigationHandle<GenericActivityKey>()
+        val nextHandle = next.getNavigationHandle<GenericActivityKey>()
 
         nextHandle.close()
         expectNoActivity()
@@ -126,14 +126,14 @@ class ActivityToActivityTests {
         val second = UUID.randomUUID().toString()
 
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.navigationHandle<DefaultActivityKey>()
+        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
         handle.forward(GenericActivityKey(first))
 
-        val firstActivity = expectActivity<GenericActivity> { it.navigationHandle<GenericActivityKey>().value.key.id == first }
-        firstActivity.navigationHandle<GenericActivityKey>().value.replace(GenericActivityKey(second))
+        val firstActivity = expectActivity<GenericActivity> { it.getNavigationHandle<GenericActivityKey>().key.id == first }
+        firstActivity.getNavigationHandle<GenericActivityKey>().replace(GenericActivityKey(second))
 
-        val secondActivity = expectActivity<GenericActivity> { it.navigationHandle<GenericActivityKey>().value.key.id == second }
-        secondActivity.navigationHandle<GenericActivityKey>().value.close()
+        val secondActivity = expectActivity<GenericActivity> { it.getNavigationHandle<GenericActivityKey>().key.id == second }
+        secondActivity.getNavigationHandle<GenericActivityKey>().close()
 
         expectActivity<DefaultActivity>()
     }

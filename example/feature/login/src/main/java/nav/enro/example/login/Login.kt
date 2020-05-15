@@ -51,9 +51,10 @@ class LoginViewModel(
     private val navigationHandle: NavigationHandle<Nothing>
 ) : nav.enro.example.core.base.SingleStateViewModel<LoginState>() {
 
-    private val userRepo = UserRepository()
+    private val userRepo = UserRepository.instance
 
     init {
+        UserRepository.instance.activeUser = null
         state = LoginState()
     }
 
@@ -73,16 +74,12 @@ class LoginViewModel(
                     state.username
                 )
             )
-            else -> navigationHandle.replaceRoot(
-                DashboardKey(user)
-//                DashboardKey("Second!"),
-//                ListKey("Isaac", ListFilterType.ALL),
-//                DetailKey("Isaac","12211221"),
-//                DashboardKey("Third!"),
-//                UserKey("Isaac 1"),
-//                UserKey("Isaac 2"),
-//                DashboardKey("Last")
+            else -> {
+                UserRepository.instance.activeUser = user
+                navigationHandle.replaceRoot(
+                    DashboardKey(user)
                 )
+            }
         }
     }
 }

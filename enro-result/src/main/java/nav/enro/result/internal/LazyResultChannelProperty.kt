@@ -7,7 +7,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import nav.enro.core.NavigationHandle
 import nav.enro.core.getNavigationHandle
-import nav.enro.core.navigationHandle
 import nav.enro.result.EnroResult
 import java.lang.IllegalArgumentException
 import kotlin.properties.ReadOnlyProperty

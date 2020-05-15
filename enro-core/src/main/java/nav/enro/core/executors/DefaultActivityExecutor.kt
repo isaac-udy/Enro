@@ -8,7 +8,6 @@ import nav.enro.core.NavigationKey
 import nav.enro.core.addOpenInstruction
 import nav.enro.core.context.NavigationContext
 import nav.enro.core.context.activity
-import nav.enro.core.context.parentActivity
 import nav.enro.core.navigator.*
 
 object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, NavigationKey>(
@@ -23,14 +22,14 @@ object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, Navig
 
         navigator as ActivityNavigator
 
-        val intent =  Intent(fromContext.parentActivity, navigator.contextType.java)
+        val intent =  Intent(fromContext.activity, navigator.contextType.java)
             .addOpenInstruction(instruction)
 
         if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
 
-        val activity = fromContext.parentActivity
+        val activity = fromContext.activity
         if (instruction.navigationDirection == NavigationDirection.REPLACE || instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
             activity.finish()
         }

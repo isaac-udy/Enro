@@ -1,4 +1,5 @@
 package nav.enro.core
+import android.R
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
@@ -12,7 +13,13 @@ class GenericActivity : TestActivity()
 
 @Parcelize
 data class ActivityWithFragmentsKey(val id: String) : NavigationKey
-class ActivityWithFragments : TestActivity()
+class ActivityWithFragments : TestActivity() {
+    private val navigation by getNavigationHandle<Nothing>() {
+        container(R.id.content) {
+            it is ActivityChildFragmentKey || it is ActivityChildFragmentTwoKey
+        }
+    }
+}
 
 @Parcelize
 data class ActivityChildFragmentKey(val id: String) : NavigationKey

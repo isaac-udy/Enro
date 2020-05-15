@@ -1,7 +1,5 @@
 package nav.enro.core.internal
 
-import android.app.Activity
-import android.util.TypedValue
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -14,7 +12,6 @@ import nav.enro.core.context.ActivityContext
 import nav.enro.core.context.FragmentContext
 import nav.enro.core.getNavigationHandle
 import nav.enro.core.internal.handle.NavigationHandleViewModel
-import nav.enro.core.navigationHandle
 
 internal fun Lifecycle.onEvent(on: Lifecycle.Event, block: () -> Unit) {
     addObserver(object : LifecycleEventObserver {

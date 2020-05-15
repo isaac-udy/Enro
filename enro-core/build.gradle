@@ -1,5 +1,5 @@
 androidLibrary()
-publishModule("nav.enro", "enro-core")
+publishAndroidModule("nav.enro", "enro-core")
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.2.0'

@@ -9,7 +9,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import nav.enro.core.*
 import nav.enro.core.context.fragment
-import nav.enro.core.context.parentActivity
+import nav.enro.core.context.activity
 import nav.enro.core.controller.NavigationController
 import nav.enro.core.controller.navigationController
 import nav.enro.core.executors.DefaultActivityExecutor
@@ -51,7 +51,7 @@ class MasterDetailProperty(
                     .commitNow()
             },
             close = {
-                it.parentActivity.finish()
+                it.activity.finish()
             }
         )
     }
@@ -82,7 +82,7 @@ class MasterDetailProperty(
             close = { context ->
                 context.fragment.parentFragmentManager.beginTransaction()
                     .remove(context.fragment)
-                    .setPrimaryNavigationFragment(context.parentActivity.supportFragmentManager.findFragmentById(masterContainer))
+                    .setPrimaryNavigationFragment(context.activity.supportFragmentManager.findFragmentById(masterContainer))
                     .commitNow()
             }
         )

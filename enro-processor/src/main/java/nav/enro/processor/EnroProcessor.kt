@@ -62,8 +62,9 @@ class EnroProcessor : AbstractProcessor() {
     }
 
     private fun generateDestination(element: Element) {
-        val destinationIsActivity = element.extends("androidx.fragment.app.FragmentActivity")
-        val destinationIsFragment = element.extends("androidx.fragment.app.Fragment")
+        val destinationIsActivity  = element.extends("androidx.fragment.app.FragmentActivity")
+        val destinationIsFragment  = element.extends("androidx.fragment.app.Fragment")
+        val destinationIsSynthetic = element.implements("nav.enro.core.navigator.SyntheticDestination")
 
         val destinationName = element.simpleName
         val destinationPackage = processingEnv.elementUtils.getPackageOf(element).toString()
@@ -92,8 +93,11 @@ class EnroProcessor : AbstractProcessor() {
 |                               builder.fragmentNavigator<$keyName, $destinationName>{ 
                                     ${if (annotation.allowDefault) "defaultKey($keyName())" else ""}
                                 }""".trimMargin()
+                            destinationIsSynthetic -> """
+                                builder.syntheticNavigator($destinationName())
+                                """
                             else -> {
-                                throw IllegalStateException("$destinationName does not extend Fragment or FragmentActivity")
+                                throw IllegalStateException("$destinationName does not extend Fragment, FragmentActivity, or SyntheticDestination")
                             }
                         }
                     )
@@ -171,6 +175,15 @@ class EnroProcessor : AbstractProcessor() {
     private fun Element.extends(superName: String): Boolean {
         val typeMirror = processingEnv.elementUtils.getTypeElement(superName).asType()
         return processingEnv.typeUtils.isSubtype(asType(), typeMirror)
+    }
+
+    private fun Element.implements(superName: String): Boolean {
+        val typeMirror = processingEnv.typeUtils.erasure(processingEnv.elementUtils.getTypeElement(superName).asType())
+        processingEnv.messager.printMessage(Diagnostic.Kind.WARNING, """
+            Isaac's Debugger @$simpleName!
+            $typeMirror
+        """.trimIndent())
+        return processingEnv.typeUtils.isAssignable(asType(), typeMirror)
     }
 
     private fun getDestinationNameFor(element: Element): String {

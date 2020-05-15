@@ -8,9 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
 import nav.enro.core.NavigationHandle
-import nav.enro.core.navigationHandle
 import java.lang.IllegalArgumentException
-import java.lang.IllegalStateException
 import java.lang.reflect.Constructor
 import kotlin.reflect.KClass
 

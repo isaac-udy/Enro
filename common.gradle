@@ -43,7 +43,7 @@ ext.androidLibrary = {
     }
 }
 
-ext.publishModule = { String groupName, String moduleName ->
+ext.publishAndroidModule = { String groupName, String moduleName ->
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.bintray'
 
@@ -64,6 +64,7 @@ ext.publishModule = { String groupName, String moduleName ->
                 name = versionName
             }
         }
+        publish = true
     }
 
     task androidSourcesJar(type: Jar) {
@@ -97,6 +98,68 @@ ext.publishModule = { String groupName, String moduleName ->
                             }
                         }
                     }
+                }
+            }
+
+            repositories {
+                maven {
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/isaac-udy/Enro")
+                    credentials {
+                        username = privateProperties['githubUser']
+                        password = privateProperties['githubToken']
+                    }
+                }
+            }
+        }
+    }
+
+    bintrayUpload.dependsOn publish
+    publish.dependsOn publishToMavenLocal
+    publishToMavenLocal.dependsOn assemble
+}
+
+ext.publishJavaModule = { String groupName, String moduleName ->
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.bintray'
+
+    def privateProperties = new Properties()
+    privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
+
+    bintray {
+        user = privateProperties["bintrayUser"]
+        key = privateProperties["bintrayToken"]
+        publications = ['jar']
+
+        pkg {
+            repo = "Enro"
+            name = moduleName
+            licenses = ["Apache-2.0"]
+            vcsUrl = "https://github.com/isaac-udy/Enro.git"
+
+            version {
+                name = versionName
+            }
+        }
+        publish = true
+    }
+
+    task sourcesJar(type: Jar) {
+        archiveClassifier.set('sources')
+        from sourceSets.main.java.srcDirs
+    }
+
+    afterEvaluate {
+        publishing {
+            publications {
+                jar(MavenPublication) {
+                    from components.java
+
+                    groupId groupName
+                    artifactId moduleName
+                    version versionName
+
+                    artifact sourcesJar
                 }
             }
 

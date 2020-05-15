@@ -1,5 +1,5 @@
 androidLibrary()
-publishModule("nav.enro", "enro-viewmodel")
+publishAndroidModule("nav.enro", "enro-viewmodel")
 
 dependencies {
     releaseImplementation "nav.enro:enro-core:$versionName"

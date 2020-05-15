@@ -17,10 +17,10 @@ import nav.enro.core.context.navigationContext
 import java.lang.IllegalStateException
 import kotlin.concurrent.thread
 
-inline fun <reified T: NavigationKey> ActivityScenario<out FragmentActivity>.navigationHandle(): NavigationHandle<T> {
+inline fun <reified T: NavigationKey> ActivityScenario<out FragmentActivity>.getNavigationHandle(): NavigationHandle<T> {
     var result: NavigationHandle<T>? = null
     onActivity{
-        result = it.navigationHandle<T>().value
+        result = it.getNavigationHandle<T>()
     }
 
     val handle = result ?: throw IllegalStateException("Could not retrieve NavigationHandle from Activity")

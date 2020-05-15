@@ -11,10 +11,8 @@ import nav.enro.core.internal.handle.NavigationHandleViewModel
 import nav.enro.core.navigator.FragmentHost
 import java.lang.IllegalStateException
 
-val NavigationContext<out FragmentActivity, *>.activity get() = contextReference
 val NavigationContext<out Fragment, *>.fragment get() = contextReference
-
-val NavigationContext<*, *>.parentActivity: FragmentActivity
+val NavigationContext<*, *>.activity: FragmentActivity
     get() = when (contextReference) {
         is FragmentActivity -> contextReference
         is Fragment -> contextReference.requireActivity()

@@ -5,7 +5,7 @@ import androidx.fragment.app.FragmentActivity
 import nav.enro.core.NavigationKey
 import nav.enro.core.context.NavigationContext
 import nav.enro.core.context.fragment
-import nav.enro.core.context.parentActivity
+import nav.enro.core.context.activity
 import nav.enro.core.executors.DefaultFragmentExecutor
 import nav.enro.core.executors.ExecutorArgs
 import nav.enro.core.executors.NavigationExecutor
@@ -25,7 +25,7 @@ inline fun <reified From : FragmentActivity, reified Opens : Fragment> createAct
 
         override fun close(context: NavigationContext<out Opens, out NavigationKey>) {
             when {
-                context.parentActivity !is From -> DefaultFragmentExecutor.close(context)
+                context.activity !is From -> DefaultFragmentExecutor.close(context)
                 context.fragment !is Opens -> DefaultFragmentExecutor.close(context)
                 else -> close.invoke(context)
             }

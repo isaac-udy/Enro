@@ -22,11 +22,6 @@ class TestApplication : Application(),
 
                 createActivityNavigator<ActivityWithFragmentsKey, ActivityWithFragments> {
                     defaultKey(ActivityWithFragmentsKey("default"))
-                    acceptFragments(
-                        R.id.content,
-                        ActivityChildFragment::class,
-                        ActivityChildFragmentTwo::class
-                    )
                 },
                 createFragmentNavigator<ActivityChildFragmentKey, ActivityChildFragment>(),
                 createFragmentNavigator<ActivityChildFragmentTwoKey, ActivityChildFragmentTwo>()

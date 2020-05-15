@@ -23,6 +23,7 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
 
     private var internalOnCloseRequested: () -> Unit = { close() }
 
+    internal val hasKey get() = ::key.isInitialized
     override lateinit var key: T
     override lateinit var id: String
     override lateinit var controller: NavigationController
@@ -37,8 +38,9 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
     private val lifecycle = LifecycleRegistry(this).apply {
         addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if(event == Lifecycle.Event.ON_CREATE) controller.onOpened(this@NavigationHandleViewModel)
-                if(event == Lifecycle.Event.ON_DESTROY) controller.onClosed(this@NavigationHandleViewModel)
+                if (navigationContext?.instruction == null) return
+                if (event == Lifecycle.Event.ON_CREATE) controller.onOpened(this@NavigationHandleViewModel)
+                if (event == Lifecycle.Event.ON_DESTROY) controller.onClosed(this@NavigationHandleViewModel)
             }
         })
     }
@@ -57,8 +59,14 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
             value?.let {
                 it.childContainers = childContainers
                 controller = it.controller
-                key = it.key
                 additionalData = it.instruction?.additionalData ?: Bundle()
+                if (navigationContext?.instruction == null) {
+                    navigationContext?.defaultKey?.let { defaultKey ->
+                        key = defaultKey
+                    }
+                    return@let
+                }
+                key = it.key
                 id = it.instruction?.id ?: return@let
                 it.controller.handles[id] = this
             }
@@ -67,7 +75,7 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
             registerOnBackPressedListener(value)
             executePendingInstruction()
 
-            if(lifecycle.currentState == Lifecycle.State.INITIALIZED) {
+            if (lifecycle.currentState == Lifecycle.State.INITIALIZED) {
                 lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
             }
         }
@@ -76,7 +84,7 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
     private fun registerLifecycleObservers(context: NavigationContext<out Any, T>) {
         context.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if(event == Lifecycle.Event.ON_DESTROY || event == Lifecycle.Event.ON_CREATE) return
+                if (event == Lifecycle.Event.ON_DESTROY || event == Lifecycle.Event.ON_CREATE) return
                 lifecycle.handleLifecycleEvent(event)
             }
         })

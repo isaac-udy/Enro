@@ -1,6 +1,5 @@
 package nav.enro.core.controller
 
-import android.R
 import android.app.Application
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -34,6 +33,10 @@ class NavigationController(
             if(value == field) return
             field = value
             if(value != null) {
+                if(value is NavigationHandleViewModel && !value.hasKey) {
+                    field = null
+                    return
+                }
                 plugins.forEach { it.onActive(value) }
             }
         }
@@ -87,6 +90,8 @@ class NavigationController(
                     instruction.setParentInstruction(navigationContext, navigator)
                 )
             )
+            is SyntheticNavigator -> (navigator.destination as SyntheticDestination<NavigationKey>)
+                .process(navigationContext, instruction as NavigationInstruction.Open<NavigationKey>)
         }
     }
 

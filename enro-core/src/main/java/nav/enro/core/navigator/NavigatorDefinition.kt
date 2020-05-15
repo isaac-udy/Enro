@@ -64,3 +64,22 @@ class FragmentNavigatorBuilder<C: Fragment, T: NavigationKey>(
         executors = executors
     )
 }
+
+inline fun <reified T : NavigationKey> createSyntheticNavigator(destination: SyntheticDestination<T>): NavigatorDefinition<Any, T> =
+    SyntheticNavigatorBuilder(
+        keyType = T::class,
+        destination = destination
+    ).build()
+
+class SyntheticNavigatorBuilder<T: NavigationKey>(
+    private val keyType: KClass<T>,
+    private val destination: SyntheticDestination<T>
+) {
+    fun build() = NavigatorDefinition(
+        navigator = SyntheticNavigator(
+            keyType = keyType,
+            destination = destination
+        ),
+        executors = emptyList()
+    )
+}

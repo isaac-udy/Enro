@@ -16,7 +16,7 @@ abstract class TestActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val key = try {
-            navigationHandle<NavigationKey>().value.key
+            getNavigationHandle<NavigationKey>().key
         } catch (t: Throwable) {
             Log.e("TestActivity", "Failed to open!", t)
             return
@@ -53,7 +53,7 @@ abstract class TestFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val key = try {
-            navigationHandle<NavigationKey>().value.key
+            getNavigationHandle<NavigationKey>().key
         } catch (t: Throwable) {
             Log.e("TestFragment", "Failed to open!", t)
             return null

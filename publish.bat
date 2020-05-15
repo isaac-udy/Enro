@@ -1,1 +1,1 @@
-gradlew :enro-core:bintrayUpload && gradlew :enro-result:bintrayUpload :enro-viewmodel:bintrayUpload :enro-multistack:bintrayUpload :enro-masterdetail:bintrayUpload && gradlew :enro:bintrayUpload
+gradlew :enro-annotations:bintrayUpload && gradlew :enro-processor:bintrayUpload && gradlew :enro-core:bintrayUpload && gradlew :enro-result:bintrayUpload :enro-viewmodel:bintrayUpload :enro-multistack:bintrayUpload :enro-masterdetail:bintrayUpload && gradlew :enro:bintrayUpload

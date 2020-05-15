@@ -56,7 +56,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         val activeFragment = host.fragmentManager.findFragmentById(host.containerId)
         activeFragment?.view?.z = -1.0f
 
-        val animations = navigator.animationsFor(fromContext.parentActivity.theme, instruction)
+        val animations = navigator.animationsFor(fromContext.activity.theme, instruction)
 
         host.fragmentManager.commitNow {
             setCustomAnimations(animations.enter, animations.exit)
@@ -72,12 +72,12 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         }
 
         val previousFragment = context.getParentFragment()
-        if (previousFragment == null && context.parentActivity is SingleFragmentActivity) {
-            context.controller.close(context.parentActivity.navigationContext)
+        if (previousFragment == null && context.activity is SingleFragmentActivity) {
+            context.controller.close(context.activity.navigationContext)
             return
         }
 
-        val animations = context.navigator.animationsFor(context.parentActivity.theme, NavigationInstruction.Close)
+        val animations = context.navigator.animationsFor(context.activity.theme, NavigationInstruction.Close)
 
         context.fragment.parentFragmentManager.commitNow {
             setCustomAnimations(animations.enter, animations.exit)

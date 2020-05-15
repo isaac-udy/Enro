@@ -1,6 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: 'kotlin-kapt'
+publishJavaModule("nav.enro", "enro-annotations")
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

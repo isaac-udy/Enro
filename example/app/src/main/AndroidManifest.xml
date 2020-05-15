@@ -10,16 +10,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name="nav.enro.example.login.LoginActivity">
+        <activity android:name="nav.enro.example.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="nav.enro.example.login.LoginActivity"/>
         <activity android:name=".dashboard.DashboardActivity" />
         <activity android:name=".detail.DetailActivity" />
         <activity android:name=".search.SearchActivity" />
-        <activity android:name=".user.UserActivity" />
         <activity android:name=".multistack.MultiStackActivity" />
         <activity android:name=".masterdetail.MasterDetailActivity" />
 

@@ -38,7 +38,7 @@ sealed class NavigatorAnimations {
         val replaceRootExit: Int = replaceExit
     ): NavigatorAnimations()
     companion object {
-        val defaultOverride = Attr(
+        val default = Attr(
             forwardEnter = R.attr.activityOpenEnterAnimation,
             forwardExit = R.attr.activityOpenExitAnimation,
 
