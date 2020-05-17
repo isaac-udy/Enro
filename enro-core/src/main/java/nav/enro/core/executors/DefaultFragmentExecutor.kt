@@ -3,12 +3,14 @@ package nav.enro.core.executors
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import androidx.fragment.app.*
 import nav.enro.core.*
 import nav.enro.core.context.*
 import nav.enro.core.context.ActivityContext
 import nav.enro.core.context.FragmentContext
 import nav.enro.core.internal.*
+import nav.enro.core.internal.handle.NavigationHandleViewModel
 import nav.enro.core.navigator.*
 
 object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey>(
@@ -60,7 +62,14 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
         host.fragmentManager.commitNow {
             setCustomAnimations(animations.enter, animations.exit)
-            replace(host.containerId, fragment)
+            if(activeFragment != null
+                && activeFragment.tag != null
+                && activeFragment.tag == NavigationContext.getContextIdFrom(activeFragment)
+                && activeFragment.tag == instruction.parentInstruction?.id
+            ){
+                detach(activeFragment)
+            }
+            replace(host.containerId, fragment, instruction.id)
             setPrimaryNavigationFragment(fragment)
         }
     }
@@ -82,11 +91,13 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         context.fragment.parentFragmentManager.commitNow {
             setCustomAnimations(animations.enter, animations.exit)
 
-            if (previousFragment != null && !previousFragment.isAdded) {
-                replace(context.fragment.getContainerId(), previousFragment)
-            } else {
-                remove(context.fragment)
+            if (previousFragment != null) {
+                when {
+                    previousFragment.isDetached -> attach(previousFragment)
+                    !previousFragment.isAdded -> add(context.contextReference.getContainerId(), previousFragment)
+                }
             }
+            remove(context.fragment)
             setPrimaryNavigationFragment(previousFragment)
         }
     }
@@ -156,9 +167,11 @@ fun NavigationContext<out Fragment, *>.getParentFragment(): Fragment? {
     if(previousNavigator is ActivityNavigator) return null
     previousNavigator as FragmentNavigator<*, *>
     val previousHost = fragmentHostFor(parentInstruction.navigationKey)
+    val previousFragment = previousHost?.fragmentManager?.findFragmentByTag(parentInstruction.id)
 
-    return when (previousHost?.containerId) {
-        containerView -> previousHost.fragmentManager.fragmentFactory
+    return when {
+        previousFragment != null -> previousFragment
+        previousHost?.containerId == containerView -> previousHost.fragmentManager.fragmentFactory
             .instantiate(
                 previousNavigator.contextType.java.classLoader!!,
                 previousNavigator.contextType.java.name
