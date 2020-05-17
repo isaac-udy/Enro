@@ -57,6 +57,16 @@ sealed class NavigationContext<ContextType : Any, T : NavigationKey>(
     }
 
     internal var childContainers = listOf<ChildContainer>()
+
+    companion object {
+        fun getContextIdFrom(activity: FragmentActivity): String? {
+            return activity.intent.extras?.readOpenInstruction<Nothing>()?.id
+        }
+
+        fun getContextIdFrom(fragment: Fragment): String? {
+            return fragment.arguments?.readOpenInstruction<Nothing>()?.id
+        }
+    }
 }
 
 internal class ActivityContext<ContextType : FragmentActivity, T : NavigationKey>(
