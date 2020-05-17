@@ -10,6 +10,7 @@ import android.view.ViewTreeObserver
 import android.view.animation.AnimationUtils
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import nav.enro.core.*
 import nav.enro.core.controller.navigationController
 import nav.enro.core.executors.DefaultFragmentExecutor
@@ -22,6 +23,8 @@ import nav.enro.core.navigator.animationsFor
 internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlobalLayoutListener {
 
     internal lateinit var containers: Array<out MultistackContainer>
+
+    internal val containerLiveData = MutableLiveData<Int>()
 
     private var listenForEvents = true
     private lateinit var activeContainer: MultistackContainer
@@ -76,6 +79,9 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
     internal fun openStack(container: MultistackContainer) {
         listenForEvents = false
         activeContainer = container
+        if(containerLiveData.value != container.containerId) {
+            containerLiveData.value = container.containerId
+        }
 
         val controller = requireActivity().application.navigationController
         val navigator = controller.navigatorForKeyType(container.rootKey::class)

@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import kotlinx.android.parcel.Parcelize
 import nav.enro.core.NavigationKey
 import kotlin.properties.ReadOnlyProperty
@@ -20,6 +21,9 @@ data class MultistackContainer(
 class MultistackController internal constructor(
     private val multistackController: MultistackControllerFragment
 ) {
+
+    val activeContainer = multistackController.containerLiveData as LiveData<Int>
+
     fun openStack(container: MultistackContainer) {
         multistackController.openStack(container)
     }
@@ -35,27 +39,30 @@ class MultistackControllerProperty @PublishedApi internal constructor(
     private val fragmentManager: () -> FragmentManager
 ) : ReadOnlyProperty<Any, MultistackController> {
 
-    lateinit var controller: MultistackController
+    val controller: MultistackController by lazy {
+        val fragment = fragmentManager().findFragmentByTag(MULTISTACK_CONTROLLER_TAG)
+            ?: run {
+                val fragment = MultistackControllerFragment()
+
+                fragmentManager()
+                    .beginTransaction()
+                    .add(fragment, MULTISTACK_CONTROLLER_TAG)
+                    .commit()
+
+                return@run fragment
+            }
+
+        fragment as MultistackControllerFragment
+        fragment.containers = containers
+
+        return@lazy MultistackController(fragment)
+    }
 
     init {
         lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (event == Lifecycle.Event.ON_CREATE) {
-                    val fragment = fragmentManager().findFragmentByTag(MULTISTACK_CONTROLLER_TAG)
-                            ?: run {
-                                val fragment = MultistackControllerFragment()
-
-                                fragmentManager()
-                                    .beginTransaction()
-                                    .add(fragment, MULTISTACK_CONTROLLER_TAG)
-                                    .commit()
-
-                                return@run fragment
-                            }
-
-                    fragment as MultistackControllerFragment
-                    fragment.containers = containers
-                    controller = MultistackController(fragment)
+                    controller.hashCode()
                 }
             }
         })
