@@ -118,12 +118,14 @@ class EnroProcessor : AbstractProcessor() {
             "$GENERATED_PACKAGE.${getDestinationNameFor(it)}"
         }
 
-        val existingDestinationNames = processingEnv.elementUtils
-            .getPackageElement(GENERATED_PACKAGE)
-            .enclosedElements
-            .mapNotNull {
-                processingEnv.getElementName(it)
-            }
+        val existingDestinationNames = kotlin.runCatching {
+            processingEnv.elementUtils
+                .getPackageElement(GENERATED_PACKAGE)
+                .enclosedElements
+                .mapNotNull {
+                    processingEnv.getElementName(it)
+                }
+        }.getOrNull().orEmpty()
 
         val destinationNames = (generatedDestinationNames + existingDestinationNames).toSet()
 
