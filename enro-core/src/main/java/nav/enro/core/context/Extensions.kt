@@ -22,20 +22,20 @@ val NavigationContext<*, *>.activity: FragmentActivity
 internal fun NavigationContext<*, *>.fragmentHostFor(key: NavigationKey): FragmentHost? {
     val primaryFragment = childFragmentManager.primaryNavigationFragment
     val activeContainerId = primaryFragment?.getContainerId()
-    val primaryDefinition = childContainers.firstOrNull {
+
+    val visibleContainers = childContainers.filter {
+        when (contextReference) {
+            is FragmentActivity -> contextReference.findViewById<View>(it.containerId).isVisible
+            is Fragment -> contextReference.requireView().findViewById<View>(it.containerId).isVisible
+            else -> false
+        }
+    }
+
+    val primaryDefinition = visibleContainers.firstOrNull {
         it.containerId == activeContainerId && it.accept(key)
     }
     val definition = primaryDefinition
-        ?: childContainers.firstOrNull {
-            val isVisible = when (contextReference) {
-                is FragmentActivity -> contextReference.findViewById<View>(it.containerId).isVisible
-                is Fragment -> contextReference.requireView().findViewById<View>(it.containerId).isVisible
-                else -> false
-            }
-
-            return@firstOrNull isVisible && it.accept(key)
-        }
-        ?: childContainers.firstOrNull { it.accept(key) }
+        ?: visibleContainers.firstOrNull { it.accept(key) }
 
     return definition?.let {
         FragmentHost(
