@@ -9,7 +9,7 @@ A simple navigation library for Android
 
 - Navigate between Fragments or Activities seamlessly
 
-- Describe navigation destinations through a simple DSL
+- Describe navigation destinations through annotations or a simple DSL
 
 - Create beautiful transitions between specific destinations
 
@@ -20,8 +20,8 @@ A simple navigation library for Android
 Enro is published to [JCenter](https://bintray.com/beta/#/isaac-udy/Enro/enro-core?tab=overview). Make sure your project includes the jcenter repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
-    implementation "nav.enro:enro:1.0.0"
-    kapt "nav.enro:enro-processor:1.0.0"
+    implementation "nav.enro:enro:1.0.2"
+    kapt "nav.enro:enro-processor:1.0.2"
 }
 ```
 
