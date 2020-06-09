@@ -2,8 +2,8 @@ androidLibrary()
 publishAndroidModule("nav.enro", "enro-result")
 
 dependencies {
-    releaseImplementation "nav.enro:enro-core:$versionName"
-    debugImplementation project(":enro-core")
+    releaseApi "nav.enro:enro-core:$versionName"
+    debugApi project(":enro-core")
 
     implementation 'androidx.activity:activity:1.1.0'
     implementation 'androidx.fragment:fragment-ktx:1.2.4'

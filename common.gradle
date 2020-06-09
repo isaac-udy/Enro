@@ -45,27 +45,9 @@ ext.androidLibrary = {
 
 ext.publishAndroidModule = { String groupName, String moduleName ->
     apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.bintray'
 
     def privateProperties = new Properties()
     privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
-
-    bintray {
-        user = privateProperties["bintrayUser"]
-        key = privateProperties["bintrayToken"]
-        publications = ['release']
-        pkg {
-            repo = "Enro"
-            name = moduleName
-            licenses = ["Apache-2.0"]
-            vcsUrl = "https://github.com/isaac-udy/Enro.git"
-
-            version {
-                name = versionName
-            }
-        }
-        publish = true
-    }
 
     task androidSourcesJar(type: Jar) {
         archiveClassifier.set('sources')
@@ -110,39 +92,28 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
                         password = privateProperties['githubToken']
                     }
                 }
+
+                maven {
+                    name = "bintray"
+                    url = uri("https://api.bintray.com/maven/isaac-udy/Enro/$moduleName/;publish=1;override=1")
+                    credentials {
+                        username = privateProperties["bintrayUser"]
+                        password = privateProperties["bintrayToken"]
+                    }
+                }
             }
         }
     }
 
-    bintrayUpload.dependsOn publish
     publish.dependsOn publishToMavenLocal
     publishToMavenLocal.dependsOn assemble
 }
 
 ext.publishJavaModule = { String groupName, String moduleName ->
     apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.bintray'
 
     def privateProperties = new Properties()
     privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
-
-    bintray {
-        user = privateProperties["bintrayUser"]
-        key = privateProperties["bintrayToken"]
-        publications = ['jar']
-
-        pkg {
-            repo = "Enro"
-            name = moduleName
-            licenses = ["Apache-2.0"]
-            vcsUrl = "https://github.com/isaac-udy/Enro.git"
-
-            version {
-                name = versionName
-            }
-        }
-        publish = true
-    }
 
     task sourcesJar(type: Jar) {
         archiveClassifier.set('sources')
@@ -172,11 +143,19 @@ ext.publishJavaModule = { String groupName, String moduleName ->
                         password = privateProperties['githubToken']
                     }
                 }
+
+                maven {
+                    name = "bintray"
+                    url = uri("https://api.bintray.com/maven/isaac-udy/Enro/$moduleName/;publish=1;override=1")
+                    credentials {
+                        username = privateProperties["bintrayUser"]
+                        password = privateProperties["bintrayToken"]
+                    }
+                }
             }
         }
     }
 
-    bintrayUpload.dependsOn publish
     publish.dependsOn publishToMavenLocal
     publishToMavenLocal.dependsOn assemble
 }

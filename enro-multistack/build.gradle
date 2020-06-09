@@ -2,8 +2,8 @@ androidLibrary()
 publishAndroidModule("nav.enro", "enro-multistack")
 
 dependencies {
-    releaseImplementation "nav.enro:enro-core:$versionName"
-    debugImplementation project(":enro-core")
+    releaseApi "nav.enro:enro-core:$versionName"
+    debugApi project(":enro-core")
 
     implementation 'androidx.core:core-ktx:1.2.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'

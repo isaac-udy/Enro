@@ -1,8 +1,8 @@
-gradlew :enro-annotations:bintrayUpload &&^
-gradlew :enro-processor:bintrayUpload &&^
-gradlew :enro-core:bintrayUpload &&^
-gradlew :enro-result:bintrayUpload &&^
-gradlew :enro-viewmodel:bintrayUpload &&^
-gradlew :enro-multistack:bintrayUpload &&^
-gradlew :enro-masterdetail:bintrayUpload &&^
-gradlew :enro:bintrayUpload
+gradlew :enro-annotations:publish &&^
+gradlew :enro-processor:publish &&^
+gradlew :enro-core:publish &&^
+gradlew :enro-result:publish &&^
+gradlew :enro-viewmodel:publish &&^
+gradlew :enro-multistack:publish &&^
+gradlew :enro-masterdetail:publish &&^
+gradlew :enro:publish
