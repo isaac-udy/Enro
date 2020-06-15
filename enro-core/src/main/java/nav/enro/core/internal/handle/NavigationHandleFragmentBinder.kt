@@ -16,7 +16,6 @@ import nav.enro.core.internal.navigationHandle
 
 internal object NavigationHandleFragmentBinder: FragmentManager.FragmentLifecycleCallbacks() {
     override fun onFragmentCreated(fm: FragmentManager, fragment: Fragment, savedInstanceState: Bundle?) {
-        fragment.requireActivity().application.navigationController.navigatorForContextType(fragment::class) ?: return
         val handle = fragment.viewModels<NavigationHandleViewModel<NavigationKey>>().value
         handle.navigationContext = FragmentContext(fragment)
         if(savedInstanceState == null) handle.executeDeeplink()
