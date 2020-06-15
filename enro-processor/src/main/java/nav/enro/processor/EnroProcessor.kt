@@ -106,7 +106,7 @@ class EnroProcessor : AbstractProcessor() {
 
         val file = FileSpec.builder(GENERATED_PACKAGE, fileName)
             .addImport(destinationPackage, element.simpleName.toString())
-            .addImport(keyPackage, keyName.toString())
+            .addImport(keyType.asClassName(), "")
             .addType(classBuilder)
             .build()
 
