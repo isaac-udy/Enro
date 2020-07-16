@@ -3,7 +3,11 @@ package nav.enro.example
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import nav.enro.annotations.NavigationDestination
 import nav.enro.core.*
 import nav.enro.core.context.NavigationContext
@@ -14,7 +18,13 @@ import nav.enro.example.core.navigation.DashboardKey
 import nav.enro.example.core.navigation.LaunchKey
 import nav.enro.example.core.navigation.LoginKey
 
+class HiltViewModel @ViewModelInject constructor(): ViewModel(){
+
+}
+
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+    private val hiltViewModel by viewModels<HiltViewModel>()
     private val navigation by navigationHandle<Nothing>()
 
     override fun onResume() {

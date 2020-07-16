@@ -1,6 +1,7 @@
 package nav.enro.example
 
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 import nav.enro.annotations.NavigationComponent
 import nav.enro.core.context.activity
 import nav.enro.core.controller.EnroLogger
@@ -18,6 +19,7 @@ import nav.enro.example.user.UserFragment
 import nav.enro.result.EnroResult
 
 @NavigationComponent
+@HiltAndroidApp
 class ExampleApplication : Application(), NavigationApplication {
 
     override val navigationController = navigationController {

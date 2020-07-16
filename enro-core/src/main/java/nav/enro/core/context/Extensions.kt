@@ -6,6 +6,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import nav.enro.core.NavigationKey
 import nav.enro.core.internal.handle.NavigationHandleViewModel
 import nav.enro.core.navigator.FragmentHost
@@ -75,8 +76,8 @@ fun NavigationContext<*, out NavigationKey>.leafContext(): NavigationContext<*, 
 
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 internal val <T : FragmentActivity> T.navigationContext: ActivityContext<T, Nothing>
-    get() = viewModels<NavigationHandleViewModel<Nothing>>().value.navigationContext as ActivityContext<T, Nothing>
+    get() = viewModels<NavigationHandleViewModel<Nothing>> { ViewModelProvider.NewInstanceFactory() } .value.navigationContext as ActivityContext<T, Nothing>
 
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 internal val <T : Fragment> T.navigationContext: FragmentContext<T, Nothing>
-    get() = viewModels<NavigationHandleViewModel<Nothing>>().value.navigationContext as FragmentContext<T, Nothing>
+    get() = viewModels<NavigationHandleViewModel<Nothing>> { ViewModelProvider.NewInstanceFactory() } .value.navigationContext as FragmentContext<T, Nothing>

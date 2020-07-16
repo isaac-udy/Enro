@@ -76,7 +76,7 @@ fun <T : NavigationKey> Fragment.navigationHandle(
 )
 
 fun <T : NavigationKey> FragmentActivity.getNavigationHandle(): NavigationHandle<T> =
-    viewModels<NavigationHandleViewModel<T>>().value
+    viewModels<NavigationHandleViewModel<T>> { ViewModelProvider.NewInstanceFactory() } .value
 
 fun <T : NavigationKey> Fragment.getNavigationHandle(): NavigationHandle<T> =
-    viewModels<NavigationHandleViewModel<T>>().value
+    viewModels<NavigationHandleViewModel<T>> { ViewModelProvider.NewInstanceFactory() } .value

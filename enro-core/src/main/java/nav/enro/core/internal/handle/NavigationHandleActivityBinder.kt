@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.SavedStateViewModelFactory
+import androidx.lifecycle.ViewModelProvider
 import nav.enro.core.NavigationKey
 import nav.enro.core.context.ActivityContext
 import nav.enro.core.context.leafContext
@@ -22,7 +24,7 @@ internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCa
             NavigationHandleFragmentBinder, true
         )
 
-        val handle by activity.viewModels<NavigationHandleViewModel<NavigationKey>>()
+        val handle by activity.viewModels<NavigationHandleViewModel<NavigationKey>> { ViewModelProvider.NewInstanceFactory() }
         handle.navigationContext = ActivityContext(activity)
         if(savedInstanceState  == null) handle.executeDeeplink()
         activity.findViewById<ViewGroup>(android.R.id.content).viewTreeObserver.addOnGlobalLayoutListener {
