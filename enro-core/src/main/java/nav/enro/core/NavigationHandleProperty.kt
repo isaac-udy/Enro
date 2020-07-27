@@ -21,7 +21,7 @@ class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal const
     private val config = NavigationHandleConfiguration<Key>().apply(configBuilder)
 
     private val navigationHandle by lazy {
-        val navigationHandle = ViewModelProvider(viewModelStoreOwner)
+        val navigationHandle = ViewModelProvider(viewModelStoreOwner, ViewModelProvider.NewInstanceFactory())
             .get(NavigationHandleViewModel::class.java)
                 as NavigationHandleViewModel<Key>
 
