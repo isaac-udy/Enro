@@ -15,6 +15,9 @@ enum class NavigationDirection {
     REPLACE_ROOT
 }
 
+internal const val OPEN_ARG = "nav.enro.core.OPEN_ARG"
+internal const val CONTEXT_ID_ARG = "nav.enro.core.CONTEXT_ID"
+
 sealed class NavigationInstruction {
     @Parcelize
     data class Open<T: NavigationKey>(
@@ -22,15 +25,14 @@ sealed class NavigationInstruction {
         val navigationKey: T,
         val children: List<NavigationKey> = emptyList(),
         val parentInstruction: Open<*>? = null,
-        val id: String = UUID.randomUUID().toString(),
-        val additionalData: Bundle = Bundle()
-    ) : NavigationInstruction(), Parcelable
+        val additionalData: Bundle = Bundle(),
+        internal val instructionId: String = UUID.randomUUID().toString()
+    ) : NavigationInstruction(), Parcelable {
+    }
 
     object Close : NavigationInstruction()
 }
 
-
-private const val OPEN_ARG = "nav.enro.core.OPEN_ARG"
 
 fun Intent.addOpenInstruction(instruction: NavigationInstruction.Open<*>): Intent {
     putExtra(OPEN_ARG, instruction)

@@ -52,7 +52,7 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
     internal var navigationContext: NavigationContext<*, T>? = null
         set(value) {
             field?.let {
-                val id = it.instruction?.id ?: return@let
+                val id = it.id
                 it.controller.handles.remove(id)
             }
             field = value
@@ -60,15 +60,16 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
                 it.childContainers = childContainers
                 controller = it.controller
                 additionalData = it.instruction?.additionalData ?: Bundle()
-                if (navigationContext?.instruction == null) {
+                id = it.id
+                it.controller.handles[id] = this
+
+                if (it.instruction == null) {
                     navigationContext?.defaultKey?.let { defaultKey ->
                         key = defaultKey
                     }
                     return@let
                 }
                 key = it.key
-                id = it.instruction?.id ?: return@let
-                it.controller.handles[id] = this
             }
             if (value == null) return
             registerLifecycleObservers(value)

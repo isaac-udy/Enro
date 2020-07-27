@@ -35,9 +35,11 @@ class ActivityToFragmentTests {
         )
 
         val activity = expectActivity<SingleFragmentActivity>()
-        val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
-        val fragmentHandle = activeFragment.getNavigationHandle<GenericFragmentKey>()
+        val fragment = expectFragment<GenericFragment>()
+
+        val fragmentHandle = fragment.getNavigationHandle<GenericFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
+        assertEquals(fragment, activity.supportFragmentManager.primaryNavigationFragment!!)
     }
 
 

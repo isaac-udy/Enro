@@ -3,14 +3,12 @@ package nav.enro.core.executors
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.View
 import androidx.fragment.app.*
 import nav.enro.core.*
 import nav.enro.core.context.*
 import nav.enro.core.context.ActivityContext
 import nav.enro.core.context.FragmentContext
 import nav.enro.core.internal.*
-import nav.enro.core.internal.handle.NavigationHandleViewModel
 import nav.enro.core.navigator.*
 
 object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey>(
@@ -45,7 +43,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         )
 
         if(fragment is DialogFragment) {
-            fragment.show(fromContext.childFragmentManager, instruction.id)
+            fragment.show(fromContext.childFragmentManager, instruction.instructionId)
             return
         }
 
@@ -64,12 +62,12 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             setCustomAnimations(animations.enter, animations.exit)
             if(activeFragment != null
                 && activeFragment.tag != null
-                && activeFragment.tag == NavigationContext.getContextIdFrom(activeFragment)
-                && activeFragment.tag == instruction.parentInstruction?.id
+                && activeFragment.tag == activeFragment.navigationContext.id
+                && activeFragment.tag == instruction.parentInstruction?.instructionId
             ){
                 detach(activeFragment)
             }
-            replace(host.containerId, fragment, instruction.id)
+            replace(host.containerId, fragment, instruction.instructionId)
             setPrimaryNavigationFragment(fragment)
         }
     }
@@ -167,7 +165,7 @@ fun NavigationContext<out Fragment, *>.getParentFragment(): Fragment? {
     if(previousNavigator is ActivityNavigator) return null
     previousNavigator as FragmentNavigator<*, *>
     val previousHost = fragmentHostFor(parentInstruction.navigationKey)
-    val previousFragment = previousHost?.fragmentManager?.findFragmentByTag(parentInstruction.id)
+    val previousFragment = previousHost?.fragmentManager?.findFragmentByTag(parentInstruction.instructionId)
 
     return when {
         previousFragment != null -> previousFragment
@@ -177,11 +175,11 @@ fun NavigationContext<out Fragment, *>.getParentFragment(): Fragment? {
                 previousNavigator.contextType.java.name
             )
             .apply {
-                arguments = Bundle().addOpenInstruction(parentInstruction?.let {
-                    it.copy(
+                arguments = Bundle().addOpenInstruction(
+                    parentInstruction.copy(
                         children = emptyList()
                     )
-                })
+                )
             }
         else -> previousHost?.fragmentManager?.findFragmentById(previousHost.containerId)
     }

@@ -30,6 +30,7 @@ sealed class NavigationContext<ContextType : Any, T : NavigationKey>(
     abstract val controller: NavigationController
     abstract val lifecycle: Lifecycle
     abstract val childFragmentManager: FragmentManager
+    abstract val id: String
     protected abstract val arguments: Bundle?
 
     val instruction by lazy { arguments?.readOpenInstruction<T>() }
@@ -62,20 +63,11 @@ sealed class NavigationContext<ContextType : Any, T : NavigationKey>(
     }
 
     internal var childContainers = listOf<ChildContainer>()
-
-    companion object {
-        fun getContextIdFrom(activity: FragmentActivity): String? {
-            return activity.intent.extras?.readOpenInstruction<Nothing>()?.id
-        }
-
-        fun getContextIdFrom(fragment: Fragment): String? {
-            return fragment.arguments?.readOpenInstruction<Nothing>()?.id
-        }
-    }
 }
 
 internal class ActivityContext<ContextType : FragmentActivity, T : NavigationKey>(
-    contextReference: ContextType
+    contextReference: ContextType,
+    override val id: String
 ) : NavigationContext<ContextType, T>(contextReference) {
     override val controller get() = contextReference.application.navigationController
     override val lifecycle get() = contextReference.lifecycle
@@ -85,7 +77,8 @@ internal class ActivityContext<ContextType : FragmentActivity, T : NavigationKey
 }
 
 internal class FragmentContext<ContextType : Fragment, T : NavigationKey>(
-    contextReference: ContextType
+    contextReference: ContextType,
+    override val id: String
 ) : NavigationContext<ContextType, T>(contextReference) {
     override val controller get() = contextReference.requireActivity().application.navigationController
     override val lifecycle get() = contextReference.lifecycle
