@@ -2,6 +2,7 @@ package nav.enro.result
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModel
 import nav.enro.core.NavigationHandle
 import nav.enro.core.close
 import nav.enro.result.internal.ResultChannelImpl
@@ -24,10 +25,10 @@ fun <T: Any> NavigationHandle<out ResultNavigationKey<T>>.closeWithResult(result
     close()
 }
 
-inline fun <reified T : Any> NavigationHandle<*>.registerForNavigationResult(
+inline fun <reified T : Any> ViewModel.registerForNavigationResult(navigationHandle: NavigationHandle<*>,
     noinline onResult: (T) -> Unit
 ): ReadOnlyProperty<Any, EnroResultChannel<T>> = LazyResultChannelProperty(
-    owner = this,
+    owner = navigationHandle,
     resultType = T::class.java,
     onResult = onResult
 )
