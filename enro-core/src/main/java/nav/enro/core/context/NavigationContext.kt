@@ -40,6 +40,11 @@ sealed class NavigationContext<ContextType : Any, T : NavigationKey>(
             ?: throw IllegalStateException("Navigation Context's bound arguments did not contain a NavigationKey!")
     }
 
+    internal val isEnroContext by lazy {
+        val key = instruction?.navigationKey ?: defaultKey
+        return@lazy key != null
+    }
+
     internal val defaultKey: T? by lazy {
         controller.navigatorForContextType(contextReference::class)?.defaultKey as? T
     }
