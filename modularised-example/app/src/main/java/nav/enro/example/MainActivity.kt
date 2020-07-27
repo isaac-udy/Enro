@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.parcel.Parcelize
 import nav.enro.annotations.NavigationDestination
 import nav.enro.core.*
 import nav.enro.core.context.NavigationContext
@@ -15,14 +16,18 @@ import nav.enro.core.context.activity
 import nav.enro.core.navigator.SyntheticDestination
 import nav.enro.example.core.data.UserRepository
 import nav.enro.example.core.navigation.DashboardKey
+import nav.enro.example.core.navigation.DetailKey
 import nav.enro.example.core.navigation.LaunchKey
 import nav.enro.example.core.navigation.LoginKey
+import nav.enro.result.registerForNavigationResult
 
-class HiltViewModel @ViewModelInject constructor(): ViewModel(){
+@Parcelize
+class MainKey : NavigationKey
 
-}
+class HiltViewModel @ViewModelInject constructor(): ViewModel()
 
 @AndroidEntryPoint
+@NavigationDestination(MainKey::class, allowDefault = true)
 class MainActivity : AppCompatActivity() {
     private val hiltViewModel by viewModels<HiltViewModel>()
     private val navigation by navigationHandle<Nothing>()

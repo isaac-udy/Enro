@@ -78,11 +78,11 @@ class DashboardViewModel(
 
     private val repo = SimpleDataRepository()
 
-    private val viewDetail by navigationHandle.registerForNavigationResult<Boolean> {
+    private val viewDetail by registerForNavigationResult<Boolean>(navigationHandle) {
         state = state.copy(userId = "${state.userId} FIRST($it)")
     }
 
-    private val viewDetail2 by navigationHandle.registerForNavigationResult<Boolean> {
+    private val viewDetail2 by registerForNavigationResult<Boolean>(navigationHandle) {
         state = state.copy(userId = "${state.userId} WOW($it)")
     }
 
