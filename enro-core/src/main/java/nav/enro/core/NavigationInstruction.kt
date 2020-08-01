@@ -25,10 +25,10 @@ sealed class NavigationInstruction {
         val navigationKey: T,
         val children: List<NavigationKey> = emptyList(),
         val parentInstruction: Open<*>? = null,
+        val animations: NavigationAnimations? = null,
         val additionalData: Bundle = Bundle(),
         internal val instructionId: String = UUID.randomUUID().toString()
-    ) : NavigationInstruction(), Parcelable {
-    }
+    ) : NavigationInstruction(), Parcelable
 
     object Close : NavigationInstruction()
 }

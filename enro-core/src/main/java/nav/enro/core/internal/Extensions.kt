@@ -1,5 +1,7 @@
 package nav.enro.core.internal
 
+import android.content.res.Resources
+import android.util.TypedValue
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -36,4 +38,9 @@ internal fun NavigationContext<out Any, *>.navigationHandle(): NavigationHandleV
         is FragmentContext<out Fragment, *> -> fragment.getNavigationHandle()
         is ActivityContext<out FragmentActivity, *> -> activity.getNavigationHandle<NavigationKey>()
     } as NavigationHandleViewModel<*>
+}
+
+internal fun Resources.Theme.getAttributeResourceId(attr: Int) = TypedValue().let {
+    resolveAttribute(attr, it, true)
+    it.resourceId
 }

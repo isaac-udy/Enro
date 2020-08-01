@@ -5,9 +5,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.parcel.Parcelize
 import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationKey
-import nav.enro.core.navigationHandle
-import nav.enro.core.replaceRoot
+import nav.enro.core.*
 
 @Parcelize
 class SplashScreenKey : NavigationKey
@@ -26,6 +24,10 @@ class SplashScreenActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        navigation.replaceRoot(MainKey())
+        navigation.executeInstruction(NavigationInstruction.Open(
+            navigationDirection = NavigationDirection.REPLACE_ROOT,
+            navigationKey = MainKey(),
+            animations = NavigationAnimations.none
+        ))
     }
 }

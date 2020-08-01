@@ -29,7 +29,7 @@ class ExampleApplication : Application(), NavigationApplication {
         override<MainActivity, LoginActivity>(
             launch = {
                 DefaultActivityExecutor.open(it)
-                it.fromContext.activity.overridePendingTransition(R.anim.fragment_fade_enter, R.anim.wait)
+                it.fromContext.activity.overridePendingTransition(R.anim.fragment_fade_enter, R.anim.enro_no_op_animation)
             },
             close = {
                 DefaultActivityExecutor.close(it)
@@ -39,7 +39,7 @@ class ExampleApplication : Application(), NavigationApplication {
         override<MainActivity, DashboardActivity>(
             launch = {
                 DefaultActivityExecutor.open(it)
-                it.fromContext.activity.overridePendingTransition(R.anim.fragment_fade_enter, R.anim.wait)
+                it.fromContext.activity.overridePendingTransition(R.anim.fragment_fade_enter, R.anim.enro_no_op_animation)
             },
             close = {
                 DefaultActivityExecutor.close(it)

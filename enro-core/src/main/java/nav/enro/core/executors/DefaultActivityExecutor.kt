@@ -2,10 +2,7 @@ package nav.enro.core.executors
 
 import android.content.Intent
 import androidx.fragment.app.FragmentActivity
-import nav.enro.core.NavigationDirection
-import nav.enro.core.NavigationInstruction
-import nav.enro.core.NavigationKey
-import nav.enro.core.addOpenInstruction
+import nav.enro.core.*
 import nav.enro.core.context.NavigationContext
 import nav.enro.core.context.activity
 import nav.enro.core.navigator.*
@@ -33,7 +30,7 @@ object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, Navig
         if (instruction.navigationDirection == NavigationDirection.REPLACE || instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
             activity.finish()
         }
-        val animations = navigator.animationsFor(activity.theme, instruction)
+        val animations = animationsFor(fromContext, instruction)
 
         activity.startActivity(intent)
         if(instruction.children.isEmpty()) {
@@ -48,7 +45,7 @@ object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, Navig
         context.activity.finish()
         if(!context.isEnroContext) return
 
-        val animations = context.navigator.animationsFor(context.contextReference.theme, NavigationInstruction.Close)
+        val animations = animationsFor(context, NavigationInstruction.Close)
         context.activity.overridePendingTransition(animations.enter, animations.exit)
     }
 }

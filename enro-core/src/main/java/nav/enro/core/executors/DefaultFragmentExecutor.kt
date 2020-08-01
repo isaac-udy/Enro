@@ -56,7 +56,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         val activeFragment = host.fragmentManager.findFragmentById(host.containerId)
         activeFragment?.view?.z = -1.0f
 
-        val animations = navigator.animationsFor(fromContext.activity.theme, instruction)
+        val animations = animationsFor(fromContext, instruction)
 
         host.fragmentManager.commitNow {
             setCustomAnimations(animations.enter, animations.exit)
@@ -84,7 +84,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             return
         }
 
-        val animations = context.navigator.animationsFor(context.activity.theme, NavigationInstruction.Close)
+        val animations = animationsFor(context, NavigationInstruction.Close)
 
         context.fragment.parentFragmentManager.commitNow {
             setCustomAnimations(animations.enter, animations.exit)
