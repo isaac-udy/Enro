@@ -34,6 +34,7 @@ class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal const
         lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if(event == Lifecycle.Event.ON_CREATE) {
+                    // trigger the lazy creation of the navigationHandle property
                     navigationHandle.hashCode()
                 }
             }
