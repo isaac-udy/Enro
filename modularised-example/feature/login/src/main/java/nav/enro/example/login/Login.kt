@@ -5,7 +5,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.observe
-import nav.enro.viewmodel.NavigationViewModelFactory
 import nav.enro.example.core.data.UserRepository
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.login.*
@@ -14,6 +13,8 @@ import nav.enro.core.*
 import nav.enro.example.core.navigation.DashboardKey
 import nav.enro.example.core.navigation.LoginErrorKey
 import nav.enro.example.core.navigation.LoginKey
+import nav.enro.viewmodel.enroViewModels
+import nav.enro.viewmodel.navigationHandle
 
 @NavigationDestination(
     key = LoginKey::class,
@@ -21,7 +22,7 @@ import nav.enro.example.core.navigation.LoginKey
 )
 class LoginActivity : AppCompatActivity() {
 
-    private val viewModel by viewModels<LoginViewModel> { NavigationViewModelFactory(this) }
+    private val viewModel by enroViewModels<LoginViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,9 +48,9 @@ data class LoginState(
     val username: String = ""
 )
 
-class LoginViewModel(
-    private val navigationHandle: NavigationHandle<Nothing>
-) : nav.enro.example.core.base.SingleStateViewModel<LoginState>() {
+class LoginViewModel : nav.enro.example.core.base.SingleStateViewModel<LoginState>() {
+
+    private val navigationHandle by navigationHandle<Nothing>()
 
     private val userRepo = UserRepository.instance
 

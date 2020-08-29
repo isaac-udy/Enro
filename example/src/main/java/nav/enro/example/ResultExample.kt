@@ -21,7 +21,8 @@ import nav.enro.core.navigationHandle
 import nav.enro.result.ResultNavigationKey
 import nav.enro.result.closeWithResult
 import nav.enro.result.registerForNavigationResult
-import nav.enro.viewmodel.NavigationViewModelFactory
+import nav.enro.viewmodel.enroViewModels
+import nav.enro.viewmodel.navigationHandle
 
 @Parcelize
 class ResultExampleKey : NavigationKey
@@ -30,7 +31,7 @@ class ResultExampleKey : NavigationKey
 @NavigationDestination(ResultExampleKey::class)
 class RequestExampleFragment : Fragment() {
 
-    private val viewModel by viewModels<RequestExampleViewModel> { NavigationViewModelFactory(this) }
+    private val viewModel by enroViewModels<RequestExampleViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,9 +55,9 @@ class RequestExampleFragment : Fragment() {
     }
 }
 
-class RequestExampleViewModel(
-    private val navigation: NavigationHandle<ResultExampleKey>
-) : ViewModel() {
+class RequestExampleViewModel() : ViewModel() {
+
+    private val navigation by navigationHandle<ResultExampleKey>()
 
     private val mutableResults = MutableLiveData<List<String>>().apply { emptyList<String>() }
     val results = mutableResults as LiveData<List<String>>

@@ -14,12 +14,13 @@ import nav.enro.annotations.NavigationDestination
 import nav.enro.core.*
 import nav.enro.example.core.navigation.*
 import nav.enro.result.registerForNavigationResult
-import nav.enro.viewmodel.NavigationViewModelFactory
+import nav.enro.viewmodel.enroViewModels
+import nav.enro.viewmodel.navigationHandle
 
 @NavigationDestination(DashboardKey::class)
 class DashboardActivity : AppCompatActivity() {
 
-    private val viewModel by viewModels<DashboardViewModel> { NavigationViewModelFactory(this) }
+    private val viewModel by enroViewModels<DashboardViewModel>()
 
     private val dialog: Dialog by lazy {
         AlertDialog.Builder(this)
@@ -73,10 +74,12 @@ data class DashboardState(
 }
 
 class DashboardViewModel(
-    private val navigationHandle: NavigationHandle<DashboardKey>
+
 ) : nav.enro.example.core.base.SingleStateViewModel<DashboardState>() {
 
     private val repo = SimpleDataRepository()
+
+    private val navigationHandle by navigationHandle<DashboardKey>()
 
     private val viewDetail by registerForNavigationResult<Boolean>(navigationHandle) {
         state = state.copy(userId = "${state.userId} FIRST($it)")

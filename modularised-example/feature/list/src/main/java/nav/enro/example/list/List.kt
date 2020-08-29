@@ -21,12 +21,13 @@ import nav.enro.example.core.navigation.ListFilterType
 import nav.enro.example.core.navigation.ListKey
 import nav.enro.result.closeWithResult
 import nav.enro.result.registerForNavigationResult
-import nav.enro.viewmodel.NavigationViewModelFactory
+import nav.enro.viewmodel.enroViewModels
+import nav.enro.viewmodel.navigationHandle
 
 
 @NavigationDestination(ListKey::class)
 class ListFragment : Fragment() {
-    private val viewModel by viewModels<ListViewModel> { NavigationViewModelFactory(this) }
+    private val viewModel by enroViewModels<ListViewModel>()
     private val adapter = SimpleDataAdapter {
         call.open(DetailKey(userId = viewModel.state.userId, id = it))
     }
@@ -57,11 +58,10 @@ data class ListState(
     val result: Boolean = true
 )
 
-class ListViewModel(
-    private val navigation: NavigationHandle<ListKey>
-) : nav.enro.example.core.base.SingleStateViewModel<ListState>() {
+class ListViewModel() : nav.enro.example.core.base.SingleStateViewModel<ListState>() {
 
     private val repo = SimpleDataRepository()
+    private val navigation by navigationHandle<ListKey>()
 
     init {
         val userId = navigation.key.userId
