@@ -79,7 +79,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         }
 
         val previousFragment = context.getParentFragment()
-        if (previousFragment == null && context.activity is SingleFragmentActivity) {
+        if (previousFragment == null && context.activity is AbstractSingleFragmentActivity) {
             context.controller.close(context.activity.navigationContext)
             return
         }

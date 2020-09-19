@@ -1,4 +1,7 @@
 androidLibrary()
+apply plugin: 'kotlin-kapt'
+apply plugin: 'dagger.hilt.android.plugin'
+
 publishAndroidModule("nav.enro", "enro-core")
 
 dependencies {
@@ -8,6 +11,10 @@ dependencies {
     implementation 'androidx.activity:activity:1.1.0'
 
     testImplementation 'junit:junit:4.12'
+
+    compileOnly 'com.google.dagger:hilt-android:2.29-alpha'
+    kapt 'androidx.hilt:hilt-compiler:1.0.0-alpha02'
+    kapt 'com.google.dagger:hilt-android-compiler:2.29-alpha'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

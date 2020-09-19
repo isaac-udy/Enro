@@ -3,6 +3,7 @@ package nav.enro.core.internal
 import android.R
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.parcel.Parcelize
 import nav.enro.core.NavigationInstruction
 import nav.enro.core.NavigationKey
@@ -10,11 +11,10 @@ import nav.enro.core.navigationHandle
 
 @Parcelize
 internal data class SingleFragmentKey(
-    internal val instruction: NavigationInstruction.Open<*>
+    val instruction: NavigationInstruction.Open<*>
 ) : NavigationKey
 
-class SingleFragmentActivity : AppCompatActivity() {
-
+internal abstract class AbstractSingleFragmentActivity : AppCompatActivity() {
     private val handle by navigationHandle<SingleFragmentKey> {
         container(R.id.content)
     }
@@ -27,3 +27,7 @@ class SingleFragmentActivity : AppCompatActivity() {
         }
     }
 }
+internal class SingleFragmentActivity : AbstractSingleFragmentActivity()
+
+@AndroidEntryPoint
+internal class HiltSingleFragmentActivity : AbstractSingleFragmentActivity()

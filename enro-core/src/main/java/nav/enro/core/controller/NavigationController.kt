@@ -17,9 +17,11 @@ import nav.enro.core.executors.DefaultActivityExecutor
 import nav.enro.core.executors.DefaultFragmentExecutor
 import nav.enro.core.executors.ExecutorArgs
 import nav.enro.core.executors.NavigationExecutor
+import nav.enro.core.internal.HiltSingleFragmentActivity
 import nav.enro.core.internal.handle.NavigationHandleActivityBinder
 import nav.enro.core.internal.handle.NavigationHandleViewModel
 import nav.enro.core.navigator.*
+import nav.enro.core.plugins.EnroHilt
 import kotlin.reflect.KClass
 
 
@@ -41,9 +43,19 @@ class NavigationController(
             }
         }
 
-    private val defaultNavigators = listOf(
-        createActivityNavigator<SingleFragmentKey, SingleFragmentActivity>()
-    )
+    private val defaultNavigators = run {
+        val useHilt = plugins.any { it is EnroHilt }
+        val singleFragmentNavigator = if(useHilt) {
+            createActivityNavigator<SingleFragmentKey, HiltSingleFragmentActivity>()
+        }
+        else {
+            createActivityNavigator<SingleFragmentKey, SingleFragmentActivity>()
+        }
+
+        listOf(
+            singleFragmentNavigator
+        )
+    }
 
     private val navigatorsByKeyType = (navigators + defaultNavigators)
         .map {
