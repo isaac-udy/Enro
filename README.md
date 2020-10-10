@@ -17,7 +17,7 @@ A simple navigation library for Android
 
 ## Using Enro
 #### Gradle
-Enro is published to [JCenter](https://bintray.com/beta/#/isaac-udy/Enro/enro-core?tab=overview). Make sure your project includes the jcenter repository, and then include the following in your module's build.gradle: 
+Enro is published to [JCenter](https://bintray.com/beta/#/isaac-udy/Enro/enro-core?tab=overview). Make sure your project includes the `jcenter()` repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
     implementation "nav.enro:enro:1.2.0"
@@ -25,7 +25,7 @@ dependencies {
 }
 ```
 
-Currently it appears that one of Enro's modules may not be resolving correctly via JCenter. If you have any issues with dependencies, simply add the following to your top level build file:
+Currently it appears that one of Enro's modules may not be resolving correctly via JCenter. If you have any issues with dependencies, simply add the following to your top level build.gradle file:
 
 ```gradle
 allprojects {
