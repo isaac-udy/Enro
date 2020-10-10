@@ -25,6 +25,19 @@ dependencies {
 }
 ```
 
+Currently it appears that one of Enro's modules may not be resolving correctly via JCenter. If you have any issues with dependencies, simply add the following to your top level build file:
+
+```gradle
+allprojects {
+    repositories {
+        ... 
+        maven {
+            url  "https://dl.bintray.com/isaac-udy/Enro" 
+        }
+    }
+}
+```
+
 #### 1. Define your NavigationKeys
 ```kotlin
 @Parcelize
