@@ -24,9 +24,9 @@ class ActivityToFragmentOverrideTests() {
                 }
             )
         )
-        val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
-        handle.forward(GenericFragmentKey("override test"))
+        ActivityScenario.launch(DefaultActivity::class.java)
+            .getNavigationHandle<DefaultActivityKey>()
+            .forward(GenericFragmentKey("override test"))
 
         expectFragment<GenericFragment>()
 
@@ -44,13 +44,14 @@ class ActivityToFragmentOverrideTests() {
                 }
             )
         )
-        val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
 
-        handle.forward(GenericFragmentKey("override test"))
-        val genericFragment = expectFragment<GenericFragment>()
+        ActivityScenario.launch(DefaultActivity::class.java)
+            .getNavigationHandle<DefaultActivityKey>()
+            .forward(GenericFragmentKey("override test"))
 
-        genericFragment.getNavigationHandle<GenericFragmentKey>().close()
+        expectFragment<GenericFragment>()
+            .getNavigationHandle<GenericFragmentKey>().close()
+
         expectActivity<DefaultActivity>()
 
         assertTrue(closeOverrideCalled)
@@ -75,10 +76,10 @@ class ActivityToFragmentOverrideTests() {
                 )
             )
 
-        val scenario = ActivityScenario.launch<GenericActivity>(intent)
-        val handle = scenario.getNavigationHandle<GenericActivityKey>()
+        ActivityScenario.launch<GenericActivity>(intent)
+            .getNavigationHandle<GenericActivityKey>()
+            .forward(GenericFragmentKey("override test 2"))
 
-        handle.forward(GenericFragmentKey("override test 2"))
         expectFragment<GenericFragment>()
 
         assertTrue(launchOverrideCalled)
@@ -104,13 +105,14 @@ class ActivityToFragmentOverrideTests() {
                 )
             )
 
-        val scenario = ActivityScenario.launch<GenericActivity>(intent)
-        val handle = scenario.getNavigationHandle<GenericActivityKey>()
+        ActivityScenario.launch<GenericActivity>(intent)
+            .getNavigationHandle<GenericActivityKey>()
+            .forward(GenericFragmentKey("override test 2"))
 
-        handle.forward(GenericFragmentKey("override test 2"))
-        val genericFragment = expectFragment<GenericFragment>()
+        expectFragment<GenericFragment>()
+            .getNavigationHandle<GenericFragmentKey>()
+            .close()
 
-        genericFragment.getNavigationHandle<GenericFragmentKey>().close()
         expectActivity<GenericActivity>()
 
         assertTrue(closeOverrideCalled)
@@ -135,10 +137,10 @@ class ActivityToFragmentOverrideTests() {
                 )
             )
 
-        val scenario = ActivityScenario.launch<ActivityWithFragments>(intent)
-        val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
+        ActivityScenario.launch<ActivityWithFragments>(intent)
+            .getNavigationHandle<ActivityWithFragmentsKey>()
+            .forward(ActivityChildFragmentKey("override test 2"))
 
-        handle.forward(ActivityChildFragmentKey("override test 2"))
         expectFragment<ActivityChildFragment>()
 
         assertTrue(launchOverrideCalled)
@@ -163,13 +165,14 @@ class ActivityToFragmentOverrideTests() {
                 )
             )
 
-        val scenario = ActivityScenario.launch<ActivityWithFragments>(intent)
-        val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
+        ActivityScenario.launch<ActivityWithFragments>(intent)
+            .getNavigationHandle<ActivityWithFragmentsKey>()
+            .forward(ActivityChildFragmentKey("override test 2"))
 
-        handle.forward(ActivityChildFragmentKey("override test 2"))
-        val childFragment = expectFragment<ActivityChildFragment>()
+        expectFragment<ActivityChildFragment>()
+            .getNavigationHandle<ActivityChildFragmentKey>()
+            .close()
 
-        childFragment.getNavigationHandle<ActivityChildFragmentKey>().close()
         expectActivity<ActivityWithFragments>()
 
         assertTrue(closeOverrideCalled)

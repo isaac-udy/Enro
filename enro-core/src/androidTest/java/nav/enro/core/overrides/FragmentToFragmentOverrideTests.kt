@@ -43,8 +43,8 @@ class FragmentToFragmentOverrideTests() {
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
             .forward(GenericFragmentKey("override test"))
 
-        val fragment = expectFragment<GenericFragment>()
-        fragment.getNavigationHandle<GenericFragmentKey>()
+        expectFragment<GenericFragment>()
+            .getNavigationHandle<GenericFragmentKey>()
             .forward(ActivityChildFragmentKey("override test 2"))
 
         expectFragment<ActivityChildFragment>()
@@ -96,8 +96,8 @@ class FragmentToFragmentOverrideTests() {
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
             .forward(ActivityChildFragmentKey("override test"))
 
-        val fragment = expectFragment<ActivityChildFragment>()
-        fragment.getNavigationHandle<ActivityChildFragmentKey>()
+        expectFragment<ActivityChildFragment>()
+            .getNavigationHandle<ActivityChildFragmentKey>()
             .forward(GenericFragmentKey("override test 2"))
 
         expectFragment<GenericFragment>()
@@ -149,8 +149,8 @@ class FragmentToFragmentOverrideTests() {
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
             .forward(ActivityChildFragmentKey("override test"))
 
-        val fragment = expectFragment<ActivityChildFragment>()
-        fragment.getNavigationHandle<ActivityChildFragmentKey>()
+        expectFragment<ActivityChildFragment>()
+            .getNavigationHandle<ActivityChildFragmentKey>()
             .forward(ActivityChildFragmentTwoKey("override test 2"))
 
         expectFragment<ActivityChildFragmentTwo>()

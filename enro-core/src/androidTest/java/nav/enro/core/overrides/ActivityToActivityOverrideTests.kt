@@ -23,9 +23,9 @@ class ActivityToActivityOverrideTests() {
                 }
             )
         )
-        val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
-        handle.forward(GenericActivityKey("override test"))
+        ActivityScenario.launch(DefaultActivity::class.java)
+            .getNavigationHandle<DefaultActivityKey>()
+            .forward(GenericActivityKey("override test"))
 
         expectActivity<GenericActivity>()
 
@@ -43,13 +43,15 @@ class ActivityToActivityOverrideTests() {
                 }
             )
         )
-        val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
 
-        handle.forward(GenericActivityKey("override test"))
-        val genericActivity = expectActivity<GenericActivity>()
+        ActivityScenario.launch(DefaultActivity::class.java)
+            .getNavigationHandle<DefaultActivityKey>()
+            .forward(GenericActivityKey("override test"))
 
-        genericActivity.getNavigationHandle<GenericActivityKey>().close()
+        expectActivity<GenericActivity>()
+            .getNavigationHandle<GenericActivityKey>()
+            .close()
+
         expectActivity<DefaultActivity>()
 
         assertTrue(closeOverrideCalled)
@@ -74,10 +76,10 @@ class ActivityToActivityOverrideTests() {
                 )
             )
 
-        val scenario = ActivityScenario.launch<GenericActivity>(intent)
-        val handle = scenario.getNavigationHandle<GenericActivityKey>()
+        ActivityScenario.launch<GenericActivity>(intent)
+            .getNavigationHandle<GenericActivityKey>()
+            .forward(GenericActivityKey("override test 2"))
 
-        handle.forward(GenericActivityKey("override test 2"))
         expectActivity<GenericActivity>()
 
         assertTrue(launchOverrideCalled)
@@ -103,13 +105,14 @@ class ActivityToActivityOverrideTests() {
                 )
             )
 
-        val scenario = ActivityScenario.launch<GenericActivity>(intent)
-        val handle = scenario.getNavigationHandle<GenericActivityKey>()
+        ActivityScenario.launch<GenericActivity>(intent)
+            .getNavigationHandle<GenericActivityKey>()
+            .forward(GenericActivityKey("override test 2"))
 
-        handle.forward(GenericActivityKey("override test 2"))
-        val genericActivity = expectActivity<GenericActivity>()
+        expectActivity<GenericActivity>()
+            .getNavigationHandle<GenericActivityKey>()
+            .close()
 
-        genericActivity.getNavigationHandle<GenericActivityKey>().close()
         expectActivity<GenericActivity>()
 
         assertTrue(closeOverrideCalled)
