@@ -16,6 +16,7 @@ import nav.enro.core.context.NavigationContext
 import nav.enro.core.context.leafContext
 import nav.enro.core.controller.NavigationController
 import nav.enro.core.internal.navigationHandle
+import java.lang.IllegalStateException
 
 internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), NavigationHandle<T> {
 
@@ -129,7 +130,7 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
     }
 
     internal fun executeDeeplink() {
-        val context = navigationContext ?: TODO("Nice Exception")
+        val context = navigationContext ?: throw IllegalStateException("The NavigationHandle must be attached to a NavigationContext")
 
         if (context.pendingKeys.isEmpty()) return
         executeInstruction(

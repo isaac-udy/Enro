@@ -85,7 +85,8 @@ class NavigationController(
         navigationContext: NavigationContext<out Any, out NavigationKey>,
         instruction: NavigationInstruction.Open<*>
     ) {
-        val navigator = navigatorForKeyType(instruction.navigationKey::class) ?: TODO()
+        val navigator = navigatorForKeyType(instruction.navigationKey::class)
+            ?: throw IllegalStateException("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
 
         if (openOverrideFor(navigationContext, navigator, instruction)) return
         when (navigator) {
@@ -246,7 +247,7 @@ class NavigationController(
         fun install(navigationApplication: NavigationApplication) {
             if (navigationApplication !is Application)
                 throw IllegalArgumentException("A NavigationApplication must extend android.app.Application")
-            
+
             navigationApplication.registerActivityLifecycleCallbacks(
                 NavigationHandleActivityBinder
             )

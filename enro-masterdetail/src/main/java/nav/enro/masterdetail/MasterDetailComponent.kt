@@ -95,7 +95,7 @@ class MasterDetailProperty(
                     navigationController = when(lifecycleOwner) {
                         is FragmentActivity -> lifecycleOwner.application.navigationController
                         is Fragment -> lifecycleOwner.requireActivity().application.navigationController
-                        else -> TODO()
+                        else -> throw IllegalStateException("The MasterDetailProperty requires that it's lifecycle owner is a FragmentActivity or Fragment")
                     }
                     navigationController.addOverride(masterOverride)
                     navigationController.addOverride(detailOverride)
