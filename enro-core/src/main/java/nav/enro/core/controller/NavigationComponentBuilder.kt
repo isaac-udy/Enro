@@ -9,7 +9,7 @@ import nav.enro.core.executors.NavigationExecutor
 import nav.enro.core.executors.override.createActivityToActivityOverride
 import nav.enro.core.executors.override.createActivityToFragmentOverride
 import nav.enro.core.executors.override.createFragmentToFragmentOverride
-import nav.enro.core.executors.override.createOverride
+import nav.enro.core.executors.createOverride
 import nav.enro.core.navigator.*
 
 interface NavigationComponentBuilderCommand {
@@ -40,27 +40,6 @@ class NavigationComponentBuilder {
         destination: SyntheticDestination<T>
     ) {
         navigators.add(createSyntheticNavigator(destination))
-    }
-
-    inline fun <reified From : FragmentActivity, reified Opens : FragmentActivity> activityToActivityOverride(
-        noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
-        noinline close: ((context: NavigationContext<out Opens, out NavigationKey>) -> Unit)
-    ) {
-        overrides.add(createActivityToActivityOverride(launch, close))
-    }
-
-    inline fun <reified From : FragmentActivity, reified Opens : Fragment> activityToFragmentOverride(
-        noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
-        noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit
-    ) {
-        overrides.add(createActivityToFragmentOverride(launch, close))
-    }
-
-    inline fun <reified From : Fragment, reified Opens : Fragment> fragmentToFragmentOverride(
-        noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
-        noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit
-    ) {
-        overrides.add(createFragmentToFragmentOverride(launch, close))
     }
 
     inline fun <reified From : Any, reified Opens : Any> override(

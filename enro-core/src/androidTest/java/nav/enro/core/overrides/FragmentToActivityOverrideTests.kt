@@ -5,9 +5,8 @@ import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
 import nav.enro.core.*
 import nav.enro.core.controller.navigationController
-import nav.enro.core.executors.override.createOverride
-import nav.enro.core.executors.override.defaultClose
-import nav.enro.core.executors.override.defaultLaunch
+import nav.enro.core.executors.createOverride
+import nav.enro.core.executors.defaultLaunch
 import nav.enro.core.expectFragment
 import org.junit.Before
 import org.junit.Test

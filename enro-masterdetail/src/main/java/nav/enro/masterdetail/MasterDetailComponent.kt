@@ -14,7 +14,7 @@ import nav.enro.core.controller.NavigationController
 import nav.enro.core.controller.navigationController
 import nav.enro.core.executors.DefaultActivityExecutor
 import nav.enro.core.executors.ExecutorArgs
-import nav.enro.core.executors.override.createOverride
+import nav.enro.core.executors.createOverride
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
