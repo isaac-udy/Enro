@@ -1,8 +1,7 @@
-package nav.enro.core.controller
+package nav.enro.core.plugins
 
-import android.util.Log
 import nav.enro.core.NavigationHandle
-import nav.enro.core.NavigationKey
+import nav.enro.core.controller.NavigationController
 
 abstract class EnroPlugin {
     open fun onAttached(navigationController: NavigationController) {}

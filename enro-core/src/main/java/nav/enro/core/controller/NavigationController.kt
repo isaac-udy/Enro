@@ -17,12 +17,12 @@ import nav.enro.core.executors.DefaultActivityExecutor
 import nav.enro.core.executors.DefaultFragmentExecutor
 import nav.enro.core.executors.ExecutorArgs
 import nav.enro.core.executors.NavigationExecutor
-import nav.enro.core.internal.AbstractSingleFragmentActivity
 import nav.enro.core.internal.HiltSingleFragmentActivity
 import nav.enro.core.internal.handle.NavigationHandleActivityBinder
 import nav.enro.core.internal.handle.NavigationHandleViewModel
 import nav.enro.core.navigator.*
 import nav.enro.core.plugins.EnroHilt
+import nav.enro.core.plugins.EnroPlugin
 import kotlin.reflect.KClass
 
 

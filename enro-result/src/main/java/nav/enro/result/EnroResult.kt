@@ -1,9 +1,8 @@
 package nav.enro.result
 
 import nav.enro.core.NavigationHandle
-import nav.enro.core.NavigationKey
 import nav.enro.core.controller.NavigationController
-import nav.enro.core.controller.EnroPlugin
+import nav.enro.core.plugins.EnroPlugin
 import nav.enro.result.internal.ResultChannelImpl
 import nav.enro.result.internal.ResultChannelId
 import nav.enro.result.internal.PendingResult

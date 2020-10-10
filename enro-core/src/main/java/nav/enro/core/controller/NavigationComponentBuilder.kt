@@ -11,6 +11,7 @@ import nav.enro.core.executors.override.createActivityToFragmentOverride
 import nav.enro.core.executors.override.createFragmentToFragmentOverride
 import nav.enro.core.executors.createOverride
 import nav.enro.core.navigator.*
+import nav.enro.core.plugins.EnroPlugin
 
 interface NavigationComponentBuilderCommand {
     fun execute(builder: NavigationComponentBuilder)
