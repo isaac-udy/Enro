@@ -17,6 +17,7 @@ import nav.enro.core.executors.DefaultActivityExecutor
 import nav.enro.core.executors.DefaultFragmentExecutor
 import nav.enro.core.executors.ExecutorArgs
 import nav.enro.core.executors.NavigationExecutor
+import nav.enro.core.internal.AbstractSingleFragmentActivity
 import nav.enro.core.internal.HiltSingleFragmentActivity
 import nav.enro.core.internal.handle.NavigationHandleActivityBinder
 import nav.enro.core.internal.handle.NavigationHandleViewModel
@@ -188,7 +189,12 @@ class NavigationController(
     private fun closeOverrideFor(navigationContext: NavigationContext<out Any, out NavigationKey>): Boolean {
         val parentType = navigationContext.parentInstruction
             ?.let {
-                navigatorForKeyType(it.navigationKey::class)
+                if(it.navigationKey is SingleFragmentKey) {
+                    it.parentInstruction
+                } else it
+            }
+            ?.let {
+                return@let navigatorForKeyType(it.navigationKey::class)
             }
             ?.contextType ?: return false
 

@@ -33,7 +33,11 @@ sealed class NavigationContext<ContextType : Any, T : NavigationKey>(
     abstract val id: String
     protected abstract val arguments: Bundle?
 
-    val instruction by lazy { arguments?.readOpenInstruction<T>() }
+    val instruction by lazy {
+        arguments?.readOpenInstruction<T>() ?: defaultKey?.let {
+            NavigationInstruction.Open(NavigationDirection.FORWARD, it)
+        }
+    }
 
     val key: T by lazy {
         instruction?.navigationKey

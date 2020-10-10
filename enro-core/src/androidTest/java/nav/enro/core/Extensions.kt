@@ -1,5 +1,6 @@
 package nav.enro.core
 
+import android.app.Application
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
@@ -89,3 +90,5 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
     }
 }
 
+val application: Application get() =
+    InstrumentationRegistry.getInstrumentation().context.applicationContext as Application
