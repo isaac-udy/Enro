@@ -244,7 +244,9 @@ class NavigationController(
 
     companion object {
         fun install(navigationApplication: NavigationApplication) {
-            if (navigationApplication !is Application) TODO("Proper Exception")
+            if (navigationApplication !is Application)
+                throw IllegalArgumentException("A NavigationApplication must extend android.app.Application")
+            
             navigationApplication.registerActivityLifecycleCallbacks(
                 NavigationHandleActivityBinder
             )
