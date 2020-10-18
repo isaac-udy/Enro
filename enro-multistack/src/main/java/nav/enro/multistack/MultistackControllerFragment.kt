@@ -26,11 +26,13 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
     internal val containerLiveData = MutableLiveData<Int>()
 
     private var listenForEvents = true
+    private var containerInitialised = false
     private lateinit var activeContainer: MultistackContainer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activeContainer = savedInstanceState?.getParcelable("activecontainer") ?: containers.first()
+        containerInitialised = savedInstanceState?.getBoolean("containerInitialised", false) ?: false
         requireActivity().findViewById<View>(android.R.id.content)
             .viewTreeObserver.addOnGlobalLayoutListener(this)
     }
@@ -44,13 +46,10 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
         return null // this is a headless fragment
     }
 
-    override fun onStart() {
-        super.onStart()
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putParcelable("activecontainer", activeContainer)
+        outState.putBoolean("containerInitialised", containerInitialised)
     }
 
     override fun onDestroy() {
@@ -61,6 +60,7 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
 
     override fun onGlobalLayout() {
         if (!listenForEvents) return
+        if (!containerInitialised) return
         val isCurrentClosing =
             parentFragmentManager.findFragmentById(activeContainer.containerId) == null
         if (isCurrentClosing) {
@@ -92,7 +92,7 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
 
         navigator as FragmentNavigator<*, *>
         containers.forEach {
-            requireActivity().findViewById<View>(it.containerId).isVisible = it == container
+            requireActivity().findViewById<View>(it.containerId).isVisible = it.containerId == container.containerId
         }
 
         val existingFragment = parentFragmentManager.findFragmentById(container.containerId)
@@ -112,6 +112,8 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
                 val enter = AnimationUtils.loadAnimation(requireContext(), animations.enter)
                 existingFragment.view?.startAnimation(enter)
             }
+
+            containerInitialised = true
         } else {
             val newFragment = DefaultFragmentExecutor.createFragment(
                 parentFragmentManager,
@@ -128,6 +130,7 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
                     .setPrimaryNavigationFragment(newFragment)
                     .commitNow()
 
+                containerInitialised = true
             } catch (ex: Throwable) {
                 Handler(Looper.getMainLooper()).post {
                     openStack(container)
