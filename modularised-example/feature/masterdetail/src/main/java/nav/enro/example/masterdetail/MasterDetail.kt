@@ -2,6 +2,7 @@ package nav.enro.example.masterdetail
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
 import nav.enro.annotations.NavigationDestination
 import nav.enro.core.getNavigationHandle
 import nav.enro.core.navigationHandle
@@ -10,6 +11,7 @@ import nav.enro.example.core.navigation.ListKey
 import nav.enro.example.core.navigation.MasterDetailKey
 import nav.enro.masterdetail.MasterDetailProperty
 
+@AndroidEntryPoint
 @NavigationDestination(MasterDetailKey::class)
 class MasterDetailActivity : AppCompatActivity() {
 
