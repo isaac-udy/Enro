@@ -17,11 +17,24 @@ A simple navigation library for Android
 
 ## Using Enro
 #### Gradle
-Enro is published to [JCenter](https://bintray.com/beta/#/isaac-udy/Enro/enro-core?tab=overview). Make sure your project includes the jcenter repository, and then include the following in your module's build.gradle: 
+Enro is published to [JCenter](https://bintray.com/beta/#/isaac-udy/Enro/enro-core?tab=overview). Make sure your project includes the `jcenter()` repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
     implementation "nav.enro:enro:1.2.0"
     kapt "nav.enro:enro-processor:1.2.0"
+}
+```
+
+Currently it appears that one of Enro's modules may not be resolving correctly via JCenter. If you have any issues with dependencies, simply add the following to your top level build.gradle file:
+
+```gradle
+allprojects {
+    repositories {
+        ... 
+        maven {
+            url  "https://dl.bintray.com/isaac-udy/Enro" 
+        }
+    }
 }
 ```
 
@@ -189,11 +202,12 @@ class MainActivity : AppCompatActivity() {}
 
 ## Why would I want to use Enro? 
 #### Support the navigation requirements of large multi-module Applications, while allowing flexibility to define rich transitions between specific destinations
-
 A multi-module application has different requirements to a single-module application. Individual modules will define Activities and Fragments, and other modules will want to navigate to these Activities and Fragments. By detatching the NavigationKeys from the destinations themselves, this allows NavigationKeys to be defined in a common/shared module which all other modules depend on.  Any module is then able to navigate to another by using one of the NavigationKeys, without knowing about the Activity or Fragment that it is going to. FeatureOneActivity and FeatureTwoActivity don't know about each other, but they both know that FeatureOneKey and FeatureTwoKey exist. A simple version of this solution can be created in less than 20 lines of code.  
 
 However, truly beautiful navigation requires knowledge of both the originator and the destination. Material design's shared element transitions are an example of this. If FeatureOneActivity and FeatureTwoActivity don't know about each other, how can they collaborate on a shared element transition? Enro allows transitions between two navigation destinations to be overridden for that specific case, meaning that FeatureOneActivity and FeatureTwoActivity might know nothing about each other, but the application that uses them will be able to define a navigation override that adds shared element transitions between the two.
 
 #### Allow navigation to be triggered at the ViewModel layer of an Application
+Enro provides a custom extension function similar to AndroidX's `by viewModels()`, called `by enroViewModels()`, which works in the exact same way. However, when you use `by enroViewModels()` to construct a ViewModel, you are able to use a `by navigationHandle<NavigationKey>()` statement within your ViewModel. This `NavigationHandle` works in the exact same way as an Activity or Fragment's `NavigationHandle`, and can be used in the exact same way. 
 
+This means that your ViewModel can be put in charge of the flow through your Application, rather than needing to use a `LiveData<NavigationEvent>()` (or similar) in your ViewModel. When we use things like `LiveData<NavigationEvent>()` we are able to test the ViewModel's intent to navigate, but there's still the reliance on the Activity/Fragment implementing the response to the navigation event correctly. In the case of retrieving a result from another screen, this gap grows even wider, and there becomes an invisible contract between the ViewModel and Activity/Fragment: The ViewModel expects that if it sets a particular `NavigationEvent` in the `LiveData`, that the Activity/Fragment will navigate to the correct place, and then once the navigation has been successful and a result has been returned, that the Activity/Fragment will call the correct method on the ViewModel to provide the result. This invisible contract results in extra boilerplate "wiring" code, and a gap for bugs to slip through. Instead, using Enro's ViewModel integration, you allow your ViewModel to be precise and clear about it's intention, and about how to handle a result. 
 
