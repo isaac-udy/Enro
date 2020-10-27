@@ -3,6 +3,7 @@ package nav.enro.core.executors
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.*
 import nav.enro.core.*
 import nav.enro.core.context.*
@@ -54,7 +55,9 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         }
 
         val activeFragment = host.fragmentManager.findFragmentById(host.containerId)
-        activeFragment?.view?.z = -1.0f
+        activeFragment?.view?.let {
+            ViewCompat.setZ(it, -1.0f)
+        }
 
         val animations = animationsFor(fromContext, instruction)
 

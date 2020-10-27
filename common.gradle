@@ -13,7 +13,7 @@ ext.androidLibrary = {
         compileSdkVersion 29
 
         defaultConfig {
-            minSdkVersion 21
+            minSdkVersion 16
             targetSdkVersion 29
             versionCode versionCode
             versionName versionName

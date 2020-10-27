@@ -83,6 +83,9 @@ class ListFragment : ListFragment() {
 ```
 
 ## FAQ
+#### Minimum SDK Version
+Enro supports a minimum SDK version of 16. However, support for SDK 16 was only recently added and targetting any SDK below 21 should be considered experimental. If you experience issues running on an SDK below 21, please report a GitHub issue. 
+
 #### How well does Enro work alongside "normal" Android Activity/Fragment navigation?  
 Enro is designed to integrate well with Android's default navigation. It's easy to manually open a Fragment or Activity as if Enro itself had performed the navigation. Create a NavigationInstruction object that represents the navigation, and then add it to the arguments of a Fragment, or the Intent for an Activity, and then open the Fragment/Activity as you normally would. 
 
