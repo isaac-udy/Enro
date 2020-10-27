@@ -44,7 +44,19 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         )
 
         if(fragment is DialogFragment) {
-            fragment.show(fromContext.childFragmentManager, instruction.instructionId)
+            if(fromContext.contextReference is DialogFragment) {
+                if (instruction.navigationDirection == NavigationDirection.REPLACE) {
+                    fromContext.contextReference.dismiss()
+                }
+
+                fragment.show(
+                    fromContext.contextReference.parentFragmentManager,
+                    instruction.instructionId
+                )
+            }
+            else {
+                fragment.show(fromContext.childFragmentManager, instruction.instructionId)
+            }
             return
         }
 
@@ -63,6 +75,11 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
         host.fragmentManager.commitNow {
             setCustomAnimations(animations.enter, animations.exit)
+
+            if(fromContext.contextReference is DialogFragment && instruction.navigationDirection == NavigationDirection.REPLACE) {
+                fromContext.contextReference.dismiss()
+            }
+
             if(activeFragment != null
                 && activeFragment.tag != null
                 && activeFragment.tag == activeFragment.navigationContext.id
@@ -70,6 +87,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             ){
                 detach(activeFragment)
             }
+
             replace(host.containerId, fragment, instruction.instructionId)
             setPrimaryNavigationFragment(fragment)
         }
@@ -146,6 +164,15 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         fromContext: NavigationContext<out Any, *>,
         instruction: NavigationInstruction.Open<*>
     ) {
+        if(fromContext.contextReference is DialogFragment && instruction.navigationDirection == NavigationDirection.REPLACE) {
+            // If we attempt to openFragmentAsActivity into a DialogFragment using the REPLACE direction,
+            // the Activity hosting the DialogFragment will be closed/replaced
+            // Instead, we close the fromContext's DialogFragment and call openFragmentAsActivity with the instruction changed to a forward direction
+            openFragmentAsActivity(fromContext, instruction.copy(navigationDirection = NavigationDirection.FORWARD))
+            fromContext.contextReference.dismiss()
+            return
+        }
+
         fromContext.controller.open(
             fromContext,
             NavigationInstruction.Open(
