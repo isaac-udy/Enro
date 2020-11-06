@@ -37,11 +37,11 @@ class MultiStackActivity : AppCompatActivity() {
         container(R.id.blueFrame)
     }
 
-    private val multistack by multistackController(
-        MultistackContainer(R.id.redFrame, MultiStackItem("Red")),
-        MultistackContainer(R.id.greenFrame, MultiStackItem("Green")),
-        MultistackContainer(R.id.blueFrame, MultiStackItem("Blue"))
-    )
+    private val multistack by multistackController {
+        container(R.id.redFrame, MultiStackItem("Red"))
+        container(R.id.greenFrame, MultiStackItem("Green"))
+        container(R.id.blueFrame, MultiStackItem("Blue"))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

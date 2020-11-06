@@ -1,6 +1,7 @@
 package nav.enro.multistack
 
 import android.os.Parcelable
+import androidx.annotation.IdRes
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
@@ -8,12 +9,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import kotlinx.android.parcel.Parcelize
+import nav.enro.core.AnimationPair
 import nav.enro.core.NavigationKey
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 @Parcelize
-data class MultistackContainer(
+data class MultistackContainer @PublishedApi internal constructor(
     val containerId: Int,
     val rootKey: NavigationKey
 ) : Parcelable
@@ -35,6 +37,7 @@ class MultistackController internal constructor(
 
 class MultistackControllerProperty @PublishedApi internal constructor(
     private val containers: Array<out MultistackContainer>,
+    private val openStackAnimations: AnimationPair?,
     private val lifecycleOwner: LifecycleOwner,
     private val fragmentManager: () -> FragmentManager
 ) : ReadOnlyProperty<Any, MultistackController> {
@@ -54,6 +57,7 @@ class MultistackControllerProperty @PublishedApi internal constructor(
 
         fragment as MultistackControllerFragment
         fragment.containers = containers
+        fragment.openStackAnimation = openStackAnimations
 
         return@lazy MultistackController(fragment)
     }
@@ -73,10 +77,39 @@ class MultistackControllerProperty @PublishedApi internal constructor(
     }
 }
 
+class MultistackControllerBuilder @PublishedApi internal constructor(){
+
+    private val containers = mutableListOf<MultistackContainer>()
+
+    private var openStackAnimations: AnimationPair? = null
+
+    fun <T: NavigationKey> container(@IdRes containerId: Int, rootKey: T) {
+        containers.add(MultistackContainer(containerId, rootKey))
+    }
+
+    inline fun <reified T: NavigationKey> container(@IdRes containerId: Int) {
+        val rootKey = T::class.java.newInstance()
+        container(containerId, rootKey)
+    }
+
+    fun openStackAnimations(animationPair: AnimationPair) {
+        openStackAnimations = animationPair
+    }
+
+    internal fun build(
+        lifecycleOwner: LifecycleOwner,
+        fragmentManager: () -> FragmentManager
+    ) = MultistackControllerProperty(
+        containers = containers.toTypedArray(),
+        openStackAnimations = openStackAnimations,
+        lifecycleOwner = lifecycleOwner,
+        fragmentManager = fragmentManager
+    )
+}
+
 fun FragmentActivity.multistackController(
-    vararg containers: MultistackContainer
-) = MultistackControllerProperty(
-    containers = containers,
+    block: MultistackControllerBuilder.() -> Unit
+) = MultistackControllerBuilder().apply(block).build(
     lifecycleOwner = this,
     fragmentManager = { supportFragmentManager }
 )

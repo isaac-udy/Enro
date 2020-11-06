@@ -23,18 +23,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val mutlistack by multistackController(
-        MultistackContainer(R.id.homeContainer, Home()),
-        MultistackContainer(R.id.featuresContainer, Features()),
-        MultistackContainer(R.id.profileContainer, Profile())
-    )
+    private val mutlistack by multistackController {
+        container<Home>(R.id.homeContainer)
+        container<Features>(R.id.featuresContainer)
+        container<Profile>(R.id.profileContainer)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         bottomNavigation.setOnNavigationItemSelectedListener {
-            when(it.itemId) {
+            when (it.itemId) {
                 R.id.home -> mutlistack.openStack(R.id.homeContainer)
                 R.id.features -> mutlistack.openStack(R.id.featuresContainer)
                 R.id.profile -> mutlistack.openStack(R.id.profileContainer)
@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         mutlistack.activeContainer.observe(this, Observer { selectedContainer ->
-            bottomNavigation.selectedItemId = when(selectedContainer) {
+            bottomNavigation.selectedItemId = when (selectedContainer) {
                 R.id.homeContainer -> R.id.home
                 R.id.featuresContainer -> R.id.features
                 R.id.profileContainer -> R.id.profile
