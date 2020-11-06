@@ -16,6 +16,8 @@ import nav.enro.core.controller.navigationController
 import nav.enro.core.executors.DefaultFragmentExecutor
 import nav.enro.core.navigator.ActivityNavigator
 import nav.enro.core.navigator.FragmentNavigator
+import nav.enro.core.navigator.NavigatorAnimations
+import nav.enro.core.navigator.toResource
 
 
 @PublishedApi
@@ -95,22 +97,13 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
             requireActivity().findViewById<View>(it.containerId).isVisible = it.containerId == container.containerId
         }
 
+        val activeContainer = requireActivity().findViewById<View>(container.containerId)
         val existingFragment = parentFragmentManager.findFragmentById(container.containerId)
         if (existingFragment != null) {
-            val animations = animationsFor(
-                existingFragment,
-                NavigationInstruction.Open(
-                    NavigationDirection.REPLACE, container.rootKey
-                )
-            )
-
             if (existingFragment != parentFragmentManager.primaryNavigationFragment) {
                 parentFragmentManager.beginTransaction()
                     .setPrimaryNavigationFragment(existingFragment)
                     .commitNow()
-
-                val enter = AnimationUtils.loadAnimation(requireContext(), animations.enter)
-                existingFragment.view?.startAnimation(enter)
             }
 
             containerInitialised = true
@@ -137,6 +130,10 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
                 }
             }
         }
+        val animations = NavigatorAnimations.default.toResource(requireActivity().theme)
+
+        val enter = AnimationUtils.loadAnimation(requireContext(), animations.replaceEnter)
+        activeContainer.startAnimation(enter)
 
         listenForEvents = true
     }
