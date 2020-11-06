@@ -57,7 +57,6 @@ class MultistackControllerProperty @PublishedApi internal constructor(
 
         fragment as MultistackControllerFragment
         fragment.containers = containers
-        fragment.openStackAnimation = openStackAnimations
 
         return@lazy MultistackController(fragment)
     }
