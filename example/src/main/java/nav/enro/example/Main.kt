@@ -24,9 +24,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val mutlistack by multistackController {
-        container<Home>(R.id.homeContainer)
-        container<Features>(R.id.featuresContainer)
-        container<Profile>(R.id.profileContainer)
+        container(R.id.homeContainer, Home())
+        container(R.id.featuresContainer, Features())
+        container(R.id.profileContainer, Profile())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

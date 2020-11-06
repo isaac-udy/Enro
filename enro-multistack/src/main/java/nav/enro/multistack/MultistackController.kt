@@ -87,11 +87,6 @@ class MultistackControllerBuilder @PublishedApi internal constructor(){
         containers.add(MultistackContainer(containerId, rootKey))
     }
 
-    inline fun <reified T: NavigationKey> container(@IdRes containerId: Int) {
-        val rootKey = T::class.java.newInstance()
-        container(containerId, rootKey)
-    }
-
     fun openStackAnimation(@AnimRes animationRes: Int) {
         openStackAnimation = animationRes
     }
