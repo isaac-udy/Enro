@@ -1,1 +1,2 @@
-nav.enro.processor.EnroProcessor
+nav.enro.processor.NavigationComponentProcessor
+nav.enro.processor.NavigationDestinationProcessor
