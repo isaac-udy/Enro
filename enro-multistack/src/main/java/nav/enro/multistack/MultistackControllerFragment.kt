@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.animation.AnimationUtils
+import androidx.annotation.AnimRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
@@ -24,6 +25,7 @@ import nav.enro.core.navigator.toResource
 internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlobalLayoutListener {
 
     internal lateinit var containers: Array<out MultistackContainer>
+    @AnimRes internal var openStackAnimation: Int? = null
 
     internal val containerLiveData = MutableLiveData<Int>()
 
@@ -130,9 +132,9 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
                 }
             }
         }
-        val animations = NavigatorAnimations.default.toResource(requireActivity().theme)
 
-        val enter = AnimationUtils.loadAnimation(requireContext(), animations.replaceEnter)
+        val animation = openStackAnimation ?: NavigatorAnimations.default.toResource(requireActivity().theme).replaceEnter
+        val enter = AnimationUtils.loadAnimation(requireContext(), animation)
         activeContainer.startAnimation(enter)
 
         listenForEvents = true

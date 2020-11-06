@@ -1,6 +1,7 @@
 package nav.enro.multistack
 
 import android.os.Parcelable
+import androidx.annotation.AnimRes
 import androidx.annotation.IdRes
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -9,7 +10,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import kotlinx.android.parcel.Parcelize
-import nav.enro.core.AnimationPair
 import nav.enro.core.NavigationKey
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -37,7 +37,7 @@ class MultistackController internal constructor(
 
 class MultistackControllerProperty @PublishedApi internal constructor(
     private val containers: Array<out MultistackContainer>,
-    private val openStackAnimations: AnimationPair?,
+    @AnimRes private val openStackAnimation: Int?,
     private val lifecycleOwner: LifecycleOwner,
     private val fragmentManager: () -> FragmentManager
 ) : ReadOnlyProperty<Any, MultistackController> {
@@ -57,6 +57,7 @@ class MultistackControllerProperty @PublishedApi internal constructor(
 
         fragment as MultistackControllerFragment
         fragment.containers = containers
+        fragment.openStackAnimation = openStackAnimation
 
         return@lazy MultistackController(fragment)
     }
@@ -80,7 +81,7 @@ class MultistackControllerBuilder @PublishedApi internal constructor(){
 
     private val containers = mutableListOf<MultistackContainer>()
 
-    private var openStackAnimations: AnimationPair? = null
+    @AnimRes private var openStackAnimation: Int? = null
 
     fun <T: NavigationKey> container(@IdRes containerId: Int, rootKey: T) {
         containers.add(MultistackContainer(containerId, rootKey))
@@ -91,8 +92,8 @@ class MultistackControllerBuilder @PublishedApi internal constructor(){
         container(containerId, rootKey)
     }
 
-    fun openStackAnimations(animationPair: AnimationPair) {
-        openStackAnimations = animationPair
+    fun openStackAnimation(@AnimRes animationRes: Int) {
+        openStackAnimation = animationRes
     }
 
     internal fun build(
@@ -100,7 +101,7 @@ class MultistackControllerBuilder @PublishedApi internal constructor(){
         fragmentManager: () -> FragmentManager
     ) = MultistackControllerProperty(
         containers = containers.toTypedArray(),
-        openStackAnimations = openStackAnimations,
+        openStackAnimation = openStackAnimation,
         lifecycleOwner = lifecycleOwner,
         fragmentManager = fragmentManager
     )
