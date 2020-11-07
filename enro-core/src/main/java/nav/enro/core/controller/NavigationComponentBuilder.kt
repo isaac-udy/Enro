@@ -4,9 +4,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.NavigationKey
 import nav.enro.core.context.NavigationContext
-import nav.enro.core.executors.ExecutorArgs
-import nav.enro.core.executors.NavigationExecutor
-import nav.enro.core.executors.createOverride
+import nav.enro.core.executors.*
 import nav.enro.core.navigator.*
 import nav.enro.core.plugins.EnroPlugin
 
@@ -41,8 +39,8 @@ class NavigationComponentBuilder {
     }
 
     inline fun <reified From : Any, reified Opens : Any> override(
-        noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
-        noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit
+        noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit) = defaultLaunch(),
+        noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit = defaultClose()
     ) {
         overrides.add(createOverride(launch, close))
     }
