@@ -4,6 +4,12 @@ apply plugin: 'kotlin-kapt'
 publishJavaModule("nav.enro", "enro-processor")
 
 dependencies {
+    implementation "net.ltgt.gradle.incap:incap:0.3"
+    kapt "net.ltgt.gradle.incap:incap-processor:0.3"
+
+    implementation "com.google.auto.service:auto-service:1.0-rc7"
+    kapt "com.google.auto.service:auto-service:1.0-rc7"
+
     implementation "javax.annotation:jsr250-api:1.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 

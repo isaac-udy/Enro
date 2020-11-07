@@ -1,16 +1,22 @@
 package nav.enro.processor
 
+import com.google.auto.service.AutoService
 import com.squareup.javapoet.*
 import nav.enro.annotations.NavigationDestination
 import nav.enro.annotations.GeneratedNavigationBinding
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.lang.IllegalStateException
 import javax.annotation.Generated
+import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 
+@IncrementalAnnotationProcessor(IncrementalAnnotationProcessorType.ISOLATING)
+@AutoService(Processor::class)
 class NavigationDestinationProcessor : BaseProcessor() {
 
     private val destinations = mutableListOf<Element>()
