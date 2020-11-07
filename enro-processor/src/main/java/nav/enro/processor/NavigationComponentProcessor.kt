@@ -1,17 +1,24 @@
 package nav.enro.processor
 
+import com.google.auto.service.AutoService
 import com.squareup.javapoet.*
 import nav.enro.annotations.GeneratedNavigationBinding
 import nav.enro.annotations.NavigationComponent
 import nav.enro.annotations.NavigationDestination
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import javax.annotation.Generated
+import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic
+import javax.tools.StandardLocation
 
+@IncrementalAnnotationProcessor(IncrementalAnnotationProcessorType.AGGREGATING)
+@AutoService(Processor::class)
 class NavigationComponentProcessor : BaseProcessor() {
 
     private val components = mutableListOf<Element>()
@@ -19,9 +26,7 @@ class NavigationComponentProcessor : BaseProcessor() {
 
     override fun getSupportedAnnotationTypes(): MutableSet<String> {
         return mutableSetOf(
-            NavigationComponent::class.java.name,
-            NavigationDestination::class.java.name,
-            GeneratedNavigationBinding::class.java.name
+            NavigationComponent::class.java.name
         )
     }
 
@@ -73,16 +78,20 @@ class NavigationComponentProcessor : BaseProcessor() {
         val classBuilder = TypeSpec.classBuilder(generatedName)
             .addOriginatingElement(component)
             .apply {
+                addOriginatingElement(
+                    processingEnv.elementUtils
+                        .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
+                )
                 destinations.forEach {
-                    addOriginatingElement(it.aggregate)
+                    addOriginatingElement(processingEnv.elementUtils.getPackageOf(it.destination))
                 }
             }
-            .addModifiers(Modifier.PUBLIC)
             .addAnnotation(
                 AnnotationSpec.builder(Generated::class.java)
-                    .addMember("value", "\"" + this::class.java.name + "\"")
+                    .addMember("value", "\"${this::class.java.name}\"")
                     .build()
             )
+            .addModifiers(Modifier.PUBLIC)
             .addSuperinterface(EnroProcessor.builderActionType)
             .addMethod(
                 MethodSpec.methodBuilder("execute")
@@ -114,6 +123,7 @@ class NavigationComponentProcessor : BaseProcessor() {
             )
             .build()
             .writeTo(processingEnv.filer)
+
     }
 }
 

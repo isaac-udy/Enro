@@ -70,6 +70,11 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     .addMember("navigationKey", CodeBlock.of("\"$keyPackage.$keyName\""))
                     .build()
             )
+            .addAnnotation(
+                AnnotationSpec.builder(Generated::class.java)
+                    .addMember("value", "\"${this::class.java.name}\"")
+                    .build()
+            )
             .addMethod(
                 MethodSpec.methodBuilder("execute")
                     .addAnnotation(Override::class.java)
