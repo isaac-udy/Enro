@@ -2,12 +2,10 @@ package nav.enro.core
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Parcel
 import android.os.Parcelable
 import androidx.fragment.app.Fragment
 import kotlinx.android.parcel.Parcelize
-import nav.enro.core.context.NavigationContext
-import java.util.*
+import java.util.UUID
 
 enum class NavigationDirection {
     FORWARD,
@@ -27,7 +25,7 @@ sealed class NavigationInstruction {
         val parentInstruction: Open<*>? = null,
         val animations: NavigationAnimations? = null,
         val additionalData: Bundle = Bundle(),
-        internal val instructionId: String = UUID.randomUUID().toString()
+        val instructionId: String = UUID.randomUUID().toString()
     ) : NavigationInstruction(), Parcelable
 
     object Close : NavigationInstruction()
