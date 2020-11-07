@@ -11,13 +11,13 @@ import nav.enro.core.context.ActivityContext
 import nav.enro.core.context.FragmentContext
 import nav.enro.core.context.NavigationContext
 import nav.enro.core.context.parentContext
-import nav.enro.core.internal.SingleFragmentActivity
-import nav.enro.core.internal.SingleFragmentKey
 import nav.enro.core.executors.DefaultActivityExecutor
 import nav.enro.core.executors.DefaultFragmentExecutor
 import nav.enro.core.executors.ExecutorArgs
 import nav.enro.core.executors.NavigationExecutor
 import nav.enro.core.internal.HiltSingleFragmentActivity
+import nav.enro.core.internal.SingleFragmentActivity
+import nav.enro.core.internal.SingleFragmentKey
 import nav.enro.core.internal.handle.NavigationHandleActivityBinder
 import nav.enro.core.internal.handle.NavigationHandleViewModel
 import nav.enro.core.navigator.*
@@ -70,8 +70,10 @@ class NavigationController(
         }
         .toMap()
 
-    private val overrides = (overrides + navigators.flatMap { it.executors })
-        .map { (it.fromType to it.opensType) to it }.toMap()
+    private val overrides = (overrides + navigators.let {
+        val flatMap: (NavigatorDefinition<*,*>) -> List<NavigationExecutor<*,*,*>> = { it.executors }
+        it.flatMap(flatMap)
+    }).map { (it.fromType to it.opensType) to it }.toMap()
 
     private val temporaryOverrides = mutableMapOf<Pair<KClass<out Any>, KClass<out Any>>, NavigationExecutor<*,*,*>>()
 
