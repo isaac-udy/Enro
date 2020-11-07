@@ -5,7 +5,7 @@ import androidx.fragment.app.FragmentActivity
 import nav.enro.core.*
 import nav.enro.core.context.NavigationContext
 import nav.enro.core.context.activity
-import nav.enro.core.navigator.*
+import nav.enro.core.navigator.ActivityNavigator
 
 object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, NavigationKey>(
     fromType = Any::class,
@@ -19,8 +19,7 @@ object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, Navig
 
         navigator as ActivityNavigator
 
-        val intent =  Intent(fromContext.activity, navigator.contextType.java)
-            .addOpenInstruction(instruction)
+        val intent = createIntent(args)
 
         if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -33,19 +32,22 @@ object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, Navig
         val animations = animationsFor(fromContext, instruction)
 
         activity.startActivity(intent)
-        if(instruction.children.isEmpty()) {
+        if (instruction.children.isEmpty()) {
             activity.overridePendingTransition(animations.enter, animations.exit)
-        }
-        else {
+        } else {
             activity.overridePendingTransition(0, 0)
         }
     }
 
     override fun close(context: NavigationContext<out FragmentActivity, out NavigationKey>) {
-        context.activity.finish()
-        if(!context.isEnroContext) return
+        context.activity.supportFinishAfterTransition()
+        if (!context.isEnroContext) return
 
         val animations = animationsFor(context, NavigationInstruction.Close)
         context.activity.overridePendingTransition(animations.enter, animations.exit)
     }
+
+    fun createIntent(args: ExecutorArgs<out Any, out FragmentActivity, out NavigationKey>) =
+        Intent(args.fromContext.activity, args.navigator.contextType.java)
+            .addOpenInstruction(args.instruction)
 }
