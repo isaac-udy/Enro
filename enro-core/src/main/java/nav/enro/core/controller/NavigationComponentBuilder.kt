@@ -23,13 +23,13 @@ class NavigationComponentBuilder {
     internal val plugins: MutableList<EnroPlugin> = mutableListOf()
 
     inline fun <reified T : NavigationKey, reified A : FragmentActivity> activityNavigator(
-        block: ActivityNavigatorBuilder<T, A>.() -> Unit = {}
+        noinline block: ActivityNavigatorBuilder<T, A>.() -> Unit = {}
     ) {
         navigators.add(createActivityNavigator(block))
     }
 
     inline fun <reified T : NavigationKey, reified A : Fragment> fragmentNavigator(
-        block: FragmentNavigatorBuilder<A, T>.() -> Unit = {}
+        noinline block: FragmentNavigatorBuilder<A, T>.() -> Unit = {}
     ) {
         navigators.add(createFragmentNavigator(block))
     }

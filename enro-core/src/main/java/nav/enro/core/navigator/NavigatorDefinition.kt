@@ -11,13 +11,19 @@ class NavigatorDefinition<OpensContext: Any, T: NavigationKey>(
     val executors: List<NavigationExecutor<OpensContext, *, *>>
 )
 
-inline fun <reified T : NavigationKey, reified A : FragmentActivity> createActivityNavigator(
+fun <T : NavigationKey, A : FragmentActivity> createActivityNavigator(
+    navigationKeyType: KClass<T>,
+    activityType: KClass<A>,
     block: ActivityNavigatorBuilder<T, A>.() -> Unit = {}
 ): NavigatorDefinition<A, T> =
     ActivityNavigatorBuilder(
-        keyType = T::class,
-        contextType = A::class
+        keyType = navigationKeyType,
+        contextType = activityType
     ).apply(block).build()
+
+inline fun <reified T : NavigationKey, reified A : FragmentActivity> createActivityNavigator(
+    noinline block: ActivityNavigatorBuilder<T, A>.() -> Unit = {}
+): NavigatorDefinition<A, T> = createActivityNavigator(T::class, A::class, block)
 
 class ActivityNavigatorBuilder<T: NavigationKey, C: FragmentActivity>(
     private val keyType: KClass<T>,
@@ -41,13 +47,19 @@ class ActivityNavigatorBuilder<T: NavigationKey, C: FragmentActivity>(
 }
 
 
-inline fun <reified T : NavigationKey, reified A : Fragment> createFragmentNavigator(
+fun <T : NavigationKey, A : Fragment> createFragmentNavigator(
+    navigationKeyType: KClass<T>,
+    fragmentType: KClass<A>,
     block: FragmentNavigatorBuilder<A, T>.() -> Unit = {}
 ): NavigatorDefinition<A, T> =
     FragmentNavigatorBuilder(
-        keyType = T::class,
-        contextType = A::class
+        keyType = navigationKeyType,
+        contextType = fragmentType,
     ).apply(block).build()
+
+inline fun <reified T : NavigationKey, reified A : Fragment> createFragmentNavigator(
+    noinline block: FragmentNavigatorBuilder<A, T>.() -> Unit = {}
+): NavigatorDefinition<A, T> = createFragmentNavigator(T::class, A::class, block)
 
 class FragmentNavigatorBuilder<C: Fragment, T: NavigationKey>(
     private val keyType: KClass<T>,
@@ -65,11 +77,18 @@ class FragmentNavigatorBuilder<C: Fragment, T: NavigationKey>(
     )
 }
 
-inline fun <reified T : NavigationKey> createSyntheticNavigator(destination: SyntheticDestination<T>): NavigatorDefinition<Any, T> =
+
+fun <T : NavigationKey> createSyntheticNavigator(
+    navigationKeyType: KClass<T>,
+    destination: SyntheticDestination<T>
+): NavigatorDefinition<Any, T> =
     SyntheticNavigatorBuilder(
-        keyType = T::class,
+        keyType = navigationKeyType,
         destination = destination
     ).build()
+
+inline fun <reified T : NavigationKey> createSyntheticNavigator(destination: SyntheticDestination<T>): NavigatorDefinition<Any, T> =
+    createSyntheticNavigator(T::class, destination)
 
 class SyntheticNavigatorBuilder<T: NavigationKey>(
     private val keyType: KClass<T>,
