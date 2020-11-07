@@ -14,13 +14,6 @@ abstract class BaseProcessor : AbstractProcessor() {
         return processingEnv.elementUtils.getPackageOf(this).toString()+"."+this.simpleName
     }
 
-    internal fun Element.getDestinationName(): String {
-        val packageName = processingEnv.elementUtils
-            .getPackageOf(this).toString()
-            .replace(".","_")
-        return "${packageName}_${this.simpleName}"
-    }
-
     internal fun Element.extends(className: ClassName): Boolean {
         val typeMirror = className.asElement().asType()
         return processingEnv.typeUtils.isSubtype(asType(), typeMirror)

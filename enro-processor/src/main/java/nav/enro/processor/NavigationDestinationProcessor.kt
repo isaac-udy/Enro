@@ -52,7 +52,11 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val keyName = keyType.simpleName
         val keyPackage = processingEnv.elementUtils.getPackageOf(keyType).toString()
 
-        val classBuilder = TypeSpec.classBuilder(element.getDestinationName())
+        val bindingName = element.getElementName()
+                .replace(".","_")
+                .let { "${it}_GeneratedNavigationBinding" }
+
+        val classBuilder = TypeSpec.classBuilder(bindingName)
             .addOriginatingElement(element)
             .addModifiers(Modifier.PUBLIC)
             .addSuperinterface(ClassNames.navigationComponentBuilderCommand)

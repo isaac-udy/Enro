@@ -8,7 +8,7 @@ import javax.lang.model.type.MirroredTypeException
 import kotlin.reflect.KClass
 
 internal object EnroProcessor {
-    const val GENERATED_PACKAGE = "nav.enro.generated"
+    const val GENERATED_PACKAGE = "enro_generated_bindings"
 
 }
 
