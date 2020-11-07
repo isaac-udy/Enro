@@ -1,17 +1,21 @@
 package nav.enro.processor
 
-import com.squareup.kotlinpoet.*
+import com.squareup.javapoet.*
 import nav.enro.annotations.GeneratedNavigationBinding
 import nav.enro.annotations.NavigationComponent
 import nav.enro.annotations.NavigationDestination
+import javax.annotation.Generated
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
+import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
+import javax.tools.Diagnostic
 
 class NavigationComponentProcessor : BaseProcessor() {
 
     private val components = mutableListOf<Element>()
+    private val processed = mutableSetOf<String>()
 
     override fun getSupportedAnnotationTypes(): MutableSet<String> {
         return mutableSetOf(
@@ -30,13 +34,26 @@ class NavigationComponentProcessor : BaseProcessor() {
         roundEnv: RoundEnvironment
     ): Boolean {
         components += roundEnv.getElementsAnnotatedWith(NavigationComponent::class.java)
-        if (roundEnv.processingOver()) {
+
+        val elementsToWaitFor = roundEnv.getElementsAnnotatedWith(NavigationComponent::class.java) +
+                roundEnv.getElementsAnnotatedWith(GeneratedNavigationBinding::class.java) +
+                roundEnv.getElementsAnnotatedWith(NavigationDestination::class.java)
+
+        if (elementsToWaitFor.isEmpty()) {
             components.forEach { generateComponent(it) }
         }
         return false
     }
 
     private fun generateComponent(component: Element) {
+        val name = ClassName.get(component as TypeElement).canonicalName()
+        if (processed.contains(name)) return
+        processed.add(name)
+        processingEnv.messager.printMessage(
+            Diagnostic.Kind.WARNING,
+            "GENERATE $name $processed\r\n\r\n"
+        )
+
         val destinations =
             processingEnv.elementUtils
                 .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
@@ -54,49 +71,52 @@ class NavigationComponentProcessor : BaseProcessor() {
 
         val generatedName = "${component.simpleName}Navigation"
         val classBuilder = TypeSpec.classBuilder(generatedName)
+            .addOriginatingElement(component)
             .apply {
-                addOriginatingElement(component)
                 destinations.forEach {
                     addOriginatingElement(it.aggregate)
                 }
-                addModifiers(KModifier.INTERNAL)
-                addSuperinterface(EnroProcessor.builderActionType)
-                addFunction(
-                    FunSpec.builder("execute")
-                        .addParameter("builder", EnroProcessor.builderType)
-                        .returns(ClassName("kotlin", "Unit"))
-                        .addModifiers(KModifier.OVERRIDE).apply {
-                            destinations.forEach {
-                                addNavigationDestination(it)
-                            }
-                        }
-                        .build()
-                )
             }
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(
+                AnnotationSpec.builder(Generated::class.java)
+                    .addMember("value", "\"" + this::class.java.name + "\"")
+                    .build()
+            )
+            .addSuperinterface(EnroProcessor.builderActionType)
+            .addMethod(
+                MethodSpec.methodBuilder("execute")
+                    .addAnnotation(Override::class.java)
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(
+                        ParameterSpec
+                            .builder(
+                                ClassName.get(
+                                    "nav.enro.core.controller",
+                                    "NavigationComponentBuilder"
+                                ), "builder"
+                            )
+                            .build()
+                    )
+                    .apply {
+                        destinations.forEach {
+                            addStatement(CodeBlock.of("new $1T().execute(builder)", it.aggregate))
+                        }
+                    }
+                    .build()
+            )
             .build()
 
-        val file = FileSpec
+        JavaFile
             .builder(
                 processingEnv.elementUtils.getPackageOf(component).toString(),
-                generatedName
+                classBuilder
             )
-            .apply {
-                destinations.forEach {
-                    addImport(it.aggregate.getElementName(), "")
-                }
-            }
-            .addType(classBuilder)
             .build()
-
-        file.writeTo(processingEnv.filer)
-    }
-
-    private fun FunSpec.Builder.addNavigationDestination(navigationDestination: NavigationDestinationArguments) {
-        addStatement(
-            "${navigationDestination.aggregate.simpleName}().execute(builder)"
-        )
+            .writeTo(processingEnv.filer)
     }
 }
+
 data class NavigationDestinationArguments(
     val aggregate: Element,
     val destination: Element,

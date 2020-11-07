@@ -4,6 +4,7 @@ import com.squareup.javapoet.*
 import nav.enro.annotations.NavigationDestination
 import nav.enro.annotations.GeneratedNavigationBinding
 import java.lang.IllegalStateException
+import javax.annotation.Generated
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
