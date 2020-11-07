@@ -54,57 +54,43 @@ class NavigationComponentProcessor : BaseProcessor() {
         val name = ClassName.get(component as TypeElement).canonicalName()
         if (processed.contains(name)) return
         processed.add(name)
-        processingEnv.messager.printMessage(
-            Diagnostic.Kind.WARNING,
-            "GENERATE $name $processed\r\n\r\n"
-        )
 
-        val destinations =
-            processingEnv.elementUtils
-                .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
-                .enclosedElements
-                .mapNotNull {
-                    val annotation = it.getAnnotation(GeneratedNavigationBinding::class.java)
-                        ?: return@mapNotNull null
+        val destinations = processingEnv.elementUtils
+            .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
+            .enclosedElements
+            .mapNotNull {
+                val annotation = it.getAnnotation(GeneratedNavigationBinding::class.java)
+                    ?: return@mapNotNull null
 
-                    NavigationDestinationArguments(
-                        aggregate = it,
-                        destination = processingEnv.elementUtils.getTypeElement(annotation.destination),
-                        navigationKey = processingEnv.elementUtils.getTypeElement(annotation.navigationKey)
-                    )
-                }
+                NavigationDestinationArguments(
+                    aggregate = it,
+                    destination = processingEnv.elementUtils.getTypeElement(annotation.destination),
+                    navigationKey = processingEnv.elementUtils.getTypeElement(annotation.navigationKey)
+                )
+            }
 
         val generatedName = "${component.simpleName}Navigation"
         val classBuilder = TypeSpec.classBuilder(generatedName)
             .addOriginatingElement(component)
+            .addOriginatingElement(
+                processingEnv.elementUtils
+                    .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
+            )
             .apply {
-                addOriginatingElement(
-                    processingEnv.elementUtils
-                        .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
-                )
                 destinations.forEach {
                     addOriginatingElement(processingEnv.elementUtils.getPackageOf(it.destination))
                 }
             }
-            .addAnnotation(
-                AnnotationSpec.builder(Generated::class.java)
-                    .addMember("value", "\"${this::class.java.name}\"")
-                    .build()
-            )
+            .addGeneratedAnnotation()
             .addModifiers(Modifier.PUBLIC)
-            .addSuperinterface(EnroProcessor.builderActionType)
+            .addSuperinterface(ClassNames.navigationComponentBuilderCommand)
             .addMethod(
                 MethodSpec.methodBuilder("execute")
                     .addAnnotation(Override::class.java)
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(
                         ParameterSpec
-                            .builder(
-                                ClassName.get(
-                                    "nav.enro.core.controller",
-                                    "NavigationComponentBuilder"
-                                ), "builder"
-                            )
+                            .builder(ClassNames.navigationComponentBuilder, "builder")
                             .build()
                     )
                     .apply {
@@ -123,11 +109,10 @@ class NavigationComponentProcessor : BaseProcessor() {
             )
             .build()
             .writeTo(processingEnv.filer)
-
     }
 }
 
-data class NavigationDestinationArguments(
+internal data class NavigationDestinationArguments(
     val aggregate: Element,
     val destination: Element,
     val navigationKey: Element

@@ -10,8 +10,19 @@ import kotlin.reflect.KClass
 internal object EnroProcessor {
     const val GENERATED_PACKAGE = "nav.enro.generated"
 
-    val builderActionType = ClassName.get("nav.enro.core.controller", "NavigationComponentBuilderCommand")
-    val builderType = ClassName.get("nav.enro.core.controller", "NavigationComponentBuilder")
+}
+
+internal object ClassNames {
+    val navigationComponentBuilderCommand = ClassName.get("nav.enro.core.controller", "NavigationComponentBuilderCommand")
+    val navigationComponentBuilder = ClassName.get("nav.enro.core.controller", "NavigationComponentBuilder")
+
+    val navigatorDefinitionKt = ClassName.get("nav.enro.core.navigator", "NavigatorDefinitionKt")
+    val jvmClassMappings = ClassName.get("kotlin.jvm", "JvmClassMappingKt")
+    val unit = ClassName.get("kotlin", "Unit")
+
+    val fragmentActivity = ClassName.get( "androidx.fragment.app", "FragmentActivity")
+    val fragment = ClassName.get("androidx.fragment.app","Fragment")
+    val syntheticNavigator = ClassName.get("nav.enro.core.navigator","SyntheticDestination")
 }
 
 internal fun getNameFromKClass(block: () -> KClass<*>) : String {

@@ -55,12 +55,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val classBuilder = TypeSpec.classBuilder(element.getDestinationName())
             .addOriginatingElement(element)
             .addModifiers(Modifier.PUBLIC)
-            .addSuperinterface(
-                ClassName.get(
-                    "nav.enro.core.controller",
-                    "NavigationComponentBuilderCommand"
-                )
-            )
+            .addSuperinterface(ClassNames.navigationComponentBuilderCommand)
             .addAnnotation(
                 AnnotationSpec.builder(GeneratedNavigationBinding::class.java)
                     .addMember(
@@ -70,23 +65,14 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     .addMember("navigationKey", CodeBlock.of("\"$keyPackage.$keyName\""))
                     .build()
             )
-            .addAnnotation(
-                AnnotationSpec.builder(Generated::class.java)
-                    .addMember("value", "\"${this::class.java.name}\"")
-                    .build()
-            )
+            .addGeneratedAnnotation()
             .addMethod(
                 MethodSpec.methodBuilder("execute")
                     .addAnnotation(Override::class.java)
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(
                         ParameterSpec
-                            .builder(
-                                ClassName.get(
-                                    "nav.enro.core.controller",
-                                    "NavigationComponentBuilder"
-                                ), "builder"
-                            )
+                            .builder(ClassNames.navigationComponentBuilder, "builder")
                             .build()
                     )
                     .addNavigationDestination(element, keyType)
@@ -97,14 +83,12 @@ class NavigationDestinationProcessor : BaseProcessor() {
         JavaFile
             .builder(EnroProcessor.GENERATED_PACKAGE, classBuilder)
             .addStaticImport(
-                ClassName.get(
-                    "nav.enro.core.navigator", "NavigatorDefinitionKt"
-                ),
+                ClassNames.navigatorDefinitionKt,
                 "createActivityNavigator",
                 "createFragmentNavigator",
                 "createSyntheticNavigator"
             )
-            .addStaticImport(ClassName.get("kotlin.jvm", "JvmClassMappingKt"), "getKotlinClass")
+            .addStaticImport(ClassNames.jvmClassMappings, "getKotlinClass")
             .build()
             .writeTo(processingEnv.filer)
     }
@@ -115,10 +99,9 @@ class NavigationDestinationProcessor : BaseProcessor() {
     ): MethodSpec.Builder {
         val destinationName = destination.simpleName
 
-        val destinationIsActivity = destination.extends("androidx.fragment.app.FragmentActivity")
-        val destinationIsFragment = destination.extends("androidx.fragment.app.Fragment")
-        val destinationIsSynthetic =
-            destination.implements("nav.enro.core.navigator.SyntheticDestination")
+        val destinationIsActivity = destination.extends(ClassNames.fragmentActivity)
+        val destinationIsFragment = destination.extends(ClassNames.fragment)
+        val destinationIsSynthetic = destination.implements(ClassNames.syntheticNavigator)
 
         val annotation = destination.getAnnotation(NavigationDestination::class.java)
 
@@ -139,7 +122,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 """.trimIndent(),
                     key,
                     destination,
-                    ClassName.get("kotlin", "Unit")
+                    ClassNames.unit
                 )
 
                 destinationIsFragment -> CodeBlock.of(
@@ -157,7 +140,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 """.trimIndent(),
                     key,
                     destination,
-                    ClassName.get("kotlin", "Unit")
+                    ClassNames.unit
                 )
 
                 destinationIsSynthetic -> CodeBlock.of(
