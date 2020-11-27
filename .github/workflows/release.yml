@@ -18,22 +18,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-#      - name: Run UI Tests
-#        uses: reactivecircus/android-emulator-runner@v2
-#        with:
-#          api-level: 29
-#          script: ./gradlew :enro-core:connectedCheck
+      - name: Run UI Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: ./gradlew :enro-core:connectedCheck
 
       - name: Update Version Name
         run: ./gradlew updateVersion -PversionName=${{ github.event.inputs.versionname }}
 
-#      - name: Publish Release
-#        env:
-#          PUBLISH_GITHUB_USER: ${{ secrets.PUBLISH_GITHUB_USER }}
-#          PUBLISH_GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
-#          PUBLISH_BINTRAY_USER: ${{ secrets.PUBLISH_BINTRAY_USER }}
-#          PUBLISH_BINTRAY_TOKEN: ${{ secrets.PUBLISH_BINTRAY_TOKEN }}
-#        run: ./gradlew publish
+      - name: Publish Release
+        env:
+          PUBLISH_GITHUB_USER: ${{ secrets.PUBLISH_GITHUB_USER }}
+          PUBLISH_GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+          PUBLISH_BINTRAY_USER: ${{ secrets.PUBLISH_BINTRAY_USER }}
+          PUBLISH_BINTRAY_TOKEN: ${{ secrets.PUBLISH_BINTRAY_TOKEN }}
+        run: ./gradlew publish
 
       - name: Update Repo
         uses: EndBug/add-and-commit@v5
@@ -48,7 +48,7 @@ jobs:
       - name: Create Release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+          GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.event.inputs.versionname }}
           release_name: Release ${{ github.event.inputs.versionname }}
