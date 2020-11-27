@@ -17,9 +17,7 @@ jobs:
           script: ./gradlew :enro-core:connectedCheck
 
       - name: Update Version Name
-        with:
-          api-level: 29
-          script: ./gradlew updateVersion -PversionName=${{ github.event.release.tag_name }}
+        run: ./gradlew updateVersion -PversionName=${{ github.event.release.tag_name }}
 
       - name: Publish Release
         env:
@@ -27,8 +25,7 @@ jobs:
           PUBLISH_GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
           PUBLISH_BINTRAY_USER: ${{ secrets.PUBLISH_BINTRAY_USER }}
           PUBLISH_BINTRAY_TOKEN: ${{ secrets.PUBLISH_BINTRAY_TOKEN }}
-        with:
-          script: ./gradlew :enro-core:connectedCheck
+        run: ./gradlew :enro-core:connectedCheck
 
       - name: Update Repo
         uses: EndBug/add-and-commit@v5
