@@ -36,4 +36,4 @@ jobs:
           message: ${{ format('Released {0}', github.event.release.tag_name) }}
           branch: main
           push: true
-          tag: ${{ format('"{0}" --force', github.event.release.tag_name) }}
+          tag: ${{ format('{0} --force', github.event.release.tag_name) }}
