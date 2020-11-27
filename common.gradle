@@ -10,11 +10,11 @@ if(privatePropertiesFile.exists()) {
     privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
 }
 else {
-    privateProperties.setProperty("githubUser", System.getenv("PUBLISH_GITHUB_USER"))
-    privateProperties.setProperty("githubToken", System.getenv("PUBLISH_GITHUB_TOKEN"))
+    privateProperties.setProperty("githubUser", System.getenv("PUBLISH_GITHUB_USER") ?: "MISSING")
+    privateProperties.setProperty("githubToken", System.getenv("PUBLISH_GITHUB_TOKEN") ?: "MISSING")
 
-    privateProperties.setProperty("bintrayUser", System.getenv("PUBLISH_BINTRAY_USER"))
-    privateProperties.setProperty("bintrayToken", System.getenv("PUBLISH_BINTRAY_TOKEN"))
+    privateProperties.setProperty("bintrayUser", System.getenv("PUBLISH_BINTRAY_USER") ?: "MISSING")
+    privateProperties.setProperty("bintrayToken", System.getenv("PUBLISH_BINTRAY_TOKEN") ?: "MISSING")
 }
 
 ext.androidLibrary = {
