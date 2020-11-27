@@ -24,8 +24,11 @@ dependencies {
     kapt "nav.enro:enro-processor:1.2.6"
 }
 ```
+<details>
+<summary>Dependency not resolving?</summary>
+<p>
 
-Currently it appears that one of Enro's modules may not be resolving correctly via JCenter. If you have any issues with dependencies, simply add the following to your top level build.gradle file:
+In the past, there have been issues with one of Enro's modules not resolving correctly via JCenter. If you have any issues with dependencies, simply add the following to your top level build.gradle file:
 
 ```gradle
 allprojects {
@@ -37,6 +40,8 @@ allprojects {
     }
 }
 ```
+</p>
+</details>
 
 #### 1. Define your NavigationKeys
 ```kotlin
