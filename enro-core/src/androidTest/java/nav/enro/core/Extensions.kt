@@ -1,22 +1,12 @@
 package nav.enro.core
 
 import android.app.Application
-import android.os.Bundle
-import android.util.Log
-import android.util.TypedValue
-import android.view.Gravity
-import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
-import nav.enro.core.context.navigationContext
-import java.lang.IllegalStateException
-import kotlin.concurrent.thread
 
 inline fun <reified T: NavigationKey> ActivityScenario<out FragmentActivity>.getNavigationHandle(): NavigationHandle<T> {
     var result: NavigationHandle<T>? = null
@@ -66,7 +56,7 @@ fun expectNoActivity() {
 }
 
 fun waitFor(block: () -> Boolean) {
-    val maximumTime = 10_000
+    val maximumTime = 20_000
     val startTime = System.currentTimeMillis()
     while(true) {
         if(block()) return
@@ -76,7 +66,7 @@ fun waitFor(block: () -> Boolean) {
 }
 
 fun <T: Any> waitOnMain(block: () -> T?): T {
-    val maximumTime = 10_000
+    val maximumTime = 20_000
     val startTime = System.currentTimeMillis()
     var currentResponse: T? = null
 
