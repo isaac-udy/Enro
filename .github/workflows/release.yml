@@ -1,7 +1,15 @@
 name: Release
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      versionname:
+        description: 'Version Name'
+        required: true
+        default: ''
+      changes:
+        description: 'Release notes'
+        required: true
+        default: ''
 jobs:
   release:
     name: Release
@@ -17,7 +25,7 @@ jobs:
 #          script: ./gradlew :enro-core:connectedCheck
 
       - name: Update Version Name
-        run: ./gradlew updateVersion -PversionName=${{ github.event.release.tag_name }}
+        run: ./gradlew updateVersion -PversionName=${{ github.event.inputs.versionname }}
 
 #      - name: Publish Release
 #        env:
@@ -33,7 +41,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
         with:
           add: "./version.properties"
-          message: ${{ format('Released {0}', github.event.release.tag_name) }}
+          message: ${{ format('Released {0}', github.event.inputs.versionname) }}
           branch: main
           push: true
-          tag: ${{ format('{0} --force', github.event.release.tag_name) }}
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.event.inputs.versionname }}
+          release_name: Release ${{ github.event.inputs.versionname }}
+          body: ${{  github.event.inputs.changes }}
+          draft: false
+          prerelease: false
