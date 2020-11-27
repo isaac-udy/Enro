@@ -42,7 +42,6 @@ jobs:
         with:
           add: "./version.properties"
           message: ${{ format('Released {0}', github.event.inputs.versionname) }}
-          branch: main
           push: true
 
       - name: Create Release
