@@ -17,5 +17,10 @@ dependencies {
     implementation "com.squareup:javapoet:1.13.0"
 }
 
+afterEvaluate {
+    tasks.findByName("compileKotlin")
+            .dependsOn(":enro-annotations:publishToMavenLocal")
+}
+
 sourceCompatibility = "8"
 targetCompatibility = "8"
