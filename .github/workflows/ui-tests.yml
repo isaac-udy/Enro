@@ -1,14 +1,13 @@
 name: run-ui-tests
-on: pull-request
+on: [push, pull_request]
 jobs:
   run-ui-tests:
-    name: Run UI Tests
     runs-on: macos-latest
     steps:
     - name: checkout
       uses: actions/checkout@v2
 
-    - name: run tests
+    - name: Run UI Tests
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 30
