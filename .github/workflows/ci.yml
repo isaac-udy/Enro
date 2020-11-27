@@ -11,11 +11,11 @@ jobs:
     name: Run UI Tests
     runs-on: macos-latest
     steps:
-    - name: checkout
+    - name: Checkout
       uses: actions/checkout@v2
 
-    - name: test
+    - name: Run
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 29
-        script: ./gradlew :enro:connectedCheck
+        script: ./gradlew connectedCheck
