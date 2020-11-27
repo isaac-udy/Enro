@@ -21,3 +21,15 @@ dependencies {
     debugApi project(":enro-annotations")
 }
 
+afterEvaluate {
+    tasks.findByName("preReleaseBuild")
+            .dependsOn(
+                    ":enro-core:publishToMavenLocal",
+                    ":enro-result:publishToMavenLocal",
+                    ":enro-viewmodel:publishToMavenLocal",
+                    ":enro-masterdetail:publishToMavenLocal",
+                    ":enro-multistack:publishToMavenLocal",
+                    ":enro-annotations:publishToMavenLocal"
+            )
+}
+

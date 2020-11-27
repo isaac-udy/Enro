@@ -1,9 +1,9 @@
 buildscript {
     ext.kotlin_version = "1.4.10"
     repositories {
+        mavenLocal()
         google()
         jcenter()
-        maven { url System.getProperty("user.home") + "/.m2/repository/"  }
         mavenCentral()
     }
     dependencies {
@@ -17,9 +17,9 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         jcenter()
-        maven { url System.getProperty("user.home") + "/.m2/repository/"  }
     }
 }
 

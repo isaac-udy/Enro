@@ -105,8 +105,13 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
         }
     }
 
-    publish.dependsOn publishToMavenLocal
-    publishToMavenLocal.dependsOn assemble
+    afterEvaluate {
+        tasks.findByName("publishToMavenLocal")
+                .dependsOn("assembleRelease")
+
+        tasks.findByName("publish")
+                .dependsOn("publishToMavenLocal")
+    }
 }
 
 ext.publishJavaModule = { String groupName, String moduleName ->
@@ -156,6 +161,11 @@ ext.publishJavaModule = { String groupName, String moduleName ->
         }
     }
 
-    publish.dependsOn publishToMavenLocal
-    publishToMavenLocal.dependsOn assemble
+    afterEvaluate {
+        tasks.findByName("publishToMavenLocal")
+                .dependsOn("assemble")
+
+        tasks.findByName("publish")
+                .dependsOn("publishToMavenLocal")
+    }
 }
