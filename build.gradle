@@ -30,3 +30,19 @@ subprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+task updateVersion {
+    doLast {
+        if (!project.hasProperty("versionName")) {
+            throw new IllegalStateException("The updateVersion task requires a version name property!")
+        }
+        def versionPropertiesFile = rootProject.file("version.properties")
+        def existingProperties = new Properties()
+        existingProperties.load(new FileInputStream(versionPropertiesFile))
+
+        def versionName = project.getProperties().get("versionName")
+        def versionCode = (existingProperties.versionCode as int) + 1
+
+        versionPropertiesFile.write("versionName=$versionName\nversionCode=$versionCode")
+    }
+}

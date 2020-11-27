@@ -4,6 +4,19 @@ versionProperties.load(new FileInputStream(rootProject.file("version.properties"
 ext.versionCode = versionProperties.getProperty("versionCode").toInteger()
 ext.versionName = versionProperties.getProperty("versionName")
 
+def privateProperties = new Properties()
+def privatePropertiesFile = rootProject.file("private.properties")
+if(privatePropertiesFile.exists()) {
+    privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
+}
+else {
+    privateProperties.setProperty("githubUser", System.getenv("PUBLISH_GITHUB_USER") ?: "MISSING")
+    privateProperties.setProperty("githubToken", System.getenv("PUBLISH_GITHUB_TOKEN") ?: "MISSING")
+
+    privateProperties.setProperty("bintrayUser", System.getenv("PUBLISH_BINTRAY_USER") ?: "MISSING")
+    privateProperties.setProperty("bintrayToken", System.getenv("PUBLISH_BINTRAY_TOKEN") ?: "MISSING")
+}
+
 ext.androidLibrary = {
     apply plugin: 'com.android.library'
     apply plugin: 'kotlin-android'
@@ -45,12 +58,6 @@ ext.androidLibrary = {
 
 ext.publishAndroidModule = { String groupName, String moduleName ->
     apply plugin: 'maven-publish'
-
-    def privateProperties = new Properties()
-    def privatePropertiesFile = rootProject.file("private.properties")
-    if(privatePropertiesFile.exists()) {
-        privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
-    }
 
     task androidSourcesJar(type: Jar) {
         archiveClassifier.set('sources')
@@ -119,12 +126,6 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
 
 ext.publishJavaModule = { String groupName, String moduleName ->
     apply plugin: 'maven-publish'
-
-    def privateProperties = new Properties()
-    def privatePropertiesFile = rootProject.file("private.properties")
-    if(privatePropertiesFile.exists()) {
-        privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
-    }
 
     task sourcesJar(type: Jar) {
         archiveClassifier.set('sources')
