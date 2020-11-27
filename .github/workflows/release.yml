@@ -30,10 +30,10 @@ jobs:
       - name: Update Repo
         uses: EndBug/add-and-commit@v5
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
         with:
           add: "./version.properties"
           message: ${{ format('Released {0}', github.event.release.tag_name) }}
           branch: main
           push: true
-          tag: ${{ format('"{0}"', github.event.release.tag_name) }}
+          tag: ${{ format('"{0}" --force', github.event.release.tag_name) }}
