@@ -47,7 +47,10 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
     apply plugin: 'maven-publish'
 
     def privateProperties = new Properties()
-    privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
+    def privatePropertiesFile = rootProject.file("private.properties")
+    if(privatePropertiesFile.exists()) {
+        privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
+    }
 
     task androidSourcesJar(type: Jar) {
         archiveClassifier.set('sources')
@@ -118,7 +121,10 @@ ext.publishJavaModule = { String groupName, String moduleName ->
     apply plugin: 'maven-publish'
 
     def privateProperties = new Properties()
-    privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
+    def privatePropertiesFile = rootProject.file("private.properties")
+    if(privatePropertiesFile.exists()) {
+        privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
+    }
 
     task sourcesJar(type: Jar) {
         archiveClassifier.set('sources')
