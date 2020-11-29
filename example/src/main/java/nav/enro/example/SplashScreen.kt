@@ -10,10 +10,12 @@ import nav.enro.core.*
 @Parcelize
 class SplashScreenKey : NavigationKey
 
-@NavigationDestination(SplashScreenKey::class, allowDefault = true)
+@NavigationDestination(SplashScreenKey::class)
 class SplashScreenActivity : AppCompatActivity() {
 
-    private val navigation by navigationHandle<SplashScreenKey>()
+    private val navigation by navigationHandle<SplashScreenKey> {
+        defaultKey(SplashScreenKey())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

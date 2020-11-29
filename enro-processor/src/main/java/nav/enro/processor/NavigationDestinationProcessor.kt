@@ -118,7 +118,6 @@ class NavigationDestinationProcessor : BaseProcessor() {
                             getKotlinClass($1T.class),
                             getKotlinClass($2T.class),
                             it -> {
-                                ${if (annotation.allowDefault) "it.defaultKey(new $1T());" else ""}
                                 return $3T.INSTANCE;
                             }
                         )
@@ -136,7 +135,6 @@ class NavigationDestinationProcessor : BaseProcessor() {
                             getKotlinClass($1T.class),
                             getKotlinClass($2T.class),
                             it -> {
-                                ${if (annotation.allowDefault) "it.defaultKey(new $1T());" else ""}
                                 return $3T.INSTANCE;
                             }
                         )

@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -15,7 +14,6 @@ import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_request_string.*
 import kotlinx.android.synthetic.main.fragment_result_example.*
 import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationHandle
 import nav.enro.core.NavigationKey
 import nav.enro.core.navigationHandle
 import nav.enro.result.ResultNavigationKey
@@ -57,7 +55,7 @@ class RequestExampleFragment : Fragment() {
 
 class RequestExampleViewModel() : ViewModel() {
 
-    private val navigation by navigationHandle<ResultExampleKey>()
+    private val navigation by navigationHandle()
 
     private val mutableResults = MutableLiveData<List<String>>().apply { emptyList<String>() }
     val results = mutableResults as LiveData<List<String>>

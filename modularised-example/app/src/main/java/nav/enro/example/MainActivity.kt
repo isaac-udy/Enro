@@ -27,10 +27,12 @@ class MainKey : NavigationKey
 class HiltViewModel @ViewModelInject constructor(): ViewModel()
 
 @AndroidEntryPoint
-@NavigationDestination(MainKey::class, allowDefault = true)
+@NavigationDestination(MainKey::class)
 class MainActivity : AppCompatActivity() {
     private val hiltViewModel by viewModels<HiltViewModel>()
-    private val navigation by navigationHandle<Nothing>()
+    private val navigation by navigationHandle<MainKey> {
+        defaultKey(MainKey())
+    }
 
     override fun onResume() {
         super.onResume()

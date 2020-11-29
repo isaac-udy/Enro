@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import nav.enro.core.NavigationHandle
-import nav.enro.core.NavigationKey
 import nav.enro.core.getNavigationHandle
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -24,7 +23,7 @@ class ViewModelNavigationHandleProperty internal constructor(
     }
 }
 
-fun <T : NavigationKey> ViewModel.navigationHandle(): ViewModelNavigationHandleProperty =
+fun ViewModel.navigationHandle(): ViewModelNavigationHandleProperty =
     ViewModelNavigationHandleProperty(this::class)
 
 
