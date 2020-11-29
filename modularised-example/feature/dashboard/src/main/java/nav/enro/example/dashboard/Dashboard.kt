@@ -3,15 +3,14 @@ package nav.enro.example.dashboard
 import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.observe
-import nav.enro.example.core.data.SimpleDataRepository
-import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.dashboard.*
 import nav.enro.annotations.NavigationDestination
-import nav.enro.core.*
+import nav.enro.core.close
+import nav.enro.core.forward
+import nav.enro.example.core.data.SimpleDataRepository
 import nav.enro.example.core.navigation.*
 import nav.enro.result.registerForNavigationResult
 import nav.enro.viewmodel.enroViewModels
@@ -79,7 +78,8 @@ class DashboardViewModel(
 
     private val repo = SimpleDataRepository()
 
-    private val navigationHandle by navigationHandle<DashboardKey>()
+    private val navigationHandle by navigationHandle()
+    private val key = navigationHandle.key<DashboardKey>()
 
     private val viewDetail by registerForNavigationResult<Boolean>(navigationHandle) {
         state = state.copy(userId = "${state.userId} FIRST($it)")
@@ -90,19 +90,19 @@ class DashboardViewModel(
     }
 
     init {
-        val userId = navigationHandle.key.userId
+        val userId = key.userId
         val data = repo.getList(userId)
         state = DashboardState(
-            userId = navigationHandle.key.userId,
+            userId = key.userId,
             closeRequested = false,
             myPrivateMessageCount = data.count { !it.isPublic && it.ownerId == userId },
             myPublicMessageCount = data.count { it.isPublic && it.ownerId == userId },
             otherPublicMessageCount = data.count { it.isPublic && it.ownerId != userId }
         )
 
-        navigationHandle.onCloseRequested {
-            state = state.copy(closeRequested = true)
-        }
+//        navigationHandle.onCloseRequested {
+//            state = state.copy(closeRequested = true)
+//        }
     }
 
     fun test(boolean: Boolean) {
@@ -112,7 +112,7 @@ class DashboardViewModel(
     fun onMyPrivateMessagesSelected() {
         viewDetail.open(
             ListKey(
-                userId = navigationHandle.key.userId,
+                userId = key.userId,
                 filter = ListFilterType.MY_PRIVATE
             )
         )
@@ -121,7 +121,7 @@ class DashboardViewModel(
     fun onMyPublicMessagesSelected() {
         viewDetail.open(
             ListKey(
-                userId = navigationHandle.key.userId,
+                userId = key.userId,
                 filter = ListFilterType.MY_PUBLIC
             )
         )
@@ -130,7 +130,7 @@ class DashboardViewModel(
     fun onOtherMessagesSelected() {
         viewDetail2.open(
             ListKey(
-                userId = navigationHandle.key.userId,
+                userId = key.userId,
                 filter = ListFilterType.NOT_MY_PUBLIC
             )
         )
@@ -139,7 +139,7 @@ class DashboardViewModel(
     fun onAllMessagesSelected() {
         navigationHandle.forward(
             MasterDetailKey(
-                userId = navigationHandle.key.userId,
+                userId = key.userId,
                 filter = ListFilterType.ALL
             )
         )
@@ -148,7 +148,7 @@ class DashboardViewModel(
     fun onUserInfoSelected() {
         navigationHandle.forward(
             UserKey(
-                userId = navigationHandle.key.userId
+                userId = key.userId
             )
         )
     }

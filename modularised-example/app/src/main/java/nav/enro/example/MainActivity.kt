@@ -16,10 +16,8 @@ import nav.enro.core.context.activity
 import nav.enro.core.navigator.SyntheticDestination
 import nav.enro.example.core.data.UserRepository
 import nav.enro.example.core.navigation.DashboardKey
-import nav.enro.example.core.navigation.DetailKey
 import nav.enro.example.core.navigation.LaunchKey
 import nav.enro.example.core.navigation.LoginKey
-import nav.enro.result.registerForNavigationResult
 
 @Parcelize
 class MainKey : NavigationKey
@@ -57,10 +55,10 @@ class MainActivity : AppCompatActivity() {
 @NavigationDestination(LaunchKey::class)
 class LaunchDestination : SyntheticDestination<LaunchKey> {
     override fun process(
-        navigationContext: NavigationContext<out Any, out NavigationKey>,
-        instruction: NavigationInstruction.Open<LaunchKey>
+        navigationContext: NavigationContext<out Any>,
+        instruction: NavigationInstruction.Open
     ) {
-        val navigation = navigationContext.activity.getNavigationHandle<Nothing>()
+        val navigation = navigationContext.activity.getNavigationHandle()
         val userRepo = UserRepository.instance
         val user = userRepo.activeUser
         val key = when (user) {

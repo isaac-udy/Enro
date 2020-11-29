@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.DiffUtil
@@ -17,14 +16,12 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationHandle
 import nav.enro.example.core.base.SingleStateViewModel
 import nav.enro.example.core.data.SimpleData
 import nav.enro.example.core.data.SimpleDataRepository
 import nav.enro.example.core.navigation.DetailKey
 import nav.enro.example.core.navigation.ListFilterType
 import nav.enro.example.core.navigation.ListKey
-import nav.enro.result.closeWithResult
 import nav.enro.result.registerForNavigationResult
 import nav.enro.viewmodel.enroViewModels
 import nav.enro.viewmodel.navigationHandle
@@ -76,18 +73,19 @@ class ListViewModel @ViewModelInject constructor(
 ) : SingleStateViewModel<ListState>() {
 
     private val repo = SimpleDataRepository()
-    private val navigation by navigationHandle<ListKey>()
+    private val navigation by navigationHandle()
+    private val key = navigation.key<ListKey>()
 
     init {
         hiltDependency.doSomething()
 
-        val userId = navigation.key.userId
+        val userId = key.userId
         state = ListState(
             userId = userId,
-            filter = navigation.key.filter,
+            filter = key.filter,
             items = repo.getList(userId)
                 .filter {
-                    when (navigation.key.filter) {
+                    when (key.filter) {
                         ListFilterType.ALL -> true
                         ListFilterType.MY_PUBLIC -> it.ownerId == userId && it.isPublic
                         ListFilterType.MY_PRIVATE -> it.ownerId == userId && !it.isPublic
@@ -97,9 +95,9 @@ class ListViewModel @ViewModelInject constructor(
                 }
         )
 
-        navigation.onCloseRequested {
-            navigation.closeWithResult(state.result)
-        }
+//        navigation.onCloseRequested {
+//            navigation.closeWithResult(state.result)
+//        }
     }
 
     fun setResult(it: Boolean) {
