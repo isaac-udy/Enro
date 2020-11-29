@@ -14,7 +14,7 @@ interface NavigationComponentBuilderCommand {
 
 class NavigationComponentBuilder {
     @PublishedApi
-    internal val navigators: MutableList<NavigatorDefinition<*, *>> = mutableListOf()
+    internal val navigators: MutableList<Navigator<*, *>> = mutableListOf()
     @PublishedApi
     internal val overrides: MutableList<NavigationExecutor<*, *, *>> = mutableListOf()
     @PublishedApi
@@ -45,7 +45,7 @@ class NavigationComponentBuilder {
         overrides.add(createOverride(launch, close))
     }
 
-    fun add(navigator: NavigatorDefinition<*, *>) {
+    fun add(navigator: Navigator<*, *>) {
         navigators.add(navigator)
     }
 

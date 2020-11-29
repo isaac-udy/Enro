@@ -25,7 +25,7 @@ import kotlin.reflect.KClass
 
 
 class NavigationController(
-    navigators: List<NavigatorDefinition<*, *>>,
+    navigators: List<Navigator<*, *>>,
     overrides: List<NavigationExecutor<*, *, *>> = listOf(),
     private val plugins: List<EnroPlugin> = listOf()
 ) {
@@ -51,7 +51,7 @@ class NavigationController(
             createActivityNavigator<SingleFragmentKey, SingleFragmentActivity>()
         }
 
-        val noKeyProvidedNavigator = NavigatorDefinition(NoKeyNavigator(), emptyList())
+        val noKeyProvidedNavigator = NoKeyNavigator()
 
         listOf(
             singleFragmentNavigator,
@@ -61,21 +61,17 @@ class NavigationController(
 
     private val navigatorsByKeyType = (navigators + defaultNavigators)
         .map {
-            it.navigator.keyType to it
+            it.keyType to it
         }
         .toMap()
 
     private val navigatorsByContextType = (navigators + defaultNavigators)
         .map {
-            it.navigator.contextType to it
+            it.contextType to it
         }
         .toMap()
 
-    private val overrides = (overrides + navigators.let {
-        val flatMap: (NavigatorDefinition<*,*>) -> List<NavigationExecutor<*,*,*>> = { it.executors }
-        it.flatMap(flatMap)
-    }).map { (it.fromType to it.opensType) to it }.toMap()
-
+    private val overrides = overrides.map { (it.fromType to it.opensType) to it }.toMap()
     private val temporaryOverrides = mutableMapOf<Pair<KClass<out Any>, KClass<out Any>>, NavigationExecutor<*,*,*>>()
 
     internal val handles = mutableMapOf<String, NavigationHandleViewModel>()
@@ -138,13 +134,13 @@ class NavigationController(
     fun navigatorForContextType(
         contextType: KClass<*>
     ): Navigator<*, *>? {
-        return navigatorsByContextType[contextType]?.navigator
+        return navigatorsByContextType[contextType]
     }
 
     fun navigatorForKeyType(
         keyType: KClass<out NavigationKey>
     ): Navigator<*, *>? {
-        return navigatorsByKeyType[keyType]?.navigator
+        return navigatorsByKeyType[keyType]
     }
 
     private fun overrideFor(types: Pair<KClass<out Any>, KClass<out Any>>): NavigationExecutor<out Any, out Any, out NavigationKey>? {
