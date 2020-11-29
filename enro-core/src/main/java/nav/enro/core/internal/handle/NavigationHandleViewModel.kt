@@ -3,7 +3,10 @@ package nav.enro.core.internal.handle
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import androidx.activity.viewModels
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.*
 import nav.enro.core.*
 import nav.enro.core.context.*
@@ -12,34 +15,63 @@ import nav.enro.core.internal.addOnBackPressedListener
 import nav.enro.core.internal.navigationHandle
 import nav.enro.core.internal.onEvent
 
-internal class NavigationHandleViewModel : ViewModel(), NavigationHandle {
+internal class NavigationHandleViewModelFactory(
+    private val navigationController: NavigationController,
+    private val instruction: NavigationInstruction.Open
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return NavigationHandleViewModel(
+            navigationController,
+            instruction
+        ) as T
+    }
+}
+
+internal fun ViewModelStoreOwner.createNavigationHandleViewModel(
+    navigationController: NavigationController,
+    instruction: NavigationInstruction.Open
+): NavigationHandleViewModel {
+    return when(this) {
+        is FragmentActivity -> viewModels<NavigationHandleViewModel> {
+            NavigationHandleViewModelFactory(navigationController, instruction)
+        }.value
+        is Fragment -> viewModels<NavigationHandleViewModel> {
+            NavigationHandleViewModelFactory(navigationController, instruction)
+        }.value
+        else -> throw IllegalArgumentException("ViewModelStoreOwner must be a Fragment or Activity")
+    }
+}
+
+internal fun ViewModelStoreOwner.getNavigationHandleViewModel(): NavigationHandleViewModel {
+    return when(this) {
+        is FragmentActivity -> viewModels<NavigationHandleViewModel> { ViewModelProvider.NewInstanceFactory() }.value
+        is Fragment -> viewModels<NavigationHandleViewModel> { ViewModelProvider.NewInstanceFactory() }.value
+        else -> throw IllegalArgumentException("ViewModelStoreOwner must be a Fragment or Activity")
+    }
+}
+
+internal class NavigationHandleViewModel(
+    override val controller: NavigationController,
+    internal val instruction: NavigationInstruction.Open
+) : ViewModel(), NavigationHandle {
 
     private var pendingInstruction: NavigationInstruction? = null
 
-    internal var internalOnCloseRequested: () -> Unit = { close() }
-
-    internal val hasKey get() = rawKey != null
-    internal var rawKey: NavigationKey? = null
-    internal var defaultKey: NavigationKey? = null
+    internal val hasKey get() = instruction.navigationKey !is NoNavigationKeyBound
 
     override val key: NavigationKey get() {
-        return rawKey
-            ?: throw IllegalStateException("This NavigationHandle has no NavigationKey bound")
+        if(instruction.navigationKey is NoNavigationKeyBound) throw IllegalStateException("This NavigationHandle has no NavigationKey")
+        return instruction.navigationKey
     }
-    override lateinit var id: String
-    override lateinit var controller: NavigationController
-    override lateinit var additionalData: Bundle
+    override val id: String get() = instruction.instructionId
+    override val additionalData: Bundle get() = instruction.additionalData
 
     internal var childContainers = listOf<ChildContainer>()
-        set(value) {
-            field = value
-            navigationContext?.childContainers = value
-        }
+    internal var internalOnCloseRequested: () -> Unit = { close() }
 
     private val lifecycle = LifecycleRegistry(this).apply {
         addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if (navigationContext?.instruction == null) return
                 if (event == Lifecycle.Event.ON_CREATE) controller.onOpened(this@NavigationHandleViewModel)
                 if (event == Lifecycle.Event.ON_DESTROY) controller.onClosed(this@NavigationHandleViewModel)
             }
@@ -52,19 +84,7 @@ internal class NavigationHandleViewModel : ViewModel(), NavigationHandle {
 
     internal var navigationContext: NavigationContext<*>? = null
         set(value) {
-            field?.let {
-                val id = it.id
-                it.controller.handles.remove(id)
-            }
             field = value
-            value?.let {
-                it.childContainers = childContainers
-                controller = it.controller
-                additionalData = it.instruction?.additionalData ?: Bundle()
-                id = it.id
-                it.controller.handles[id] = this
-                rawKey = it.key ?: return@let
-            }
             if (value == null) return
             registerLifecycleObservers(value)
             registerOnBackPressedListener(value)
@@ -75,6 +95,9 @@ internal class NavigationHandleViewModel : ViewModel(), NavigationHandle {
             }
         }
 
+    init {
+        controller.handles[id] = this
+    }
 
     private fun registerLifecycleObservers(context: NavigationContext<out Any>) {
         context.lifecycle.addObserver(object : LifecycleEventObserver {
@@ -119,19 +142,18 @@ internal class NavigationHandleViewModel : ViewModel(), NavigationHandle {
     }
 
     internal fun executeDeeplink() {
-        val context = navigationContext ?: throw IllegalStateException("The NavigationHandle must be attached to a NavigationContext")
-
-        if (context.pendingKeys.isEmpty()) return
+        if (instruction.children.isEmpty()) return
         executeInstruction(
             NavigationInstruction.Open(
                 NavigationDirection.FORWARD,
-                context.pendingKeys.first(),
-                context.pendingKeys.drop(1)
+                instruction.children.first(),
+                instruction.children.drop(1)
             )
         )
     }
 
     override fun onCleared() {
+        controller.handles.remove(id)
         lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
 }

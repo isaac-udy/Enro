@@ -3,10 +3,7 @@ package nav.enro.core.controller
 import android.app.Application
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import nav.enro.core.NavigationDirection
-import nav.enro.core.NavigationHandle
-import nav.enro.core.NavigationInstruction
-import nav.enro.core.NavigationKey
+import nav.enro.core.*
 import nav.enro.core.context.ActivityContext
 import nav.enro.core.context.FragmentContext
 import nav.enro.core.context.NavigationContext
@@ -20,6 +17,7 @@ import nav.enro.core.internal.SingleFragmentActivity
 import nav.enro.core.internal.SingleFragmentKey
 import nav.enro.core.internal.handle.NavigationHandleActivityBinder
 import nav.enro.core.internal.handle.NavigationHandleViewModel
+import nav.enro.core.internal.navigationHandle
 import nav.enro.core.navigator.*
 import nav.enro.core.plugins.EnroHilt
 import nav.enro.core.plugins.EnroPlugin
@@ -53,8 +51,11 @@ class NavigationController(
             createActivityNavigator<SingleFragmentKey, SingleFragmentActivity>()
         }
 
+        val noKeyProvidedNavigator = NavigatorDefinition(NoKeyNavigator(), emptyList())
+
         listOf(
-            singleFragmentNavigator
+            singleFragmentNavigator,
+            noKeyProvidedNavigator
         )
     }
 
@@ -110,6 +111,8 @@ class NavigationController(
             )
             is SyntheticNavigator -> (navigator.destination as SyntheticDestination<NavigationKey>)
                 .process(navigationContext, instruction.navigationKey, instruction)
+
+            is NoKeyNavigator -> { throw IllegalArgumentException() }
         }
     }
 
@@ -193,7 +196,8 @@ class NavigationController(
     }
 
     private fun closeOverrideFor(navigationContext: NavigationContext<out Any>): Boolean {
-        val parentType = navigationContext.parentInstruction
+        val parentInstruction = navigationContext.navigationHandle().instruction.parentInstruction
+        val parentNavigator = parentInstruction
             ?.let {
                 if(it.navigationKey is SingleFragmentKey) {
                     it.parentInstruction
@@ -202,10 +206,16 @@ class NavigationController(
             ?.let {
                 return@let navigatorForKeyType(it.navigationKey::class)
             }
-            ?.contextType ?: return false
+            ?: return false
 
-        @Suppress("UNCHECKED_CAST") // higher level logic dictates that this cast should succeed
-        val override = overrideFor(parentType to navigationContext.navigator.contextType)
+        val parentType = when(parentInstruction.navigationKey) {
+            is NoNavigationKeyBound -> parentInstruction.navigationKey.contextType.kotlin
+            else -> parentNavigator.contextType
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        // higher level logic dictates that this cast should succeed
+        val override = overrideFor(parentType to navigationContext.contextReference::class)
                 as? NavigationExecutor<Any, Any, NavigationKey>
             ?: return false
 
@@ -228,12 +238,13 @@ class NavigationController(
             val keyType = instruction.navigationKey::class
             val parentNavigator = navigatorForKeyType(keyType)
             if (parentNavigator is ActivityNavigator) return instruction
+            if (parentNavigator is NoKeyNavigator) return instruction
             return findCorrectParentInstructionFor(instruction.parentInstruction)
         }
 
         val parentInstruction = when (navigationDirection) {
-            NavigationDirection.FORWARD -> findCorrectParentInstructionFor(parentContext.instruction)
-            NavigationDirection.REPLACE -> findCorrectParentInstructionFor(parentContext.instruction)?.parentInstruction
+            NavigationDirection.FORWARD -> findCorrectParentInstructionFor(parentContext.navigationHandle().instruction)
+            NavigationDirection.REPLACE -> findCorrectParentInstructionFor(parentContext.navigationHandle().instruction)?.parentInstruction
             NavigationDirection.REPLACE_ROOT -> null
         }
 

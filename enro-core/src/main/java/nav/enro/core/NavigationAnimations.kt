@@ -9,6 +9,8 @@ import nav.enro.core.context.NavigationContext
 import nav.enro.core.context.activity
 import nav.enro.core.context.navigationContext
 import nav.enro.core.internal.getAttributeResourceId
+import nav.enro.core.internal.navigationHandle
+import nav.enro.core.navigator.NavigatorAnimations
 import nav.enro.core.navigator.toResource
 
 sealed class NavigationAnimations : Parcelable {
@@ -86,7 +88,8 @@ private fun animationsForOpen(
     val theme = context.activity.theme
     val navigator = context.navigator
 
-    val navigatorAnimations = navigator.animations.toResource(theme)
+    val navigatorAnimations = navigator?.animations?.toResource(theme)
+        ?: NavigatorAnimations.default.toResource(theme)
     val instructionAnimations = navigationInstruction.animations?.toResource(theme)
 
     return when {
@@ -118,8 +121,9 @@ private fun animationsForClose(
     val theme = context.activity.theme
     val navigator = context.navigator
 
-    val navigatorAnimations = navigator.animations.toResource(theme)
-    val animations = context.instruction?.animations?.toResource(theme)
+    val navigatorAnimations = navigator?.animations?.toResource(theme)
+        ?: NavigatorAnimations.default.toResource(theme)
+    val animations = context.navigationHandle().instruction.animations?.toResource(theme)
 
     return when {
         animations != null -> AnimationPair(

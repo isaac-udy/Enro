@@ -5,7 +5,10 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
-import nav.enro.*
+import nav.enro.DefaultActivity
+import nav.enro.DefaultActivityKey
+import nav.enro.GenericActivity
+import nav.enro.GenericActivityKey
 import org.junit.Test
 import java.util.*
 
@@ -15,7 +18,17 @@ class ActivityToActivityTests {
     fun givenDefaultActivityOpenedWithoutNavigationKeySet_thenDefaultKeyIsUsed() {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
-        assertEquals(defaultKey, handle.key)
+        assertEquals(DefaultActivity.defaultKey, handle.key)
+    }
+
+    @Test
+    fun givenDefaultActivityRecreated_thenNavigationHandleIdIsStable() {
+        val scenario = ActivityScenario.launch(DefaultActivity::class.java)
+        val id = scenario.getNavigationHandle<DefaultActivityKey>().id
+        scenario.recreate()
+
+        val recreatedId = expectActivity<DefaultActivity>().getNavigationHandle().id
+        assertEquals(id, recreatedId)
     }
 
     @Test
@@ -76,7 +89,7 @@ class ActivityToActivityTests {
 
         val activeActivity = expectActivity<DefaultActivity>()
         val activeHandle = activeActivity.getNavigationHandle().asTyped<DefaultActivityKey>()
-        assertEquals(defaultKey, activeHandle.key)
+        assertEquals(DefaultActivity.defaultKey, activeHandle.key)
     }
 
     @Test(expected = IllegalStateException::class)

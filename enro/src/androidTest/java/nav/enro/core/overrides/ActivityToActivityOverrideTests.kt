@@ -3,10 +3,7 @@ package nav.enro.core.overrides
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
-import nav.enro.DefaultActivity
-import nav.enro.DefaultActivityKey
-import nav.enro.GenericActivity
-import nav.enro.GenericActivityKey
+import nav.enro.*
 import nav.enro.core.*
 import nav.enro.core.controller.navigationController
 import nav.enro.core.executors.createOverride
@@ -122,4 +119,50 @@ class ActivityToActivityOverrideTests() {
         assertTrue(closeOverrideCalled)
     }
 
+
+    @Test
+    fun givenUnboundActivityToActivityOverride_whenActivityIsLaunched_thenOverrideIsCalled() {
+        var launchOverrideCalled = false
+        application.navigationController.addOverride(
+            createOverride<UnboundActivity, GenericActivity>(
+                launch = {
+                    launchOverrideCalled = true
+                    defaultLaunch<GenericActivity>().invoke(it)
+                }
+            )
+        )
+
+        ActivityScenario.launch(UnboundActivity::class.java)
+        expectActivity<UnboundActivity>().getNavigationHandle()
+            .forward(GenericActivityKey("override test 2"))
+
+        expectActivity<GenericActivity>()
+
+        assertTrue(launchOverrideCalled)
+    }
+
+    @Test
+    fun givenUnboundActivityToActivityOverride_whenActivityIsClosed_thenOverrideIsCalled() {
+        var closeOverrideCalled = false
+        application.navigationController.addOverride(
+            createOverride<UnboundActivity, GenericActivity>(
+                close = {
+                    closeOverrideCalled = true
+                    defaultClose<GenericActivity>().invoke(it)
+                }
+            )
+        )
+
+        ActivityScenario.launch(UnboundActivity::class.java)
+        expectActivity<UnboundActivity>().getNavigationHandle()
+            .forward(GenericActivityKey("override test 2"))
+
+        expectActivity<GenericActivity>()
+            .getNavigationHandle()
+            .close()
+
+        expectActivity<UnboundActivity>()
+
+        assertTrue(closeOverrideCalled)
+    }
 }

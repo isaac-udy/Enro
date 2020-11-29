@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import nav.enro.core.NavigationKey
 import nav.enro.core.internal.handle.NavigationHandleViewModel
+import nav.enro.core.internal.navigationHandle
 import nav.enro.core.navigator.FragmentHost
 
 val NavigationContext<out Fragment>.fragment get() = contextReference
@@ -23,7 +24,7 @@ internal fun NavigationContext<*>.fragmentHostFor(key: NavigationKey): FragmentH
     val primaryFragment = childFragmentManager.primaryNavigationFragment
     val activeContainerId = primaryFragment?.getContainerId()
 
-    val visibleContainers = childContainers.filter {
+    val visibleContainers = navigationHandle().childContainers.filter {
         when (contextReference) {
             is FragmentActivity -> contextReference.findViewById<View>(it.containerId).isVisible
             is Fragment -> contextReference.requireView().findViewById<View>(it.containerId).isVisible

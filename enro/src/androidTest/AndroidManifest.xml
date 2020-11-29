@@ -6,5 +6,6 @@
         <activity android:name=".DefaultActivity"/>
         <activity android:name=".GenericActivity"/>
         <activity android:name=".ActivityWithFragments"/>
+        <activity android:name=".UnboundActivity"/>
     </application>
 </manifest>

@@ -42,6 +42,14 @@ internal inline fun <reified T: Fragment> expectFragment(crossinline selector: (
     }
 }
 
+internal inline fun <reified T: Fragment> expectNoFragment(crossinline selector: (Fragment) -> Boolean = { it is T }): Boolean {
+    val activity = expectActivity<FragmentActivity>()
+    return waitOnMain {
+        val fragment = activity.supportFragmentManager.primaryNavigationFragment ?: return@waitOnMain true
+        if(selector(fragment)) return@waitOnMain null else true
+    }
+}
+
 fun expectNoActivity() {
     waitOnMain {
         val activities = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.PRE_ON_CREATE).toList() +

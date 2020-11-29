@@ -30,7 +30,7 @@ internal fun FragmentActivity.addOnBackPressedListener(block: () -> Unit) {
     })
 }
 
-internal fun NavigationContext<out Any>.navigationHandle(): NavigationHandleViewModel {
+internal fun NavigationContext<*>.navigationHandle(): NavigationHandleViewModel {
     return when (this) {
         is FragmentContext<out Fragment> -> fragment.getNavigationHandle()
         is ActivityContext<out FragmentActivity> -> activity.getNavigationHandle()

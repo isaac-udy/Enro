@@ -9,6 +9,7 @@ import nav.enro.core.*
 import nav.enro.core.context.*
 import nav.enro.core.internal.AbstractSingleFragmentActivity
 import nav.enro.core.internal.SingleFragmentKey
+import nav.enro.core.internal.navigationHandle
 import nav.enro.core.navigator.ActivityNavigator
 import nav.enro.core.navigator.FragmentNavigator
 import nav.enro.core.navigator.Navigator
@@ -83,7 +84,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
             if(activeFragment != null
                 && activeFragment.tag != null
-                && activeFragment.tag == activeFragment.navigationContext.id
+                && activeFragment.tag == activeFragment.navigationContext.navigationHandle().id
                 && activeFragment.tag == instruction.parentInstruction?.instructionId
             ){
                 detach(activeFragment)
@@ -189,7 +190,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
 fun NavigationContext<out Fragment>.getParentFragment(): Fragment? {
     val containerView = contextReference.getContainerId()
-    val parentInstruction = parentInstruction
+    val parentInstruction = navigationHandle().instruction.parentInstruction
     parentInstruction ?: return null
 
     val previousNavigator = controller.navigatorForKeyType(parentInstruction.navigationKey::class)

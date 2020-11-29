@@ -3,6 +3,7 @@ package nav.enro.core.navigator
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.NavigationKey
+import nav.enro.core.NoNavigationKeyBound
 import kotlin.reflect.KClass
 
 interface Navigator<C: Any, T : NavigationKey> {
@@ -27,6 +28,12 @@ class SyntheticNavigator<T : NavigationKey> @PublishedApi internal constructor(
     override val keyType: KClass<T>,
     val destination: SyntheticDestination<T>
 ) : Navigator<Any, T> {
+    override val contextType: KClass<Any> = Any::class
+    override val animations: NavigatorAnimations = NavigatorAnimations.default
+}
+
+internal class NoKeyNavigator: Navigator<Any, NoNavigationKeyBound> {
+    override val keyType: KClass<NoNavigationKeyBound> = NoNavigationKeyBound::class
     override val contextType: KClass<Any> = Any::class
     override val animations: NavigatorAnimations = NavigatorAnimations.default
 }
