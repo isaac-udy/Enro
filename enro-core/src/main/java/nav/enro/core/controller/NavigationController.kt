@@ -31,7 +31,7 @@ class NavigationController(
     overrides: List<NavigationExecutor<*, *, *>> = listOf(),
     private val plugins: List<EnroPlugin> = listOf()
 ) {
-    internal var active: NavigationHandle<*>? = null
+    internal var active: NavigationHandle? = null
         set(value) {
             if(value == field) return
             field = value
@@ -77,15 +77,15 @@ class NavigationController(
 
     private val temporaryOverrides = mutableMapOf<Pair<KClass<out Any>, KClass<out Any>>, NavigationExecutor<*,*,*>>()
 
-    internal val handles = mutableMapOf<String, NavigationHandleViewModel<*>>()
+    internal val handles = mutableMapOf<String, NavigationHandleViewModel>()
 
     init {
         plugins.forEach { it.onAttached(this) }
     }
 
     internal fun open(
-        navigationContext: NavigationContext<out Any, out NavigationKey>,
-        instruction: NavigationInstruction.Open<*>
+        navigationContext: NavigationContext<out Any>,
+        instruction: NavigationInstruction.Open
     ) {
         val navigator = navigatorForKeyType(instruction.navigationKey::class)
             ?: throw IllegalStateException("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
@@ -107,12 +107,12 @@ class NavigationController(
                 )
             )
             is SyntheticNavigator -> (navigator.destination as SyntheticDestination<NavigationKey>)
-                .process(navigationContext, instruction as NavigationInstruction.Open<NavigationKey>)
+                .process(navigationContext, instruction as NavigationInstruction.Open)
         }
     }
 
     internal fun close(
-        navigationContext: NavigationContext<out Any, out NavigationKey>
+        navigationContext: NavigationContext<out Any>
     ) {
         if (!closeOverrideFor(navigationContext)) {
             when (navigationContext) {
@@ -122,11 +122,11 @@ class NavigationController(
         }
     }
 
-    internal fun onOpened(navigationHandle: NavigationHandle<*>) {
+    internal fun onOpened(navigationHandle: NavigationHandle) {
         plugins.forEach { it.onOpened(navigationHandle) }
     }
 
-    internal fun onClosed(navigationHandle: NavigationHandle<*>) {
+    internal fun onClosed(navigationHandle: NavigationHandle) {
         plugins.forEach { it.onClosed(navigationHandle) }
     }
 
@@ -147,9 +147,9 @@ class NavigationController(
     }
 
     private fun openOverrideFor(
-        fromContext: NavigationContext<out Any, *>,
+        fromContext: NavigationContext<out Any>,
         navigator: Navigator<out Any, out NavigationKey>,
-        instruction: NavigationInstruction.Open<out NavigationKey>
+        instruction: NavigationInstruction.Open
     ): Boolean {
 
         val override = overrideFor(fromContext.contextReference::class to navigator.contextType)
@@ -189,7 +189,7 @@ class NavigationController(
         }
     }
 
-    private fun closeOverrideFor(navigationContext: NavigationContext<out Any, out NavigationKey>): Boolean {
+    private fun closeOverrideFor(navigationContext: NavigationContext<out Any>): Boolean {
         val parentType = navigationContext.parentInstruction
             ?.let {
                 if(it.navigationKey is SingleFragmentKey) {
@@ -210,13 +210,13 @@ class NavigationController(
         return true
     }
 
-    private fun NavigationInstruction.Open<*>.setParentInstruction(
-        parentContext: NavigationContext<*, *>,
+    private fun NavigationInstruction.Open.setParentInstruction(
+        parentContext: NavigationContext<*>,
         navigator: Navigator<out Any, out NavigationKey>
-    ): NavigationInstruction.Open<*> {
+    ): NavigationInstruction.Open {
         if (parentInstruction != null) return this
 
-        fun findCorrectParentInstructionFor(instruction: NavigationInstruction.Open<*>?): NavigationInstruction.Open<*>? {
+        fun findCorrectParentInstructionFor(instruction: NavigationInstruction.Open?): NavigationInstruction.Open? {
             if (navigator is FragmentNavigator) {
                 return instruction
             }

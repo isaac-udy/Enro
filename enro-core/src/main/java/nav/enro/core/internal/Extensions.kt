@@ -8,10 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import nav.enro.core.NavigationKey
 import nav.enro.core.context.*
-import nav.enro.core.context.ActivityContext
-import nav.enro.core.context.FragmentContext
 import nav.enro.core.getNavigationHandle
 import nav.enro.core.internal.handle.NavigationHandleViewModel
 
@@ -33,11 +30,11 @@ internal fun FragmentActivity.addOnBackPressedListener(block: () -> Unit) {
     })
 }
 
-internal fun NavigationContext<out Any, *>.navigationHandle(): NavigationHandleViewModel<*> {
+internal fun NavigationContext<out Any>.navigationHandle(): NavigationHandleViewModel {
     return when (this) {
-        is FragmentContext<out Fragment, *> -> fragment.getNavigationHandle()
-        is ActivityContext<out FragmentActivity, *> -> activity.getNavigationHandle<NavigationKey>()
-    } as NavigationHandleViewModel<*>
+        is FragmentContext<out Fragment> -> fragment.getNavigationHandle()
+        is ActivityContext<out FragmentActivity> -> activity.getNavigationHandle()
+    } as NavigationHandleViewModel
 }
 
 internal fun Resources.Theme.getAttributeResourceId(attr: Int) = TypedValue().let {

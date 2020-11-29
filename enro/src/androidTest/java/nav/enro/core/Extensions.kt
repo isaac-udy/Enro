@@ -8,16 +8,16 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 
-inline fun <reified T: NavigationKey> ActivityScenario<out FragmentActivity>.getNavigationHandle(): NavigationHandle<T> {
-    var result: NavigationHandle<T>? = null
+inline fun <reified T: NavigationKey> ActivityScenario<out FragmentActivity>.getNavigationHandle(): TypedNavigationHandle<T> {
+    var result: NavigationHandle? = null
     onActivity{
-        result = it.getNavigationHandle<T>()
+        result = it.getNavigationHandle()
     }
 
     val handle = result ?: throw IllegalStateException("Could not retrieve NavigationHandle from Activity")
-    val key = handle.key as? T
-        ?: throw IllegalStateException("Handle was of incorrect type. Expected ${T::class.java.name} but was ${handle.key::class.java.name}")
-    return handle
+    val key = handle.key<NavigationKey>() as? T
+        ?: throw IllegalStateException("Handle was of incorrect type. Expected ${T::class.java.name} but was ${handle.key<NavigationKey>()::class.java.name}")
+    return handle.asTyped()
 }
 
 inline fun <reified T: FragmentActivity> expectActivity(crossinline selector: (FragmentActivity) -> Boolean = { it is T }): T {

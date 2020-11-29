@@ -5,9 +5,13 @@ import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import nav.enro.core.context.ChildContainer
 import nav.enro.core.internal.handle.NavigationHandleViewModel
+import java.lang.ref.WeakReference
+import kotlin.collections.set
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -16,46 +20,66 @@ class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal const
     private val lifecycleOwner: LifecycleOwner,
     private val viewModelStoreOwner: ViewModelStoreOwner,
     private val configBuilder: NavigationHandleConfiguration<Key>.() -> Unit = {}
-) : ReadOnlyProperty<Any, NavigationHandle<Key>> {
+) : ReadOnlyProperty<Any, TypedNavigationHandle<Key>> {
 
     private val config = NavigationHandleConfiguration<Key>().apply(configBuilder)
 
-    private val navigationHandle by lazy {
+    private val navigationHandle: TypedNavigationHandle<Key> by lazy {
         val navigationHandle = ViewModelProvider(viewModelStoreOwner, ViewModelProvider.NewInstanceFactory())
             .get(NavigationHandleViewModel::class.java)
-                as NavigationHandleViewModel<Key>
 
         config.applyTo(navigationHandle)
 
-        return@lazy navigationHandle
+        return@lazy navigationHandle.asTyped<Key>()
     }
 
     init {
-        lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
-            override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if(event == Lifecycle.Event.ON_CREATE) {
-                    // trigger the lazy creation of the navigationHandle property
-                    navigationHandle.hashCode()
-                }
-            }
-        })
+        pendingProperties[lifecycleOwner.hashCode()] = WeakReference(this)
     }
 
-    override fun getValue(thisRef: Any, property: KProperty<*>): NavigationHandle<Key> {
+    override fun getValue(thisRef: Any, property: KProperty<*>): TypedNavigationHandle<Key> {
         return navigationHandle
+    }
+
+    companion object {
+        internal val pendingProperties = mutableMapOf<Int, WeakReference<NavigationHandleProperty<*>>>()
+
+        fun applyPending(activity: FragmentActivity) {
+            val pending = pendingProperties[activity.hashCode()] ?: return
+            pending.get()?.navigationHandle.hashCode()
+            pendingProperties.remove(activity.hashCode())
+        }
+
+        fun applyPending(fragment: Fragment) {
+            val pending = pendingProperties[fragment.hashCode()] ?: return
+            pending.get()?.navigationHandle.hashCode()
+            pendingProperties.remove(fragment.hashCode())
+        }
     }
 }
 
 class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal constructor() {
 
-    private var childContainers = listOf<ChildContainer>()
+    private var childContainers: List<ChildContainer> = listOf()
+    private var defaultKey: T? = null
+    private var onCloseRequested: TypedNavigationHandle<T>.() -> Unit = { close() }
 
     fun container(@IdRes containerId: Int, accept: (NavigationKey) -> Boolean = { true }) {
         childContainers = childContainers + ChildContainer(containerId, accept)
     }
 
-    internal fun applyTo(navigationHandleViewModel: NavigationHandleViewModel<T>) {
+    fun defaultKey(navigationKey: T) {
+        defaultKey = navigationKey
+    }
+
+    fun onCloseRequested(block: TypedNavigationHandle<T>.() -> Unit) {
+        onCloseRequested = block
+    }
+
+    internal fun applyTo(navigationHandleViewModel: NavigationHandleViewModel) {
         navigationHandleViewModel.childContainers = childContainers
+        navigationHandleViewModel.defaultKey = defaultKey
+        navigationHandleViewModel.internalOnCloseRequested = { onCloseRequested(navigationHandleViewModel.asTyped()) }
     }
 }
 
@@ -76,8 +100,8 @@ fun <T : NavigationKey> Fragment.navigationHandle(
     configBuilder = config
 )
 
-fun <T : NavigationKey> FragmentActivity.getNavigationHandle(): NavigationHandle<T> =
-    viewModels<NavigationHandleViewModel<T>> { ViewModelProvider.NewInstanceFactory() } .value
+fun FragmentActivity.getNavigationHandle(): NavigationHandle =
+    viewModels<NavigationHandleViewModel> { ViewModelProvider.NewInstanceFactory() } .value
 
-fun <T : NavigationKey> Fragment.getNavigationHandle(): NavigationHandle<T> =
-    viewModels<NavigationHandleViewModel<T>> { ViewModelProvider.NewInstanceFactory() } .value
+fun Fragment.getNavigationHandle(): NavigationHandle =
+    viewModels<NavigationHandleViewModel> { ViewModelProvider.NewInstanceFactory() } .value

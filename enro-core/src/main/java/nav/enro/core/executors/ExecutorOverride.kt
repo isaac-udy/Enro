@@ -10,7 +10,7 @@ fun <From : Any, Opens : Any> createOverride(
     fromClass: KClass<From>,
     opensClass: KClass<Opens>,
     launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
-    close: ((context: NavigationContext<out Opens, out NavigationKey>) -> Unit)
+    close: ((context: NavigationContext<out Opens>) -> Unit)
 ): NavigationExecutor<From, Opens, NavigationKey> =
     object : NavigationExecutor<From, Opens, NavigationKey>(
         fromType = fromClass,
@@ -21,14 +21,14 @@ fun <From : Any, Opens : Any> createOverride(
             launch(args)
         }
 
-        override fun close(context: NavigationContext<out Opens, out NavigationKey>) {
+        override fun close(context: NavigationContext<out Opens>) {
             close(context)
         }
     }
 
 inline fun <reified From : Any, reified Opens : Any> createOverride(
     noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit) = defaultLaunch(),
-    noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit = defaultClose()
+    noinline close: (NavigationContext<out Opens>) -> Unit = defaultClose()
 ): NavigationExecutor<From, Opens, NavigationKey> =
     createOverride(From::class, Opens::class, launch, close)
 
@@ -46,13 +46,13 @@ inline fun <reified Opens: Any> defaultLaunch(): ((ExecutorArgs<out Any, out Ope
 }
 
 @Suppress("UNCHECKED_CAST")
-inline fun <reified Opens: Any> defaultClose(): (NavigationContext<out Opens, out NavigationKey>) -> Unit {
+inline fun <reified Opens: Any> defaultClose(): (NavigationContext<out Opens>) -> Unit {
     return when {
         FragmentActivity::class.java.isAssignableFrom(Opens::class.java) ->
-            DefaultActivityExecutor::close as (NavigationContext<out Opens, out NavigationKey>) -> Unit
+            DefaultActivityExecutor::close as (NavigationContext<out Opens>) -> Unit
 
         Fragment::class.java.isAssignableFrom(Opens::class.java) ->
-            DefaultFragmentExecutor::close as (NavigationContext<out Opens, out NavigationKey>) -> Unit
+            DefaultFragmentExecutor::close as (NavigationContext<out Opens>) -> Unit
 
         else -> throw IllegalArgumentException("No default close executor found for ${Opens::class}")
     }

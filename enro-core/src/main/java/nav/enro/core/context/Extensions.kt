@@ -10,17 +10,16 @@ import androidx.lifecycle.ViewModelProvider
 import nav.enro.core.NavigationKey
 import nav.enro.core.internal.handle.NavigationHandleViewModel
 import nav.enro.core.navigator.FragmentHost
-import java.lang.IllegalStateException
 
-val NavigationContext<out Fragment, *>.fragment get() = contextReference
-val NavigationContext<*, *>.activity: FragmentActivity
+val NavigationContext<out Fragment>.fragment get() = contextReference
+val NavigationContext<*>.activity: FragmentActivity
     get() = when (contextReference) {
         is FragmentActivity -> contextReference
         is Fragment -> contextReference.requireActivity()
         else -> throw IllegalStateException()
     }
 
-internal fun NavigationContext<*, *>.fragmentHostFor(key: NavigationKey): FragmentHost? {
+internal fun NavigationContext<*>.fragmentHostFor(key: NavigationKey): FragmentHost? {
     val primaryFragment = childFragmentManager.primaryNavigationFragment
     val activeContainerId = primaryFragment?.getContainerId()
 
@@ -48,7 +47,7 @@ internal fun NavigationContext<*, *>.fragmentHostFor(key: NavigationKey): Fragme
 
 internal fun Fragment.getContainerId() = (requireView().parent as View).id
 
-fun NavigationContext<*, *>.rootContext(): NavigationContext<*, *> {
+fun NavigationContext<*>.rootContext(): NavigationContext<*> {
     var parent = this
     while (true) {
         val currentContext = parent
@@ -56,10 +55,10 @@ fun NavigationContext<*, *>.rootContext(): NavigationContext<*, *> {
     }
 }
 
-fun NavigationContext<*, *>.parentContext(): NavigationContext<*, *>? {
+fun NavigationContext<*>.parentContext(): NavigationContext<*>? {
     return when (this) {
         is ActivityContext -> null
-        is FragmentContext<out Fragment, *> ->
+        is FragmentContext<out Fragment> ->
             when (val parentFragment = fragment.parentFragment) {
                 null -> fragment.requireActivity().navigationContext
                 else -> parentFragment.navigationContext
@@ -67,7 +66,7 @@ fun NavigationContext<*, *>.parentContext(): NavigationContext<*, *>? {
     }
 }
 
-fun NavigationContext<*, out NavigationKey>.leafContext(): NavigationContext<*, out NavigationKey> {
+fun NavigationContext<*>.leafContext(): NavigationContext<*> {
     val primaryNavigationFragment = childFragmentManager.primaryNavigationFragment ?: return this
     primaryNavigationFragment.view ?: return this
     val childContext = primaryNavigationFragment.navigationContext
@@ -75,9 +74,9 @@ fun NavigationContext<*, out NavigationKey>.leafContext(): NavigationContext<*, 
 }
 
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
-internal val <T : FragmentActivity> T.navigationContext: ActivityContext<T, Nothing>
-    get() = viewModels<NavigationHandleViewModel<Nothing>> { ViewModelProvider.NewInstanceFactory() } .value.navigationContext as ActivityContext<T, Nothing>
+internal val <T : FragmentActivity> T.navigationContext: ActivityContext<T>
+    get() = viewModels<NavigationHandleViewModel> { ViewModelProvider.NewInstanceFactory() } .value.navigationContext as ActivityContext<T>
 
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
-internal val <T : Fragment> T.navigationContext: FragmentContext<T, Nothing>
-    get() = viewModels<NavigationHandleViewModel<Nothing>> { ViewModelProvider.NewInstanceFactory() } .value.navigationContext as FragmentContext<T, Nothing>
+internal val <T : Fragment> T.navigationContext: FragmentContext<T>
+    get() = viewModels<NavigationHandleViewModel> { ViewModelProvider.NewInstanceFactory() } .value.navigationContext as FragmentContext<T>

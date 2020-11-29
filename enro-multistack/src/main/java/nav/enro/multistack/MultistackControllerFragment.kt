@@ -147,7 +147,7 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
     private fun onStackClosed(container: MultistackContainer) {
         listenForEvents = false
         if (container == containers.first()) {
-            requireActivity().getNavigationHandle<Nothing>().close()
+            requireActivity().getNavigationHandle().close()
         } else {
             openStack(containers.first())
         }

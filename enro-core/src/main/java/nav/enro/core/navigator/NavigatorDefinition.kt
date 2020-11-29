@@ -30,17 +30,11 @@ class ActivityNavigatorBuilder<T: NavigationKey, C: FragmentActivity>(
     @PublishedApi internal val contextType: KClass<C>
 ) {
     @PublishedApi internal val executors = mutableListOf<NavigationExecutor<C, *, *>>()
-    private var defaultKey: NavigationKey? = null
-
-    fun defaultKey(key: T) {
-        defaultKey = key
-    }
 
     fun build() = NavigatorDefinition(
         navigator = ActivityNavigator(
             keyType = keyType,
             contextType = contextType,
-            defaultKey = defaultKey
         ),
         executors = executors
     )
@@ -71,7 +65,6 @@ class FragmentNavigatorBuilder<C: Fragment, T: NavigationKey>(
         navigator = FragmentNavigator(
             keyType = keyType,
             contextType = contextType,
-            defaultKey = null
         ),
         executors = executors
     )

@@ -1,10 +1,15 @@
 package nav.enro.core
 
+import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
-import junit.framework.TestCase.*
-import nav.enro.core.internal.SingleFragmentActivity
+import junit.framework.TestCase.assertEquals
+import nav.enro.*
 import org.junit.Test
 import java.util.*
+
+private fun expectSingleFragmentActivity(): FragmentActivity {
+    return expectActivity { it::class.java.simpleName == "SingleFragmentActivity"}
+}
 
 class ActivityToFragmentTests {
 
@@ -16,9 +21,9 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.forward(GenericFragmentKey(id))
 
-        val activity = expectActivity<SingleFragmentActivity>()
+        val activity = expectSingleFragmentActivity()
         val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
-        val fragmentHandle = activeFragment.getNavigationHandle<GenericFragmentKey>()
+        val fragmentHandle = activeFragment.getNavigationHandle().asTyped<GenericFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }
 
@@ -34,10 +39,10 @@ class ActivityToFragmentTests {
             GenericFragmentKey(id)
         )
 
-        val activity = expectActivity<SingleFragmentActivity>()
+        val activity = expectSingleFragmentActivity()
         val fragment = expectFragment<GenericFragment>()
 
-        val fragmentHandle = fragment.getNavigationHandle<GenericFragmentKey>()
+        val fragmentHandle = fragment.getNavigationHandle().asTyped<GenericFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
         assertEquals(fragment, activity.supportFragmentManager.primaryNavigationFragment!!)
     }
@@ -53,7 +58,7 @@ class ActivityToFragmentTests {
 
         expectActivity<ActivityWithFragments>()
         val activeFragment = expectFragment<ActivityChildFragment>()
-        val fragmentHandle = activeFragment.getNavigationHandle<ActivityChildFragmentKey>()
+        val fragmentHandle = activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }
 
@@ -65,9 +70,9 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.replace(ActivityChildFragmentKey(id))
 
-        expectActivity<SingleFragmentActivity>()
+        val activity = expectSingleFragmentActivity()
         val activeFragment = expectFragment<ActivityChildFragment>()
-        val fragmentHandle = activeFragment.getNavigationHandle<ActivityChildFragmentKey>()
+        val fragmentHandle = activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
 
         fragmentHandle.close()
@@ -83,9 +88,9 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.forward(GenericFragmentKey(id))
 
-        val activity = expectActivity<SingleFragmentActivity>()
+        val activity = expectSingleFragmentActivity()
         val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
-        val fragmentHandle = activeFragment.getNavigationHandle<GenericFragmentKey>()
+        val fragmentHandle = activeFragment.getNavigationHandle().asTyped<GenericFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }
 
@@ -97,9 +102,9 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.replace(ActivityChildFragmentKey(id))
 
-        val activity = expectActivity<SingleFragmentActivity>()
+        val activity = expectSingleFragmentActivity()
         val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
-        val fragmentHandle = activeFragment.getNavigationHandle<ActivityChildFragmentKey>()
+        val fragmentHandle = activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }
 }

@@ -6,16 +6,13 @@ import android.os.Bundle
 import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.SavedStateViewModelFactory
 import androidx.lifecycle.ViewModelProvider
-import nav.enro.core.CONTEXT_ID_ARG
-import nav.enro.core.NavigationKey
+import nav.enro.core.*
 import nav.enro.core.context.ActivityContext
 import nav.enro.core.context.leafContext
 import nav.enro.core.context.navigationContext
 import nav.enro.core.controller.navigationController
 import nav.enro.core.internal.navigationHandle
-import nav.enro.core.readOpenInstruction
 import java.util.*
 
 internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCallbacks {
@@ -27,12 +24,16 @@ internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCa
             NavigationHandleFragmentBinder, true
         )
 
-        val handle by activity.viewModels<NavigationHandleViewModel<NavigationKey>> { ViewModelProvider.NewInstanceFactory() }
-        val contextId = activity.intent.extras?.readOpenInstruction<NavigationKey>()?.instructionId
+        val handle by activity.viewModels<NavigationHandleViewModel> { ViewModelProvider.NewInstanceFactory() }
+        val contextId = activity.intent.extras?.readOpenInstruction()?.instructionId
             ?: savedInstanceState?.getString(CONTEXT_ID_ARG)
             ?: UUID.randomUUID().toString()
 
-        handle.navigationContext = ActivityContext(activity, contextId)
+        NavigationHandleProperty.applyPending(activity)
+        val instruction = activity.intent.extras?.readOpenInstruction() ?: handle.defaultKey?.let {
+            NavigationInstruction.Open(NavigationDirection.FORWARD, it)
+        }
+        handle.navigationContext = ActivityContext(activity, instruction, contextId)
         if(savedInstanceState  == null) handle.executeDeeplink()
         activity.findViewById<ViewGroup>(android.R.id.content).viewTreeObserver.addOnGlobalLayoutListener {
             activity.application.navigationController.active = activity.navigationContext.leafContext().navigationHandle()

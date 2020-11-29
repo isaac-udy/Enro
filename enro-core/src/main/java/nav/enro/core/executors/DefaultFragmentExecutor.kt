@@ -7,10 +7,11 @@ import androidx.core.view.ViewCompat
 import androidx.fragment.app.*
 import nav.enro.core.*
 import nav.enro.core.context.*
-import nav.enro.core.context.ActivityContext
-import nav.enro.core.context.FragmentContext
-import nav.enro.core.internal.*
-import nav.enro.core.navigator.*
+import nav.enro.core.internal.AbstractSingleFragmentActivity
+import nav.enro.core.internal.SingleFragmentKey
+import nav.enro.core.navigator.ActivityNavigator
+import nav.enro.core.navigator.FragmentNavigator
+import nav.enro.core.navigator.Navigator
 
 object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey>(
     fromType = Any::class,
@@ -93,7 +94,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         }
     }
 
-    override fun close(context: NavigationContext<out Fragment, out NavigationKey>) {
+    override fun close(context: NavigationContext<out Fragment>) {
         if (context.contextReference is DialogFragment) {
             context.contextReference.dismiss()
             return
@@ -124,7 +125,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     fun createFragment(
         fragmentManager: FragmentManager,
         navigator: Navigator<*, *>,
-        instruction: NavigationInstruction.Open<*>
+        instruction: NavigationInstruction.Open
     ): Fragment {
         val fragment = fragmentManager.fragmentFactory.instantiate(
             navigator.contextType.java.classLoader!!,
@@ -139,8 +140,8 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
     private fun tryExecutePendingTransitions(
         navigator: FragmentNavigator<*, *>,
-        fromContext: NavigationContext<out Any, *>,
-        instruction: NavigationInstruction.Open<*>
+        fromContext: NavigationContext<out Any>,
+        instruction: NavigationInstruction.Open
     ): Boolean {
         try {
             fromContext.fragmentHostFor(instruction.navigationKey)?.fragmentManager?.executePendingTransactions()
@@ -148,10 +149,10 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         } catch (ex: IllegalStateException) {
             mainThreadHandler.post {
                 when (fromContext) {
-                    is ActivityContext -> fromContext.activity.getNavigationHandle<Nothing>().executeInstruction(
+                    is ActivityContext -> fromContext.activity.getNavigationHandle().executeInstruction(
                         instruction
                     )
-                    is FragmentContext -> fromContext.fragment.getNavigationHandle<Nothing>().executeInstruction(
+                    is FragmentContext -> fromContext.fragment.getNavigationHandle().executeInstruction(
                         instruction
                     )
                 }
@@ -161,8 +162,8 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     }
 
     fun openFragmentAsActivity(
-        fromContext: NavigationContext<out Any, *>,
-        instruction: NavigationInstruction.Open<*>
+        fromContext: NavigationContext<out Any>,
+        instruction: NavigationInstruction.Open
     ) {
         if(fromContext.contextReference is DialogFragment && instruction.navigationDirection == NavigationDirection.REPLACE) {
             // If we attempt to openFragmentAsActivity into a DialogFragment using the REPLACE direction,
@@ -186,7 +187,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     }
 }
 
-fun NavigationContext<out Fragment, *>.getParentFragment(): Fragment? {
+fun NavigationContext<out Fragment>.getParentFragment(): Fragment? {
     val containerView = contextReference.getContainerId()
     val parentInstruction = parentInstruction
     parentInstruction ?: return null

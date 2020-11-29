@@ -3,11 +3,11 @@ package nav.enro.core.overrides
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
+import nav.enro.*
 import nav.enro.core.*
 import nav.enro.core.controller.navigationController
 import nav.enro.core.executors.createOverride
 import nav.enro.core.executors.defaultLaunch
-import nav.enro.core.expectFragment
 import org.junit.Before
 import org.junit.Test
 
@@ -44,7 +44,7 @@ class FragmentToActivityOverrideTests() {
             .forward(GenericFragmentKey("override test"))
 
         expectFragment<GenericFragment>()
-            .getNavigationHandle<GenericFragmentKey>()
+            .getNavigationHandle()
             .forward(GenericActivityKey("override test 2"))
 
         expectActivity<GenericActivity>()
@@ -68,11 +68,11 @@ class FragmentToActivityOverrideTests() {
             .forward(GenericFragmentKey("override test"))
 
         expectFragment<GenericFragment>()
-            .getNavigationHandle<GenericFragmentKey>()
+            .getNavigationHandle()
             .forward(GenericActivityKey("override test 2"))
 
         expectActivity<GenericActivity>()
-            .getNavigationHandle<GenericActivityKey>()
+            .getNavigationHandle()
             .close()
 
         expectFragment<GenericFragment>()
@@ -97,7 +97,7 @@ class FragmentToActivityOverrideTests() {
             .forward(ActivityChildFragmentKey("override test"))
 
         expectFragment<ActivityChildFragment>()
-            .getNavigationHandle<ActivityChildFragmentKey>()
+            .getNavigationHandle()
             .forward(GenericActivityKey("override test 2"))
 
         expectActivity<GenericActivity>()
@@ -121,11 +121,11 @@ class FragmentToActivityOverrideTests() {
             .forward(ActivityChildFragmentKey("override test"))
 
         expectFragment<ActivityChildFragment>()
-            .getNavigationHandle<ActivityChildFragmentKey>()
+            .getNavigationHandle()
             .forward(GenericActivityKey("override test 2"))
 
         expectActivity<GenericActivity>()
-            .getNavigationHandle<GenericActivityKey>()
+            .getNavigationHandle()
             .close()
 
         expectFragment<ActivityChildFragment>()

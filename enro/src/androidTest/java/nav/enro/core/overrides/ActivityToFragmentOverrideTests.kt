@@ -3,12 +3,12 @@ package nav.enro.core.overrides
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
+import nav.enro.*
 import nav.enro.core.*
 import nav.enro.core.controller.navigationController
 import nav.enro.core.executors.createOverride
 import nav.enro.core.executors.defaultClose
 import nav.enro.core.executors.defaultLaunch
-import nav.enro.core.expectFragment
 import org.junit.Test
 
 class ActivityToFragmentOverrideTests() {
@@ -50,7 +50,7 @@ class ActivityToFragmentOverrideTests() {
             .forward(GenericFragmentKey("override test"))
 
         expectFragment<GenericFragment>()
-            .getNavigationHandle<GenericFragmentKey>().close()
+            .getNavigationHandle().close()
 
         expectActivity<DefaultActivity>()
 
@@ -110,7 +110,7 @@ class ActivityToFragmentOverrideTests() {
             .forward(GenericFragmentKey("override test 2"))
 
         expectFragment<GenericFragment>()
-            .getNavigationHandle<GenericFragmentKey>()
+            .getNavigationHandle()
             .close()
 
         expectActivity<GenericActivity>()
@@ -170,7 +170,7 @@ class ActivityToFragmentOverrideTests() {
             .forward(ActivityChildFragmentKey("override test 2"))
 
         expectFragment<ActivityChildFragment>()
-            .getNavigationHandle<ActivityChildFragmentKey>()
+            .getNavigationHandle()
             .close()
 
         expectActivity<ActivityWithFragments>()

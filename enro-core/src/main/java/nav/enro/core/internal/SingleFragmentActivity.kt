@@ -11,7 +11,7 @@ import nav.enro.core.navigationHandle
 
 @Parcelize
 internal data class SingleFragmentKey(
-    val instruction: NavigationInstruction.Open<*>
+    val instruction: NavigationInstruction.Open
 ) : NavigationKey
 
 internal abstract class AbstractSingleFragmentActivity : AppCompatActivity() {

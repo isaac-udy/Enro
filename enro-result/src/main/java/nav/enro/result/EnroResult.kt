@@ -3,10 +3,9 @@ package nav.enro.result
 import nav.enro.core.NavigationHandle
 import nav.enro.core.controller.NavigationController
 import nav.enro.core.plugins.EnroPlugin
-import nav.enro.result.internal.ResultChannelImpl
-import nav.enro.result.internal.ResultChannelId
 import nav.enro.result.internal.PendingResult
-import java.lang.IllegalStateException
+import nav.enro.result.internal.ResultChannelId
+import nav.enro.result.internal.ResultChannelImpl
 
 class EnroResult: EnroPlugin() {
     private val channels = mutableMapOf<ResultChannelId, ResultChannelImpl<*>>()
@@ -16,7 +15,7 @@ class EnroResult: EnroPlugin() {
         controllerBindings[navigationController] = this
     }
 
-    override fun onActive(navigationHandle: NavigationHandle<*>) {
+    override fun onActive(navigationHandle: NavigationHandle) {
         channels.values
             .filter { channel ->
                 pendingResults.any { it.key == channel.id }

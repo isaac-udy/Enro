@@ -1,6 +1,5 @@
-package nav.enro.core
+package nav.enro
 
-import android.R
 import android.app.Application
 import nav.enro.core.controller.NavigationApplication
 import nav.enro.core.controller.NavigationController
@@ -13,19 +12,14 @@ class TestApplication : Application(),
     override val navigationController =
         NavigationController(
             navigators = listOf(
-                createActivityNavigator<DefaultActivityKey, DefaultActivity> {
-                    defaultKey(defaultKey)
-                },
+                createActivityNavigator<DefaultActivityKey, DefaultActivity>(),
 
                 createActivityNavigator<GenericActivityKey, GenericActivity>(),
                 createFragmentNavigator<GenericFragmentKey, GenericFragment>(),
 
-                createActivityNavigator<ActivityWithFragmentsKey, ActivityWithFragments> {
-                    defaultKey(ActivityWithFragmentsKey("default"))
-                },
+                createActivityNavigator<ActivityWithFragmentsKey, ActivityWithFragments>(),
                 createFragmentNavigator<ActivityChildFragmentKey, ActivityChildFragment>(),
                 createFragmentNavigator<ActivityChildFragmentTwoKey, ActivityChildFragmentTwo>()
-
             )
         )
 

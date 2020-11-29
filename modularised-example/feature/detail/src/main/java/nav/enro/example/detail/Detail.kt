@@ -8,13 +8,16 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import nav.enro.annotations.NavigationDestination
-import nav.enro.core.getNavigationHandle
 import nav.enro.core.navigationHandle
 import nav.enro.example.core.navigation.DetailKey
 import nav.enro.result.closeWithResult
 
 class DetailActivity : AppCompatActivity() {
-    private val navigation by navigationHandle<DetailKey>()
+    private val navigation by navigationHandle<DetailKey> {
+        onCloseRequested {
+            closeWithResult(false)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,16 +26,16 @@ class DetailActivity : AppCompatActivity() {
             text = "Detail View ${navigation.key.id}"
             setBackgroundColor(0xFFFFFFFF.toInt())
         })
-
-        navigation.onCloseRequested {
-            navigation.closeWithResult(false)
-        }
     }
 }
 
 @NavigationDestination(DetailKey::class)
 class DetailFragment : Fragment() {
-    private val navigation by navigationHandle<DetailKey>()
+    private val navigation by navigationHandle<DetailKey> {
+        onCloseRequested {
+            closeWithResult(false)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,9 +50,5 @@ class DetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        navigation.onCloseRequested {
-            navigation.closeWithResult(false)
-        }
     }
 }

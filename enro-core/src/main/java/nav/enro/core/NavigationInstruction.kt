@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import androidx.fragment.app.Fragment
 import kotlinx.android.parcel.Parcelize
-import java.util.UUID
+import java.util.*
 
 enum class NavigationDirection {
     FORWARD,
@@ -18,11 +18,11 @@ internal const val CONTEXT_ID_ARG = "nav.enro.core.CONTEXT_ID"
 
 sealed class NavigationInstruction {
     @Parcelize
-    data class Open<T: NavigationKey>(
+    data class Open(
         val navigationDirection: NavigationDirection,
-        val navigationKey: T,
+        val navigationKey: NavigationKey,
         val children: List<NavigationKey> = emptyList(),
-        val parentInstruction: Open<*>? = null,
+        val parentInstruction: Open? = null,
         val animations: NavigationAnimations? = null,
         val additionalData: Bundle = Bundle(),
         val instructionId: String = UUID.randomUUID().toString()
@@ -32,23 +32,23 @@ sealed class NavigationInstruction {
 }
 
 
-fun Intent.addOpenInstruction(instruction: NavigationInstruction.Open<*>): Intent {
+fun Intent.addOpenInstruction(instruction: NavigationInstruction.Open): Intent {
     putExtra(OPEN_ARG, instruction)
     return this
 }
 
-fun Bundle.addOpenInstruction(instruction: NavigationInstruction.Open<*>): Bundle {
+fun Bundle.addOpenInstruction(instruction: NavigationInstruction.Open): Bundle {
     putParcelable(OPEN_ARG, instruction)
     return this
 }
 
-fun Fragment.addOpenInstruction(instruction: NavigationInstruction.Open<*>): Fragment {
+fun Fragment.addOpenInstruction(instruction: NavigationInstruction.Open): Fragment {
     arguments = (arguments ?: Bundle()).apply {
         putParcelable(OPEN_ARG, instruction)
     }
     return this
 }
 
-fun <T: NavigationKey> Bundle.readOpenInstruction(): NavigationInstruction.Open<T>? {
+fun Bundle.readOpenInstruction(): NavigationInstruction.Open? {
     return getParcelable(OPEN_ARG)
 }

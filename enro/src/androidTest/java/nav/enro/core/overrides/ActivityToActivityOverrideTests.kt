@@ -3,6 +3,10 @@ package nav.enro.core.overrides
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
+import nav.enro.DefaultActivity
+import nav.enro.DefaultActivityKey
+import nav.enro.GenericActivity
+import nav.enro.GenericActivityKey
 import nav.enro.core.*
 import nav.enro.core.controller.navigationController
 import nav.enro.core.executors.createOverride
@@ -49,7 +53,7 @@ class ActivityToActivityOverrideTests() {
             .forward(GenericActivityKey("override test"))
 
         expectActivity<GenericActivity>()
-            .getNavigationHandle<GenericActivityKey>()
+            .getNavigationHandle()
             .close()
 
         expectActivity<DefaultActivity>()
@@ -110,7 +114,7 @@ class ActivityToActivityOverrideTests() {
             .forward(GenericActivityKey("override test 2"))
 
         expectActivity<GenericActivity>()
-            .getNavigationHandle<GenericActivityKey>()
+            .getNavigationHandle()
             .close()
 
         expectActivity<GenericActivity>()

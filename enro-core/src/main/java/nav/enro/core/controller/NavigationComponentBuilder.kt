@@ -40,7 +40,7 @@ class NavigationComponentBuilder {
 
     inline fun <reified From : Any, reified Opens : Any> override(
         noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit) = defaultLaunch(),
-        noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit = defaultClose()
+        noinline close: (NavigationContext<out Opens>) -> Unit = defaultClose()
     ) {
         overrides.add(createOverride(launch, close))
     }

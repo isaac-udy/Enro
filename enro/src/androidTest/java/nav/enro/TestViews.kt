@@ -1,4 +1,4 @@
-package nav.enro.core
+package nav.enro
 
 import android.os.Bundle
 import android.util.Log
@@ -11,12 +11,14 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import nav.enro.core.NavigationKey
+import nav.enro.core.getNavigationHandle
 
 abstract class TestActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val key = try {
-            getNavigationHandle<NavigationKey>().key
+            getNavigationHandle().key<NavigationKey>()
         } catch (t: Throwable) {
             Log.e("TestActivity", "Failed to open!", t)
             return
@@ -53,7 +55,7 @@ abstract class TestFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val key = try {
-            getNavigationHandle<NavigationKey>().key
+            getNavigationHandle().key<NavigationKey>()
         } catch (t: Throwable) {
             Log.e("TestFragment", "Failed to open!", t)
             return null

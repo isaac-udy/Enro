@@ -3,7 +3,9 @@ package nav.enro.core
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
-import junit.framework.TestCase.*
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNotNull
+import nav.enro.*
 import org.junit.Test
 import java.util.*
 
@@ -33,7 +35,7 @@ class ActivityToActivityTests {
         handle.forward(GenericActivityKey(id))
 
         val next = expectActivity<GenericActivity>()
-        val nextHandle = next.getNavigationHandle<GenericActivityKey>()
+        val nextHandle = next.getNavigationHandle().asTyped<GenericActivityKey>()
 
         assertEquals(id, nextHandle.key.id)
     }
@@ -58,7 +60,7 @@ class ActivityToActivityTests {
         )
 
         expectActivity<GenericActivity> {
-            it.getNavigationHandle<GenericActivityKey>().key.id == id
+            it.getNavigationHandle().key<GenericActivityKey>().id == id
         }
     }
 
@@ -69,15 +71,15 @@ class ActivityToActivityTests {
         handle.forward(GenericActivityKey("close"))
 
         val next = expectActivity<GenericActivity>()
-        val nextHandle = next.getNavigationHandle<GenericActivityKey>()
+        val nextHandle = next.getNavigationHandle()
         nextHandle.close()
 
         val activeActivity = expectActivity<DefaultActivity>()
-        val activeHandle = activeActivity.getNavigationHandle<DefaultActivityKey>()
+        val activeHandle = activeActivity.getNavigationHandle().asTyped<DefaultActivityKey>()
         assertEquals(defaultKey, activeHandle.key)
     }
 
-    @Test(expected = Throwable::class)
+    @Test(expected = IllegalStateException::class)
     fun givenActivityDoesNotHaveDefaultKey_whenActivityOpenedWithoutNavigationKeySet_thenNavigationHandleCannotRetrieveKey() {
         val scenario = ActivityScenario.launch(GenericActivity::class.java)
         val handle = scenario.getNavigationHandle<GenericActivityKey>()
@@ -114,7 +116,7 @@ class ActivityToActivityTests {
         handle.replace(GenericActivityKey(id))
 
         val next = expectActivity<GenericActivity>()
-        val nextHandle = next.getNavigationHandle<GenericActivityKey>()
+        val nextHandle = next.getNavigationHandle()
 
         nextHandle.close()
         expectNoActivity()
@@ -129,11 +131,11 @@ class ActivityToActivityTests {
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
         handle.forward(GenericActivityKey(first))
 
-        val firstActivity = expectActivity<GenericActivity> { it.getNavigationHandle<GenericActivityKey>().key.id == first }
-        firstActivity.getNavigationHandle<GenericActivityKey>().replace(GenericActivityKey(second))
+        val firstActivity = expectActivity<GenericActivity> { it.getNavigationHandle().key<GenericActivityKey>().id == first }
+        firstActivity.getNavigationHandle().replace(GenericActivityKey(second))
 
-        val secondActivity = expectActivity<GenericActivity> { it.getNavigationHandle<GenericActivityKey>().key.id == second }
-        secondActivity.getNavigationHandle<GenericActivityKey>().close()
+        val secondActivity = expectActivity<GenericActivity> { it.getNavigationHandle().key<GenericActivityKey>().id == second }
+        secondActivity.getNavigationHandle().close()
 
         expectActivity<DefaultActivity>()
     }

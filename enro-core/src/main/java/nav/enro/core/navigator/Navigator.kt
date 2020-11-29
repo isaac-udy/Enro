@@ -7,7 +7,6 @@ import kotlin.reflect.KClass
 
 interface Navigator<C: Any, T : NavigationKey> {
     val keyType: KClass<T>
-    val defaultKey: NavigationKey?
     val contextType: KClass<C>
     val animations: NavigatorAnimations
 }
@@ -15,14 +14,12 @@ interface Navigator<C: Any, T : NavigationKey> {
 class ActivityNavigator<C: FragmentActivity, T : NavigationKey> @PublishedApi internal constructor(
     override val keyType: KClass<T>,
     override val contextType: KClass<C>,
-    override val defaultKey: NavigationKey?,
     override val animations: NavigatorAnimations = NavigatorAnimations.default
 ) : Navigator<C, T>
 
 class FragmentNavigator<C: Fragment, T : NavigationKey> @PublishedApi internal constructor(
     override val keyType: KClass<T>,
     override val contextType: KClass<C>,
-    override val defaultKey: NavigationKey?,
     override val animations: NavigatorAnimations = NavigatorAnimations.default
 ) : Navigator<C, T>
 
@@ -32,5 +29,4 @@ class SyntheticNavigator<T : NavigationKey> @PublishedApi internal constructor(
 ) : Navigator<Any, T> {
     override val contextType: KClass<Any> = Any::class
     override val animations: NavigatorAnimations = NavigatorAnimations.default
-    override val defaultKey: NavigationKey? = null
 }

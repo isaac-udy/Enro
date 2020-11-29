@@ -3,29 +3,24 @@ package nav.enro.core.internal.handle
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
-import nav.enro.core.internal.addOnBackPressedListener
-import nav.enro.core.internal.onEvent
 import nav.enro.core.*
 import nav.enro.core.context.*
-import nav.enro.core.context.ActivityContext
-import nav.enro.core.context.FragmentContext
-import nav.enro.core.context.NavigationContext
-import nav.enro.core.context.leafContext
 import nav.enro.core.controller.NavigationController
+import nav.enro.core.internal.addOnBackPressedListener
 import nav.enro.core.internal.navigationHandle
-import java.lang.IllegalStateException
+import nav.enro.core.internal.onEvent
 
-internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), NavigationHandle<T> {
+internal class NavigationHandleViewModel : ViewModel(), NavigationHandle {
 
     private var pendingInstruction: NavigationInstruction? = null
 
-    private var internalOnCloseRequested: () -> Unit = { close() }
+    internal var internalOnCloseRequested: () -> Unit = { close() }
 
-    internal val hasKey get() = ::key.isInitialized
-    override lateinit var key: T
+    internal val hasKey get() = rawKey != null
+    internal var rawKey: NavigationKey? = null
+    internal var defaultKey: NavigationKey? = null
     override lateinit var id: String
     override lateinit var controller: NavigationController
     override lateinit var additionalData: Bundle
@@ -50,7 +45,7 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
         return lifecycle
     }
 
-    internal var navigationContext: NavigationContext<*, T>? = null
+    internal var navigationContext: NavigationContext<*>? = null
         set(value) {
             field?.let {
                 val id = it.id
@@ -63,14 +58,7 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
                 additionalData = it.instruction?.additionalData ?: Bundle()
                 id = it.id
                 it.controller.handles[id] = this
-
-                if (it.instruction == null) {
-                    navigationContext?.defaultKey?.let { defaultKey ->
-                        key = defaultKey
-                    }
-                    return@let
-                }
-                key = it.key
+                rawKey = it.key ?: return@let
             }
             if (value == null) return
             registerLifecycleObservers(value)
@@ -83,7 +71,7 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
         }
 
 
-    private fun registerLifecycleObservers(context: NavigationContext<out Any, T>) {
+    private fun registerLifecycleObservers(context: NavigationContext<out Any>) {
         context.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (event == Lifecycle.Event.ON_DESTROY || event == Lifecycle.Event.ON_CREATE) return
@@ -95,8 +83,8 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
         }
     }
 
-    private fun registerOnBackPressedListener(context: NavigationContext<out Any, T>) {
-        if (context is ActivityContext<out FragmentActivity, *>) {
+    private fun registerOnBackPressedListener(context: NavigationContext<out Any>) {
+        if (context is ActivityContext<out FragmentActivity>) {
             context.activity.addOnBackPressedListener {
                 context.leafContext().navigationHandle().internalOnCloseRequested()
             }
@@ -108,8 +96,11 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
         executePendingInstruction()
     }
 
-    override fun onCloseRequested(onCloseRequested: () -> Unit) {
-        internalOnCloseRequested = onCloseRequested
+    override fun <T : NavigationKey> key(): T {
+        if(rawKey == null) {
+            throw IllegalStateException("This NavigationHandle has no NavigationKey bound")
+        }
+        return rawKey as T
     }
 
     private fun executePendingInstruction() {
@@ -123,7 +114,7 @@ internal class NavigationHandleViewModel<T : NavigationKey> : ViewModel(), Navig
 
         when (instruction) {
             NavigationInstruction.Close -> context.controller.close(context.leafContext())
-            is NavigationInstruction.Open<*> -> {
+            is NavigationInstruction.Open -> {
                 context.controller.open(context, instruction)
             }
         }
