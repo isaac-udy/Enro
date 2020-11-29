@@ -13,16 +13,18 @@ import nav.enro.core.internal.handle.NavigationHandleViewModel
 import java.lang.ref.WeakReference
 import kotlin.collections.set
 import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 
 class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal constructor(
     private val lifecycleOwner: LifecycleOwner,
     private val viewModelStoreOwner: ViewModelStoreOwner,
-    private val configBuilder: NavigationHandleConfiguration<Key>.() -> Unit = {}
+    private val configBuilder: NavigationHandleConfiguration<Key>.() -> Unit = {},
+    private val keyType: KClass<Key>
 ) : ReadOnlyProperty<Any, TypedNavigationHandle<Key>> {
 
-    private val config = NavigationHandleConfiguration<Key>().apply(configBuilder)
+    private val config = NavigationHandleConfiguration(keyType).apply(configBuilder)
 
     private val navigationHandle: TypedNavigationHandle<Key> by lazy {
         val navigationHandle = ViewModelProvider(viewModelStoreOwner, ViewModelProvider.NewInstanceFactory())
@@ -30,7 +32,7 @@ class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal const
 
         config.applyTo(navigationHandle)
 
-        return@lazy navigationHandle.asTyped<Key>()
+        return@lazy TypedNavigationHandleImpl<Key>(navigationHandle)
     }
 
     init {
@@ -58,7 +60,9 @@ class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal const
     }
 }
 
-class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal constructor() {
+class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal constructor(
+    private val keyType: KClass<T>
+) {
 
     private var childContainers: List<ChildContainer> = listOf()
     private var defaultKey: T? = null
@@ -79,25 +83,27 @@ class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal co
     internal fun applyTo(navigationHandleViewModel: NavigationHandleViewModel) {
         navigationHandleViewModel.childContainers = childContainers
         navigationHandleViewModel.defaultKey = defaultKey
-        navigationHandleViewModel.internalOnCloseRequested = { onCloseRequested(navigationHandleViewModel.asTyped()) }
+        navigationHandleViewModel.internalOnCloseRequested = { onCloseRequested(navigationHandleViewModel.asTyped(keyType)) }
     }
 }
 
 
-fun <T : NavigationKey> FragmentActivity.navigationHandle(
-    config: NavigationHandleConfiguration<T>.() -> Unit = {}
+inline fun <reified T: NavigationKey> FragmentActivity.navigationHandle(
+    noinline config: NavigationHandleConfiguration<T>.() -> Unit = {}
 ): NavigationHandleProperty<T> = NavigationHandleProperty(
     lifecycleOwner = this,
     viewModelStoreOwner = this,
-    configBuilder = config
+    configBuilder = config,
+    keyType = T::class
 )
 
-fun <T : NavigationKey> Fragment.navigationHandle(
-    config: NavigationHandleConfiguration<T>.() -> Unit = {}
+inline fun <reified T : NavigationKey> Fragment.navigationHandle(
+    noinline config: NavigationHandleConfiguration<T>.() -> Unit = {}
 ): NavigationHandleProperty<T> = NavigationHandleProperty(
     lifecycleOwner = this,
     viewModelStoreOwner = this,
-    configBuilder = config
+    configBuilder = config,
+    keyType = T::class
 )
 
 fun FragmentActivity.getNavigationHandle(): NavigationHandle =

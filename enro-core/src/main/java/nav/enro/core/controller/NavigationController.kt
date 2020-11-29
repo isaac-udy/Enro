@@ -93,21 +93,23 @@ class NavigationController(
         if (openOverrideFor(navigationContext, navigator, instruction)) return
         when (navigator) {
             is ActivityNavigator -> DefaultActivityExecutor.open(
-                ExecutorArgs<Any, FragmentActivity, NavigationKey>(
+                ExecutorArgs(
                     navigationContext,
                     navigator,
+                    instruction.navigationKey,
                     instruction.setParentInstruction(navigationContext, navigator)
                 )
             )
             is FragmentNavigator -> DefaultFragmentExecutor.open(
-                ExecutorArgs<Any, Fragment, NavigationKey>(
+                ExecutorArgs(
                     navigationContext,
                     navigator,
+                    instruction.navigationKey,
                     instruction.setParentInstruction(navigationContext, navigator)
                 )
             )
             is SyntheticNavigator -> (navigator.destination as SyntheticDestination<NavigationKey>)
-                .process(navigationContext, instruction as NavigationInstruction.Open)
+                .process(navigationContext, instruction.navigationKey, instruction)
         }
     }
 
@@ -173,6 +175,7 @@ class NavigationController(
                 ExecutorArgs(
                     fromContext,
                     navigator,
+                    instruction.navigationKey,
                     instruction.setParentInstruction(fromContext, navigator)
                 )
             )

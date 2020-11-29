@@ -15,8 +15,8 @@ inline fun <reified T: NavigationKey> ActivityScenario<out FragmentActivity>.get
     }
 
     val handle = result ?: throw IllegalStateException("Could not retrieve NavigationHandle from Activity")
-    val key = handle.key<NavigationKey>() as? T
-        ?: throw IllegalStateException("Handle was of incorrect type. Expected ${T::class.java.name} but was ${handle.key<NavigationKey>()::class.java.name}")
+    val key = handle.key as? T
+        ?: throw IllegalStateException("Handle was of incorrect type. Expected ${T::class.java.name} but was ${handle.key::class.java.name}")
     return handle.asTyped()
 }
 

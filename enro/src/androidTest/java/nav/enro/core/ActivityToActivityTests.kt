@@ -60,7 +60,7 @@ class ActivityToActivityTests {
         )
 
         expectActivity<GenericActivity> {
-            it.getNavigationHandle().key<GenericActivityKey>().id == id
+            it.getNavigationHandle().asTyped<GenericActivityKey>().key.id == id
         }
     }
 
@@ -131,10 +131,10 @@ class ActivityToActivityTests {
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
         handle.forward(GenericActivityKey(first))
 
-        val firstActivity = expectActivity<GenericActivity> { it.getNavigationHandle().key<GenericActivityKey>().id == first }
+        val firstActivity = expectActivity<GenericActivity> { it.getNavigationHandle().asTyped<GenericActivityKey>().key.id == first }
         firstActivity.getNavigationHandle().replace(GenericActivityKey(second))
 
-        val secondActivity = expectActivity<GenericActivity> { it.getNavigationHandle().key<GenericActivityKey>().id == second }
+        val secondActivity = expectActivity<GenericActivity> { it.getNavigationHandle().asTyped<GenericActivityKey>().key.id == second }
         secondActivity.getNavigationHandle().close()
 
         expectActivity<DefaultActivity>()

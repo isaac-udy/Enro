@@ -21,6 +21,11 @@ internal class NavigationHandleViewModel : ViewModel(), NavigationHandle {
     internal val hasKey get() = rawKey != null
     internal var rawKey: NavigationKey? = null
     internal var defaultKey: NavigationKey? = null
+
+    override val key: NavigationKey get() {
+        return rawKey
+            ?: throw IllegalStateException("This NavigationHandle has no NavigationKey bound")
+    }
     override lateinit var id: String
     override lateinit var controller: NavigationController
     override lateinit var additionalData: Bundle
@@ -94,13 +99,6 @@ internal class NavigationHandleViewModel : ViewModel(), NavigationHandle {
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {
         pendingInstruction = navigationInstruction
         executePendingInstruction()
-    }
-
-    override fun <T : NavigationKey> key(): T {
-        if(rawKey == null) {
-            throw IllegalStateException("This NavigationHandle has no NavigationKey bound")
-        }
-        return rawKey as T
     }
 
     private fun executePendingInstruction() {

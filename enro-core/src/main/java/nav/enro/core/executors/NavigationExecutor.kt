@@ -10,6 +10,7 @@ import kotlin.reflect.KClass
 class ExecutorArgs<FromContext: Any, OpensContext: Any, KeyType: NavigationKey>(
     val fromContext: NavigationContext<out FromContext>,
     val navigator: Navigator<out OpensContext, out KeyType>,
+    val key: KeyType,
     val instruction: NavigationInstruction.Open
 )
 
