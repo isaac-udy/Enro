@@ -1,6 +1,5 @@
-package nav.enro.core.internal
+package nav.enro.core.fragment.internal
 
-import android.R
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,7 +15,7 @@ internal data class SingleFragmentKey(
 
 internal abstract class AbstractSingleFragmentActivity : AppCompatActivity() {
     private val handle by navigationHandle<SingleFragmentKey> {
-        container(R.id.content)
+        container(android.R.id.content)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

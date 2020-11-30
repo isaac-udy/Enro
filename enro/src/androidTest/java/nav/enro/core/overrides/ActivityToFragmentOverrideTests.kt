@@ -5,10 +5,10 @@ import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
 import nav.enro.*
 import nav.enro.core.*
-import nav.enro.core.controller.navigationController
-import nav.enro.core.executors.createOverride
-import nav.enro.core.executors.defaultClose
-import nav.enro.core.executors.defaultLaunch
+import nav.enro.core.navigationController
+import nav.enro.core.createOverride
+import nav.enro.core.defaultClose
+import nav.enro.core.defaultOpen
 import org.junit.Test
 
 class ActivityToFragmentOverrideTests() {
@@ -18,9 +18,9 @@ class ActivityToFragmentOverrideTests() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
             createOverride<DefaultActivity, GenericFragment>(
-                launch = {
+                open = {
                     launchOverrideCalled = true
-                    defaultLaunch<GenericFragment>().invoke(it)
+                    defaultOpen<GenericFragment>().invoke(it)
                 }
             )
         )
@@ -62,9 +62,9 @@ class ActivityToFragmentOverrideTests() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
             createOverride<GenericActivity, GenericFragment>(
-                launch = {
+                open = {
                     launchOverrideCalled = true
-                    defaultLaunch<GenericFragment>().invoke(it)
+                    defaultOpen<GenericFragment>().invoke(it)
                 }
             )
         )
@@ -123,9 +123,9 @@ class ActivityToFragmentOverrideTests() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
             createOverride<ActivityWithFragments, ActivityChildFragment>(
-                launch = {
+                open = {
                     launchOverrideCalled = true
-                    defaultLaunch<ActivityChildFragment>().invoke(it)
+                    defaultOpen<ActivityChildFragment>().invoke(it)
                 }
             )
         )

@@ -5,9 +5,9 @@ import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
 import nav.enro.*
 import nav.enro.core.*
-import nav.enro.core.controller.navigationController
-import nav.enro.core.executors.createOverride
-import nav.enro.core.executors.defaultLaunch
+import nav.enro.core.navigationController
+import nav.enro.core.createOverride
+import nav.enro.core.defaultOpen
 import org.junit.Before
 import org.junit.Test
 
@@ -33,9 +33,9 @@ class FragmentToActivityOverrideTests() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
             createOverride<GenericFragment, GenericActivity>(
-                launch = {
+                open = {
                     launchOverrideCalled = true
-                    defaultLaunch<GenericActivity>().invoke(it)
+                    defaultOpen<GenericActivity>().invoke(it)
                 }
             )
         )
@@ -57,9 +57,9 @@ class FragmentToActivityOverrideTests() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
             createOverride<GenericFragment, GenericActivity>(
-                launch = {
+                open = {
                     closeOverrideCalled = true
-                    defaultLaunch<GenericActivity>().invoke(it)
+                    defaultOpen<GenericActivity>().invoke(it)
                 }
             )
         )
@@ -86,9 +86,9 @@ class FragmentToActivityOverrideTests() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
             createOverride<ActivityChildFragment, GenericActivity>(
-                launch = {
+                open = {
                     launchOverrideCalled = true
-                    defaultLaunch<GenericActivity>().invoke(it)
+                    defaultOpen<GenericActivity>().invoke(it)
                 }
             )
         )
@@ -110,9 +110,9 @@ class FragmentToActivityOverrideTests() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
             createOverride<ActivityChildFragment, GenericActivity>(
-                launch = {
+                open = {
                     closeOverrideCalled = true
-                    defaultLaunch<GenericActivity>().invoke(it)
+                    defaultOpen<GenericActivity>().invoke(it)
                 }
             )
         )

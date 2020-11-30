@@ -1,13 +1,11 @@
-package nav.enro.core.controller
+    package nav.enro.core.controller
 
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import nav.enro.core.NavigationKey
-import nav.enro.core.context.NavigationContext
-import nav.enro.core.executors.*
-import nav.enro.core.navigator.*
+import nav.enro.core.NavigationApplication
+import nav.enro.core.NavigationExecutor
+import nav.enro.core.Navigator
 import nav.enro.core.plugins.EnroPlugin
 
+// TODO get rid of this, or give it a better name
 interface NavigationComponentBuilderCommand {
     fun execute(builder: NavigationComponentBuilder)
 }
@@ -20,46 +18,21 @@ class NavigationComponentBuilder {
     @PublishedApi
     internal val plugins: MutableList<EnroPlugin> = mutableListOf()
 
-    inline fun <reified T : NavigationKey, reified A : FragmentActivity> activityNavigator(
-        noinline block: ActivityNavigatorBuilder<T, A>.() -> Unit = {}
-    ) {
-        navigators.add(createActivityNavigator(block))
-    }
-
-    inline fun <reified T : NavigationKey, reified A : Fragment> fragmentNavigator(
-        noinline block: FragmentNavigatorBuilder<A, T>.() -> Unit = {}
-    ) {
-        navigators.add(createFragmentNavigator(block))
-    }
-
-    inline fun <reified T : NavigationKey> syntheticNavigator(
-        destination: SyntheticDestination<T>
-    ) {
-        navigators.add(createSyntheticNavigator(destination))
-    }
-
-    inline fun <reified From : Any, reified Opens : Any> override(
-        noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit) = defaultLaunch(),
-        noinline close: (NavigationContext<out Opens>) -> Unit = defaultClose()
-    ) {
-        overrides.add(createOverride(launch, close))
-    }
-
-    fun add(navigator: Navigator<*, *>) {
+    fun navigator(navigator: Navigator<*, *>) {
         navigators.add(navigator)
     }
 
-    fun add(override: NavigationExecutor<*, *, *>) {
+    fun override(override: NavigationExecutor<*, *, *>) {
         overrides.add(override)
     }
 
-    fun withComponent(builder: NavigationComponentBuilder) {
+    fun component(builder: NavigationComponentBuilder) {
         navigators.addAll(builder.navigators)
         overrides.addAll(builder.overrides)
         plugins.addAll(builder.plugins)
     }
 
-    fun withPlugin(enroPlugin: EnroPlugin) {
+    fun plugin(enroPlugin: EnroPlugin) {
         plugins.add(enroPlugin)
     }
 

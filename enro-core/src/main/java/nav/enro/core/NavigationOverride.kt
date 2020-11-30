@@ -1,15 +1,15 @@
-package nav.enro.core.executors
+package nav.enro.core
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import nav.enro.core.NavigationKey
-import nav.enro.core.context.NavigationContext
+import nav.enro.core.activity.DefaultActivityExecutor
+import nav.enro.core.fragment.DefaultFragmentExecutor
 import kotlin.reflect.KClass
 
 fun <From : Any, Opens : Any> createOverride(
     fromClass: KClass<From>,
     opensClass: KClass<Opens>,
-    launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
+    open: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
     close: ((context: NavigationContext<out Opens>) -> Unit)
 ): NavigationExecutor<From, Opens, NavigationKey> =
     object : NavigationExecutor<From, Opens, NavigationKey>(
@@ -18,7 +18,7 @@ fun <From : Any, Opens : Any> createOverride(
         keyType = NavigationKey::class
     ) {
         override fun open(args: ExecutorArgs<out From, out Opens, out NavigationKey>) {
-            launch(args)
+            open(args)
         }
 
         override fun close(context: NavigationContext<out Opens>) {
@@ -27,13 +27,13 @@ fun <From : Any, Opens : Any> createOverride(
     }
 
 inline fun <reified From : Any, reified Opens : Any> createOverride(
-    noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit) = defaultLaunch(),
+    noinline open: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit) = defaultOpen(),
     noinline close: (NavigationContext<out Opens>) -> Unit = defaultClose()
 ): NavigationExecutor<From, Opens, NavigationKey> =
-    createOverride(From::class, Opens::class, launch, close)
+    createOverride(From::class, Opens::class, open, close)
 
 @Suppress("UNCHECKED_CAST")
-inline fun <reified Opens: Any> defaultLaunch(): ((ExecutorArgs<out Any, out Opens, out NavigationKey>) -> Unit) {
+inline fun <reified Opens: Any> defaultOpen(): ((ExecutorArgs<out Any, out Opens, out NavigationKey>) -> Unit) {
     return when {
         FragmentActivity::class.java.isAssignableFrom(Opens::class.java) ->
             DefaultActivityExecutor::open as ((ExecutorArgs<out Any, out Opens, out NavigationKey>) -> Unit)

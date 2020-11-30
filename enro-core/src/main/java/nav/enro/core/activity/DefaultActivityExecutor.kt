@@ -1,11 +1,10 @@
-package nav.enro.core.executors
+package nav.enro.core.activity
 
 import android.content.Intent
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.*
-import nav.enro.core.context.NavigationContext
-import nav.enro.core.context.activity
-import nav.enro.core.navigator.ActivityNavigator
+import nav.enro.core.NavigationContext
+import nav.enro.core.activity
 
 object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, NavigationKey>(
     fromType = Any::class,

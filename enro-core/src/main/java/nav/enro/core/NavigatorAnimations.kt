@@ -1,8 +1,9 @@
-package nav.enro.core.navigator
+package nav.enro.core
 
+import android.R
 import android.content.res.Resources
-import nav.enro.core.internal.getAttributeResourceId
 
+// Allow setting on NavigationDestination annotation?
 sealed class NavigatorAnimations {
     data class Resource(
         val forwardEnter: Int,
@@ -33,17 +34,17 @@ sealed class NavigatorAnimations {
     ): NavigatorAnimations()
     companion object {
         val default = Attr(
-            forwardEnter = android.R.attr.activityOpenEnterAnimation,
-            forwardExit = android.R.attr.activityOpenExitAnimation,
+            forwardEnter = R.attr.activityOpenEnterAnimation,
+            forwardExit = R.attr.activityOpenExitAnimation,
 
-            replaceEnter = android.R.attr.activityOpenEnterAnimation,
-            replaceExit = android.R.attr.activityOpenExitAnimation,
+            replaceEnter = R.attr.activityOpenEnterAnimation,
+            replaceExit = R.attr.activityOpenExitAnimation,
 
-            replaceRootEnter = android.R.attr.taskOpenEnterAnimation,
-            replaceRootExit = android.R.attr.taskOpenExitAnimation,
+            replaceRootEnter = R.attr.taskOpenEnterAnimation,
+            replaceRootExit = R.attr.taskOpenExitAnimation,
 
-            closeEnter = android.R.attr.activityCloseEnterAnimation,
-            closeExit = android.R.attr.activityCloseExitAnimation
+            closeEnter = R.attr.activityCloseEnterAnimation,
+            closeExit = R.attr.activityCloseExitAnimation
         )
     }
 }

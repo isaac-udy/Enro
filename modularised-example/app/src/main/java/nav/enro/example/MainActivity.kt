@@ -11,9 +11,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.parcel.Parcelize
 import nav.enro.annotations.NavigationDestination
 import nav.enro.core.*
-import nav.enro.core.context.NavigationContext
-import nav.enro.core.context.activity
-import nav.enro.core.navigator.SyntheticDestination
+import nav.enro.core.NavigationContext
+import nav.enro.core.activity
+import nav.enro.core.synthetic.SyntheticDestination
 import nav.enro.example.core.data.UserRepository
 import nav.enro.example.core.navigation.DashboardKey
 import nav.enro.example.core.navigation.LaunchKey

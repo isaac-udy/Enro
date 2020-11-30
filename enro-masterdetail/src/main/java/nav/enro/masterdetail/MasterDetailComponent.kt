@@ -9,13 +9,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import nav.enro.core.NavigationKey
 import nav.enro.core.addOpenInstruction
-import nav.enro.core.context.activity
-import nav.enro.core.context.fragment
+import nav.enro.core.activity
+import nav.enro.core.fragment
 import nav.enro.core.controller.NavigationController
-import nav.enro.core.controller.navigationController
-import nav.enro.core.executors.DefaultActivityExecutor
-import nav.enro.core.executors.ExecutorArgs
-import nav.enro.core.executors.createOverride
+import nav.enro.core.navigationController
+import nav.enro.core.activity.DefaultActivityExecutor
+import nav.enro.core.ExecutorArgs
+import nav.enro.core.createOverride
 import nav.enro.core.forward
 import nav.enro.core.getNavigationHandle
 import kotlin.properties.ReadOnlyProperty
@@ -42,7 +42,7 @@ class MasterDetailProperty(
         createOverride(
             owningType,
             masterType,
-            launch = {
+            open = {
                 val fragment = it.fromContext.childFragmentManager.fragmentFactory.instantiate(
                     masterType.java.classLoader!!,
                     masterType.java.name
@@ -64,7 +64,7 @@ class MasterDetailProperty(
         createOverride(
             owningType,
             detailType,
-            launch = {
+            open = {
                 if(!Fragment::class.java.isAssignableFrom(it.navigator.contextType.java)) {
                     Log.e("Enro", "Attempted to open ${detailKey::class.java} as a Detail in ${it.fromContext.contextReference}, " +
                             "but ${detailKey::class.java}'s NavigationDestination is not a Fragment! Defaulting to standard navigation")

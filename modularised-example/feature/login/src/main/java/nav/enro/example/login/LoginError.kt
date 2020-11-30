@@ -6,10 +6,10 @@ import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import nav.enro.annotations.NavigationDestination
 import nav.enro.core.NavigationInstruction
-import nav.enro.core.context.NavigationContext
-import nav.enro.core.context.activity
+import nav.enro.core.NavigationContext
+import nav.enro.core.activity
 import nav.enro.core.navigationHandle
-import nav.enro.core.navigator.SyntheticDestination
+import nav.enro.core.synthetic.SyntheticDestination
 import nav.enro.example.core.navigation.LoginErrorKey
 
 class LoginErrorFragment : DialogFragment() {

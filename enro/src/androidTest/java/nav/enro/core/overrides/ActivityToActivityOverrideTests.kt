@@ -5,10 +5,10 @@ import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
 import nav.enro.*
 import nav.enro.core.*
-import nav.enro.core.controller.navigationController
-import nav.enro.core.executors.createOverride
-import nav.enro.core.executors.defaultClose
-import nav.enro.core.executors.defaultLaunch
+import nav.enro.core.navigationController
+import nav.enro.core.createOverride
+import nav.enro.core.defaultClose
+import nav.enro.core.defaultOpen
 import org.junit.Test
 
 class ActivityToActivityOverrideTests() {
@@ -18,9 +18,9 @@ class ActivityToActivityOverrideTests() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
             createOverride<DefaultActivity, GenericActivity>(
-                launch = {
+                open = {
                     launchOverrideCalled = true
-                    defaultLaunch<GenericActivity>().invoke(it)
+                    defaultOpen<GenericActivity>().invoke(it)
                 }
             )
         )
@@ -63,9 +63,9 @@ class ActivityToActivityOverrideTests() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
             createOverride<GenericActivity, GenericActivity>(
-                launch = {
+                open = {
                     launchOverrideCalled = true
-                    defaultLaunch<GenericActivity>().invoke(it)
+                    defaultOpen<GenericActivity>().invoke(it)
                 }
             )
         )
@@ -125,9 +125,9 @@ class ActivityToActivityOverrideTests() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
             createOverride<UnboundActivity, GenericActivity>(
-                launch = {
+                open = {
                     launchOverrideCalled = true
-                    defaultLaunch<GenericActivity>().invoke(it)
+                    defaultOpen<GenericActivity>().invoke(it)
                 }
             )
         )

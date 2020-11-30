@@ -1,4 +1,4 @@
-package nav.enro.core.internal.handle
+package nav.enro.core.activity
 
 import android.app.Activity
 import android.app.Application
@@ -6,11 +6,11 @@ import android.os.Bundle
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.*
-import nav.enro.core.context.ActivityContext
-import nav.enro.core.context.leafContext
-import nav.enro.core.context.navigationContext
-import nav.enro.core.controller.navigationController
-import nav.enro.core.internal.navigationHandle
+import nav.enro.core.ActivityContext
+import nav.enro.core.leafContext
+import nav.enro.core.navigationContext
+import nav.enro.core.internal.NoNavigationKey
+import nav.enro.core.internal.handle.createNavigationHandleViewModel
 import java.util.*
 
 internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCallbacks {
@@ -18,9 +18,6 @@ internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCa
         if (activity !is FragmentActivity) return
 
         activity.theme.applyStyle(android.R.style.Animation_Activity, false)
-        activity.supportFragmentManager.registerFragmentLifecycleCallbacks(
-            NavigationHandleFragmentBinder, true
-        )
 
         val instruction = activity.intent.extras?.readOpenInstruction()
         val contextId = instruction?.instructionId
@@ -31,7 +28,7 @@ internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCa
         val defaultInstruction = NavigationInstruction.Open(
             instructionId = contextId,
             navigationDirection = NavigationDirection.FORWARD,
-            navigationKey = config?.defaultKey ?: NoNavigationKeyBound(activity::class.java, activity.intent.extras)
+            navigationKey = config?.defaultKey ?: NoNavigationKey(activity::class.java, activity.intent.extras)
         )
 
         val handle = activity.createNavigationHandleViewModel(
@@ -43,7 +40,7 @@ internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCa
         handle.navigationContext = ActivityContext(activity)
         if(savedInstanceState  == null) handle.executeDeeplink()
         activity.findViewById<ViewGroup>(android.R.id.content).viewTreeObserver.addOnGlobalLayoutListener {
-            activity.application.navigationController.active = activity.navigationContext.leafContext().navigationHandle()
+            activity.application.navigationController.active = activity.navigationContext.leafContext().getNavigationHandleViewModel()
         }
     }
 
@@ -58,6 +55,6 @@ internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCa
     override fun onActivityStopped(activity: Activity) {}
     override fun onActivityResumed(activity: Activity) {
         if(activity !is FragmentActivity) return
-        activity.application.navigationController.active = activity.navigationContext.leafContext().navigationHandle()
+        activity.application.navigationController.active = activity.navigationContext.leafContext().getNavigationHandleViewModel()
     }
 }

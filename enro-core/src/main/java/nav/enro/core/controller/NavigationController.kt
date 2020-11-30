@@ -4,26 +4,27 @@ import android.app.Application
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.*
-import nav.enro.core.context.ActivityContext
-import nav.enro.core.context.FragmentContext
-import nav.enro.core.context.NavigationContext
-import nav.enro.core.context.parentContext
-import nav.enro.core.executors.DefaultActivityExecutor
-import nav.enro.core.executors.DefaultFragmentExecutor
-import nav.enro.core.executors.ExecutorArgs
-import nav.enro.core.executors.NavigationExecutor
-import nav.enro.core.internal.HiltSingleFragmentActivity
-import nav.enro.core.internal.SingleFragmentActivity
-import nav.enro.core.internal.SingleFragmentKey
-import nav.enro.core.internal.handle.NavigationHandleActivityBinder
+import nav.enro.core.activity.ActivityNavigator
+import nav.enro.core.activity.DefaultActivityExecutor
+import nav.enro.core.activity.NavigationHandleActivityBinder
+import nav.enro.core.activity.createActivityNavigator
+import nav.enro.core.fragment.DefaultFragmentExecutor
+import nav.enro.core.fragment.FragmentNavigator
+import nav.enro.core.fragment.NavigationHandleFragmentBinder
+import nav.enro.core.fragment.internal.HiltSingleFragmentActivity
+import nav.enro.core.fragment.internal.SingleFragmentActivity
+import nav.enro.core.fragment.internal.SingleFragmentKey
+import nav.enro.core.internal.NoKeyNavigator
+import nav.enro.core.internal.NoNavigationKey
 import nav.enro.core.internal.handle.NavigationHandleViewModel
-import nav.enro.core.internal.navigationHandle
-import nav.enro.core.navigator.*
 import nav.enro.core.plugins.EnroHilt
 import nav.enro.core.plugins.EnroPlugin
+import nav.enro.core.synthetic.SyntheticDestination
+import nav.enro.core.synthetic.SyntheticNavigator
 import kotlin.reflect.KClass
 
-
+// TODO split functionality out into more focused classes (e.g. OverrideController or similar)
+// TODO has too many sideways dependencies
 class NavigationController(
     navigators: List<Navigator<*, *>>,
     overrides: List<NavigationExecutor<*, *, *>> = listOf(),
@@ -72,7 +73,7 @@ class NavigationController(
         .toMap()
 
     private val overrides = overrides.map { (it.fromType to it.opensType) to it }.toMap()
-    private val temporaryOverrides = mutableMapOf<Pair<KClass<out Any>, KClass<out Any>>, NavigationExecutor<*,*,*>>()
+    private val temporaryOverrides = mutableMapOf<Pair<KClass<out Any>, KClass<out Any>>, NavigationExecutor<*, *, *>>()
 
     internal val handles = mutableMapOf<String, NavigationHandleViewModel>()
 
@@ -149,7 +150,7 @@ class NavigationController(
 
     private fun openOverrideFor(
         fromContext: NavigationContext<out Any>,
-        navigator: Navigator<out Any, out NavigationKey>,
+        navigator: Navigator<out NavigationKey, out Any>,
         instruction: NavigationInstruction.Open
     ): Boolean {
 
@@ -192,7 +193,7 @@ class NavigationController(
     }
 
     private fun closeOverrideFor(navigationContext: NavigationContext<out Any>): Boolean {
-        val parentInstruction = navigationContext.navigationHandle().instruction.parentInstruction
+        val parentInstruction = navigationContext.getNavigationHandleViewModel().instruction.parentInstruction
         val parentNavigator = parentInstruction
             ?.let {
                 if(it.navigationKey is SingleFragmentKey) {
@@ -205,7 +206,7 @@ class NavigationController(
             ?: return false
 
         val parentType = when(parentInstruction.navigationKey) {
-            is NoNavigationKeyBound -> parentInstruction.navigationKey.contextType.kotlin
+            is NoNavigationKey -> parentInstruction.navigationKey.contextType.kotlin
             else -> parentNavigator.contextType
         }
 
@@ -221,7 +222,7 @@ class NavigationController(
 
     private fun NavigationInstruction.Open.setParentInstruction(
         parentContext: NavigationContext<*>,
-        navigator: Navigator<out Any, out NavigationKey>
+        navigator: Navigator<out NavigationKey, out Any>
     ): NavigationInstruction.Open {
         if (parentInstruction != null) return this
 
@@ -239,19 +240,19 @@ class NavigationController(
         }
 
         val parentInstruction = when (navigationDirection) {
-            NavigationDirection.FORWARD -> findCorrectParentInstructionFor(parentContext.navigationHandle().instruction)
-            NavigationDirection.REPLACE -> findCorrectParentInstructionFor(parentContext.navigationHandle().instruction)?.parentInstruction
+            NavigationDirection.FORWARD -> findCorrectParentInstructionFor(parentContext.getNavigationHandleViewModel().instruction)
+            NavigationDirection.REPLACE -> findCorrectParentInstructionFor(parentContext.getNavigationHandleViewModel().instruction)?.parentInstruction
             NavigationDirection.REPLACE_ROOT -> null
         }
 
         return copy(parentInstruction = parentInstruction)
     }
 
-    fun addOverride(navigationExecutor: NavigationExecutor<*,*,*>) {
+    fun addOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
         temporaryOverrides[navigationExecutor.fromType to navigationExecutor.opensType] = navigationExecutor
     }
 
-    fun removeOverride(navigationExecutor: NavigationExecutor<*,*,*>) {
+    fun removeOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
         temporaryOverrides.remove(navigationExecutor.fromType to navigationExecutor.opensType)
     }
 
@@ -262,6 +263,10 @@ class NavigationController(
 
             navigationApplication.registerActivityLifecycleCallbacks(
                 NavigationHandleActivityBinder
+            )
+
+            navigationApplication.registerActivityLifecycleCallbacks(
+                NavigationHandleFragmentBinder
             )
         }
     }

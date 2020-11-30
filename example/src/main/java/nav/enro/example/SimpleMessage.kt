@@ -5,10 +5,10 @@ import kotlinx.android.parcel.Parcelize
 import nav.enro.annotations.NavigationDestination
 import nav.enro.core.NavigationInstruction
 import nav.enro.core.NavigationKey
-import nav.enro.core.context.NavigationContext
-import nav.enro.core.context.activity
+import nav.enro.core.NavigationContext
+import nav.enro.core.activity
 import nav.enro.core.getNavigationHandle
-import nav.enro.core.navigator.SyntheticDestination
+import nav.enro.core.synthetic.SyntheticDestination
 
 @Parcelize
 data class SimpleMessage(

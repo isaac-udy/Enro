@@ -1,10 +1,10 @@
 package nav.enro
 
 import android.app.Application
-import nav.enro.core.controller.NavigationApplication
+import nav.enro.core.NavigationApplication
+import nav.enro.core.activity.createActivityNavigator
 import nav.enro.core.controller.NavigationController
-import nav.enro.core.navigator.createActivityNavigator
-import nav.enro.core.navigator.createFragmentNavigator
+import nav.enro.core.fragment.createFragmentNavigator
 
 class TestApplication : Application(),
     NavigationApplication {
