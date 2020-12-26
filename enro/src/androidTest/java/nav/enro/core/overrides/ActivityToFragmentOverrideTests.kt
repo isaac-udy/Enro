@@ -5,10 +5,6 @@ import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
 import nav.enro.*
 import nav.enro.core.*
-import nav.enro.core.navigationController
-import nav.enro.core.createOverride
-import nav.enro.core.defaultClose
-import nav.enro.core.defaultOpen
 import org.junit.Test
 
 class ActivityToFragmentOverrideTests() {
@@ -17,12 +13,12 @@ class ActivityToFragmentOverrideTests() {
     fun givenActivityToFragmentOverride_andActivityDoesNotSupportFragment_whenInitialActivityOpenedWithDefaultKey_whenFragmentIsLaunched_whenActivityDoes_thenOverrideIsCalled() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<DefaultActivity, GenericFragment>(
-                open = {
+            createOverride<DefaultActivity, GenericFragment> {
+                opened {
                     launchOverrideCalled = true
                     defaultOpen<GenericFragment>().invoke(it)
                 }
-            )
+            }
         )
         ActivityScenario.launch(DefaultActivity::class.java)
             .getNavigationHandle<DefaultActivityKey>()
@@ -37,12 +33,12 @@ class ActivityToFragmentOverrideTests() {
     fun givenActivityToFragmentOverride_andActivityDoesNotSupportFragment_whenInitialActivityOpenedWithDefaultKey_whenFragmentIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<DefaultActivity, GenericFragment>(
-                close = {
+            createOverride<DefaultActivity, GenericFragment> {
+                closed {
                     closeOverrideCalled = true
                     defaultClose<GenericFragment>().invoke(it)
                 }
-            )
+            }
         )
 
         ActivityScenario.launch(DefaultActivity::class.java)
@@ -61,12 +57,12 @@ class ActivityToFragmentOverrideTests() {
     fun givenActivityToFragmentOverride_andActivityDoesNotSupportFragment_whenFragmentIsLaunched_thenOverrideIsCalled() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<GenericActivity, GenericFragment>(
-                open = {
+            createOverride<GenericActivity, GenericFragment> {
+                opened {
                     launchOverrideCalled = true
                     defaultOpen<GenericFragment>().invoke(it)
                 }
-            )
+            }
         )
         val intent = Intent(application, GenericActivity::class.java)
             .addOpenInstruction(
@@ -89,12 +85,12 @@ class ActivityToFragmentOverrideTests() {
     fun givenActivityToFragmentOverride_andActivityDoesNotSupportFragment_whenFragmentIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<GenericActivity, GenericFragment>(
-                close = {
+            createOverride<GenericActivity, GenericFragment> {
+                closed {
                     closeOverrideCalled = true
                     defaultClose<GenericFragment>().invoke(it)
                 }
-            )
+            }
         )
 
         val intent = Intent(application, GenericActivity::class.java)
@@ -122,12 +118,12 @@ class ActivityToFragmentOverrideTests() {
     fun givenActivityToFragmentOverride_whenFragmentIsLaunched_thenOverrideIsCalled() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<ActivityWithFragments, ActivityChildFragment>(
-                open = {
+            createOverride<ActivityWithFragments, ActivityChildFragment> {
+                opened {
                     launchOverrideCalled = true
                     defaultOpen<ActivityChildFragment>().invoke(it)
                 }
-            )
+            }
         )
         val intent = Intent(application, ActivityWithFragments::class.java)
             .addOpenInstruction(
@@ -150,12 +146,12 @@ class ActivityToFragmentOverrideTests() {
     fun givenActivityToFragmentOverride_whenFragmentIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<ActivityWithFragments, ActivityChildFragment>(
-                close = {
+            createOverride<ActivityWithFragments, ActivityChildFragment> {
+                closed {
                     closeOverrideCalled = true
                     defaultClose<ActivityChildFragment>().invoke(it)
                 }
-            )
+            }
         )
         val intent = Intent(application, ActivityWithFragments::class.java)
             .addOpenInstruction(

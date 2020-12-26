@@ -9,28 +9,16 @@ import kotlin.reflect.KClass
 fun <From : Any, Opens : Any> createOverride(
     fromClass: KClass<From>,
     opensClass: KClass<Opens>,
-    open: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit),
-    close: ((context: NavigationContext<out Opens>) -> Unit)
+    block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
 ): NavigationExecutor<From, Opens, NavigationKey> =
-    object : NavigationExecutor<From, Opens, NavigationKey>(
-        fromType = fromClass,
-        opensType = opensClass,
-        keyType = NavigationKey::class
-    ) {
-        override fun open(args: ExecutorArgs<out From, out Opens, out NavigationKey>) {
-            open(args)
-        }
-
-        override fun close(context: NavigationContext<out Opens>) {
-            close(context)
-        }
-    }
+    NavigationExecutorBuilder(fromClass, opensClass, NavigationKey::class)
+        .apply(block)
+        .build()
 
 inline fun <reified From : Any, reified Opens : Any> createOverride(
-    noinline open: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit) = defaultOpen(),
-    noinline close: (NavigationContext<out Opens>) -> Unit = defaultClose()
+    noinline block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
 ): NavigationExecutor<From, Opens, NavigationKey> =
-    createOverride(From::class, Opens::class, open, close)
+    createOverride(From::class, Opens::class, block)
 
 @Suppress("UNCHECKED_CAST")
 inline fun <reified Opens: Any> defaultOpen(): ((ExecutorArgs<out Any, out Opens, out NavigationKey>) -> Unit) {

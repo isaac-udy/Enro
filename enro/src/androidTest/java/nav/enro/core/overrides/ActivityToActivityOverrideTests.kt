@@ -17,12 +17,12 @@ class ActivityToActivityOverrideTests() {
     fun givenActivityToActivityOverride_whenInitialActivityOpenedWithDefaultKey_whenActivityIsLaunched_thenOverrideIsCalled() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<DefaultActivity, GenericActivity>(
-                open = {
+            createOverride<DefaultActivity, GenericActivity> {
+                opened {
                     launchOverrideCalled = true
                     defaultOpen<GenericActivity>().invoke(it)
                 }
-            )
+            }
         )
         ActivityScenario.launch(DefaultActivity::class.java)
             .getNavigationHandle<DefaultActivityKey>()
@@ -36,13 +36,13 @@ class ActivityToActivityOverrideTests() {
     @Test
     fun givenActivityToActivityOverride_whenInitialActivityOpenedWithDefaultKey_whenActivityIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
-        application.navigationController.addOverride(
-            createOverride<DefaultActivity, GenericActivity>(
-                close = {
+        application.navigationController.addOverride (
+            createOverride<DefaultActivity, GenericActivity> {
+                closed {
                     closeOverrideCalled = true
                     defaultClose<GenericActivity>().invoke(it)
                 }
-            )
+            }
         )
 
         ActivityScenario.launch(DefaultActivity::class.java)
@@ -62,12 +62,12 @@ class ActivityToActivityOverrideTests() {
     fun givenActivityToActivityOverride_whenActivityIsLaunched_thenOverrideIsCalled() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<GenericActivity, GenericActivity>(
-                open = {
+            createOverride<GenericActivity, GenericActivity>{
+                opened {
                     launchOverrideCalled = true
                     defaultOpen<GenericActivity>().invoke(it)
                 }
-            )
+            }
         )
         val intent = Intent(application, GenericActivity::class.java)
             .addOpenInstruction(
@@ -90,12 +90,12 @@ class ActivityToActivityOverrideTests() {
     fun givenActivityToActivityOverride_whenActivityIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<GenericActivity, GenericActivity>(
-                close = {
+            createOverride<GenericActivity, GenericActivity> {
+                closed {
                     closeOverrideCalled = true
                     defaultClose<GenericActivity>().invoke(it)
                 }
-            )
+            }
         )
 
         val intent = Intent(application, GenericActivity::class.java)
@@ -124,12 +124,12 @@ class ActivityToActivityOverrideTests() {
     fun givenUnboundActivityToActivityOverride_whenActivityIsLaunched_thenOverrideIsCalled() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<UnboundActivity, GenericActivity>(
-                open = {
+            createOverride<UnboundActivity, GenericActivity>{
+                opened {
                     launchOverrideCalled = true
                     defaultOpen<GenericActivity>().invoke(it)
                 }
-            )
+            }
         )
 
         ActivityScenario.launch(UnboundActivity::class.java)
@@ -145,12 +145,12 @@ class ActivityToActivityOverrideTests() {
     fun givenUnboundActivityToActivityOverride_whenActivityIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<UnboundActivity, GenericActivity>(
-                close = {
+            createOverride<UnboundActivity, GenericActivity> {
+                closed {
                     closeOverrideCalled = true
                     defaultClose<GenericActivity>().invoke(it)
                 }
-            )
+            }
         )
 
         ActivityScenario.launch(UnboundActivity::class.java)

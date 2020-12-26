@@ -39,10 +39,8 @@ class MasterDetailProperty(
 
     private val masterOverride by lazy {
         val masterType = navigationController.navigatorForKeyType(masterKey)!!.contextType as KClass<out Fragment>
-        createOverride(
-            owningType,
-            masterType,
-            open = {
+        createOverride(owningType, masterType) {
+            opened {
                 val fragment = it.fromContext.childFragmentManager.fragmentFactory.instantiate(
                     masterType.java.classLoader!!,
                     masterType.java.name
@@ -52,27 +50,29 @@ class MasterDetailProperty(
                     .replace(masterContainer, fragment)
                     .setPrimaryNavigationFragment(fragment)
                     .commitNow()
-            },
-            close = {
+            }
+
+            closed {
                 it.activity.finish()
             }
-        )
+        }
     }
 
     private val detailOverride by lazy {
         val detailType = navigationController.navigatorForKeyType(detailKey)!!.contextType as KClass<out Fragment>
-        createOverride(
-            owningType,
-            detailType,
-            open = {
-                if(!Fragment::class.java.isAssignableFrom(it.navigator.contextType.java)) {
-                    Log.e("Enro", "Attempted to open ${detailKey::class.java} as a Detail in ${it.fromContext.contextReference}, " +
-                            "but ${detailKey::class.java}'s NavigationDestination is not a Fragment! Defaulting to standard navigation")
+        createOverride(owningType, detailType) {
+            opened {
+                if (!Fragment::class.java.isAssignableFrom(it.navigator.contextType.java)) {
+                    Log.e(
+                        "Enro",
+                        "Attempted to open ${detailKey::class.java} as a Detail in ${it.fromContext.contextReference}, " +
+                                "but ${detailKey::class.java}'s NavigationDestination is not a Fragment! Defaulting to standard navigation"
+                    )
                     DefaultActivityExecutor.open(it as ExecutorArgs<out Any, out FragmentActivity, out NavigationKey>)
-                    return@createOverride
+                    return@opened
                 }
 
-                val fragment =  it.fromContext.childFragmentManager.fragmentFactory.instantiate(
+                val fragment = it.fromContext.childFragmentManager.fragmentFactory.instantiate(
                     detailType.java.classLoader!!,
                     detailType.java.name
                 ).addOpenInstruction(it.instruction)
@@ -81,14 +81,19 @@ class MasterDetailProperty(
                     .replace(detailContainer, fragment)
                     .setPrimaryNavigationFragment(fragment)
                     .commitNow()
-            },
-            close = { context ->
+            }
+
+            closed { context ->
                 context.fragment.parentFragmentManager.beginTransaction()
                     .remove(context.fragment)
-                    .setPrimaryNavigationFragment(context.activity.supportFragmentManager.findFragmentById(masterContainer))
+                    .setPrimaryNavigationFragment(
+                        context.activity.supportFragmentManager.findFragmentById(
+                            masterContainer
+                        )
+                    )
                     .commitNow()
             }
-        )
+        }
     }
 
     init {

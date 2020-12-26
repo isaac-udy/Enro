@@ -32,12 +32,12 @@ class FragmentToActivityOverrideTests() {
     fun givenFragmentToActivityOverride_whenFragmentIsStandalone_whenActivityIsLaunchedFrom_thenOverrideIsCalled() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<GenericFragment, GenericActivity>(
-                open = {
+            createOverride<GenericFragment, GenericActivity>{
+                opened {
                     launchOverrideCalled = true
                     defaultOpen<GenericActivity>().invoke(it)
                 }
-            )
+            }
         )
 
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
@@ -56,12 +56,12 @@ class FragmentToActivityOverrideTests() {
     fun givenFragmentToActivityOverride_whenFragmentIsStandalone_whenActivityIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<GenericFragment, GenericActivity>(
-                open = {
+            createOverride<GenericFragment, GenericActivity> {
+                opened {
                     closeOverrideCalled = true
                     defaultOpen<GenericActivity>().invoke(it)
                 }
-            )
+            }
         )
 
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
@@ -85,12 +85,12 @@ class FragmentToActivityOverrideTests() {
     fun givenFragmentToActivityOverride_whenFragmentIsNested_whenActivityIsLaunchedFrom_thenOverrideIsCalled() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<ActivityChildFragment, GenericActivity>(
-                open = {
+            createOverride<ActivityChildFragment, GenericActivity> {
+                opened {
                     launchOverrideCalled = true
                     defaultOpen<GenericActivity>().invoke(it)
                 }
-            )
+            }
         )
 
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
@@ -109,12 +109,12 @@ class FragmentToActivityOverrideTests() {
     fun givenFragmentToActivityOverride_whenFragmentIsNested_whenActivityIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<ActivityChildFragment, GenericActivity>(
-                open = {
+            createOverride<ActivityChildFragment, GenericActivity> {
+                opened {
                     closeOverrideCalled = true
                     defaultOpen<GenericActivity>().invoke(it)
                 }
-            )
+            }
         )
 
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()

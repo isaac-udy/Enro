@@ -32,12 +32,12 @@ class FragmentToFragmentOverrideTests() {
     fun givenFragmentToFragmentOverride_whenFragmentIsStandalone_whenFragmentIsLaunched_thenOverrideIsCalled() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<GenericFragment, ActivityChildFragment>(
-                open = {
+            createOverride<GenericFragment, ActivityChildFragment> {
+                opened {
                     launchOverrideCalled = true
                     defaultOpen<ActivityChildFragment>().invoke(it)
                 }
-            )
+            }
         )
 
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
@@ -56,12 +56,12 @@ class FragmentToFragmentOverrideTests() {
     fun givenFragmentToFragmentOverride_whenFragmentIsStandalone_whenFragmentIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<GenericFragment, ActivityChildFragment>(
-                open = {
+            createOverride<GenericFragment, ActivityChildFragment> {
+                opened {
                     closeOverrideCalled = true
                     defaultOpen<ActivityChildFragment>().invoke(it)
                 }
-            )
+            }
         )
 
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
@@ -85,12 +85,12 @@ class FragmentToFragmentOverrideTests() {
     fun givenFragmentToFragmentOverride_whenFragmentIsNested_andTargetIsStandalone_whenFragmentIsLaunched_thenOverrideIsCalled() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<ActivityChildFragment, GenericFragment>(
-                open = {
+            createOverride<ActivityChildFragment, GenericFragment> {
+                opened {
                     launchOverrideCalled = true
                     defaultOpen<GenericFragment>().invoke(it)
                 }
-            )
+            }
         )
 
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
@@ -109,12 +109,12 @@ class FragmentToFragmentOverrideTests() {
     fun givenFragmentToFragmentOverride_whenFragmentIsNested_andTargetIsStandalone_whenFragmentIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<ActivityChildFragment, GenericFragment>(
-                open = {
+            createOverride<ActivityChildFragment, GenericFragment> {
+                opened {
                     closeOverrideCalled = true
                     defaultOpen<GenericFragment>().invoke(it)
                 }
-            )
+            }
         )
 
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
@@ -138,12 +138,12 @@ class FragmentToFragmentOverrideTests() {
     fun givenFragmentToFragmentOverride_whenFragmentIsNested_andTargetIsNested_whenFragmentIsLaunched_thenOverrideIsCalled() {
         var launchOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<ActivityChildFragment, ActivityChildFragmentTwo>(
-                open = {
+            createOverride<ActivityChildFragment, ActivityChildFragmentTwo> {
+                opened {
                     launchOverrideCalled = true
                     defaultOpen<ActivityChildFragmentTwo>().invoke(it)
                 }
-            )
+            }
         )
 
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
@@ -162,12 +162,12 @@ class FragmentToFragmentOverrideTests() {
     fun givenFragmentToFragmentOverride_whenFragmentIsNested_andTargetIsNested_whenFragmentIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
         application.navigationController.addOverride(
-            createOverride<ActivityChildFragment, ActivityChildFragmentTwo>(
-                open = {
+            createOverride<ActivityChildFragment, ActivityChildFragmentTwo> {
+                opened {
                     closeOverrideCalled = true
                     defaultOpen<ActivityChildFragmentTwo>().invoke(it)
                 }
-            )
+            }
         )
 
         initialScenario.getNavigationHandle<ActivityWithFragmentsKey>()
