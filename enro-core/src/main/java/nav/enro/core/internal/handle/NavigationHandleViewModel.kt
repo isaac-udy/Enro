@@ -20,7 +20,9 @@ internal class NavigationHandleViewModel(
     internal val hasKey get() = instruction.navigationKey !is NoNavigationKey
 
     override val key: NavigationKey get() {
-        if(instruction.navigationKey is NoNavigationKey) throw IllegalStateException("This NavigationHandle has no NavigationKey")
+        if(instruction.navigationKey is NoNavigationKey) throw IllegalStateException(
+            "The navigation handle for the context ${navigationContext?.contextReference} has no NavigationKey"
+        )
         return instruction.navigationKey
     }
     override val id: String get() = instruction.instructionId
@@ -32,6 +34,7 @@ internal class NavigationHandleViewModel(
     private val lifecycle = LifecycleRegistry(this).apply {
         addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                if(!hasKey) return
                 if (event == Lifecycle.Event.ON_CREATE) controller.onOpened(this@NavigationHandleViewModel)
                 if (event == Lifecycle.Event.ON_DESTROY) controller.onClosed(this@NavigationHandleViewModel)
             }

@@ -17,7 +17,7 @@ internal class FragmentHost(
 
 internal fun NavigationContext<*>.fragmentHostFor(key: NavigationKey): FragmentHost? {
     val primaryFragment = childFragmentManager.primaryNavigationFragment
-    val activeContainerId = (primaryFragment?.view?.parent as View).id
+    val activeContainerId = (primaryFragment?.view?.parent as? View)?.id
 
     val visibleContainers = getNavigationHandleViewModel().childContainers.filter {
         when (contextReference) {
