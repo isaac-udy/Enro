@@ -90,7 +90,7 @@ class NavigationController(
         val navigator = navigatorForKeyType(instruction.navigationKey::class)
             ?: throw IllegalStateException("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
 
-        val executor = executorForOpen(navigationContext, navigator.contextType)
+        val executor = executorForOpen(navigationContext, instruction)
 
         val args = ExecutorArgs(
             executor.context,
@@ -143,7 +143,11 @@ class NavigationController(
         return temporaryOverrides[types] ?: overrides[types]
     }
 
-    private fun executorForOpen(fromContext: NavigationContext<out Any>, opensContext: KClass<out Any>): OpenExecutorPair {
+    internal fun executorForOpen(fromContext: NavigationContext<out Any>, instruction: NavigationInstruction.Open): OpenExecutorPair {
+        val navigator = navigatorForKeyType(instruction.navigationKey::class)
+            ?: throw IllegalStateException("Attempted to find executor for $instruction but could not find a valid navigator for the key type on this instruction")
+
+        val opensContext = navigator.contextType
         val opensContextIsActivity by lazy {
             FragmentActivity::class.java.isAssignableFrom(opensContext.java)
         }
@@ -189,12 +193,32 @@ class NavigationController(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun executorForClose(navigationContext: NavigationContext<out Any>): NavigationExecutor<Any, Any, NavigationKey> {
+    internal fun executorForClose(navigationContext: NavigationContext<out Any>): NavigationExecutor<Any, Any, NavigationKey> {
         val parentContextType = navigationContext.getNavigationHandleViewModel().instruction.parentContext?.kotlin
-        val override = parentContextType?.let {
-            overrideFor(it to navigationContext.contextReference::class)
-                    as? NavigationExecutor<Any, Any, NavigationKey>
-        }
+        val contextType = navigationContext.contextReference::class
+
+        val override = parentContextType?.let { parentContext ->
+            val parentContextIsActivity by lazy {
+                FragmentActivity::class.java.isAssignableFrom(parentContext.java)
+            }
+
+            val parentContextIsFragment by lazy {
+                Fragment::class.java.isAssignableFrom(parentContext.java)
+            }
+
+            overrideFor(parentContext to contextType)
+                ?: when  {
+                    parentContextIsActivity -> overrideFor(FragmentActivity::class to contextType)
+                    parentContextIsFragment -> overrideFor(Fragment::class to contextType)
+                    else -> null
+                }
+                ?: overrideFor(Any::class to contextType)
+                ?: when(navigationContext) {
+                    is ActivityContext -> overrideFor(parentContext to FragmentActivity::class)
+                    is FragmentContext -> overrideFor(parentContext to Fragment::class)
+                }
+                ?: overrideFor(parentContext to Any::class)
+        } as? NavigationExecutor<Any, Any, NavigationKey>
 
         return override ?: when (navigationContext) {
             is ActivityContext -> DefaultActivityExecutor as NavigationExecutor<Any, Any, NavigationKey>

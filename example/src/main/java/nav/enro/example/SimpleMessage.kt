@@ -24,7 +24,6 @@ class SimpleMessageDestination : SyntheticDestination<SimpleMessage> {
         key: SimpleMessage,
         instruction: NavigationInstruction.Open
     ) {
-        val key = instruction.navigationKey as SimpleMessage
         val activity = navigationContext.activity
         AlertDialog.Builder(activity).apply {
             setTitle(key.title)

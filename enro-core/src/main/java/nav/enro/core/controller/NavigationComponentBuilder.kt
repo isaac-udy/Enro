@@ -1,8 +1,6 @@
     package nav.enro.core.controller
 
-import nav.enro.core.NavigationApplication
-import nav.enro.core.NavigationExecutor
-import nav.enro.core.Navigator
+import nav.enro.core.*
 import nav.enro.core.plugins.EnroPlugin
 
 // TODO get rid of this, or give it a better name
@@ -24,6 +22,12 @@ class NavigationComponentBuilder {
 
     fun override(override: NavigationExecutor<*, *, *>) {
         overrides.add(override)
+    }
+
+    inline fun <reified From : Any, reified Opens : Any> override(
+        noinline block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
+    ) {
+        overrides.add(createOverride(From::class, Opens::class, block))
     }
 
     fun component(builder: NavigationComponentBuilder) {

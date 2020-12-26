@@ -28,8 +28,7 @@ class SplashScreenActivity : AppCompatActivity() {
         super.onResume()
         navigation.executeInstruction(NavigationInstruction.Open(
             navigationDirection = NavigationDirection.REPLACE_ROOT,
-            navigationKey = MainKey(),
-            animations = NavigationAnimations.none
+            navigationKey = MainKey()
         ))
     }
 }

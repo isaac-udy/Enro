@@ -3,13 +3,11 @@ package nav.enro.core.fragment
 import androidx.fragment.app.Fragment
 import nav.enro.core.NavigationKey
 import nav.enro.core.Navigator
-import nav.enro.core.NavigatorAnimations
 import kotlin.reflect.KClass
 
 class FragmentNavigator<KeyType : NavigationKey, FragmentType: Fragment> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
     override val contextType: KClass<FragmentType>,
-    override val animations: NavigatorAnimations = NavigatorAnimations.default
 ) : Navigator<KeyType, FragmentType>
 
 fun <KeyType : NavigationKey, FragmentType : Fragment> createFragmentNavigator(

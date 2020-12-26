@@ -1,4 +1,4 @@
-package nav.enro.core
+package nav.enro.core.internal
 
 import android.content.res.Resources
 import android.util.TypedValue

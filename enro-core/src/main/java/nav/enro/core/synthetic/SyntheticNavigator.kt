@@ -2,7 +2,6 @@ package nav.enro.core.synthetic
 
 import nav.enro.core.NavigationKey
 import nav.enro.core.Navigator
-import nav.enro.core.NavigatorAnimations
 import kotlin.reflect.KClass
 
 
@@ -11,7 +10,6 @@ class SyntheticNavigator<KeyType : NavigationKey> @PublishedApi internal constru
     val destination: SyntheticDestination<KeyType>
 ) : Navigator<KeyType, SyntheticDestination<*>> {
     override val contextType: KClass<SyntheticDestination<*>> = SyntheticDestination::class
-    override val animations: NavigatorAnimations = NavigatorAnimations.default
 }
 
 fun <T : NavigationKey> createSyntheticNavigator(

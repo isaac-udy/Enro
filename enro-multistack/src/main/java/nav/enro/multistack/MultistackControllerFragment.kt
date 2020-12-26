@@ -131,7 +131,7 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
             }
         }
 
-        val animation = openStackAnimation ?: NavigatorAnimations.default.toResource(requireActivity().theme).replaceEnter
+        val animation = openStackAnimation ?: DefaultAnimations.replace.asResource(requireActivity().theme).enter
         val enter = AnimationUtils.loadAnimation(requireContext(), animation)
         activeContainer.startAnimation(enter)
 
