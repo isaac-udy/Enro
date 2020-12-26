@@ -85,7 +85,6 @@ fun NavigationContext<*>.leafContext(): NavigationContext<*> {
     return childContext.leafContext()
 }
 
-// TODO - Move to sit with NavigationHandleViewModel?
 internal fun NavigationContext<*>.getNavigationHandleViewModel(): NavigationHandleViewModel {
     return when (this) {
         is FragmentContext<out Fragment> -> fragment.getNavigationHandle()
