@@ -26,9 +26,6 @@ class SplashScreenActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        navigation.executeInstruction(NavigationInstruction.Open(
-            navigationDirection = NavigationDirection.REPLACE_ROOT,
-            navigationKey = MainKey()
-        ))
+        navigation.replaceRoot(MainKey())
     }
 }

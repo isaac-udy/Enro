@@ -21,7 +21,7 @@ class ActivityToFragmentOverrideTests() {
                 postOpened { postOpenCalled = true }
                 opened {
                     openCalled = true
-                    defaultOpen<GenericFragment>().invoke(it)
+                    defaultOpened(it)
                 }
             }
         )
@@ -46,7 +46,7 @@ class ActivityToFragmentOverrideTests() {
                 preClosed { preCloseCalled = true }
                 closed {
                     closeOverrideCalled = true
-                    defaultClose<GenericFragment>().invoke(it)
+                    defaultClosed(it)
                 }
             }
         )
@@ -76,7 +76,7 @@ class ActivityToFragmentOverrideTests() {
                 postOpened { postOpenCalled = true }
                 opened {
                     openCalled = true
-                    defaultOpen<GenericFragment>().invoke(it)
+                    defaultOpened(it)
                 }
             }
         )
@@ -109,7 +109,7 @@ class ActivityToFragmentOverrideTests() {
                 preClosed { preCloseCalled = true }
                 closed {
                     closeOverrideCalled = true
-                    defaultClose<GenericFragment>().invoke(it)
+                    defaultClosed(it)
                 }
             }
         )
@@ -148,7 +148,7 @@ class ActivityToFragmentOverrideTests() {
                 postOpened { postOpenCalled = true }
                 opened {
                     openCalled = true
-                    defaultOpen<ActivityChildFragment>().invoke(it)
+                    defaultOpened(it)
                 }
             }
         )
@@ -181,7 +181,7 @@ class ActivityToFragmentOverrideTests() {
                 preClosed { preCloseCalled = true }
                 closed {
                     closeOverrideCalled = true
-                    defaultClose<ActivityChildFragment>().invoke(it)
+                    defaultClosed(it)
                 }
             }
         )

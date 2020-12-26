@@ -7,8 +7,6 @@ import nav.enro.*
 import nav.enro.core.*
 import nav.enro.core.navigationController
 import nav.enro.core.createOverride
-import nav.enro.core.defaultClose
-import nav.enro.core.defaultOpen
 import org.junit.Test
 
 class ActivityToActivityOverrideTests() {
@@ -25,7 +23,7 @@ class ActivityToActivityOverrideTests() {
                 postOpened { postOpenCalled = true }
                 opened {
                     openCalled = true
-                    defaultOpen<GenericActivity>().invoke(it)
+                    defaultOpened(it)
                 }
             }
         )
@@ -48,7 +46,7 @@ class ActivityToActivityOverrideTests() {
             createOverride<DefaultActivity, GenericActivity> {
                 closed {
                     closeOverrideCalled = true
-                    defaultClose<GenericActivity>().invoke(it)
+                    defaultClosed(it)
                 }
                 preClosed {
                     preCloseCalled = true
@@ -82,7 +80,7 @@ class ActivityToActivityOverrideTests() {
                 postOpened { postOpenCalled = true }
                 opened {
                     openCalled = true
-                    defaultOpen<GenericActivity>().invoke(it)
+                    defaultOpened(it)
                 }
             }
         )
@@ -114,7 +112,7 @@ class ActivityToActivityOverrideTests() {
             createOverride<GenericActivity, GenericActivity> {
                 closed {
                     closeOverrideCalled = true
-                    defaultClose<GenericActivity>().invoke(it)
+                    defaultClosed(it)
                 }
                 preClosed { preCloseCalled = true }
             }
@@ -155,7 +153,7 @@ class ActivityToActivityOverrideTests() {
                 postOpened { postOpenCalled = true }
                 opened {
                     openCalled = true
-                    defaultOpen<GenericActivity>().invoke(it)
+                    defaultOpened(it)
                 }
             }
         )
@@ -180,7 +178,7 @@ class ActivityToActivityOverrideTests() {
             createOverride<UnboundActivity, GenericActivity> {
                 closed {
                     closeOverrideCalled = true
-                    defaultClose<GenericActivity>().invoke(it)
+                    defaultClosed(it)
                 }
                 preClosed { preCloseCalled = true }
             }

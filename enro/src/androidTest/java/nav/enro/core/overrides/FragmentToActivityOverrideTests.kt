@@ -7,7 +7,6 @@ import nav.enro.*
 import nav.enro.core.*
 import nav.enro.core.navigationController
 import nav.enro.core.createOverride
-import nav.enro.core.defaultOpen
 import org.junit.Before
 import org.junit.Test
 
@@ -40,7 +39,7 @@ class FragmentToActivityOverrideTests() {
                 postOpened { postOpenCalled = true }
                 opened {
                     openCalled = true
-                    defaultOpen<GenericActivity>().invoke(it)
+                    defaultOpened(it)
                 }
             }
         )
@@ -69,7 +68,7 @@ class FragmentToActivityOverrideTests() {
                 preClosed { preCloseCalled = true}
                 closed {
                     closeOverrideCalled = true
-                    defaultClose<GenericActivity>().invoke(it)
+                    defaultClosed(it)
                 }
             }
         )
@@ -104,7 +103,7 @@ class FragmentToActivityOverrideTests() {
                 postOpened { postOpenCalled = true }
                 opened {
                     openCalled = true
-                    defaultOpen<GenericActivity>().invoke(it)
+                    defaultOpened(it)
                 }
             }
         )
@@ -133,7 +132,7 @@ class FragmentToActivityOverrideTests() {
                 preClosed { preCloseCalled = true }
                 closed {
                     closeOverrideCalled = true
-                    defaultClose<GenericActivity>().invoke(it)
+                    defaultClosed(it)
                 }
             }
         )

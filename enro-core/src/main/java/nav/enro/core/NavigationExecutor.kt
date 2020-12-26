@@ -67,29 +67,29 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
     private var closedFunc: ((context: NavigationContext<out OpensContext>) -> Unit)? = null
 
     @Suppress("UNCHECKED_CAST")
-    private val defaultOpens: (args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) -> Unit = {
+    fun defaultOpened(args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) {
         when {
-            FragmentActivity::class.java.isAssignableFrom(it.navigator.contextType.java) ->
+            FragmentActivity::class.java.isAssignableFrom(args.navigator.contextType.java) ->
                 DefaultActivityExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
-            Fragment::class.java.isAssignableFrom(it.navigator.contextType.java) ->
+            Fragment::class.java.isAssignableFrom(args.navigator.contextType.java) ->
                 DefaultFragmentExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
             else -> throw IllegalArgumentException("No default launch executor found for ${opensType.java}")
-        }.invoke(it)
+        }.invoke(args)
     }
 
     @Suppress("UNCHECKED_CAST")
-    private val defaultCloses: (context: NavigationContext<out OpensContext>) -> Unit = {
+    fun defaultClosed(context: NavigationContext<out OpensContext>) {
         when {
-            FragmentActivity::class.java.isAssignableFrom(it.contextReference::class.java) ->
+            FragmentActivity::class.java.isAssignableFrom(context.contextReference::class.java) ->
                 DefaultActivityExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
-            Fragment::class.java.isAssignableFrom(it.contextReference::class.java) ->
+            Fragment::class.java.isAssignableFrom(context.contextReference::class.java) ->
                 DefaultFragmentExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
             else -> throw IllegalArgumentException("No default close executor found for ${opensType.java}")
-        }.invoke(it)
+        }.invoke(context)
     }
 
     fun animation(block: (instruction: NavigationInstruction.Open) -> AnimationPair) {
@@ -145,7 +145,7 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
         }
 
         override fun open(args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) {
-            (openedFunc ?: defaultOpens).invoke(args)
+            openedFunc?.invoke(args) ?: defaultOpened(args)
         }
 
         override fun postOpened(context: NavigationContext<out OpensContext>) {
@@ -157,7 +157,21 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
         }
 
         override fun close(context: NavigationContext<out OpensContext>) {
-            (closedFunc ?: defaultCloses).invoke(context)
+            closedFunc?.invoke(context) ?: defaultClosed(context)
         }
     }
 }
+
+fun <From : Any, Opens : Any> createOverride(
+    fromClass: KClass<From>,
+    opensClass: KClass<Opens>,
+    block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
+): NavigationExecutor<From, Opens, NavigationKey> =
+    NavigationExecutorBuilder(fromClass, opensClass, NavigationKey::class)
+        .apply(block)
+        .build()
+
+inline fun <reified From : Any, reified Opens : Any> createOverride(
+    noinline block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
+): NavigationExecutor<From, Opens, NavigationKey> =
+    createOverride(From::class, Opens::class, block)
