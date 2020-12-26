@@ -90,8 +90,6 @@ class NavigationController(
         val navigator = navigatorForKeyType(instruction.navigationKey::class)
             ?: throw IllegalStateException("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
 
-        Log.e("FINDING OVERRIDE FOR", "Exec open for ${instruction::class.java.simpleName} from ${navigationContext.contextReference}")
-
         val executor = executorForOpen(navigationContext, navigator.contextType)
 
         val args = ExecutorArgs(
@@ -103,7 +101,6 @@ class NavigationController(
                 .setParentContext(executor.context)
         )
 
-        Log.e("FINDING OVERRIDE FOR", "Exec open for ${instruction::class.java.simpleName} with real context ${executor.context.contextReference}")
         executor.executor.preOpened(executor.context)
         executor.executor.open(args)
     }
@@ -125,8 +122,6 @@ class NavigationController(
     }
 
     internal fun onContextCreated(navigationContext: NavigationContext<out Any>, savedInstanceState: Bundle?) {
-
-        Log.e("FINDING OVERRIDE FOR", "CONTEXT CREATED ${navigationContext.contextReference}\n\n-")
         if(savedInstanceState == null) {
             executorForClose(navigationContext).postOpened(navigationContext)
         }
