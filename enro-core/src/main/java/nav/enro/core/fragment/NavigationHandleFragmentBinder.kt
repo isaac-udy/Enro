@@ -44,14 +44,16 @@ internal object NavigationHandleFragmentBinder: Application.ActivityLifecycleCal
                 navigationDirection = NavigationDirection.FORWARD,
                 navigationKey = config?.defaultKey ?: NoNavigationKey(fragment::class.java, fragment.arguments)
             )
-
+            val controller = fragment.requireActivity().application.navigationController
             val handle = fragment.createNavigationHandleViewModel(
-                fragment.requireActivity().application.navigationController,
+                controller,
                 instruction ?: defaultInstruction
             )
             config?.applyTo(handle)
 
-            handle.navigationContext = FragmentContext(fragment)
+            val context = FragmentContext(fragment)
+            handle.navigationContext = context
+            controller.onContextCreated(context, savedInstanceState)
             if(savedInstanceState == null) handle.executeDeeplink()
         }
 

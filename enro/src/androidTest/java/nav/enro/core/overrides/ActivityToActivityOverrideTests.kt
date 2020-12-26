@@ -15,11 +15,16 @@ class ActivityToActivityOverrideTests() {
 
     @Test
     fun givenActivityToActivityOverride_whenInitialActivityOpenedWithDefaultKey_whenActivityIsLaunched_thenOverrideIsCalled() {
-        var launchOverrideCalled = false
+        var preOpenCalled = false
+        var openCalled = false
+        var postOpenCalled = false
+
         application.navigationController.addOverride(
             createOverride<DefaultActivity, GenericActivity> {
+                preOpened { preOpenCalled = true }
+                postOpened { postOpenCalled = true }
                 opened {
-                    launchOverrideCalled = true
+                    openCalled = true
                     defaultOpen<GenericActivity>().invoke(it)
                 }
             }
@@ -30,17 +35,23 @@ class ActivityToActivityOverrideTests() {
 
         expectActivity<GenericActivity>()
 
-        assertTrue(launchOverrideCalled)
+        assertTrue(preOpenCalled)
+        assertTrue(openCalled)
+        assertTrue(postOpenCalled)
     }
 
     @Test
     fun givenActivityToActivityOverride_whenInitialActivityOpenedWithDefaultKey_whenActivityIsClosed_thenOverrideIsCalled() {
+        var preCloseCalled = false
         var closeOverrideCalled = false
         application.navigationController.addOverride (
             createOverride<DefaultActivity, GenericActivity> {
                 closed {
                     closeOverrideCalled = true
                     defaultClose<GenericActivity>().invoke(it)
+                }
+                preClosed {
+                    preCloseCalled = true
                 }
             }
         )
@@ -56,15 +67,21 @@ class ActivityToActivityOverrideTests() {
         expectActivity<DefaultActivity>()
 
         assertTrue(closeOverrideCalled)
+        assertTrue(preCloseCalled)
     }
 
     @Test
     fun givenActivityToActivityOverride_whenActivityIsLaunched_thenOverrideIsCalled() {
-        var launchOverrideCalled = false
+        var preOpenCalled = false
+        var openCalled = false
+        var postOpenCalled = false
+
         application.navigationController.addOverride(
             createOverride<GenericActivity, GenericActivity>{
+                preOpened { preOpenCalled = true }
+                postOpened { postOpenCalled = true }
                 opened {
-                    launchOverrideCalled = true
+                    openCalled = true
                     defaultOpen<GenericActivity>().invoke(it)
                 }
             }
@@ -83,18 +100,23 @@ class ActivityToActivityOverrideTests() {
 
         expectActivity<GenericActivity>()
 
-        assertTrue(launchOverrideCalled)
+        assertTrue(preOpenCalled)
+        assertTrue(openCalled)
+        assertTrue(postOpenCalled)
     }
 
     @Test
     fun givenActivityToActivityOverride_whenActivityIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
+        var preCloseCalled = false
+
         application.navigationController.addOverride(
             createOverride<GenericActivity, GenericActivity> {
                 closed {
                     closeOverrideCalled = true
                     defaultClose<GenericActivity>().invoke(it)
                 }
+                preClosed { preCloseCalled = true }
             }
         )
 
@@ -117,16 +139,22 @@ class ActivityToActivityOverrideTests() {
         expectActivity<GenericActivity>()
 
         assertTrue(closeOverrideCalled)
+        assertTrue(preCloseCalled)
     }
 
 
     @Test
     fun givenUnboundActivityToActivityOverride_whenActivityIsLaunched_thenOverrideIsCalled() {
-        var launchOverrideCalled = false
+        var preOpenCalled = false
+        var openCalled = false
+        var postOpenCalled = false
+
         application.navigationController.addOverride(
             createOverride<UnboundActivity, GenericActivity>{
+                preOpened { preOpenCalled = true }
+                postOpened { postOpenCalled = true }
                 opened {
-                    launchOverrideCalled = true
+                    openCalled = true
                     defaultOpen<GenericActivity>().invoke(it)
                 }
             }
@@ -138,18 +166,23 @@ class ActivityToActivityOverrideTests() {
 
         expectActivity<GenericActivity>()
 
-        assertTrue(launchOverrideCalled)
+        assertTrue(preOpenCalled)
+        assertTrue(openCalled)
+        assertTrue(postOpenCalled)
     }
 
     @Test
     fun givenUnboundActivityToActivityOverride_whenActivityIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
+        var preCloseCalled = false
+
         application.navigationController.addOverride(
             createOverride<UnboundActivity, GenericActivity> {
                 closed {
                     closeOverrideCalled = true
                     defaultClose<GenericActivity>().invoke(it)
                 }
+                preClosed { preCloseCalled = true }
             }
         )
 
@@ -164,5 +197,6 @@ class ActivityToActivityOverrideTests() {
         expectActivity<UnboundActivity>()
 
         assertTrue(closeOverrideCalled)
+        assertTrue(preCloseCalled)
     }
 }

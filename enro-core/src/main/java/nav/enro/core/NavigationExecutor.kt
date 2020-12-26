@@ -20,7 +20,7 @@ abstract class NavigationExecutor<FromContext: Any, OpensContext: Any, KeyType: 
     val keyType: KClass<KeyType>
 ) {
     open fun preOpened(
-        context: NavigationContext<out OpensContext>
+        context: NavigationContext<out FromContext>
     ) {}
 
     abstract fun open(
@@ -38,10 +38,6 @@ abstract class NavigationExecutor<FromContext: Any, OpensContext: Any, KeyType: 
     abstract fun close(
         context: NavigationContext<out OpensContext>
     )
-
-    open fun postClosed(
-        context: NavigationContext<out FromContext>
-    ) {}
 }
 
 class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: NavigationKey> @PublishedApi internal constructor(
@@ -50,12 +46,11 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
     private val keyType: KClass<KeyType>
 ) {
 
-    private var preOpenedFunc: (( context: NavigationContext<out OpensContext>) -> Unit)? = null
+    private var preOpenedFunc: (( context: NavigationContext<out FromContext>) -> Unit)? = null
     private var openedFunc: ((args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) -> Unit)? = null
     private var postOpenedFunc: ((context: NavigationContext<out OpensContext>) -> Unit)? = null
     private var preClosedFunc: ((context: NavigationContext<out OpensContext>) -> Unit)? = null
     private var closedFunc: ((context: NavigationContext<out OpensContext>) -> Unit)? = null
-    private var postClosedFunc: ((context: NavigationContext<out FromContext>) -> Unit)? = null
 
     @Suppress("UNCHECKED_CAST")
     private val defaultOpens: (args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) -> Unit by lazy {
@@ -83,7 +78,7 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
         }
     }
 
-    fun preOpened(block: ( context: NavigationContext<out OpensContext>) -> Unit) {
+    fun preOpened(block: ( context: NavigationContext<out FromContext>) -> Unit) {
         if(preOpenedFunc != null) throw IllegalStateException("Value is already set!")
         preOpenedFunc = block
     }
@@ -108,18 +103,12 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
         closedFunc = block
     }
 
-    fun postClosed(block: (context: NavigationContext<out FromContext>) -> Unit) {
-        if(postClosedFunc != null) throw IllegalStateException("Value is already set!")
-        postClosedFunc = block
-    }
-
-
     internal fun build() = object : NavigationExecutor<FromContext, OpensContext, KeyType>(
         fromType,
         opensType,
         keyType
     ) {
-        override fun preOpened(context: NavigationContext<out OpensContext>) {
+        override fun preOpened(context: NavigationContext<out FromContext>) {
             preOpenedFunc?.invoke(context)
         }
 
@@ -137,10 +126,6 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
 
         override fun close(context: NavigationContext<out OpensContext>) {
             (closedFunc ?: defaultCloses).invoke(context)
-        }
-
-        override fun postClosed(context: NavigationContext<out FromContext>) {
-            postClosedFunc?.invoke(context)
         }
     }
 }

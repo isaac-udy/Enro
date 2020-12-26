@@ -31,13 +31,16 @@ internal object NavigationHandleActivityBinder : Application.ActivityLifecycleCa
             navigationKey = config?.defaultKey ?: NoNavigationKey(activity::class.java, activity.intent.extras)
         )
 
+        val controller = activity.application.navigationController
         val handle = activity.createNavigationHandleViewModel(
-            activity.application.navigationController,
+            controller,
             instruction ?: defaultInstruction
         )
         config?.applyTo(handle)
 
+        val context = ActivityContext(activity)
         handle.navigationContext = ActivityContext(activity)
+        controller.onContextCreated(context, savedInstanceState)
         if(savedInstanceState  == null) handle.executeDeeplink()
         activity.findViewById<ViewGroup>(android.R.id.content).viewTreeObserver.addOnGlobalLayoutListener {
             activity.application.navigationController.active = activity.navigationContext.leafContext().getNavigationHandleViewModel()

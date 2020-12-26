@@ -11,11 +11,16 @@ class ActivityToFragmentOverrideTests() {
 
     @Test
     fun givenActivityToFragmentOverride_andActivityDoesNotSupportFragment_whenInitialActivityOpenedWithDefaultKey_whenFragmentIsLaunched_whenActivityDoes_thenOverrideIsCalled() {
-        var launchOverrideCalled = false
+        var preOpenCalled = false
+        var openCalled = false
+        var postOpenCalled = false
+
         application.navigationController.addOverride(
             createOverride<DefaultActivity, GenericFragment> {
+                preOpened { preOpenCalled = true }
+                postOpened { postOpenCalled = true }
                 opened {
-                    launchOverrideCalled = true
+                    openCalled = true
                     defaultOpen<GenericFragment>().invoke(it)
                 }
             }
@@ -26,14 +31,19 @@ class ActivityToFragmentOverrideTests() {
 
         expectFragment<GenericFragment>()
 
-        assertTrue(launchOverrideCalled)
+        assertTrue(preOpenCalled)
+        assertTrue(openCalled)
+        assertTrue(postOpenCalled)
     }
 
     @Test
     fun givenActivityToFragmentOverride_andActivityDoesNotSupportFragment_whenInitialActivityOpenedWithDefaultKey_whenFragmentIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
+        var preCloseCalled = false
+
         application.navigationController.addOverride(
             createOverride<DefaultActivity, GenericFragment> {
+                preClosed { preCloseCalled = true }
                 closed {
                     closeOverrideCalled = true
                     defaultClose<GenericFragment>().invoke(it)
@@ -51,15 +61,21 @@ class ActivityToFragmentOverrideTests() {
         expectActivity<DefaultActivity>()
 
         assertTrue(closeOverrideCalled)
+        assertTrue(preCloseCalled)
     }
 
     @Test
     fun givenActivityToFragmentOverride_andActivityDoesNotSupportFragment_whenFragmentIsLaunched_thenOverrideIsCalled() {
-        var launchOverrideCalled = false
+        var preOpenCalled = false
+        var openCalled = false
+        var postOpenCalled = false
+
         application.navigationController.addOverride(
             createOverride<GenericActivity, GenericFragment> {
+                preOpened { preOpenCalled = true }
+                postOpened { postOpenCalled = true }
                 opened {
-                    launchOverrideCalled = true
+                    openCalled = true
                     defaultOpen<GenericFragment>().invoke(it)
                 }
             }
@@ -78,14 +94,19 @@ class ActivityToFragmentOverrideTests() {
 
         expectFragment<GenericFragment>()
 
-        assertTrue(launchOverrideCalled)
+        assertTrue(preOpenCalled)
+        assertTrue(openCalled)
+        assertTrue(postOpenCalled)
     }
 
     @Test
     fun givenActivityToFragmentOverride_andActivityDoesNotSupportFragment_whenFragmentIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
+        var preCloseCalled = false
+
         application.navigationController.addOverride(
             createOverride<GenericActivity, GenericFragment> {
+                preClosed { preCloseCalled = true }
                 closed {
                     closeOverrideCalled = true
                     defaultClose<GenericFragment>().invoke(it)
@@ -112,15 +133,21 @@ class ActivityToFragmentOverrideTests() {
         expectActivity<GenericActivity>()
 
         assertTrue(closeOverrideCalled)
+        assertTrue(preCloseCalled)
     }
 
     @Test
     fun givenActivityToFragmentOverride_whenFragmentIsLaunched_thenOverrideIsCalled() {
-        var launchOverrideCalled = false
+        var preOpenCalled = false
+        var openCalled = false
+        var postOpenCalled = false
+
         application.navigationController.addOverride(
             createOverride<ActivityWithFragments, ActivityChildFragment> {
+                preOpened { preOpenCalled = true }
+                postOpened { postOpenCalled = true }
                 opened {
-                    launchOverrideCalled = true
+                    openCalled = true
                     defaultOpen<ActivityChildFragment>().invoke(it)
                 }
             }
@@ -139,14 +166,19 @@ class ActivityToFragmentOverrideTests() {
 
         expectFragment<ActivityChildFragment>()
 
-        assertTrue(launchOverrideCalled)
+        assertTrue(preOpenCalled)
+        assertTrue(openCalled)
+        assertTrue(postOpenCalled)
     }
 
     @Test
     fun givenActivityToFragmentOverride_whenFragmentIsClosed_thenOverrideIsCalled() {
         var closeOverrideCalled = false
+        var preCloseCalled = false
+
         application.navigationController.addOverride(
             createOverride<ActivityWithFragments, ActivityChildFragment> {
+                preClosed { preCloseCalled = true }
                 closed {
                     closeOverrideCalled = true
                     defaultClose<ActivityChildFragment>().invoke(it)
@@ -172,5 +204,6 @@ class ActivityToFragmentOverrideTests() {
         expectActivity<ActivityWithFragments>()
 
         assertTrue(closeOverrideCalled)
+        assertTrue(preCloseCalled)
     }
 }

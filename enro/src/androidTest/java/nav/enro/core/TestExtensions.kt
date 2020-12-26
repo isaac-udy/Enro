@@ -1,6 +1,7 @@
 package nav.enro.core
 
 import android.app.Application
+import android.os.Looper
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
@@ -66,9 +67,10 @@ fun expectNoActivity() {
 fun waitFor(block: () -> Boolean) {
     val maximumTime = 20_000
     val startTime = System.currentTimeMillis()
+
     while(true) {
         if(block()) return
-        Thread.sleep(100)
+        Thread.sleep(250)
         if(System.currentTimeMillis() - startTime > maximumTime) throw IllegalStateException("Took too long waiting")
     }
 }
@@ -80,7 +82,7 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
 
     while(true) {
         if (System.currentTimeMillis() - startTime > maximumTime) throw IllegalStateException("Took too long waiting")
-        Thread.sleep(100)
+        Thread.sleep(250)
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             currentResponse = block()
         }

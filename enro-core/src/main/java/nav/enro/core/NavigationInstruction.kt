@@ -26,6 +26,7 @@ sealed class NavigationInstruction {
         val navigationKey: NavigationKey,
         val children: List<NavigationKey> = emptyList(),
         val parentInstruction: Open? = null,
+        val parentContext: Class<out Any>? = null,
         val animations: NavigationAnimations? = null,
         val additionalData: Bundle = Bundle(),
         val instructionId: String = UUID.randomUUID().toString()
