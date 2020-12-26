@@ -25,7 +25,6 @@ class UnboundActivitiesTest {
             caught = t
         }
         assertTrue(caught is IllegalStateException)
-        assertEquals("This NavigationHandle has no NavigationKey", caught.message)
     }
 
     @Test
