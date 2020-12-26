@@ -21,6 +21,7 @@ data class SimpleMessage(
 class SimpleMessageDestination : SyntheticDestination<SimpleMessage> {
     override fun process(
         navigationContext: NavigationContext<out Any>,
+        key: SimpleMessage,
         instruction: NavigationInstruction.Open
     ) {
         val key = instruction.navigationKey as SimpleMessage

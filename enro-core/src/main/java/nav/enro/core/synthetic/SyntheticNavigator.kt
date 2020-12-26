@@ -15,11 +15,11 @@ class SyntheticNavigator<KeyType : NavigationKey> @PublishedApi internal constru
 }
 
 fun <T : NavigationKey> createSyntheticNavigator(
-    navigationKeyType: KClass<T>,
+    navigationKeyType: Class<T>,
     destination: SyntheticDestination<T>
 ): Navigator<T, SyntheticDestination<*>> =
     SyntheticNavigator(
-        keyType = navigationKeyType,
+        keyType = navigationKeyType.kotlin,
         destination = destination
     )
 
