@@ -51,6 +51,10 @@ ext.androidLibrary = {
         }
     }
 
+    kotlin {
+        explicitApi()
+    }
+
     dependencies {
         implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     }

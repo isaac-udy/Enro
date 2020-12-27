@@ -1,6 +1,13 @@
     package nav.enro.core.controller
 
 import nav.enro.core.*
+import nav.enro.core.controller.container.ExecutorContainer
+import nav.enro.core.controller.container.NavigatorContainer
+import nav.enro.core.controller.container.PluginContainer
+import nav.enro.core.controller.interceptor.InstructionInterceptorController
+import nav.enro.core.controller.interceptor.InstructionParentInterceptor
+import nav.enro.core.controller.lifecycle.NavigationLifecycleController
+import nav.enro.core.plugins.EnroHilt
 import nav.enro.core.plugins.EnroPlugin
 
 // TODO get rid of this, or give it a better name
@@ -40,7 +47,28 @@ class NavigationComponentBuilder {
         plugins.add(enroPlugin)
     }
 
-    internal fun build() = NavigationController(navigators, overrides, plugins)
+    internal fun build(): NavigationController {
+        val useHilt = plugins.any { it is EnroHilt }
+
+        val pluginContainer = PluginContainer(plugins)
+        val navigatorContainer = NavigatorContainer(navigators, useHilt)
+        val executorContainer = ExecutorContainer(overrides)
+
+        val interceptorController = InstructionInterceptorController(
+            listOf(
+                InstructionParentInterceptor(navigatorContainer)
+            )
+        )
+        val contextController = NavigationLifecycleController(executorContainer, pluginContainer)
+
+        return NavigationController(
+            pluginContainer = pluginContainer,
+            navigatorContainer = navigatorContainer,
+            executorContainer = executorContainer,
+            interceptorController = interceptorController,
+            contextController = contextController,
+        )
+    }
 }
 
 /**
@@ -52,9 +80,7 @@ fun NavigationApplication.navigationController(block: NavigationComponentBuilder
         .apply { generatedComponent?.execute(this) }
         .apply(block)
         .build()
-        .apply {
-            NavigationController.install(this@navigationController)
-        }
+        .apply { install(this@navigationController) }
 }
 
 private val NavigationApplication.generatedComponent get(): NavigationComponentBuilderCommand? =

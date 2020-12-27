@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import nav.enro.core.*
 import nav.enro.core.activity.ActivityNavigator
+import nav.enro.core.controller.navigationController
 import nav.enro.core.fragment.DefaultFragmentExecutor
 import nav.enro.core.fragment.FragmentNavigator
 

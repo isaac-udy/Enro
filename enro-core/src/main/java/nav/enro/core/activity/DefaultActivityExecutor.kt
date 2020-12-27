@@ -40,7 +40,7 @@ object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, Navig
 
     override fun close(context: NavigationContext<out FragmentActivity>) {
         context.activity.supportFinishAfterTransition()
-        context.controller.navigatorForContextType(context.contextReference::class) ?: return
+        context.navigator ?: return
 
         val animations = animationsFor(context, NavigationInstruction.Close)
         context.activity.overridePendingTransition(animations.enter, animations.exit)

@@ -37,17 +37,10 @@ class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal const
     companion object {
         internal val pendingProperties = mutableMapOf<Int, WeakReference<NavigationHandleProperty<*>>>()
 
-        fun getPendingConfig(activity: FragmentActivity): NavigationHandleConfiguration<*>? {
-            val pending = pendingProperties[activity.hashCode()] ?: return null
+        fun getPendingConfig(navigationContext: NavigationContext<*>): NavigationHandleConfiguration<*>? {
+            val pending = pendingProperties[navigationContext.contextReference.hashCode()] ?: return null
             val config = pending.get()?.config
-            pendingProperties.remove(activity.hashCode())
-            return config
-        }
-
-        fun getPendingConfig(fragment: Fragment): NavigationHandleConfiguration<*>? {
-            val pending = pendingProperties[fragment.hashCode()] ?: return null
-            val config = pending.get()?.config
-            pendingProperties.remove(fragment.hashCode())
+            pendingProperties.remove(navigationContext.contextReference.hashCode())
             return config
         }
     }

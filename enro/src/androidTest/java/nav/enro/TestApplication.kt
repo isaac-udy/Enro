@@ -1,30 +1,21 @@
 package nav.enro
 
 import android.app.Application
-import nav.enro.core.NavigationApplication
 import nav.enro.core.activity.createActivityNavigator
-import nav.enro.core.controller.NavigationController
+import nav.enro.core.controller.NavigationApplication
+import nav.enro.core.controller.navigationController
 import nav.enro.core.fragment.createFragmentNavigator
 
-class TestApplication : Application(),
-    NavigationApplication {
+class TestApplication : Application(), NavigationApplication {
 
-    override val navigationController =
-        NavigationController(
-            navigators = listOf(
-                createActivityNavigator<DefaultActivityKey, DefaultActivity>(),
+    override val navigationController = navigationController {
+        navigator(createActivityNavigator<DefaultActivityKey, DefaultActivity>())
 
-                createActivityNavigator<GenericActivityKey, GenericActivity>(),
-                createFragmentNavigator<GenericFragmentKey, GenericFragment>(),
+        navigator(createActivityNavigator<GenericActivityKey, GenericActivity>())
+        navigator(createFragmentNavigator<GenericFragmentKey, GenericFragment>())
 
-                createActivityNavigator<ActivityWithFragmentsKey, ActivityWithFragments>(),
-                createFragmentNavigator<ActivityChildFragmentKey, ActivityChildFragment>(),
-                createFragmentNavigator<ActivityChildFragmentTwoKey, ActivityChildFragmentTwo>()
-            )
-        )
-
-    override fun onCreate() {
-        super.onCreate()
-        NavigationController.install(this)
+        navigator(createActivityNavigator<ActivityWithFragmentsKey, ActivityWithFragments>())
+        navigator(createFragmentNavigator<ActivityChildFragmentKey, ActivityChildFragment>())
+        navigator(createFragmentNavigator<ActivityChildFragmentTwoKey, ActivityChildFragmentTwo>())
     }
 }

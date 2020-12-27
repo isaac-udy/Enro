@@ -31,15 +31,7 @@ internal class NavigationHandleViewModel(
     internal var childContainers = listOf<ChildContainer>()
     internal var internalOnCloseRequested: () -> Unit = { close() }
 
-    private val lifecycle = LifecycleRegistry(this).apply {
-        addObserver(object : LifecycleEventObserver {
-            override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if(!hasKey) return
-                if (event == Lifecycle.Event.ON_CREATE) controller.onOpened(this@NavigationHandleViewModel)
-                if (event == Lifecycle.Event.ON_DESTROY) controller.onClosed(this@NavigationHandleViewModel)
-            }
-        })
-    }
+    private val lifecycle = LifecycleRegistry(this)
 
     override fun getLifecycle(): Lifecycle {
         return lifecycle
@@ -57,10 +49,6 @@ internal class NavigationHandleViewModel(
                 lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
             }
         }
-
-    init {
-        controller.handles[id] = this
-    }
 
     private fun registerLifecycleObservers(context: NavigationContext<out Any>) {
         context.lifecycle.addObserver(object : LifecycleEventObserver {
@@ -116,7 +104,6 @@ internal class NavigationHandleViewModel(
     }
 
     override fun onCleared() {
-        controller.handles.remove(id)
         lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
 }

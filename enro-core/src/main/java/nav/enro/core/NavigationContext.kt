@@ -1,5 +1,6 @@
 package nav.enro.core
 
+import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -9,6 +10,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import nav.enro.core.activity.ActivityNavigator
 import nav.enro.core.controller.NavigationController
+import nav.enro.core.controller.navigationController
 import nav.enro.core.fragment.FragmentNavigator
 import nav.enro.core.internal.handle.NavigationHandleViewModel
 
@@ -18,6 +20,7 @@ sealed class NavigationContext<ContextType : Any>(
     abstract val controller: NavigationController
     abstract val lifecycle: Lifecycle
     abstract val childFragmentManager: FragmentManager
+    abstract val arguments: Bundle
 
     internal open val navigator: Navigator<*, ContextType>? by lazy {
         controller.navigatorForContextType(contextReference::class) as? Navigator<*, ContextType>
@@ -31,6 +34,7 @@ internal class ActivityContext<ContextType : FragmentActivity>(
     override val lifecycle get() = contextReference.lifecycle
     override val navigator get() = super.navigator as? ActivityNavigator<*, ContextType>
     override val childFragmentManager get() = contextReference.supportFragmentManager
+    override val arguments: Bundle by lazy { contextReference.intent.extras ?: Bundle() }
 }
 
 internal class FragmentContext<ContextType : Fragment>(
@@ -40,6 +44,7 @@ internal class FragmentContext<ContextType : Fragment>(
     override val lifecycle get() = contextReference.lifecycle
     override val navigator get() = super.navigator as? FragmentNavigator<*, ContextType>
     override val childFragmentManager get() = contextReference.childFragmentManager
+    override val arguments: Bundle by lazy { contextReference.arguments ?: Bundle() }
 }
 
 val NavigationContext<out Fragment>.fragment get() = contextReference

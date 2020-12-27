@@ -12,9 +12,9 @@ import nav.enro.core.addOpenInstruction
 import nav.enro.core.activity
 import nav.enro.core.fragment
 import nav.enro.core.controller.NavigationController
-import nav.enro.core.navigationController
 import nav.enro.core.activity.DefaultActivityExecutor
 import nav.enro.core.ExecutorArgs
+import nav.enro.core.controller.navigationController
 import nav.enro.core.createOverride
 import nav.enro.core.forward
 import nav.enro.core.getNavigationHandle

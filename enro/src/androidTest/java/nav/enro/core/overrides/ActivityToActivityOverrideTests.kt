@@ -5,7 +5,7 @@ import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
 import nav.enro.*
 import nav.enro.core.*
-import nav.enro.core.navigationController
+import nav.enro.core.controller.navigationController
 import nav.enro.core.createOverride
 import org.junit.Test
 

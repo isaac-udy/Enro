@@ -15,9 +15,6 @@ enum class NavigationDirection {
 
 internal const val OPEN_ARG = "nav.enro.core.OPEN_ARG"
 
-// TODO Put this somewhere closer to where it's being used?
-internal const val CONTEXT_ID_ARG = "nav.enro.core.CONTEXT_ID"
-
 // TODO Hide some of these properties?
 sealed class NavigationInstruction {
     @Parcelize

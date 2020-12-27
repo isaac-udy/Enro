@@ -5,6 +5,7 @@ import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
 import nav.enro.*
 import nav.enro.core.*
+import nav.enro.core.controller.navigationController
 import org.junit.Test
 
 class ActivityToFragmentOverrideTests() {
