@@ -6,7 +6,6 @@ import nav.enro.core.*
 import nav.enro.core.ActivityContext
 import nav.enro.core.FragmentContext
 import nav.enro.core.activity.DefaultActivityExecutor
-import nav.enro.core.controller.NavigationController
 import nav.enro.core.fragment.DefaultFragmentExecutor
 import nav.enro.core.getNavigationHandleViewModel
 import nav.enro.core.synthetic.DefaultSyntheticExecutor
@@ -79,7 +78,7 @@ internal class ExecutorContainer(
 
     @Suppress("UNCHECKED_CAST")
     internal fun executorForClose(navigationContext: NavigationContext<out Any>): NavigationExecutor<Any, Any, NavigationKey> {
-        val parentContextType = navigationContext.getNavigationHandleViewModel().instruction.parentContext?.kotlin
+        val parentContextType = navigationContext.getNavigationHandleViewModel().instruction.executorContext?.kotlin
         val contextType = navigationContext.contextReference::class
 
         val override = parentContextType?.let { parentContext ->

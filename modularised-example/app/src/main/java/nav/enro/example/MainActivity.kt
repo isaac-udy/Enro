@@ -48,6 +48,9 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         findViewById<View>(android.R.id.content)
             .animate()
+            .apply {
+                start()
+            }
             .cancel()
     }
 }
@@ -56,15 +59,15 @@ class MainActivity : AppCompatActivity() {
 class LaunchDestination : SyntheticDestination<LaunchKey> {
     override fun process(
         navigationContext: NavigationContext<out Any>,
+        key: LaunchKey,
         instruction: NavigationInstruction.Open
     ) {
         val navigation = navigationContext.activity.getNavigationHandle()
         val userRepo = UserRepository.instance
-        val user = userRepo.activeUser
-        val key = when (user) {
+        val nextKey = when (val user = userRepo.activeUser) {
             null -> LoginKey()
             else -> DashboardKey(user)
         }
-        navigation.replaceRoot(key)
+        navigation.replaceRoot(nextKey)
     }
 }

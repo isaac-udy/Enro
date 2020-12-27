@@ -13,7 +13,6 @@ import nav.enro.core.forward
 import nav.enro.example.core.data.SimpleDataRepository
 import nav.enro.example.core.navigation.*
 import nav.enro.result.registerForNavigationResult
-import nav.enro.viewmodel.asTyped
 import nav.enro.viewmodel.enroViewModels
 import nav.enro.viewmodel.navigationHandle
 
@@ -79,7 +78,11 @@ class DashboardViewModel(
 
     private val repo = SimpleDataRepository()
 
-    private val navigationHandle by navigationHandle().asTyped<DashboardKey>()
+    private val navigationHandle by navigationHandle<DashboardKey> {
+        onCloseRequested {
+            state = state.copy(closeRequested = true)
+        }
+    }
     private val key = navigationHandle.key
 
     private val viewDetail by registerForNavigationResult<Boolean>(navigationHandle) {
@@ -101,9 +104,6 @@ class DashboardViewModel(
             otherPublicMessageCount = data.count { it.isPublic && it.ownerId != userId }
         )
 
-//        navigationHandle.onCloseRequested {
-//            state = state.copy(closeRequested = true)
-//        }
     }
 
     fun test(boolean: Boolean) {

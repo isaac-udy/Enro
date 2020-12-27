@@ -40,3 +40,24 @@ class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal co
         navigationHandleViewModel.internalOnCloseRequested = { onCloseRequested(navigationHandleViewModel.asTyped(keyType)) }
     }
 }
+
+class LazyNavigationHandleConfiguration<T: NavigationKey>(
+    private val keyType: KClass<T>
+) {
+
+    private var onCloseRequested: TypedNavigationHandle<T>.() -> Unit = { close() }
+
+    fun onCloseRequested(block: TypedNavigationHandle<T>.() -> Unit) {
+        onCloseRequested = block
+    }
+
+    fun configure(navigationHandle: NavigationHandle) {
+        val handle = if(navigationHandle is TypedNavigationHandleImpl<*>) {
+            navigationHandle.navigationHandle
+        } else navigationHandle
+
+        if(handle is NavigationHandleViewModel) {
+            handle.internalOnCloseRequested = { onCloseRequested(navigationHandle.asTyped(keyType)) }
+        }
+    }
+}

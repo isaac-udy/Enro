@@ -11,36 +11,34 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-class ViewModelNavigationHandleProperty internal constructor(
-    viewModelType: KClass<out ViewModel>
-) : ReadOnlyProperty<ViewModel, NavigationHandle> {
+class ViewModelNavigationHandleProperty<T : NavigationKey> @PublishedApi internal constructor(
+    viewModelType: KClass<out ViewModel>,
+    type: KClass<T>,
+    block: LazyNavigationHandleConfiguration<T>.() -> Unit
+) : ReadOnlyProperty<ViewModel, TypedNavigationHandle<T>> {
 
     private val navigationHandle = EnroViewModelNavigationHandleProvider.get(viewModelType.java)
-
-    override fun getValue(thisRef: ViewModel, property: KProperty<*>): NavigationHandle {
-        return navigationHandle
-    }
-
-    inner class TypedViewModelNavigationHandleProperty<T: NavigationKey> internal constructor(
-        private val type: KClass<T>
-    ) : ReadOnlyProperty<ViewModel, TypedNavigationHandle<T>> {
-        private val typedNavigationHandle = navigationHandle.asTyped(type)
-
-        override fun getValue(thisRef: ViewModel, property: KProperty<*>): TypedNavigationHandle<T> {
-            return typedNavigationHandle
+        .asTyped(type)
+        .apply {
+            LazyNavigationHandleConfiguration(type)
+                .apply(block)
+                .configure(this)
         }
+
+    override fun getValue(thisRef: ViewModel, property: KProperty<*>): TypedNavigationHandle<T> {
+        return navigationHandle
     }
 }
 
-fun <T: NavigationKey> ViewModelNavigationHandleProperty.asTyped(type: KClass<T>)
-        = TypedViewModelNavigationHandleProperty(type)
+fun <T : NavigationKey> ViewModel.navigationHandle(
+    type: KClass<T>,
+    block: LazyNavigationHandleConfiguration<T>.() -> Unit = {}
+): ViewModelNavigationHandleProperty<T> =
+    ViewModelNavigationHandleProperty(this::class, type, block)
 
-inline fun <reified T: NavigationKey> ViewModelNavigationHandleProperty.asTyped()
-        = asTyped(T::class)
-
-
-fun ViewModel.navigationHandle(): ViewModelNavigationHandleProperty =
-    ViewModelNavigationHandleProperty(this::class)
+inline fun <reified T : NavigationKey> ViewModel.navigationHandle(
+    noinline block: LazyNavigationHandleConfiguration<T>.() -> Unit = {}
+): ViewModelNavigationHandleProperty<T> = navigationHandle(T::class, block)
 
 @MainThread
 inline fun <reified VM : ViewModel> FragmentActivity.enroViewModels(

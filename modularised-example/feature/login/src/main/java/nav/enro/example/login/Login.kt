@@ -6,9 +6,11 @@ import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.observe
 import kotlinx.android.synthetic.main.login.*
 import nav.enro.annotations.NavigationDestination
+import nav.enro.core.NavigationKey
 import nav.enro.core.forward
 import nav.enro.core.navigationHandle
 import nav.enro.core.replaceRoot
+import nav.enro.example.core.base.SingleStateViewModel
 import nav.enro.example.core.data.UserRepository
 import nav.enro.example.core.navigation.DashboardKey
 import nav.enro.example.core.navigation.LoginErrorKey
@@ -50,9 +52,9 @@ data class LoginState(
     val username: String = ""
 )
 
-class LoginViewModel : nav.enro.example.core.base.SingleStateViewModel<LoginState>() {
+class LoginViewModel : SingleStateViewModel<LoginState>() {
 
-    private val navigationHandle by navigationHandle()
+    private val navigationHandle by navigationHandle<NavigationKey>()
 
     private val userRepo = UserRepository.instance
 

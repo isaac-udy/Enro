@@ -22,8 +22,8 @@ import nav.enro.example.core.data.SimpleDataRepository
 import nav.enro.example.core.navigation.DetailKey
 import nav.enro.example.core.navigation.ListFilterType
 import nav.enro.example.core.navigation.ListKey
+import nav.enro.result.closeWithResult
 import nav.enro.result.registerForNavigationResult
-import nav.enro.viewmodel.asTyped
 import nav.enro.viewmodel.enroViewModels
 import nav.enro.viewmodel.navigationHandle
 import javax.inject.Inject
@@ -74,7 +74,11 @@ class ListViewModel @ViewModelInject constructor(
 ) : SingleStateViewModel<ListState>() {
 
     private val repo = SimpleDataRepository()
-    private val navigation by navigationHandle().asTyped<ListKey>()
+    private val navigation by navigationHandle<ListKey> {
+        onCloseRequested {
+            closeWithResult(state.result)
+        }
+    }
     private val key = navigation.key
 
     init {
@@ -96,9 +100,6 @@ class ListViewModel @ViewModelInject constructor(
                 }
         )
 
-//        navigation.onCloseRequested {
-//            navigation.closeWithResult(state.result)
-//        }
     }
 
     fun setResult(it: Boolean) {

@@ -14,5 +14,6 @@ class TestApplication : Application(), NavigationApplication {
     override val navigationController = navigationController {
         plugin(EnroLogger())
         plugin(EnroResult())
+        plugin(TestPlugin)
     }
 }

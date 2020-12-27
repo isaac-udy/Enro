@@ -98,7 +98,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             return
         }
 
-        val previousFragment = context.getParentFragment()
+        val previousFragment = context.getPreviousFragment()
         if (previousFragment == null && context.activity is AbstractSingleFragmentActivity) {
             context.controller.close(context.activity.navigationContext)
             return
@@ -159,7 +159,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         }
     }
 
-    fun openFragmentAsActivity(
+    private fun openFragmentAsActivity(
         fromContext: NavigationContext<out Any>,
         instruction: NavigationInstruction.Open
     ) {
@@ -185,13 +185,20 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     }
 }
 
-fun NavigationContext<out Fragment>.getParentFragment(): Fragment? {
+private fun NavigationContext<out Fragment>.getPreviousFragment(): Fragment? {
+    val previouslyActiveFragment = getNavigationHandleViewModel().instruction.previouslyActiveId
+        ?.let { previouslyActiveId ->
+            fragment.parentFragmentManager.fragments.firstOrNull {
+                it.getNavigationHandle().id == previouslyActiveId && it.isVisible
+            }
+        }
+
     val containerView = contextReference.getContainerId()
     val parentInstruction = getNavigationHandleViewModel().instruction.parentInstruction
-    parentInstruction ?: return null
+    parentInstruction ?: return previouslyActiveFragment
 
     val previousNavigator = controller.navigatorForKeyType(parentInstruction.navigationKey::class)
-    if(previousNavigator !is FragmentNavigator) return null
+    if(previousNavigator !is FragmentNavigator) return previouslyActiveFragment
     val previousHost = fragmentHostFor(parentInstruction.navigationKey)
     val previousFragment = previousHost?.fragmentManager?.findFragmentByTag(parentInstruction.instructionId)
 
@@ -210,7 +217,7 @@ fun NavigationContext<out Fragment>.getParentFragment(): Fragment? {
                 )
             }
         else -> previousHost?.fragmentManager?.findFragmentById(previousHost.containerId)
-    }
+    } ?: previouslyActiveFragment
 }
 
 private fun Fragment.getContainerId() = (requireView().parent as View).id

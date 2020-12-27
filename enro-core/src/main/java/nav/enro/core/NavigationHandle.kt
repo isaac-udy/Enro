@@ -24,7 +24,7 @@ interface TypedNavigationHandle<T: NavigationKey> : NavigationHandle {
 
 @PublishedApi
 internal class TypedNavigationHandleImpl<T : NavigationKey>(
-    private val navigationHandle: NavigationHandle
+    internal val navigationHandle: NavigationHandle
 ): TypedNavigationHandle<T> {
     override val id: String get() = navigationHandle.id
     override val controller: NavigationController get() = navigationHandle.controller

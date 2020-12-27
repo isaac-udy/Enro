@@ -2,30 +2,31 @@ package nav.enro.core.controller.lifecycle
 
 import android.app.Application
 import android.os.Bundle
-import android.view.ViewGroup
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import nav.enro.core.*
 import nav.enro.core.controller.NavigationApplication
-import nav.enro.core.controller.NavigationController
 import nav.enro.core.controller.container.ExecutorContainer
 import nav.enro.core.controller.container.PluginContainer
-import nav.enro.core.controller.navigationController
 import nav.enro.core.internal.NoNavigationKey
 import nav.enro.core.internal.handle.NavigationHandleViewModel
 import nav.enro.core.internal.handle.createNavigationHandleViewModel
-import java.lang.IllegalStateException
 import java.util.*
 
-private const val CONTEXT_ID_ARG = "nav.enro.core.ContextController.CONTEXT_ID"
+internal const val CONTEXT_ID_ARG = "nav.enro.core.ContextController.CONTEXT_ID"
 
 internal class NavigationLifecycleController(
     private val executorContainer: ExecutorContainer,
     private val pluginContainer: PluginContainer
 ) {
 
+    private val handler = Handler(Looper.getMainLooper())
     private val callbacks = NavigationContextLifecycleCallbacks(this)
 
     fun install(application: Application) {
@@ -38,9 +39,6 @@ internal class NavigationLifecycleController(
     fun onContextCreated(context: NavigationContext<*>, savedInstanceState: Bundle?) {
         if(context is ActivityContext) {
             context.activity.theme.applyStyle(android.R.style.Animation_Activity, false)
-            context.activity.findViewById<ViewGroup>(android.R.id.content).viewTreeObserver.addOnGlobalLayoutListener {
-                activeNavigationHandle = context.activity.navigationContext.leafContext().getNavigationHandleViewModel()
-            }
         }
 
         val instruction = context.arguments.readOpenInstruction()
@@ -62,32 +60,58 @@ internal class NavigationLifecycleController(
         config?.applyTo(handle)
         handle.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if(!handle.hasKey) return
+                if (!handle.hasKey) return
                 if (event == Lifecycle.Event.ON_CREATE) pluginContainer.onOpened(handle)
                 if (event == Lifecycle.Event.ON_DESTROY) pluginContainer.onClosed(handle)
+
+                handle.navigationContext?.let {
+                    updateActiveNavigationContext(it)
+                }
             }
         })
         handle.navigationContext = context
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             executorContainer.executorForClose(context).postOpened(context)
         }
-        if(savedInstanceState == null) handle.executeDeeplink()
+        if (savedInstanceState == null) handle.executeDeeplink()
     }
 
     fun onContextSaved(context: NavigationContext<*>, outState: Bundle) {
         outState.putString(CONTEXT_ID_ARG, context.getNavigationHandleViewModel().id)
     }
 
-    fun onContextResumed(context: NavigationContext<*>) {
-        activeNavigationHandle = context.leafContext().getNavigationHandleViewModel()
+    private fun updateActiveNavigationContext(context: NavigationContext<*>) {
+        // Sometimes the context will be in an invalid state to correctly update, and will throw,
+        // in which case, we just ignore the exception
+        runCatching {
+            val root = context.rootContext()
+            root.childFragmentManager.beginTransaction()
+                .runOnCommit {
+                    runCatching {
+                        activeNavigationHandle = root.leafContext().getNavigationHandleViewModel()
+                    }
+                }
+                .commitAllowingStateLoss()
+        }
+        runCatching {
+            if(context !is FragmentContext<*>) return@runCatching
+            val root = context.rootContext()
+            context.fragment.parentFragmentManager.beginTransaction()
+                .runOnCommit {
+                    runCatching {
+                        activeNavigationHandle = root.leafContext().getNavigationHandleViewModel()
+                    }
+                }
+                .commitAllowingStateLoss()
+        }
     }
 
     private var activeNavigationHandle: NavigationHandle? = null
         set(value) {
-            if(value == field) return
+            if (value == field) return
             field = value
-            if(value != null) {
-                if(value is NavigationHandleViewModel && !value.hasKey) {
+            if (value != null) {
+                if (value is NavigationHandleViewModel && !value.hasKey) {
                     field = null
                     return
                 }

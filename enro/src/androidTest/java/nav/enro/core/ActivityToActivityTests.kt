@@ -11,6 +11,7 @@ import nav.enro.GenericActivity
 import nav.enro.GenericActivityKey
 import org.junit.Test
 import java.util.*
+import nav.enro.*
 
 class ActivityToActivityTests {
 

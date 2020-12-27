@@ -43,6 +43,14 @@ internal class NavigatorContainer (
         }
         .toMap()
 
+    init {
+        navigators.forEach {
+            require(navigatorsByKeyType[it.keyType] == it) {
+                "Found duplicated navigator binding! ${it.keyType.java.name} has been bound to multiple destinations."
+            }
+        }
+    }
+
     fun navigatorForContextType(
         contextType: KClass<*>
     ): Navigator<*, *>? {

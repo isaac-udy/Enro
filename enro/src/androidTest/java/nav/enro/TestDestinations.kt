@@ -32,7 +32,7 @@ data class ActivityWithFragmentsKey(val id: String) : NavigationKey
 class ActivityWithFragments : TestActivity() {
     private val navigation by navigationHandle<ActivityWithFragmentsKey> {
         defaultKey(ActivityWithFragmentsKey("default"))
-        container(R.id.content) {
+        container(primaryFragmentContainer) {
             it is ActivityChildFragmentKey || it is ActivityChildFragmentTwoKey
         }
     }

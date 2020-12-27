@@ -3,6 +3,7 @@ package nav.enro.core.controller.interceptor
 import nav.enro.core.*
 import nav.enro.core.activity.ActivityNavigator
 import nav.enro.core.controller.container.NavigatorContainer
+import nav.enro.core.controller.lifecycle.CONTEXT_ID_ARG
 import nav.enro.core.fragment.FragmentNavigator
 import nav.enro.core.fragment.internal.SingleFragmentActivity
 import nav.enro.core.internal.NoKeyNavigator
@@ -18,7 +19,8 @@ internal class InstructionParentInterceptor(
     ): NavigationInstruction.Open {
         return instruction
             .setParentInstruction(parentContext, navigator)
-            .setParentContext(parentContext)
+            .setExecutorContext(parentContext)
+            .setPreviouslyActiveId(parentContext)
     }
 
 
@@ -50,12 +52,21 @@ internal class InstructionParentInterceptor(
         return copy(parentInstruction = parentInstruction)
     }
 
-    private fun NavigationInstruction.Open.setParentContext(
+    private fun NavigationInstruction.Open.setExecutorContext(
         parentContext: NavigationContext<*>
     ): NavigationInstruction.Open {
         if(parentContext.contextReference is SingleFragmentActivity) {
-            return copy(parentContext = parentContext.getNavigationHandleViewModel().instruction.parentContext)
+            return copy(executorContext = parentContext.getNavigationHandleViewModel().instruction.executorContext)
         }
-        return copy(parentContext = parentContext.contextReference::class.java)
+        return copy(executorContext = parentContext.contextReference::class.java)
+    }
+
+    private fun NavigationInstruction.Open.setPreviouslyActiveId(
+        parentContext: NavigationContext<*>
+    ): NavigationInstruction.Open {
+        if(previouslyActiveId != null) return this
+        return copy(
+            previouslyActiveId = parentContext.childFragmentManager.primaryNavigationFragment?.getNavigationHandle()?.id
+        )
     }
 }

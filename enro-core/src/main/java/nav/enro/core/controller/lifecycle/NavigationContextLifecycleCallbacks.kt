@@ -2,10 +2,16 @@ package nav.enro.core.controller.lifecycle
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import nav.enro.core.*
 
 internal class NavigationContextLifecycleCallbacks (
@@ -29,11 +35,6 @@ internal class NavigationContextLifecycleCallbacks (
             lifecycleController.onContextCreated(ActivityContext(activity), savedInstanceState)
         }
 
-        override fun onActivityResumed(activity: Activity) {
-            if(activity !is FragmentActivity) return
-            lifecycleController.onContextResumed(activity.navigationContext)
-        }
-
         override fun onActivitySaveInstanceState(
             activity: Activity,
             outState: Bundle
@@ -43,6 +44,7 @@ internal class NavigationContextLifecycleCallbacks (
         }
 
         override fun onActivityStarted(activity: Activity) {}
+        override fun onActivityResumed(activity: Activity) {}
         override fun onActivityPaused(activity: Activity) {}
         override fun onActivityStopped(activity: Activity) {}
         override fun onActivityDestroyed(activity: Activity) {}
@@ -63,10 +65,6 @@ internal class NavigationContextLifecycleCallbacks (
             outState: Bundle
         ) {
             lifecycleController.onContextSaved(fragment.navigationContext, outState)
-        }
-
-        override fun onFragmentResumed(fm: FragmentManager, fragment: Fragment) {
-            lifecycleController.onContextResumed(fragment.navigationContext)
         }
     }
 }
