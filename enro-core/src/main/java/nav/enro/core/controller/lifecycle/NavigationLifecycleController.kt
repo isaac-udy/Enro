@@ -87,18 +87,12 @@ internal class NavigationLifecycleController(
         // in which case, we just ignore the exception
         runCatching {
             val root = context.rootContext()
-            root.childFragmentManager.beginTransaction()
-                .runOnCommit {
-                    runCatching {
-                        activeNavigationHandle = root.leafContext().getNavigationHandleViewModel()
-                    }
-                }
-                .commitAllowingStateLoss()
-        }
-        runCatching {
-            if(context !is FragmentContext<*>) return@runCatching
-            val root = context.rootContext()
-            context.fragment.parentFragmentManager.beginTransaction()
+            val fragmentManager = when (context) {
+                is FragmentContext -> context.fragment.parentFragmentManager
+                else -> root.childFragmentManager
+            }
+
+            fragmentManager.beginTransaction()
                 .runOnCommit {
                     runCatching {
                         activeNavigationHandle = root.leafContext().getNavigationHandleViewModel()
