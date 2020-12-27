@@ -81,6 +81,8 @@ internal class NavigationLifecycleController(
     }
 
     private fun updateActiveNavigationContext(context: NavigationContext<*>) {
+        if (!context.activity.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
+
         // Sometimes the context will be in an invalid state to correctly update, and will throw,
         // in which case, we just ignore the exception
         runCatching {

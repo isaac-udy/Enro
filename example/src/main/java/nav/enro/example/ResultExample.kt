@@ -55,7 +55,7 @@ class RequestExampleFragment : Fragment() {
 
 class RequestExampleViewModel() : ViewModel() {
 
-    private val navigation by navigationHandle()
+    private val navigation by navigationHandle<ResultExampleKey>()
 
     private val mutableResults = MutableLiveData<List<String>>().apply { emptyList<String>() }
     val results = mutableResults as LiveData<List<String>>
