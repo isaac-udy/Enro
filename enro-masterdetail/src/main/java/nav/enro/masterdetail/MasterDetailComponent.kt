@@ -108,7 +108,11 @@ class MasterDetailProperty(
                     navigationController.addOverride(masterOverride)
                     navigationController.addOverride(detailOverride)
 
-                    (lifecycleOwner as FragmentActivity).getNavigationHandle().forward(initialMasterKey())
+                    val activity = lifecycleOwner as FragmentActivity
+                    val masterFragment = activity.supportFragmentManager.findFragmentById(masterContainer)
+                    if(masterFragment == null) {
+                        activity.getNavigationHandle().forward(initialMasterKey())
+                    }
                 }
 
                 if(event == Lifecycle.Event.ON_START) {
