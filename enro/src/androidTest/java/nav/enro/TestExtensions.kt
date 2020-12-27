@@ -39,10 +39,7 @@ inline fun <reified ContextType: Any, reified KeyType: NavigationKey> expectCont
                 val activity = activities.firstOrNull() as? FragmentActivity ?: return@waitOnMain null
                 var fragment = activity.supportFragmentManager.primaryNavigationFragment
 
-                Log.e("WAITING", "started w/ $fragment @ ${TestPlugin.activeKey}")
-
                 while(fragment != null) {
-                    Log.e("WAITING", "continued w/ $fragment @ ${TestPlugin.activeKey}")
                     if (fragment is ContextType) {
                         val context = TestNavigationContext(
                             fragment as ContextType,
