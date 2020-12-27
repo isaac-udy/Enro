@@ -6,8 +6,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
-import nav.enro.core.NavigationHandle
-import nav.enro.core.getNavigationHandle
+import nav.enro.core.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -21,11 +20,27 @@ class ViewModelNavigationHandleProperty internal constructor(
     override fun getValue(thisRef: ViewModel, property: KProperty<*>): NavigationHandle {
         return navigationHandle
     }
+
+    inner class TypedViewModelNavigationHandleProperty<T: NavigationKey> internal constructor(
+        private val type: KClass<T>
+    ) : ReadOnlyProperty<ViewModel, TypedNavigationHandle<T>> {
+        private val typedNavigationHandle = navigationHandle.asTyped(type)
+
+        override fun getValue(thisRef: ViewModel, property: KProperty<*>): TypedNavigationHandle<T> {
+            return typedNavigationHandle
+        }
+    }
 }
+
+fun <T: NavigationKey> ViewModelNavigationHandleProperty.asTyped(type: KClass<T>)
+        = TypedViewModelNavigationHandleProperty(type)
+
+inline fun <reified T: NavigationKey> ViewModelNavigationHandleProperty.asTyped()
+        = asTyped(T::class)
+
 
 fun ViewModel.navigationHandle(): ViewModelNavigationHandleProperty =
     ViewModelNavigationHandleProperty(this::class)
-
 
 @MainThread
 inline fun <reified VM : ViewModel> FragmentActivity.enroViewModels(

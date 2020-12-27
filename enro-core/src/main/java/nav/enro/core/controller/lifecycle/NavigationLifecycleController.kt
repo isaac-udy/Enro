@@ -33,7 +33,6 @@ internal class NavigationLifecycleController(
             ?: throw IllegalStateException("Application MUST be a NavigationApplication")
 
         callbacks.install(application)
-        pluginContainer.onAttached(application.navigationController)
     }
 
     fun onContextCreated(context: NavigationContext<*>, savedInstanceState: Bundle?) {

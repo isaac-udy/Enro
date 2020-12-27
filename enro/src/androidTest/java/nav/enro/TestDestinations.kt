@@ -7,6 +7,7 @@ import nav.enro.core.navigationHandle
 
 @Parcelize
 data class DefaultActivityKey(val id: String) : NavigationKey
+
 @NavigationDestination(DefaultActivityKey::class)
 class DefaultActivity : TestActivity() {
     private val navigation by navigationHandle<DefaultActivityKey> {
@@ -20,11 +21,13 @@ class DefaultActivity : TestActivity() {
 
 @Parcelize
 data class GenericActivityKey(val id: String) : NavigationKey
+
 @NavigationDestination(GenericActivityKey::class)
 class GenericActivity : TestActivity()
 
 @Parcelize
 data class ActivityWithFragmentsKey(val id: String) : NavigationKey
+
 @NavigationDestination(ActivityWithFragmentsKey::class)
 class ActivityWithFragments : TestActivity() {
     private val navigation by navigationHandle<ActivityWithFragmentsKey> {
@@ -37,16 +40,19 @@ class ActivityWithFragments : TestActivity() {
 
 @Parcelize
 data class ActivityChildFragmentKey(val id: String) : NavigationKey
+
 @NavigationDestination(ActivityChildFragmentKey::class)
 class ActivityChildFragment : TestFragment()
 
 @Parcelize
 data class ActivityChildFragmentTwoKey(val id: String) : NavigationKey
+
 @NavigationDestination(ActivityChildFragmentTwoKey::class)
 class ActivityChildFragmentTwo : TestFragment()
 
 @Parcelize
 data class GenericFragmentKey(val id: String) : NavigationKey
+
 @NavigationDestination(GenericFragmentKey::class)
 class GenericFragment : TestFragment()
 

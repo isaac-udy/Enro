@@ -17,6 +17,10 @@ class NavigationController internal constructor(
     private val contextController: NavigationLifecycleController,
 ) {
 
+    init {
+        pluginContainer.onAttached(this)
+    }
+
     internal fun open(
         navigationContext: NavigationContext<out Any>,
         instruction: NavigationInstruction.Open
@@ -88,9 +92,6 @@ class NavigationController internal constructor(
     fun install(navigationApplication: NavigationApplication) {
         if (navigationApplication !is Application)
             throw IllegalArgumentException("A NavigationApplication must extend android.app.Application")
-
-        if(navigationApplication.navigationController != this)
-            throw IllegalArgumentException("A NavigationController can only be installed on a NavigationApplication that returns that NavigationController as its navigationController property")
 
         contextController.install(navigationApplication)
     }

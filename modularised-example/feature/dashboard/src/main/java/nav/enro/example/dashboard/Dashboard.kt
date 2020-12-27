@@ -13,6 +13,7 @@ import nav.enro.core.forward
 import nav.enro.example.core.data.SimpleDataRepository
 import nav.enro.example.core.navigation.*
 import nav.enro.result.registerForNavigationResult
+import nav.enro.viewmodel.asTyped
 import nav.enro.viewmodel.enroViewModels
 import nav.enro.viewmodel.navigationHandle
 
@@ -78,8 +79,8 @@ class DashboardViewModel(
 
     private val repo = SimpleDataRepository()
 
-    private val navigationHandle by navigationHandle()
-    private val key = navigationHandle.key<DashboardKey>()
+    private val navigationHandle by navigationHandle().asTyped<DashboardKey>()
+    private val key = navigationHandle.key
 
     private val viewDetail by registerForNavigationResult<Boolean>(navigationHandle) {
         state = state.copy(userId = "${state.userId} FIRST($it)")

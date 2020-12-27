@@ -23,6 +23,7 @@ import nav.enro.example.core.navigation.DetailKey
 import nav.enro.example.core.navigation.ListFilterType
 import nav.enro.example.core.navigation.ListKey
 import nav.enro.result.registerForNavigationResult
+import nav.enro.viewmodel.asTyped
 import nav.enro.viewmodel.enroViewModels
 import nav.enro.viewmodel.navigationHandle
 import javax.inject.Inject
@@ -73,8 +74,8 @@ class ListViewModel @ViewModelInject constructor(
 ) : SingleStateViewModel<ListState>() {
 
     private val repo = SimpleDataRepository()
-    private val navigation by navigationHandle()
-    private val key = navigation.key<ListKey>()
+    private val navigation by navigationHandle().asTyped<ListKey>()
+    private val key = navigation.key
 
     init {
         hiltDependency.doSomething()

@@ -29,10 +29,10 @@ class LoginErrorFragment : DialogFragment() {
 class LoginErrorDestination : SyntheticDestination<LoginErrorKey> {
     override fun process(
         navigationContext: NavigationContext<out Any>,
+        key: LoginErrorKey,
         instruction: NavigationInstruction.Open
     ) {
         val activity = navigationContext.activity
-        val key = instruction.navigationKey as LoginErrorKey
         AlertDialog.Builder(activity)
             .setTitle("Error!")
             .setMessage("Whoops! It looks like '${key.errorUser}' isn't a valid user.\n\nPlease try again.")
