@@ -16,13 +16,17 @@ internal object ClassNames {
     val navigationComponentBuilderCommand = ClassName.get("nav.enro.core.controller", "NavigationComponentBuilderCommand")
     val navigationComponentBuilder = ClassName.get("nav.enro.core.controller", "NavigationComponentBuilder")
 
-    val navigatorDefinitionKt = ClassName.get("nav.enro.core.navigator", "NavigatorDefinitionKt")
     val jvmClassMappings = ClassName.get("kotlin.jvm", "JvmClassMappingKt")
     val unit = ClassName.get("kotlin", "Unit")
 
     val fragmentActivity = ClassName.get( "androidx.fragment.app", "FragmentActivity")
+    val activityNavigatorKt = ClassName.get("nav.enro.core.activity","ActivityNavigatorKt")
+
     val fragment = ClassName.get("androidx.fragment.app","Fragment")
-    val syntheticNavigator = ClassName.get("nav.enro.core.navigator","SyntheticDestination")
+    val fragmentNavigatorKt = ClassName.get("nav.enro.core.fragment","FragmentNavigatorKt")
+
+    val syntheticDestination = ClassName.get("nav.enro.core.synthetic","SyntheticDestination")
+    val syntheticNavigatorKt = ClassName.get("nav.enro.core.synthetic","SyntheticNavigatorKt")
 }
 
 internal fun getNameFromKClass(block: () -> KClass<*>) : String {

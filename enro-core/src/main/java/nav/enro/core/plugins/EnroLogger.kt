@@ -4,15 +4,15 @@ import android.util.Log
 import nav.enro.core.NavigationHandle
 
 class EnroLogger : EnroPlugin() {
-    override fun onOpened(navigationHandle: NavigationHandle<*>) {
+    override fun onOpened(navigationHandle: NavigationHandle) {
         Log.d("Enro", "Opened: ${navigationHandle.key}")
     }
 
-    override fun onActive(navigationHandle: NavigationHandle<*>) {
+    override fun onActive(navigationHandle: NavigationHandle) {
         Log.d("Enro", "Active: ${navigationHandle.key}")
     }
 
-    override fun onClosed(navigationHandle: NavigationHandle<*>) {
+    override fun onClosed(navigationHandle: NavigationHandle) {
         Log.d("Enro", "Closed: ${navigationHandle.key}")
     }
 }

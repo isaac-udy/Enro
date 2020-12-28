@@ -7,7 +7,6 @@ import nav.enro.annotations.GeneratedNavigationBinding
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import java.lang.IllegalStateException
-import javax.annotation.Generated
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
@@ -86,12 +85,9 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
         JavaFile
             .builder(EnroProcessor.GENERATED_PACKAGE, classBuilder)
-            .addStaticImport(
-                ClassNames.navigatorDefinitionKt,
-                "createActivityNavigator",
-                "createFragmentNavigator",
-                "createSyntheticNavigator"
-            )
+            .addStaticImport(ClassNames.activityNavigatorKt, "createActivityNavigator")
+            .addStaticImport(ClassNames.fragmentNavigatorKt, "createFragmentNavigator")
+            .addStaticImport(ClassNames.syntheticNavigatorKt, "createSyntheticNavigator")
             .addStaticImport(ClassNames.jvmClassMappings, "getKotlinClass")
             .build()
             .writeTo(processingEnv.filer)
@@ -105,7 +101,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
         val destinationIsActivity = destination.extends(ClassNames.fragmentActivity)
         val destinationIsFragment = destination.extends(ClassNames.fragment)
-        val destinationIsSynthetic = destination.implements(ClassNames.syntheticNavigator)
+        val destinationIsSynthetic = destination.implements(ClassNames.syntheticDestination)
 
         val annotation = destination.getAnnotation(NavigationDestination::class.java)
 
@@ -113,45 +109,35 @@ class NavigationDestinationProcessor : BaseProcessor() {
             when {
                 destinationIsActivity -> CodeBlock.of(
                     """
-                    builder.add(
+                    builder.navigator(
                         createActivityNavigator(
-                            getKotlinClass($1T.class),
-                            getKotlinClass($2T.class),
-                            it -> {
-                                ${if (annotation.allowDefault) "it.defaultKey(new $1T());" else ""}
-                                return $3T.INSTANCE;
-                            }
+                            $1T.class,
+                            $2T.class
                         )
                     )
                 """.trimIndent(),
                     key,
-                    destination,
-                    ClassNames.unit
+                    destination
                 )
 
                 destinationIsFragment -> CodeBlock.of(
                     """
-                    builder.add(
+                    builder.navigator(
                         createFragmentNavigator(
-                            getKotlinClass($1T.class),
-                            getKotlinClass($2T.class),
-                            it -> {
-                                ${if (annotation.allowDefault) "it.defaultKey(new $1T());" else ""}
-                                return $3T.INSTANCE;
-                            }
+                            $1T.class,
+                            $2T.class
                         )
                     )
                 """.trimIndent(),
                     key,
-                    destination,
-                    ClassNames.unit
+                    destination
                 )
 
                 destinationIsSynthetic -> CodeBlock.of(
                     """
-                    builder.add(
+                    builder.navigator(
                         createSyntheticNavigator(
-                            getKotlinClass($1T.class),
+                            $1T.class,
                             new $2T()
                         )
                     )

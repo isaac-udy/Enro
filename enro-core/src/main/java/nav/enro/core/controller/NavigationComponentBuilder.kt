@@ -1,69 +1,74 @@
-package nav.enro.core.controller
+    package nav.enro.core.controller
 
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import nav.enro.core.NavigationKey
-import nav.enro.core.context.NavigationContext
-import nav.enro.core.executors.*
-import nav.enro.core.navigator.*
+import nav.enro.core.*
+import nav.enro.core.controller.container.ExecutorContainer
+import nav.enro.core.controller.container.NavigatorContainer
+import nav.enro.core.controller.container.PluginContainer
+import nav.enro.core.controller.interceptor.InstructionInterceptorController
+import nav.enro.core.controller.interceptor.InstructionParentInterceptor
+import nav.enro.core.controller.lifecycle.NavigationLifecycleController
+import nav.enro.core.plugins.EnroHilt
 import nav.enro.core.plugins.EnroPlugin
 
+// TODO get rid of this, or give it a better name
 interface NavigationComponentBuilderCommand {
     fun execute(builder: NavigationComponentBuilder)
 }
 
 class NavigationComponentBuilder {
     @PublishedApi
-    internal val navigators: MutableList<NavigatorDefinition<*, *>> = mutableListOf()
+    internal val navigators: MutableList<Navigator<*, *>> = mutableListOf()
     @PublishedApi
     internal val overrides: MutableList<NavigationExecutor<*, *, *>> = mutableListOf()
     @PublishedApi
     internal val plugins: MutableList<EnroPlugin> = mutableListOf()
 
-    inline fun <reified T : NavigationKey, reified A : FragmentActivity> activityNavigator(
-        noinline block: ActivityNavigatorBuilder<T, A>.() -> Unit = {}
-    ) {
-        navigators.add(createActivityNavigator(block))
-    }
-
-    inline fun <reified T : NavigationKey, reified A : Fragment> fragmentNavigator(
-        noinline block: FragmentNavigatorBuilder<A, T>.() -> Unit = {}
-    ) {
-        navigators.add(createFragmentNavigator(block))
-    }
-
-    inline fun <reified T : NavigationKey> syntheticNavigator(
-        destination: SyntheticDestination<T>
-    ) {
-        navigators.add(createSyntheticNavigator(destination))
-    }
-
-    inline fun <reified From : Any, reified Opens : Any> override(
-        noinline launch: ((ExecutorArgs<out From, out Opens, out NavigationKey>) -> Unit) = defaultLaunch(),
-        noinline close: (NavigationContext<out Opens, out NavigationKey>) -> Unit = defaultClose()
-    ) {
-        overrides.add(createOverride(launch, close))
-    }
-
-    fun add(navigator: NavigatorDefinition<*, *>) {
+    fun navigator(navigator: Navigator<*, *>) {
         navigators.add(navigator)
     }
 
-    fun add(override: NavigationExecutor<*, *, *>) {
+    fun override(override: NavigationExecutor<*, *, *>) {
         overrides.add(override)
     }
 
-    fun withComponent(builder: NavigationComponentBuilder) {
+    inline fun <reified From : Any, reified Opens : Any> override(
+        noinline block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
+    ) {
+        overrides.add(createOverride(From::class, Opens::class, block))
+    }
+
+    fun component(builder: NavigationComponentBuilder) {
         navigators.addAll(builder.navigators)
         overrides.addAll(builder.overrides)
         plugins.addAll(builder.plugins)
     }
 
-    fun withPlugin(enroPlugin: EnroPlugin) {
+    fun plugin(enroPlugin: EnroPlugin) {
         plugins.add(enroPlugin)
     }
 
-    internal fun build() = NavigationController(navigators, overrides, plugins)
+    internal fun build(): NavigationController {
+        val useHilt = plugins.any { it is EnroHilt }
+
+        val pluginContainer = PluginContainer(plugins)
+        val navigatorContainer = NavigatorContainer(navigators, useHilt)
+        val executorContainer = ExecutorContainer(overrides)
+
+        val interceptorController = InstructionInterceptorController(
+            listOf(
+                InstructionParentInterceptor(navigatorContainer)
+            )
+        )
+        val contextController = NavigationLifecycleController(executorContainer, pluginContainer)
+
+        return NavigationController(
+            pluginContainer = pluginContainer,
+            navigatorContainer = navigatorContainer,
+            executorContainer = executorContainer,
+            interceptorController = interceptorController,
+            contextController = contextController,
+        )
+    }
 }
 
 /**
@@ -75,9 +80,7 @@ fun NavigationApplication.navigationController(block: NavigationComponentBuilder
         .apply { generatedComponent?.execute(this) }
         .apply(block)
         .build()
-        .apply {
-            NavigationController.install(this@navigationController)
-        }
+        .apply { install(this@navigationController) }
 }
 
 private val NavigationApplication.generatedComponent get(): NavigationComponentBuilderCommand? =

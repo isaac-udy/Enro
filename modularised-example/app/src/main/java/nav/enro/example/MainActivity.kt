@@ -11,15 +11,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.parcel.Parcelize
 import nav.enro.annotations.NavigationDestination
 import nav.enro.core.*
-import nav.enro.core.context.NavigationContext
-import nav.enro.core.context.activity
-import nav.enro.core.navigator.SyntheticDestination
+import nav.enro.core.NavigationContext
+import nav.enro.core.activity
+import nav.enro.core.synthetic.SyntheticDestination
 import nav.enro.example.core.data.UserRepository
 import nav.enro.example.core.navigation.DashboardKey
-import nav.enro.example.core.navigation.DetailKey
 import nav.enro.example.core.navigation.LaunchKey
 import nav.enro.example.core.navigation.LoginKey
-import nav.enro.result.registerForNavigationResult
 
 @Parcelize
 class MainKey : NavigationKey
@@ -27,10 +25,12 @@ class MainKey : NavigationKey
 class HiltViewModel @ViewModelInject constructor(): ViewModel()
 
 @AndroidEntryPoint
-@NavigationDestination(MainKey::class, allowDefault = true)
+@NavigationDestination(MainKey::class)
 class MainActivity : AppCompatActivity() {
     private val hiltViewModel by viewModels<HiltViewModel>()
-    private val navigation by navigationHandle<Nothing>()
+    private val navigation by navigationHandle<MainKey> {
+        defaultKey(MainKey())
+    }
 
     override fun onResume() {
         super.onResume()
@@ -48,6 +48,9 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         findViewById<View>(android.R.id.content)
             .animate()
+            .apply {
+                start()
+            }
             .cancel()
     }
 }
@@ -55,16 +58,16 @@ class MainActivity : AppCompatActivity() {
 @NavigationDestination(LaunchKey::class)
 class LaunchDestination : SyntheticDestination<LaunchKey> {
     override fun process(
-        navigationContext: NavigationContext<out Any, out NavigationKey>,
-        instruction: NavigationInstruction.Open<LaunchKey>
+        navigationContext: NavigationContext<out Any>,
+        key: LaunchKey,
+        instruction: NavigationInstruction.Open
     ) {
-        val navigation = navigationContext.activity.getNavigationHandle<Nothing>()
+        val navigation = navigationContext.activity.getNavigationHandle()
         val userRepo = UserRepository.instance
-        val user = userRepo.activeUser
-        val key = when (user) {
+        val nextKey = when (val user = userRepo.activeUser) {
             null -> LoginKey()
             else -> DashboardKey(user)
         }
-        navigation.replaceRoot(key)
+        navigation.replaceRoot(nextKey)
     }
 }

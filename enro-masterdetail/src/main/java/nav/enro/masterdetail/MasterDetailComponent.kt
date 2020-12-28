@@ -7,14 +7,17 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import nav.enro.core.*
-import nav.enro.core.context.fragment
-import nav.enro.core.context.activity
+import nav.enro.core.NavigationKey
+import nav.enro.core.addOpenInstruction
+import nav.enro.core.activity
+import nav.enro.core.fragment
 import nav.enro.core.controller.NavigationController
+import nav.enro.core.activity.DefaultActivityExecutor
+import nav.enro.core.ExecutorArgs
 import nav.enro.core.controller.navigationController
-import nav.enro.core.executors.DefaultActivityExecutor
-import nav.enro.core.executors.ExecutorArgs
-import nav.enro.core.executors.createOverride
+import nav.enro.core.createOverride
+import nav.enro.core.forward
+import nav.enro.core.getNavigationHandle
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -36,10 +39,8 @@ class MasterDetailProperty(
 
     private val masterOverride by lazy {
         val masterType = navigationController.navigatorForKeyType(masterKey)!!.contextType as KClass<out Fragment>
-        createOverride(
-            owningType,
-            masterType,
-            launch = {
+        createOverride(owningType, masterType) {
+            opened {
                 val fragment = it.fromContext.childFragmentManager.fragmentFactory.instantiate(
                     masterType.java.classLoader!!,
                     masterType.java.name
@@ -49,27 +50,29 @@ class MasterDetailProperty(
                     .replace(masterContainer, fragment)
                     .setPrimaryNavigationFragment(fragment)
                     .commitNow()
-            },
-            close = {
+            }
+
+            closed {
                 it.activity.finish()
             }
-        )
+        }
     }
 
     private val detailOverride by lazy {
         val detailType = navigationController.navigatorForKeyType(detailKey)!!.contextType as KClass<out Fragment>
-        createOverride(
-            owningType,
-            detailType,
-            launch = {
-                if(!Fragment::class.java.isAssignableFrom(it.navigator.contextType.java)) {
-                    Log.e("Enro", "Attempted to open ${detailKey::class.java} as a Detail in ${it.fromContext.contextReference}, " +
-                            "but ${detailKey::class.java}'s NavigationDestination is not a Fragment! Defaulting to standard navigation")
+        createOverride(owningType, detailType) {
+            opened {
+                if (!Fragment::class.java.isAssignableFrom(it.navigator.contextType.java)) {
+                    Log.e(
+                        "Enro",
+                        "Attempted to open ${detailKey::class.java} as a Detail in ${it.fromContext.contextReference}, " +
+                                "but ${detailKey::class.java}'s NavigationDestination is not a Fragment! Defaulting to standard navigation"
+                    )
                     DefaultActivityExecutor.open(it as ExecutorArgs<out Any, out FragmentActivity, out NavigationKey>)
-                    return@createOverride
+                    return@opened
                 }
 
-                val fragment =  it.fromContext.childFragmentManager.fragmentFactory.instantiate(
+                val fragment = it.fromContext.childFragmentManager.fragmentFactory.instantiate(
                     detailType.java.classLoader!!,
                     detailType.java.name
                 ).addOpenInstruction(it.instruction)
@@ -78,14 +81,19 @@ class MasterDetailProperty(
                     .replace(detailContainer, fragment)
                     .setPrimaryNavigationFragment(fragment)
                     .commitNow()
-            },
-            close = { context ->
+            }
+
+            closed { context ->
                 context.fragment.parentFragmentManager.beginTransaction()
                     .remove(context.fragment)
-                    .setPrimaryNavigationFragment(context.activity.supportFragmentManager.findFragmentById(masterContainer))
+                    .setPrimaryNavigationFragment(
+                        context.activity.supportFragmentManager.findFragmentById(
+                            masterContainer
+                        )
+                    )
                     .commitNow()
             }
-        )
+        }
     }
 
     init {
@@ -100,7 +108,11 @@ class MasterDetailProperty(
                     navigationController.addOverride(masterOverride)
                     navigationController.addOverride(detailOverride)
 
-                    (lifecycleOwner as FragmentActivity).getNavigationHandle<Nothing>().forward(initialMasterKey())
+                    val activity = lifecycleOwner as FragmentActivity
+                    val masterFragment = activity.supportFragmentManager.findFragmentById(masterContainer)
+                    if(masterFragment == null) {
+                        activity.getNavigationHandle().forward(initialMasterKey())
+                    }
                 }
 
                 if(event == Lifecycle.Event.ON_START) {

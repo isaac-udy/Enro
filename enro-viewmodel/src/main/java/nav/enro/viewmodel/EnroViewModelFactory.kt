@@ -2,12 +2,11 @@ package nav.enro.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import nav.enro.core.NavigationHandle
 
 @PublishedApi
 internal class EnroViewModelFactory(
-    private val navigationHandle: NavigationHandle<*>,
+    private val navigationHandle: NavigationHandle,
     private val delegate: ViewModelProvider.Factory
 ) : ViewModelProvider.Factory {
 

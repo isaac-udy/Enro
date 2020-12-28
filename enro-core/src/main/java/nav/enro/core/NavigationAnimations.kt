@@ -1,131 +1,93 @@
 package nav.enro.core
 
 import android.content.res.Resources
+import android.os.Parcel
 import android.os.Parcelable
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import kotlinx.android.parcel.Parcelize
-import nav.enro.core.context.NavigationContext
-import nav.enro.core.context.activity
-import nav.enro.core.context.navigationContext
+import nav.enro.core.controller.navigationController
 import nav.enro.core.internal.getAttributeResourceId
-import nav.enro.core.navigator.toResource
 
-sealed class NavigationAnimations : Parcelable {
-    @Parcelize
-    data class Resource(
-        val openEnter: Int,
-        val openExit: Int,
-        val closeEnter: Int,
-        val closeExit: Int
-    ) : NavigationAnimations()
+sealed class AnimationPair : Parcelable{
+    abstract val enter: Int
+    abstract val exit: Int
 
     @Parcelize
-    data class Attr(
-        val openEnter: Int,
-        val openExit: Int,
-        val closeEnter: Int,
-        val closeExit: Int
-    ) : NavigationAnimations()
+    class Resource(
+        override val enter: Int,
+        override val exit: Int
+    ): AnimationPair()
 
-    companion object {
-        val default = Attr(
-            openEnter = android.R.attr.activityOpenEnterAnimation,
-            openExit = android.R.attr.activityOpenExitAnimation,
-            closeEnter = android.R.attr.activityCloseEnterAnimation,
-            closeExit = android.R.attr.activityCloseExitAnimation
+    @Parcelize
+    class Attr(
+        override val enter: Int,
+        override val exit: Int
+    ): AnimationPair()
+
+    fun asResource(theme: Resources.Theme) = when(this) {
+        is Resource -> this
+        is Attr -> Resource(
+            theme.getAttributeResourceId(enter),
+            theme.getAttributeResourceId(exit)
         )
-
-        val none = Resource(0, R.anim.enro_no_op_animation, 0, 0)
     }
 }
 
-fun NavigationAnimations.toResource(theme: Resources.Theme): NavigationAnimations.Resource =
-    when (this) {
-        is NavigationAnimations.Resource -> this
-        is NavigationAnimations.Attr -> NavigationAnimations.Resource(
-            openEnter = theme.getAttributeResourceId(openEnter),
-            openExit = theme.getAttributeResourceId(openExit),
-            closeEnter = theme.getAttributeResourceId(closeEnter),
-            closeExit = theme.getAttributeResourceId(closeExit)
-        )
-    }
+object DefaultAnimations {
+    val forward = AnimationPair.Attr(
+        enter = android.R.attr.activityOpenEnterAnimation,
+        exit = android.R.attr.activityOpenExitAnimation
+    )
 
+    val replace = AnimationPair.Attr(
+        enter = android.R.attr.activityOpenEnterAnimation,
+        exit = android.R.attr.activityOpenExitAnimation
+    )
 
-data class AnimationPair(
-    val enter: Int,
-    val exit: Int
-)
+    val replaceRoot = AnimationPair.Attr(
+        enter = android.R.attr.taskOpenEnterAnimation,
+        exit = android.R.attr.taskOpenExitAnimation
+    )
+
+    val close = AnimationPair.Attr(
+        enter = android.R.attr.activityCloseEnterAnimation,
+        exit =  android.R.attr.activityCloseExitAnimation
+    )
+
+    val none = AnimationPair.Resource(
+        enter = 0,
+        exit =  R.anim.enro_no_op_animation
+    )
+}
 
 fun animationsFor(
-    context: FragmentActivity,
+    context: NavigationContext<*>,
     navigationInstruction: NavigationInstruction
-): AnimationPair = animationsFor(context.navigationContext, navigationInstruction)
-
-fun animationsFor(context: Fragment, navigationInstruction: NavigationInstruction): AnimationPair =
-    animationsFor(context.navigationContext, navigationInstruction)
-
-fun animationsFor(
-    context: NavigationContext<*, *>,
-    navigationInstruction: NavigationInstruction
-): AnimationPair {
-    if (navigationInstruction is NavigationInstruction.Open<*> && navigationInstruction.children.isNotEmpty()) {
-        return AnimationPair(0, 0)
+): AnimationPair.Resource {
+    if (navigationInstruction is NavigationInstruction.Open && navigationInstruction.children.isNotEmpty()) {
+        return AnimationPair.Resource(0, 0)
     }
 
     return when (navigationInstruction) {
-        is NavigationInstruction.Open<*> -> animationsForOpen(context, navigationInstruction)
-        is NavigationInstruction.Close -> animationsForClose(context, navigationInstruction)
+        is NavigationInstruction.Open -> animationsForOpen(context, navigationInstruction)
+        is NavigationInstruction.Close -> animationsForClose(context)
     }
 }
 
 private fun animationsForOpen(
-    context: NavigationContext<*, *>,
-    navigationInstruction: NavigationInstruction.Open<*>
-): AnimationPair {
+    context: NavigationContext<*>,
+    navigationInstruction: NavigationInstruction.Open
+): AnimationPair.Resource {
     val theme = context.activity.theme
-    val navigator = context.navigator
-
-    val navigatorAnimations = navigator.animations.toResource(theme)
-    val instructionAnimations = navigationInstruction.animations?.toResource(theme)
-
-    return when {
-        instructionAnimations != null -> AnimationPair(
-            instructionAnimations.openEnter,
-            instructionAnimations.openExit
-        )
-        else -> when (navigationInstruction.navigationDirection) {
-            NavigationDirection.FORWARD -> AnimationPair(
-                navigatorAnimations.forwardEnter,
-                navigatorAnimations.forwardExit
-            )
-            NavigationDirection.REPLACE -> AnimationPair(
-                navigatorAnimations.replaceEnter,
-                navigatorAnimations.replaceExit
-            )
-            NavigationDirection.REPLACE_ROOT -> AnimationPair(
-                navigatorAnimations.replaceRootEnter,
-                navigatorAnimations.replaceRootExit
-            )
-        }
-    }
+    val executor = context.activity.application.navigationController.executorForOpen(context, navigationInstruction)
+    return executor.executor.animation(navigationInstruction).asResource(theme)
 }
 
 private fun animationsForClose(
-    context: NavigationContext<*, *>,
-    navigationInstruction: NavigationInstruction.Close
-): AnimationPair {
+    context: NavigationContext<*>
+): AnimationPair.Resource {
     val theme = context.activity.theme
-    val navigator = context.navigator
-
-    val navigatorAnimations = navigator.animations.toResource(theme)
-    val animations = context.instruction?.animations?.toResource(theme)
-
-    return when {
-        animations != null -> AnimationPair(
-            animations.closeEnter,
-            animations.closeExit
-        )
-        else -> AnimationPair(navigatorAnimations.closeEnter, navigatorAnimations.closeExit)
-    }
+    val executor = context.activity.application.navigationController.executorForClose(context)
+    return executor.closeAnimation(context).asResource(theme)
 }

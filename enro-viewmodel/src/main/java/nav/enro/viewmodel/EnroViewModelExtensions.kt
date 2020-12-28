@@ -1,6 +1,5 @@
 package nav.enro.viewmodel
 
-import androidx.activity.ComponentActivity
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -12,20 +11,34 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-class ViewModelNavigationHandleProperty<T : NavigationKey> internal constructor(
-    viewModelType: KClass<out ViewModel>
-) : ReadOnlyProperty<ViewModel, NavigationHandle<T>> {
+class ViewModelNavigationHandleProperty<T : NavigationKey> @PublishedApi internal constructor(
+    viewModelType: KClass<out ViewModel>,
+    type: KClass<T>,
+    block: LazyNavigationHandleConfiguration<T>.() -> Unit
+) : ReadOnlyProperty<ViewModel, TypedNavigationHandle<T>> {
 
-    private val navigationHandle = EnroViewModelNavigationHandleProvider.get<T>(viewModelType.java)
+    private val navigationHandle = EnroViewModelNavigationHandleProvider.get(viewModelType.java)
+        .asTyped(type)
+        .apply {
+            LazyNavigationHandleConfiguration(type)
+                .apply(block)
+                .configure(this)
+        }
 
-    override fun getValue(thisRef: ViewModel, property: KProperty<*>): NavigationHandle<T> {
+    override fun getValue(thisRef: ViewModel, property: KProperty<*>): TypedNavigationHandle<T> {
         return navigationHandle
     }
 }
 
-fun <T : NavigationKey> ViewModel.navigationHandle(): ViewModelNavigationHandleProperty<T> =
-    ViewModelNavigationHandleProperty(this::class)
+fun <T : NavigationKey> ViewModel.navigationHandle(
+    type: KClass<T>,
+    block: LazyNavigationHandleConfiguration<T>.() -> Unit = {}
+): ViewModelNavigationHandleProperty<T> =
+    ViewModelNavigationHandleProperty(this::class, type, block)
 
+inline fun <reified T : NavigationKey> ViewModel.navigationHandle(
+    noinline block: LazyNavigationHandleConfiguration<T>.() -> Unit = {}
+): ViewModelNavigationHandleProperty<T> = navigationHandle(T::class, block)
 
 @MainThread
 inline fun <reified VM : ViewModel> FragmentActivity.enroViewModels(
@@ -37,7 +50,7 @@ inline fun <reified VM : ViewModel> FragmentActivity.enroViewModels(
     }
 
     val navigationHandle = {
-        getNavigationHandle<Nothing>()
+        getNavigationHandle()
     }
 
     return enroViewModels({viewModelStore}, navigationHandle, factory)
@@ -53,7 +66,7 @@ inline fun <reified VM : ViewModel> Fragment.enroViewModels(
     }
 
     val navigationHandle = {
-        getNavigationHandle<Nothing>()
+        getNavigationHandle()
     }
 
     return enroViewModels({viewModelStore}, navigationHandle, factory)
@@ -63,7 +76,7 @@ inline fun <reified VM : ViewModel> Fragment.enroViewModels(
 @PublishedApi
 internal inline fun <reified VM : ViewModel> enroViewModels(
     noinline viewModelStore: (() -> ViewModelStore),
-    noinline navigationHandle: (() -> NavigationHandle<Nothing>),
+    noinline navigationHandle: (() -> NavigationHandle),
     noinline factoryProducer: (() -> ViewModelProvider.Factory)
 ): Lazy<VM> {
 
