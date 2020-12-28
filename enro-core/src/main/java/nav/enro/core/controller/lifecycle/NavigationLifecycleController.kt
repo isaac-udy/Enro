@@ -71,7 +71,14 @@ internal class NavigationLifecycleController(
         })
         handle.navigationContext = context
         if (savedInstanceState == null) {
-            executorContainer.executorForClose(context).postOpened(context)
+            context.lifecycle.addObserver(object: LifecycleEventObserver {
+                override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                    if(event == Lifecycle.Event.ON_START) {
+                        executorContainer.executorForClose(context).postOpened(context)
+                        context.lifecycle.removeObserver(this)
+                    }
+                }
+            })
         }
         if (savedInstanceState == null) handle.executeDeeplink()
     }
