@@ -52,10 +52,10 @@ class ResultTests {
         val scenario = ActivityScenario.launch(ResultReceiverActivity::class.java)
         val result = UUID.randomUUID().toString()
         scenario.onActivity {
-            it.resultChannel.open(NestedFragmentResultKey())
+            it.resultChannel.open(NestedResultFragmentKey())
         }
 
-        expectContext<NestedResultFragment, NestedFragmentResultKey>()
+        expectContext<NestedResultFragment, NestedResultFragmentKey>()
             .navigation
             .closeWithResult(result)
 
@@ -198,6 +198,32 @@ class ResultTests {
     }
 
     @Test
+    fun whenFragmentRequestsResult_andResultProviderIsNestedFragment_thenResultIsReceived() {
+        ActivityScenario.launch(DefaultActivity::class.java)
+        val result = UUID.randomUUID().toString()
+
+        expectContext<DefaultActivity, DefaultActivityKey>()
+            .navigation
+            .forward(NestedResultReceiverFragmentKey())
+
+        expectContext<NestedResultReceiverFragment, NestedResultReceiverFragmentKey>()
+            .context
+            .resultChannel
+            .open(NestedResultFragmentKey())
+
+        expectContext<NestedResultFragment, NestedResultFragmentKey>()
+            .navigation
+            .closeWithResult(result)
+
+        assertEquals(
+            result,
+            expectContext<NestedResultReceiverFragment, NestedResultReceiverFragmentKey>()
+                .context
+                .result
+        )
+    }
+
+    @Test
     fun whenNestedFragmentRequestsResult_andResultProviderIsStandaloneFragment_thenResultIsReceived() {
         ActivityScenario.launch(NestedResultReceiverActivity::class.java)
         val result = UUID.randomUUID().toString()
@@ -261,9 +287,9 @@ class ResultTests {
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(NestedFragmentResultKey())
+            .open(NestedResultFragmentKey())
 
-        expectContext<NestedResultFragment, NestedFragmentResultKey>()
+        expectContext<NestedResultFragment, NestedResultFragmentKey>()
             .navigation
             .closeWithResult(result)
 
@@ -287,9 +313,9 @@ class ResultTests {
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(NestedFragmentResultKey())
+            .open(NestedResultFragmentKey())
 
-        expectContext<NestedResultFragment, NestedFragmentResultKey>()
+        expectContext<NestedResultFragment, NestedResultFragmentKey>()
             .navigation
             .closeWithResult(result)
 

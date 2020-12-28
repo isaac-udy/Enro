@@ -1,7 +1,6 @@
 package nav.enro.result
 
 import android.widget.TextView
-import androidx.fragment.app.Fragment
 import kotlinx.android.parcel.Parcelize
 import nav.enro.TestActivity
 import nav.enro.TestFragment
@@ -22,9 +21,9 @@ class FragmentResultKey : ResultNavigationKey<String>
 class ResultFragment : TestFragment()
 
 @Parcelize
-class NestedFragmentResultKey : ResultNavigationKey<String>
+class NestedResultFragmentKey : ResultNavigationKey<String>
 
-@NavigationDestination(NestedFragmentResultKey::class)
+@NavigationDestination(NestedResultFragmentKey::class)
 class NestedResultFragment : TestFragment()
 
 
@@ -37,7 +36,7 @@ class ResultReceiverActivity : TestActivity() {
     private val navigation by navigationHandle<ResultReceiverActivityKey> {
         defaultKey(ResultReceiverActivityKey())
 
-        container(primaryFragmentContainer) { it is NestedFragmentResultKey }
+        container(primaryFragmentContainer) { it is NestedResultFragmentKey }
     }
 
     var result: String? = null
@@ -61,7 +60,7 @@ class NestedResultReceiverActivityKey : NavigationKey
 class NestedResultReceiverActivity : TestActivity() {
     private val navigation by navigationHandle<NestedResultReceiverActivityKey> {
         defaultKey(NestedResultReceiverActivityKey())
-        container(primaryFragmentContainer) { it is ResultReceiverFragmentKey || it is NestedFragmentResultKey }
+        container(primaryFragmentContainer) { it is ResultReceiverFragmentKey || it is NestedResultFragmentKey }
     }
 }
 
@@ -73,7 +72,7 @@ class SideBySideNestedResultReceiverActivity : TestActivity() {
     private val navigation by navigationHandle<SideBySideNestedResultReceiverActivityKey> {
         defaultKey(SideBySideNestedResultReceiverActivityKey())
         container(primaryFragmentContainer) { it is ResultReceiverFragmentKey }
-        container(secondaryFragmentContainer) { it is NestedFragmentResultKey }
+        container(secondaryFragmentContainer) { it is NestedResultFragmentKey }
     }
 }
 
@@ -82,6 +81,29 @@ class ResultReceiverFragmentKey : NavigationKey
 
 @NavigationDestination(ResultReceiverFragmentKey::class)
 class ResultReceiverFragment : TestFragment() {
+    var result: String? = null
+    val resultChannel by registerForNavigationResult<String> {
+        result = it
+        requireView().findViewById<TextView>(debugText).text = "Result: $result\nSecondary Result: $secondaryResult"
+    }
+
+    var secondaryResult: String? = null
+    val secondaryResultChannel by registerForNavigationResult<String> {
+        secondaryResult = it
+        requireView().findViewById<TextView>(debugText).text = "Result: $result\nSecondary Result: $secondaryResult"
+    }
+}
+
+@Parcelize
+class NestedResultReceiverFragmentKey : NavigationKey
+
+@NavigationDestination(NestedResultReceiverFragmentKey::class)
+class NestedResultReceiverFragment : TestFragment() {
+
+    private val navigation by navigationHandle<NestedResultReceiverFragmentKey> {
+        container(primaryFragmentContainer) { it is NestedResultFragmentKey }
+    }
+
     var result: String? = null
     val resultChannel by registerForNavigationResult<String> {
         result = it
