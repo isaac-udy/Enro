@@ -16,9 +16,8 @@ import kotlinx.android.synthetic.main.fragment_result_example.*
 import nav.enro.annotations.NavigationDestination
 import nav.enro.core.NavigationKey
 import nav.enro.core.navigationHandle
-import nav.enro.result.ResultNavigationKey
-import nav.enro.result.closeWithResult
-import nav.enro.result.registerForNavigationResult
+import nav.enro.core.result.closeWithResult
+import nav.enro.core.result.registerForNavigationResult
 import nav.enro.viewmodel.enroViewModels
 import nav.enro.viewmodel.navigationHandle
 

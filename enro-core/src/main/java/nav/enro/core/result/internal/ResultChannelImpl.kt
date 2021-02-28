@@ -1,4 +1,4 @@
-package nav.enro.result.internal
+package nav.enro.core.result.internal
 
 import android.os.Bundle
 import android.os.Handler
@@ -6,13 +6,12 @@ import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import nav.enro.core.NavigationDirection
 import nav.enro.core.NavigationHandle
 import nav.enro.core.NavigationInstruction
+import nav.enro.core.NavigationKey
 import nav.enro.core.TypedNavigationHandle
-import nav.enro.result.EnroResult
-import nav.enro.result.EnroResultChannel
-import nav.enro.result.ResultNavigationKey
+import nav.enro.core.result.EnroResult
+import nav.enro.core.result.EnroResultChannel
 
 class ResultChannelImpl<T> internal constructor(
     private val navigationHandle: NavigationHandle,
@@ -28,10 +27,9 @@ class ResultChannelImpl<T> internal constructor(
         EnroResult.from(navigationHandle.controller).registerChannel(this)
     }
 
-    override fun open(key: ResultNavigationKey<T>) {
+    override fun open(key: NavigationKey.WithResult<T>) {
         navigationHandle.executeInstruction(
-            NavigationInstruction.Open(
-                navigationDirection = NavigationDirection.FORWARD,
+            NavigationInstruction.Forward(
                 navigationKey = key,
                 additionalData = Bundle().apply {
                     putParcelable(EXTRA_RESULT_CHANNEL_ID, id)

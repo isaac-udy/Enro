@@ -12,7 +12,7 @@ import nav.enro.core.close
 import nav.enro.core.forward
 import nav.enro.example.core.data.SimpleDataRepository
 import nav.enro.example.core.navigation.*
-import nav.enro.result.registerForNavigationResult
+import nav.enro.core.result.registerForNavigationResult
 import nav.enro.viewmodel.enroViewModels
 import nav.enro.viewmodel.navigationHandle
 

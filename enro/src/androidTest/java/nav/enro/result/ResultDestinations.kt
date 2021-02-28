@@ -7,21 +7,22 @@ import nav.enro.TestFragment
 import nav.enro.annotations.NavigationDestination
 import nav.enro.core.NavigationKey
 import nav.enro.core.navigationHandle
+import nav.enro.core.result.registerForNavigationResult
 
 @Parcelize
-class ActivityResultKey : ResultNavigationKey<String>
+class ActivityResultKey : NavigationKey.WithResult<String>
 
 @NavigationDestination(ActivityResultKey::class)
 class ResultActivity : TestActivity()
 
 @Parcelize
-class FragmentResultKey : ResultNavigationKey<String>
+class FragmentResultKey : NavigationKey.WithResult<String>
 
 @NavigationDestination(FragmentResultKey::class)
 class ResultFragment : TestFragment()
 
 @Parcelize
-class NestedResultFragmentKey : ResultNavigationKey<String>
+class NestedResultFragmentKey : NavigationKey.WithResult<String>
 
 @NavigationDestination(NestedResultFragmentKey::class)
 class NestedResultFragment : TestFragment()

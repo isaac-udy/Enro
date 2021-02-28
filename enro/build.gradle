@@ -6,9 +6,6 @@ dependencies {
     releaseApi "nav.enro:enro-core:$versionName"
     debugApi project(":enro-core")
 
-    releaseApi "nav.enro:enro-result:$versionName"
-    debugApi project(":enro-result")
-
     releaseApi "nav.enro:enro-viewmodel:$versionName"
     debugApi project(":enro-viewmodel")
 
@@ -40,7 +37,6 @@ afterEvaluate {
     tasks.findByName("preReleaseBuild")
             .dependsOn(
                     ":enro-core:publishToMavenLocal",
-                    ":enro-result:publishToMavenLocal",
                     ":enro-viewmodel:publishToMavenLocal",
                     ":enro-masterdetail:publishToMavenLocal",
                     ":enro-multistack:publishToMavenLocal",

@@ -1,4 +1,4 @@
-package nav.enro.result.internal
+package nav.enro.core.result.internal
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize

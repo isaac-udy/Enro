@@ -6,6 +6,7 @@ import junit.framework.Assert.assertFalse
 import nav.enro.DefaultActivity
 import nav.enro.DefaultActivityKey
 import nav.enro.core.*
+import nav.enro.core.result.closeWithResult
 import nav.enro.expectActivity
 import nav.enro.expectContext
 import org.junit.Test

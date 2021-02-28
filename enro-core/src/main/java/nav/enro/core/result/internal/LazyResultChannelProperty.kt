@@ -1,4 +1,4 @@
-package nav.enro.result.internal
+package nav.enro.core.result.internal
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -6,9 +6,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import nav.enro.core.NavigationHandle
-import nav.enro.core.TypedNavigationHandle
 import nav.enro.core.getNavigationHandle
-import nav.enro.result.EnroResult
+import nav.enro.core.result.EnroResult
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 

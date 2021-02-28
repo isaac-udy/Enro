@@ -1,11 +1,11 @@
-package nav.enro.result
+package nav.enro.core.result
 
 import nav.enro.core.NavigationHandle
 import nav.enro.core.controller.NavigationController
 import nav.enro.core.plugins.EnroPlugin
-import nav.enro.result.internal.PendingResult
-import nav.enro.result.internal.ResultChannelId
-import nav.enro.result.internal.ResultChannelImpl
+import nav.enro.core.result.internal.PendingResult
+import nav.enro.core.result.internal.ResultChannelId
+import nav.enro.core.result.internal.ResultChannelImpl
 
 class EnroResult: EnroPlugin() {
     private val channels = mutableMapOf<ResultChannelId, ResultChannelImpl<*>>()
