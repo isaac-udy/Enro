@@ -12,11 +12,14 @@ import androidx.annotation.AnimRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
-import nav.enro.core.*
+import nav.enro.core.DefaultAnimations
+import nav.enro.core.NavigationInstruction
 import nav.enro.core.activity.ActivityNavigator
+import nav.enro.core.close
 import nav.enro.core.controller.navigationController
 import nav.enro.core.fragment.DefaultFragmentExecutor
 import nav.enro.core.fragment.FragmentNavigator
+import nav.enro.core.getNavigationHandle
 
 
 @PublishedApi
@@ -108,9 +111,7 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
 
             containerInitialised = true
         } else {
-            val instruction = NavigationInstruction.Open(
-                    NavigationDirection.FORWARD, container.rootKey
-            )
+            val instruction = NavigationInstruction.Forward(container.rootKey)
             val newFragment = DefaultFragmentExecutor.createFragment(
                 parentFragmentManager,
                 navigator,

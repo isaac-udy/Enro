@@ -6,7 +6,6 @@ import junit.framework.Assert.assertTrue
 import nav.enro.*
 import nav.enro.core.*
 import nav.enro.core.controller.navigationController
-import nav.enro.core.createOverride
 import org.junit.Before
 import org.junit.Test
 
@@ -18,8 +17,7 @@ class FragmentToActivityOverrideTests() {
     fun before() {
         val intent = Intent(application, ActivityWithFragments::class.java)
             .addOpenInstruction(
-                NavigationInstruction.Open(
-                    NavigationDirection.FORWARD,
+                NavigationInstruction.Forward(
                     ActivityWithFragmentsKey(id = "initial activity")
                 )
             )

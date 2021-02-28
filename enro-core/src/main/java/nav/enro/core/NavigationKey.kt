@@ -6,3 +6,5 @@ interface NavigationKey : Parcelable {
     interface WithResult<T> : NavigationKey
 }
 
+interface AllowNested
+interface AllowRoot

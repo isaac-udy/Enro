@@ -3,7 +3,6 @@ package nav.enro.core.controller.interceptor
 import nav.enro.core.*
 import nav.enro.core.activity.ActivityNavigator
 import nav.enro.core.controller.container.NavigatorContainer
-import nav.enro.core.controller.lifecycle.CONTEXT_ID_ARG
 import nav.enro.core.fragment.FragmentNavigator
 import nav.enro.core.fragment.internal.SingleFragmentActivity
 import nav.enro.core.internal.NoKeyNavigator
@@ -28,7 +27,7 @@ internal class InstructionParentInterceptor(
         parentContext: NavigationContext<*>,
         navigator: Navigator<out NavigationKey, out Any>
     ): NavigationInstruction.Open {
-        if (parentInstruction != null) return this
+        if (internal.parentInstruction != null) return this
 
         fun findCorrectParentInstructionFor(instruction: NavigationInstruction.Open?): NavigationInstruction.Open? {
             if (navigator is FragmentNavigator) {
@@ -40,32 +39,32 @@ internal class InstructionParentInterceptor(
             val parentNavigator = navigatorContainer.navigatorForKeyType(keyType)
             if (parentNavigator is ActivityNavigator) return instruction
             if (parentNavigator is NoKeyNavigator) return instruction
-            return findCorrectParentInstructionFor(instruction.parentInstruction)
+            return findCorrectParentInstructionFor(instruction.internal.parentInstruction)
         }
 
         val parentInstruction = when (navigationDirection) {
             NavigationDirection.FORWARD -> findCorrectParentInstructionFor(parentContext.getNavigationHandleViewModel().instruction)
-            NavigationDirection.REPLACE -> findCorrectParentInstructionFor(parentContext.getNavigationHandleViewModel().instruction)?.parentInstruction
+            NavigationDirection.REPLACE -> findCorrectParentInstructionFor(parentContext.getNavigationHandleViewModel().instruction)?.internal?.parentInstruction
             NavigationDirection.REPLACE_ROOT -> null
         }
 
-        return copy(parentInstruction = parentInstruction)
+        return internal.copy(parentInstruction = parentInstruction?.internal)
     }
 
     private fun NavigationInstruction.Open.setExecutorContext(
         parentContext: NavigationContext<*>
     ): NavigationInstruction.Open {
         if(parentContext.contextReference is SingleFragmentActivity) {
-            return copy(executorContext = parentContext.getNavigationHandleViewModel().instruction.executorContext)
+            return internal.copy(executorContext = parentContext.getNavigationHandleViewModel().instruction.internal.executorContext)
         }
-        return copy(executorContext = parentContext.contextReference::class.java)
+        return internal.copy(executorContext = parentContext.contextReference::class.java)
     }
 
     private fun NavigationInstruction.Open.setPreviouslyActiveId(
         parentContext: NavigationContext<*>
     ): NavigationInstruction.Open {
-        if(previouslyActiveId != null) return this
-        return copy(
+        if(internal.previouslyActiveId != null) return this
+        return internal.copy(
             previouslyActiveId = parentContext.childFragmentManager.primaryNavigationFragment?.getNavigationHandle()?.id
         )
     }

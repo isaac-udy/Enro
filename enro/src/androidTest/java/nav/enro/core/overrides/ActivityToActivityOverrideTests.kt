@@ -6,7 +6,6 @@ import junit.framework.Assert.assertTrue
 import nav.enro.*
 import nav.enro.core.*
 import nav.enro.core.controller.navigationController
-import nav.enro.core.createOverride
 import org.junit.Test
 
 class ActivityToActivityOverrideTests() {
@@ -86,8 +85,7 @@ class ActivityToActivityOverrideTests() {
         )
         val intent = Intent(application, GenericActivity::class.java)
             .addOpenInstruction(
-                NavigationInstruction.Open(
-                    NavigationDirection.FORWARD,
+                NavigationInstruction.Forward(
                     GenericActivityKey(id = "override test")
                 )
             )
@@ -120,8 +118,7 @@ class ActivityToActivityOverrideTests() {
 
         val intent = Intent(application, GenericActivity::class.java)
             .addOpenInstruction(
-                NavigationInstruction.Open(
-                    NavigationDirection.FORWARD,
+                NavigationInstruction.Forward(
                     GenericActivityKey(id = "override test")
                 )
             )

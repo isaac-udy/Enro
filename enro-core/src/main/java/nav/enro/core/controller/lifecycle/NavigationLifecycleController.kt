@@ -2,10 +2,6 @@ package nav.enro.core.controller.lifecycle
 
 import android.app.Application
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -25,8 +21,6 @@ internal class NavigationLifecycleController(
     private val executorContainer: ExecutorContainer,
     private val pluginContainer: PluginContainer
 ) {
-
-    private val handler = Handler(Looper.getMainLooper())
     private val callbacks = NavigationContextLifecycleCallbacks(this)
 
     fun install(application: Application) {
@@ -37,21 +31,24 @@ internal class NavigationLifecycleController(
     }
 
     fun onContextCreated(context: NavigationContext<*>, savedInstanceState: Bundle?) {
-        if(context is ActivityContext) {
+        if (context is ActivityContext) {
             context.activity.theme.applyStyle(android.R.style.Animation_Activity, false)
         }
 
         val instruction = context.arguments.readOpenInstruction()
-        val contextId = instruction?.instructionId
+        val contextId = instruction?.internal?.instructionId
             ?: savedInstanceState?.getString(CONTEXT_ID_ARG)
             ?: UUID.randomUUID().toString()
 
         val config = NavigationHandleProperty.getPendingConfig(context)
-        val defaultInstruction = NavigationInstruction.Open(
-            instructionId = contextId,
-            navigationDirection = NavigationDirection.FORWARD,
-            navigationKey = config?.defaultKey ?: NoNavigationKey(context.contextReference::class.java, context.arguments)
-        )
+        val defaultInstruction = NavigationInstruction
+            .Forward(
+                navigationKey = config?.defaultKey
+                    ?: NoNavigationKey(context.contextReference::class.java, context.arguments)
+            )
+            .internal
+            .copy(instructionId = contextId)
+
         val viewModelStoreOwner = context.contextReference as ViewModelStoreOwner
         val handle = viewModelStoreOwner.createNavigationHandleViewModel(
             context.controller,
@@ -71,9 +68,9 @@ internal class NavigationLifecycleController(
         })
         handle.navigationContext = context
         if (savedInstanceState == null) {
-            context.lifecycle.addObserver(object: LifecycleEventObserver {
+            context.lifecycle.addObserver(object : LifecycleEventObserver {
                 override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                    if(event == Lifecycle.Event.ON_START) {
+                    if (event == Lifecycle.Event.ON_START) {
                         executorContainer.executorForClose(context).postOpened(context)
                         context.lifecycle.removeObserver(this)
                     }

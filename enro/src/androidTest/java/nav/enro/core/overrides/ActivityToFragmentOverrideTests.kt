@@ -83,8 +83,7 @@ class ActivityToFragmentOverrideTests() {
         )
         val intent = Intent(application, GenericActivity::class.java)
             .addOpenInstruction(
-                NavigationInstruction.Open(
-                    NavigationDirection.FORWARD,
+                NavigationInstruction.Forward(
                     GenericActivityKey(id = "override test")
                 )
             )
@@ -117,8 +116,7 @@ class ActivityToFragmentOverrideTests() {
 
         val intent = Intent(application, GenericActivity::class.java)
             .addOpenInstruction(
-                NavigationInstruction.Open(
-                    NavigationDirection.FORWARD,
+                NavigationInstruction.Forward(
                     GenericActivityKey(id = "override test")
                 )
             )
@@ -155,8 +153,7 @@ class ActivityToFragmentOverrideTests() {
         )
         val intent = Intent(application, ActivityWithFragments::class.java)
             .addOpenInstruction(
-                NavigationInstruction.Open(
-                    NavigationDirection.FORWARD,
+                NavigationInstruction.Forward(
                     ActivityWithFragmentsKey(id = "override test")
                 )
             )
@@ -188,8 +185,7 @@ class ActivityToFragmentOverrideTests() {
         )
         val intent = Intent(application, ActivityWithFragments::class.java)
             .addOpenInstruction(
-                NavigationInstruction.Open(
-                    NavigationDirection.FORWARD,
+                NavigationInstruction.Forward(
                     ActivityWithFragmentsKey(id = "override test")
                 )
             )

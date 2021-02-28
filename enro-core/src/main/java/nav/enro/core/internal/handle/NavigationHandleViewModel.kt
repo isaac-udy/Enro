@@ -95,10 +95,9 @@ internal class NavigationHandleViewModel(
     internal fun executeDeeplink() {
         if (instruction.children.isEmpty()) return
         executeInstruction(
-            NavigationInstruction.Open(
-                NavigationDirection.FORWARD,
-                instruction.children.first(),
-                instruction.children.drop(1)
+            NavigationInstruction.Forward(
+                navigationKey = instruction.children.first(),
+                children = instruction.children.drop(1)
             )
         )
     }

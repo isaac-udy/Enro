@@ -15,41 +15,88 @@ enum class NavigationDirection {
 
 internal const val OPEN_ARG = "nav.enro.core.OPEN_ARG"
 
-// TODO Hide some of these properties?
 sealed class NavigationInstruction {
-    @Parcelize
-    data class Open(
-        val navigationDirection: NavigationDirection,
-        val navigationKey: NavigationKey,
-        val children: List<NavigationKey> = emptyList(),
-        val parentInstruction: Open? = null,
-        val previouslyActiveId: String? = null,
-        val executorContext: Class<out Any>? = null,
-        val additionalData: Bundle = Bundle(),
-        val instructionId: String = UUID.randomUUID().toString()
-    ) : NavigationInstruction(), Parcelable
+    sealed class Open : NavigationInstruction(), Parcelable {
+        abstract val navigationDirection: NavigationDirection
+        abstract val navigationKey: NavigationKey
+        abstract val children: List<NavigationKey>
+        abstract val additionalData: Bundle
+        abstract val instructionId: String
+
+        internal val internal by lazy { this as OpenInternal }
+
+        @Parcelize
+        internal data class OpenInternal constructor(
+            override val navigationDirection: NavigationDirection,
+            override val navigationKey: NavigationKey,
+            override val children: List<NavigationKey> = emptyList(),
+            override val additionalData: Bundle = Bundle(),
+            val parentInstruction: OpenInternal? = null,
+            val previouslyActiveId: String? = null,
+            val executorContext: Class<out Any>? = null,
+            override val instructionId: String = UUID.randomUUID().toString()
+        ) : NavigationInstruction.Open()
+    }
 
     object Close : NavigationInstruction()
+
+    companion object {
+        @Suppress("FunctionName")
+        fun Forward(
+            navigationKey: NavigationKey,
+            children: List<NavigationKey> = emptyList(),
+            additionalData: Bundle = Bundle(),
+        ): Open = Open.OpenInternal(
+            navigationDirection = NavigationDirection.FORWARD,
+            navigationKey = navigationKey,
+            children = children,
+            additionalData = additionalData
+        )
+
+        @Suppress("FunctionName")
+        fun Replace(
+            navigationKey: NavigationKey,
+            children: List<NavigationKey> = emptyList(),
+            additionalData: Bundle = Bundle(),
+        ): Open = Open.OpenInternal(
+            navigationDirection = NavigationDirection.REPLACE,
+            navigationKey = navigationKey,
+            children = children,
+            additionalData = additionalData
+        )
+
+        @Suppress("FunctionName")
+        fun ReplaceRoot(
+            navigationKey: NavigationKey,
+            children: List<NavigationKey> = emptyList(),
+            additionalData: Bundle = Bundle(),
+        ): Open = Open.OpenInternal(
+            navigationDirection = NavigationDirection.REPLACE_ROOT,
+            navigationKey = navigationKey,
+            children = children,
+            additionalData = additionalData
+        )
+    }
 }
 
 
 fun Intent.addOpenInstruction(instruction: NavigationInstruction.Open): Intent {
-    putExtra(OPEN_ARG, instruction)
+    putExtra(OPEN_ARG, instruction.internal)
     return this
 }
 
 fun Bundle.addOpenInstruction(instruction: NavigationInstruction.Open): Bundle {
-    putParcelable(OPEN_ARG, instruction)
+    putParcelable(OPEN_ARG, instruction.internal)
     return this
 }
 
 fun Fragment.addOpenInstruction(instruction: NavigationInstruction.Open): Fragment {
     arguments = (arguments ?: Bundle()).apply {
-        putParcelable(OPEN_ARG, instruction)
+        putParcelable(OPEN_ARG, instruction.internal)
     }
     return this
 }
 
 fun Bundle.readOpenInstruction(): NavigationInstruction.Open? {
-    return getParcelable(OPEN_ARG)
+    return getParcelable<NavigationInstruction.Open.OpenInternal>(OPEN_ARG)
 }

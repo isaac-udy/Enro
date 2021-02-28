@@ -82,7 +82,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             if(activeFragment != null
                 && activeFragment.tag != null
                 && activeFragment.tag == activeFragment.navigationContext.getNavigationHandleViewModel().id
-                && activeFragment.tag == instruction.parentInstruction?.instructionId
+                && activeFragment.tag == instruction.internal.parentInstruction?.instructionId
             ){
                 detach(activeFragment)
             }
@@ -174,16 +174,16 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             // If we attempt to openFragmentAsActivity into a DialogFragment using the REPLACE direction,
             // the Activity hosting the DialogFragment will be closed/replaced
             // Instead, we close the fromContext's DialogFragment and call openFragmentAsActivity with the instruction changed to a forward direction
-            openFragmentAsActivity(fromContext, instruction.copy(navigationDirection = NavigationDirection.FORWARD))
+            openFragmentAsActivity(fromContext, instruction.internal.copy(navigationDirection = NavigationDirection.FORWARD))
             fromContext.contextReference.dismiss()
             return
         }
 
         fromContext.controller.open(
             fromContext,
-            NavigationInstruction.Open(
-                instruction.navigationDirection,
-                SingleFragmentKey(instruction.copy(
+            NavigationInstruction.Open.OpenInternal(
+                navigationDirection = instruction.navigationDirection,
+                navigationKey = SingleFragmentKey(instruction.internal.copy(
                     navigationDirection = NavigationDirection.FORWARD,
                     parentInstruction = null
                 ))
@@ -193,7 +193,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 }
 
 private fun NavigationContext<out Fragment>.getPreviousFragment(): Fragment? {
-    val previouslyActiveFragment = getNavigationHandleViewModel().instruction.previouslyActiveId
+    val previouslyActiveFragment = getNavigationHandleViewModel().instruction.internal.previouslyActiveId
         ?.let { previouslyActiveId ->
             fragment.parentFragmentManager.fragments.firstOrNull {
                 it.getNavigationHandle().id == previouslyActiveId && it.isVisible
@@ -201,7 +201,7 @@ private fun NavigationContext<out Fragment>.getPreviousFragment(): Fragment? {
         }
 
     val containerView = contextReference.getContainerId()
-    val parentInstruction = getNavigationHandleViewModel().instruction.parentInstruction
+    val parentInstruction = getNavigationHandleViewModel().instruction.internal.parentInstruction
     parentInstruction ?: return previouslyActiveFragment
 
     val previousNavigator = controller.navigatorForKeyType(parentInstruction.navigationKey::class)

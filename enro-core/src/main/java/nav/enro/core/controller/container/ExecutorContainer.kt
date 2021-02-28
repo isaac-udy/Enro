@@ -3,11 +3,8 @@ package nav.enro.core.controller.container
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import nav.enro.core.*
-import nav.enro.core.ActivityContext
-import nav.enro.core.FragmentContext
 import nav.enro.core.activity.DefaultActivityExecutor
 import nav.enro.core.fragment.DefaultFragmentExecutor
-import nav.enro.core.getNavigationHandleViewModel
 import nav.enro.core.synthetic.DefaultSyntheticExecutor
 import nav.enro.core.synthetic.SyntheticDestination
 import kotlin.reflect.KClass
@@ -78,7 +75,7 @@ internal class ExecutorContainer(
 
     @Suppress("UNCHECKED_CAST")
     internal fun executorForClose(navigationContext: NavigationContext<out Any>): NavigationExecutor<Any, Any, NavigationKey> {
-        val parentContextType = navigationContext.getNavigationHandleViewModel().instruction.executorContext?.kotlin
+        val parentContextType = navigationContext.getNavigationHandleViewModel().instruction.internal.executorContext?.kotlin
         val contextType = navigationContext.contextReference::class
 
         val override = parentContextType?.let { parentContext ->

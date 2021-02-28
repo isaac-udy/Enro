@@ -5,13 +5,10 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
+import nav.enro.*
 import nav.enro.DefaultActivity
-import nav.enro.DefaultActivityKey
-import nav.enro.GenericActivity
-import nav.enro.GenericActivityKey
 import org.junit.Test
 import java.util.*
-import nav.enro.*
 
 class ActivityToActivityTests {
 
@@ -61,8 +58,7 @@ class ActivityToActivityTests {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
         handle.executeInstruction(
-            NavigationInstruction.Open(
-                NavigationDirection.FORWARD,
+            NavigationInstruction.Forward(
                 GenericActivityKey(UUID.randomUUID().toString()),
                 listOf(
                     GenericActivityKey(UUID.randomUUID().toString()),
@@ -109,8 +105,7 @@ class ActivityToActivityTests {
                 GenericActivity::class.java
             )
                 .addOpenInstruction(
-                    NavigationInstruction.Open(
-                        navigationDirection = NavigationDirection.REPLACE,
+                    NavigationInstruction.Replace(
                         navigationKey = GenericActivityKey(id)
                     )
                 )

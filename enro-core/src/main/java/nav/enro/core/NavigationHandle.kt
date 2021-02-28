@@ -53,13 +53,13 @@ inline fun <reified T: NavigationKey> NavigationHandle.asTyped(): TypedNavigatio
 }
 
 fun NavigationHandle.forward(key: NavigationKey, vararg childKeys: NavigationKey) =
-    executeInstruction(NavigationInstruction.Open(NavigationDirection.FORWARD, key, childKeys.toList()))
+    executeInstruction(NavigationInstruction.Forward(key, childKeys.toList()))
 
 fun NavigationHandle.replace(key: NavigationKey, vararg childKeys: NavigationKey) =
-    executeInstruction(NavigationInstruction.Open(NavigationDirection.REPLACE, key, childKeys.toList()))
+    executeInstruction(NavigationInstruction.Replace(key, childKeys.toList()))
 
 fun NavigationHandle.replaceRoot(key: NavigationKey, vararg childKeys: NavigationKey) =
-    executeInstruction(NavigationInstruction.Open(NavigationDirection.REPLACE_ROOT, key, childKeys.toList()))
+    executeInstruction(NavigationInstruction.ReplaceRoot(key, childKeys.toList()))
 
 fun NavigationHandle.close() =
     executeInstruction(NavigationInstruction.Close)
