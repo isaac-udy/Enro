@@ -18,6 +18,35 @@ class ResultChannelImpl<T> internal constructor(
     private val resultType: Class<T>,
     private val onResult: (T) -> Unit
 ): EnroResultChannel<T> {
+    /*
+        The resultId being set here to the JVM class name of the onResult lambda is a key part of
+        being able to make result channels work without providing an explicit id. The JVM will treat
+        the lambda as an anonymous class, which is uniquely identifiable by it's class name.
+
+        If the behaviour of the Kotlin/JVM interaction changes in a future release, it may be required
+        to pass an explicit resultId as a part of the ResultChannelImpl constructor, which would need
+        to be unique per result channel created.
+
+        It is possible to have two result channels registered for the same result type:
+        <code>
+            val resultOne = registerForResult<Boolean> { ... }
+            val resultTwo = registerForResult<Boolean> { ... }
+
+            // ...
+            resultTwo.open(SomeNavigationKey( ... ))
+        </code>
+
+        It's important in this case that resultTwo can be identified as the channel to deliver the
+        result into, and this identification needs to be stable across application process death.
+        The simple solution would be to require users to provide a name for the channel:
+        <code>
+            val resultTwo = registerForResult<Boolean>("resultTwo") { ... }
+        </code>
+
+        but using the anonymous class name is a nicer way to do things for now, with the ability to
+        fall back to explicit identification of the channels in the case that the Kotlin/JVM behaviour
+        changes in the future. 
+     */
     internal val id = ResultChannelId(
         ownerId = navigationHandle.id,
         resultId = onResult::class.java.name
