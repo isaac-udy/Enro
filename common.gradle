@@ -12,9 +12,6 @@ if(privatePropertiesFile.exists()) {
 else {
     privateProperties.setProperty("githubUser", System.getenv("PUBLISH_GITHUB_USER") ?: "MISSING")
     privateProperties.setProperty("githubToken", System.getenv("PUBLISH_GITHUB_TOKEN") ?: "MISSING")
-
-    privateProperties.setProperty("bintrayUser", System.getenv("PUBLISH_BINTRAY_USER") ?: "MISSING")
-    privateProperties.setProperty("bintrayToken", System.getenv("PUBLISH_BINTRAY_TOKEN") ?: "MISSING")
 }
 
 ext.androidLibrary = {
@@ -62,13 +59,25 @@ ext.androidLibrary = {
 
 ext.publishAndroidModule = { String groupName, String moduleName ->
     apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    ext["signing.keyId"] = privateProperties['signingKeyId']
+    ext["signing.password"] = privateProperties['signingKeyPassword']
+    ext["signing.secretKeyRingFile"] = privateProperties['signingKeyLocation']
 
     task androidSourcesJar(type: Jar) {
         archiveClassifier.set('sources')
         from android.sourceSets.main.java.srcDirs
     }
 
+    artifacts {
+        archives androidSourcesJar
+    }
+
     afterEvaluate {
+        group = groupName
+        version = versionName
+
         publishing {
             publications {
                 release(MavenPublication) {
@@ -80,17 +89,40 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
 
                     artifact androidSourcesJar
 
-                    pom.withXml {
-                        def dependenciesNode = asNode().getAt('dependencies')[0] ?: asNode().appendNode('dependencies')
+                    pom {
+                        name = moduleName
+                        description = ""
+                        url = "https://github.com/isaac-udy/Enro"
+                        licenses {
+                            license {
+                                name = 'Enro License'
+                                url = 'https://github.com/isaac-udy/Enro/blob/main/LICENSE'
+                            }
+                        }
+                        developers {
+                            developer {
+                                id = 'isaac.udy'
+                                name = 'Isaac Udy'
+                                email = 'isaac.udy@gmail.com'
+                            }
+                        }
+                        scm {
+                            connection = 'scm:git:github.com/isaac-udy/Enro.git'
+                            developerConnection = 'scm:git:ssh://github.com/isaac-udy/Enro.git'
+                            url = 'https://github.com/isaac-udy/Enro/tree/main'
+                        }
+                        withXml {
+                            def dependenciesNode = asNode().getAt('dependencies')[0] ?: asNode().appendNode('dependencies')
 
-                        // Iterate over the implementation dependencies (we don't want the test ones), adding a <dependency> node for each
-                        configurations.implementation.allDependencies.each {
-                            // Ensure dependencies such as fileTree are not included.
-                            if (it.name != 'unspecified') {
-                                def dependencyNode = dependenciesNode.appendNode('dependency')
-                                dependencyNode.appendNode('groupId', it.group)
-                                dependencyNode.appendNode('artifactId', it.name)
-                                dependencyNode.appendNode('version', it.version)
+                            // Iterate over the implementation dependencies (we don't want the test ones), adding a <dependency> node for each
+                            configurations.implementation.allDependencies.each {
+                                // Ensure dependencies such as fileTree are not included.
+                                if (it.name != 'unspecified') {
+                                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                                    dependencyNode.appendNode('groupId', it.group)
+                                    dependencyNode.appendNode('artifactId', it.name)
+                                    dependencyNode.appendNode('version', it.version)
+                                }
                             }
                         }
                     }
@@ -106,16 +138,24 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
                         password = privateProperties['githubToken']
                     }
                 }
+            }
 
+            repositories {
                 maven {
-                    name = "bintray"
-                    url = uri("https://api.bintray.com/maven/isaac-udy/Enro/$moduleName/;publish=1;override=1")
+                    // This is an arbitrary name, you may also use "mavencentral" or
+                    // any other name that's descriptive for you
+                    name = "sonatype"
+                    url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                     credentials {
-                        username = privateProperties["bintrayUser"]
-                        password = privateProperties["bintrayToken"]
+                        username privateProperties['sonatypeUser']
+                        password privateProperties['sonatypePassword']
                     }
                 }
             }
+        }
+
+        signing {
+            sign publishing.publications
         }
     }
 
@@ -125,18 +165,33 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
 
         tasks.findByName("publish")
                 .dependsOn("publishToMavenLocal")
+
+        tasks.findByName("publishAllPublicationsToSonatypeRepository")
+                .dependsOn("publishToMavenLocal")
     }
 }
 
 ext.publishJavaModule = { String groupName, String moduleName ->
     apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    ext["signing.keyId"] = privateProperties['signingKeyId']
+    ext["signing.password"] = privateProperties['signingKeyPassword']
+    ext["signing.secretKeyRingFile"] = privateProperties['signingKeyLocation']
 
     task sourcesJar(type: Jar) {
         archiveClassifier.set('sources')
         from sourceSets.main.java.srcDirs
     }
 
+    artifacts {
+        archives sourcesJar
+    }
+
     afterEvaluate {
+        group = groupName
+        version = versionName
+
         publishing {
             publications {
                 jar(MavenPublication) {
@@ -147,6 +202,30 @@ ext.publishJavaModule = { String groupName, String moduleName ->
                     version versionName
 
                     artifact sourcesJar
+
+                    pom {
+                        name = moduleName
+                        description = ""
+                        url = "https://github.com/isaac-udy/Enro"
+                        licenses {
+                            license {
+                                name = 'Enro License'
+                                url = 'https://github.com/isaac-udy/Enro/blob/main/LICENSE'
+                            }
+                        }
+                        developers {
+                            developer {
+                                id = 'isaac.udy'
+                                name = 'Isaac Udy'
+                                email = 'isaac.udy@gmail.com'
+                            }
+                        }
+                        scm {
+                            connection = 'scm:git:github.com/isaac-udy/Enro.git'
+                            developerConnection = 'scm:git:ssh://github.com/isaac-udy/Enro.git'
+                            url = 'https://github.com/isaac-udy/Enro/tree/main'
+                        }
+                    }
                 }
             }
 
@@ -159,22 +238,32 @@ ext.publishJavaModule = { String groupName, String moduleName ->
                         password = privateProperties['githubToken']
                     }
                 }
-
+            }
+            repositories {
                 maven {
-                    name = "bintray"
-                    url = uri("https://api.bintray.com/maven/isaac-udy/Enro/$moduleName/;publish=1;override=1")
+                    // This is an arbitrary name, you may also use "mavencentral" or
+                    // any other name that's descriptive for you
+                    name = "sonatype"
+                    url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                     credentials {
-                        username = privateProperties["bintrayUser"]
-                        password = privateProperties["bintrayToken"]
+                        username privateProperties['sonatypeUser']
+                        password privateProperties['sonatypePassword']
                     }
                 }
             }
+        }
+
+        signing {
+            sign publishing.publications
         }
     }
 
     afterEvaluate {
         tasks.findByName("publishToMavenLocal")
                 .dependsOn("assemble")
+
+        tasks.findByName("publishAllPublicationsToSonatypeRepository")
+                .dependsOn("publishToMavenLocal")
 
         tasks.findByName("publish")
                 .dependsOn("publishToMavenLocal")

@@ -1,21 +1,21 @@
 androidLibrary()
 apply plugin: "kotlin-kapt"
-publishAndroidModule("nav.enro", "enro")
+publishAndroidModule("dev.enro", "enro")
 
 dependencies {
-    releaseApi "nav.enro:enro-core:$versionName"
+    releaseApi "dev.enro:enro-core:$versionName"
     debugApi project(":enro-core")
 
-    releaseApi "nav.enro:enro-viewmodel:$versionName"
+    releaseApi "dev.enro:enro-viewmodel:$versionName"
     debugApi project(":enro-viewmodel")
 
-    releaseApi "nav.enro:enro-masterdetail:$versionName"
+    releaseApi "dev.enro:enro-masterdetail:$versionName"
     debugApi project(":enro-masterdetail")
 
-    releaseApi "nav.enro:enro-multistack:$versionName"
+    releaseApi "dev.enro:enro-multistack:$versionName"
     debugApi project(":enro-multistack")
 
-    releaseApi "nav.enro:enro-annotations:$versionName"
+    releaseApi "dev.enro:enro-annotations:$versionName"
     debugApi project(":enro-annotations")
 
     kaptAndroidTest project(":enro-processor")
