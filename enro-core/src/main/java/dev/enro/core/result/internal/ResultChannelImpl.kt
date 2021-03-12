@@ -1,6 +1,5 @@
 package dev.enro.core.result.internal
 
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.Lifecycle
@@ -57,12 +56,11 @@ class ResultChannelImpl<T> internal constructor(
 
     override fun open(key: NavigationKey.WithResult<T>) {
         navigationHandle.executeInstruction(
-            NavigationInstruction.Forward(
-                navigationKey = key,
-                additionalData = Bundle().apply {
+            NavigationInstruction.Forward(key).apply {
+                additionalData.apply {
                     putParcelable(EXTRA_RESULT_CHANNEL_ID, id)
                 }
-            )
+            }
         )
     }
 

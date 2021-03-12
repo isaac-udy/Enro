@@ -44,37 +44,31 @@ sealed class NavigationInstruction {
         @Suppress("FunctionName")
         fun Forward(
             navigationKey: NavigationKey,
-            children: List<NavigationKey> = emptyList(),
-            additionalData: Bundle = Bundle(),
+            children: List<NavigationKey> = emptyList()
         ): Open = Open.OpenInternal(
             navigationDirection = NavigationDirection.FORWARD,
             navigationKey = navigationKey,
-            children = children,
-            additionalData = additionalData
+            children = children
         )
 
         @Suppress("FunctionName")
         fun Replace(
             navigationKey: NavigationKey,
-            children: List<NavigationKey> = emptyList(),
-            additionalData: Bundle = Bundle(),
+            children: List<NavigationKey> = emptyList()
         ): Open = Open.OpenInternal(
             navigationDirection = NavigationDirection.REPLACE,
             navigationKey = navigationKey,
-            children = children,
-            additionalData = additionalData
+            children = children
         )
 
         @Suppress("FunctionName")
         fun ReplaceRoot(
             navigationKey: NavigationKey,
-            children: List<NavigationKey> = emptyList(),
-            additionalData: Bundle = Bundle(),
+            children: List<NavigationKey> = emptyList()
         ): Open = Open.OpenInternal(
             navigationDirection = NavigationDirection.REPLACE_ROOT,
             navigationKey = navigationKey,
-            children = children,
-            additionalData = additionalData
+            children = children
         )
     }
 }
