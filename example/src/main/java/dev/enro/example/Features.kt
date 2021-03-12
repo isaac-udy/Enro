@@ -11,10 +11,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.forward
+import dev.enro.core.navigationHandle
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_features.*
-import dev.enro.annotations.NavigationDestination
-import dev.enro.core.*
 
 
 @Parcelize
@@ -94,7 +97,7 @@ val features = listOf(
                 
                 Click the 'Launch' button to try this out.
             """.trimIndent(),
-            positiveActionInstruction = NavigationInstruction.Open(NavigationDirection.FORWARD, ResultExampleKey())
+            positiveActionInstruction = NavigationInstruction.Forward(ResultExampleKey())
         )
     ),
     FeatureDescription(
@@ -110,8 +113,7 @@ val features = listOf(
                 Click the 'Launch' button to open a deeplink with the following stack:
                 "Deeplink 1 -> Deeplink 2 -> Deeplink 3"
             """.trimIndent(),
-            positiveActionInstruction = NavigationInstruction.Open(
-                navigationDirection = NavigationDirection.FORWARD,
+            positiveActionInstruction = NavigationInstruction.Forward(
                 navigationKey = SimpleExampleKey("Deeplink 1", "Features", listOf("Features")),
                 children = listOf(
                     SimpleExampleKey("Deeplink 2", "Deeplink 1", listOf("Features", "Deeplink 1")),

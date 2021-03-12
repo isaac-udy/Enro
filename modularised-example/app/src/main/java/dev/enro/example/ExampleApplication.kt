@@ -9,6 +9,7 @@ import dev.enro.core.controller.navigationController
 import dev.enro.core.plugins.EnroHilt
 import dev.enro.core.plugins.EnroLogger
 import dev.enro.example.core.data.UserRepository
+import dev.enro.example.R
 
 @NavigationComponent
 @HiltAndroidApp

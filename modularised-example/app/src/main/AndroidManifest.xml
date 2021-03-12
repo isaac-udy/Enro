@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="nav.enro.example">
+    package="dev.enro.example">
 
     <application
         android:name=".ExampleApplication"
@@ -10,13 +10,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name="nav.enro.example.MainActivity">
+        <activity android:name="dev.enro.example.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="nav.enro.example.login.LoginActivity"/>
+        <activity android:name="dev.enro.example.login.LoginActivity"/>
         <activity android:name=".dashboard.DashboardActivity" />
         <activity android:name=".detail.DetailActivity" />
         <activity android:name=".search.SearchActivity" />
