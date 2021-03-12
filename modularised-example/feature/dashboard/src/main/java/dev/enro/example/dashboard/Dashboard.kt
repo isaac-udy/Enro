@@ -6,15 +6,16 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.observe
-import kotlinx.android.synthetic.main.dashboard.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.close
 import dev.enro.core.forward
+import dev.enro.core.result.registerForNavigationResult
+import dev.enro.example.core.base.SingleStateViewModel
 import dev.enro.example.core.data.SimpleDataRepository
 import dev.enro.example.core.navigation.*
-import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
+import kotlinx.android.synthetic.main.dashboard.*
 
 @NavigationDestination(DashboardKey::class)
 class DashboardActivity : AppCompatActivity() {
@@ -74,7 +75,7 @@ data class DashboardState(
 
 class DashboardViewModel(
 
-) : nav.enro.example.core.base.SingleStateViewModel<DashboardState>() {
+) : SingleStateViewModel<DashboardState>() {
 
     private val repo = SimpleDataRepository()
 

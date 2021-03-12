@@ -13,7 +13,7 @@ enum class NavigationDirection {
     REPLACE_ROOT
 }
 
-internal const val OPEN_ARG = "nav.enro.core.OPEN_ARG"
+internal const val OPEN_ARG = "dev.enro.core.OPEN_ARG"
 
 sealed class NavigationInstruction {
     sealed class Open : NavigationInstruction(), Parcelable {

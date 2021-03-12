@@ -15,7 +15,7 @@ import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
 import java.util.*
 
-internal const val CONTEXT_ID_ARG = "nav.enro.core.ContextController.CONTEXT_ID"
+internal const val CONTEXT_ID_ARG = "dev.enro.core.ContextController.CONTEXT_ID"
 
 internal class NavigationLifecycleController(
     private val executorContainer: ExecutorContainer,

@@ -1,7 +1,7 @@
 package dev.enro.example.core.navigation
 
-import kotlinx.android.parcel.Parcelize
 import dev.enro.core.NavigationKey
+import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 object LaunchKey: NavigationKey
@@ -13,14 +13,14 @@ data class DashboardKey(val userId: String) : NavigationKey
 data class DetailKey(
     val userId: String,
     val id: String
-) : ResultNavigationKey<Boolean>
+) : NavigationKey.WithResult<Boolean>
 
 enum class ListFilterType { ALL, MY_PUBLIC, MY_PRIVATE, ALL_PUBLIC, NOT_MY_PUBLIC }
 @Parcelize
 data class ListKey(
     val userId: String,
     val filter: ListFilterType
-) : ResultNavigationKey<Boolean>
+) : NavigationKey.WithResult<Boolean>
 
 @Parcelize
 class LoginKey : NavigationKey

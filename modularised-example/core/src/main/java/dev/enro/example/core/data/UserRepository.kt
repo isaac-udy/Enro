@@ -28,7 +28,7 @@ class UserRepository private constructor(private val application: Application) {
             instance = UserRepository(application)
         }
 
-        private const val USER_PREFERENCES = "nav.enro.example.core.data.USER_PREFERENCES"
-        private const val KEY_USER_NAME = "nav.enro.example.core.data.USER_PREFERENCES"
+        private const val USER_PREFERENCES = "dev.enro.example.core.data.USER_PREFERENCES"
+        private const val KEY_USER_NAME = "dev.enro.example.core.data.USER_PREFERENCES"
     }
 }

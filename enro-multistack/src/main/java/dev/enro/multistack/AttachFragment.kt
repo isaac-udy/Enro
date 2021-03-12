@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import kotlin.reflect.KClass
 
-internal const val MULTISTACK_CONTROLLER_TAG = "nav.enro.multistack.MULTISTACK_CONTROLLER_TAG"
+internal const val MULTISTACK_CONTROLLER_TAG = "dev.enro.multistack.MULTISTACK_CONTROLLER_TAG"
 
 @PublishedApi
 internal class AttachFragment<T : FragmentActivity>(

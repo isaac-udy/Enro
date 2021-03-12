@@ -10,9 +10,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.fragment_request_string.*
-import kotlinx.android.synthetic.main.fragment_result_example.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
@@ -20,6 +17,9 @@ import dev.enro.core.result.closeWithResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.synthetic.main.fragment_request_string.*
+import kotlinx.android.synthetic.main.fragment_result_example.*
 
 @Parcelize
 class ResultExampleKey : NavigationKey
@@ -69,7 +69,7 @@ class RequestExampleViewModel() : ViewModel() {
 }
 
 @Parcelize
-class RequestStringKey : ResultNavigationKey<String>
+class RequestStringKey : NavigationKey.WithResult<String>
 
 @NavigationDestination(RequestStringKey::class)
 class RequestStringFragment : Fragment() {
