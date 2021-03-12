@@ -31,8 +31,6 @@ jobs:
         env:
           PUBLISH_GITHUB_USER: ${{ secrets.PUBLISH_GITHUB_USER }}
           PUBLISH_GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
-          PUBLISH_BINTRAY_USER: ${{ secrets.PUBLISH_BINTRAY_USER }}
-          PUBLISH_BINTRAY_TOKEN: ${{ secrets.PUBLISH_BINTRAY_TOKEN }}
         run: ./gradlew publish
 
       - name: Update Repo

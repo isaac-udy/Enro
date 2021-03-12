@@ -20,8 +20,8 @@ A simple navigation library for Android
 Enro is published to [JCenter](https://bintray.com/beta/#/isaac-udy/Enro/enro-core?tab=overview). Make sure your project includes the `jcenter()` repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
-    implementation "nav.enro:enro:1.2.6"
-    kapt "nav.enro:enro-processor:1.2.6"
+    implementation "dev.enro:enro:1.2.6"
+    kapt "dev.enro:enro-processor:1.2.6"
 }
 ```
 <details>
@@ -126,12 +126,12 @@ When an Activity executes a navigation instruction that resolves to a Fragment, 
 2. The Activity's navigation **does not** define a fragment host that acccepts the Fragment's type, in which case, the Fragment will be opened into a new, full screen Activity. 
 
 #### How do I deal with Activity results? 
-Enro supports any NavigationKey/NavigationDestination providing a result. Instead of implementing the NavigationKey interface on the NavigationKey that provides the result, implement ResultNavigationKey<T> where T is the type of the result. Once you're ready to navigate to that NavigationKey and consume a result, you'll want to call "registerForNavigationResult" in your Fragment/Activity/ViewModel. This API is very similar to the AndroidX Activity 1.2.0 ActivityResultLauncher. 
+Enro supports any NavigationKey/NavigationDestination providing a result. Instead of implementing the NavigationKey interface on the NavigationKey that provides the result, implement NavigationKey.WithResult<T> where T is the type of the result. Once you're ready to navigate to that NavigationKey and consume a result, you'll want to call "registerForNavigationResult" in your Fragment/Activity/ViewModel. This API is very similar to the AndroidX Activity 1.2.0 ActivityResultLauncher.
 
 Example:
 ```kotlin
 @Parcelize
-class RequestDataKey(...) : ResultNavigationKey<Boolean>()
+class RequestDataKey(...) : NavigationKey.WithResult<Boolean>()
 
 @NavigationDestination(RequestDataKey::class)
 class MyResultActivity : AppCompatActivity() {

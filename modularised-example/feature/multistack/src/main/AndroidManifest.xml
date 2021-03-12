@@ -1,3 +1,3 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="nav.enro.example.multistack">
+    package="dev.enro.example.multistack">
 </manifest>

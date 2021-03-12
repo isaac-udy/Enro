@@ -1,7 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: 'kotlin-kapt'
-publishJavaModule("nav.enro", "enro-annotations")
+publishJavaModule("dev.enro", "enro-annotations")
 
 dependencies {
     api "javax.annotation:jsr250-api:1.0"

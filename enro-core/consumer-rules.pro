@@ -1,2 +1,2 @@
--keep class * extends nav.enro.core.controller.NavigationComponentBuilderCommand
--keep class * extends nav.enro.core.NavigationKey
+-keep class * extends dev.enro.core.controller.NavigationComponentBuilderCommand
+-keep class * extends dev.enro.core.NavigationKey
