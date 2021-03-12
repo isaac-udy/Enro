@@ -7,7 +7,7 @@ import nav.enro.core.result.internal.PendingResult
 import nav.enro.core.result.internal.ResultChannelId
 import nav.enro.core.result.internal.ResultChannelImpl
 
-class EnroResult: EnroPlugin() {
+internal class EnroResult: EnroPlugin() {
     private val channels = mutableMapOf<ResultChannelId, ResultChannelImpl<*>>()
     private val pendingResults = mutableMapOf<ResultChannelId, PendingResult>()
 
