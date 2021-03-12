@@ -161,8 +161,10 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
             }
         }
 
-        signing {
-            sign publishing.publications
+        if(privateProperties['signingKeyId'] != "MISSING") {
+            signing {
+                sign publishing.publications
+            }
         }
     }
 
@@ -260,8 +262,10 @@ ext.publishJavaModule = { String groupName, String moduleName ->
             }
         }
 
-        signing {
-            sign publishing.publications
+        if(privateProperties['signingKeyId'] != "MISSING") {
+            signing {
+                sign publishing.publications
+            }
         }
     }
 
