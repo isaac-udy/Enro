@@ -17,29 +17,19 @@ A simple navigation library for Android
 
 ## Using Enro
 #### Gradle
-Enro is published to [JCenter](https://bintray.com/beta/#/isaac-udy/Enro/enro-core?tab=overview). Make sure your project includes the `jcenter()` repository, and then include the following in your module's build.gradle: 
+Enro is published to [Maven Central](https://search.maven.org/). Make sure your project includes the `mavenCentral()` repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
-    implementation "dev.enro:enro:1.2.6"
-    kapt "dev.enro:enro-processor:1.2.6"
+    implementation "dev.enro:enro:1.3.0"
+    kapt "dev.enro:enro-processor:1.3.0"
 }
 ```
 <details>
-<summary>Dependency not resolving?</summary>
+<summary>Information on migration from JCenter and versions of Enro before 1.3.0</summary>
 <p>
+Enro was previously published on JCenter, under the group name `nav.enro`. With the move to Maven Central, the group name has been changed to `dev.enro`, and the packages within the project have been updated to reflect this. 
 
-In the past, there have been issues with one of Enro's modules not resolving correctly via JCenter. If you have any issues with dependencies, simply add the following to your top level build.gradle file:
-
-```gradle
-allprojects {
-    repositories {
-        ... 
-        maven {
-            url  "https://dl.bintray.com/isaac-udy/Enro" 
-        }
-    }
-}
-```
+If you require older versions of Enro, these remain available on Github Packages. 
 </p>
 </details>
 
@@ -96,8 +86,7 @@ Enro is designed to integrate well with Android's default navigation. It's easy 
 
 Example:
 ```kotlin
-val instruction = NavigationInstruction.Open(
-    navigationDirection = NavigationDirection.Open,
+val instruction = NavigationInstruction.Forward(
     navigationKey = MyNavigationKey(...)
 )
 val intent = Intent(this, MyActivity::class).addOpenInstruction(instruction)
