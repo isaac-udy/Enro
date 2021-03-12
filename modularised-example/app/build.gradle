@@ -8,7 +8,7 @@ android {
     compileSdkVersion 29
 
     defaultConfig {
-        applicationId "dev.enro.example"
+        applicationId "dev.enro.example.modularised"
         minSdkVersion 16
         targetSdkVersion 29
         versionCode 1

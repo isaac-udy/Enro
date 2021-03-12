@@ -1,4 +1,4 @@
-package dev.enro.example
+package dev.enro.example.modularised
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -8,16 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.parcel.Parcelize
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.NavigationContext
-import dev.enro.core.activity
 import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.example.core.data.UserRepository
 import dev.enro.example.core.navigation.DashboardKey
 import dev.enro.example.core.navigation.LaunchKey
 import dev.enro.example.core.navigation.LoginKey
+import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 class MainKey : NavigationKey
