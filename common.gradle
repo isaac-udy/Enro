@@ -6,10 +6,9 @@ ext.versionName = versionProperties.getProperty("versionName")
 
 def privateProperties = new Properties()
 def privatePropertiesFile = rootProject.file("private.properties")
-if(privatePropertiesFile.exists()) {
+if (privatePropertiesFile.exists()) {
     privateProperties.load(new FileInputStream(rootProject.file("private.properties")))
-}
-else {
+} else {
     privateProperties.setProperty("githubUser", System.getenv("PUBLISH_GITHUB_USER") ?: "MISSING")
     privateProperties.setProperty("githubToken", System.getenv("PUBLISH_GITHUB_TOKEN") ?: "MISSING")
 
@@ -98,7 +97,7 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
 
                     pom {
                         name = moduleName
-                        description = ""
+                        description = "A component of Enro, a small navigation library for Android"
                         url = "https://github.com/isaac-udy/Enro"
                         licenses {
                             license {
@@ -161,7 +160,7 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
             }
         }
 
-        if(privateProperties['signingKeyId'] != "MISSING") {
+        if (privateProperties['signingKeyId'] != "MISSING") {
             signing {
                 sign publishing.publications
             }
@@ -188,13 +187,28 @@ ext.publishJavaModule = { String groupName, String moduleName ->
     ext["signing.password"] = privateProperties['signingKeyPassword']
     ext["signing.secretKeyRingFile"] = privateProperties['signingKeyLocation']
 
+    javadoc {
+        source = sourceSets.main.allJava
+        classpath = configurations.compileClasspath
+        options {
+            setMemberLevel JavadocMemberLevel.PUBLIC
+            setAuthor true
+            links "https://docs.oracle.com/javase/8/docs/api/"
+        }
+    }
     task sourcesJar(type: Jar) {
         archiveClassifier.set('sources')
         from sourceSets.main.java.srcDirs
     }
 
+    task javadocJar(type: Jar) {
+        archiveClassifier.set('javadoc')
+        from javadoc
+    }
+
     artifacts {
         archives sourcesJar
+        archives javadocJar
     }
 
     afterEvaluate {
@@ -211,10 +225,11 @@ ext.publishJavaModule = { String groupName, String moduleName ->
                     version versionName
 
                     artifact sourcesJar
+                    artifact javadocJar
 
                     pom {
                         name = moduleName
-                        description = ""
+                        description = "A component of Enro, a small navigation library for Android"
                         url = "https://github.com/isaac-udy/Enro"
                         licenses {
                             license {
@@ -262,7 +277,7 @@ ext.publishJavaModule = { String groupName, String moduleName ->
             }
         }
 
-        if(privateProperties['signingKeyId'] != "MISSING") {
+        if (privateProperties['signingKeyId'] != "MISSING") {
             signing {
                 sign publishing.publications
             }
