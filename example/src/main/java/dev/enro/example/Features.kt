@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_features.*
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.*
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.*
 
 
 @Parcelize

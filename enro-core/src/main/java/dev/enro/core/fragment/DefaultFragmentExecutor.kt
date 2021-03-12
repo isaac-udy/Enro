@@ -6,10 +6,10 @@ import android.os.Looper
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.*
-import nav.enro.core.*
-import nav.enro.core.fragment.internal.AbstractSingleFragmentActivity
-import nav.enro.core.fragment.internal.SingleFragmentKey
-import nav.enro.core.fragment.internal.fragmentHostFor
+import dev.enro.core.*
+import dev.enro.core.fragment.internal.AbstractSingleFragmentActivity
+import dev.enro.core.fragment.internal.SingleFragmentKey
+import dev.enro.core.fragment.internal.fragmentHostFor
 
 object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey>(
     fromType = Any::class,

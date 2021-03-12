@@ -1,11 +1,11 @@
 package dev.enro.example
 
 import android.app.Application
-import nav.enro.annotations.NavigationComponent
-import nav.enro.core.*
-import nav.enro.core.controller.NavigationApplication
-import nav.enro.core.controller.navigationController
-import nav.enro.core.plugins.EnroLogger
+import dev.enro.annotations.NavigationComponent
+import dev.enro.core.*
+import dev.enro.core.controller.NavigationApplication
+import dev.enro.core.controller.navigationController
+import dev.enro.core.plugins.EnroLogger
 
 @NavigationComponent
 class ExampleApplication : Application(), NavigationApplication {

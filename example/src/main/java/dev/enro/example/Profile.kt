@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import kotlinx.android.parcel.Parcelize
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationKey
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationKey
 
 @Parcelize
 class Profile : NavigationKey

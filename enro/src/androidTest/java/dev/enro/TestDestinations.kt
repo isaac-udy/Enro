@@ -1,9 +1,9 @@
 package dev.enro
 import android.R
 import kotlinx.android.parcel.Parcelize
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationKey
-import nav.enro.core.navigationHandle
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationKey
+import dev.enro.core.navigationHandle
 
 @Parcelize
 data class DefaultActivityKey(val id: String) : NavigationKey

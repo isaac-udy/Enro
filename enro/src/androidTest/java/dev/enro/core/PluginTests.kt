@@ -3,11 +3,11 @@ package dev.enro.core
 import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertEquals
 import kotlinx.android.parcel.Parcelize
-import nav.enro.TestActivity
-import nav.enro.TestFragment
-import nav.enro.TestPlugin
-import nav.enro.annotations.NavigationDestination
-import nav.enro.expectContext
+import dev.enro.TestActivity
+import dev.enro.TestFragment
+import dev.enro.TestPlugin
+import dev.enro.annotations.NavigationDestination
+import dev.enro.expectContext
 import org.junit.Test
 import java.util.*
 

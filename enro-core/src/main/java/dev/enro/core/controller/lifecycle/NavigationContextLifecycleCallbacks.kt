@@ -12,7 +12,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import nav.enro.core.*
+import dev.enro.core.*
 
 internal class NavigationContextLifecycleCallbacks (
     private val lifecycleController: NavigationLifecycleController

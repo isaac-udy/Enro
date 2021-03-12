@@ -4,7 +4,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
-import nav.enro.core.internal.handle.getNavigationHandleViewModel
+import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.lang.ref.WeakReference
 import kotlin.collections.set
 import kotlin.properties.ReadOnlyProperty

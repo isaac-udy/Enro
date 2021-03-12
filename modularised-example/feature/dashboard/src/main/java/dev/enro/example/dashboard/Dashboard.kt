@@ -7,14 +7,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.observe
 import kotlinx.android.synthetic.main.dashboard.*
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.close
-import nav.enro.core.forward
-import nav.enro.example.core.data.SimpleDataRepository
-import nav.enro.example.core.navigation.*
-import nav.enro.core.result.registerForNavigationResult
-import nav.enro.viewmodel.enroViewModels
-import nav.enro.viewmodel.navigationHandle
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.close
+import dev.enro.core.forward
+import dev.enro.example.core.data.SimpleDataRepository
+import dev.enro.example.core.navigation.*
+import dev.enro.core.result.registerForNavigationResult
+import dev.enro.viewmodel.enroViewModels
+import dev.enro.viewmodel.navigationHandle
 
 @NavigationDestination(DashboardKey::class)
 class DashboardActivity : AppCompatActivity() {

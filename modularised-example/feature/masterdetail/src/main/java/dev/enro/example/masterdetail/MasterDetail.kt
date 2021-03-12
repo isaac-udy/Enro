@@ -3,13 +3,13 @@ package dev.enro.example.masterdetail
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.getNavigationHandle
-import nav.enro.core.navigationHandle
-import nav.enro.example.core.navigation.DetailKey
-import nav.enro.example.core.navigation.ListKey
-import nav.enro.example.core.navigation.MasterDetailKey
-import nav.enro.masterdetail.MasterDetailProperty
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.navigationHandle
+import dev.enro.example.core.navigation.DetailKey
+import dev.enro.example.core.navigation.ListKey
+import dev.enro.example.core.navigation.MasterDetailKey
+import dev.enro.masterdetail.MasterDetailProperty
 
 @AndroidEntryPoint
 @NavigationDestination(MasterDetailKey::class)

@@ -5,10 +5,10 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import nav.enro.core.NavigationContext
-import nav.enro.core.NavigationKey
-import nav.enro.core.getNavigationHandleViewModel
-import nav.enro.core.parentContext
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationKey
+import dev.enro.core.getNavigationHandleViewModel
+import dev.enro.core.parentContext
 
 internal class FragmentHost(
     internal val containerId: Int,

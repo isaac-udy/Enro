@@ -13,8 +13,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_example_dialog.*
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.*
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.*
 
 @Parcelize
 class ExampleDialogKey(val number: Int = 1) : NavigationKey

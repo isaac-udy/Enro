@@ -6,13 +6,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
-import nav.enro.core.*
-import nav.enro.core.controller.NavigationApplication
-import nav.enro.core.controller.container.ExecutorContainer
-import nav.enro.core.controller.container.PluginContainer
-import nav.enro.core.internal.NoNavigationKey
-import nav.enro.core.internal.handle.NavigationHandleViewModel
-import nav.enro.core.internal.handle.createNavigationHandleViewModel
+import dev.enro.core.*
+import dev.enro.core.controller.NavigationApplication
+import dev.enro.core.controller.container.ExecutorContainer
+import dev.enro.core.controller.container.PluginContainer
+import dev.enro.core.internal.NoNavigationKey
+import dev.enro.core.internal.handle.NavigationHandleViewModel
+import dev.enro.core.internal.handle.createNavigationHandleViewModel
 import java.util.*
 
 internal const val CONTEXT_ID_ARG = "nav.enro.core.ContextController.CONTEXT_ID"

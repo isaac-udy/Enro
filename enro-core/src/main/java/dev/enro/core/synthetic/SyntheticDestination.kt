@@ -1,8 +1,8 @@
 package dev.enro.core.synthetic
 
-import nav.enro.core.NavigationInstruction
-import nav.enro.core.NavigationKey
-import nav.enro.core.NavigationContext
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.NavigationContext
 
 interface SyntheticDestination<T : NavigationKey> {
     fun process(

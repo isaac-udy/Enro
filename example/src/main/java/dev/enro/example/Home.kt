@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_home.*
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationKey
-import nav.enro.core.forward
-import nav.enro.core.getNavigationHandle
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationKey
+import dev.enro.core.forward
+import dev.enro.core.getNavigationHandle
 
 
 @Parcelize

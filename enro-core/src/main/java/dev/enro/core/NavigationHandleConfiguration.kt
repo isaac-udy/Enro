@@ -1,7 +1,7 @@
 package dev.enro.core
 
 import androidx.annotation.IdRes
-import nav.enro.core.internal.handle.NavigationHandleViewModel
+import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
 
 internal class ChildContainer(

@@ -1,6 +1,6 @@
 package dev.enro.viewmodel
 
-import nav.enro.core.NavigationHandle
+import dev.enro.core.NavigationHandle
 
 internal object EnroViewModelNavigationHandleProvider {
     private val navigationHandles = mutableMapOf<Class<*>, NavigationHandle>()

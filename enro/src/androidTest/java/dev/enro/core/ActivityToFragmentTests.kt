@@ -3,7 +3,7 @@ package dev.enro.core
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
 import junit.framework.TestCase.assertEquals
-import nav.enro.*
+import dev.enro.*
 import org.junit.Test
 import java.util.*
 

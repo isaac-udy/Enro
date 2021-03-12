@@ -13,7 +13,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
-import nav.enro.core.getNavigationHandle
+import dev.enro.core.getNavigationHandle
 
 abstract class TestActivity : AppCompatActivity() {
 

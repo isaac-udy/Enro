@@ -1,12 +1,12 @@
 package dev.enro.core.controller
 
 import android.app.Application
-import nav.enro.core.*
-import nav.enro.core.controller.container.ExecutorContainer
-import nav.enro.core.controller.container.NavigatorContainer
-import nav.enro.core.controller.container.PluginContainer
-import nav.enro.core.controller.interceptor.InstructionInterceptorController
-import nav.enro.core.controller.lifecycle.NavigationLifecycleController
+import dev.enro.core.*
+import dev.enro.core.controller.container.ExecutorContainer
+import dev.enro.core.controller.container.NavigatorContainer
+import dev.enro.core.controller.container.PluginContainer
+import dev.enro.core.controller.interceptor.InstructionInterceptorController
+import dev.enro.core.controller.lifecycle.NavigationLifecycleController
 import kotlin.reflect.KClass
 
 class NavigationController internal constructor(

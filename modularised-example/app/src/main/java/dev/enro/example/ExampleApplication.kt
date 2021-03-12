@@ -2,13 +2,13 @@ package dev.enro.example
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
-import nav.enro.annotations.NavigationComponent
-import nav.enro.core.AnimationPair
-import nav.enro.core.controller.NavigationApplication
-import nav.enro.core.controller.navigationController
-import nav.enro.core.plugins.EnroHilt
-import nav.enro.core.plugins.EnroLogger
-import nav.enro.example.core.data.UserRepository
+import dev.enro.annotations.NavigationComponent
+import dev.enro.core.AnimationPair
+import dev.enro.core.controller.NavigationApplication
+import dev.enro.core.controller.navigationController
+import dev.enro.core.plugins.EnroHilt
+import dev.enro.core.plugins.EnroLogger
+import dev.enro.example.core.data.UserRepository
 
 @NavigationComponent
 @HiltAndroidApp

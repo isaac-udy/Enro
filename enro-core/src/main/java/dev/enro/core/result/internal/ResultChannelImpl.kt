@@ -6,11 +6,11 @@ import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import nav.enro.core.NavigationHandle
-import nav.enro.core.NavigationInstruction
-import nav.enro.core.NavigationKey
-import nav.enro.core.result.EnroResult
-import nav.enro.core.result.EnroResultChannel
+import dev.enro.core.NavigationHandle
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.result.EnroResult
+import dev.enro.core.result.EnroResultChannel
 
 class ResultChannelImpl<T> internal constructor(
     private val navigationHandle: NavigationHandle,

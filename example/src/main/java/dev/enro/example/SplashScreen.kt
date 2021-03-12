@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.parcel.Parcelize
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.*
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.*
 
 @Parcelize
 class SplashScreenKey : NavigationKey

@@ -4,13 +4,13 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationInstruction
-import nav.enro.core.NavigationContext
-import nav.enro.core.activity
-import nav.enro.core.navigationHandle
-import nav.enro.core.synthetic.SyntheticDestination
-import nav.enro.example.core.navigation.LoginErrorKey
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationContext
+import dev.enro.core.activity
+import dev.enro.core.navigationHandle
+import dev.enro.core.synthetic.SyntheticDestination
+import dev.enro.example.core.navigation.LoginErrorKey
 
 class LoginErrorFragment : DialogFragment() {
 

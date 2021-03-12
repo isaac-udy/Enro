@@ -6,8 +6,8 @@ import android.os.Parcelable
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import kotlinx.android.parcel.Parcelize
-import nav.enro.core.controller.navigationController
-import nav.enro.core.internal.getAttributeResourceId
+import dev.enro.core.controller.navigationController
+import dev.enro.core.internal.getAttributeResourceId
 
 sealed class AnimationPair : Parcelable{
     abstract val enter: Int

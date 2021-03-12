@@ -3,7 +3,7 @@ package dev.enro.core
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.*
-import nav.enro.*
+import dev.enro.*
 import org.junit.Ignore
 import org.junit.Test
 

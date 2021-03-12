@@ -15,17 +15,17 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.scopes.ActivityRetainedScoped
-import nav.enro.annotations.NavigationDestination
-import nav.enro.example.core.base.SingleStateViewModel
-import nav.enro.example.core.data.SimpleData
-import nav.enro.example.core.data.SimpleDataRepository
-import nav.enro.example.core.navigation.DetailKey
-import nav.enro.example.core.navigation.ListFilterType
-import nav.enro.example.core.navigation.ListKey
-import nav.enro.core.result.closeWithResult
-import nav.enro.core.result.registerForNavigationResult
-import nav.enro.viewmodel.enroViewModels
-import nav.enro.viewmodel.navigationHandle
+import dev.enro.annotations.NavigationDestination
+import dev.enro.example.core.base.SingleStateViewModel
+import dev.enro.example.core.data.SimpleData
+import dev.enro.example.core.data.SimpleDataRepository
+import dev.enro.example.core.navigation.DetailKey
+import dev.enro.example.core.navigation.ListFilterType
+import dev.enro.example.core.navigation.ListKey
+import dev.enro.core.result.closeWithResult
+import dev.enro.core.result.registerForNavigationResult
+import dev.enro.viewmodel.enroViewModels
+import dev.enro.viewmodel.navigationHandle
 import javax.inject.Inject
 
 @ActivityRetainedScoped

@@ -5,18 +5,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.observe
 import kotlinx.android.synthetic.main.login.*
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationKey
-import nav.enro.core.forward
-import nav.enro.core.navigationHandle
-import nav.enro.core.replaceRoot
-import nav.enro.example.core.base.SingleStateViewModel
-import nav.enro.example.core.data.UserRepository
-import nav.enro.example.core.navigation.DashboardKey
-import nav.enro.example.core.navigation.LoginErrorKey
-import nav.enro.example.core.navigation.LoginKey
-import nav.enro.viewmodel.enroViewModels
-import nav.enro.viewmodel.navigationHandle
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationKey
+import dev.enro.core.forward
+import dev.enro.core.navigationHandle
+import dev.enro.core.replaceRoot
+import dev.enro.example.core.base.SingleStateViewModel
+import dev.enro.example.core.data.UserRepository
+import dev.enro.example.core.navigation.DashboardKey
+import dev.enro.example.core.navigation.LoginErrorKey
+import dev.enro.example.core.navigation.LoginKey
+import dev.enro.viewmodel.enroViewModels
+import dev.enro.viewmodel.navigationHandle
 
 @NavigationDestination(
     key = LoginKey::class

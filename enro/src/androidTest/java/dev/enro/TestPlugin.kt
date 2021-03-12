@@ -1,8 +1,8 @@
 package dev.enro
 
-import nav.enro.core.NavigationHandle
-import nav.enro.core.NavigationKey
-import nav.enro.core.plugins.EnroPlugin
+import dev.enro.core.NavigationHandle
+import dev.enro.core.NavigationKey
+import dev.enro.core.plugins.EnroPlugin
 
 object TestPlugin : EnroPlugin() {
     var activeKey: NavigationKey? = null

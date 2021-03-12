@@ -4,9 +4,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.parcel.Parcelize
-import nav.enro.core.NavigationInstruction
-import nav.enro.core.NavigationKey
-import nav.enro.core.navigationHandle
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.navigationHandle
 
 @Parcelize
 internal data class SingleFragmentKey(

@@ -2,13 +2,13 @@ package dev.enro.example
 
 import android.app.AlertDialog
 import kotlinx.android.parcel.Parcelize
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationInstruction
-import nav.enro.core.NavigationKey
-import nav.enro.core.NavigationContext
-import nav.enro.core.activity
-import nav.enro.core.getNavigationHandle
-import nav.enro.core.synthetic.SyntheticDestination
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.NavigationContext
+import dev.enro.core.activity
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.synthetic.SyntheticDestination
 
 @Parcelize
 data class SimpleMessage(

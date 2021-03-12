@@ -3,13 +3,13 @@ package dev.enro.core.result
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
-import nav.enro.core.NavigationHandle
-import nav.enro.core.NavigationKey
-import nav.enro.core.TypedNavigationHandle
-import nav.enro.core.close
-import nav.enro.core.result.internal.LazyResultChannelProperty
-import nav.enro.core.result.internal.PendingResult
-import nav.enro.core.result.internal.ResultChannelImpl
+import dev.enro.core.NavigationHandle
+import dev.enro.core.NavigationKey
+import dev.enro.core.TypedNavigationHandle
+import dev.enro.core.close
+import dev.enro.core.result.internal.LazyResultChannelProperty
+import dev.enro.core.result.internal.PendingResult
+import dev.enro.core.result.internal.ResultChannelImpl
 import kotlin.properties.ReadOnlyProperty
 
 

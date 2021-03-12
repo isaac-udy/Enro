@@ -1,9 +1,9 @@
 package dev.enro.core.controller.interceptor
 
-import nav.enro.core.NavigationContext
-import nav.enro.core.NavigationInstruction
-import nav.enro.core.NavigationKey
-import nav.enro.core.Navigator
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.Navigator
 
 interface NavigationInstructionInterceptor {
     fun intercept(

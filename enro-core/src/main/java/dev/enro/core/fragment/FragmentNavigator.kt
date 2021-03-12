@@ -1,8 +1,8 @@
 package dev.enro.core.fragment
 
 import androidx.fragment.app.Fragment
-import nav.enro.core.NavigationKey
-import nav.enro.core.Navigator
+import dev.enro.core.NavigationKey
+import dev.enro.core.Navigator
 import kotlin.reflect.KClass
 
 class FragmentNavigator<KeyType : NavigationKey, FragmentType: Fragment> @PublishedApi internal constructor(

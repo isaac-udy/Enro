@@ -1,9 +1,9 @@
 package dev.enro.core.controller.container
 
-import nav.enro.core.NavigationHandle
-import nav.enro.core.controller.NavigationController
-import nav.enro.core.plugins.EnroPlugin
-import nav.enro.core.result.EnroResult
+import dev.enro.core.NavigationHandle
+import dev.enro.core.controller.NavigationController
+import dev.enro.core.plugins.EnroPlugin
+import dev.enro.core.result.EnroResult
 
 internal class PluginContainer(
     plugins: List<EnroPlugin> = listOf()

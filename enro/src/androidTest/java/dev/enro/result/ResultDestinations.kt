@@ -2,12 +2,12 @@ package dev.enro.result
 
 import android.widget.TextView
 import kotlinx.android.parcel.Parcelize
-import nav.enro.TestActivity
-import nav.enro.TestFragment
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationKey
-import nav.enro.core.navigationHandle
-import nav.enro.core.result.registerForNavigationResult
+import dev.enro.TestActivity
+import dev.enro.TestFragment
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationKey
+import dev.enro.core.navigationHandle
+import dev.enro.core.result.registerForNavigationResult
 
 @Parcelize
 class ActivityResultKey : NavigationKey.WithResult<String>

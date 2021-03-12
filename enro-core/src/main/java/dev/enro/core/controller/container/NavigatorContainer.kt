@@ -1,14 +1,14 @@
 package dev.enro.core.controller.container
 
-import nav.enro.core.NavigationKey
-import nav.enro.core.Navigator
-import nav.enro.core.activity.createActivityNavigator
-import nav.enro.core.controller.NavigationController
-import nav.enro.core.fragment.internal.HiltSingleFragmentActivity
-import nav.enro.core.fragment.internal.SingleFragmentActivity
-import nav.enro.core.fragment.internal.SingleFragmentKey
-import nav.enro.core.internal.NoKeyNavigator
-import nav.enro.core.plugins.EnroHilt
+import dev.enro.core.NavigationKey
+import dev.enro.core.Navigator
+import dev.enro.core.activity.createActivityNavigator
+import dev.enro.core.controller.NavigationController
+import dev.enro.core.fragment.internal.HiltSingleFragmentActivity
+import dev.enro.core.fragment.internal.SingleFragmentActivity
+import dev.enro.core.fragment.internal.SingleFragmentKey
+import dev.enro.core.internal.NoKeyNavigator
+import dev.enro.core.plugins.EnroHilt
 import kotlin.reflect.KClass
 
 internal class NavigatorContainer (

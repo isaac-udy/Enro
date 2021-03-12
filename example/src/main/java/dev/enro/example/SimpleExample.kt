@@ -10,8 +10,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_simple_example.*
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.*
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.*
 
 @Parcelize
 data class SimpleExampleKey(

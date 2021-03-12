@@ -3,12 +3,12 @@ package dev.enro.result
 import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertFalse
-import nav.enro.DefaultActivity
-import nav.enro.DefaultActivityKey
-import nav.enro.core.*
-import nav.enro.core.result.closeWithResult
-import nav.enro.expectActivity
-import nav.enro.expectContext
+import dev.enro.DefaultActivity
+import dev.enro.DefaultActivityKey
+import dev.enro.core.*
+import dev.enro.core.result.closeWithResult
+import dev.enro.expectActivity
+import dev.enro.expectContext
 import org.junit.Test
 import java.util.*
 

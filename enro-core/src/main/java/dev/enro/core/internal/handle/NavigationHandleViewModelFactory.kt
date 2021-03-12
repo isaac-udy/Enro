@@ -7,8 +7,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import nav.enro.core.NavigationInstruction
-import nav.enro.core.controller.NavigationController
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.controller.NavigationController
 
 internal class NavigationHandleViewModelFactory(
     private val navigationController: NavigationController,

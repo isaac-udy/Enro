@@ -1,7 +1,7 @@
 package dev.enro.core.plugins
 
 import android.util.Log
-import nav.enro.core.NavigationHandle
+import dev.enro.core.NavigationHandle
 
 class EnroLogger : EnroPlugin() {
     override fun onOpened(navigationHandle: NavigationHandle) {

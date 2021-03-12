@@ -5,11 +5,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.activity_main.*
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.NavigationKey
-import nav.enro.core.navigationHandle
-import nav.enro.multistack.MultistackContainer
-import nav.enro.multistack.multistackController
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationKey
+import dev.enro.core.navigationHandle
+import dev.enro.multistack.MultistackContainer
+import dev.enro.multistack.multistackController
 
 @Parcelize
 class MainKey : NavigationKey

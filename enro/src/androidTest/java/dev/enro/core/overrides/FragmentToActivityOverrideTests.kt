@@ -3,9 +3,9 @@ package dev.enro.core.overrides
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertTrue
-import nav.enro.*
-import nav.enro.core.*
-import nav.enro.core.controller.navigationController
+import dev.enro.*
+import dev.enro.core.*
+import dev.enro.core.controller.navigationController
 import org.junit.Before
 import org.junit.Test
 

@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import nav.enro.annotations.NavigationDestination
-import nav.enro.core.navigationHandle
-import nav.enro.example.core.navigation.DetailKey
-import nav.enro.core.result.closeWithResult
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.navigationHandle
+import dev.enro.example.core.navigation.DetailKey
+import dev.enro.core.result.closeWithResult
 
 class DetailActivity : AppCompatActivity() {
     private val navigation by navigationHandle<DetailKey> {

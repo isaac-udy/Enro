@@ -3,7 +3,7 @@ package dev.enro.core
 import android.os.Bundle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
-import nav.enro.core.controller.NavigationController
+import dev.enro.core.controller.NavigationController
 import kotlin.reflect.KClass
 
 interface NavigationHandle : LifecycleOwner {

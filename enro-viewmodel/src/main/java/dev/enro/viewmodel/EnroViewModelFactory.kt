@@ -2,7 +2,7 @@ package dev.enro.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import nav.enro.core.NavigationHandle
+import dev.enro.core.NavigationHandle
 
 @PublishedApi
 internal class EnroViewModelFactory(

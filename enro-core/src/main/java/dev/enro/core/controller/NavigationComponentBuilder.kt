@@ -1,14 +1,14 @@
     package dev.enro.core.controller
 
-import nav.enro.core.*
-import nav.enro.core.controller.container.ExecutorContainer
-import nav.enro.core.controller.container.NavigatorContainer
-import nav.enro.core.controller.container.PluginContainer
-import nav.enro.core.controller.interceptor.InstructionInterceptorController
-import nav.enro.core.controller.interceptor.InstructionParentInterceptor
-import nav.enro.core.controller.lifecycle.NavigationLifecycleController
-import nav.enro.core.plugins.EnroHilt
-import nav.enro.core.plugins.EnroPlugin
+import dev.enro.core.*
+import dev.enro.core.controller.container.ExecutorContainer
+import dev.enro.core.controller.container.NavigatorContainer
+import dev.enro.core.controller.container.PluginContainer
+import dev.enro.core.controller.interceptor.InstructionInterceptorController
+import dev.enro.core.controller.interceptor.InstructionParentInterceptor
+import dev.enro.core.controller.lifecycle.NavigationLifecycleController
+import dev.enro.core.plugins.EnroHilt
+import dev.enro.core.plugins.EnroPlugin
 
 // TODO get rid of this, or give it a better name
 interface NavigationComponentBuilderCommand {

@@ -8,11 +8,11 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
-import nav.enro.core.activity.ActivityNavigator
-import nav.enro.core.controller.NavigationController
-import nav.enro.core.controller.navigationController
-import nav.enro.core.fragment.FragmentNavigator
-import nav.enro.core.internal.handle.NavigationHandleViewModel
+import dev.enro.core.activity.ActivityNavigator
+import dev.enro.core.controller.NavigationController
+import dev.enro.core.controller.navigationController
+import dev.enro.core.fragment.FragmentNavigator
+import dev.enro.core.internal.handle.NavigationHandleViewModel
 
 sealed class NavigationContext<ContextType : Any>(
     val contextReference: ContextType

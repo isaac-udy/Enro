@@ -5,8 +5,8 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
-import nav.enro.*
-import nav.enro.DefaultActivity
+import dev.enro.*
+import dev.enro.DefaultActivity
 import org.junit.Test
 import java.util.*
 
