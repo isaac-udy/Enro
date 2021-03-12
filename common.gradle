@@ -12,6 +12,13 @@ if(privatePropertiesFile.exists()) {
 else {
     privateProperties.setProperty("githubUser", System.getenv("PUBLISH_GITHUB_USER") ?: "MISSING")
     privateProperties.setProperty("githubToken", System.getenv("PUBLISH_GITHUB_TOKEN") ?: "MISSING")
+
+    privateProperties.setProperty("sonatypeUser", System.getenv("PUBLISH_SONATYPE_USER") ?: "MISSING")
+    privateProperties.setProperty("sonatypePassword", System.getenv("PUBLISH_SONATYPE_PASSWORD") ?: "MISSING")
+
+    privateProperties.setProperty("signingKeyId", System.getenv("PUBLISH_SIGNING_KEY_ID") ?: "MISSING")
+    privateProperties.setProperty("signingKeyPassword", System.getenv("PUBLISH_SIGNING_KEY_PASSWORD") ?: "MISSING")
+    privateProperties.setProperty("signingKeyLocation", System.getenv("PUBLISH_SIGNING_KEY_LOCATION") ?: "MISSING")
 }
 
 ext.androidLibrary = {
