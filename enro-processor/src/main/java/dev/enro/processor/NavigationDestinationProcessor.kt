@@ -2,11 +2,10 @@ package dev.enro.processor
 
 import com.google.auto.service.AutoService
 import com.squareup.javapoet.*
-import dev.enro.annotations.NavigationDestination
 import dev.enro.annotations.GeneratedNavigationBinding
+import dev.enro.annotations.NavigationDestination
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
-import java.lang.IllegalStateException
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
@@ -22,7 +21,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
     override fun getSupportedAnnotationTypes(): MutableSet<String> {
         return mutableSetOf(
-            _root_ide_package_.dev.enro.annotations.NavigationDestination::class.java.name
+            NavigationDestination::class.java.name
         )
     }
 
@@ -34,7 +33,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
         annotations: MutableSet<out TypeElement>?,
         roundEnv: RoundEnvironment
     ): Boolean {
-        destinations += roundEnv.getElementsAnnotatedWith(_root_ide_package_.dev.enro.annotations.NavigationDestination::class.java)
+        destinations += roundEnv.getElementsAnnotatedWith(NavigationDestination::class.java)
             .map {
                 it.also(::generateDestination)
             }
@@ -44,7 +43,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
     private fun generateDestination(element: Element) {
         val destinationName = element.simpleName
         val destinationPackage = processingEnv.elementUtils.getPackageOf(element).toString()
-        val annotation = element.getAnnotation(_root_ide_package_.dev.enro.annotations.NavigationDestination::class.java)
+        val annotation = element.getAnnotation(NavigationDestination::class.java)
 
         val keyType =
             processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
@@ -60,7 +59,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
             .addModifiers(Modifier.PUBLIC)
             .addSuperinterface(ClassNames.navigationComponentBuilderCommand)
             .addAnnotation(
-                AnnotationSpec.builder(_root_ide_package_.dev.enro.annotations.GeneratedNavigationBinding::class.java)
+                AnnotationSpec.builder(GeneratedNavigationBinding::class.java)
                     .addMember(
                         "destination",
                         CodeBlock.of("\"$destinationPackage.$destinationName\"")
@@ -103,7 +102,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val destinationIsFragment = destination.extends(ClassNames.fragment)
         val destinationIsSynthetic = destination.implements(ClassNames.syntheticDestination)
 
-        val annotation = destination.getAnnotation(_root_ide_package_.dev.enro.annotations.NavigationDestination::class.java)
+        val annotation = destination.getAnnotation(NavigationDestination::class.java)
 
         addStatement(
             when {

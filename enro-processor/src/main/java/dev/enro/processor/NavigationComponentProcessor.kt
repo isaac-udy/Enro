@@ -7,15 +7,12 @@ import dev.enro.annotations.NavigationComponent
 import dev.enro.annotations.NavigationDestination
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
-import javax.annotation.Generated
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
-import javax.tools.Diagnostic
-import javax.tools.StandardLocation
 
 @IncrementalAnnotationProcessor(IncrementalAnnotationProcessorType.AGGREGATING)
 @AutoService(Processor::class)
@@ -26,7 +23,7 @@ class NavigationComponentProcessor : BaseProcessor() {
 
     override fun getSupportedAnnotationTypes(): MutableSet<String> {
         return mutableSetOf(
-            _root_ide_package_.dev.enro.annotations.NavigationComponent::class.java.name
+            NavigationComponent::class.java.name
         )
     }
 
@@ -38,11 +35,11 @@ class NavigationComponentProcessor : BaseProcessor() {
         annotations: MutableSet<out TypeElement>?,
         roundEnv: RoundEnvironment
     ): Boolean {
-        components += roundEnv.getElementsAnnotatedWith(_root_ide_package_.dev.enro.annotations.NavigationComponent::class.java)
+        components += roundEnv.getElementsAnnotatedWith(NavigationComponent::class.java)
 
-        val elementsToWaitFor = roundEnv.getElementsAnnotatedWith(_root_ide_package_.dev.enro.annotations.NavigationComponent::class.java) +
-                roundEnv.getElementsAnnotatedWith(_root_ide_package_.dev.enro.annotations.GeneratedNavigationBinding::class.java) +
-                roundEnv.getElementsAnnotatedWith(_root_ide_package_.dev.enro.annotations.NavigationDestination::class.java)
+        val elementsToWaitFor = roundEnv.getElementsAnnotatedWith(NavigationComponent::class.java) +
+                roundEnv.getElementsAnnotatedWith(GeneratedNavigationBinding::class.java) +
+                roundEnv.getElementsAnnotatedWith(NavigationDestination::class.java)
 
         if (elementsToWaitFor.isEmpty()) {
             components.forEach { generateComponent(it) }
@@ -59,7 +56,7 @@ class NavigationComponentProcessor : BaseProcessor() {
             .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
             .enclosedElements
             .mapNotNull {
-                val annotation = it.getAnnotation(_root_ide_package_.dev.enro.annotations.GeneratedNavigationBinding::class.java)
+                val annotation = it.getAnnotation(GeneratedNavigationBinding::class.java)
                     ?: return@mapNotNull null
 
                 NavigationDestinationArguments(
