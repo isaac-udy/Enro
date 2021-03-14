@@ -68,3 +68,37 @@ inline fun <reified T : Any> Fragment.registerForNavigationResult(
         resultType = T::class.java,
         onResult = onResult
     )
+
+
+inline fun <reified T : Any> ViewModel.forwardNavigationResult(
+        navigationHandle: TypedNavigationHandle<NavigationKey.WithResult<T>>
+): ReadOnlyProperty<Any, EnroResultChannel<T>> =
+        LazyResultChannelProperty(
+                owner = navigationHandle,
+                resultType = T::class.java,
+                onResult = {
+                    navigationHandle.closeWithResult(it)
+                }
+        )
+
+inline fun <reified T : Any> FragmentActivity.forwardNavigationResult(
+        navigationHandle: TypedNavigationHandle<NavigationKey.WithResult<T>>
+): ReadOnlyProperty<FragmentActivity, EnroResultChannel<T>>  =
+        LazyResultChannelProperty(
+                owner = this,
+                resultType = T::class.java,
+                onResult = {
+                    navigationHandle.closeWithResult(it)
+                }
+        )
+
+inline fun <reified T : Any> Fragment.forwardNavigationResult(
+        crossinline navigationHandle: () -> TypedNavigationHandle<out NavigationKey.WithResult<T>>
+): ReadOnlyProperty<Fragment, EnroResultChannel<T>>  =
+        LazyResultChannelProperty(
+                owner = this,
+                resultType = T::class.java,
+                onResult = {
+                    navigationHandle().closeWithResult(it)
+                }
+        )

@@ -49,6 +49,10 @@ class RequestExampleFragment : Fragment() {
         requestStringButton.setOnClickListener {
             viewModel.onRequestString()
         }
+
+        requestFlowButton.setOnClickListener {
+            viewModel.onRequestFlow()
+        }
     }
 }
 
@@ -63,8 +67,21 @@ class RequestExampleViewModel() : ViewModel() {
         mutableResults.value = mutableResults.value.orEmpty() + it
     }
 
+    private val requestFlow by registerForNavigationResult<FlowResult>(navigation) {
+        mutableResults.value = mutableResults.value.orEmpty() + """
+            Flow Result: 
+                ${it.firstData}
+                ${it.secondData}
+                ${it.thirdData}
+        """.trimIndent()
+    }
+
     fun onRequestString() {
         requestString.open(RequestStringKey())
+    }
+
+    fun onRequestFlow() {
+        requestFlow.open(FlowPartOne())
     }
 }
 

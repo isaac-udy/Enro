@@ -62,4 +62,13 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:text="Request String"/>
 
+    <Button
+        android:id="@+id/requestFlowButton"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Request Flow"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/requestStringButton" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
