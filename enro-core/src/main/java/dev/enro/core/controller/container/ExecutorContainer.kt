@@ -5,6 +5,8 @@ import androidx.fragment.app.FragmentActivity
 import dev.enro.core.*
 import dev.enro.core.activity.DefaultActivityExecutor
 import dev.enro.core.fragment.DefaultFragmentExecutor
+import dev.enro.core.result.forwardingResultExecutor
+import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
 import dev.enro.core.synthetic.SyntheticDestination
 import kotlin.reflect.KClass
@@ -77,6 +79,10 @@ internal class ExecutorContainer(
     internal fun executorForClose(navigationContext: NavigationContext<out Any>): NavigationExecutor<Any, Any, NavigationKey> {
         val parentContextType = navigationContext.getNavigationHandleViewModel().instruction.internal.executorContext?.kotlin
         val contextType = navigationContext.contextReference::class
+
+        if(ResultChannelImpl.isForwardingResult(navigationContext.getNavigationHandleViewModel())) {
+            return forwardingResultExecutor
+        }
 
         val override = parentContextType?.let { parentContext ->
             val parentContextIsActivity by lazy {

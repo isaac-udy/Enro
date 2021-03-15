@@ -56,4 +56,16 @@
         app:layout_constraintStart_toStartOf="@+id/inputLayout"
         app:layout_constraintEnd_toEndOf="@+id/inputLayout"/>
 
+    <Button
+        android:id="@+id/secondaryButton"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        android:text="Send Result"
+        app:layout_constraintTop_toBottomOf="@+id/sendResultButton"
+        app:layout_constraintStart_toStartOf="@+id/inputLayout"
+        app:layout_constraintEnd_toEndOf="@+id/inputLayout"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

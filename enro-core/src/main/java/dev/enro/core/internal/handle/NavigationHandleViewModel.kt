@@ -125,3 +125,9 @@ private fun FragmentActivity.addOnBackPressedListener(block: () -> Unit) {
         }
     })
 }
+
+internal val NavigationHandle.context: NavigationContext<*> get() = when(this) {
+    is TypedNavigationHandleImpl<*> -> navigationHandle.context
+    is NavigationHandleViewModel -> navigationContext as NavigationContext<*>
+    else -> throw java.lang.IllegalStateException()
+}

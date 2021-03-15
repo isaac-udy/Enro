@@ -13,9 +13,9 @@ import dev.enro.core.result.internal.ResultChannelImpl
 import kotlin.properties.ReadOnlyProperty
 
 
-fun <T: Any> NavigationHandle.closeWithResult(result: T) {
+fun <T : Any> NavigationHandle.closeWithResult(result: T) {
     val resultId = ResultChannelImpl.getResultId(this)
-    if(resultId != null) {
+    if (resultId != null) {
         EnroResult.from(controller).addPendingResult(
             PendingResult(
                 resultChannelId = resultId,
@@ -27,9 +27,9 @@ fun <T: Any> NavigationHandle.closeWithResult(result: T) {
     close()
 }
 
-fun <T: Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
+fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
     val resultId = ResultChannelImpl.getResultId(this)
-    if(resultId != null) {
+    if (resultId != null) {
         EnroResult.from(controller).addPendingResult(
             PendingResult(
                 resultChannelId = resultId,
@@ -48,57 +48,53 @@ inline fun <reified T : Any> ViewModel.registerForNavigationResult(
     LazyResultChannelProperty(
         owner = navigationHandle,
         resultType = T::class.java,
-        onResult = onResult
+        onResult = onResult,
+        isForwarding = false
     )
 
 inline fun <reified T : Any> FragmentActivity.registerForNavigationResult(
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<FragmentActivity, EnroResultChannel<T>>  =
+): ReadOnlyProperty<FragmentActivity, EnroResultChannel<T>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class.java,
-        onResult = onResult
+        onResult = onResult,
+        isForwarding = false
     )
 
 inline fun <reified T : Any> Fragment.registerForNavigationResult(
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<Fragment, EnroResultChannel<T>>  =
+): ReadOnlyProperty<Fragment, EnroResultChannel<T>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class.java,
-        onResult = onResult
+        onResult = onResult,
+        isForwarding = false
     )
 
 
 inline fun <reified T : Any> ViewModel.forwardNavigationResult(
-        navigationHandle: TypedNavigationHandle<NavigationKey.WithResult<T>>
+    navigationHandle:TypedNavigationHandle<out NavigationKey.WithResult<T>>
 ): ReadOnlyProperty<Any, EnroResultChannel<T>> =
-        LazyResultChannelProperty(
-                owner = navigationHandle,
-                resultType = T::class.java,
-                onResult = {
-                    navigationHandle.closeWithResult(it)
-                }
-        )
+    LazyResultChannelProperty(
+        owner = navigationHandle,
+        resultType = T::class.java,
+        onResult = { },
+        isForwarding = true
+    )
 
-inline fun <reified T : Any> FragmentActivity.forwardNavigationResult(
-        navigationHandle: TypedNavigationHandle<NavigationKey.WithResult<T>>
-): ReadOnlyProperty<FragmentActivity, EnroResultChannel<T>>  =
-        LazyResultChannelProperty(
-                owner = this,
-                resultType = T::class.java,
-                onResult = {
-                    navigationHandle.closeWithResult(it)
-                }
-        )
+inline fun <reified T : Any> FragmentActivity.forwardNavigationResult(): ReadOnlyProperty<FragmentActivity, EnroResultChannel<T>> =
+    LazyResultChannelProperty(
+        owner = this,
+        resultType = T::class.java,
+        onResult = { },
+        isForwarding = true
+    )
 
-inline fun <reified T : Any> Fragment.forwardNavigationResult(
-        crossinline navigationHandle: () -> TypedNavigationHandle<out NavigationKey.WithResult<T>>
-): ReadOnlyProperty<Fragment, EnroResultChannel<T>>  =
-        LazyResultChannelProperty(
-                owner = this,
-                resultType = T::class.java,
-                onResult = {
-                    navigationHandle().closeWithResult(it)
-                }
-        )
+inline fun <reified T : Any> Fragment.forwardNavigationResult(): ReadOnlyProperty<Fragment, EnroResultChannel<T>> =
+    LazyResultChannelProperty(
+        owner = this,
+        resultType = T::class.java,
+        onResult = { },
+        isForwarding = true
+    )

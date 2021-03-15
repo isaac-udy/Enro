@@ -53,6 +53,10 @@ class RequestExampleFragment : Fragment() {
         requestFlowButton.setOnClickListener {
             viewModel.onRequestFlow()
         }
+
+        requestFlowActivityButton.setOnClickListener {
+            viewModel.onRequestFlowActivity()
+        }
     }
 }
 
@@ -82,6 +86,10 @@ class RequestExampleViewModel() : ViewModel() {
 
     fun onRequestFlow() {
         requestFlow.open(FlowPartOne())
+    }
+
+    fun onRequestFlowActivity() {
+        requestFlow.open(FlowPartOneA())
     }
 }
 

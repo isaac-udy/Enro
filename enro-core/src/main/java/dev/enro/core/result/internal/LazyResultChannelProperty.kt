@@ -15,7 +15,8 @@ import kotlin.reflect.KProperty
 internal class LazyResultChannelProperty<T>(
     private val owner: Any,
     private val resultType: Class<T>,
-    private val onResult: (T) -> Unit
+    private val onResult: (T) -> Unit,
+    private val isForwarding: Boolean
 ) : ReadOnlyProperty<Any, ResultChannelImpl<T>> {
 
     lateinit var resultChannel: ResultChannelImpl<T>
@@ -23,7 +24,7 @@ internal class LazyResultChannelProperty<T>(
     init {
         val handle = when (owner) {
                 is FragmentActivity -> lazy { owner.getNavigationHandle() }
-                is Fragment ->lazy { owner.getNavigationHandle() }
+                is Fragment -> lazy { owner.getNavigationHandle() }
                 is NavigationHandle -> lazy { owner as NavigationHandle }
                 else -> throw IllegalArgumentException("Owner must be a Fragment, FragmentActivity, or NavigationHandle")
             }
@@ -37,7 +38,8 @@ internal class LazyResultChannelProperty<T>(
                 resultChannel = ResultChannelImpl(
                     navigationHandle = handle.value,
                     resultType = resultType,
-                    onResult = onResult
+                    onResult = onResult,
+                    isForwarding = isForwarding
                 )
             }
         })
@@ -45,10 +47,12 @@ internal class LazyResultChannelProperty<T>(
         lifecycle.lifecycle.addObserver(object: LifecycleEventObserver {
             private var enroResult: EnroResult? = null
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                if(event == Lifecycle.Event.ON_START) {
+                    enroResult = EnroResult.from(handle.value.controller)
+                    enroResult?.registerChannel(resultChannel)
+                }
                 if(event == Lifecycle.Event.ON_STOP) {
                     enroResult = EnroResult.from(handle.value.controller)
-                }
-                if(event == Lifecycle.Event.ON_DESTROY) {
                     enroResult?.deregisterChannel(resultChannel)
                     enroResult = null
                 }

@@ -1,13 +1,15 @@
 package dev.enro.result
 
 import android.widget.TextView
-import kotlinx.android.parcel.Parcelize
 import dev.enro.TestActivity
 import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
+import dev.enro.core.result.closeWithResult
+import dev.enro.core.result.forwardNavigationResult
 import dev.enro.core.result.registerForNavigationResult
+import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 class ActivityResultKey : NavigationKey.WithResult<String>
@@ -43,13 +45,19 @@ class ResultReceiverActivity : TestActivity() {
     var result: String? = null
     val resultChannel by registerForNavigationResult<String> {
         result = it
-        findViewById<TextView>(debugText).text = "Result: $result\nSecondary Result: $secondaryResult"
+        findViewById<TextView>(debugText).text = "Result: $result\nSecondary Result: $secondaryResult\nFlow Result: $flowResult"
     }
 
     var secondaryResult: String? = null
     val secondaryResultChannel by registerForNavigationResult<String> {
         secondaryResult = it
-        findViewById<TextView>(debugText).text = "Result: $result\nSecondary Result: $secondaryResult"
+        findViewById<TextView>(debugText).text = "Result: $result\nSecondary Result: $secondaryResult\nFlow Result: $flowResult"
+    }
+
+    var flowResult: FlowTestResult? = null
+    val flowResultChannel by registerForNavigationResult<FlowTestResult> {
+        flowResult = it
+        findViewById<TextView>(debugText).text = "Result: $result\nSecondary Result: $secondaryResult\nFlow Result: $flowResult"
     }
 }
 
@@ -115,5 +123,70 @@ class NestedResultReceiverFragment : TestFragment() {
     val secondaryResultChannel by registerForNavigationResult<String> {
         secondaryResult = it
         requireView().findViewById<TextView>(debugText).text = "Result: $result\nSecondary Result: $secondaryResult"
+    }
+}
+
+
+@Parcelize
+class FlowTestPartOne() : NavigationKey.WithResult<FlowTestResult>
+
+@Parcelize
+data class FlowTestPartTwo(
+        val firstData: String
+) : NavigationKey.WithResult<FlowTestResult>
+
+@Parcelize
+data class FlowTestPartThree(
+        val firstData: String,
+        val secondData: String
+) : NavigationKey.WithResult<FlowTestResult>
+
+data class FlowTestResult(
+        val firstData: String,
+        val secondData: String,
+        val thirdData: String
+)
+
+@NavigationDestination(FlowTestPartOne::class)
+class FlowTestPartOneFragment : TestFragment() {
+    private val navigation by navigationHandle<FlowTestPartOne>()
+    val resultChannel by forwardNavigationResult { navigation }
+
+    fun next(data: String) {
+        resultChannel.open(
+                FlowTestPartTwo(
+                        firstData = data
+                )
+        )
+    }
+}
+
+@NavigationDestination(FlowTestPartTwo::class)
+class FlowTestPartTwoFragment : TestFragment() {
+    private val navigation by navigationHandle<FlowTestPartTwo>()
+    val resultChannel by forwardNavigationResult { navigation }
+
+    fun next(data: String) {
+        resultChannel.open(
+                FlowTestPartThree(
+                        firstData = navigation.key.firstData,
+                        secondData = data
+                )
+        )
+    }
+}
+
+@NavigationDestination(FlowTestPartThree::class)
+class FlowTestPartThreeFragment : TestFragment() {
+    private val navigation by navigationHandle<FlowTestPartThree>()
+
+    fun finishFlow(data: String) {
+        navigation.closeWithResult(
+                FlowTestResult(
+                        firstData = navigation.key.firstData,
+                        secondData = navigation.key.secondData,
+                        thirdData = data
+                )
+        )
     }
 }

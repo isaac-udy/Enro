@@ -1,6 +1,7 @@
 package dev.enro.core.result
 
 import dev.enro.core.NavigationHandle
+import dev.enro.core.close
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.plugins.EnroPlugin
 import dev.enro.core.result.internal.PendingResult
@@ -16,6 +17,10 @@ internal class EnroResult: EnroPlugin() {
     }
 
     override fun onActive(navigationHandle: NavigationHandle) {
+        if(ResultChannelImpl.isForwardingResult(navigationHandle)) {
+            navigationHandle.close()
+            return
+        }
         channels.values
             .filter { channel ->
                 pendingResults.any { it.key == channel.id }
@@ -34,6 +39,10 @@ internal class EnroResult: EnroPlugin() {
         else {
             pendingResults[result.resultChannelId] = result
         }
+    }
+
+    internal fun hasPendingResult(resultChannelId: ResultChannelId): Boolean {
+        return pendingResults.containsKey(resultChannelId)
     }
 
     private fun consumePendingResult(resultChannelId: ResultChannelId): PendingResult? {
