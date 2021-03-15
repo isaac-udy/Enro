@@ -3,10 +3,10 @@ package dev.enro.core.fragment.internal
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.parcel.Parcelize
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
+import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 internal data class SingleFragmentKey(
@@ -19,7 +19,6 @@ internal abstract class AbstractSingleFragmentActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        overridePendingTransition(0, 0)
         super.onCreate(savedInstanceState)
         if(savedInstanceState == null) {
             handle.executeInstruction(handle.key.instruction)

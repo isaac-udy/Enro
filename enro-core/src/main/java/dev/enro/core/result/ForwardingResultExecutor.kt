@@ -3,7 +3,7 @@ package dev.enro.core.result
 import android.app.Activity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.commitNow
+import androidx.fragment.app.commit
 import dev.enro.core.*
 import dev.enro.core.result.internal.ResultChannelImpl
 
@@ -22,7 +22,8 @@ internal val forwardingResultExecutor = createOverride<Any, Any> {
         }
 
         if(it.contextReference !is Fragment) throw IllegalStateException()
-        it.contextReference.parentFragmentManager.commitNow {
+
+        it.contextReference.parentFragmentManager.commit {
             val animations = animationsFor(it, NavigationInstruction.Close)
             setCustomAnimations(animations.enter, animations.exit)
 
