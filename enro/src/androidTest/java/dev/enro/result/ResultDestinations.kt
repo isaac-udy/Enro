@@ -150,7 +150,7 @@ data class FlowTestResult(
 @NavigationDestination(FlowTestPartOne::class)
 class FlowTestPartOneFragment : TestFragment() {
     private val navigation by navigationHandle<FlowTestPartOne>()
-    val resultChannel by forwardNavigationResult { navigation }
+    val resultChannel by forwardNavigationResult<FlowTestResult>()
 
     fun next(data: String) {
         resultChannel.open(
@@ -164,7 +164,7 @@ class FlowTestPartOneFragment : TestFragment() {
 @NavigationDestination(FlowTestPartTwo::class)
 class FlowTestPartTwoFragment : TestFragment() {
     private val navigation by navigationHandle<FlowTestPartTwo>()
-    val resultChannel by forwardNavigationResult { navigation }
+    val resultChannel by forwardNavigationResult<FlowTestResult>()
 
     fun next(data: String) {
         resultChannel.open(
