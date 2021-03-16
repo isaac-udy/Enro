@@ -22,4 +22,7 @@ dependencies {
 afterEvaluate {
     tasks.findByName("preReleaseBuild")
             .dependsOn(":enro-core:publishToMavenLocal")
+
+    tasks.findByName("preReleaseBuild")
+            .dependsOn(":enro-viewmodel:publishToMavenLocal")
 }
