@@ -14,6 +14,7 @@ include ':enro-annotations'
 include ':enro-masterdetail'
 include ':enro-multistack'
 include ':enro-viewmodel'
+include ':enro-test'
 include ':enro'
 include ':enro-core'
 rootProject.name = "Enro"
