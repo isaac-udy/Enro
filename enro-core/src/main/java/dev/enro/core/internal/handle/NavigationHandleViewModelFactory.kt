@@ -15,6 +15,13 @@ internal class NavigationHandleViewModelFactory(
     private val instruction: NavigationInstruction.Open
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if(navigationController.isInTest) {
+            return TestNavigationHandleViewModel(
+                navigationController,
+                instruction
+            ) as T
+        }
+
         return NavigationHandleViewModel(
             navigationController,
             instruction

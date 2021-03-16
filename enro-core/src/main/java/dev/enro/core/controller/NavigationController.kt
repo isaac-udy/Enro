@@ -16,6 +16,7 @@ class NavigationController internal constructor(
     private val interceptorController: InstructionInterceptorController,
     private val contextController: NavigationLifecycleController,
 ) {
+    internal var isInTest = false
 
     init {
         pluginContainer.onAttached(this)
