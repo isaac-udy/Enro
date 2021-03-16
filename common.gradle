@@ -66,7 +66,7 @@ ext.androidLibrary = {
     }
 }
 
-ext.publishAndroidModule = { String groupName, String moduleName ->
+ext.publishAndroidModule = { String groupName, String moduleName, String versionSuffix = "" ->
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
@@ -85,7 +85,7 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
 
     afterEvaluate {
         group = groupName
-        version = versionName
+        version = versionName + versionSuffix
 
         publishing {
             publications {
@@ -94,7 +94,7 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
 
                     groupId groupName
                     artifactId moduleName
-                    version versionName
+                    version versionName + versionSuffix
 
                     artifact androidSourcesJar
 
@@ -182,7 +182,7 @@ ext.publishAndroidModule = { String groupName, String moduleName ->
     }
 }
 
-ext.publishJavaModule = { String groupName, String moduleName ->
+ext.publishJavaModule = { String groupName, String moduleName, String versionSuffix = "" ->
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
@@ -216,7 +216,7 @@ ext.publishJavaModule = { String groupName, String moduleName ->
 
     afterEvaluate {
         group = groupName
-        version = versionName
+        version = versionName + versionSuffix
 
         publishing {
             publications {
@@ -225,7 +225,7 @@ ext.publishJavaModule = { String groupName, String moduleName ->
 
                     groupId groupName
                     artifactId moduleName
-                    version versionName
+                    version versionName + versionSuffix
 
                     artifact sourcesJar
                     artifact javadocJar

@@ -7,6 +7,7 @@ import dev.enro.GenericFragmentKey
 import dev.enro.core.*
 import dev.enro.result.ActivityResultKey
 import dev.enro.result.FragmentResultKey
+import dev.enro.test.extensions.getTestNavigationHandle
 import dev.enro.test.extensions.sendResultForTest
 import junit.framework.TestCase
 import org.junit.Rule

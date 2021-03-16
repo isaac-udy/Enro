@@ -1,10 +1,11 @@
-package dev.enro.test
+package dev.enro.test.extensions
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.FragmentScenario
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.core.getNavigationHandle
+import dev.enro.test.TestNavigationHandle
 
 fun <T : NavigationKey> FragmentScenario<*>.getTestNavigationHandle(type: Class<T>): TestNavigationHandle<T> {
     @Suppress("UNCHECKED_CAST")
