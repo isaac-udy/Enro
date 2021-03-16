@@ -18,8 +18,12 @@ class EnroTestRule : TestRule {
 fun runEnroTest(block: () -> Unit) {
     val navigationController = EnroTest.getCurrentNavigationController()
     navigationController.isInTest = true
-    block()
-    navigationController.isInTest = false
+    try {
+        block()
+    }
+    finally {
+        navigationController.isInTest = false
+    }
 }
 
 private var NavigationController.isInTest: Boolean

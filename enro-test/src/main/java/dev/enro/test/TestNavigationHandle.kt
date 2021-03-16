@@ -7,6 +7,7 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.TypedNavigationHandle
 import dev.enro.core.controller.NavigationController
+import junit.framework.TestCase
 
 class TestNavigationHandle<T : NavigationKey>(
     private val navigationHandle: NavigationHandle
@@ -38,4 +39,21 @@ class TestNavigationHandle<T : NavigationKey>(
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {
         navigationHandle.executeInstruction(navigationInstruction)
     }
+}
+
+fun TestNavigationHandle<*>.expectCloseInstruction() {
+    TestCase.assertTrue(instructions.last() is NavigationInstruction.Close)
+}
+
+fun <T: Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): NavigationInstruction.Open {
+    val instruction = instructions.last()
+    TestCase.assertTrue(instruction is NavigationInstruction.Open)
+    instruction as NavigationInstruction.Open
+
+    TestCase.assertTrue(type.isAssignableFrom(instruction.navigationKey::class.java))
+    return instruction
+}
+
+inline fun <reified T: Any> TestNavigationHandle<*>.expectOpenInstruction(): NavigationInstruction.Open {
+    return expectOpenInstruction(T::class.java)
 }

@@ -5,6 +5,9 @@ import androidx.fragment.app.testing.launchFragmentInContainer
 import dev.enro.GenericActivityKey
 import dev.enro.GenericFragmentKey
 import dev.enro.core.*
+import dev.enro.result.ActivityResultKey
+import dev.enro.result.FragmentResultKey
+import dev.enro.test.extensions.sendResultForTest
 import junit.framework.TestCase
 import org.junit.Rule
 import org.junit.Test
@@ -64,6 +67,27 @@ class FragmentTestExtensionsTest {
     }
 
     @Test
+    fun whenFragmentOpensResult_thenResultIsReceived() {
+        val scenario = launchFragmentInContainer<EnroTestTestFragment>()
+        val expectedResult = UUID.randomUUID().toString()
+        val expectedKey = listOf(ActivityResultKey(), FragmentResultKey()).random()
+
+        scenario.onFragment {
+            it.resultChannel.open(expectedKey)
+        }
+
+        val handle = scenario.getTestNavigationHandle<EnroTestTestFragmentKey>()
+
+        val instruction = handle.instructions.first()
+        instruction as NavigationInstruction.Open
+        instruction.sendResultForTest(expectedResult)
+
+        scenario.onFragment {
+            TestCase.assertEquals(expectedResult, it.result)
+        }
+    }
+
+    @Test
     fun noContainer_whenFragmentScenarioCreated_thenActivityHasTestNavigationHandle() {
         val scenario = launchFragment<EnroTestTestFragment>()
         val handle = scenario.getTestNavigationHandle<EnroTestTestFragmentKey>()
@@ -109,5 +133,26 @@ class FragmentTestExtensionsTest {
         instruction as NavigationInstruction.Open
         TestCase.assertEquals(NavigationDirection.FORWARD, instruction.navigationDirection)
         TestCase.assertEquals(expectedKey, instruction.navigationKey)
+    }
+
+    @Test
+    fun noContainer_whenFragmentOpensResult_thenResultIsReceived() {
+        val scenario = launchFragmentInContainer<EnroTestTestFragment>()
+        val expectedResult = UUID.randomUUID().toString()
+        val expectedKey = listOf(ActivityResultKey(), FragmentResultKey()).random()
+
+        scenario.onFragment {
+            it.resultChannel.open(expectedKey)
+        }
+
+        val handle = scenario.getTestNavigationHandle<EnroTestTestFragmentKey>()
+
+        val instruction = handle.instructions.first()
+        instruction as NavigationInstruction.Open
+        instruction.sendResultForTest(expectedResult)
+
+        scenario.onFragment {
+            TestCase.assertEquals(expectedResult, it.result)
+        }
     }
 }
