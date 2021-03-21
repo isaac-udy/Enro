@@ -2,17 +2,13 @@ package dev.enro.core.controller.lifecycle
 
 import android.app.Activity
 import android.app.Application
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
-import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import dev.enro.core.*
+import dev.enro.core.ActivityContext
+import dev.enro.core.FragmentContext
+import dev.enro.core.navigationContext
 
 internal class NavigationContextLifecycleCallbacks (
     private val lifecycleController: NavigationLifecycleController
@@ -22,6 +18,10 @@ internal class NavigationContextLifecycleCallbacks (
     private val activityCallbacks = ActivityCallbacks()
 
     fun install(application: Application) {
+        application.registerActivityLifecycleCallbacks(activityCallbacks)
+    }
+
+    internal fun uninstall(application: Application) {
         application.registerActivityLifecycleCallbacks(activityCallbacks)
     }
 

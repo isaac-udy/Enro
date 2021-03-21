@@ -94,6 +94,30 @@ class NavigationController internal constructor(
         if (navigationApplication !is Application)
             throw IllegalArgumentException("A NavigationApplication must extend android.app.Application")
 
+        navigationControllerBindings[navigationApplication] = this
         contextController.install(navigationApplication)
     }
+
+    private fun installForTest(application: Application) {
+        navigationControllerBindings[application] = this
+        contextController.install(application)
+    }
+
+    private fun uninstall(application: Application) {
+        navigationControllerBindings.remove(application)
+        contextController.uninstall(application)
+    }
+
+    companion object {
+        internal val navigationControllerBindings = mutableMapOf<Application, NavigationController>()
+
+        private fun getBoundApplicationForTest(application: Application) = navigationControllerBindings[application]
+    }
+}
+
+val Application.navigationController: NavigationController get() {
+    if(this is NavigationApplication) return navigationController
+    val bound = NavigationController.navigationControllerBindings[this]
+    if(bound != null) return bound
+    throw IllegalStateException("Application is not a NavigationApplication, and has no attached NavigationController ")
 }
