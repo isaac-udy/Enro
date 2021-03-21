@@ -14,12 +14,8 @@ import java.lang.reflect.Field
 
 object EnroTest {
     private val generatedBindings: List<NavigationComponentBuilderCommand> by lazy {
-        val isRobolectric = runCatching {
-            val robolectricClassLoader = Class.forName("org.robolectric.internal.bytecode.SandboxClassLoader")
-            robolectricClassLoader.isAssignableFrom(Thread.currentThread().contextClassLoader::class.java)
-        }.getOrNull() ?: false
-
-        val classes = if(isRobolectric) getRobolectricClasses() else getDexClasses()
+        val isDexClassLoader = Thread.currentThread().contextClassLoader::class.java is BaseDexClassLoader
+        val classes = if(isDexClassLoader) getGeneratedClasses() else getGeneratedClassesFromDexFile()
 
         classes
             .filter {
@@ -57,7 +53,7 @@ object EnroTest {
     }
 }
 
-private fun getRobolectricClasses(): Sequence<Class<*>> {
+private fun getGeneratedClasses(): Sequence<Class<*>> {
     return Thread.currentThread().contextClassLoader
         .getResources("enro_generated_bindings")
         .asSequence()
@@ -76,7 +72,7 @@ private fun getRobolectricClasses(): Sequence<Class<*>> {
         }
 }
 
-private fun getDexClasses(): Sequence<Class<*>> {
+private fun getGeneratedClassesFromDexFile(): Sequence<Class<*>> {
     // Here we do some reflection to access the dex files from the class loader. These implementation details vary by platform version,
     // so we have to be a little careful, but not a huge deal since this is just for testing. It should work on 21+.
     // The source for reference is at:
