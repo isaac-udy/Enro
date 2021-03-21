@@ -13,9 +13,9 @@ import dev.enro.core.result.internal.ResultChannelImpl
 import kotlin.properties.ReadOnlyProperty
 
 
-fun <T: Any> NavigationHandle.closeWithResult(result: T) {
+fun <T : Any> NavigationHandle.closeWithResult(result: T) {
     val resultId = ResultChannelImpl.getResultId(this)
-    if(resultId != null) {
+    if (resultId != null) {
         EnroResult.from(controller).addPendingResult(
             PendingResult(
                 resultChannelId = resultId,
@@ -27,9 +27,9 @@ fun <T: Any> NavigationHandle.closeWithResult(result: T) {
     close()
 }
 
-fun <T: Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
+fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
     val resultId = ResultChannelImpl.getResultId(this)
-    if(resultId != null) {
+    if (resultId != null) {
         EnroResult.from(controller).addPendingResult(
             PendingResult(
                 resultChannelId = resultId,
@@ -53,7 +53,7 @@ inline fun <reified T : Any> ViewModel.registerForNavigationResult(
 
 inline fun <reified T : Any> FragmentActivity.registerForNavigationResult(
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<FragmentActivity, EnroResultChannel<T>>  =
+): ReadOnlyProperty<FragmentActivity, EnroResultChannel<T>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class.java,
@@ -62,7 +62,7 @@ inline fun <reified T : Any> FragmentActivity.registerForNavigationResult(
 
 inline fun <reified T : Any> Fragment.registerForNavigationResult(
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<Fragment, EnroResultChannel<T>>  =
+): ReadOnlyProperty<Fragment, EnroResultChannel<T>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class.java,
