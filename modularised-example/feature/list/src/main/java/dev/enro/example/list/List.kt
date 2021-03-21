@@ -7,28 +7,28 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.scopes.ActivityRetainedScoped
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.scopes.ViewModelScoped
 import dev.enro.annotations.NavigationDestination
+import dev.enro.core.result.closeWithResult
+import dev.enro.core.result.registerForNavigationResult
 import dev.enro.example.core.base.SingleStateViewModel
 import dev.enro.example.core.data.SimpleData
 import dev.enro.example.core.data.SimpleDataRepository
 import dev.enro.example.core.navigation.DetailKey
 import dev.enro.example.core.navigation.ListFilterType
 import dev.enro.example.core.navigation.ListKey
-import dev.enro.core.result.closeWithResult
-import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
 import javax.inject.Inject
 
-@ActivityRetainedScoped
+@ViewModelScoped
 class ExampleHiltDependency @Inject constructor() {
     fun doSomething() {
         Log.d("ExampleHiltDependency", "Something was done!")
@@ -69,7 +69,8 @@ data class ListState(
     val result: Boolean = true
 )
 
-class ListViewModel @ViewModelInject constructor(
+@HiltViewModel
+class ListViewModel @Inject constructor(
     private val hiltDependency: ExampleHiltDependency
 ) : SingleStateViewModel<ListState>() {
 

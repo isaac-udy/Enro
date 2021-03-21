@@ -5,9 +5,9 @@ import android.animation.AnimatorListenerAdapter
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.synthetic.SyntheticDestination
@@ -16,16 +16,18 @@ import dev.enro.example.core.navigation.DashboardKey
 import dev.enro.example.core.navigation.LaunchKey
 import dev.enro.example.core.navigation.LoginKey
 import kotlinx.android.parcel.Parcelize
+import javax.inject.Inject
 
 @Parcelize
 class MainKey : NavigationKey
 
-class HiltViewModel @ViewModelInject constructor(): ViewModel()
+@HiltViewModel
+class ExampleHiltViewModel @Inject constructor(): ViewModel()
 
 @AndroidEntryPoint
 @NavigationDestination(MainKey::class)
 class MainActivity : AppCompatActivity() {
-    private val hiltViewModel by viewModels<HiltViewModel>()
+    private val hiltViewModel by viewModels<ExampleHiltViewModel>()
     private val navigation by navigationHandle<MainKey> {
         defaultKey(MainKey())
     }
