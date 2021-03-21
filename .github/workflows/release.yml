@@ -18,11 +18,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Run UI Tests
+      - name: Run Enro UI Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
           script: ./gradlew :enro:connectedCheck
+
+      - name: Run Modularised Example Tests
+        with:
+          api-level: 29
+          script: ./gradlew :modularised-example:app:testDebugUnitTest
 
       - name: Install gpg secret key
         run: cat <(echo -e "${{ secrets.PUBLISH_SIGNING_KEY_LITERAL }}") | gpg --batch --import
