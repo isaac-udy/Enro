@@ -98,18 +98,20 @@ class NavigationController internal constructor(
         contextController.install(navigationApplication)
     }
 
-    internal fun installForTest(application: Application) {
+    private fun installForTest(application: Application) {
         navigationControllerBindings[application] = this
         contextController.install(application)
     }
 
-    internal fun uninstall(application: Application) {
+    private fun uninstall(application: Application) {
         navigationControllerBindings.remove(application)
         contextController.uninstall(application)
     }
 
     companion object {
         internal val navigationControllerBindings = mutableMapOf<Application, NavigationController>()
+
+        private fun getBoundApplicationForTest(application: Application) = navigationControllerBindings[application]
     }
 }
 

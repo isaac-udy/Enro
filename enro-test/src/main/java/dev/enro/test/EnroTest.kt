@@ -5,12 +5,14 @@ import androidx.test.core.app.ApplicationProvider
 import dalvik.system.BaseDexClassLoader
 import dalvik.system.DexFile
 import dev.enro.core.controller.NavigationApplication
+import dev.enro.core.controller.NavigationComponentBuilder
 import dev.enro.core.controller.NavigationComponentBuilderCommand
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.plugins.EnroLogger
 import java.lang.reflect.Field
 
 object EnroTest {
-    val generatedBindings: List<Class<*>> by lazy {
+    private val generatedBindings: List<NavigationComponentBuilderCommand> by lazy {
         getDexFiles()
             .flatMap {
                 it.entries().asSequence()
@@ -22,15 +24,35 @@ object EnroTest {
             .filter {
                 NavigationComponentBuilderCommand::class.java.isAssignableFrom(it)
             }
+            .map {
+                it.newInstance() as NavigationComponentBuilderCommand
+            }
             .toList()
+    }
+
+    internal fun installNavigationController() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        if(application is NavigationApplication) return
+
+        NavigationComponentBuilder()
+            .apply { generatedBindings.forEach { it.execute(this) } }
+            .apply {
+                plugin(EnroLogger())
+            }
+            .callPrivate<NavigationController>("build")
+            .apply { callPrivate("installForTest", application) }
+    }
+
+    internal fun uninstallNavigationController() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        if(application is NavigationApplication) return
+        getCurrentNavigationController().callPrivate<Unit>("uninstall", application)
     }
 
     fun getCurrentNavigationController(): NavigationController {
         val application = ApplicationProvider.getApplicationContext<Application>()
-        val navigationApplication = application as? NavigationApplication
-            ?: throw IllegalStateException("The Application instance for the current test ($application) is not a NavigationApplication")
-
-        return navigationApplication.navigationController
+        if(application is NavigationApplication) return application.navigationController
+        return NavigationController.callPrivate("getBoundApplicationForTest", application) as NavigationController
     }
 }
 
@@ -62,4 +84,12 @@ private fun field(className: String, fieldName: String): Field {
     val field = clazz.getDeclaredField(fieldName)
     field.isAccessible = true
     return field
+}
+
+private fun <T> Any.callPrivate(methodName: String, vararg args: Any): T {
+    val method = this::class.java.declaredMethods.filter { it.name.startsWith(methodName) }.first()
+    method.isAccessible = true
+    val result = method.invoke(this, *args)
+    method.isAccessible = false
+    return result as T
 }

@@ -16,6 +16,7 @@ class EnroTestRule : TestRule {
 }
 
 fun runEnroTest(block: () -> Unit) {
+    EnroTest.installNavigationController()
     val navigationController = EnroTest.getCurrentNavigationController()
     navigationController.isInTest = true
     try {
@@ -23,6 +24,7 @@ fun runEnroTest(block: () -> Unit) {
     }
     finally {
         navigationController.isInTest = false
+        EnroTest.uninstallNavigationController()
     }
 }
 
