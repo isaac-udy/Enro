@@ -7,7 +7,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.core.*
-import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.PluginContainer
 import dev.enro.core.internal.NoNavigationKey
@@ -24,10 +23,11 @@ internal class NavigationLifecycleController(
     private val callbacks = NavigationContextLifecycleCallbacks(this)
 
     fun install(application: Application) {
-        application as? NavigationApplication
-            ?: throw IllegalStateException("Application MUST be a NavigationApplication")
-
         callbacks.install(application)
+    }
+
+    internal fun uninstall(application: Application) {
+        callbacks.uninstall(application)
     }
 
     fun onContextCreated(context: NavigationContext<*>, savedInstanceState: Bundle?) {
