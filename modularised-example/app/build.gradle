@@ -28,7 +28,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
@@ -61,11 +65,16 @@ dependencies {
     kapt 'androidx.hilt:hilt-compiler:1.0.0-beta01'
     kapt 'com.google.dagger:hilt-android-compiler:2.31-alpha'
 
+    testImplementation "org.robolectric:robolectric:4.4"
+
     implementation 'com.google.android.material:material:1.4.0-alpha01'
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'androidx.test.ext:junit:1.1.2'
     testImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     testImplementation project(":enro-test")
+
+    testImplementation 'com.google.dagger:hilt-android-testing:2.31-alpha'
+    kaptTest 'com.google.dagger:hilt-android-compiler:2.31-alpha'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

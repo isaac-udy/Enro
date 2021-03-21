@@ -9,18 +9,19 @@ import dev.enro.core.controller.NavigationComponentBuilder
 import dev.enro.core.controller.NavigationComponentBuilderCommand
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.plugins.EnroLogger
+import java.io.File
 import java.lang.reflect.Field
 
 object EnroTest {
     private val generatedBindings: List<NavigationComponentBuilderCommand> by lazy {
-        getDexFiles()
-            .flatMap {
-                it.entries().asSequence()
-            }
-            .filter { it.startsWith("enro_generated_binding") }
-            .mapNotNull {
-                runCatching { Class.forName(it) }.getOrNull()
-            }
+        val isRobolectric = runCatching {
+            val robolectricClassLoader = Class.forName("org.robolectric.internal.bytecode.SandboxClassLoader")
+            robolectricClassLoader.isAssignableFrom(Thread.currentThread().contextClassLoader::class.java)
+        }.getOrNull() ?: false
+
+        val classes = if(isRobolectric) getRobolectricClasses() else getDexClasses()
+
+        classes
             .filter {
                 NavigationComponentBuilderCommand::class.java.isAssignableFrom(it)
             }
@@ -56,8 +57,26 @@ object EnroTest {
     }
 }
 
+private fun getRobolectricClasses(): Sequence<Class<*>> {
+    return Thread.currentThread().contextClassLoader
+        .getResources("enro_generated_bindings")
+        .asSequence()
+        .flatMap {
+            File(it.file).list().orEmpty().asSequence()
+        }
+        .filter {
+            it.endsWith(".class")
+        }
+        .toSet()
+        .asSequence()
+        .mapNotNull {
+            runCatching {
+                Class.forName("enro_generated_bindings."+it.replace(".class", ""))
+            }.getOrNull()
+        }
+}
 
-private fun getDexFiles(): Sequence<DexFile> {
+private fun getDexClasses(): Sequence<Class<*>> {
     // Here we do some reflection to access the dex files from the class loader. These implementation details vary by platform version,
     // so we have to be a little careful, but not a huge deal since this is just for testing. It should work on 21+.
     // The source for reference is at:
@@ -74,9 +93,18 @@ private fun getDexFiles(): Sequence<DexFile> {
         dexElementsField.get(pathList) as Array<Any> // Type is Array<DexPathList.Element>
 
     val dexFileField = field("dalvik.system.DexPathList\$Element", "dexFile")
-    return dexElements.map {
-        dexFileField.get(it) as DexFile
-    }.asSequence()
+    return dexElements
+        .map {
+            dexFileField.get(it) as DexFile
+        }
+        .asSequence()
+        .flatMap {
+            it.entries().asSequence()
+        }
+        .filter { it.startsWith("enro_generated_binding") }
+        .mapNotNull {
+            runCatching { Class.forName(it) }.getOrNull()
+        }
 }
 
 private fun field(className: String, fieldName: String): Field {
