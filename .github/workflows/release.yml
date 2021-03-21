@@ -18,6 +18,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Run UI Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: ./gradlew :enro:connectedCheck
+
       - name: Install gpg secret key
         run: cat <(echo -e "${{ secrets.PUBLISH_SIGNING_KEY_LITERAL }}") | gpg --batch --import
 
@@ -26,12 +32,6 @@ jobs:
 
       - name: Export gpg secret key
         run: sudo gpg --export-secret-keys --pinentry-mode loopback --passphrase=${{ secrets.PUBLISH_SIGNING_KEY_PASSWORD }} ${{ secrets.PUBLISH_SIGNING_KEY_ID }} > ${{ secrets.PUBLISH_SIGNING_KEY_LOCATION }}
-
-#      - name: Run UI Tests
-#        uses: reactivecircus/android-emulator-runner@v2
-#        with:
-#          api-level: 29
-#          script: ./gradlew :enro:connectedCheck
 
       - name: Update Version Name
         run: ./gradlew updateVersion -PversionName=${{ github.event.inputs.versionname }}

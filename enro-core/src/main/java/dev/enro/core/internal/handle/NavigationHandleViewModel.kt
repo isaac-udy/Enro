@@ -10,7 +10,7 @@ import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.internal.NoNavigationKey
 
-internal class NavigationHandleViewModel(
+internal open class NavigationHandleViewModel(
     override val controller: NavigationController,
     internal val instruction: NavigationInstruction.Open
 ) : ViewModel(), NavigationHandle {

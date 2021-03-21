@@ -17,11 +17,11 @@
             </intent-filter>
         </activity>
         <activity android:name="dev.enro.example.login.LoginActivity"/>
-        <activity android:name=".dashboard.DashboardActivity" />
-        <activity android:name=".detail.DetailActivity" />
-        <activity android:name=".search.SearchActivity" />
-        <activity android:name=".multistack.MultiStackActivity" />
-        <activity android:name=".masterdetail.MasterDetailActivity" />
+        <activity android:name="dev.enro.example.dashboard.DashboardActivity" />
+        <activity android:name="dev.enro.example.detail.DetailActivity" />
+        <activity android:name="dev.enro.example.search.SearchActivity" />
+        <activity android:name="dev.enro.example.multistack.MultiStackActivity" />
+        <activity android:name="dev.enro.example.masterdetail.MasterDetailActivity" />
 
     </application>
 

@@ -1,5 +1,6 @@
 package dev.enro.core.result.internal
 
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Parcelable
@@ -109,12 +110,18 @@ class ResultChannelImpl<T> internal constructor(
         private const val EXTRA_RESULT_FORWARDING_DATA = "com.enro.core.RESULT_FORWARDING_DATA"
 
         internal fun getResultId(navigationHandle: NavigationHandle): ResultChannelId? {
-            val classLoader = navigationHandle.additionalData.classLoader
-            navigationHandle.additionalData.classLoader = ResultChannelId::class.java.classLoader
-            val resultId = navigationHandle.additionalData.getParcelable<ResultChannelId>(
+            return getResultId(navigationHandle.additionalData)
+        }
+
+        // Used reflectively by ResultExtensions in enro-test
+        @JvmStatic
+        private fun getResultId(bundle: Bundle): ResultChannelId? {
+            val classLoader = bundle.classLoader
+            bundle.classLoader = ResultChannelId::class.java.classLoader
+            val resultId = bundle.getParcelable<ResultChannelId>(
                 EXTRA_RESULT_CHANNEL_ID
             )
-            navigationHandle.additionalData.classLoader = classLoader
+            bundle.classLoader = classLoader
             return resultId
         }
 

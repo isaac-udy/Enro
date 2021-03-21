@@ -23,16 +23,16 @@ internal class LazyResultChannelProperty<T>(
 
     init {
         val handle = when (owner) {
-                is FragmentActivity -> lazy { owner.getNavigationHandle() }
-                is Fragment -> lazy { owner.getNavigationHandle() }
-                is NavigationHandle -> lazy { owner as NavigationHandle }
-                else -> throw IllegalArgumentException("Owner must be a Fragment, FragmentActivity, or NavigationHandle")
-            }
+            is FragmentActivity -> lazy { owner.getNavigationHandle() }
+            is Fragment -> lazy { owner.getNavigationHandle() }
+            is NavigationHandle -> lazy { owner as NavigationHandle }
+            else -> throw IllegalArgumentException("Owner must be a Fragment, FragmentActivity, or NavigationHandle")
+        }
         val lifecycle = owner as LifecycleOwner
 
         lifecycle.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if(event != Lifecycle.Event.ON_START)  return
+                if (event != Lifecycle.Event.ON_START) return
                 lifecycle.lifecycle.removeObserver(this)
 
                 resultChannel = ResultChannelImpl(
@@ -44,7 +44,7 @@ internal class LazyResultChannelProperty<T>(
             }
         })
 
-        lifecycle.lifecycle.addObserver(object: LifecycleEventObserver {
+        lifecycle.lifecycle.addObserver(object : LifecycleEventObserver {
             private var enroResult: EnroResult? = null
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if(event == Lifecycle.Event.ON_START) {

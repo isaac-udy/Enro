@@ -65,6 +65,7 @@ internal class EnroResult: EnroPlugin() {
     companion object {
         private val controllerBindings = mutableMapOf<NavigationController, EnroResult>()
 
+        @JvmStatic
         fun from(navigationController: NavigationController): EnroResult {
             return controllerBindings[navigationController]
                 ?: throw IllegalStateException("Nice Error")

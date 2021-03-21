@@ -20,7 +20,7 @@ class ExampleApplication : Application(), NavigationApplication {
 
         override<MainActivity, Any> {
             animation {
-                AnimationPair.Resource(R.anim.fragment_fade_enter, R.anim.enro_no_op_animation)
+                AnimationPair.Resource(android.R.anim.fade_in, R.anim.enro_no_op_animation)
             }
         }
     }
