@@ -72,7 +72,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
         val animations = animationsFor(fromContext, instruction)
 
-        host.fragmentManager.commitNow {
+        host.fragmentManager.commit {
             setCustomAnimations(animations.enter, animations.exit)
 
             if(fromContext.contextReference is DialogFragment && instruction.navigationDirection == NavigationDirection.REPLACE) {
@@ -107,7 +107,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         val animations = animationsFor(context, NavigationInstruction.Close)
         val sameFragmentManagers = previousFragment?.parentFragmentManager == context.fragment.parentFragmentManager
 
-        context.fragment.parentFragmentManager.commitNow {
+        context.fragment.parentFragmentManager.commit {
             setCustomAnimations(animations.enter, animations.exit)
             remove(context.fragment)
 
@@ -121,7 +121,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         }
 
         if(previousFragment != null && !sameFragmentManagers) {
-            previousFragment.parentFragmentManager.commitNow {
+            previousFragment.parentFragmentManager.commit {
                 setPrimaryNavigationFragment(previousFragment)
             }
         }

@@ -1,13 +1,12 @@
 package dev.enro.core
 
 import android.content.res.Resources
-import android.os.Parcel
 import android.os.Parcelable
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import kotlinx.android.parcel.Parcelize
 import dev.enro.core.controller.navigationController
+import dev.enro.core.fragment.internal.AbstractSingleFragmentActivity
+import dev.enro.core.fragment.internal.SingleFragmentKey
 import dev.enro.core.internal.getAttributeResourceId
+import kotlinx.android.parcel.Parcelize
 
 sealed class AnimationPair : Parcelable{
     abstract val enter: Int
@@ -67,6 +66,13 @@ fun animationsFor(
 ): AnimationPair.Resource {
     if (navigationInstruction is NavigationInstruction.Open && navigationInstruction.children.isNotEmpty()) {
         return AnimationPair.Resource(0, 0)
+    }
+
+    if(navigationInstruction is NavigationInstruction.Open && context.contextReference is AbstractSingleFragmentActivity) {
+        val singleFragmentKey = context.getNavigationHandleViewModel().key as SingleFragmentKey
+        if(navigationInstruction.instructionId == singleFragmentKey.instruction.instructionId) {
+            return AnimationPair.Resource(0, 0)
+        }
     }
 
     return when (navigationInstruction) {
