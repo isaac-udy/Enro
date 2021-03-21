@@ -8,6 +8,7 @@ import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.NavigationComponentBuilder
 import dev.enro.core.controller.NavigationComponentBuilderCommand
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.plugins.EnroHilt
 import dev.enro.core.plugins.EnroLogger
 import java.io.File
 import java.lang.reflect.Field
@@ -34,6 +35,11 @@ object EnroTest {
         NavigationComponentBuilder()
             .apply { generatedBindings.forEach { it.execute(this) } }
             .apply {
+                runCatching {
+                    if(Class.forName("dagger.hilt.internal.GeneratedComponentManager").isAssignableFrom(application::class.java)) {
+                        plugin(EnroHilt())
+                    }
+                }
                 plugin(EnroLogger())
             }
             .callPrivate<NavigationController>("build")
