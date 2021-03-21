@@ -15,7 +15,7 @@ import java.lang.reflect.Field
 object EnroTest {
     private val generatedBindings: List<NavigationComponentBuilderCommand> by lazy {
         val isDexClassLoader = Thread.currentThread().contextClassLoader::class.java is BaseDexClassLoader
-        val classes = if(isDexClassLoader) getGeneratedClasses() else getGeneratedClassesFromDexFile()
+        val classes = if(isDexClassLoader) getGeneratedClassesFromDexFile() else getGeneratedClasses()
 
         classes
             .filter {
