@@ -1,4 +1,4 @@
-[![Download](https://api.bintray.com/packages/isaac-udy/Enro/enro/images/download.svg) ](https://bintray.com/isaac-udy/Enro/enro/_latestVersion)
+[![Maven Central](https://img.shields.io/maven-central/v/dev.enro/enro.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22dev.enro%22%20AND%20a:%22enro%22)
 
 # Enro 🗺️
 A simple navigation library for Android 
@@ -20,8 +20,8 @@ A simple navigation library for Android
 Enro is published to [Maven Central](https://search.maven.org/). Make sure your project includes the `mavenCentral()` repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
-    implementation "dev.enro:enro:1.3.0"
-    kapt "dev.enro:enro-processor:1.3.0"
+    implementation "dev.enro:enro:1.3.2"
+    kapt "dev.enro:enro-processor:1.3.2"
 }
 ```
 <details>
