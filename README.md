@@ -186,15 +186,21 @@ override<MasterDetailActivity, DetailFragment>(
 #### My Activity crashes on launch, what's going on?!
 It's possible for an Activity to be launched from multiple places. Most of these can be controlled by Enro, but some of them cannot. For example, an Activity that's declared in the manifest as a MAIN/LAUNCHER Activity might be launched by the Android operating system when the user opens your application for the first time. Because Enro hasn't launched the Activity, it's not going to know what the NavigationKey for that Activity is, and won't be able to read it from the Activity's intent. 
 
-Luckily, there's an easy solution! When you declare an Activty or Fragment as a NavigationDestination, and the NavigationKey for that Activity or Fragment has a no-args constructor available, you can add "allowDefault = true" to the NavigationDestination arguments, and the no-args constructor will be used to construct a NavigationKey for that Activity/Fragment if there isn't one in the intent extras/fragment arguments.
+Luckily, there's an easy solution! When you declare an Activty or Fragment, you are able to do a small amount of configuration inside the `navigationHandle` block using the `defaultKey` method. This method takes a `NavigationKey` as an argument, and if the Fragment or Activity is opened without being passed a `NavigationKey` as part of its arguments, the value passed will be treated as the `NavigationKey`. This could occur because of an Activity being launched via a MAIN/LAUNCHER intent filter, via a standard `Intent`, or via a `Fragment` being added directly to a `FragmentManager` without any `NavigationInstruction` being applied. In other words, any situation where Enro is not used to launch the Activity or Fragment. 
 
 Example: 
 ```kotlin
 @Parcelize
-class MainKey(someOptionalArgument: Boolean = false) : NavigationKey
+class MainKey(isDefaultKey: Boolean = false) : NavigationKey
 
-@NavigationDestination(MainKey::class, allowDefault = true)
-class MainActivity : AppCompatActivity() {}
+@NavigationDestination(MainKey::class)
+class MainActivity : AppCompatActivity() {
+    private val navigation by navigationHandle<MainKey> {
+        defaultKey(
+            MainKey(isDefaultKey = true)
+        )
+    }
+}
 ```
 
 ## Why would I want to use Enro? 
