@@ -2,6 +2,13 @@ androidLibrary()
 apply plugin: "kotlin-kapt"
 publishAndroidModule("dev.enro", "enro")
 
+android {
+    lintOptions {
+        textReport true
+        textOutput 'stdout'
+    }
+}
+
 dependencies {
     releaseApi "dev.enro:enro-core:$versionName"
     debugApi project(":enro-core")
@@ -17,6 +24,8 @@ dependencies {
 
     releaseApi "dev.enro:enro-annotations:$versionName"
     debugApi project(":enro-annotations")
+
+    lintPublish(project(":enro-lint"))
 
     kaptAndroidTest project(":enro-processor")
 
