@@ -42,7 +42,7 @@ jobs:
       - name: Update Version Name
         run: ./gradlew updateVersion -PversionName=${{ github.event.inputs.versionname }}
 
-      - name: Publish Release
+      - name: Publish Release to Github Packages
         env:
           PUBLISH_GITHUB_USER: ${{ secrets.PUBLISH_GITHUB_USER }}
           PUBLISH_GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
@@ -51,7 +51,18 @@ jobs:
           PUBLISH_SIGNING_KEY_ID: ${{ secrets.PUBLISH_SIGNING_KEY_ID }}
           PUBLISH_SIGNING_KEY_PASSWORD: ${{ secrets.PUBLISH_SIGNING_KEY_PASSWORD }}
           PUBLISH_SIGNING_KEY_LOCATION: ${{ secrets.PUBLISH_SIGNING_KEY_LOCATION }}
-        run: ./gradlew publishAllPublicationsToSonatypeRepository publishAllPublicationsToGitHubPackagesRepository
+        run: ./gradlew --continue publishAllPublicationsToGitHubPackagesRepository || true
+
+      - name: Publish Release to Sonatype
+        env:
+          PUBLISH_GITHUB_USER: ${{ secrets.PUBLISH_GITHUB_USER }}
+          PUBLISH_GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+          PUBLISH_SONATYPE_USER: ${{ secrets.PUBLISH_SONATYPE_USER }}
+          PUBLISH_SONATYPE_PASSWORD: ${{ secrets.PUBLISH_SONATYPE_PASSWORD }}
+          PUBLISH_SIGNING_KEY_ID: ${{ secrets.PUBLISH_SIGNING_KEY_ID }}
+          PUBLISH_SIGNING_KEY_PASSWORD: ${{ secrets.PUBLISH_SIGNING_KEY_PASSWORD }}
+          PUBLISH_SIGNING_KEY_LOCATION: ${{ secrets.PUBLISH_SIGNING_KEY_LOCATION }}
+        run: ./gradlew publishAllPublicationsToSonatypeRepository
 
       - name: Update Repo
         uses: EndBug/add-and-commit@v5

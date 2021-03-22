@@ -52,7 +52,8 @@ afterEvaluate {
                     ":enro-viewmodel:publishToMavenLocal",
                     ":enro-masterdetail:publishToMavenLocal",
                     ":enro-multistack:publishToMavenLocal",
-                    ":enro-annotations:publishToMavenLocal"
+                    ":enro-annotations:publishToMavenLocal",
+                    ":enro-lint:publishToMavenLocal"
             )
 }
 
