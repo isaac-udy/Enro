@@ -9,6 +9,7 @@ class EnroIssueRegistry : IssueRegistry() {
     override val api: Int = CURRENT_API
 
     override val issues: List<Issue> = listOf(
-        incorrectlyTypedNavigationHandle
+        incorrectlyTypedNavigationHandle,
+        missingNavigationDestinationAnnotation
     )
 }

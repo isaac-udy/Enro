@@ -43,7 +43,15 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
                     ?.findAttributeValue("key")
                     .toUElementOfType<UClassLiteralExpression>()
                     ?.type
-                    ?: return
+
+                if(navigationDestinationType == null) {
+                    context.report(
+                        issue = missingNavigationDestinationAnnotation,
+                        location = context.getLocation(node),
+                        message = "${node.getContainingUClass()?.name} is not marked as a NavigationDestination"
+                    )
+                    return
+                }
 
                 if (!navigationHandleGenericType.isAssignableFrom(navigationDestinationType)) {
                     context.report(
