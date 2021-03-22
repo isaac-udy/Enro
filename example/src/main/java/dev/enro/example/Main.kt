@@ -3,13 +3,12 @@ package dev.enro.example
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.activity_main.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
-import dev.enro.multistack.MultistackContainer
 import dev.enro.multistack.multistackController
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.synthetic.main.activity_main.*
 
 @Parcelize
 class MainKey : NavigationKey
