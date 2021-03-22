@@ -31,8 +31,6 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
 
         return object : UElementHandler() {
             override fun visitCallExpression(node: UCallExpression) {
-                if (node.methodName != "navigationHandle") return
-
                 val returnType = node.returnType?.cast<PsiClassType>() ?: return
                 if (!returnType.isAssignableFrom(navigationHandlePropertyType)) return
 
