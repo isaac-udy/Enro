@@ -6,7 +6,6 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiType
 import com.intellij.psi.search.GlobalSearchScope
-import org.jetbrains.kotlin.utils.addToStdlib.cast
 import org.jetbrains.uast.*
 
 @Suppress("UnstableApiUsage")
@@ -31,22 +30,31 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
 
         return object : UElementHandler() {
             override fun visitCallExpression(node: UCallExpression) {
-                val returnType = node.returnType?.cast<PsiClassType>() ?: return
-                if (!returnType.isAssignableFrom(navigationHandlePropertyType)) return
+                val returnType = node.returnType as? PsiClassType ?: return
+                if (!navigationHandlePropertyType.isAssignableFrom(returnType)) return
 
                 val navigationHandleGenericType = returnType.parameters.first()
 
-                val navigationDestinationType = node.getContainingUClass()
-                    ?.getAnnotation("dev.enro.annotations.NavigationDestination")
+                val containingClass = node.getContainingUClass() ?: return
+                val navigationDestinationType = containingClass
+                    .getAnnotation("dev.enro.annotations.NavigationDestination")
                     ?.findAttributeValue("key")
                     .toUElementOfType<UClassLiteralExpression>()
                     ?.type
 
                 if(navigationDestinationType == null) {
+                    val classSource = containingClass.sourceElement?.text
                     context.report(
                         issue = missingNavigationDestinationAnnotation,
                         location = context.getLocation(node),
-                        message = "${node.getContainingUClass()?.name} is not marked as a NavigationDestination"
+                        message = "${containingClass.name} is not a NavigationDestination",
+                        quickfixData = fix()
+                            .name("Add NavigationDestination for ${navigationHandleGenericType.presentableText} to ${containingClass.name}")
+                            .replace()
+                            .range(context.getLocation(element = node.getContainingUFile()!!))
+                            .text("$classSource")
+                            .with("@NavigationDestination(${navigationHandleGenericType.presentableText}::class)\n$classSource")
+                            .build()
                     )
                     return
                 }
@@ -55,12 +63,13 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
                     context.report(
                         issue = incorrectlyTypedNavigationHandle,
                         location = context.getLocation(node),
-                        message = "NavigationDestination defined for this class is of type ${navigationDestinationType.presentableText}, which is not assignable to ${navigationHandleGenericType.presentableText}",
+                        message = "${containingClass.name} expects a NavigationKey of type '${navigationDestinationType.presentableText}', which cannot be cast to '${navigationHandleGenericType.presentableText}'",
                         quickfixData = fix()
                             .name("Change type to ${navigationDestinationType.presentableText}")
                             .replace()
                             .text(navigationHandleGenericType.presentableText)
-                            .with(navigationDestinationType.presentableText)
+                            .with(navigationDestinationType.canonicalText)
+                            .shortenNames()
                             .build()
                     )
                 }
