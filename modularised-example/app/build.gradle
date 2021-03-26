@@ -73,7 +73,7 @@ dependencies {
     testImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     testImplementation project(":enro-test")
 
-    testImplementation 'com.google.dagger:hilt-android-testing:2.31-alpha'
+    testImplementation 'com.google.dagger:hilt-android-testing:2.33-beta'
     kaptTest 'com.google.dagger:hilt-android-compiler:2.31-alpha'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
