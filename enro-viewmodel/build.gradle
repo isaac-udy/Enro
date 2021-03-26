@@ -5,7 +5,7 @@ dependencies {
     releaseApi "dev.enro:enro-core:$versionName"
     debugApi project(":enro-core")
 
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    implementation deps.androidx.lifecycle
 }
 
 afterEvaluate {

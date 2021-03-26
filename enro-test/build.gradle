@@ -8,15 +8,15 @@ dependencies {
     releaseApi "dev.enro:enro-viewmodel:$versionName"
     debugApi project(":enro-viewmodel")
 
-    implementation 'androidx.core:core-ktx:1.3.2'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation deps.androidx.core
+    implementation deps.androidx.appcompat
 
-    implementation 'junit:junit:4.13.1'
-    implementation 'androidx.test:runner:1.3.0'
-    implementation 'androidx.test:core:1.3.0'
-    implementation 'androidx.test.espresso:espresso-core:3.3.0'
+    implementation deps.testing.junit
+    implementation deps.testing.androidx.runner
+    implementation deps.testing.androidx.core
+    implementation deps.testing.androidx.espresso
     //noinspection FragmentGradleConfiguration
-    implementation "androidx.fragment:fragment-testing:1.3.1"
+    implementation deps.testing.androidx.fragment
 }
 
 afterEvaluate {
