@@ -14,7 +14,7 @@ dependencies {
 
     compileOnly 'com.google.dagger:hilt-android:2.31-alpha'
     kapt 'androidx.hilt:hilt-compiler:1.0.0-beta01'
-    kapt 'com.google.dagger:hilt-android-compiler:2.31-alpha'
+    kapt 'com.google.dagger:hilt-android-compiler:2.33-beta'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
