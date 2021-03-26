@@ -4,8 +4,8 @@ apply plugin: 'kotlin-kapt'
 publishJavaModule("dev.enro", "enro-annotations")
 
 dependencies {
-    api "javax.annotation:jsr250-api:1.0"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    api deps.processing.jsr250
+    implementation deps.kotlin.stdLib
 }
 
 sourceCompatibility = "8"
