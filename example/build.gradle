@@ -2,13 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
+useCompose()
 
 android {
     compileSdkVersion 29
 
     defaultConfig {
         applicationId "dev.enro.example"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -39,6 +40,8 @@ android {
 dependencies {
     implementation project(":enro")
     kapt project(":enro-processor")
+
+    implementation deps.compose.material
 
     implementation deps.kotlin.stdLib
     implementation deps.androidx.core
