@@ -65,7 +65,7 @@ dependencies {
     kapt 'androidx.hilt:hilt-compiler:1.0.0-beta01'
     kapt 'com.google.dagger:hilt-android-compiler:2.31-alpha'
 
-    testImplementation "org.robolectric:robolectric:4.4"
+    testImplementation "org.robolectric:robolectric:4.5.1"
 
     implementation 'com.google.android.material:material:1.4.0-alpha01'
     testImplementation 'junit:junit:4.13.1'
