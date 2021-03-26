@@ -23,7 +23,7 @@ abstract class ComposableDestination: LifecycleOwner, ViewModelStoreOwner {
     internal lateinit var lifecycleOwner: LifecycleOwner
     internal lateinit var viewModelStoreOwner: ViewModelStoreOwner
 
-    private var initialised = false
+    internal var initialised = false
 
     internal val parentContext: NavigationContext<*>? = null // TODO - add proper context references!
     internal val childContext: NavigationContext<*>?  = null// TODO - add proper context references!
