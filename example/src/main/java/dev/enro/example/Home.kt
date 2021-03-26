@@ -5,12 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.fragment_home.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.forward
 import dev.enro.core.getNavigationHandle
+import dev.enro.example.databinding.FragmentHomeBinding
+import kotlinx.parcelize.Parcelize
 
 
 @Parcelize
@@ -28,9 +28,11 @@ class HomeFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        launchExample.setOnClickListener {
-            getNavigationHandle()
-                .forward(SimpleExampleKey("Start", "Home", listOf("Home")))
+        FragmentHomeBinding.bind(view).apply {
+            launchExample.setOnClickListener {
+                getNavigationHandle()
+                    .forward(SimpleExampleKey("Start", "Home", listOf("Home")))
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ import dev.enro.core.navigationHandle
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 interface EnroTestTestKey : NavigationKey {
     val name: String

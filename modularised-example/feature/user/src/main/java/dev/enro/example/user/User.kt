@@ -5,11 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import kotlinx.android.synthetic.main.user.*
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.*
+import dev.enro.core.navigationHandle
+import dev.enro.core.replaceRoot
 import dev.enro.example.core.navigation.LoginKey
 import dev.enro.example.core.navigation.UserKey
+import dev.enro.example.user.databinding.UserBinding
 
 @NavigationDestination(UserKey::class)
 class UserFragment : Fragment() {
@@ -27,9 +28,11 @@ class UserFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        subtitle.text = navigation.key.userId
-        logOutButton.setOnClickListener {
-            navigation.replaceRoot(LoginKey())
+        UserBinding.bind(view).apply {
+            subtitle.text = navigation.key.userId
+            logOutButton.setOnClickListener {
+                navigation.replaceRoot(LoginKey())
+            }
         }
     }
 }

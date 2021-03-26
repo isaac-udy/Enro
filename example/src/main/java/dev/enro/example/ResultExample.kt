@@ -15,11 +15,11 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.closeWithResult
 import dev.enro.core.result.registerForNavigationResult
+import dev.enro.example.databinding.FragmentRequestStringBinding
+import dev.enro.example.databinding.FragmentResultExampleBinding
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.fragment_request_string.*
-import kotlinx.android.synthetic.main.fragment_result_example.*
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 class ResultExampleKey : NavigationKey
@@ -39,15 +39,17 @@ class RequestExampleFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        viewModel.results.observe(viewLifecycleOwner, Observer {
-            results.text = it.joinToString("\n")
-            if(it.isEmpty()) {
-                results.text = "(None)"
-            }
-        })
+        FragmentResultExampleBinding.bind(view).apply {
+            viewModel.results.observe(viewLifecycleOwner, Observer {
+                results.text = it.joinToString("\n")
+                if (it.isEmpty()) {
+                    results.text = "(None)"
+                }
+            })
 
-        requestStringButton.setOnClickListener {
-            viewModel.onRequestString()
+            requestStringButton.setOnClickListener {
+                viewModel.onRequestString()
+            }
         }
     }
 }
@@ -85,8 +87,10 @@ class RequestStringFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        sendResultButton.setOnClickListener {
-            navigation.closeWithResult(input.text.toString())
+        FragmentRequestStringBinding.bind(view).apply {
+            sendResultButton.setOnClickListener {
+                navigation.closeWithResult(input.text.toString())
+            }
         }
     }
 }

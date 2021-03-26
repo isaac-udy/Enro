@@ -15,7 +15,7 @@ import dev.enro.example.core.data.UserRepository
 import dev.enro.example.core.navigation.DashboardKey
 import dev.enro.example.core.navigation.LaunchKey
 import dev.enro.example.core.navigation.LoginKey
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
 
 @Parcelize

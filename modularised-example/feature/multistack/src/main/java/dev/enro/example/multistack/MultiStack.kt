@@ -11,16 +11,14 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.multistack.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.forward
-import dev.enro.core.getNavigationHandle
 import dev.enro.core.navigationHandle
 import dev.enro.example.core.navigation.MultiStackKey
-import dev.enro.multistack.MultistackContainer
+import dev.enro.example.multistack.databinding.MultistackBinding
 import dev.enro.multistack.multistackController
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 class MultiStackItem(
@@ -45,18 +43,21 @@ class MultiStackActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.multistack)
+        val binding = MultistackBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        redNavigationButton.setOnClickListener {
-            multistack.openStack(R.id.redFrame)
-        }
+        binding.apply {
+            redNavigationButton.setOnClickListener {
+                multistack.openStack(R.id.redFrame)
+            }
 
-        greenNavigationButton.setOnClickListener {
-            multistack.openStack(R.id.greenFrame)
-        }
+            greenNavigationButton.setOnClickListener {
+                multistack.openStack(R.id.greenFrame)
+            }
 
-        blueNavigationButton.setOnClickListener {
-            multistack.openStack(R.id.blueFrame)
+            blueNavigationButton.setOnClickListener {
+                multistack.openStack(R.id.blueFrame)
+            }
         }
     }
 }

@@ -16,8 +16,8 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.forward
 import dev.enro.core.navigationHandle
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.fragment_features.*
+import dev.enro.example.databinding.FragmentFeaturesBinding
+import kotlinx.parcelize.Parcelize
 
 
 @Parcelize
@@ -40,8 +40,10 @@ class FeaturesFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = adapter
+        FragmentFeaturesBinding.bind(view).apply {
+            recyclerView.layoutManager = LinearLayoutManager(requireContext())
+            recyclerView.adapter = adapter
+        }
 
         adapter.submitList(features)
     }

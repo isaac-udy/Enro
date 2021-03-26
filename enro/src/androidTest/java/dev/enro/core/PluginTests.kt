@@ -2,7 +2,7 @@ package dev.enro.core
 
 import androidx.test.core.app.ActivityScenario
 import junit.framework.Assert.assertEquals
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import dev.enro.TestActivity
 import dev.enro.TestFragment
 import dev.enro.TestPlugin

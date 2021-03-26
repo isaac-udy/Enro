@@ -1,7 +1,7 @@
 package dev.enro.example.core.navigation
 
 import dev.enro.core.NavigationKey
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 object LaunchKey: NavigationKey

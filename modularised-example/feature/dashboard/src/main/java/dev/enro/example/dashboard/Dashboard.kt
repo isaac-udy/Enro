@@ -13,9 +13,9 @@ import dev.enro.core.result.registerForNavigationResult
 import dev.enro.example.core.base.SingleStateViewModel
 import dev.enro.example.core.data.SimpleDataRepository
 import dev.enro.example.core.navigation.*
+import dev.enro.example.dashboard.databinding.DashboardBinding
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
-import kotlinx.android.synthetic.main.dashboard.*
 
 @NavigationDestination(DashboardKey::class)
 class DashboardActivity : AppCompatActivity() {
@@ -34,27 +34,31 @@ class DashboardActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val binding = DashboardBinding.inflate(layoutInflater)
         setContentView(R.layout.dashboard)
 
-        privateMessagesTitle.setOnClickListener { viewModel.onMyPrivateMessagesSelected() }
-        publicMessagesTitle.setOnClickListener { viewModel.onMyPublicMessagesSelected() }
-        otherMessagesTitle.setOnClickListener { viewModel.onOtherMessagesSelected() }
-        allMessagesTitle.setOnClickListener { viewModel.onAllMessagesSelected() }
-        userInfoButton.setOnClickListener { viewModel.onUserInfoSelected() }
-        multiStackButton.setOnClickListener { viewModel.onMultiStackSelected() }
+        binding.apply {
+            privateMessagesTitle.setOnClickListener { viewModel.onMyPrivateMessagesSelected() }
+            publicMessagesTitle.setOnClickListener { viewModel.onMyPublicMessagesSelected() }
+            otherMessagesTitle.setOnClickListener { viewModel.onOtherMessagesSelected() }
+            allMessagesTitle.setOnClickListener { viewModel.onAllMessagesSelected() }
+            userInfoButton.setOnClickListener { viewModel.onUserInfoSelected() }
+            multiStackButton.setOnClickListener { viewModel.onMultiStackSelected() }
 
-        viewModel.observableState.observe(this) {
-            subtitle.text = "Welcome back, ${it.userId}"
+            viewModel.observableState.observe(this@DashboardActivity) {
+                subtitle.text = "Welcome back, ${it.userId}"
 
-            privateMessagesAmount.text = it.myPrivateMessageCount.toString()
-            publicMessagesAmount.text = it.myPublicMessageCount.toString()
-            otherMessagesAmount.text = it.otherPublicMessageCount.toString()
-            allMessagesAmount.text = it.allMessageCount.toString()
+                privateMessagesAmount.text = it.myPrivateMessageCount.toString()
+                publicMessagesAmount.text = it.myPublicMessageCount.toString()
+                otherMessagesAmount.text = it.otherPublicMessageCount.toString()
+                allMessagesAmount.text = it.allMessageCount.toString()
 
-            if (it.closeRequested && !dialog.isShowing) {
-                dialog.show()
+                if (it.closeRequested && !dialog.isShowing) {
+                    dialog.show()
+                }
             }
         }
+
     }
 
     override fun onDestroy() {

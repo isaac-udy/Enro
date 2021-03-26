@@ -1,7 +1,7 @@
 package dev.enro.result
 
 import android.widget.TextView
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import dev.enro.TestActivity
 import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination

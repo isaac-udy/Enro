@@ -3,8 +3,6 @@ package dev.enro.example.login
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
-import androidx.lifecycle.observe
-import kotlinx.android.synthetic.main.login.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.forward
@@ -15,6 +13,7 @@ import dev.enro.example.core.data.UserRepository
 import dev.enro.example.core.navigation.DashboardKey
 import dev.enro.example.core.navigation.LoginErrorKey
 import dev.enro.example.core.navigation.LoginKey
+import dev.enro.example.login.databinding.LoginBinding
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
 
@@ -30,20 +29,23 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.login)
+        val binding = LoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        viewModel.observableState.observe(this) {
-            if(userInput.text.toString() != it.username) {
-                userInput.setTextKeepState(it.username)
+        binding.apply {
+            viewModel.observableState.observe(this@LoginActivity) {
+                if(userInput.text.toString() != it.username) {
+                    userInput.setTextKeepState(it.username)
+                }
             }
-        }
 
-        userInput.doOnTextChanged { text, _, _, _ ->
-            viewModel.onUserNameUpdated(text?.toString() ?: "")
-        }
+            userInput.doOnTextChanged { text, _, _, _ ->
+                viewModel.onUserNameUpdated(text?.toString() ?: "")
+            }
 
-        loginButton.setOnClickListener {
-            viewModel.onLogin()
+            loginButton.setOnClickListener {
+                viewModel.onLogin()
+            }
         }
     }
 }
