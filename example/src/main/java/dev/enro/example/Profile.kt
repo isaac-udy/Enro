@@ -5,9 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import kotlinx.parcelize.Parcelize
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 class Profile : NavigationKey
