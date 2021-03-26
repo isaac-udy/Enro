@@ -1,10 +1,7 @@
 package dev.enro.core.internal.handle
 
-import androidx.activity.viewModels
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.core.NavigationInstruction
@@ -33,21 +30,17 @@ internal fun ViewModelStoreOwner.createNavigationHandleViewModel(
     navigationController: NavigationController,
     instruction: NavigationInstruction.Open
 ): NavigationHandleViewModel {
-    return when(this) {
-        is FragmentActivity -> viewModels<NavigationHandleViewModel> {
-            NavigationHandleViewModelFactory(navigationController, instruction)
-        }.value
-        is Fragment -> viewModels<NavigationHandleViewModel> {
-            NavigationHandleViewModelFactory(navigationController, instruction)
-        }.value
-        else -> throw IllegalArgumentException("ViewModelStoreOwner must be a Fragment or Activity")
-    }
+    return ViewModelLazy(
+        viewModelClass = NavigationHandleViewModel::class,
+        storeProducer = { viewModelStore },
+        factoryProducer = { NavigationHandleViewModelFactory(navigationController, instruction) }
+    ).value
 }
 
 internal fun ViewModelStoreOwner.getNavigationHandleViewModel(): NavigationHandleViewModel {
-    return when(this) {
-        is FragmentActivity -> viewModels<NavigationHandleViewModel> { ViewModelProvider.NewInstanceFactory() }.value
-        is Fragment -> viewModels<NavigationHandleViewModel> { ViewModelProvider.NewInstanceFactory() }.value
-        else -> throw IllegalArgumentException("ViewModelStoreOwner must be a Fragment or Activity")
-    }
+    return ViewModelLazy(
+        viewModelClass = NavigationHandleViewModel::class,
+        storeProducer = { viewModelStore },
+        factoryProducer = { ViewModelProvider.NewInstanceFactory() }
+    ).value
 }

@@ -2,6 +2,7 @@ package dev.enro.core.controller
 
 import android.app.Application
 import dev.enro.core.*
+import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.NavigatorContainer
 import dev.enro.core.controller.container.PluginContainer
@@ -106,6 +107,21 @@ class NavigationController internal constructor(
     private fun uninstall(application: Application) {
         navigationControllerBindings.remove(application)
         contextController.uninstall(application)
+    }
+
+    internal fun onComposeDestinationAttached(destination: ComposableDestination) {
+        contextController.onContextCreated(
+            ComposeContext(destination),
+            null // TODO Saved instance state
+        )
+    }
+
+    internal fun onComposeDestinationActive(destination: ComposableDestination) {
+        pluginContainer.onActive(destination.navigationHandle)
+    }
+
+    internal fun onComposeDestinationClosed(destination: ComposableDestination) {
+        pluginContainer.onClosed(destination.navigationHandle)
     }
 
     companion object {
