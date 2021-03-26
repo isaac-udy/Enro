@@ -1,7 +1,7 @@
 package dev.enro.example
 
 import android.app.AlertDialog
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey

@@ -6,9 +6,9 @@ import androidx.lifecycle.Observer
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
+import dev.enro.example.databinding.ActivityMainBinding
 import dev.enro.multistack.multistackController
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 class MainKey : NavigationKey
@@ -30,25 +30,28 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        val binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        bottomNavigation.setOnNavigationItemSelectedListener {
-            when (it.itemId) {
-                R.id.home -> mutlistack.openStack(R.id.homeContainer)
-                R.id.features -> mutlistack.openStack(R.id.featuresContainer)
-                R.id.profile -> mutlistack.openStack(R.id.profileContainer)
-                else -> return@setOnNavigationItemSelectedListener false
+        binding.apply {
+            bottomNavigation.setOnNavigationItemSelectedListener {
+                when (it.itemId) {
+                    R.id.home -> mutlistack.openStack(R.id.homeContainer)
+                    R.id.features -> mutlistack.openStack(R.id.featuresContainer)
+                    R.id.profile -> mutlistack.openStack(R.id.profileContainer)
+                    else -> return@setOnNavigationItemSelectedListener false
+                }
+                return@setOnNavigationItemSelectedListener true
             }
-            return@setOnNavigationItemSelectedListener true
+
+            mutlistack.activeContainer.observe(this@MainActivity, Observer { selectedContainer ->
+                bottomNavigation.selectedItemId = when (selectedContainer) {
+                    R.id.homeContainer -> R.id.home
+                    R.id.featuresContainer -> R.id.features
+                    R.id.profileContainer -> R.id.profile
+                    else -> 0
+                }
+            })
         }
-
-        mutlistack.activeContainer.observe(this, Observer { selectedContainer ->
-            bottomNavigation.selectedItemId = when (selectedContainer) {
-                R.id.homeContainer -> R.id.home
-                R.id.featuresContainer -> R.id.features
-                R.id.profileContainer -> R.id.profile
-                else -> 0
-            }
-        })
     }
 }

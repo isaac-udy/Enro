@@ -1,6 +1,6 @@
 package dev.enro
 import android.R
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle

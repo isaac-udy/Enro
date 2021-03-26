@@ -1,9 +1,9 @@
 package dev.enro.core.internal
 
 import android.os.Bundle
-import kotlinx.android.parcel.Parcelize
 import dev.enro.core.NavigationKey
 import dev.enro.core.Navigator
+import kotlinx.parcelize.Parcelize
 import kotlin.reflect.KClass
 
 @Parcelize

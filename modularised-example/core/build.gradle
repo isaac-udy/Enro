@@ -12,4 +12,5 @@ dependencies {
     api deps.androidx.constraintlayout
     api deps.androidx.fragment
     api deps.androidx.activity
+    api deps.material
 }

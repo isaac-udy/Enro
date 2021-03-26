@@ -6,7 +6,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 internal data class SingleFragmentKey(

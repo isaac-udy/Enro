@@ -9,7 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import dev.enro.core.NavigationKey
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty

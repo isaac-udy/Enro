@@ -3,7 +3,7 @@ package dev.enro.example
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 

@@ -4,7 +4,7 @@ versionProperties.load(new FileInputStream(rootProject.file("version.properties"
 ext.androidLibrary = {
     apply plugin: 'com.android.library'
     apply plugin: 'kotlin-android'
-    apply plugin: 'kotlin-android-extensions'
+    apply plugin: 'kotlin-parcelize'
 
     android {
         compileSdkVersion 30
@@ -35,6 +35,7 @@ ext.androidLibrary = {
         }
         buildFeatures {
             buildConfig = false
+            viewBinding = true
         }
     }
 
