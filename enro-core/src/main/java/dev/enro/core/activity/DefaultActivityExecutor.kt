@@ -30,9 +30,9 @@ object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, Navig
 
         activity.startActivity(intent)
         if (instruction.children.isEmpty()) {
-//            activity.overridePendingTransition(animations.enter, animations.exit)
+            activity.overridePendingTransition(animations.enter, animations.exit)
         } else {
-//            activity.overridePendingTransition(0, 0)
+            activity.overridePendingTransition(0, 0)
         }
     }
 
@@ -41,7 +41,7 @@ object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, Navig
         context.navigator ?: return
 
         val animations = animationsFor(context, NavigationInstruction.Close)
-//        context.activity.overridePendingTransition(animations.enter, animations.exit)
+        context.activity.overridePendingTransition(animations.enter, animations.exit)
     }
 
     fun createIntent(args: ExecutorArgs<out Any, out FragmentActivity, out NavigationKey>) =

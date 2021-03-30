@@ -2,6 +2,7 @@ package dev.enro.core
 
 import android.content.res.Resources
 import android.os.Parcelable
+import dev.enro.core.compose.ComposeFragmentHost
 import dev.enro.core.controller.navigationController
 import dev.enro.core.fragment.internal.AbstractSingleFragmentActivity
 import dev.enro.core.fragment.internal.SingleFragmentKey
@@ -73,6 +74,10 @@ fun animationsFor(
         if(navigationInstruction.instructionId == singleFragmentKey.instruction.instructionId) {
             return AnimationPair.Resource(0, 0)
         }
+    }
+
+    if(context.contextReference is ComposeFragmentHost) {
+        return AnimationPair.Resource(0, 0)
     }
 
     return when (navigationInstruction) {

@@ -25,7 +25,7 @@ abstract class ComposableDestination: LifecycleOwner, ViewModelStoreOwner {
 
     internal var initialised = false
 
-    internal val parentContext: NavigationContext<*>? = null // TODO - add proper context references!
+    internal var parentContext: NavigationContext<*>? = null // TODO - add proper context references!
     internal val childContext: NavigationContext<*>?  = null// TODO - add proper context references!
 
     override fun getLifecycle(): Lifecycle {

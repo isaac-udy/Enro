@@ -38,7 +38,8 @@ fun ComposeSimpleExample() {
             ) {
                 Text(
                     text = "Example Composable",
-                    style = MaterialTheme.typography.h4
+                    style = MaterialTheme.typography.h4,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
 
                 Text(

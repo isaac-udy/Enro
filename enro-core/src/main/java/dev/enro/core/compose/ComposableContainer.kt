@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
 import dev.enro.core.*
@@ -28,7 +29,8 @@ internal val LocalComposableContainer = compositionLocalOf<ComposableContainer> 
 }
 
 class ComposableContainer(
-        private val navigationController: () -> NavigationController
+        private val navigationController: () -> NavigationController,
+        private val hostContext: () -> NavigationContext<out Fragment>
 ) {
 
     private val backstackState =
@@ -67,7 +69,8 @@ class ComposableContainer(
         }
 
         if (backstackState.value?.size == 1) {
-            context?.controller?.close(context?.activity?.navigationContext ?: return)
+            context?.controller?.close(hostContext())
+            return
         }
 
         previousState.value = backstackState.value?.lastOrNull()
