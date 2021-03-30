@@ -22,30 +22,29 @@ internal data class HostedComposeKey(
 class ComposeFragmentHost : Fragment() {
     private val navigationHandle by navigationHandle<HostedComposeKey>()
 
-    internal val rootContainer = ComposableContainer(
-        navigationController = { requireActivity().application.navigationController },
-        hostContext = { navigationContext }
-    )
+    internal lateinit var rootContainer: ComposableContainer
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        if(savedInstanceState == null) {
-            val controller = navigationHandle.controller
-            val composeKey = navigationHandle.key.instruction.navigationKey
-            val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
-                .newInstance() as ComposableDestination
+        rootContainer = ComposableContainer(
+            initialState=  savedInstanceState?.getParcelableArrayList("backstackState") ?: listOf(navigationHandle.key.instruction),
+            navigationController = { requireActivity().application.navigationController },
+            hostContext = { navigationContext },
+        )
 
-            destination.instruction = navigationHandle.key.instruction
-            rootContainer.push(destination)
-        }
-
+        Log.e("CREATED CFH", "${this.hashCode()}, ${rootContainer.hashCode()}, ${rootContainer.backstackState.value}")
         return ComposeView(requireContext()).apply {
             setContent {
                 rootContainer.Render()
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelableArrayList("backstackState", ArrayList(rootContainer.backstackState.value.orEmpty()))
     }
 }

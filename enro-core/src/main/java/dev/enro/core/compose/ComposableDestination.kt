@@ -11,7 +11,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
-import dev.enro.core.controller.navigationController
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
 abstract class ComposableDestination: LifecycleOwner, ViewModelStoreOwner {
@@ -22,8 +21,6 @@ abstract class ComposableDestination: LifecycleOwner, ViewModelStoreOwner {
     internal lateinit var navigationHandle: NavigationHandle
     internal lateinit var lifecycleOwner: LifecycleOwner
     internal lateinit var viewModelStoreOwner: ViewModelStoreOwner
-
-    internal var initialised = false
 
     internal var parentContext: NavigationContext<*>? = null // TODO - add proper context references!
     internal val childContext: NavigationContext<*>?  = null// TODO - add proper context references!
@@ -42,11 +39,6 @@ abstract class ComposableDestination: LifecycleOwner, ViewModelStoreOwner {
         container = LocalComposableContainer.current
         lifecycleOwner = LocalLifecycleOwner.current
         viewModelStoreOwner = viewModel<ComposableDestinationViewModelStoreOwner>(instruction.instructionId)
-
-        if(!initialised) {
-            initialised = true
-            activity.application.navigationController.onComposeDestinationAttached(this)
-        }
 
         navigationHandle = getNavigationHandleViewModel()
 

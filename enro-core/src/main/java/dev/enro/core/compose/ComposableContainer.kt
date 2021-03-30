@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
@@ -29,43 +31,39 @@ internal val LocalComposableContainer = compositionLocalOf<ComposableContainer> 
 }
 
 class ComposableContainer(
-        private val navigationController: () -> NavigationController,
-        private val hostContext: () -> NavigationContext<out Fragment>
+    internal val initialState: List<NavigationInstruction.Open>,
+    internal val navigationController: () -> NavigationController,
+    internal val hostContext: () -> NavigationContext<out Fragment>
 ) {
 
-    private val backstackState =
-            MutableLiveData<List<Pair<ComposableDestination, Int>>>(emptyList())
+    val backstackState = MutableLiveData<List<NavigationInstruction.Open>>(initialState)
+    private val destinations = mutableMapOf<String, ComposableDestination>()
 
-    private val previousState =
-            MutableLiveData<Pair<ComposableDestination, Int>?>() // TODO Saved State
+    private val currentDestination get() = backstackState.value?.lastOrNull()?.instructionId?.let { destinations[it] }
+    private val previousState = MutableLiveData<NavigationInstruction.Open?>()
 
-    private val index = MutableLiveData(0)
+    internal val context: NavigationContext<*>? get() = currentDestination?.getNavigationHandleViewModel()?.navigationContext
 
-    internal val context: NavigationContext<*>? get() = backstackState.value?.lastOrNull()?.first?.getNavigationHandleViewModel()?.navigationContext
-
-    fun push(destination: ComposableDestination) {
-        index.value = index.value!! + 1
-        when (destination.instruction.navigationDirection) {
+    fun push(instruction: NavigationInstruction.Open) {
+        when (instruction.navigationDirection) {
             NavigationDirection.FORWARD -> {
-                backstackState.value =
-                        backstackState.value?.plus(destination to index.value!!)
+                backstackState.value = backstackState.value.orEmpty().plus(instruction)
             }
             NavigationDirection.REPLACE -> {
                 previousState.value = backstackState.value?.lastOrNull()
-                backstackState.value =
-                        backstackState.value?.dropLast(1)?.plus(destination to index.value!!)
+                backstackState.value = backstackState.value.orEmpty().dropLast(1).plus(instruction)
             }
             NavigationDirection.REPLACE_ROOT -> {
                 previousState.value = backstackState.value?.lastOrNull()
-                backstackState.value =
-                        listOf(destination to index.value!!)
+                backstackState.value = listOf(instruction)
             }
         }
     }
 
     fun close() {
         backstackState.value?.lastOrNull()?.let {
-            navigationController().onComposeDestinationClosed(it.first)
+            val destination = destinations[it.instructionId] ?: return@let
+            navigationController().onComposeDestinationClosed(destination)
         }
 
         if (backstackState.value?.size == 1) {
@@ -79,31 +77,31 @@ class ComposableContainer(
 
     @Composable
     fun Render() {
-        val backstack = backstackState.observeAsState(initial = emptyList())
+        val backstack = backstackState.observeAsState()
         val previous = previousState.observeAsState()
-        val visible = backstack.value.lastOrNull()
+        val visible = backstack.value?.lastOrNull() ?: return
         val context = LocalContext.current as FragmentActivity
 
         val animations = remember(visible) {
             if (visible == null) return@remember AnimationPair.Resource(0, 0)
             animationsFor(
                     context.navigationContext,
-                    if (previous.value == null) visible.first.instruction else NavigationInstruction.Close
+                    if (previous.value == null) visible else NavigationInstruction.Close
             )
         }
 
         CompositionLocalProvider(
                 LocalComposableContainer provides this
         ) {
-            var toRender = backstack.value
+            var toRender = backstack.value.orEmpty()
             if (previous.value != null) {
                 toRender = toRender + previous.value!!
             }
             // TODO - sometimes renders too much (i.e. renders the item behind the current item)
             toRender.takeLast(2).forEach {
-                key(it.second) {
+                key(it.instructionId) {
                     val animationState = getAnimationResourceState(if (visible == it) animations.enter else animations.exit)
-                    if (animationState.isActive || visible == it || !it.first.initialised) {
+                    if (animationState.isActive || visible == it) {
                         Box(
                                 modifier = Modifier
                                         .fillMaxSize()
@@ -120,7 +118,7 @@ class ComposableContainer(
                                             it != visible
                                         }
                         ) {
-                            it.first.InternalRender()
+                            getDestination(it).InternalRender()
                         }
                     }
                     if (!animationState.isActive && it == previous.value) {
@@ -134,9 +132,30 @@ class ComposableContainer(
             if (visible == null) {
                 true
             } else {
-                navigationController().onComposeDestinationActive(visible.first)
+                val destination = destinations[visible.instructionId] ?: return@remember true
+                navigationController().onComposeDestinationActive(destination)
                 true
             }
+        }
+    }
+
+    @Composable
+    private fun getDestination(instruction: NavigationInstruction.Open): ComposableDestination {
+        return destinations.getOrPut(instruction.instructionId) {
+            val controller = navigationController()
+            val composeKey = instruction.navigationKey
+            val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
+                .newInstance() as ComposableDestination
+            destination.instruction = instruction
+
+            destination.activity = LocalContext.current as FragmentActivity
+            destination.container = LocalComposableContainer.current
+            destination.lifecycleOwner = LocalLifecycleOwner.current
+            destination.viewModelStoreOwner = viewModel<ComposableDestinationViewModelStoreOwner>(instruction.instructionId)
+
+            controller.onComposeDestinationAttached(destination)
+
+            return@getOrPut destination
         }
     }
 }

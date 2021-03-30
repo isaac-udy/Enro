@@ -30,15 +30,8 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
             return
         }
 
-        val controller = args.fromContext.controller
-        val composeKey = args.key
-        val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
-            .newInstance() as ComposableDestination
-
-        destination.instruction = args.instruction
-
         args.fromContext.contextReference as ComposableDestination
-        args.fromContext.contextReference.container.push(destination)
+        args.fromContext.contextReference.container.push(args.instruction)
     }
 
     override fun close(context: NavigationContext<out ComposableDestination>) {
