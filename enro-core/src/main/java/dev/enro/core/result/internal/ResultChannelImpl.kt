@@ -12,7 +12,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.EnroResultChannel
 
-class ResultChannelImpl<T> internal constructor(
+class ResultChannelImpl<T> @PublishedApi internal  constructor(
     private val navigationHandle: NavigationHandle,
     private val resultType: Class<T>,
     private val onResult: (T) -> Unit

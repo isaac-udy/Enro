@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Surface
@@ -31,22 +33,22 @@ data class ComposeSimpleExampleKey(
 @NavigationDestination(ComposeSimpleExampleKey::class)
 fun ComposeSimpleExample() {
     val navigation = navigationHandle<ComposeSimpleExampleKey>()
+    val scrollState = rememberScrollState()
+
     EnroExampleTheme {
         Surface {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.verticalScroll(scrollState).padding(16.dp),
             ) {
                 Text(
                     text = "Example Composable",
                     style = MaterialTheme.typography.h4,
                     modifier = Modifier.padding(top = 8.dp)
                 )
-
                 Text(
                     text = stringResource(R.string.example_content),
                     modifier = Modifier.padding(top = 16.dp)
                 )
-
                 Text(
                     text = "Current Destination:",
                     modifier = Modifier.padding(top = 24.dp),
@@ -79,7 +81,7 @@ fun ComposeSimpleExample() {
 
                 Column(
                     verticalArrangement = Arrangement.Bottom,
-                    modifier = Modifier.fillMaxHeight()
+                    modifier = Modifier.fillMaxHeight().padding(top = 56.dp)
                 ) {
                     OutlinedButton(
                         modifier = Modifier.padding(top = 6.dp, bottom = 6.dp),
@@ -137,6 +139,7 @@ fun ComposeSimpleExample() {
             }
         }
     }
+
 }
 
 private fun ComposeSimpleExampleKey.getNextDestinationName(): String {

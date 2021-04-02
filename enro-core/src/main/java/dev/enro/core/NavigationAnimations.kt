@@ -76,7 +76,7 @@ fun animationsFor(
         }
     }
 
-    if(context.contextReference is ComposeFragmentHost) {
+    if(navigationInstruction is NavigationInstruction.Open && context.contextReference is ComposeFragmentHost) {
         return AnimationPair.Resource(0, 0)
     }
 

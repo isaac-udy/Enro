@@ -2,12 +2,9 @@ package dev.enro.core.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
@@ -35,13 +32,7 @@ abstract class ComposableDestination: LifecycleOwner, ViewModelStoreOwner {
 
     @Composable
     internal fun InternalRender() {
-        activity = LocalContext.current as FragmentActivity
-        container = LocalComposableContainer.current
-        lifecycleOwner = LocalLifecycleOwner.current
-        viewModelStoreOwner = viewModel<ComposableDestinationViewModelStoreOwner>(instruction.instructionId)
-
         navigationHandle = getNavigationHandleViewModel()
-
         CompositionLocalProvider(
             LocalNavigationHandle provides navigationHandle,
             LocalViewModelStoreOwner provides viewModelStoreOwner
