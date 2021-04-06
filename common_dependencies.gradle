@@ -43,7 +43,7 @@ ext.deps = [
                 testing        : "com.google.dagger:hilt-android-testing:2.33-beta",
         ],
         testing   : [
-                junit      : "junit:junit:4.13.1",
+                junit      : "junit:junit:4.12",
                 robolectric: "org.robolectric:robolectric:4.5.1",
                 androidx   : [
                         junit          : "androidx.test.ext:junit:1.1.2",

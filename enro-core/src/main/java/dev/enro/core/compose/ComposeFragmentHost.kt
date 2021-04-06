@@ -1,17 +1,13 @@
 package dev.enro.core.compose
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
+import dev.enro.core.*
 import dev.enro.core.controller.navigationController
-import dev.enro.core.navigationContext
-import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -24,18 +20,21 @@ class ComposeFragmentHost : Fragment() {
 
     internal lateinit var rootContainer: ComposableContainer
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        rootContainer = ComposableContainer(
+            initialState = savedInstanceState?.getParcelableArrayList("backstackState")
+                ?: listOf(),
+            navigationController = { requireActivity().application.navigationController },
+            hostContext = { navigationContext },
+        )
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        rootContainer = ComposableContainer(
-            initialState=  savedInstanceState?.getParcelableArrayList("backstackState") ?: listOf(navigationHandle.key.instruction),
-            navigationController = { requireActivity().application.navigationController },
-            hostContext = { navigationContext },
-        )
-
-        Log.e("CREATED CFH", "${this.hashCode()}, ${rootContainer.hashCode()}, ${rootContainer.backstackState.value}")
         return ComposeView(requireContext()).apply {
             setContent {
                 rootContainer.Render()
@@ -43,8 +42,20 @@ class ComposeFragmentHost : Fragment() {
         }
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        if(savedInstanceState == null && rootContainer.backstackState.value.orEmpty().isEmpty()) {
+            navigationHandle.executeInstruction(navigationHandle.key.instruction)
+        }
+        if(rootContainer.backstackState.value.orEmpty().isEmpty()) {
+            navigationHandle.close()
+        }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putParcelableArrayList("backstackState", ArrayList(rootContainer.backstackState.value.orEmpty()))
+        outState.putParcelableArrayList(
+            "backstackState",
+            ArrayList(rootContainer.backstackState.value.orEmpty())
+        )
     }
 }
