@@ -105,22 +105,24 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         }
 
         val animations = animationsFor(context, NavigationInstruction.Close)
-        val sameFragmentManagers = previousFragment?.parentFragmentManager == context.fragment.parentFragmentManager
+        // Checking for non-null context seems to be the best way to make sure parentFragmentManager will
+        // not throw an IllegalStateException when there is no parent fragment manager
+        val differentFragmentManagers = previousFragment?.context != null && previousFragment.parentFragmentManager != context.fragment.parentFragmentManager
 
         context.fragment.parentFragmentManager.commit {
             setCustomAnimations(animations.enter, animations.exit)
             remove(context.fragment)
 
-            if (previousFragment != null && sameFragmentManagers) {
+            if (previousFragment != null && !differentFragmentManagers) {
                 when {
                     previousFragment.isDetached -> attach(previousFragment)
                     !previousFragment.isAdded -> add(context.contextReference.getContainerId(), previousFragment)
                 }
             }
-            if(sameFragmentManagers) setPrimaryNavigationFragment(previousFragment)
+            if(!differentFragmentManagers) setPrimaryNavigationFragment(previousFragment)
         }
 
-        if(previousFragment != null && !sameFragmentManagers) {
+        if(previousFragment != null && differentFragmentManagers) {
             previousFragment.parentFragmentManager.commit {
                 setPrimaryNavigationFragment(previousFragment)
             }
