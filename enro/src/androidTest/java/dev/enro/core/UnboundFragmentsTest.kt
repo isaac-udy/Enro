@@ -7,8 +7,7 @@ import dev.enro.*
 import org.junit.Ignore
 import org.junit.Test
 
-@Ignore("Something isn't working with the unbound fragment test environment, tests are failing but are known to pass")
-class UnboundFragmentsTest {
+class  UnboundFragmentsTest {
 
     @Test
     fun whenUnboundFragmentIsOpened_thenNavigationKeyIsUnbound() {
@@ -31,7 +30,8 @@ class UnboundFragmentsTest {
             caught = t
         }
         assertTrue(caught is IllegalStateException)
-        assertEquals("This NavigationHandle has no NavigationKey", caught.message)
+        assertNotNull(caught.message)
+        assertTrue(caught.message!!.matches(Regex("The navigation handle for the context UnboundFragment.*has no NavigationKey")))
     }
 
     @Test
