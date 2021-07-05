@@ -10,7 +10,6 @@ buildscript {
     }
     dependencies {
         classpath deps.android.gradle
-        classpath deps.compose.jetbrains.gradle
         classpath deps.kotlin.gradle
         classpath deps.hilt.gradle
     }

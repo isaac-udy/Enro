@@ -49,11 +49,9 @@ ext.androidLibrary = {
 }
 
 ext.useCompose = {
-    apply plugin: "org.jetbrains.compose"
-
     android {
-        kotlinOptions {
-            useIR = true
+        buildFeatures {
+            compose = true
         }
     }
 
