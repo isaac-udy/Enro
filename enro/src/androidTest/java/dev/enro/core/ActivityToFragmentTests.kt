@@ -125,9 +125,9 @@ class ActivityToFragmentTests {
 
             assertEquals("two",
                     it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
-                    .getNavigationHandle()
-                    .asTyped<GenericFragmentKey>()
-                    .key.id
+                            .getNavigationHandle()
+                            .asTyped<GenericFragmentKey>()
+                            .key.id
             )
         }
     }
