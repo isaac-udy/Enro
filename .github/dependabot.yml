@@ -1,0 +1,23 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: com.google.dagger:hilt-android-testing
+    versions:
+    - 2.33-beta
+  - dependency-name: com.google.dagger:hilt-android
+    versions:
+    - 2.33-beta
+  - dependency-name: com.google.dagger:hilt-android-gradle-plugin
+    versions:
+    - 2.33-beta
+  - dependency-name: com.google.dagger:hilt-android-compiler
+    versions:
+    - 2.33-beta
+  - dependency-name: org.robolectric:robolectric
+    versions:
+    - 4.5.1
