@@ -11,7 +11,7 @@ import org.junit.Test
 import java.util.*
 
 private fun expectSingleFragmentActivity(): FragmentActivity {
-    return expectActivity { it::class.java.simpleName == "SingleFragmentActivity"}
+    return expectActivity { it::class.java.simpleName == "SingleFragmentActivity" }
 }
 
 class ActivityToFragmentTests {
@@ -37,9 +37,9 @@ class ActivityToFragmentTests {
 
         val id = UUID.randomUUID().toString()
         handle.forward(
-            GenericFragmentKey("1"),
-            GenericFragmentKey("2"),
-            GenericFragmentKey(id)
+                GenericFragmentKey("1"),
+                GenericFragmentKey("2"),
+                GenericFragmentKey(id)
         )
 
         val activity = expectSingleFragmentActivity()
@@ -115,31 +115,157 @@ class ActivityToFragmentTests {
     fun whenActivityOpensTwoFragmentsImmediatelyIntoDifferentContainers_thenBothFragmentsAreCorrectlyAddedToContainers() {
         val scenario = ActivityScenario.launch(ImmediateOpenChildActivity::class.java)
 
-        var primary: String? = null
-        var secondary: String? = null
         scenario.onActivity {
-            primary = it.supportFragmentManager.findFragmentById(TestActivity.primaryFragmentContainer)!!
-                .getNavigationHandle()
-                .asTyped<GenericFragmentKey>()
-                .key.id
+            assertEquals("one",
+                    it.supportFragmentManager.findFragmentById(TestActivity.primaryFragmentContainer)!!
+                            .getNavigationHandle()
+                            .asTyped<GenericFragmentKey>()
+                            .key.id
+            )
 
-            secondary = it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
-                .getNavigationHandle()
-                .asTyped<GenericFragmentKey>()
-                .key.id
+            assertEquals("two",
+                    it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
+                    .getNavigationHandle()
+                    .asTyped<GenericFragmentKey>()
+                    .key.id
+            )
         }
+    }
 
-        assertEquals("one", primary)
-        assertEquals("two", secondary)
+    @Test
+    fun whenActivityOpensTwoFragmentsImmediatelyIntoDifferentContainers_andThoseFragmentsOpenTwoChildrenImmediately_thenAllFragmentsAreOpenedCorrectly() {
+        val scenario = ActivityScenario.launch(ImmediateOpenFragmentChildActivity::class.java)
+
+        scenario.onActivity {
+            val primary = it.supportFragmentManager.findFragmentById(TestActivity.primaryFragmentContainer)!!
+            val secondary = it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
+
+            assertEquals("one", primary.childFragmentManager
+                    .findFragmentById(TestFragment.primaryFragmentContainer)!!
+                    .getNavigationHandle()
+                    .asTyped<GenericFragmentKey>()
+                    .key.id
+            )
+
+            assertEquals("two", primary.childFragmentManager
+                    .findFragmentById(TestFragment.secondaryFragmentContainer)!!
+                    .getNavigationHandle()
+                    .asTyped<GenericFragmentKey>()
+                    .key.id
+            )
+
+            assertEquals("one", secondary.childFragmentManager
+                    .findFragmentById(TestFragment.primaryFragmentContainer)!!
+                    .getNavigationHandle()
+                    .asTyped<GenericFragmentKey>()
+                    .key.id
+            )
+
+            assertEquals("two", secondary.childFragmentManager
+                    .findFragmentById(TestFragment.secondaryFragmentContainer)!!
+                    .getNavigationHandle()
+                    .asTyped<GenericFragmentKey>()
+                    .key.id
+            )
+        }
+    }
+
+    /**
+     * Executing navigation instructions as a response to fragment creation (i.e. in "onCreate") may cause issues
+     * with attempting to access viewmodels from a detached fragment. This test should verify
+     * that the behaviour of the test above will continue to work after activity re-creation
+     */
+    @Test
+    fun whenActivityOpensTwoFragmentsImmediatelyIntoDifferentContainers_andThoseFragmentsOpenTwoChildrenImmediately_thenAllFragmentsAreOpenedCorrectly_recreated() {
+        val scenario = ActivityScenario.launch(ImmediateOpenFragmentChildActivity::class.java)
+        scenario.recreate()
+
+        scenario.onActivity {
+            val primary = it.supportFragmentManager.findFragmentById(TestActivity.primaryFragmentContainer)!!
+            val secondary = it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
+
+            assertEquals("one", primary.childFragmentManager
+                    .findFragmentById(TestFragment.primaryFragmentContainer)!!
+                    .getNavigationHandle()
+                    .asTyped<GenericFragmentKey>()
+                    .key.id
+            )
+
+            assertEquals("two", primary.childFragmentManager
+                    .findFragmentById(TestFragment.secondaryFragmentContainer)!!
+                    .getNavigationHandle()
+                    .asTyped<GenericFragmentKey>()
+                    .key.id
+            )
+
+            assertEquals("one", secondary.childFragmentManager
+                    .findFragmentById(TestFragment.primaryFragmentContainer)!!
+                    .getNavigationHandle()
+                    .asTyped<GenericFragmentKey>()
+                    .key.id
+            )
+
+            assertEquals("two", secondary.childFragmentManager
+                    .findFragmentById(TestFragment.secondaryFragmentContainer)!!
+                    .getNavigationHandle()
+                    .asTyped<GenericFragmentKey>()
+                    .key.id
+            )
+        }
     }
 }
 
 @Parcelize
 class ImmediateOpenChildActivityKey : NavigationKey
+
 @NavigationDestination(ImmediateOpenChildActivityKey::class)
 class ImmediateOpenChildActivity : TestActivity() {
     private val navigation by navigationHandle<ImmediateOpenChildActivityKey> {
         defaultKey(ImmediateOpenChildActivityKey())
+        container(primaryFragmentContainer) {
+            it is GenericFragmentKey && it.id == "one"
+        }
+        container(secondaryFragmentContainer) {
+            it is GenericFragmentKey && it.id == "two"
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        navigation.forward(GenericFragmentKey("one"))
+        navigation.forward(GenericFragmentKey("two"))
+    }
+}
+
+@Parcelize
+class ImmediateOpenFragmentChildActivityKey : NavigationKey
+
+@NavigationDestination(ImmediateOpenFragmentChildActivityKey::class)
+class ImmediateOpenFragmentChildActivity : TestActivity() {
+    private val navigation by navigationHandle<ImmediateOpenFragmentChildActivityKey> {
+        defaultKey(ImmediateOpenFragmentChildActivityKey())
+        container(primaryFragmentContainer) {
+            it is ImmediateOpenChildFragmentKey && it.name == "one"
+        }
+        container(secondaryFragmentContainer) {
+            it is ImmediateOpenChildFragmentKey && it.name == "two"
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        navigation.forward(ImmediateOpenChildFragmentKey("one"))
+        navigation.forward(ImmediateOpenChildFragmentKey("two"))
+    }
+}
+
+
+@Parcelize
+data class ImmediateOpenChildFragmentKey(val name: String) : NavigationKey
+
+@NavigationDestination(ImmediateOpenChildFragmentKey::class)
+class ImmediateOpenChildFragment : TestFragment() {
+    private val navigation by navigationHandle<ImmediateOpenChildFragmentKey> {
         container(primaryFragmentContainer) {
             it is GenericFragmentKey && it.id == "one"
         }

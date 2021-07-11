@@ -14,5 +14,6 @@
         <activity android:name=".core.PluginTestActivity"/>
         <activity android:name=".test.EnroTestTestActivity"/>
         <activity android:name=".core.ImmediateOpenChildActivity"/>
+        <activity android:name=".core.ImmediateOpenFragmentChildActivity"/>
     </application>
 </manifest>

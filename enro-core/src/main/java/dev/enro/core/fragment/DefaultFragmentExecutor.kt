@@ -159,9 +159,12 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                     is ActivityContext -> fromContext.activity.getNavigationHandle().executeInstruction(
                         instruction
                     )
-                    is FragmentContext -> fromContext.fragment.getNavigationHandle().executeInstruction(
-                        instruction
-                    )
+                    is FragmentContext -> {
+                        if(!fromContext.fragment.isAdded) return@post
+                        fromContext.fragment.getNavigationHandle().executeInstruction(
+                            instruction
+                        )
+                    }
                 }
             }
             return false
