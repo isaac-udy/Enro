@@ -1,9 +1,12 @@
 package dev.enro.core
 
+import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
-import junit.framework.TestCase.assertEquals
 import dev.enro.*
+import dev.enro.annotations.NavigationDestination
+import junit.framework.TestCase.assertEquals
+import kotlinx.parcelize.Parcelize
 import org.junit.Test
 import java.util.*
 
@@ -106,5 +109,48 @@ class ActivityToFragmentTests {
         val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
         val fragmentHandle = activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
+    }
+
+    @Test
+    fun whenActivityOpensTwoFragmentsImmediatelyIntoDifferentContainers_thenBothFragmentsAreCorrectlyAddedToContainers() {
+        val scenario = ActivityScenario.launch(ImmediateOpenChildActivity::class.java)
+
+        var primary: String? = null
+        var secondary: String? = null
+        scenario.onActivity {
+            primary = it.supportFragmentManager.findFragmentById(TestActivity.primaryFragmentContainer)!!
+                .getNavigationHandle()
+                .asTyped<GenericFragmentKey>()
+                .key.id
+
+            secondary = it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
+                .getNavigationHandle()
+                .asTyped<GenericFragmentKey>()
+                .key.id
+        }
+
+        assertEquals("one", primary)
+        assertEquals("two", secondary)
+    }
+}
+
+@Parcelize
+class ImmediateOpenChildActivityKey : NavigationKey
+@NavigationDestination(ImmediateOpenChildActivityKey::class)
+class ImmediateOpenChildActivity : TestActivity() {
+    private val navigation by navigationHandle<ImmediateOpenChildActivityKey> {
+        defaultKey(ImmediateOpenChildActivityKey())
+        container(primaryFragmentContainer) {
+            it is GenericFragmentKey && it.id == "one"
+        }
+        container(secondaryFragmentContainer) {
+            it is GenericFragmentKey && it.id == "two"
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        navigation.forward(GenericFragmentKey("one"))
+        navigation.forward(GenericFragmentKey("two"))
     }
 }

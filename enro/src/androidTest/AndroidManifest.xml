@@ -13,5 +13,6 @@
         <activity android:name=".result.SideBySideNestedResultReceiverActivity"/>
         <activity android:name=".core.PluginTestActivity"/>
         <activity android:name=".test.EnroTestTestActivity"/>
+        <activity android:name=".core.ImmediateOpenChildActivity"/>
     </application>
 </manifest>
