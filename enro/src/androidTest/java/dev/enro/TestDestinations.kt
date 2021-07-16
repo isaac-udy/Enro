@@ -1,9 +1,8 @@
 package dev.enro
-import android.R
-import kotlinx.parcelize.Parcelize
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class DefaultActivityKey(val id: String) : NavigationKey
@@ -42,7 +41,13 @@ class ActivityWithFragments : TestActivity() {
 data class ActivityChildFragmentKey(val id: String) : NavigationKey
 
 @NavigationDestination(ActivityChildFragmentKey::class)
-class ActivityChildFragment : TestFragment()
+class ActivityChildFragment : TestFragment() {
+    val navigation by navigationHandle<ActivityChildFragmentKey>() {
+        container(primaryFragmentContainer) {
+            it is Nothing
+        }
+    }
+}
 
 @Parcelize
 data class ActivityChildFragmentTwoKey(val id: String) : NavigationKey

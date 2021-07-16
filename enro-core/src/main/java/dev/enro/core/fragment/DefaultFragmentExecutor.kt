@@ -36,6 +36,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         }
 
         if (!tryExecutePendingTransitions(navigator, fromContext, instruction)) return
+        if (fromContext is FragmentContext && !fromContext.fragment.isAdded) return
         val fragment = createFragment(
             fromContext.childFragmentManager,
             navigator,
@@ -72,7 +73,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
         val animations = animationsFor(fromContext, instruction)
 
-        host.fragmentManager.commit {
+        host.fragmentManager.commitNow {
             setCustomAnimations(animations.enter, animations.exit)
 
             if(fromContext.contextReference is DialogFragment && instruction.navigationDirection == NavigationDirection.REPLACE) {
@@ -109,7 +110,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         // not throw an IllegalStateException when there is no parent fragment manager
         val differentFragmentManagers = previousFragment?.context != null && previousFragment.parentFragmentManager != context.fragment.parentFragmentManager
 
-        context.fragment.parentFragmentManager.commit {
+        context.fragment.parentFragmentManager.commitNow {
             setCustomAnimations(animations.enter, animations.exit)
             remove(context.fragment)
 
@@ -123,7 +124,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         }
 
         if(previousFragment != null && differentFragmentManagers) {
-            previousFragment.parentFragmentManager.commit {
+            previousFragment.parentFragmentManager.commitNow {
                 setPrimaryNavigationFragment(previousFragment)
             }
         }
