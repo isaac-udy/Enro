@@ -6,6 +6,7 @@ import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.annotations.NavigationDestination
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNull
 import kotlinx.parcelize.Parcelize
 import org.junit.Test
 import java.util.*
@@ -37,9 +38,9 @@ class ActivityToFragmentTests {
 
         val id = UUID.randomUUID().toString()
         handle.forward(
-                GenericFragmentKey("1"),
-                GenericFragmentKey("2"),
-                GenericFragmentKey(id)
+            GenericFragmentKey("1"),
+            GenericFragmentKey("2"),
+            GenericFragmentKey(id)
         )
 
         val activity = expectSingleFragmentActivity()
@@ -61,7 +62,8 @@ class ActivityToFragmentTests {
 
         expectActivity<ActivityWithFragments>()
         val activeFragment = expectFragment<ActivityChildFragment>()
-        val fragmentHandle = activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
+        val fragmentHandle =
+            activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }
 
@@ -75,7 +77,8 @@ class ActivityToFragmentTests {
 
         val activity = expectSingleFragmentActivity()
         val activeFragment = expectFragment<ActivityChildFragment>()
-        val fragmentHandle = activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
+        val fragmentHandle =
+            activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
 
         fragmentHandle.close()
@@ -107,7 +110,8 @@ class ActivityToFragmentTests {
 
         val activity = expectSingleFragmentActivity()
         val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
-        val fragmentHandle = activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
+        val fragmentHandle =
+            activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }
 
@@ -116,18 +120,20 @@ class ActivityToFragmentTests {
         val scenario = ActivityScenario.launch(ImmediateOpenChildActivity::class.java)
 
         scenario.onActivity {
-            assertEquals("one",
-                    it.supportFragmentManager.findFragmentById(TestActivity.primaryFragmentContainer)!!
-                            .getNavigationHandle()
-                            .asTyped<GenericFragmentKey>()
-                            .key.id
+            assertEquals(
+                "one",
+                it.supportFragmentManager.findFragmentById(TestActivity.primaryFragmentContainer)!!
+                    .getNavigationHandle()
+                    .asTyped<GenericFragmentKey>()
+                    .key.id
             )
 
-            assertEquals("two",
-                    it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
-                            .getNavigationHandle()
-                            .asTyped<GenericFragmentKey>()
-                            .key.id
+            assertEquals(
+                "two",
+                it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
+                    .getNavigationHandle()
+                    .asTyped<GenericFragmentKey>()
+                    .key.id
             )
         }
     }
@@ -137,31 +143,37 @@ class ActivityToFragmentTests {
         val scenario = ActivityScenario.launch(ImmediateOpenFragmentChildActivity::class.java)
 
         scenario.onActivity {
-            val primary = it.supportFragmentManager.findFragmentById(TestActivity.primaryFragmentContainer)!!
-            val secondary = it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
+            val primary =
+                it.supportFragmentManager.findFragmentById(TestActivity.primaryFragmentContainer)!!
+            val secondary =
+                it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
 
-            assertEquals("one", primary.childFragmentManager
+            assertEquals(
+                "one", primary.childFragmentManager
                     .findFragmentById(TestFragment.primaryFragmentContainer)!!
                     .getNavigationHandle()
                     .asTyped<GenericFragmentKey>()
                     .key.id
             )
 
-            assertEquals("two", primary.childFragmentManager
+            assertEquals(
+                "two", primary.childFragmentManager
                     .findFragmentById(TestFragment.secondaryFragmentContainer)!!
                     .getNavigationHandle()
                     .asTyped<GenericFragmentKey>()
                     .key.id
             )
 
-            assertEquals("one", secondary.childFragmentManager
+            assertEquals(
+                "one", secondary.childFragmentManager
                     .findFragmentById(TestFragment.primaryFragmentContainer)!!
                     .getNavigationHandle()
                     .asTyped<GenericFragmentKey>()
                     .key.id
             )
 
-            assertEquals("two", secondary.childFragmentManager
+            assertEquals(
+                "two", secondary.childFragmentManager
                     .findFragmentById(TestFragment.secondaryFragmentContainer)!!
                     .getNavigationHandle()
                     .asTyped<GenericFragmentKey>()
@@ -181,37 +193,92 @@ class ActivityToFragmentTests {
         scenario.recreate()
 
         scenario.onActivity {
-            val primary = it.supportFragmentManager.findFragmentById(TestActivity.primaryFragmentContainer)!!
-            val secondary = it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
+            val primary =
+                it.supportFragmentManager.findFragmentById(TestActivity.primaryFragmentContainer)!!
+            val secondary =
+                it.supportFragmentManager.findFragmentById(TestActivity.secondaryFragmentContainer)!!
 
-            assertEquals("one", primary.childFragmentManager
+            assertEquals(
+                "one", primary.childFragmentManager
                     .findFragmentById(TestFragment.primaryFragmentContainer)!!
                     .getNavigationHandle()
                     .asTyped<GenericFragmentKey>()
                     .key.id
             )
 
-            assertEquals("two", primary.childFragmentManager
+            assertEquals(
+                "two", primary.childFragmentManager
                     .findFragmentById(TestFragment.secondaryFragmentContainer)!!
                     .getNavigationHandle()
                     .asTyped<GenericFragmentKey>()
                     .key.id
             )
 
-            assertEquals("one", secondary.childFragmentManager
+            assertEquals(
+                "one", secondary.childFragmentManager
                     .findFragmentById(TestFragment.primaryFragmentContainer)!!
                     .getNavigationHandle()
                     .asTyped<GenericFragmentKey>()
                     .key.id
             )
 
-            assertEquals("two", secondary.childFragmentManager
+            assertEquals(
+                "two", secondary.childFragmentManager
                     .findFragmentById(TestFragment.secondaryFragmentContainer)!!
                     .getNavigationHandle()
                     .asTyped<GenericFragmentKey>()
                     .key.id
             )
         }
+    }
+
+    @Test
+    fun givenActivityWithChildFragment_whenMultipleChildrenAreOpenedOnActivity_andStaleChildFragmentHandleIsUsedToOpenAnotherChild_thenStaleNavigationActionIsIgnored_andOtherNavigationActionsSucceed() {
+        val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
+        expectActivity<ActivityWithFragments>()
+            .getNavigationHandle()
+            .forward(ActivityChildFragmentKey(UUID.randomUUID().toString()))
+
+        val activityHandle = expectActivity<ActivityWithFragments>().getNavigationHandle()
+        val fragmentHandle = expectFragment<ActivityChildFragment>().getNavigationHandle()
+
+        scenario.onActivity {
+            activityHandle
+                .forward(ActivityChildFragmentKey("one"))
+
+            activityHandle
+                .forward(ActivityChildFragmentKey("two"))
+
+            fragmentHandle
+                .forward(ActivityChildFragmentKey("three"))
+
+            activityHandle
+                .forward(ActivityChildFragmentKey("four"))
+        }
+
+        val id = expectFragment<ActivityChildFragment>().getNavigationHandle().asTyped<ActivityChildFragmentKey>().key.id
+        assertEquals("four", id)
+    }
+
+    @Test
+    fun givenActivityWithChildFragment_whenFragmentIsDetached_andStaleFragmentNavigationHandleIsUsedForNavigation_thenNothingHappens() {
+        val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
+        expectActivity<ActivityWithFragments>()
+            .getNavigationHandle()
+            .forward(ActivityChildFragmentKey(UUID.randomUUID().toString()))
+
+        val fragment = expectFragment<ActivityChildFragment>()
+        val fragmentHandle = fragment.getNavigationHandle()
+
+        scenario.onActivity {
+            it.supportFragmentManager.beginTransaction()
+                .detach(fragment)
+                .commit()
+
+            fragmentHandle.forward(ActivityChildFragmentKey("should not appear"))
+        }
+
+        assertNull(expectActivity<ActivityWithFragments>().supportFragmentManager.primaryNavigationFragment)
     }
 }
 
