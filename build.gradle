@@ -6,7 +6,6 @@ buildscript {
         google()
         jcenter()
         mavenCentral()
-        maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
     }
     dependencies {
         classpath deps.android.gradle
@@ -20,7 +19,6 @@ allprojects {
         mavenLocal()
         google()
         jcenter()
-        maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
     }
 }
 
