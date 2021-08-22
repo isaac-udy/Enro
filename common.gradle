@@ -51,14 +51,20 @@ ext.androidLibrary = {
 ext.useCompose = {
     android {
         buildFeatures {
-            compose = true
+            compose true
+        }
+        composeOptions {
+            kotlinCompilerVersion "1.5.21"
+            kotlinCompilerExtensionVersion "1.0.1"
         }
     }
 
     dependencies {
         implementation deps.compose.compiler
+        implementation deps.compose.foundation
         implementation deps.compose.foundationLayout
         implementation deps.compose.ui
+        implementation deps.compose.uiTooling
         implementation deps.compose.runtime
         implementation deps.compose.viewmodel
         implementation deps.compose.livedata

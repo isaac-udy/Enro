@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
@@ -22,6 +23,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
@@ -38,7 +40,6 @@ class ComposableContainer(
     internal val navigationController: () -> NavigationController,
     internal val hostContext: () -> NavigationContext<out Fragment>
 ) {
-
     val backstackState = MutableLiveData(initialState)
     private val destinations = mutableMapOf<String, ComposableDestination>()
 
@@ -78,6 +79,7 @@ class ComposableContainer(
         backstackState.value = backstackState.value?.dropLast(1)
     }
 
+    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     fun Render() {
         val backstack = backstackState.observeAsState()
@@ -162,7 +164,7 @@ class ComposableContainer(
             destination.container = LocalComposableContainer.current
             destination.lifecycleOwner = LocalLifecycleOwner.current
             destination.viewModelStoreOwner =
-                viewModel<ComposableDestinationViewModelStoreOwner>(instruction.instructionId)
+                viewModel<ComposableDestinationViewModelStoreOwner>(LocalViewModelStoreOwner.current!!, instruction.instructionId)
             destination.parentContext = hostContext()
 
             controller.onComposeDestinationAttached(destination)
