@@ -53,7 +53,7 @@ internal class NavigationContextLifecycleCallbacks (
     }
 
     inner class FragmentCallbacks :  FragmentManager.FragmentLifecycleCallbacks() {
-        override fun onFragmentCreated(
+        override fun onFragmentPreCreated(
             fm: FragmentManager,
             fragment: Fragment,
             savedInstanceState: Bundle?
