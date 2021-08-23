@@ -1,6 +1,7 @@
 package dev.enro.core.controller
 
 import android.app.Application
+import android.os.Bundle
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.container.ExecutorContainer
@@ -109,10 +110,17 @@ class NavigationController internal constructor(
         contextController.uninstall(application)
     }
 
-    internal fun onComposeDestinationAttached(destination: ComposableDestination) {
+    internal fun onComposeDestinationAttached(destination: ComposableDestination, savedInstanceState: Bundle?) {
         contextController.onContextCreated(
             ComposeContext(destination),
-            null // TODO Saved instance state
+            savedInstanceState
+        )
+    }
+
+    internal fun onComposeContextSaved(destination: ComposableDestination, outState: Bundle) {
+        contextController.onContextSaved(
+            ComposeContext(destination),
+            outState
         )
     }
 

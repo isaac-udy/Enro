@@ -44,7 +44,6 @@ class FeaturesFragment : Fragment() {
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
             recyclerView.adapter = adapter
         }
-
         adapter.submitList(features)
     }
 }

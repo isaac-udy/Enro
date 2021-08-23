@@ -11,7 +11,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.ComposeFragmentHost
+import dev.enro.core.compose.EnroComposableManager
+import dev.enro.core.compose.composableManger
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.fragment.FragmentNavigator
@@ -24,6 +25,7 @@ sealed class NavigationContext<ContextType : Any>(
     abstract val controller: NavigationController
     abstract val lifecycle: Lifecycle
     abstract val childFragmentManager: FragmentManager
+    abstract val childComposableManager: EnroComposableManager
     abstract val arguments: Bundle
 
     internal open val navigator: Navigator<*, ContextType>? by lazy {
@@ -38,6 +40,7 @@ internal class ActivityContext<ContextType : FragmentActivity>(
     override val lifecycle get() = contextReference.lifecycle
     override val navigator get() = super.navigator as? ActivityNavigator<*, ContextType>
     override val childFragmentManager get() = contextReference.supportFragmentManager
+    override val childComposableManager: EnroComposableManager get() = contextReference.composableManger
     override val arguments: Bundle by lazy { contextReference.intent.extras ?: Bundle() }
 }
 
@@ -48,6 +51,7 @@ internal class FragmentContext<ContextType : Fragment>(
     override val lifecycle get() = contextReference.lifecycle
     override val navigator get() = super.navigator as? FragmentNavigator<*, ContextType>
     override val childFragmentManager get() = contextReference.childFragmentManager
+    override val childComposableManager: EnroComposableManager get() = contextReference.composableManger
     override val arguments: Bundle by lazy { contextReference.arguments ?: Bundle() }
 }
 
@@ -57,6 +61,7 @@ internal class ComposeContext<ContextType : ComposableDestination>(
     override val controller: NavigationController get() = contextReference.activity.application.navigationController
     override val lifecycle: Lifecycle get() = contextReference.lifecycle
     override val childFragmentManager: FragmentManager get() = contextReference.activity.supportFragmentManager
+    override val childComposableManager: EnroComposableManager get() = contextReference.composableManger
     override val arguments: Bundle by lazy { bundleOf(OPEN_ARG to contextReference.instruction) }
 }
 
@@ -99,17 +104,15 @@ fun NavigationContext<*>.parentContext(): NavigationContext<*>? {
 }
 
 fun NavigationContext<*>.leafContext(): NavigationContext<*> {
-    if(contextReference is ComposeFragmentHost) {
-        return contextReference.rootContainer.context?.leafContext() ?: this
-    }
     return when(this) {
         is ActivityContext,
         is FragmentContext -> {
-            val primaryNavigationFragment = childFragmentManager.primaryNavigationFragment ?: return this
+            val primaryNavigationFragment = childFragmentManager.primaryNavigationFragment
+                ?: return childComposableManager.primaryContainer?.activeContext?.leafContext() ?: this
             primaryNavigationFragment.view ?: return this
             primaryNavigationFragment.navigationContext.leafContext()
         }
-        is ComposeContext<*> -> contextReference.childContext?.leafContext() ?: this
+        is ComposeContext<*> -> childComposableManager.primaryContainer?.activeContext?.leafContext() ?: this
     }
 }
 

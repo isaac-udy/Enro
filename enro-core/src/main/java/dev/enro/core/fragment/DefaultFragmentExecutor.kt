@@ -83,7 +83,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             }
 
             val isSafeToRetain = if(fromContext.contextReference is ComposableDestination) {
-                fromContext.contextReference.container.backstackState.value.orEmpty().isNotEmpty()
+                fromContext.contextReference.containerState.backstack.isNotEmpty()
             } else (activeFragment?.tag == instruction.internal.parentInstruction?.instructionId)
 
             if(activeFragment != null

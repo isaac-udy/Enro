@@ -7,6 +7,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.core.*
+import dev.enro.core.compose.composableManger
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.PluginContainer
 import dev.enro.core.internal.NoNavigationKey
@@ -54,6 +55,10 @@ internal class NavigationLifecycleController(
             context.controller,
             instruction ?: defaultInstruction
         )
+
+        // ensure the composable manager is created
+        val composableManager = viewModelStoreOwner.composableManger
+
         config?.applyTo(handle)
         handle.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {

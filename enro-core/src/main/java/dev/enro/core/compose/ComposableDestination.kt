@@ -14,13 +14,12 @@ abstract class ComposableDestination: LifecycleOwner, ViewModelStoreOwner {
 
     internal lateinit var instruction: NavigationInstruction.Open
     internal lateinit var activity: FragmentActivity
-    internal lateinit var container: ComposableContainer
+    internal lateinit var containerState: EnroContainerState
     internal lateinit var navigationHandle: NavigationHandle
     internal lateinit var lifecycleOwner: LifecycleOwner
     internal lateinit var viewModelStoreOwner: ViewModelStoreOwner
 
-    internal var parentContext: NavigationContext<*>? = null // TODO - add proper context references!
-    internal val childContext: NavigationContext<*>?  = null// TODO - add proper context references!
+    internal var parentContext: NavigationContext<*>? = null
 
     override fun getLifecycle(): Lifecycle {
         return lifecycleOwner.lifecycle

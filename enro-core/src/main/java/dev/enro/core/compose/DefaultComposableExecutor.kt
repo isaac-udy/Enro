@@ -8,12 +8,9 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
     keyType = NavigationKey::class
 ) {
     override fun open(args: ExecutorArgs<out Any, out ComposableDestination, out NavigationKey>) {
-        if(args.fromContext is FragmentContext && args.fromContext.contextReference is ComposeFragmentHost) {
-            args.fromContext.contextReference.rootContainer.push(args.instruction)
-            return
-        }
+        val host = args.fromContext.composeHostFor(args.key)
 
-        if(args.fromContext !is ComposeContext || args.instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
+        if(host == null || args.instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
             args.fromContext.controller.open(
                 args.fromContext,
                 NavigationInstruction.Open.OpenInternal(
@@ -24,11 +21,11 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
             return
         }
 
-        args.fromContext.contextReference as ComposableDestination
-        args.fromContext.contextReference.container.push(args.instruction)
+        host.containerState.push(args.instruction)
+        return
     }
 
     override fun close(context: NavigationContext<out ComposableDestination>) {
-        context.contextReference.container.close()
+        context.contextReference.containerState.close()
     }
 }

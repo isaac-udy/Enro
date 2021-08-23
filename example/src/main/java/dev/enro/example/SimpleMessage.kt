@@ -1,14 +1,10 @@
 package dev.enro.example
 
 import android.app.AlertDialog
-import kotlinx.parcelize.Parcelize
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.NavigationContext
-import dev.enro.core.activity
-import dev.enro.core.getNavigationHandle
+import dev.enro.core.*
 import dev.enro.core.synthetic.SyntheticDestination
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class SimpleMessage(
@@ -32,7 +28,7 @@ class SimpleMessageDestination : SyntheticDestination<SimpleMessage> {
 
             if(key.positiveActionInstruction != null) {
                 setPositiveButton("Launch") {_, _ ->
-                    navigationContext.activity
+                    navigationContext
                         .getNavigationHandle()
                         .executeInstruction(key.positiveActionInstruction)
                 }

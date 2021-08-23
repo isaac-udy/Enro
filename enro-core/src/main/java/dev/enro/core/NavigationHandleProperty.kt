@@ -66,6 +66,8 @@ inline fun <reified T : NavigationKey> Fragment.navigationHandle(
     keyType = T::class
 )
 
+fun NavigationContext<*>.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
+
 fun FragmentActivity.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
 
 fun Fragment.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
