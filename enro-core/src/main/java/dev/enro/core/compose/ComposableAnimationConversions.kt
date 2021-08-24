@@ -2,142 +2,119 @@ package dev.enro.core.compose
 
 import android.animation.AnimatorInflater
 import android.content.Context
-import android.graphics.Matrix
+import android.os.Parcelable
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.view.animation.Transformation
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.viewinterop.AndroidView
-import dev.enro.core.AnimationPair
+import kotlinx.coroutines.delay
+import kotlinx.parcelize.Parcelize
 
-internal data class AnimationResourceValues(
+private class AnimatorView @JvmOverloads constructor(
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        return false
+    }
+}
+
+@Parcelize
+internal data class AnimationResourceState(
     val alpha: Float = 1.0f,
     val scaleX: Float = 1.0f,
     val scaleY: Float = 1.0f,
     val translationX: Float = 0.0f,
     val translationY: Float = 0.0f,
-    val duration: Long = 1
-)
+    val rotationX: Float = 0.0f,
+    val rotationY: Float = 0.0f,
+    val transformOrigin: TransformOrigin = TransformOrigin.Center,
 
-@OptIn(ExperimentalAnimationApi::class)
+    val playTime: Long = 0,
+    val isActive: Boolean = false
+) : Parcelable
+
 @Composable
-internal fun getAnimationResourceValues(animation: AnimationPair.Resource): Pair<AnimationResourceValues, AnimationResourceValues> {
-    val enterValues = getTargetAnimationStateFromAnim(animation.enter, true)
-        ?: getTargetAnimationStateFromAnimator(animation.enter, true)
-        ?: AnimationResourceValues()
+internal fun getAnimationResourceState(animOrAnimator: Int): AnimationResourceState {
+    val state =
+        remember(animOrAnimator) { mutableStateOf(AnimationResourceState(isActive = true)) }
+    if (animOrAnimator == 0) return state.value
 
-    val exitValues = getTargetAnimationStateFromAnim(animation.exit, false)
-        ?: getTargetAnimationStateFromAnimator(animation.exit, false)
-        ?: AnimationResourceValues()
+    updateAnimationResourceStateFromAnim(state, animOrAnimator)
+    updateAnimationResourceStateFromAnimator(state, animOrAnimator)
 
-    val enter = fadeIn(
-        initialAlpha = enterValues.alpha,
-        animationSpec = tween(enterValues.duration.toInt())
-    ) + expandIn(
-        expandFrom = Alignment.Center,
-        animationSpec = tween(enterValues.duration.toInt()),
-        initialSize = {
-            IntSize(
-                width = (it.width * enterValues.scaleX).toInt(),
-                height = (it.height * enterValues.scaleY).toInt()
-            ).also { Log.e("Enro", "slideIn initialSize: $it") }
+    LaunchedEffect(animOrAnimator) {
+        val start = System.currentTimeMillis()
+        while (state.value.isActive) {
+            state.value = state.value.copy(playTime = System.currentTimeMillis() - start)
+            delay(8)
         }
-    ) + slideIn(
-        animationSpec = tween(enterValues.duration.toInt()),
-        initialOffset = {
-            IntOffset(
-                x = (it.width * enterValues.translationX).toInt(),
-                y = (it.height * enterValues.translationY).toInt()
-            ).also { Log.e("Enro", "slideIn initialOffset: $it") }
-        }
-    )
-
-    val exit = fadeOut(
-        targetAlpha = exitValues.alpha,
-        animationSpec = tween(exitValues.duration.toInt())
-    ) + shrinkOut(
-        shrinkTowards = Alignment.Center,
-        animationSpec = tween(exitValues.duration.toInt()),
-        targetSize = {
-            IntSize(
-                width = (it.width * exitValues.scaleX).toInt(),
-                height = (it.height * exitValues.scaleY).toInt()
-            ).also { Log.e("Enro", "shrinkOut target: $it") }
-        }
-    ) + slideOut(
-        animationSpec = tween(exitValues.duration.toInt()),
-        targetOffset = {
-            IntOffset(
-                x = (it.width * exitValues.translationX).toInt(),
-                y = (it.height * exitValues.translationY).toInt()
-            ).also { Log.e("Enro", "slideOut target: $it") }
-        }
-    )
-
-    return enterValues to exitValues
+    }
+    return state.value
 }
 
 @Composable
-private fun getTargetAnimationStateFromAnim(
-    animOrAnimator: Int,
-    isEnter: Boolean
-) : AnimationResourceValues? {
-    if(animOrAnimator == 0) return null
+private fun updateAnimationResourceStateFromAnim(
+    state: MutableState<AnimationResourceState>,
+    animOrAnimator: Int
+) {
     val context = LocalContext.current
-    val isAnim = remember(animOrAnimator) {
-        context.resources.getResourceTypeName(animOrAnimator) == "anim"
+    val isAnim =
+        remember(animOrAnimator) { context.resources.getResourceTypeName(animOrAnimator) == "anim" }
+    if (!isAnim) return
+
+    val containerState = LocalEnroContainerState.current
+    val anim = remember(animOrAnimator) {
+        AnimationUtils.loadAnimation(context, animOrAnimator).apply {
+            initialize(
+                containerState.size.width.toInt(),
+                containerState.size.height.toInt(),
+                containerState.size.width.toInt(),
+                containerState.size.height.toInt()
+            )
+        }
     }
-    if (!isAnim) return null
+    val transformation = Transformation()
+    anim.getTransformation(System.currentTimeMillis(), transformation)
 
-    return remember(animOrAnimator) {
-        val anim = AnimationUtils.loadAnimation(context, animOrAnimator)
+    val v = FloatArray(9)
+    transformation.matrix.getValues(v)
+    state.value = AnimationResourceState(
+        alpha = transformation.alpha,
+        scaleX = v[android.graphics.Matrix.MSCALE_X],
+        scaleY = v[android.graphics.Matrix.MSCALE_Y],
+        translationX = v[android.graphics.Matrix.MTRANS_X],
+        translationY = v[android.graphics.Matrix.MTRANS_Y],
+        rotationX = 0.0f,
+        rotationY = 0.0f,
+        transformOrigin = TransformOrigin(0f, 0f),
 
-        val transformation = Transformation()
-        anim.startTime = 0
-        anim.getTransformation(if(isEnter) 0 else anim.duration, transformation)
-
-        val v = FloatArray(9)
-        transformation.matrix.getValues(v)
-
-        return@remember AnimationResourceValues(
-            alpha = transformation.alpha,
-            scaleX = v[Matrix.MSCALE_X],
-            scaleY = v[Matrix.MSCALE_Y],
-            translationX = v[Matrix.MTRANS_X],
-            translationY = v[Matrix.MTRANS_Y],
-            duration = anim.duration
-        )
-    }
+        isActive = state.value.isActive && state.value.playTime < anim.duration,
+        playTime = state.value.playTime,
+    )
 }
 
 @Composable
-private fun getTargetAnimationStateFromAnimator(
-    animOrAnimator: Int,
-    isEnter: Boolean
-): AnimationResourceValues? {
-    if(animOrAnimator == 0) return null
+private fun updateAnimationResourceStateFromAnimator(
+    state: MutableState<AnimationResourceState>,
+    animOrAnimator: Int
+) {
     val context = LocalContext.current
-    val isAnimator = remember(animOrAnimator) {
-        context.resources.getResourceTypeName(animOrAnimator) == "animator"
-    }
-    if (!isAnimator) return null
-
-    val state = remember { mutableStateOf(AnimationResourceValues()) }
+    val isAnimator =
+        remember(animOrAnimator) { context.resources.getResourceTypeName(animOrAnimator) == "animator" }
+    if (!isAnimator) return
 
     val animator = remember(animOrAnimator) {
+        state.value = AnimationResourceState(
+            alpha = 0.0f,
+            isActive = true
+        )
         AnimatorInflater.loadAnimator(context, animOrAnimator)
     }
 
@@ -146,27 +123,23 @@ private fun getTargetAnimationStateFromAnimator(
         factory = {
             AnimatorView(it).apply {
                 animator.setTarget(this)
-                if(isEnter) animator.setupStartValues() else animator.setupEndValues()
+                animator.start()
+                animation
             }
         },
         update = {
-            state.value = AnimationResourceValues(
+            state.value = AnimationResourceState(
                 alpha = it.alpha,
                 scaleX = it.scaleX,
                 scaleY = it.scaleY,
                 translationX = it.translationX,
                 translationY = it.translationY,
-                duration = animator.duration
+                rotationX = it.rotationX,
+                rotationY = it.rotationY,
+
+                isActive = state.value.isActive && animator.isRunning,
+                playTime = state.value.playTime
             )
         }
     )
-    return state.value
-}
-
-private class AnimatorView @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr) {
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        return false
-    }
 }

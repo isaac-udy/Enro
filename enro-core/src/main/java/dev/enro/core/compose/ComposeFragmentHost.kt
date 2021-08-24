@@ -4,35 +4,40 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import dev.enro.core.*
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.close
+import dev.enro.core.fragment.internal.fragmentHostFrom
+import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-internal data class HostedComposeKey(
-    val instruction: NavigationInstruction.Open
+internal data class ComposeFragmentHostKey(
+    val instruction: NavigationInstruction.Open,
+    val fragmentContainerId: Int?
 ) : NavigationKey
 
 class ComposeFragmentHost : Fragment() {
-    private val navigationHandle by navigationHandle<HostedComposeKey>()
+    private val navigationHandle by navigationHandle<ComposeFragmentHostKey>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        val fragmentHost = container?.let { fragmentHostFrom(it) }
+
         return ComposeView(requireContext()).apply {
             setContent {
-                val state = remember {
-                    EnroContainerState(
-                        initialState = listOf(navigationHandle.key.instruction),
-                        navigationHandle = getNavigationHandle()
-                    )
-                }
+                val state = rememberEnroContainerState(
+                    initialState = listOf(navigationHandle.key.instruction),
+                    accept = fragmentHost?.accept ?: { true }
+                )
+
                 EnroContainer(state = state)
-                if (state.observeBackstackAsState().isEmpty()) {
+                if (state.observeBackstackState().backstack.isEmpty()) {
                     navigationHandle.close()
                 }
             }

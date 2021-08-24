@@ -4,7 +4,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.Navigator
 import dev.enro.core.activity.createActivityNavigator
 import dev.enro.core.compose.ComposeFragmentHost
-import dev.enro.core.compose.HostedComposeKey
+import dev.enro.core.compose.ComposeFragmentHostKey
 import dev.enro.core.fragment.createFragmentNavigator
 import dev.enro.core.fragment.internal.HiltSingleFragmentActivity
 import dev.enro.core.fragment.internal.SingleFragmentActivity
@@ -25,7 +25,7 @@ internal class NavigatorContainer (
         }
 
         val noKeyProvidedNavigator = NoKeyNavigator()
-        val hostedComposeNavigator = createFragmentNavigator<HostedComposeKey, ComposeFragmentHost>()
+        val hostedComposeNavigator = createFragmentNavigator<ComposeFragmentHostKey, ComposeFragmentHost>()
 
         listOf(
             singleFragmentNavigator,
