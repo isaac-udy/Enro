@@ -15,8 +15,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.platform.LocalContext
-import androidx.fragment.app.FragmentActivity
 import dev.enro.core.AnimationPair
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
@@ -26,7 +24,7 @@ internal fun EnroAnimatedVisibility(
     animations: AnimationPair,
     content: @Composable () -> Unit
 ) {
-    val context = LocalContext.current as FragmentActivity
+    val context = localActivity
     val resourceAnimations = remember(animations) {
         animations.asResource(context.theme)
     }
