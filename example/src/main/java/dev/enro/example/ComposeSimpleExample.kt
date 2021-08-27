@@ -1,5 +1,6 @@
 package dev.enro.example
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,6 +16,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
@@ -22,6 +27,18 @@ import dev.enro.core.forward
 import dev.enro.core.replace
 import dev.enro.core.replaceRoot
 import kotlinx.parcelize.Parcelize
+import java.util.*
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class SingletonThing @Inject constructor() {
+    val id = UUID.randomUUID().toString()
+}
+
+class ThingThing @Inject constructor() {
+    val id = UUID.randomUUID().toString()
+}
 
 @Parcelize
 data class ComposeSimpleExampleKey(
@@ -30,11 +47,28 @@ data class ComposeSimpleExampleKey(
     val backstack: List<String> = emptyList()
 ) : NavigationKey
 
+@HiltViewModel
+class ComposeSimpleExampleViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val singletonThing: SingletonThing,
+    private val thingThing: ThingThing
+) : ViewModel() {
+
+    init {
+        val isRestored = savedStateHandle.contains("savedId")
+        val savedId =  savedStateHandle.get<String>("savedId") ?: UUID.randomUUID().toString()
+        savedStateHandle.set("savedId", savedId)
+        Log.e("CSEVM", "Opened $savedId/${singletonThing.id}/${thingThing.id} (was restored $isRestored)")
+    }
+
+}
+
 @Composable
 @NavigationDestination(ComposeSimpleExampleKey::class)
 fun ComposeSimpleExample() {
     val navigation = navigationHandle<ComposeSimpleExampleKey>()
     val scrollState = rememberScrollState()
+    val viewModel = viewModel<ComposeSimpleExampleViewModel>()
 
     EnroExampleTheme {
         Surface {
@@ -98,7 +132,9 @@ fun ComposeSimpleExample() {
 
                 Column(
                     verticalArrangement = Arrangement.Bottom,
-                    modifier = Modifier.onGloballyPositioned { bottomContentHeight.value = it.size.height }.padding(top = 16.dp)
+                    modifier = Modifier
+                        .onGloballyPositioned { bottomContentHeight.value = it.size.height }
+                        .padding(top = 16.dp)
                 ) {
                     OutlinedButton(
                         modifier = Modifier.padding(top = 6.dp, bottom = 6.dp),

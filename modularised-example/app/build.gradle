@@ -64,7 +64,6 @@ dependencies {
     implementation deps.androidx.activity
 
     implementation deps.hilt.android
-    implementation deps.hilt.viewmodel
     kapt deps.hilt.compiler
     kapt deps.hilt.androidCompiler
 
