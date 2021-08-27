@@ -1,5 +1,6 @@
 package dev.enro.core.compose
 
+import android.app.Application
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.compose.animation.*
@@ -14,9 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.compose.ui.unit.toSize
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.core.*
@@ -42,12 +44,16 @@ fun rememberEnroContainerState(
     val id = rememberSaveable {
         UUID.randomUUID().toString()
     }
+    val viewModelStoreManager = viewModel<ViewModelStoreOwnerManager>(
+        factory = SavedStateViewModelFactory(LocalContext.current.applicationContext as Application, LocalSavedStateRegistryOwner.current)
+    )
     return remember {
         EnroContainerState(
             initialState = initialState,
             id = id,
             navigationHandle = viewModelStoreOwner.getNavigationHandleViewModel(),
-            accept = accept
+            accept = accept,
+            viewModelStoreManager = viewModelStoreManager
         )
     }
 }
@@ -129,11 +135,16 @@ data class EnroContainerBackstackState(
     }
 }
 
+internal class ViewModelStoreOwnerManager : ViewModel() {
+    val viewModelStores = mutableMapOf<String, ViewModelStoreOwner>()
+}
+
 class EnroContainerState internal constructor(
     initialState: List<NavigationInstruction.Open> = emptyList(),
     val id: String,
     val navigationHandle: NavigationHandle,
-    val accept: (NavigationKey) -> Boolean = { true }
+    val accept: (NavigationKey) -> Boolean = { true },
+    internal val viewModelStoreManager: ViewModelStoreOwnerManager
 ) {
     private val backstackState = MutableStateFlow(
         EnroContainerBackstackState(
@@ -214,19 +225,14 @@ class EnroContainerState internal constructor(
                 .newInstance() as ComposableDestination
             destination.instruction = instruction
 
-            destination.activity = LocalContext.current as FragmentActivity
+            destination.activity = localActivity as FragmentActivity
             destination.containerState = LocalEnroContainerState.current
-            destination.lifecycleOwner = LocalLifecycleOwner.current
-            destination.viewModelStoreOwner =
-                viewModel<ComposableDestinationViewModelStoreOwner>(
-                    LocalViewModelStoreOwner.current!!,
-                    instruction.instructionId
-                )
+            destination.viewModelStoreOwner = createViewModelStoreOwner(id = instruction.instructionId, destination)
             destination.parentContext = navigationContext
             return@getOrPut destination
         }
         destination.containerState = LocalEnroContainerState.current
-
+        if(destination.lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) throw java.lang.IllegalStateException()
         val isRestoredKey = "dev.enro.core.compose.IS_RESTORED"
         val savedInstanceState = rememberSaveable(
             saver = object : Saver<Bundle, Bundle> {
@@ -312,3 +318,4 @@ fun EnroContainer(
         }
     }
 }
+
