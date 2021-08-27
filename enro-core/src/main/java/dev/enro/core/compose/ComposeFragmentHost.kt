@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
@@ -19,7 +20,7 @@ internal data class ComposeFragmentHostKey(
     val fragmentContainerId: Int?
 ) : NavigationKey
 
-class ComposeFragmentHost : Fragment() {
+abstract class AbstractComposeFragmentHost : Fragment() {
     private val navigationHandle by navigationHandle<ComposeFragmentHostKey>()
 
     override fun onCreateView(
@@ -44,3 +45,8 @@ class ComposeFragmentHost : Fragment() {
         }
     }
 }
+
+class ComposeFragmentHost : AbstractComposeFragmentHost()
+
+@AndroidEntryPoint
+class HiltComposeFragmentHost : AbstractComposeFragmentHost()
