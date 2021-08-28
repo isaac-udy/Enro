@@ -3,6 +3,7 @@ package dev.enro.lint
 import com.android.tools.lint.client.api.UElementHandler
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.TextFormat
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiType
 import com.intellij.psi.search.GlobalSearchScope
@@ -12,11 +13,10 @@ import org.jetbrains.uast.*
 @Suppress("UnstableApiUsage")
 class EnroIssueDetector : Detector(), Detector.UastScanner {
     override fun getApplicableUastTypes(): List<Class<out UElement?>> {
-        return listOf(UCallExpression::class.java)
+        return listOf(UCallExpression::class.java, UMethod::class.java)
     }
 
     override fun createUastHandler(context: JavaContext): UElementHandler {
-
         val navigationHandlePropertyType = PsiType.getTypeByName(
             "dev.enro.core.NavigationHandleProperty",
             context.project.ideaProject,
@@ -30,6 +30,36 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
         )
 
         return object : UElementHandler() {
+
+            override fun visitMethod(node: UMethod) {
+                val isComposable = node.hasAnnotation("androidx.compose.runtime.Composable")
+
+                val isNavigationDestination =
+                    node.hasAnnotation("dev.enro.annotations.NavigationDestination")
+
+                val isExperimentalComposableDestinationsEnabled =
+                    node.hasAnnotation("dev.enro.annotations.ExperimentalComposableDestination")
+
+                if (isComposable && isNavigationDestination && !isExperimentalComposableDestinationsEnabled) {
+                    val annotationLocation =  context.getLocation(node.findAnnotation("dev.enro.annotations.NavigationDestination").sourcePsiElement!!)
+                    context.report(
+                        issue = missingExperimentalComposableDestinationOptIn,
+                        location = annotationLocation,
+                        message = missingExperimentalComposableDestinationOptIn.getExplanation(
+                            TextFormat.TEXT
+                        ),
+                        quickfixData = fix()
+                            .name("Add @NavigationDestination annotation")
+                            .replace()
+                            .range(context.getLocation(node))
+                            .text("@dev.enro.annotations.NavigationDestination")
+                            .with("@dev.enro.annotations.ExperimentalComposableDestination\n@dev.enro.annotations.NavigationDestination")
+                            .shortenNames()
+                            .build()
+                    )
+                }
+            }
+
             override fun visitCallExpression(node: UCallExpression) {
                 val returnType = node.returnType as? PsiClassType ?: return
                 if (!navigationHandlePropertyType.isAssignableFrom(returnType)) return
@@ -43,7 +73,7 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
                     .toUElementOfType<UClassLiteralExpression>()
                     ?.type
 
-                if(navigationDestinationType == null) {
+                if (navigationDestinationType == null) {
                     val classSource = receiverClass.sourceElement?.text
                     context.report(
                         issue = missingNavigationDestinationAnnotation,

@@ -18,3 +18,7 @@ annotation class GeneratedNavigationBinding(
     val destination: String,
     val navigationKey: String
 )
+
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.FUNCTION)
+annotation class ExperimentalComposableDestination

@@ -2,6 +2,7 @@ package dev.enro.processor
 
 import com.google.auto.service.AutoService
 import com.squareup.javapoet.*
+import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.GeneratedNavigationBinding
 import dev.enro.annotations.NavigationDestination
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
@@ -13,6 +14,7 @@ import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
+import javax.tools.Diagnostic
 import javax.tools.StandardLocation
 
 @IncrementalAnnotationProcessor(IncrementalAnnotationProcessorType.ISOLATING)
@@ -106,6 +108,20 @@ class NavigationDestinationProcessor : BaseProcessor() {
             ?: throw java.lang.IllegalStateException("Function ${element.getElementName()} was marked as @NavigationDestination, but was not marked as @Composable")
 
         val annotation = element.getAnnotation(NavigationDestination::class.java)
+
+        val enableComposableDestination = element.getAnnotation(ExperimentalComposableDestination::class.java) != null
+//                  TODO: Allow compiler opt-in somehow?
+//                || processingEnv.options.entries.any {
+//                    it.key == "dev.enro.experimentalComposableDestinations" && (it.value == "enabled" || it.value == "true")
+//                }
+
+        if(!enableComposableDestination) {
+            val shortMessage = "Failed to create NavigationDestination for function ${element.getElementName()}. Using @Composable functions as @NavigationDestinations is an experimental feature an must be explicitly enabled."
+            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, shortMessage)
+            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "To enable @Composable @NavigationDestinations annotate the @Composable function @NavigationDestination with the @ExperimentalComposableDestination annotation")
+//            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "To enable @Composable @NavigationDestinations per-module: Set the kapt option 'dev.enro.experimentalComposableDestinations' as 'enabled'. In your build.gradle: kapt { arguments { arg(\"dev.enro.experimentalComposableDestinations\", \"enabled\") } }")
+            throw RuntimeException(shortMessage)
+        }
         val keyType =
             processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
         val keyName = keyType.simpleName

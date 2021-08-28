@@ -42,6 +42,8 @@ dependencies {
     implementation project(":enro")
     kapt project(":enro-processor")
 
+    lintChecks(project(":enro-lint"))
+
     implementation deps.compose.material
 
     implementation deps.hilt.android
