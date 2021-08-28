@@ -15,7 +15,7 @@ import dev.enro.core.result.EnroResultChannel
 
 private const val EXTRA_RESULT_CHANNEL_ID = "com.enro.core.RESULT_CHANNEL_ID"
 
-class ResultChannelImpl<T> @PublishedApi internal  constructor(
+class ResultChannelImpl<T> @PublishedApi internal constructor(
     private val navigationHandle: NavigationHandle,
     private val resultType: Class<T>,
     private val onResult: (T) -> Unit

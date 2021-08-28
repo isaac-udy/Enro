@@ -15,6 +15,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
 import dev.enro.core.*
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import dev.enro.viewmodel.EnroViewModelFactory
 
 
 internal class ComposableDestinationContextReference(
@@ -99,7 +100,7 @@ internal class ComposableDestinationContextReference(
     internal fun requireParentContainer(): EnroContainerController = parentContainer!!
 
     @Composable
-    private fun rememberDefaultViewModelFactory(): Pair<Int, ViewModelProvider.Factory> {
+    private fun rememberDefaultViewModelFactory(navigationHandle: NavigationHandle): Pair<Int, ViewModelProvider.Factory> {
         return remember(parentViewModelStoreOwner.hashCode()) {
             if (parentViewModelStoreOwner.hashCode() == defaultViewModelFactory.first) return@remember defaultViewModelFactory
 
@@ -115,7 +116,8 @@ internal class ComposableDestinationContextReference(
             } else {
                 SavedStateViewModelFactory(activity.application, this, savedState)
             }
-            return@remember parentViewModelStoreOwner.hashCode() to factory
+
+            return@remember parentViewModelStoreOwner.hashCode() to EnroViewModelFactory(navigationHandle, factory)
         }
     }
 
@@ -163,7 +165,7 @@ internal class ComposableDestinationContextReference(
             }
 
             val navigationHandle = remember { getNavigationHandleViewModel() }
-            defaultViewModelFactory = rememberDefaultViewModelFactory()
+            defaultViewModelFactory = rememberDefaultViewModelFactory(navigationHandle)
 
             CompositionLocalProvider(
                 LocalLifecycleOwner provides this,

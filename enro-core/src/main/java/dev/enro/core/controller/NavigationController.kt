@@ -111,7 +111,10 @@ class NavigationController internal constructor(
         contextController.uninstall(application)
     }
 
-    internal fun onComposeDestinationAttached(destination: ComposableDestination, savedInstanceState: Bundle?): NavigationHandleViewModel {
+    internal fun onComposeDestinationAttached(
+        destination: ComposableDestination,
+        savedInstanceState: Bundle?
+    ): NavigationHandleViewModel {
         return contextController.onContextCreated(
             ComposeContext(destination),
             savedInstanceState
@@ -126,15 +129,27 @@ class NavigationController internal constructor(
     }
 
     companion object {
-        internal val navigationControllerBindings = mutableMapOf<Application, NavigationController>()
+        internal val navigationControllerBindings =
+            mutableMapOf<Application, NavigationController>()
 
-        private fun getBoundApplicationForTest(application: Application) = navigationControllerBindings[application]
+        private fun getBoundApplicationForTest(application: Application) =
+            navigationControllerBindings[application]
     }
 }
 
-val Application.navigationController: NavigationController get() {
-    if(this is NavigationApplication) return navigationController
-    val bound = NavigationController.navigationControllerBindings[this]
-    if(bound != null) return bound
-    throw IllegalStateException("Application is not a NavigationApplication, and has no attached NavigationController ")
-}
+val Application.navigationController: NavigationController
+    get() {
+        if (this is NavigationApplication) return navigationController
+        val bound = NavigationController.navigationControllerBindings[this]
+        if (bound != null) return bound
+        throw IllegalStateException("Application is not a NavigationApplication, and has no attached NavigationController")
+    }
+
+internal val NavigationController.application: Application
+    get() {
+        return NavigationController.navigationControllerBindings.entries
+            .firstOrNull {
+                it.value == this
+            }
+            ?.key ?: throw IllegalStateException("NavigationController is not attached to an Application")
+    }
