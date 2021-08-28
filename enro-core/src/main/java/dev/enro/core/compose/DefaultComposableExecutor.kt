@@ -23,10 +23,10 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
             return
         }
 
-        host.containerState.push(args.instruction)
+        host.containerController.push(args.instruction)
     }
 
     override fun close(context: NavigationContext<out ComposableDestination>) {
-        context.contextReference.containerState.close()
+        context.contextReference.contextReference.requireParentContainer().close()
     }
 }

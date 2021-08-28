@@ -6,38 +6,41 @@ import dev.enro.core.activity.createActivityNavigator
 import dev.enro.core.compose.ComposeFragmentHost
 import dev.enro.core.compose.ComposeFragmentHostKey
 import dev.enro.core.compose.HiltComposeFragmentHost
+import dev.enro.core.compose.HiltComposeFragmentHostKey
 import dev.enro.core.fragment.createFragmentNavigator
 import dev.enro.core.fragment.internal.HiltSingleFragmentActivity
+import dev.enro.core.fragment.internal.HiltSingleFragmentKey
 import dev.enro.core.fragment.internal.SingleFragmentActivity
 import dev.enro.core.fragment.internal.SingleFragmentKey
 import dev.enro.core.internal.NoKeyNavigator
 import kotlin.reflect.KClass
 
-internal class NavigatorContainer (
+internal class NavigatorContainer(
     private val navigators: List<Navigator<*, *>>,
-    private val useHiltDefaults: Boolean,
 ) {
     private val defaultNavigators = run {
-        val singleFragmentNavigator = if(useHiltDefaults) {
-            createActivityNavigator<SingleFragmentKey, HiltSingleFragmentActivity>()
-        }
-        else {
+        val singleFragmentNavigator =
             createActivityNavigator<SingleFragmentKey, SingleFragmentActivity>()
-        }
+
+        val hiltSingleFragmentNavigator = runCatching {
+            createActivityNavigator<HiltSingleFragmentKey, HiltSingleFragmentActivity>()
+        }.getOrNull()
 
         val noKeyProvidedNavigator = NoKeyNavigator()
 
-        val hostedComposeNavigator = if(useHiltDefaults) {
-            createFragmentNavigator<ComposeFragmentHostKey, HiltComposeFragmentHost>()
-        }
-        else {
+        val composeFragmentHostKey =
             createFragmentNavigator<ComposeFragmentHostKey, ComposeFragmentHost>()
-        }
 
-        listOf(
+        val hiltComposeFragmentHostKey = runCatching {
+            createFragmentNavigator<HiltComposeFragmentHostKey, HiltComposeFragmentHost>()
+        }.getOrNull()
+
+        listOfNotNull(
             singleFragmentNavigator,
+            hiltSingleFragmentNavigator,
             noKeyProvidedNavigator,
-            hostedComposeNavigator
+            composeFragmentHostKey,
+            hiltComposeFragmentHostKey
         )
     }
 

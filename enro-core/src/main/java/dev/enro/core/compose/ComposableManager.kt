@@ -15,9 +15,9 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.parentContext
 
 class EnroComposableManager : ViewModel() {
-    val containers: MutableSet<EnroContainerState> = mutableSetOf()
+    val containers: MutableSet<EnroContainerController> = mutableSetOf()
 
-    var primaryContainer: EnroContainerState? = null
+    var primaryContainer: EnroContainerController? = null
         private set
 
     internal fun setPrimaryContainer(id: String?) {
@@ -25,29 +25,29 @@ class EnroComposableManager : ViewModel() {
     }
 
     @Composable
-    internal fun registerState(state: EnroContainerState): Boolean {
-        DisposableEffect(state) {
-            containers += state
+    internal fun registerState(controller: EnroContainerController): Boolean {
+        DisposableEffect(controller) {
+            containers += controller
             if(primaryContainer == null) {
-                primaryContainer = state
+                primaryContainer = controller
             }
             onDispose {
-                containers -= state
-                if(primaryContainer == state) {
+                containers -= controller
+                if(primaryContainer == controller) {
                     primaryContainer = null
                 }
             }
         }
-        rememberSaveable(state, saver = object : Saver<Unit, Boolean> {
+        rememberSaveable(controller, saver = object : Saver<Unit, Boolean> {
             override fun restore(value: Boolean) {
                 if(value) {
-                    primaryContainer = state
+                    primaryContainer = controller
                 }
                 return
             }
 
             override fun SaverScope.save(value: Unit): Boolean {
-                return (primaryContainer?.id == state.id)
+                return (primaryContainer?.id == controller.id)
             }
         }) {}
         return true
@@ -65,7 +65,7 @@ internal val ViewModelStoreOwner.composableManger: EnroComposableManager get() {
 }
 
 internal class ComposableHost(
-    internal val containerState: EnroContainerState
+    internal val containerController: EnroContainerController
 )
 
 internal fun NavigationContext<*>.composeHostFor(key: NavigationKey): ComposableHost? {

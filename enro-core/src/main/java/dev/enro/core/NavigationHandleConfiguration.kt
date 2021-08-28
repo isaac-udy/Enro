@@ -1,7 +1,7 @@
 package dev.enro.core
 
 import androidx.annotation.IdRes
-import dev.enro.core.compose.ComposeFragmentHostKey
+import dev.enro.core.compose.AbstractComposeFragmentHostKey
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
 
@@ -10,7 +10,7 @@ internal class ChildContainer(
     private val accept: (NavigationKey) -> Boolean
 ) {
     fun accept(key: NavigationKey): Boolean {
-        if(key is ComposeFragmentHostKey && accept.invoke(key.instruction.navigationKey)) return true
+        if(key is AbstractComposeFragmentHostKey && accept.invoke(key.instruction.navigationKey)) return true
         return accept.invoke(key)
     }
 }

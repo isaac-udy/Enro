@@ -9,6 +9,7 @@ import dev.enro.core.controller.container.NavigatorContainer
 import dev.enro.core.controller.container.PluginContainer
 import dev.enro.core.controller.interceptor.InstructionInterceptorController
 import dev.enro.core.controller.lifecycle.NavigationLifecycleController
+import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
 
 class NavigationController internal constructor(
@@ -110,8 +111,8 @@ class NavigationController internal constructor(
         contextController.uninstall(application)
     }
 
-    internal fun onComposeDestinationAttached(destination: ComposableDestination, savedInstanceState: Bundle?) {
-        contextController.onContextCreated(
+    internal fun onComposeDestinationAttached(destination: ComposableDestination, savedInstanceState: Bundle?): NavigationHandleViewModel {
+        return contextController.onContextCreated(
             ComposeContext(destination),
             savedInstanceState
         )
@@ -122,14 +123,6 @@ class NavigationController internal constructor(
             ComposeContext(destination),
             outState
         )
-    }
-
-    internal fun onComposeDestinationActive(destination: ComposableDestination) {
-        pluginContainer.onActive(destination.navigationHandle)
-    }
-
-    internal fun onComposeDestinationClosed(destination: ComposableDestination) {
-        pluginContainer.onClosed(destination.navigationHandle)
     }
 
     companion object {

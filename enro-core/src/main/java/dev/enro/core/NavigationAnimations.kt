@@ -2,11 +2,11 @@ package dev.enro.core
 
 import android.content.res.Resources
 import android.os.Parcelable
-import dev.enro.core.compose.ComposeFragmentHost
-import dev.enro.core.compose.ComposeFragmentHostKey
+import dev.enro.core.compose.AbstractComposeFragmentHost
+import dev.enro.core.compose.AbstractComposeFragmentHostKey
 import dev.enro.core.controller.navigationController
 import dev.enro.core.fragment.internal.AbstractSingleFragmentActivity
-import dev.enro.core.fragment.internal.SingleFragmentKey
+import dev.enro.core.fragment.internal.AbstractSingleFragmentKey
 import dev.enro.core.internal.getAttributeResourceId
 import kotlinx.parcelize.Parcelize
 
@@ -71,14 +71,14 @@ fun animationsFor(
     }
 
     if (navigationInstruction is NavigationInstruction.Open && context.contextReference is AbstractSingleFragmentActivity) {
-        val singleFragmentKey = context.getNavigationHandleViewModel().key as SingleFragmentKey
+        val singleFragmentKey = context.getNavigationHandleViewModel().key as AbstractSingleFragmentKey
         if (navigationInstruction.instructionId == singleFragmentKey.instruction.instructionId) {
             return AnimationPair.Resource(0, 0)
         }
     }
 
-    if (navigationInstruction is NavigationInstruction.Open && context.contextReference is ComposeFragmentHost) {
-        val composeHostKey = context.getNavigationHandleViewModel().key as ComposeFragmentHostKey
+    if (navigationInstruction is NavigationInstruction.Open && context.contextReference is AbstractComposeFragmentHost) {
+        val composeHostKey = context.getNavigationHandleViewModel().key as AbstractComposeFragmentHostKey
         if (navigationInstruction.instructionId == composeHostKey.instruction.instructionId) {
             return AnimationPair.Resource(0, 0)
         }

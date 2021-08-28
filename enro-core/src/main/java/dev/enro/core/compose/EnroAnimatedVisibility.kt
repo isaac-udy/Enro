@@ -15,6 +15,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.IntSize
 import dev.enro.core.AnimationPair
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
@@ -29,13 +31,17 @@ internal fun EnroAnimatedVisibility(
         animations.asResource(context.theme)
     }
 
-    val animationStateValues = getAnimationResourceState(if(visible) resourceAnimations.enter else resourceAnimations.exit)
+    val size = remember { mutableStateOf(IntSize(0, 0)) }
+    val animationStateValues = getAnimationResourceState(if(visible) resourceAnimations.enter else resourceAnimations.exit, size.value)
     val currentVisibility = remember {
         mutableStateOf(false)
     }
     AnimatedVisibility(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .onGloballyPositioned {
+                size.value = it.size
+            },
         visible = currentVisibility.value || animationStateValues.isActive,
         enter = fadeIn(1.0f, tween(1)),
         exit = fadeOut(1.0f, tween(1)),

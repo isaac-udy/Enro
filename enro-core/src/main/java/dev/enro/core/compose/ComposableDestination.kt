@@ -1,14 +1,9 @@
 package dev.enro.core.compose
 
-import android.app.Activity
-import android.app.Application
-import android.content.ContextWrapper
+import android.annotation.SuppressLint
 import android.os.Bundle
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.fragment.app.FragmentActivity
@@ -18,154 +13,207 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationHandle
-import dev.enro.core.NavigationInstruction
+import dev.enro.core.*
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
 
-abstract class ComposableDestination: LifecycleOwner, ViewModelStoreOwner {
+internal class ComposableDestinationContextReference(
+    val instruction: NavigationInstruction.Open,
+    val composableDestination: ComposableDestination,
+    internal var parentContainer: EnroContainerController?
+) : ViewModel(),
+    LifecycleOwner,
+    ViewModelStoreOwner,
+    HasDefaultViewModelProviderFactory,
+    SavedStateRegistryOwner {
 
-    internal val lifecycleRegistry: LifecycleRegistry by lazy {  LifecycleRegistry(this) }
+    private val navigationController get() = requireParentContainer().navigationContext.controller
+    private val parentViewModelStoreOwner get() = requireParentContainer().navigationContext.viewModelStoreOwner
+    private val parentSavedStateRegistry get() = requireParentContainer().navigationContext.savedStateRegistryOwner.savedStateRegistry
+    internal val activity: FragmentActivity get() = requireParentContainer().navigationContext.activity
 
-    internal lateinit var instruction: NavigationInstruction.Open
-    internal lateinit var activity: FragmentActivity
-    internal lateinit var containerState: EnroContainerState
-    internal lateinit var navigationHandle: NavigationHandle
-    internal lateinit var viewModelStoreOwner: ViewModelStoreOwner
+    private val arguments by lazy { Bundle().addOpenInstruction(instruction) }
+    private val savedState: Bundle? =
+        parentSavedStateRegistry.consumeRestoredStateForKey(instruction.instructionId)
+    private val savedStateController = SavedStateRegistryController.create(this)
+    private val viewModelStore: ViewModelStore = ViewModelStore()
 
-    internal var parentContext: NavigationContext<*>? = null
+
+    @SuppressLint("StaticFieldLeak")
+    private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
+
+    private var defaultViewModelFactory: Pair<Int, ViewModelProvider.Factory> =
+        0 to ViewModelProvider.NewInstanceFactory()
+
+    init {
+        composableDestination.contextReference = this
+
+        savedStateController.performRestore(savedState)
+        lifecycleRegistry.addObserver(object : LifecycleEventObserver {
+            override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                when (event) {
+                    Lifecycle.Event.ON_CREATE -> {
+                        parentSavedStateRegistry.registerSavedStateProvider(instruction.instructionId) {
+                            val outState = Bundle()
+                            navigationController.onComposeContextSaved(
+                                composableDestination,
+                                outState
+                            )
+                            savedStateController.performSave(outState)
+                            outState
+                        }
+                        navigationController.onComposeDestinationAttached(
+                            composableDestination,
+                            savedState
+                        )
+                    }
+                    Lifecycle.Event.ON_DESTROY -> {
+                        parentSavedStateRegistry.unregisterSavedStateProvider(instruction.instructionId)
+                        viewModelStore.clear()
+                        lifecycleRegistry.removeObserver(this)
+                    }
+                    else -> {
+                    }
+                }
+            }
+        })
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    }
 
     override fun getLifecycle(): Lifecycle {
         return lifecycleRegistry
     }
 
     override fun getViewModelStore(): ViewModelStore {
-        return viewModelStoreOwner.viewModelStore
-    }
-
-    @Composable
-    internal fun InternalRender() {
-        if(lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) return
-        navigationHandle = getNavigationHandleViewModel()
-        CompositionLocalProvider(
-            LocalLifecycleOwner provides this,
-            LocalNavigationHandle provides navigationHandle,
-            LocalViewModelStoreOwner provides viewModelStoreOwner
-        ) {
-            Render()
-        }
-        val containerState = LocalEnroContainerState.current
-        DisposableEffect(true) {
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-            onDispose {
-                if(containerState.backstack.contains(instruction)) {
-                    lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-                }
-                else {
-                    lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-                    containerState.viewModelStoreManager.viewModelStores.remove((viewModelStoreOwner as ComposableDestinationViewModelStoreOwner).id)
-                    viewModelStoreOwner.viewModelStore.clear()
-                }
-            }
-        }
-    }
-
-    @Composable
-    abstract fun Render()
-}
-
-internal class ComposableDestinationViewModelStoreOwner(
-    val id: String
-) : ViewModelStoreOwner, HasDefaultViewModelProviderFactory {
-    private val viewModelStore = ViewModelStore()
-    lateinit var factory: ViewModelProvider.Factory
-
-    override fun getViewModelStore(): ViewModelStore {
         return viewModelStore
     }
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
-        return factory
+        return defaultViewModelFactory.second
+    }
+
+    override fun getSavedStateRegistry(): SavedStateRegistry {
+        return savedStateController.savedStateRegistry
+    }
+
+    internal fun requireParentContainer(): EnroContainerController = parentContainer!!
+
+    @Composable
+    private fun rememberDefaultViewModelFactory(): Pair<Int, ViewModelProvider.Factory> {
+        return remember(parentViewModelStoreOwner.hashCode()) {
+            if (parentViewModelStoreOwner.hashCode() == defaultViewModelFactory.first) return@remember defaultViewModelFactory
+
+            val parentDefaultViewModelFactory =
+                (parentViewModelStoreOwner as? HasDefaultViewModelProviderFactory)?.defaultViewModelProviderFactory
+            val factory = if (parentDefaultViewModelFactory is HiltViewModelFactory) {
+                HiltViewModelFactory.createInternal(
+                    activity,
+                    this,
+                    arguments,
+                    SavedStateViewModelFactory(activity.application, this, savedState)
+                )
+            } else {
+                SavedStateViewModelFactory(activity.application, this, savedState)
+            }
+            return@remember parentViewModelStoreOwner.hashCode() to factory
+        }
+    }
+
+    @Composable
+    fun Render() {
+        val saveableStateHolder = rememberSaveableStateHolder()
+        if (!lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.CREATED)) return
+
+        val backstackState by requireParentContainer().backstack.collectAsState()
+        val parentContext = requireParentContainer().navigationContext
+        DisposableEffect(true) {
+            onDispose {
+                if (!backstackState.backstack.contains(instruction)) {
+                    lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                }
+            }
+        }
+
+        val isVisible = instruction == backstackState.visible
+        val animations = remember(isVisible) {
+            if( backstackState.skipAnimations) return@remember DefaultAnimations.none
+            animationsFor(
+                parentContext,
+                backstackState.lastInstruction
+            )
+        }
+
+        EnroAnimatedVisibility(
+            visible = isVisible,
+            animations = animations
+        ) {
+            DisposableEffect(isVisible) {
+                if (isVisible) {
+                    lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+                } else {
+                    lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+                }
+                onDispose {
+                    if (isVisible) {
+                        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+                    } else {
+                        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+                    }
+                }
+            }
+
+            val navigationHandle = remember { getNavigationHandleViewModel() }
+            defaultViewModelFactory = rememberDefaultViewModelFactory()
+
+            CompositionLocalProvider(
+                LocalLifecycleOwner provides this,
+                LocalViewModelStoreOwner provides this,
+                LocalSavedStateRegistryOwner provides this,
+                LocalNavigationHandle provides navigationHandle
+            ) {
+                saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
+                    composableDestination.Render()
+                }
+            }
+
+            DisposableEffect(true) {
+                onDispose {
+                    requireParentContainer().onInstructionDisposed(instruction)
+                }
+            }
+        }
     }
 }
 
 @Composable
-internal fun createViewModelStoreOwner(id: String, currentLifecycle: LifecycleOwner): ViewModelStoreOwner {
-    val parentSavedState = LocalSavedStateRegistryOwner.current.savedStateRegistry
-    val savedState = remember(id) { Bundle() }
+internal fun getComposableDestinationContext(
+    instruction: NavigationInstruction.Open,
+    composableDestination: ComposableDestination,
+    parentContainer: EnroContainerController?
+): ComposableDestinationContextReference {
+    return ComposableDestinationContextReference(
+        instruction = instruction,
+        composableDestination = composableDestination,
+        parentContainer = parentContainer
+    )
+}
 
-    val manager = LocalEnroContainerState.current.viewModelStoreManager
-    val viewModelStoreOwner = remember(id) {
-        manager.viewModelStores.getOrPut(id) {
-            ComposableDestinationViewModelStoreOwner(id)
-        } as ComposableDestinationViewModelStoreOwner
+abstract class ComposableDestination : LifecycleOwner, ViewModelStoreOwner,
+    SavedStateRegistryOwner {
+    internal lateinit var contextReference: ComposableDestinationContextReference
+
+    override fun getLifecycle(): Lifecycle {
+        return contextReference.lifecycle
     }
 
-    val savedStateRegistryOwner = remember(id) {
-        object : SavedStateRegistryOwner, LifecycleEventObserver, ViewModelStoreOwner {
-            private val savedStateController = SavedStateRegistryController.create(this)
-            private val lifecycleRegistry = LifecycleRegistry(this)
-
-            init {
-                savedStateController.performRestore(parentSavedState.consumeRestoredStateForKey(id))
-                currentLifecycle.lifecycle.addObserver(this)
-            }
-
-            override fun getViewModelStore(): ViewModelStore {
-                return viewModelStoreOwner.viewModelStore
-            }
-
-            override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if(event <= Lifecycle.Event.ON_RESUME) {
-                    parentSavedState.unregisterSavedStateProvider(id)
-                    parentSavedState.registerSavedStateProvider(id) {
-                        savedStateController.performSave(savedState)
-                        if (currentLifecycle.lifecycle.currentState <= Lifecycle.State.CREATED) {
-                            parentSavedState.unregisterSavedStateProvider(id)
-                        }
-                        savedState
-                    }
-                }
-                lifecycleRegistry.handleLifecycleEvent(event)
-            }
-            override fun getLifecycle(): Lifecycle = lifecycleRegistry
-
-            override fun getSavedStateRegistry(): SavedStateRegistry = savedStateController.savedStateRegistry
-
-        }
+    override fun getViewModelStore(): ViewModelStore {
+        return contextReference.viewModelStore
     }
 
-    val parentOwner = (LocalViewModelStoreOwner.current)
-    val parentViewModelFactory = (parentOwner as? HasDefaultViewModelProviderFactory) ?.defaultViewModelProviderFactory
-    val context = LocalContext.current
-    val application = context.applicationContext as Application
-
-    val defaultFactory = remember(id) {
-        if(parentViewModelFactory is HiltViewModelFactory) {
-            val activity = context.let {
-                var ctx = it
-                while (ctx is ContextWrapper) {
-                    if (ctx is Activity) {
-                        return@let ctx
-                    }
-                    ctx = ctx.baseContext
-                }
-                throw IllegalStateException("TODO Exception Details")
-            }
-            HiltViewModelFactory.createInternal(
-                activity,
-                savedStateRegistryOwner,
-                savedState,
-                SavedStateViewModelFactory(application, savedStateRegistryOwner, savedState)
-            )
-        }
-        else {
-            SavedStateViewModelFactory(application, savedStateRegistryOwner, savedState)
-        }
+    override fun getSavedStateRegistry(): SavedStateRegistry {
+        return contextReference.savedStateRegistry
     }
 
-    return viewModelStoreOwner.apply {
-        factory = defaultFactory
-    }
+    @Composable
+    abstract fun Render()
 }

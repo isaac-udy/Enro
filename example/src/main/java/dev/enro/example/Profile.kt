@@ -21,13 +21,30 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberEnroContainerState
+import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.forward
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 class Profile : NavigationKey
 
+
+@Composable
+fun ProgileFragment() {
+    EnroExampleTheme {
+        Text(text = "Open Nested!")
+        Column {
+            val navigation = navigationHandle()
+            Text(text = "Open Nested!")
+            Button(onClick = { navigation.forward(InitialKey()) }) {
+                Text(text = "Open Initial")
+            }
+            EnroContainer(modifier = Modifier.fillMaxWidth().fillMaxHeight(), controller = rememberEnroContainerController {
+                it is InitialKey
+            })
+        }
+    }
+}
 
 @NavigationDestination(Profile::class)
 class ProfileFragment : Fragment() {
@@ -47,7 +64,7 @@ class ProfileFragment : Fragment() {
                         Button(onClick = { navigation.forward(InitialKey()) }) {
                             Text(text = "Open Initial")
                         }
-                        EnroContainer(modifier = Modifier.fillMaxWidth().fillMaxHeight(), state = rememberEnroContainerState {
+                        EnroContainer(modifier = Modifier.fillMaxWidth().fillMaxHeight(), controller = rememberEnroContainerController {
                             it is InitialKey
                         })
                     }
@@ -71,8 +88,8 @@ fun InitialScreen() {
         Button(onClick = { navigation.forward(NestedKey2()) }) {
             Text(text = "Open Nested 2!")
         }
-        EnroContainer(modifier = Modifier.fillMaxWidth().height(200.dp).border(1.dp, Color.Green), state = rememberEnroContainerState() { it is NestedKey })
-        EnroContainer(modifier =  Modifier.fillMaxWidth().height(200.dp).border(1.dp, Color.Red), state = rememberEnroContainerState() { it is NestedKey2 })
+        EnroContainer(modifier = Modifier.fillMaxWidth().height(75.dp).border(1.dp, Color.Green), controller = rememberEnroContainerController() { it is NestedKey })
+        EnroContainer(modifier =  Modifier.fillMaxWidth().height(75.dp).border(1.dp, Color.Red), controller = rememberEnroContainerController() { it is NestedKey2 })
     }
 }
 

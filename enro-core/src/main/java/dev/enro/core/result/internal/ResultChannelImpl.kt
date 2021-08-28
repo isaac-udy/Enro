@@ -3,6 +3,7 @@ package dev.enro.core.result.internal
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.Keep
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -11,6 +12,8 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.EnroResultChannel
+
+private const val EXTRA_RESULT_CHANNEL_ID = "com.enro.core.RESULT_CHANNEL_ID"
 
 class ResultChannelImpl<T> @PublishedApi internal  constructor(
     private val navigationHandle: NavigationHandle,
@@ -84,23 +87,20 @@ class ResultChannelImpl<T> @PublishedApi internal  constructor(
 
     internal companion object {
         private val handler = Handler(Looper.getMainLooper())
-        private const val EXTRA_RESULT_CHANNEL_ID = "com.enro.core.RESULT_CHANNEL_ID"
-
         internal fun getResultId(navigationHandle: NavigationHandle): ResultChannelId? {
             return getResultId(navigationHandle.additionalData)
-        }
-
-        // Used reflectively by ResultExtensions in enro-test
-        @JvmStatic
-        private fun getResultId(bundle: Bundle): ResultChannelId? {
-            val classLoader = bundle.classLoader
-            bundle.classLoader = ResultChannelId::class.java.classLoader
-            val resultId = bundle.getParcelable<ResultChannelId>(
-                EXTRA_RESULT_CHANNEL_ID
-            )
-            bundle.classLoader = classLoader
-            return resultId
         }
     }
 }
 
+// Used reflectively by ResultExtensions in enro-test
+@Keep
+private fun getResultId(bundle: Bundle): ResultChannelId? {
+    val classLoader = bundle.classLoader
+    bundle.classLoader = ResultChannelId::class.java.classLoader
+    val resultId = bundle.getParcelable<ResultChannelId>(
+        EXTRA_RESULT_CHANNEL_ID
+    )
+    bundle.classLoader = classLoader
+    return resultId
+}

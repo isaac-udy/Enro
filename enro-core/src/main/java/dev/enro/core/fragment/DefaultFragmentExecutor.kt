@@ -37,6 +37,10 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             return
         }
 
+        if(instruction.navigationDirection == NavigationDirection.REPLACE && fromContext.contextReference is ComposableDestination) {
+            fromContext.contextReference.contextReference.requireParentContainer().close()
+        }
+
         if (!tryExecutePendingTransitions(navigator, fromContext, instruction)) return
         if (fromContext is FragmentContext && !fromContext.fragment.isAdded) return
         val fragment = createFragment(
@@ -83,7 +87,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             }
 
             val isSafeToRetain = if(fromContext.contextReference is ComposableDestination) {
-                fromContext.contextReference.containerState.backstack.isNotEmpty()
+                fromContext.contextReference.contextReference.requireParentContainer().backstack.value.backstack.isNotEmpty()
             } else (activeFragment?.tag == instruction.internal.parentInstruction?.instructionId)
 
             if(activeFragment != null

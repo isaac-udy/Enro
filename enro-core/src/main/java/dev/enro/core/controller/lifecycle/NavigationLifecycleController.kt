@@ -31,7 +31,7 @@ internal class NavigationLifecycleController(
         callbacks.uninstall(application)
     }
 
-    fun onContextCreated(context: NavigationContext<*>, savedInstanceState: Bundle?) {
+    fun onContextCreated(context: NavigationContext<*>, savedInstanceState: Bundle?): NavigationHandleViewModel {
         if (context is ActivityContext) {
             context.activity.theme.applyStyle(android.R.style.Animation_Activity, false)
         }
@@ -83,6 +83,7 @@ internal class NavigationLifecycleController(
             })
         }
         if (savedInstanceState == null) handle.executeDeeplink()
+        return handle
     }
 
     fun onContextSaved(context: NavigationContext<*>, outState: Bundle) {

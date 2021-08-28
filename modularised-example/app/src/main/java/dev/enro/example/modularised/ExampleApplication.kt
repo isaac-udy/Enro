@@ -6,7 +6,6 @@ import dev.enro.annotations.NavigationComponent
 import dev.enro.core.AnimationPair
 import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.navigationController
-import dev.enro.core.plugins.EnroHilt
 import dev.enro.core.plugins.EnroLogger
 import dev.enro.example.core.data.UserRepository
 
@@ -15,7 +14,6 @@ import dev.enro.example.core.data.UserRepository
 class ExampleApplication : Application(), NavigationApplication {
 
     override val navigationController = navigationController {
-        plugin(EnroHilt())
         plugin(EnroLogger())
 
         override<MainActivity, Any> {

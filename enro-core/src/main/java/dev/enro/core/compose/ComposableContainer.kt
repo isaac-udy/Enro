@@ -1,174 +1,105 @@
 package dev.enro.core.compose
 
-import android.app.Application
-import android.os.Bundle
-import android.os.Parcelable
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
-import androidx.compose.ui.unit.toSize
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.core.*
-import dev.enro.core.controller.NavigationController
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.parcelize.Parcelize
+import kotlinx.coroutines.flow.StateFlow
 import java.util.*
-import kotlin.collections.ArrayList
 
-internal val LocalEnroContainerState = compositionLocalOf<EnroContainerState> {
-    throw IllegalStateException("The current composition does not have a ComposableContainer attached")
+internal class EnroDestinationStorage : ViewModel() {
+    val destinations = mutableMapOf<String, MutableMap<String, ComposableDestinationContextReference>>()
+}
+
+sealed class EmptyBehavior {
+    object AllowEmpty: EmptyBehavior()
+    object CloseParent: EmptyBehavior()
+    class SelectContainer(val container: EnroContainerController): EmptyBehavior()
 }
 
 @Composable
-fun rememberEnroContainerState(
+fun rememberEnroContainerController(
     initialState: List<NavigationInstruction.Open> = emptyList(),
-    accept: (NavigationKey) -> Boolean = { true }
-): EnroContainerState {
+    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    accept: (NavigationKey) -> Boolean = { true },
+): EnroContainerController {
     val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
+    val destinationStorage = viewModel<EnroDestinationStorage>()
+
     val id = rememberSaveable {
         UUID.randomUUID().toString()
     }
-    val viewModelStoreManager = viewModel<ViewModelStoreOwnerManager>(
-        factory = SavedStateViewModelFactory(LocalContext.current.applicationContext as Application, LocalSavedStateRegistryOwner.current)
-    )
-    return remember {
-        EnroContainerState(
-            initialState = initialState,
+
+
+    val controller = remember {
+        EnroContainerController(
             id = id,
             navigationHandle = viewModelStoreOwner.getNavigationHandleViewModel(),
             accept = accept,
-            viewModelStoreManager = viewModelStoreManager
+            destinationStorage = destinationStorage,
+            emptyBehavior = emptyBehavior
         )
     }
-}
 
-@Parcelize
-data class EnroContainerBackstackEntry(
-    val instruction: NavigationInstruction.Open,
-    val previouslyActiveContainerId: String?
-) : Parcelable
-
-data class EnroContainerBackstackState(
-    val lastInstruction: NavigationInstruction,
-    val backstackEntries: List<EnroContainerBackstackEntry>,
-    val exiting: NavigationInstruction.Open?,
-    val exitingIndex: Int
-) {
-    val backstack = backstackEntries.map { it.instruction }
-    val visible: NavigationInstruction.Open? = backstack.lastOrNull()
-    val renderable: List<NavigationInstruction.Open> = run {
-        if(exiting == null) return@run backstack
-        if(backstack.contains(exiting)) return@run backstack
-        if(exitingIndex > backstack.lastIndex) return@run backstack + exiting
-        return@run backstack.flatMapIndexed { index, open ->
-            if(exitingIndex == index) return@flatMapIndexed listOf(exiting, open)
-            return@flatMapIndexed listOf(open)
+    val savedBackstack = rememberSaveable(
+        key = id,
+        saver = EnroContainerBackstackStateSaver {
+            controller.backstack.value
         }
-    }
-
-    fun push(
-        instruction: NavigationInstruction.Open,
-        activeContainerId: String?
-    ): EnroContainerBackstackState {
-        return when (instruction.navigationDirection) {
-            NavigationDirection.FORWARD -> {
-                copy(
-                    backstackEntries = backstackEntries + EnroContainerBackstackEntry(
-                        instruction,
-                        activeContainerId
-                    ),
-                    exiting = visible,
-                    exitingIndex = backstack.lastIndex,
-                    lastInstruction = instruction
-                )
-            }
-            NavigationDirection.REPLACE -> {
-                copy(
-                    backstackEntries = backstackEntries.dropLast(1) + EnroContainerBackstackEntry(
-                        instruction,
-                        activeContainerId
-                    ),
-                    exiting = visible,
-                    exitingIndex = backstack.lastIndex,
-                    lastInstruction = instruction
-                )
-            }
-            NavigationDirection.REPLACE_ROOT -> {
-                copy(
-                    backstackEntries = listOf(
-                        EnroContainerBackstackEntry(
-                            instruction,
-                            activeContainerId
-                        )
-                    ),
-                    exiting = visible,
-                    exitingIndex = 0,
-                    lastInstruction = instruction
-                )
-            }
-        }
-    }
-
-    fun close(): EnroContainerBackstackState {
-        return copy(
-            backstackEntries = backstackEntries.dropLast(1),
-            exiting = visible,
-            exitingIndex = backstack.lastIndex,
-            lastInstruction = NavigationInstruction.Close
-        )
-    }
-}
-
-internal class ViewModelStoreOwnerManager : ViewModel() {
-    val viewModelStores = mutableMapOf<String, ViewModelStoreOwner>()
-}
-
-class EnroContainerState internal constructor(
-    initialState: List<NavigationInstruction.Open> = emptyList(),
-    val id: String,
-    val navigationHandle: NavigationHandle,
-    val accept: (NavigationKey) -> Boolean = { true },
-    internal val viewModelStoreManager: ViewModelStoreOwnerManager
-) {
-    private val backstackState = MutableStateFlow(
+    ) {
         EnroContainerBackstackState(
             backstackEntries = initialState.map { EnroContainerBackstackEntry(it, null) },
             exiting = null,
             exitingIndex = -1,
-            lastInstruction = initialState.lastOrNull() ?: NavigationInstruction.Close
+            lastInstruction = initialState.lastOrNull() ?: NavigationInstruction.Close,
+            skipAnimations = true
         )
-    )
-    val backstack get() = backstackState.value.backstack
+    }
 
-    internal val navigationController: NavigationController = navigationHandle.controller
-    internal val navigationContext: NavigationContext<*> =
-        (navigationHandle as NavigationHandleViewModel).navigationContext!!
+    return remember {
+        controller.setInitialBackstack(savedBackstack)
+        controller
+    }
+}
 
-    private val destinations = mutableMapOf<String, ComposableDestination>()
-    private val currentDestination get() = backstackState.value.visible?.instructionId?.let { destinations[it] }
+class EnroContainerController internal constructor(
+    val id: String,
+    val accept: (NavigationKey) -> Boolean,
+    internal val navigationHandle: NavigationHandleViewModel,
+    private val destinationStorage: EnroDestinationStorage,
+    private val emptyBehavior: EmptyBehavior
+) {
+    private lateinit var mutableBackstack: MutableStateFlow<EnroContainerBackstackState>
+    val backstack: StateFlow<EnroContainerBackstackState> get() = mutableBackstack
 
-    internal var size: Size = Size.Zero
+    internal val navigationContext: NavigationContext<*> get() = navigationHandle.navigationContext!!
+
+    private val destinations = destinationStorage.destinations.getOrPut(id) { mutableMapOf() }
+    private val currentDestination get() = mutableBackstack.value.backstack
+        .mapNotNull { destinations[it.instructionId] }
+        .lastOrNull {
+            it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)
+        }
 
     internal val activeContext: NavigationContext<*>? get() = currentDestination?.getNavigationHandleViewModel()?.navigationContext
 
+    internal fun setInitialBackstack(initialBackstack: EnroContainerBackstackState) {
+        if(::mutableBackstack.isInitialized) throw IllegalStateException()
+        mutableBackstack = MutableStateFlow(initialBackstack)
+    }
+
     fun push(instruction: NavigationInstruction.Open) {
-        backstackState.value = backstackState.value.push(
+        mutableBackstack.value = mutableBackstack.value.push(
             instruction,
             navigationContext.childComposableManager.primaryContainer?.id
         )
@@ -177,14 +108,30 @@ class EnroContainerState internal constructor(
 
     fun close() {
         currentDestination ?: return
-
-        navigationContext.childComposableManager.setPrimaryContainer(backstackState.value.backstackEntries.lastOrNull()?.previouslyActiveContainerId)
-        backstackState.value = backstackState.value.close()
+        val closedState = mutableBackstack.value.close()
+        if(closedState.backstack.isEmpty()) {
+            when(emptyBehavior) {
+                EmptyBehavior.AllowEmpty -> {
+                    /* If allow empty, pass through to default behavior */
+                }
+                EmptyBehavior.CloseParent -> {
+                    navigationContext.childComposableManager.setPrimaryContainer(null)
+                    navigationHandle.close()
+                    return
+                }
+                is EmptyBehavior.SelectContainer -> {
+                    navigationContext.childComposableManager.setPrimaryContainer(emptyBehavior.container.id)
+                    return
+                }
+            }
+        }
+        navigationContext.childComposableManager.setPrimaryContainer(mutableBackstack.value.backstackEntries.lastOrNull()?.previouslyActiveContainerId)
+        mutableBackstack.value = closedState
     }
 
     internal fun onInstructionDisposed(instruction: NavigationInstruction.Open) {
-        if (backstackState.value.exiting == instruction) {
-            backstackState.value = backstackState.value.copy(
+        if (mutableBackstack.value.exiting == instruction) {
+            mutableBackstack.value = mutableBackstack.value.copy(
                 exiting = null,
                 exitingIndex = -1
             )
@@ -192,78 +139,28 @@ class EnroContainerState internal constructor(
     }
 
     @Composable
-    fun observeBackstackState(): EnroContainerBackstackState {
-        val backstack = backstackState.collectAsState()
-        return backstack.value
-    }
-
-    @Composable
-    fun persist(): EnroContainerState {
-        val backstack = backstackState.collectAsState()
-        val savedBackStack = rememberSaveable(backstack.value, key = id) {
-            ArrayList(backstack.value.backstackEntries)
-        }
-
-        if (backstackState.value.backstackEntries != savedBackStack) {
-            backstackState.value = EnroContainerBackstackState(
-                backstackEntries = savedBackStack,
-                exiting = null,
-                exitingIndex = -1,
-                lastInstruction = backstackState.value.visible ?: NavigationInstruction.Close
-            )
-        }
-        return this
-    }
-
-    @Composable
-    fun getDestination(instruction: NavigationInstruction.Open): ComposableDestination {
-        val isNewDestination = !destinations.containsKey(instruction.instructionId)
-        val destination = destinations.getOrPut(instruction.instructionId) {
-            val controller = navigationController
+    internal fun getDestination(instruction: NavigationInstruction.Open): ComposableDestinationContextReference {
+        val destinationContextReference = destinations.getOrPut(instruction.instructionId) {
+            val controller = navigationContext.controller
             val composeKey = instruction.navigationKey
             val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
                 .newInstance() as ComposableDestination
-            destination.instruction = instruction
 
-            destination.activity = localActivity as FragmentActivity
-            destination.containerState = LocalEnroContainerState.current
-            destination.viewModelStoreOwner = createViewModelStoreOwner(id = instruction.instructionId, destination)
-            destination.parentContext = navigationContext
-            return@getOrPut destination
+            return@getOrPut getComposableDestinationContext(
+                instruction = instruction,
+                composableDestination = destination,
+                parentContainer = this
+            )
         }
-        destination.containerState = LocalEnroContainerState.current
-        if(destination.lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) throw java.lang.IllegalStateException()
-        val isRestoredKey = "dev.enro.core.compose.IS_RESTORED"
-        val savedInstanceState = rememberSaveable(
-            saver = object : Saver<Bundle, Bundle> {
-                override fun restore(value: Bundle): Bundle {
-                    value.putBoolean(isRestoredKey, true)
-                    return value
-                }
-
-                override fun SaverScope.save(value: Bundle): Bundle {
-                    navigationController.onComposeContextSaved(destination, value)
-                    return value
+        destinationContextReference.parentContainer = this@EnroContainerController
+        DisposableEffect(true) {
+            onDispose {
+                if(!mutableBackstack.value.backstack.contains(instruction)) {
+                    destinations.remove(instruction.instructionId)
                 }
             }
-        ) {
-            Bundle().addOpenInstruction(instruction)
         }
-
-        val isRestored = savedInstanceState.getBoolean(isRestoredKey)
-        if (isNewDestination) {
-            navigationController.onComposeDestinationAttached(
-                destination,
-                if (isRestored) savedInstanceState else null
-            )
-        }
-        if (destination.getNavigationHandleViewModel().navigationContext == null) {
-            navigationController.onComposeDestinationAttached(
-                destination,
-                if (isRestored) savedInstanceState else null
-            )
-        }
-        return destination
+        return destinationContextReference
     }
 }
 
@@ -271,49 +168,15 @@ class EnroContainerState internal constructor(
 @Composable
 fun EnroContainer(
     modifier: Modifier = Modifier,
-    state: EnroContainerState = rememberEnroContainerState(),
+    controller: EnroContainerController = rememberEnroContainerController(),
 ) {
-    state.persist()
-    localComposableManager.registerState(state)
-    val backstackState = state.observeBackstackState()
-    val saveableStateHolder = rememberSaveableStateHolder()
+    localComposableManager.registerState(controller)
+    val backstackState by controller.backstack.collectAsState()
 
-    val context = localEnroContext
-    val animations = remember(backstackState.visible) {
-        animationsFor(
-            context,
-            backstackState.lastInstruction
-        )
-    }
-
-    Box(modifier = modifier.onGloballyPositioned {
-        state.size = it.size.toSize()
-    }) {
-        CompositionLocalProvider(
-            LocalEnroContainerState provides state
-        ) {
-            backstackState.renderable.forEach {
-                key(it.instructionId) {
-                    EnroAnimatedVisibility(
-                        visible = it == backstackState.visible,
-                        animations = animations
-                    ) {
-                        saveableStateHolder.SaveableStateProvider(it.instructionId) {
-                            val destination = state.getDestination(it)
-                            destination.InternalRender()
-
-                            DisposableEffect(true) {
-                                state.navigationController.onComposeDestinationActive(destination)
-                                onDispose {
-                                    state.onInstructionDisposed(it)
-                                    state.navigationController.onComposeDestinationClosed(
-                                        destination
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+    Box(modifier = modifier) {
+        backstackState.renderable.forEach {
+            key(it.instructionId) {
+                controller.getDestination(it).Render()
             }
         }
     }

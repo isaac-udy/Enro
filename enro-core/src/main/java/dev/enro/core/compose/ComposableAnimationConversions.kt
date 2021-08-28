@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
@@ -41,12 +42,15 @@ internal data class AnimationResourceState(
 ) : Parcelable
 
 @Composable
-internal fun getAnimationResourceState(animOrAnimator: Int): AnimationResourceState {
+internal fun getAnimationResourceState(
+    animOrAnimator: Int,
+    size: IntSize
+): AnimationResourceState {
     val state =
         remember(animOrAnimator) { mutableStateOf(AnimationResourceState(isActive = true)) }
     if (animOrAnimator == 0) return state.value
 
-    updateAnimationResourceStateFromAnim(state, animOrAnimator)
+    updateAnimationResourceStateFromAnim(state, animOrAnimator, size)
     updateAnimationResourceStateFromAnimator(state, animOrAnimator)
 
     LaunchedEffect(animOrAnimator) {
@@ -62,21 +66,28 @@ internal fun getAnimationResourceState(animOrAnimator: Int): AnimationResourceSt
 @Composable
 private fun updateAnimationResourceStateFromAnim(
     state: MutableState<AnimationResourceState>,
-    animOrAnimator: Int
+    animOrAnimator: Int,
+    size: IntSize
 ) {
     val context = LocalContext.current
     val isAnim =
         remember(animOrAnimator) { context.resources.getResourceTypeName(animOrAnimator) == "anim" }
     if (!isAnim) return
+    if(size.width == 0 && size.height == 0) {
+        state.value = AnimationResourceState(
+            alpha = 0f,
+            isActive = true
+        )
+        return
+    }
 
-    val containerState = LocalEnroContainerState.current
-    val anim = remember(animOrAnimator) {
+    val anim = remember(animOrAnimator, size) {
         AnimationUtils.loadAnimation(context, animOrAnimator).apply {
             initialize(
-                containerState.size.width.toInt(),
-                containerState.size.height.toInt(),
-                containerState.size.width.toInt(),
-                containerState.size.height.toInt()
+               size.width,
+               size.height,
+               size.width,
+               size.height
             )
         }
     }

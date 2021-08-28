@@ -9,19 +9,29 @@ import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.close
 import dev.enro.core.fragment.internal.fragmentHostFrom
 import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
+internal abstract class AbstractComposeFragmentHostKey : NavigationKey {
+    abstract val instruction: NavigationInstruction.Open
+    abstract val fragmentContainerId: Int?
+}
+
 @Parcelize
 internal data class ComposeFragmentHostKey(
-    val instruction: NavigationInstruction.Open,
-    val fragmentContainerId: Int?
-) : NavigationKey
+    override val instruction: NavigationInstruction.Open,
+    override val fragmentContainerId: Int?
+) : AbstractComposeFragmentHostKey()
+
+@Parcelize
+internal data class HiltComposeFragmentHostKey(
+    override val instruction: NavigationInstruction.Open,
+    override val fragmentContainerId: Int?
+) : AbstractComposeFragmentHostKey()
 
 abstract class AbstractComposeFragmentHost : Fragment() {
-    private val navigationHandle by navigationHandle<ComposeFragmentHostKey>()
+    private val navigationHandle by navigationHandle<AbstractComposeFragmentHostKey>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,15 +42,13 @@ abstract class AbstractComposeFragmentHost : Fragment() {
 
         return ComposeView(requireContext()).apply {
             setContent {
-                val state = rememberEnroContainerState(
+                val state = rememberEnroContainerController(
                     initialState = listOf(navigationHandle.key.instruction),
-                    accept = fragmentHost?.accept ?: { true }
+                    accept = fragmentHost?.accept ?: { true },
+                    emptyBehavior = EmptyBehavior.CloseParent
                 )
 
-                EnroContainer(state = state)
-                if (state.observeBackstackState().backstack.isEmpty()) {
-                    navigationHandle.close()
-                }
+                EnroContainer(controller = state)
             }
         }
     }
