@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:ordering="sequentially">
+    <set>
+        <objectAnimator
+            android:duration="500"
+            android:propertyName="translationX"
+            android:valueFrom="300"
+            android:valueTo="0"
+            android:valueType="floatType" />
+        <objectAnimator
+            android:duration="500"
+            android:propertyName="translationY"
+            android:valueFrom="300"
+            android:valueTo="0"
+            android:valueType="floatType" />
+    </set>
+    <objectAnimator
+        android:duration="500"
+        android:propertyName="alpha"
+        android:valueTo="1f" />
+</set>

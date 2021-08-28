@@ -4,10 +4,10 @@ import dev.enro.core.*
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.NavigatorContainer
 import dev.enro.core.controller.container.PluginContainer
+import dev.enro.core.controller.interceptor.HiltInstructionInterceptor
 import dev.enro.core.controller.interceptor.InstructionInterceptorController
 import dev.enro.core.controller.interceptor.InstructionParentInterceptor
 import dev.enro.core.controller.lifecycle.NavigationLifecycleController
-import dev.enro.core.plugins.EnroHilt
 import dev.enro.core.plugins.EnroPlugin
 
 // TODO get rid of this, or give it a better name
@@ -48,15 +48,14 @@ class NavigationComponentBuilder {
     }
 
     internal fun build(): NavigationController {
-        val useHilt = plugins.any { it is EnroHilt }
-
         val pluginContainer = PluginContainer(plugins)
-        val navigatorContainer = NavigatorContainer(navigators, useHilt)
+        val navigatorContainer = NavigatorContainer(navigators)
         val executorContainer = ExecutorContainer(overrides)
 
         val interceptorController = InstructionInterceptorController(
             listOf(
-                InstructionParentInterceptor(navigatorContainer)
+                InstructionParentInterceptor(navigatorContainer),
+                HiltInstructionInterceptor()
             )
         )
         val contextController = NavigationLifecycleController(executorContainer, pluginContainer)

@@ -5,9 +5,6 @@ dependencies {
     releaseApi "dev.enro:enro-core:$versionName"
     debugApi project(":enro-core")
 
-    releaseApi "dev.enro:enro-viewmodel:$versionName"
-    debugApi project(":enro-viewmodel")
-
     implementation deps.androidx.core
     implementation deps.androidx.appcompat
 
@@ -22,7 +19,4 @@ dependencies {
 afterEvaluate {
     tasks.findByName("preReleaseBuild")
             .dependsOn(":enro-core:publishToMavenLocal")
-
-    tasks.findByName("preReleaseBuild")
-            .dependsOn(":enro-viewmodel:publishToMavenLocal")
 }

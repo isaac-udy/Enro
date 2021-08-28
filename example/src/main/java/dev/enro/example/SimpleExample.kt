@@ -47,6 +47,15 @@ class SimpleExampleFragment() : Fragment() {
                 navigation.forward(next)
             }
 
+            forwardComposeButton.setOnClickListener {
+                val next = ComposeSimpleExampleKey(
+                    name = navigation.key.getNextDestinationName(),
+                    launchedFrom = navigation.key.name,
+                    backstack = navigation.key.backstack + navigation.key.name
+                )
+                navigation.forward(next)
+            }
+
             replaceButton.setOnClickListener {
                 val next = SimpleExampleKey(
                     name = navigation.key.getNextDestinationName(),

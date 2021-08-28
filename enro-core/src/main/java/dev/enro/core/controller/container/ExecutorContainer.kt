@@ -4,6 +4,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import dev.enro.core.*
 import dev.enro.core.activity.DefaultActivityExecutor
+import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.compose.DefaultComposableExecutor
 import dev.enro.core.fragment.DefaultFragmentExecutor
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
 import dev.enro.core.synthetic.SyntheticDestination
@@ -27,6 +29,7 @@ internal class ExecutorContainer(
         return temporaryOverrides[types] ?: overrides[types]
     }
 
+    // TODO - Does not properly support Composable overrides as yet
     internal fun executorForOpen(fromContext: NavigationContext<out Any>, navigator: Navigator<*, *>): OpenExecutorPair {
         val opensContext = navigator.contextType
         val opensContextIsActivity by lazy {
@@ -35,6 +38,10 @@ internal class ExecutorContainer(
 
         val opensContextIsFragment by lazy {
             Fragment::class.java.isAssignableFrom(opensContext.java)
+        }
+
+        val opensContextIsComposable by lazy {
+            ComposableDestination::class.java.isAssignableFrom(opensContext.java)
         }
 
         val opensContextIsSynthetic by lazy {
@@ -68,12 +75,14 @@ internal class ExecutorContainer(
         return override ?: when {
             opensContextIsActivity -> OpenExecutorPair(fromContext, DefaultActivityExecutor)
             opensContextIsFragment -> OpenExecutorPair(fromContext, DefaultFragmentExecutor)
+            opensContextIsComposable -> OpenExecutorPair(fromContext, DefaultComposableExecutor)
             opensContextIsSynthetic -> OpenExecutorPair(fromContext, DefaultSyntheticExecutor)
             else -> throw IllegalStateException()
         }
     }
 
     @Suppress("UNCHECKED_CAST")
+    // TODO - Does not properly support Composable overrides as yet
     internal fun executorForClose(navigationContext: NavigationContext<out Any>): NavigationExecutor<Any, Any, NavigationKey> {
         val parentContextType = navigationContext.getNavigationHandleViewModel().instruction.internal.executorContext?.kotlin
         val contextType = navigationContext.contextReference::class
@@ -97,6 +106,7 @@ internal class ExecutorContainer(
                 ?: when(navigationContext) {
                     is ActivityContext -> overrideFor(parentContext to FragmentActivity::class)
                     is FragmentContext -> overrideFor(parentContext to Fragment::class)
+                    is ComposeContext -> null
                 }
                 ?: overrideFor(parentContext to Any::class)
         } as? NavigationExecutor<Any, Any, NavigationKey>
@@ -104,6 +114,7 @@ internal class ExecutorContainer(
         return override ?: when (navigationContext) {
             is ActivityContext -> DefaultActivityExecutor as NavigationExecutor<Any, Any, NavigationKey>
             is FragmentContext -> DefaultFragmentExecutor as NavigationExecutor<Any, Any, NavigationKey>
+            is ComposeContext -> DefaultComposableExecutor as NavigationExecutor<Any, Any, NavigationKey>
         }
     }
 }

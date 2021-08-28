@@ -3,6 +3,7 @@ package dev.enro.multistack
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -127,6 +128,7 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
 
                 containerInitialised = true
             } catch (ex: Throwable) {
+                Log.e("Enro Mutlistack", "Initial open failed", ex)
                 Handler(Looper.getMainLooper()).post {
                     openStack(container)
                 }

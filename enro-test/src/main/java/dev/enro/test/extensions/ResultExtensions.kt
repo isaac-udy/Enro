@@ -9,7 +9,7 @@ import kotlin.reflect.KClass
 fun <T: Any> NavigationInstruction.Open.sendResultForTest(type: Class<T>, result: T) {
     val navigationController = EnroTest.getCurrentNavigationController()
 
-    val resultChannelClass = Class.forName("dev.enro.core.result.internal.ResultChannelImpl")
+    val resultChannelClass = Class.forName("dev.enro.core.result.internal.ResultChannelImplKt")
     val getResultId = resultChannelClass.getDeclaredMethod("getResultId", Bundle::class.java)
     getResultId.isAccessible = true
     val resultId = getResultId.invoke(null, additionalData)

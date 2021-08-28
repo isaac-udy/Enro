@@ -1,5 +1,6 @@
 package dev.enro.example.detail
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import dev.enro.core.navigationHandle
 import dev.enro.example.core.navigation.DetailKey
 import dev.enro.core.result.closeWithResult
 
+@SuppressLint("MissingNavigationDestinationAnnotation")
 class DetailActivity : AppCompatActivity() {
     private val navigation by navigationHandle<DetailKey> {
         onCloseRequested {

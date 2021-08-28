@@ -10,7 +10,7 @@ ext.androidLibrary = {
         compileSdkVersion 30
 
         defaultConfig {
-            minSdkVersion 16
+            minSdkVersion 21
             targetSdkVersion 30
             versionCode versionProperties.getProperty("versionCode").toInteger()
             versionName versionProperties.getProperty("versionName")
@@ -45,5 +45,29 @@ ext.androidLibrary = {
 
     dependencies {
         implementation deps.kotlin.stdLib
+    }
+}
+
+ext.useCompose = {
+    android {
+        buildFeatures {
+            compose true
+        }
+        composeOptions {
+            kotlinCompilerVersion "1.5.21"
+            kotlinCompilerExtensionVersion "1.0.1"
+        }
+    }
+
+    dependencies {
+        implementation deps.compose.compiler
+        implementation deps.compose.foundation
+        implementation deps.compose.foundationLayout
+        implementation deps.compose.ui
+        implementation deps.compose.uiTooling
+        implementation deps.compose.runtime
+        implementation deps.compose.viewmodel
+        implementation deps.compose.livedata
+        implementation deps.compose.activity
     }
 }

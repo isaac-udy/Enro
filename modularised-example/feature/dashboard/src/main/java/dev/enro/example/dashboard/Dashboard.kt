@@ -2,7 +2,6 @@ package dev.enro.example.dashboard
 
 import android.app.Dialog
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.observe
@@ -109,10 +108,6 @@ class DashboardViewModel(
             otherPublicMessageCount = data.count { it.isPublic && it.ownerId != userId }
         )
 
-    }
-
-    fun test(boolean: Boolean) {
-        Log.e("ASDASD", "ASASDDAS")
     }
 
     fun onMyPrivateMessagesSelected() {

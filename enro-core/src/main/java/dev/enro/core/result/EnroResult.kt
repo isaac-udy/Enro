@@ -7,6 +7,7 @@ import dev.enro.core.result.internal.PendingResult
 import dev.enro.core.result.internal.ResultChannelId
 import dev.enro.core.result.internal.ResultChannelImpl
 
+@PublishedApi
 internal class EnroResult: EnroPlugin() {
     private val channels = mutableMapOf<ResultChannelId, ResultChannelImpl<*>>()
     private val pendingResults = mutableMapOf<ResultChannelId, PendingResult>()
@@ -43,12 +44,14 @@ internal class EnroResult: EnroPlugin() {
         return result
     }
 
+    @PublishedApi
     internal fun registerChannel(channel: ResultChannelImpl<*>) {
         channels[channel.id] = channel
         val result = consumePendingResult(channel.id) ?: return
         channel.consumeResult(result.result)
     }
 
+    @PublishedApi
     internal fun deregisterChannel(channel: ResultChannelImpl<*>) {
         channels.remove(channel.id)
     }

@@ -9,8 +9,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
-import kotlinx.parcelize.Parcelize
+import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
+import dev.enro.core.compose.ComposableNavigator
+import dev.enro.core.controller.NavigationController
+import dev.enro.core.controller.navigationController
+import dev.enro.core.fragment.FragmentNavigator
+import kotlinx.parcelize.Parcelize
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -36,7 +41,7 @@ class MultistackController internal constructor(
 }
 
 class MultistackControllerProperty @PublishedApi internal constructor(
-    private val containers: Array<out MultistackContainer>,
+    private val containerBuilders: List<()-> MultistackContainer>,
     @AnimRes private val openStackAnimation: Int?,
     private val lifecycleOwner: LifecycleOwner,
     private val fragmentManager: () -> FragmentManager
@@ -56,7 +61,7 @@ class MultistackControllerProperty @PublishedApi internal constructor(
             }
 
         fragment as MultistackControllerFragment
-        fragment.containers = containers
+        fragment.containers = containerBuilders.map { it() }.toTypedArray()
         fragment.openStackAnimation = openStackAnimation
 
         return@lazy MultistackController(fragment)
@@ -77,14 +82,34 @@ class MultistackControllerProperty @PublishedApi internal constructor(
     }
 }
 
-class MultistackControllerBuilder @PublishedApi internal constructor(){
+class MultistackControllerBuilder @PublishedApi internal constructor(
+    private val navigationController: () -> NavigationController
+){
 
-    private val containers = mutableListOf<MultistackContainer>()
+    private val containerBuilders = mutableListOf<() -> MultistackContainer>()
 
     @AnimRes private var openStackAnimation: Int? = null
 
     fun <T: NavigationKey> container(@IdRes containerId: Int, rootKey: T) {
-        containers.add(MultistackContainer(containerId, rootKey))
+        containerBuilders.add {
+            val navigator = navigationController().navigatorForKeyType(rootKey::class)
+            val actualKey = when(navigator) {
+                is FragmentNavigator -> rootKey
+                is ComposableNavigator -> {
+                    Class.forName("dev.enro.core.compose.ComposeFragmentHostKey")
+                        .getConstructor(
+                            NavigationInstruction.Open::class.java,
+                            Integer::class.java
+                        )
+                        .newInstance(
+                            NavigationInstruction.Forward(rootKey),
+                            containerId
+                        ) as NavigationKey
+                }
+                else -> throw IllegalStateException("TODO")
+            }
+            MultistackContainer(containerId, actualKey)
+        }
     }
 
     fun openStackAnimation(@AnimRes animationRes: Int) {
@@ -95,7 +120,7 @@ class MultistackControllerBuilder @PublishedApi internal constructor(){
         lifecycleOwner: LifecycleOwner,
         fragmentManager: () -> FragmentManager
     ) = MultistackControllerProperty(
-        containers = containers.toTypedArray(),
+        containerBuilders = containerBuilders,
         openStackAnimation = openStackAnimation,
         lifecycleOwner = lifecycleOwner,
         fragmentManager = fragmentManager
@@ -104,7 +129,7 @@ class MultistackControllerBuilder @PublishedApi internal constructor(){
 
 fun FragmentActivity.multistackController(
     block: MultistackControllerBuilder.() -> Unit
-) = MultistackControllerBuilder().apply(block).build(
+) = MultistackControllerBuilder { application.navigationController }.apply(block).build(
     lifecycleOwner = this,
     fragmentManager = { supportFragmentManager }
 )
