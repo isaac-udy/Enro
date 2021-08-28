@@ -110,6 +110,7 @@ class InitialScreenViewModel : ViewModel() {
 }
 
 @Composable
+@ExperimentalComposableDestination
 @NavigationDestination(InitialKey::class)
 fun InitialScreen() {
     val viewModel = viewModel<InitialScreenViewModel>()

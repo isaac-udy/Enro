@@ -1,5 +1,6 @@
 package dev.enro.example
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -20,6 +21,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
@@ -64,6 +66,7 @@ class ComposeSimpleExampleViewModel @Inject constructor(
 }
 
 @Composable
+@ExperimentalComposableDestination
 @NavigationDestination(ComposeSimpleExampleKey::class)
 fun ComposeSimpleExample() {
     val navigation = navigationHandle<ComposeSimpleExampleKey>()

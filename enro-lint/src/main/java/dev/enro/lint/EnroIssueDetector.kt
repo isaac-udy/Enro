@@ -41,9 +41,10 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
                     node.hasAnnotation("dev.enro.annotations.ExperimentalComposableDestination")
 
                 if (isComposable && isNavigationDestination && !isExperimentalComposableDestinationsEnabled) {
-                    val annotationLocation =  context.getLocation(node.findAnnotation("dev.enro.annotations.NavigationDestination").sourcePsiElement!!)
+                    val annotationLocation =  context.getLocation(element = node.findAnnotation("dev.enro.annotations.NavigationDestination")!!)
                     context.report(
                         issue = missingExperimentalComposableDestinationOptIn,
+                        scopeClass = node,
                         location = annotationLocation,
                         message = missingExperimentalComposableDestinationOptIn.getExplanation(
                             TextFormat.TEXT
@@ -51,9 +52,9 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
                         quickfixData = fix()
                             .name("Add @NavigationDestination annotation")
                             .replace()
-                            .range(context.getLocation(node))
-                            .text("@dev.enro.annotations.NavigationDestination")
-                            .with("@dev.enro.annotations.ExperimentalComposableDestination\n@dev.enro.annotations.NavigationDestination")
+                            .range(annotationLocation)
+                            .text("")
+                            .with("@dev.enro.annotations.ExperimentalComposableDestination\n")
                             .shortenNames()
                             .build()
                     )

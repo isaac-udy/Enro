@@ -1,5 +1,6 @@
 package dev.enro.example.login
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
@@ -12,6 +13,7 @@ import dev.enro.core.navigationHandle
 import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.example.core.navigation.LoginErrorKey
 
+@SuppressLint("MissingNavigationDestinationAnnotation")
 class LoginErrorFragment : DialogFragment() {
 
     private val navigation by navigationHandle<LoginErrorKey>()
