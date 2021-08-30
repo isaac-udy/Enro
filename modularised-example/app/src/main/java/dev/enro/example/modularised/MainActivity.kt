@@ -12,9 +12,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.example.core.data.UserRepository
-import dev.enro.example.core.navigation.DashboardKey
-import dev.enro.example.core.navigation.LaunchKey
-import dev.enro.example.core.navigation.LoginKey
+import dev.enro.example.core.navigation.*
 import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
 

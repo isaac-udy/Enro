@@ -3,15 +3,16 @@ package dev.enro.core.fragment
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.*
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigator
-import dev.enro.core.fragment.internal.AbstractSingleFragmentActivity
 import dev.enro.core.fragment.internal.SingleFragmentKey
 import dev.enro.core.fragment.internal.fragmentHostFor
+import dev.enro.core.internal.handle.getNavigationHandleViewModel
+
+private const val PREVIOUS_FRAGMENT_IN_CONTAINER = "dev.enro.core.fragment.DefaultFragmentExecutor.PREVIOUS_FRAGMENT_IN_CONTAINER"
 
 object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey>(
     fromType = Any::class,
@@ -86,16 +87,27 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                 fromContext.contextReference.dismiss()
             }
 
-            val isSafeToRetain = if(fromContext.contextReference is ComposableDestination) {
-                fromContext.contextReference.contextReference.requireParentContainer().backstack.value.backstack.isNotEmpty()
-            } else (activeFragment?.tag == instruction.internal.parentInstruction?.instructionId)
+            if(activeFragment != null) {
+                if (instruction.navigationDirection == NavigationDirection.FORWARD) {
+                    host.fragmentManager.putFragment(
+                        instruction.internal.additionalData,
+                        PREVIOUS_FRAGMENT_IN_CONTAINER,
+                        activeFragment
+                    )
+                    detach(activeFragment)
+                }
+                if (instruction.navigationDirection == NavigationDirection.REPLACE) {
+                    val activeFragmentPreviousFragment =
+                        host.fragmentManager.getFragment(activeFragment.getNavigationHandleViewModel().instruction.additionalData, PREVIOUS_FRAGMENT_IN_CONTAINER)
 
-            if(activeFragment != null
-                && activeFragment.tag != null
-                && activeFragment.tag == activeFragment.navigationContext.getNavigationHandleViewModel().id
-                && isSafeToRetain
-            ){
-                detach(activeFragment)
+                    if(activeFragmentPreviousFragment != null) {
+                        host.fragmentManager.putFragment(
+                            instruction.internal.additionalData,
+                            PREVIOUS_FRAGMENT_IN_CONTAINER,
+                            activeFragmentPreviousFragment
+                        )
+                    }
+                }
             }
 
             replace(host.containerId, fragment, instruction.instructionId)
@@ -109,9 +121,14 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             return
         }
 
-        val previousFragment = context.getPreviousFragment()
+        val previousFragmentInContainer = runCatching {
+            context.fragment.parentFragmentManager.getFragment(
+                context.getNavigationHandleViewModel().instruction.additionalData,
+                PREVIOUS_FRAGMENT_IN_CONTAINER
+            )
+        }.getOrNull()
 
-        val containerWillBeEmpty = context.contextReference.id != previousFragment?.id
+        val containerWillBeEmpty = previousFragmentInContainer == null
         if (containerWillBeEmpty) {
             val container = context.parentContext()
                 ?.getNavigationHandleViewModel()
@@ -127,8 +144,8 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                         return
                     }
                     is EmptyBehavior.Action -> {
-                        val keepGoing = container.emptyBehavior.onEmpty()
-                        if(!keepGoing) {
+                        val consumed = container.emptyBehavior.onEmpty()
+                        if (consumed) {
                             return
                         }
                     }
@@ -136,6 +153,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             }
         }
 
+        val previousFragment = context.getPreviousFragment()
         val animations = animationsFor(context, NavigationInstruction.Close)
         // Checking for non-null context seems to be the best way to make sure parentFragmentManager will
         // not throw an IllegalStateException when there is no parent fragment manager
@@ -148,9 +166,14 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             if (previousFragment != null && !differentFragmentManagers) {
                 when {
                     previousFragment.isDetached -> attach(previousFragment)
-                    !previousFragment.isAdded -> add(context.contextReference.getContainerId(), previousFragment)
+                    !previousFragment.isAdded -> add(context.contextReference.id, previousFragment)
                 }
             }
+
+            if (previousFragmentInContainer != null && previousFragmentInContainer != previousFragment) {
+                if(previousFragmentInContainer.isDetached) attach(previousFragmentInContainer)
+            }
+
             if(!differentFragmentManagers) setPrimaryNavigationFragment(previousFragment)
         }
 
@@ -229,6 +252,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     }
 }
 
+// TODO - simplify
 private fun NavigationContext<out Fragment>.getPreviousFragment(): Fragment? {
     val previouslyActiveFragment = getNavigationHandleViewModel().instruction.internal.previouslyActiveId
         ?.let { previouslyActiveId ->
@@ -237,7 +261,7 @@ private fun NavigationContext<out Fragment>.getPreviousFragment(): Fragment? {
             }
         }
 
-    val containerView = contextReference.getContainerId()
+    val containerView = contextReference.id
     val parentInstruction = getNavigationHandleViewModel().instruction.internal.parentInstruction
     parentInstruction ?: return previouslyActiveFragment
 
@@ -266,5 +290,3 @@ private fun NavigationContext<out Fragment>.getPreviousFragment(): Fragment? {
         else -> previousHost?.fragmentManager?.findFragmentById(previousHost.containerId)
     } ?: previouslyActiveFragment
 }
-
-private fun Fragment.getContainerId() = (requireView().parent as View).id

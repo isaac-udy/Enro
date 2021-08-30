@@ -38,7 +38,7 @@ sealed class EmptyBehavior {
 
 class NavigationContainer internal constructor(
     @IdRes val containerId: Int,
-    private val root: NavigationKey? = null,
+    private val root: () -> NavigationKey? = { null },
     val emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     private val accept: (NavigationKey) -> Boolean
 ) {
@@ -48,9 +48,9 @@ class NavigationContainer internal constructor(
     }
 
     internal fun openRoot(navigationHandle: NavigationHandle) {
-        if (root == null) return
+        val rootKey = root() ?: return
         navigationHandle.executeInstruction(
-            NavigationInstruction.Forward(root)
+            NavigationInstruction.Forward(rootKey)
                 .setTargetContainer(containerId)
         )
     }
@@ -85,9 +85,9 @@ class NavigationContainerProperty @PublishedApi internal constructor(
 
 fun FragmentActivity.navigationContainer(
     @IdRes containerId: Int,
-    root: NavigationKey? = null,
+    root: () -> NavigationKey? = { null },
+    accept: (NavigationKey) -> Boolean = { true },
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
-    accept: (NavigationKey) -> Boolean
 ): NavigationContainerProperty = NavigationContainerProperty(
     this,
     NavigationContainer(
@@ -100,9 +100,9 @@ fun FragmentActivity.navigationContainer(
 
 fun Fragment.navigationContainer(
     @IdRes containerId: Int,
-    root: NavigationKey? = null,
+    root: () -> NavigationKey? = { null },
+    accept: (NavigationKey) -> Boolean = { true },
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
-    accept: (NavigationKey) -> Boolean
 ): NavigationContainerProperty = NavigationContainerProperty(
     this,
     NavigationContainer(

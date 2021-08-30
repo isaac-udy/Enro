@@ -25,8 +25,8 @@ internal abstract class AbstractSingleFragmentActivity : AppCompatActivity() {
 
     private val container by navigationContainer(
         containerId = R.id.enro_internal_single_fragment_frame_layout,
-        emptyBehavior = EmptyBehavior.CloseParent
-    ) { true }
+        emptyBehavior = EmptyBehavior.CloseParent,
+    )
 
     private val handle by navigationHandle<AbstractSingleFragmentKey>()
 

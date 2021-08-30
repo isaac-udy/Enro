@@ -34,7 +34,7 @@ class DashboardActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = DashboardBinding.inflate(layoutInflater)
-        setContentView(R.layout.dashboard)
+        setContentView(binding.root)
 
         binding.apply {
             privateMessagesTitle.setOnClickListener { viewModel.onMyPrivateMessagesSelected() }

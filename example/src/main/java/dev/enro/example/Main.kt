@@ -19,12 +19,12 @@ class MainKey : NavigationKey
 @NavigationDestination(MainKey::class)
 class MainActivity : AppCompatActivity() {
 
-    private val homeContainer by navigationContainer(R.id.homeContainer, Home()) {
+    private val homeContainer by navigationContainer(R.id.homeContainer, { Home() },  {
         it is Home || it is SimpleExampleKey || (it is ComposeSimpleExampleKey && it.name == "A")
-    }
-    private val featuresContainer by navigationContainer(R.id.featuresContainer, Features()) { false }
+    })
+    private val featuresContainer by navigationContainer(R.id.featuresContainer, { Features() }, { false })
 
-    private val profileContainer by navigationContainer(R.id.profileContainer, Profile()) { false }
+    private val profileContainer by navigationContainer(R.id.profileContainer, { Profile() }, { false })
 
     private val navigation by navigationHandle<MainKey>()
 

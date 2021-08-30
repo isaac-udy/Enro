@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
+import dev.enro.core.EmptyBehavior
 import dev.enro.core.getNavigationHandle
+import dev.enro.core.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.example.core.navigation.DetailKey
 import dev.enro.example.core.navigation.ListKey
@@ -16,16 +18,19 @@ import dev.enro.masterdetail.MasterDetailProperty
 class MasterDetailActivity : AppCompatActivity() {
 
     private val navigation by navigationHandle<MasterDetailKey>()
-    private val masterDetail by MasterDetailProperty(
-        lifecycleOwner = this,
-        owningType = MasterDetailActivity::class,
-        masterContainer = R.id.master,
-        masterKey = ListKey::class,
-        detailContainer = R.id.detail,
-        detailKey = DetailKey::class
-    ) {
-        ListKey(navigation.key.userId, navigation.key.filter)
-    }
+
+    private val masterContainer by navigationContainer(
+        containerId = R.id.master,
+        emptyBehavior = EmptyBehavior.CloseParent,
+        root = { ListKey(navigation.key.userId, navigation.key.filter) },
+        accept = { it is ListKey }
+    )
+
+    private val detailsContainer by navigationContainer(
+        containerId = R.id.detail,
+        emptyBehavior = EmptyBehavior.AllowEmpty,
+        accept = { it is DetailKey }
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

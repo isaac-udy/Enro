@@ -40,7 +40,10 @@ internal open class NavigationHandleViewModel(
     internal var navigationContext: NavigationContext<*>? = null
         set(value) {
             field = value
-            if (value == null) return
+            if (value == null) {
+                childContainers = emptyList() // NavigationContainers can hold context references
+                return
+            }
             registerLifecycleObservers(value)
             registerOnBackPressedListener(value)
             executePendingInstruction()
