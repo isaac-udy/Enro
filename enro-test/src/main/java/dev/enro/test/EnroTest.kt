@@ -5,7 +5,6 @@ import androidx.test.core.app.ApplicationProvider
 import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.NavigationComponentBuilder
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.plugins.EnroHilt
 import dev.enro.core.plugins.EnroLogger
 
 object EnroTest {
@@ -15,11 +14,6 @@ object EnroTest {
 
         NavigationComponentBuilder()
             .apply {
-                runCatching {
-                    if(Class.forName("dagger.hilt.internal.GeneratedComponentManager").isAssignableFrom(application::class.java)) {
-                        plugin(EnroHilt())
-                    }
-                }
                 plugin(EnroLogger())
             }
             .callPrivate<NavigationController>("build")

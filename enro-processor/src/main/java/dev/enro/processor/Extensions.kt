@@ -12,18 +12,21 @@ internal object EnroProcessor {
 internal object ClassNames {
     val navigationComponentBuilderCommand = ClassName.get("dev.enro.core.controller", "NavigationComponentBuilderCommand")
     val navigationComponentBuilder = ClassName.get("dev.enro.core.controller", "NavigationComponentBuilder")
-
     val jvmClassMappings = ClassName.get("kotlin.jvm", "JvmClassMappingKt")
+
     val unit = ClassName.get("kotlin", "Unit")
-
     val fragmentActivity = ClassName.get( "androidx.fragment.app", "FragmentActivity")
+
     val activityNavigatorKt = ClassName.get("dev.enro.core.activity","ActivityNavigatorKt")
-
     val fragment = ClassName.get("androidx.fragment.app","Fragment")
-    val fragmentNavigatorKt = ClassName.get("dev.enro.core.fragment","FragmentNavigatorKt")
 
+    val fragmentNavigatorKt = ClassName.get("dev.enro.core.fragment","FragmentNavigatorKt")
     val syntheticDestination = ClassName.get("dev.enro.core.synthetic","SyntheticDestination")
+
     val syntheticNavigatorKt = ClassName.get("dev.enro.core.synthetic","SyntheticNavigatorKt")
+
+    val composableDestination = ClassName.get("dev.enro.core.compose", "ComposableDestination")
+    val composeNavigatorKt = ClassName.get("dev.enro.core.compose", "ComposableNavigatorKt")
 }
 
 internal fun getNameFromKClass(block: () -> KClass<*>) : String {

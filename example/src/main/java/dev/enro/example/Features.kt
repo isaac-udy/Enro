@@ -44,7 +44,6 @@ class FeaturesFragment : Fragment() {
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
             recyclerView.adapter = adapter
         }
-
         adapter.submitList(features)
     }
 }
@@ -53,7 +52,10 @@ class FeaturesFragment : Fragment() {
 data class FeatureDescription(
     val name: String,
     val iconResource: Int = 0,
-    val key: NavigationKey = SimpleMessage("Missing", "This destination hasn't been implemented yet!")
+    val key: NavigationKey = SimpleMessage(
+        "Missing",
+        "This destination hasn't been implemented yet!"
+    )
 )
 
 val features = listOf(
@@ -88,6 +90,24 @@ val features = listOf(
         iconResource = R.drawable.ic_round_extension_24
     ),
     FeatureDescription(
+        name = "Jetpack Compose",
+        iconResource = R.drawable.ic_compose,
+        key = SimpleMessage(
+            title = "Jetpack Compose",
+            message = """
+                Enro supports Jetpack Compose navigation as a primary concern. 
+                
+                Click 'Launch' to show an example of how this works. 
+                
+                To see how this example is built, look at ComposeSimpleExample.kt in the examples.
+            """.trimIndent(),
+            positiveActionInstruction = NavigationInstruction.Forward(ComposeSimpleExampleKey(
+                name = "Start",
+                launchedFrom = "Features"
+            ))
+        )
+    ),
+    FeatureDescription(
         name = "Receive results from destinations",
         iconResource = R.drawable.ic_round_undo_24,
         key = SimpleMessage(
@@ -119,7 +139,11 @@ val features = listOf(
                 navigationKey = SimpleExampleKey("Deeplink 1", "Features", listOf("Features")),
                 children = listOf(
                     SimpleExampleKey("Deeplink 2", "Deeplink 1", listOf("Features", "Deeplink 1")),
-                    SimpleExampleKey("Deeplink 3", "Deeplink 2", listOf("Features", "Deeplink 1", "Deeplink 2"))
+                    SimpleExampleKey(
+                        "Deeplink 3",
+                        "Deeplink 2",
+                        listOf("Features", "Deeplink 1", "Deeplink 2")
+                    )
                 )
             )
         )
@@ -175,7 +199,10 @@ class FeatureAdapter(
 ) : ListAdapter<FeatureDescription, FeatureAdapter.ViewHolder>(FeatureDescriptionDiff) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.viewholder_feature_description, parent, false))
+        return ViewHolder(
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.viewholder_feature_description, parent, false)
+        )
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -196,7 +223,7 @@ class FeatureAdapter(
     }
 }
 
-object FeatureDescriptionDiff: DiffUtil.ItemCallback<FeatureDescription>() {
+object FeatureDescriptionDiff : DiffUtil.ItemCallback<FeatureDescription>() {
     override fun areItemsTheSame(
         oldItem: FeatureDescription,
         newItem: FeatureDescription

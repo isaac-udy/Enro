@@ -2,14 +2,16 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'dagger.hilt.android.plugin'
+useCompose()
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "dev.enro.example"
-        minSdkVersion 16
-        targetSdkVersion 29
+        minSdkVersion 21
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
@@ -39,6 +41,14 @@ android {
 dependencies {
     implementation project(":enro")
     kapt project(":enro-processor")
+
+    lintChecks(project(":enro-lint"))
+
+    implementation deps.compose.material
+
+    implementation deps.hilt.android
+    kapt deps.hilt.compiler
+    kapt deps.hilt.androidCompiler
 
     implementation deps.kotlin.stdLib
     implementation deps.androidx.core

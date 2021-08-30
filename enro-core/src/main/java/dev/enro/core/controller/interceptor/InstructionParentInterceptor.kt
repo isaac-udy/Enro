@@ -2,6 +2,7 @@ package dev.enro.core.controller.interceptor
 
 import dev.enro.core.*
 import dev.enro.core.activity.ActivityNavigator
+import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.controller.container.NavigatorContainer
 import dev.enro.core.fragment.FragmentNavigator
 import dev.enro.core.fragment.internal.SingleFragmentActivity
@@ -31,6 +32,9 @@ internal class InstructionParentInterceptor(
 
         fun findCorrectParentInstructionFor(instruction: NavigationInstruction.Open?): NavigationInstruction.Open? {
             if (navigator is FragmentNavigator) {
+                return instruction
+            }
+            if (navigator is ComposableNavigator) {
                 return instruction
             }
 

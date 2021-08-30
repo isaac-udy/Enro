@@ -7,6 +7,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.core.*
+import dev.enro.core.compose.composableManger
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.PluginContainer
 import dev.enro.core.internal.NoNavigationKey
@@ -30,7 +31,7 @@ internal class NavigationLifecycleController(
         callbacks.uninstall(application)
     }
 
-    fun onContextCreated(context: NavigationContext<*>, savedInstanceState: Bundle?) {
+    fun onContextCreated(context: NavigationContext<*>, savedInstanceState: Bundle?): NavigationHandleViewModel {
         if (context is ActivityContext) {
             context.activity.theme.applyStyle(android.R.style.Animation_Activity, false)
         }
@@ -54,6 +55,10 @@ internal class NavigationLifecycleController(
             context.controller,
             instruction ?: defaultInstruction
         )
+
+        // ensure the composable manager is created
+        val composableManager = viewModelStoreOwner.composableManger
+
         config?.applyTo(handle)
         handle.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
@@ -78,6 +83,7 @@ internal class NavigationLifecycleController(
             })
         }
         if (savedInstanceState == null) handle.executeDeeplink()
+        return handle
     }
 
     fun onContextSaved(context: NavigationContext<*>, outState: Bundle) {

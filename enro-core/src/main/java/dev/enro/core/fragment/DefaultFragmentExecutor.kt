@@ -7,6 +7,8 @@ import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.*
 import dev.enro.core.*
+import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.fragment.internal.AbstractSingleFragmentActivity
 import dev.enro.core.fragment.internal.SingleFragmentKey
 import dev.enro.core.fragment.internal.fragmentHostFor
@@ -33,6 +35,10 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         if (instruction.navigationDirection == NavigationDirection.REPLACE && fromContext.contextReference is FragmentActivity) {
             openFragmentAsActivity(fromContext, instruction)
             return
+        }
+
+        if(instruction.navigationDirection == NavigationDirection.REPLACE && fromContext.contextReference is ComposableDestination) {
+            fromContext.contextReference.contextReference.requireParentContainer().close()
         }
 
         if (!tryExecutePendingTransitions(navigator, fromContext, instruction)) return
@@ -80,10 +86,14 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                 fromContext.contextReference.dismiss()
             }
 
+            val isSafeToRetain = if(fromContext.contextReference is ComposableDestination) {
+                fromContext.contextReference.contextReference.requireParentContainer().backstack.value.backstack.isNotEmpty()
+            } else (activeFragment?.tag == instruction.internal.parentInstruction?.instructionId)
+
             if(activeFragment != null
                 && activeFragment.tag != null
                 && activeFragment.tag == activeFragment.navigationContext.getNavigationHandleViewModel().id
-                && activeFragment.tag == instruction.internal.parentInstruction?.instructionId
+                && isSafeToRetain
             ){
                 detach(activeFragment)
             }
@@ -211,6 +221,9 @@ private fun NavigationContext<out Fragment>.getPreviousFragment(): Fragment? {
     parentInstruction ?: return previouslyActiveFragment
 
     val previousNavigator = controller.navigatorForKeyType(parentInstruction.navigationKey::class)
+    if (previousNavigator is ComposableNavigator) {
+        return fragment.parentFragmentManager.findFragmentByTag(getNavigationHandleViewModel().instruction.internal.previouslyActiveId)
+    }
     if(previousNavigator !is FragmentNavigator) return previouslyActiveFragment
     val previousHost = fragmentHostFor(parentInstruction.navigationKey)
     val previousFragment = previousHost?.fragmentManager?.findFragmentByTag(parentInstruction.instructionId)

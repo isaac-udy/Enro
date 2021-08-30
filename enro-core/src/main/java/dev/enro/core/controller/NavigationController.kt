@@ -1,12 +1,15 @@
 package dev.enro.core.controller
 
 import android.app.Application
+import android.os.Bundle
 import dev.enro.core.*
+import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.NavigatorContainer
 import dev.enro.core.controller.container.PluginContainer
 import dev.enro.core.controller.interceptor.InstructionInterceptorController
 import dev.enro.core.controller.lifecycle.NavigationLifecycleController
+import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
 
 class NavigationController internal constructor(
@@ -108,16 +111,45 @@ class NavigationController internal constructor(
         contextController.uninstall(application)
     }
 
-    companion object {
-        internal val navigationControllerBindings = mutableMapOf<Application, NavigationController>()
+    internal fun onComposeDestinationAttached(
+        destination: ComposableDestination,
+        savedInstanceState: Bundle?
+    ): NavigationHandleViewModel {
+        return contextController.onContextCreated(
+            ComposeContext(destination),
+            savedInstanceState
+        )
+    }
 
-        private fun getBoundApplicationForTest(application: Application) = navigationControllerBindings[application]
+    internal fun onComposeContextSaved(destination: ComposableDestination, outState: Bundle) {
+        contextController.onContextSaved(
+            ComposeContext(destination),
+            outState
+        )
+    }
+
+    companion object {
+        internal val navigationControllerBindings =
+            mutableMapOf<Application, NavigationController>()
+
+        private fun getBoundApplicationForTest(application: Application) =
+            navigationControllerBindings[application]
     }
 }
 
-val Application.navigationController: NavigationController get() {
-    if(this is NavigationApplication) return navigationController
-    val bound = NavigationController.navigationControllerBindings[this]
-    if(bound != null) return bound
-    throw IllegalStateException("Application is not a NavigationApplication, and has no attached NavigationController ")
-}
+val Application.navigationController: NavigationController
+    get() {
+        if (this is NavigationApplication) return navigationController
+        val bound = NavigationController.navigationControllerBindings[this]
+        if (bound != null) return bound
+        throw IllegalStateException("Application is not a NavigationApplication, and has no attached NavigationController")
+    }
+
+internal val NavigationController.application: Application
+    get() {
+        return NavigationController.navigationControllerBindings.entries
+            .firstOrNull {
+                it.value == this
+            }
+            ?.key ?: throw IllegalStateException("NavigationController is not attached to an Application")
+    }

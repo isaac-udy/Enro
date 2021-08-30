@@ -107,18 +107,25 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/replaceButton"
+        app:layout_constraintBottom_toTopOf="@+id/forwardComposeButton"
         android:text="Forward"/>
+
+    <Button
+        android:id="@+id/forwardComposeButton"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/replaceButton"
+        android:text="Forward (Compose)"/>
 
     <Button
         android:id="@+id/replaceButton"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@id/forwardButton"
-        app:layout_constraintEnd_toStartOf="@+id/replaceRootButton"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/replaceRootButton"
+        app:layout_constraintStart_toStartOf="parent"
         android:text="Replace"/>
 
     <Button
@@ -126,9 +133,8 @@
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@id/replaceButton"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:text="Replace Root"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

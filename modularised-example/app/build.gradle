@@ -5,12 +5,12 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "dev.enro.example.modularised"
-        minSdkVersion 16
-        targetSdkVersion 29
+        minSdkVersion 21
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -64,7 +64,6 @@ dependencies {
     implementation deps.androidx.activity
 
     implementation deps.hilt.android
-    implementation deps.hilt.viewmodel
     kapt deps.hilt.compiler
     kapt deps.hilt.androidCompiler
 

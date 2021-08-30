@@ -1,13 +1,19 @@
 package dev.enro.core
 
 import androidx.annotation.IdRes
+import dev.enro.core.compose.AbstractComposeFragmentHostKey
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
 
 internal class ChildContainer(
     @IdRes val containerId: Int,
-    val accept: (NavigationKey) -> Boolean
-)
+    private val accept: (NavigationKey) -> Boolean
+) {
+    fun accept(key: NavigationKey): Boolean {
+        if(key is AbstractComposeFragmentHostKey && accept.invoke(key.instruction.navigationKey)) return true
+        return accept.invoke(key)
+    }
+}
 
 // TODO Move this to being a "Builder" and add data class for configuration?
 class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal constructor(
