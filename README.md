@@ -15,13 +15,15 @@ A simple navigation library for Android
 
 - Remove navigation logic from Fragment or Activity implementations
 
+- (Experimental) @Composable functions as navigation destinations, with full interoperability with Fragments and Activities
+
 ## Using Enro
 #### Gradle
 Enro is published to [Maven Central](https://search.maven.org/). Make sure your project includes the `mavenCentral()` repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
-    implementation "dev.enro:enro:1.3.5"
-    kapt "dev.enro:enro-processor:1.3.5"
+    implementation "dev.enro:enro:1.3.7" // or use 1.4.0-beta01 for experimental Compose support
+    kapt "dev.enro:enro-processor:1.3.7" // or use 1.4.0-beta01 for experimental Compose support
 }
 ```
 <details>
@@ -40,6 +42,9 @@ data class MyListKey(val listType: String): NavigationKey
 
 @Parcelize
 data class MyDetailKey(val itemId: String, val isReadOnly): NavigationKey
+
+@Parcelize
+data class MyComposeKey(val name: String): NavigationKey
 ```
 
 #### 2. Define your NavigationDestinations
@@ -48,7 +53,12 @@ data class MyDetailKey(val itemId: String, val isReadOnly): NavigationKey
 class ListFragment : Fragment()
 
 @NavigationDestination(MyDetailKey::class)
-class DetailActivity : AppCompatActivity() 
+class DetailActivity : AppCompatActivity()
+
+@Composable
+@ExperimentalComposableDestination
+@NavigationDestination(MyComposeKey::class)
+fun MyComposableScreen() { }
 ```
 
 #### 3. Annotate your Application as a NavigationComponent, and implement the NavigationApplication interface
@@ -75,6 +85,21 @@ class ListFragment : ListFragment() {
         navigation.forward(key)
     }
 }
+
+@Composable
+@ExperimentalComposableDestination
+@NavigationDestination(MyComposeKey::class)
+fun MyComposableScreen() {
+    val navigation = navigationHandle<MyComposeKey>()
+
+    Button(
+        content = { Text("Hello, ${navigation.key}") },
+        onClick = {
+            navigation.forward(MyListKey(...))
+        }
+    )
+}
+
 ```
 
 ## FAQ
