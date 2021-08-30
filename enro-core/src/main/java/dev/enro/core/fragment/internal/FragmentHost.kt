@@ -5,11 +5,10 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationKey
+import dev.enro.core.*
 import dev.enro.core.getNavigationHandleViewModel
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
-import dev.enro.core.parentContext
+import java.lang.IllegalStateException
 
 internal class FragmentHost(
     internal val containerId: Int,
@@ -17,17 +16,25 @@ internal class FragmentHost(
     internal val accept: (NavigationKey) -> Boolean
 )
 
-internal fun NavigationContext<*>.fragmentHostFor(key: NavigationKey): FragmentHost? {
+internal fun NavigationContext<*>.fragmentHostFor(navigationInstruction: NavigationInstruction.Open): FragmentHost? {
+    val targetContainer = navigationInstruction.getTargetContainer()
+    if(targetContainer != null) {
+        val target = getViewForId(targetContainer)
+        return target?.let {
+            return FragmentHost(
+                containerId = targetContainer,
+                fragmentManager = childFragmentManager,
+                accept = { false }
+            )
+        } ?: parentContext()?.fragmentHostFor(navigationInstruction)
+    }
+
+    val key = navigationInstruction.navigationKey
     val primaryFragment = childFragmentManager.primaryNavigationFragment
     val activeContainerId = (primaryFragment?.view?.parent as? View)?.id
 
     val visibleContainers = getNavigationHandleViewModel().childContainers.filter {
-        when (contextReference) {
-            is FragmentActivity -> contextReference.findViewById<View>(it.containerId).isVisible
-            is Fragment -> contextReference.requireView()
-                .findViewById<View>(it.containerId).isVisible
-            else -> false
-        }
+        getViewForId(it.containerId)?.isVisible == true
     }
 
     val primaryDefinition = visibleContainers.firstOrNull {
@@ -42,7 +49,15 @@ internal fun NavigationContext<*>.fragmentHostFor(key: NavigationKey): FragmentH
             fragmentManager = childFragmentManager,
             accept = it::accept
         )
-    } ?: parentContext()?.fragmentHostFor(key)
+    } ?: parentContext()?.fragmentHostFor(navigationInstruction)
+}
+
+internal fun NavigationContext<*>.getViewForId(id: Int): View? {
+    return when (contextReference) {
+        is FragmentActivity -> contextReference.findViewById<View>(id)
+        is Fragment -> contextReference.requireView().findViewById<View>(id)
+        else -> null
+    }
 }
 
 internal fun  Fragment.fragmentHostFrom(container: View): FragmentHost? {

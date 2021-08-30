@@ -4,10 +4,7 @@ import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.R
-import dev.enro.core.navigationHandle
+import dev.enro.core.*
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractSingleFragmentKey : NavigationKey {
@@ -25,9 +22,13 @@ internal data class HiltSingleFragmentKey(
 ) : AbstractSingleFragmentKey()
 
 internal abstract class AbstractSingleFragmentActivity : AppCompatActivity() {
-    private val handle by navigationHandle<AbstractSingleFragmentKey> {
-        container(R.id.enro_internal_single_fragment_frame_layout)
-    }
+
+    private val container by navigationContainer(
+        containerId = R.id.enro_internal_single_fragment_frame_layout,
+        emptyBehavior = EmptyBehavior.CloseParent
+    ) { true }
+
+    private val handle by navigationHandle<AbstractSingleFragmentKey>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

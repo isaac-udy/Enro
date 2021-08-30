@@ -42,6 +42,7 @@ internal class NavigationLifecycleController(
             ?: UUID.randomUUID().toString()
 
         val config = NavigationHandleProperty.getPendingConfig(context)
+        val containers = NavigationContainerProperty.getPendingContainers(context.contextReference as LifecycleOwner)
         val defaultInstruction = NavigationInstruction
             .Forward(
                 navigationKey = config?.defaultKey
@@ -60,6 +61,7 @@ internal class NavigationLifecycleController(
         val composableManager = viewModelStoreOwner.composableManger
 
         config?.applyTo(handle)
+        handle.childContainers += containers
         handle.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (!handle.hasKey) return
@@ -76,13 +78,15 @@ internal class NavigationLifecycleController(
             context.lifecycle.addObserver(object : LifecycleEventObserver {
                 override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                     if (event == Lifecycle.Event.ON_START) {
+                        handle.childContainers.forEach { it.openRoot(handle) }
+                        handle.executeDeeplink()
+
                         executorContainer.executorForClose(context).postOpened(context)
                         context.lifecycle.removeObserver(this)
                     }
                 }
             })
         }
-        if (savedInstanceState == null) handle.executeDeeplink()
         return handle
     }
 

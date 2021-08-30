@@ -55,7 +55,7 @@ class NavigationComponentBuilder {
         val interceptorController = InstructionInterceptorController(
             listOf(
                 InstructionParentInterceptor(navigatorContainer),
-                HiltInstructionInterceptor()
+                HiltInstructionInterceptor(),
             )
         )
         val contextController = NavigationLifecycleController(executorContainer, pluginContainer)

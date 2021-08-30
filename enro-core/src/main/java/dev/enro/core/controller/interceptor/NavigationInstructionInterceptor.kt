@@ -10,5 +10,10 @@ interface NavigationInstructionInterceptor {
         instruction: NavigationInstruction.Open,
         parentContext: NavigationContext<*>,
         navigator: Navigator<out NavigationKey, out Any>
-    ): NavigationInstruction.Open
+    ): NavigationInstruction.Open? { return instruction }
+
+    fun intercept(
+        instruction: NavigationInstruction.Close,
+        context: NavigationContext<*>
+    ): NavigationInstruction? { return instruction }
 }

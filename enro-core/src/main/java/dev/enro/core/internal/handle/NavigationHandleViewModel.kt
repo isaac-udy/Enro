@@ -28,7 +28,7 @@ internal open class NavigationHandleViewModel(
     override val id: String get() = instruction.instructionId
     override val additionalData: Bundle get() = instruction.additionalData
 
-    internal var childContainers = listOf<ChildContainer>()
+    internal var childContainers = listOf<NavigationContainer>()
     internal var internalOnCloseRequested: () -> Unit = { close() }
 
     private val lifecycle = LifecycleRegistry(this)
@@ -85,7 +85,7 @@ internal open class NavigationHandleViewModel(
         pendingInstruction = null
 
         when (instruction) {
-            NavigationInstruction.Close -> context.controller.close(context.leafContext())
+            NavigationInstruction.Close -> context.controller.close(context)
             is NavigationInstruction.Open -> {
                 context.controller.open(context, instruction)
             }

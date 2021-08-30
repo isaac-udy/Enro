@@ -13,7 +13,8 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.EnroResultChannel
 
-private const val EXTRA_RESULT_CHANNEL_ID = "com.enro.core.RESULT_CHANNEL_ID"
+private const val EXTRA_RESULT_CHANNEL_OWNER_ID = "com.enro.core.EXTRA_RESULT_CHANNEL_OWNER_ID"
+private const val EXTRA_RESULT_CHANNEL_RESULT_ID = "com.enro.core.EXTRA_RESULT_CHANNEL_RESULT_ID"
 
 class ResultChannelImpl<T> @PublishedApi internal constructor(
     private val navigationHandle: NavigationHandle,
@@ -62,7 +63,8 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
         navigationHandle.executeInstruction(
             NavigationInstruction.Forward(key).apply {
                 additionalData.apply {
-                    putParcelable(EXTRA_RESULT_CHANNEL_ID, id)
+                    putString(EXTRA_RESULT_CHANNEL_RESULT_ID, id.resultId)
+                    putString(EXTRA_RESULT_CHANNEL_OWNER_ID, id.ownerId)
                 }
             }
         )
@@ -96,11 +98,15 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
 // Used reflectively by ResultExtensions in enro-test
 @Keep
 private fun getResultId(bundle: Bundle): ResultChannelId? {
-    val classLoader = bundle.classLoader
-    bundle.classLoader = ResultChannelId::class.java.classLoader
-    val resultId = bundle.getParcelable<ResultChannelId>(
-        EXTRA_RESULT_CHANNEL_ID
+    return ResultChannelId(
+
+        resultId = bundle.getString(
+            EXTRA_RESULT_CHANNEL_RESULT_ID
+        ) ?: return null,
+
+        ownerId = bundle.getString(
+            EXTRA_RESULT_CHANNEL_OWNER_ID
+        ) ?: return null
+
     )
-    bundle.classLoader = classLoader
-    return resultId
 }

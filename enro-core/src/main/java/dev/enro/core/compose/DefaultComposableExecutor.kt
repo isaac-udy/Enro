@@ -12,7 +12,7 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
         val host = args.fromContext.composeHostFor(args.key)
 
         if(host == null || args.instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
-            val fragmentHost = if(args.instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) null else args.fromContext.fragmentHostFor(args.key)
+            val fragmentHost = if(args.instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) null else args.fromContext.fragmentHostFor(args.instruction)
             args.fromContext.controller.open(
                 args.fromContext,
                 NavigationInstruction.Open.OpenInternal(

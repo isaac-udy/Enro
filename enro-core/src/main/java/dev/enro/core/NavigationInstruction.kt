@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.fragment.app.Fragment
+import dev.enro.core.result.internal.ResultChannelId
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
@@ -73,6 +74,17 @@ sealed class NavigationInstruction {
     }
 }
 
+private const val TARGET_NAVIGATION_CONTAINER = "dev.enro.core.NavigationInstruction.TARGET_NAVIGATION_CONTAINER"
+
+internal fun NavigationInstruction.Open.setTargetContainer(id: Int): NavigationInstruction.Open {
+    internal.additionalData.putInt(TARGET_NAVIGATION_CONTAINER, id)
+    return this
+}
+
+internal fun NavigationInstruction.Open.getTargetContainer(): Int? {
+    return internal.additionalData.getInt(TARGET_NAVIGATION_CONTAINER, -1)
+        .takeIf { it != -1 }
+}
 
 fun Intent.addOpenInstruction(instruction: NavigationInstruction.Open): Intent {
     putExtra(OPEN_ARG, instruction.internal)

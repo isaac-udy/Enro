@@ -21,15 +21,9 @@ internal class EnroDestinationStorage : ViewModel() {
     val destinations = mutableMapOf<String, MutableMap<String, ComposableDestinationContextReference>>()
 }
 
-sealed class EmptyBehavior {
-    object AllowEmpty: EmptyBehavior()
-    object CloseParent: EmptyBehavior()
-    class SelectContainer(val container: EnroContainerController): EmptyBehavior()
-}
-
 @Composable
 fun rememberEnroContainerController(
-    initialState: List<NavigationInstruction.Open> = emptyList(),
+    initialBackstack: List<NavigationInstruction.Open> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
 ): EnroContainerController {
@@ -39,7 +33,6 @@ fun rememberEnroContainerController(
     val id = rememberSaveable {
         UUID.randomUUID().toString()
     }
-
 
     val controller = remember {
         EnroContainerController(
@@ -58,10 +51,10 @@ fun rememberEnroContainerController(
         }
     ) {
         EnroContainerBackstackState(
-            backstackEntries = initialState.map { EnroContainerBackstackEntry(it, null) },
+            backstackEntries = initialBackstack.map { EnroContainerBackstackEntry(it, null) },
             exiting = null,
             exitingIndex = -1,
-            lastInstruction = initialState.lastOrNull() ?: NavigationInstruction.Close,
+            lastInstruction = initialBackstack.lastOrNull() ?: NavigationInstruction.Close,
             skipAnimations = true
         )
     }
@@ -119,9 +112,11 @@ class EnroContainerController internal constructor(
                     navigationHandle.close()
                     return
                 }
-                is EmptyBehavior.SelectContainer -> {
-                    navigationContext.childComposableManager.setPrimaryContainer(emptyBehavior.container.id)
-                    return
+                is EmptyBehavior.Action -> {
+                    val keepGoing = emptyBehavior.onEmpty()
+                    if(!keepGoing){
+                        return
+                    }
                 }
             }
         }

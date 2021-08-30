@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
+import dev.enro.core.EmptyBehavior
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.fragment.internal.fragmentHostFrom
@@ -43,7 +44,7 @@ abstract class AbstractComposeFragmentHost : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 val state = rememberEnroContainerController(
-                    initialState = listOf(navigationHandle.key.instruction),
+                    initialBackstack = listOf(navigationHandle.key.instruction),
                     accept = fragmentHost?.accept ?: { true },
                     emptyBehavior = EmptyBehavior.CloseParent
                 )

@@ -5,21 +5,11 @@ import dev.enro.core.compose.AbstractComposeFragmentHostKey
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
 
-internal class ChildContainer(
-    @IdRes val containerId: Int,
-    private val accept: (NavigationKey) -> Boolean
-) {
-    fun accept(key: NavigationKey): Boolean {
-        if(key is AbstractComposeFragmentHostKey && accept.invoke(key.instruction.navigationKey)) return true
-        return accept.invoke(key)
-    }
-}
-
 // TODO Move this to being a "Builder" and add data class for configuration?
 class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal constructor(
     private val keyType: KClass<T>
 ) {
-    internal var childContainers: List<ChildContainer> = listOf()
+    internal var childContainers: List<NavigationContainer> = listOf()
         private set
 
     internal var defaultKey: T? = null
@@ -28,8 +18,12 @@ class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal co
     internal var onCloseRequested: TypedNavigationHandle<T>.() -> Unit = { close() }
         private set
 
+    @Deprecated("TODO") // TODO
     fun container(@IdRes containerId: Int, accept: (NavigationKey) -> Boolean = { true }) {
-        childContainers = childContainers + ChildContainer(containerId, accept)
+        childContainers = childContainers + NavigationContainer(
+            containerId = containerId,
+            accept = accept
+        )
     }
 
     fun defaultKey(navigationKey: T) {

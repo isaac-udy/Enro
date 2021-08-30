@@ -36,10 +36,10 @@ class NavigationController internal constructor(
 
         val processedInstruction = interceptorController.intercept(
             instruction, executor.context, navigator
-        )
+        ) ?: return
 
         if (processedInstruction.navigationKey::class != navigator.keyType) {
-            open(navigationContext, processedInstruction)
+            navigationContext.getNavigationHandle().executeInstruction(processedInstruction)
             return
         }
 
@@ -57,6 +57,15 @@ class NavigationController internal constructor(
     internal fun close(
         navigationContext: NavigationContext<out Any>
     ) {
+        val processedInstruction = interceptorController.intercept(
+            NavigationInstruction.Close, navigationContext
+        ) ?: return
+
+        if(processedInstruction !is NavigationInstruction.Close) {
+            navigationContext.getNavigationHandle().executeInstruction(processedInstruction)
+            return
+        }
+
         val executor = executorContainer.executorForClose(navigationContext)
         executor.preClosed(navigationContext)
         executor.close(navigationContext)

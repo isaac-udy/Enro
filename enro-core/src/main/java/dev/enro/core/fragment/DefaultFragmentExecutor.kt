@@ -66,7 +66,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             return
         }
 
-        val host = fromContext.fragmentHostFor(instruction.navigationKey)
+        val host = fromContext.fragmentHostFor(instruction)
         if (host == null) {
             openFragmentAsActivity(fromContext, instruction)
             return
@@ -110,9 +110,30 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         }
 
         val previousFragment = context.getPreviousFragment()
-        if (previousFragment == null && context.activity is AbstractSingleFragmentActivity) {
-            context.controller.close(context.activity.navigationContext)
-            return
+
+        val containerWillBeEmpty = context.contextReference.id != previousFragment?.id
+        if (containerWillBeEmpty) {
+            val container = context.parentContext()
+                ?.getNavigationHandleViewModel()
+                ?.childContainers
+                ?.firstOrNull {
+                    it.containerId == context.contextReference.id
+                }
+            if(container != null) {
+                when(container.emptyBehavior) {
+                    EmptyBehavior.AllowEmpty -> { /* continue */ }
+                    EmptyBehavior.CloseParent -> {
+                        context.parentContext()?.getNavigationHandle()?.close()
+                        return
+                    }
+                    is EmptyBehavior.Action -> {
+                        val keepGoing = container.emptyBehavior.onEmpty()
+                        if(!keepGoing) {
+                            return
+                        }
+                    }
+                }
+            }
         }
 
         val animations = animationsFor(context, NavigationInstruction.Close)
@@ -162,7 +183,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         instruction: NavigationInstruction.Open
     ): Boolean {
         try {
-            fromContext.fragmentHostFor(instruction.navigationKey)?.fragmentManager?.executePendingTransactions()
+            fromContext.fragmentHostFor(instruction)?.fragmentManager?.executePendingTransactions()
             return true
         } catch (ex: IllegalStateException) {
             mainThreadHandler.post {
@@ -225,7 +246,7 @@ private fun NavigationContext<out Fragment>.getPreviousFragment(): Fragment? {
         return fragment.parentFragmentManager.findFragmentByTag(getNavigationHandleViewModel().instruction.internal.previouslyActiveId)
     }
     if(previousNavigator !is FragmentNavigator) return previouslyActiveFragment
-    val previousHost = fragmentHostFor(parentInstruction.navigationKey)
+    val previousHost = fragmentHostFor(parentInstruction)
     val previousFragment = previousHost?.fragmentManager?.findFragmentByTag(parentInstruction.instructionId)
 
     return when {
