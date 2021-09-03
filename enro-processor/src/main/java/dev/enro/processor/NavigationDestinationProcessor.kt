@@ -266,12 +266,15 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 """
                 package ${EnroProcessor.GENERATED_PACKAGE}
                 
-                import ${element.getElementName()}
-                import ${ClassNames.composableDestination}
                 import androidx.compose.runtime.Composable
                 import dev.enro.annotations.NavigationDestination
+                import javax.annotation.Generated
+                
+                import ${element.getElementName()}
+                import ${ClassNames.composableDestination}
                 import ${keyType.getElementName()}
                 
+                @Generated("dev.enro.processor.NavigationDestinationProcessor")
                 class $composableWrapperName : ComposableDestination() {
                     @Composable
                     override fun Render() {
