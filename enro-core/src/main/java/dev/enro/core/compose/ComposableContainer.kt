@@ -118,9 +118,9 @@ class EnroContainerController internal constructor(
     fun push(instruction: NavigationInstruction.Open) {
         mutableBackstack.value = mutableBackstack.value.push(
             instruction,
-            navigationContext.childComposableManager.primaryContainer?.id
+            navigationContext.childComposableManager.activeContainer?.id
         )
-        navigationContext.childComposableManager.setPrimaryContainer(id)
+        navigationContext.childComposableManager.setActiveContainerById(id)
     }
 
     fun close() {
@@ -132,7 +132,7 @@ class EnroContainerController internal constructor(
                     /* If allow empty, pass through to default behavior */
                 }
                 EmptyBehavior.CloseParent -> {
-                    navigationContext.childComposableManager.setPrimaryContainer(null)
+                    navigationContext.childComposableManager.setActiveContainerById(null)
                     navigationHandle.close()
                     return
                 }
@@ -144,7 +144,7 @@ class EnroContainerController internal constructor(
                 }
             }
         }
-        navigationContext.childComposableManager.setPrimaryContainer(mutableBackstack.value.backstackEntries.lastOrNull()?.previouslyActiveContainerId)
+        navigationContext.childComposableManager.setActiveContainerById(mutableBackstack.value.backstackEntries.lastOrNull()?.previouslyActiveContainerId)
         mutableBackstack.value = closedState
     }
 

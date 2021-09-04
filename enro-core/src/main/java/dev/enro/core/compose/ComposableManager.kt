@@ -1,6 +1,5 @@
 package dev.enro.core.compose
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.saveable.Saver
@@ -13,43 +12,53 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationKey
-import dev.enro.core.getNavigationHandle
 import dev.enro.core.parentContext
+import java.lang.IllegalStateException
 
 class EnroComposableManager : ViewModel() {
     val containers: MutableSet<EnroContainerController> = mutableSetOf()
 
-    var primaryContainer: EnroContainerController? = null
+    var activeContainer: EnroContainerController? = null
         private set
 
-    internal fun setPrimaryContainer(id: String?) {
-        primaryContainer = containers.firstOrNull { it.id == id }
+    internal fun setActiveContainerById(id: String?) {
+        activeContainer = containers.firstOrNull { it.id == id }
+    }
+
+    fun setActiveContainer(containerController: EnroContainerController?) {
+        if(containerController == null) {
+            activeContainer = null
+            return
+        }
+        val selectedContainer = containers.firstOrNull { it.id == containerController.id }
+            ?: throw IllegalStateException("EnroContainerController with id ${containerController.id} is not registered with this EnroComposableManager")
+        activeContainer = selectedContainer
     }
 
     @Composable
     internal fun registerState(controller: EnroContainerController): Boolean {
         DisposableEffect(controller) {
             containers += controller
-            if(primaryContainer == null) {
-                primaryContainer = controller
+            if(activeContainer == null) {
+                activeContainer = controller
             }
             onDispose {
                 containers -= controller
-                if(primaryContainer == controller) {
-                    primaryContainer = null
+                if(activeContainer == controller) {
+                    activeContainer = null
                 }
             }
         }
         rememberSaveable(controller, saver = object : Saver<Unit, Boolean> {
             override fun restore(value: Boolean) {
                 if(value) {
-                    primaryContainer = controller
+                    activeContainer = controller
                 }
                 return
             }
 
             override fun SaverScope.save(value: Unit): Boolean {
-                return (primaryContainer?.id == controller.id)
+                return (activeContainer?.id == controller.id)
             }
         }) {}
         return true
@@ -71,7 +80,7 @@ internal class ComposableHost(
 )
 
 internal fun NavigationContext<*>.composeHostFor(key: NavigationKey): ComposableHost? {
-    val primary = childComposableManager.primaryContainer
+    val primary = childComposableManager.activeContainer
     if(primary?.accept?.invoke(key) == true) return ComposableHost(primary)
 
     val secondary = childComposableManager.containers.firstOrNull {
