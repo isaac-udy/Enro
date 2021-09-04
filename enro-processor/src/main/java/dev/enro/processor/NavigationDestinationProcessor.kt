@@ -108,8 +108,23 @@ class NavigationDestinationProcessor : BaseProcessor() {
             processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "Function ${element.getElementName()} is an instance function, which is not allowed.")
             return
         }
+
+        val receiverTypes = element.kotlinReceiverTypes()
+        val allowedReceiverTypes = listOf(
+            "java.lang.Object",
+            "dev.enro.core.compose.DialogDestination"
+        )
+        val isCompatibleReceiver = receiverTypes.all {
+            allowedReceiverTypes.contains(it)
+        }
+
         val hasNoParameters = element.parameters.size == 0
-        if(!hasNoParameters) {
+        val hasAllowedParameters = element.parameters.filter { !it.simpleName.startsWith("\$this") }.all {
+            false
+        }
+
+        val parametersAreValid = (hasNoParameters || hasAllowedParameters) && isCompatibleReceiver
+        if(!parametersAreValid) {
             processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "Function ${element.getElementName()} has parameters which is not allowed.")
             return
         }
@@ -117,16 +132,11 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val annotation = element.getAnnotation(NavigationDestination::class.java)
         val enableComposableDestination =
             element.getAnnotation(ExperimentalComposableDestination::class.java) != null
-//                  TODO: Allow compiler opt-in somehow?
-//                || processingEnv.options.entries.any {
-//                    it.key == "dev.enro.experimentalComposableDestinations" && (it.value == "enabled" || it.value == "true")
-//                }
 
         if(!enableComposableDestination) {
             val shortMessage = "Failed to create NavigationDestination for function ${element.getElementName()}. Using @Composable functions as @NavigationDestinations is an experimental feature an must be explicitly enabled."
             processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, shortMessage)
             processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "To enable @Composable @NavigationDestinations annotate the @Composable function @NavigationDestination with the @ExperimentalComposableDestination annotation")
-//            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "To enable @Composable @NavigationDestinations per-module: Set the kapt option 'dev.enro.experimentalComposableDestinations' as 'enabled'. In your build.gradle: kapt { arguments { arg(\"dev.enro.experimentalComposableDestinations\", \"enabled\") } }")
             throw RuntimeException(shortMessage)
         }
         val keyType =
@@ -254,11 +264,41 @@ class NavigationDestinationProcessor : BaseProcessor() {
     }
 
     private fun createComposableWrapper(
-        element: Element,
+        element: ExecutableElement,
         keyType: Element
     ): String {
         val composableWrapperName =
             element.getElementName().replace(".", "_") + "_ComposableDestination"
+
+        val receiverTypes = element.kotlinReceiverTypes()
+        val additionalInterfaces = receiverTypes.mapNotNull {
+            when (it) {
+                "dev.enro.core.compose.DialogDestination" -> "DialogDestination"
+                else -> null
+            }
+        }.joinToString(separator = "") { ", $it" }
+
+        val typeParameter = if(element.typeParameters.isEmpty()) "" else "<$composableWrapperName>"
+
+        val additionalImports = receiverTypes.flatMap {
+            when (it) {
+                "dev.enro.core.compose.DialogDestination" -> listOf(
+                    "dev.enro.core.compose.DialogDestination",
+                    "dev.enro.core.compose.DialogConfiguration"
+                )
+                else -> emptyList()
+            }
+        }.joinToString(separator = "") { "\n                import $it"}
+
+        val additionalBody = receiverTypes.mapNotNull {
+            when (it) {
+                "dev.enro.core.compose.DialogDestination" ->
+                    """
+                        override val dialogConfiguration: DialogConfiguration = DialogConfiguration()
+                    """.trimIndent()
+                else -> null
+            }
+        }.joinToString(separator = "\n")
 
         processingEnv.filer
             .createResource(
@@ -274,17 +314,19 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 
                 import androidx.compose.runtime.Composable
                 import dev.enro.annotations.NavigationDestination
-                import javax.annotation.Generated
+                import javax.annotation.Generated 
+                $additionalImports
                 
                 import ${element.getElementName()}
                 import ${ClassNames.composableDestination}
                 import ${keyType.getElementName()}
                 
                 @Generated("dev.enro.processor.NavigationDestinationProcessor")
-                class $composableWrapperName : ComposableDestination() {
+                class $composableWrapperName : ComposableDestination()$additionalInterfaces {
+                    $additionalBody
                     @Composable
                     override fun Render() {
-                        ${element.simpleName}()
+                        ${element.simpleName}$typeParameter()
                     }
                 }
                 """.trimIndent()

@@ -228,3 +228,11 @@ abstract class ComposableDestination: LifecycleOwner,
     @Composable
     abstract fun Render()
 }
+
+class DialogConfiguration {
+
+}
+
+interface DialogDestination {
+    val dialogConfiguration: DialogConfiguration
+}

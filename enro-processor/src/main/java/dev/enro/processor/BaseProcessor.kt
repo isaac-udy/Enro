@@ -53,4 +53,21 @@ abstract class BaseProcessor : AbstractProcessor() {
         )
         return this
     }
+
+
+    fun ExecutableElement.kotlinReceiverTypes(): List<String> {
+        val receiver = parameters.firstOrNull {
+            it.simpleName.startsWith("\$this")
+        } ?: return emptyList()
+
+        val typeParameterNames = typeParameters.map { it.simpleName.toString() }
+        val superTypes = processingEnv.typeUtils.directSupertypes(receiver.asType()).map { it.toString() }
+        val receiverTypeName = receiver.asType().toString()
+
+        return if(typeParameterNames.contains(receiverTypeName)) {
+            superTypes
+        } else {
+            superTypes + receiverTypeName
+        }
+    }
 }
