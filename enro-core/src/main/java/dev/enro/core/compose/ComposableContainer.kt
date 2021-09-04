@@ -137,8 +137,8 @@ class EnroContainerController internal constructor(
                     return
                 }
                 is EmptyBehavior.Action -> {
-                    val keepGoing = emptyBehavior.onEmpty()
-                    if (!keepGoing) {
+                    val consumed = emptyBehavior.onEmpty()
+                    if (consumed) {
                         return
                     }
                 }

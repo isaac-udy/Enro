@@ -2,6 +2,8 @@ package dev.enro.core.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -18,21 +20,21 @@ import java.lang.IllegalStateException
 class EnroComposableManager : ViewModel() {
     val containers: MutableSet<EnroContainerController> = mutableSetOf()
 
-    var activeContainer: EnroContainerController? = null
-        private set
+    private val activeContainerState: MutableState<EnroContainerController?> = mutableStateOf(null)
+    val activeContainer: EnroContainerController? get() = activeContainerState.value
 
     internal fun setActiveContainerById(id: String?) {
-        activeContainer = containers.firstOrNull { it.id == id }
+        activeContainerState.value = containers.firstOrNull { it.id == id }
     }
 
     fun setActiveContainer(containerController: EnroContainerController?) {
         if(containerController == null) {
-            activeContainer = null
+            activeContainerState.value = null
             return
         }
         val selectedContainer = containers.firstOrNull { it.id == containerController.id }
             ?: throw IllegalStateException("EnroContainerController with id ${containerController.id} is not registered with this EnroComposableManager")
-        activeContainer = selectedContainer
+        activeContainerState.value = selectedContainer
     }
 
     @Composable
@@ -40,19 +42,19 @@ class EnroComposableManager : ViewModel() {
         DisposableEffect(controller) {
             containers += controller
             if(activeContainer == null) {
-                activeContainer = controller
+                activeContainerState.value = controller
             }
             onDispose {
                 containers -= controller
                 if(activeContainer == controller) {
-                    activeContainer = null
+                    activeContainerState.value = null
                 }
             }
         }
         rememberSaveable(controller, saver = object : Saver<Unit, Boolean> {
             override fun restore(value: Boolean) {
                 if(value) {
-                    activeContainer = controller
+                    activeContainerState.value = controller
                 }
                 return
             }
