@@ -13,6 +13,8 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
+import dagger.hilt.internal.GeneratedComponentManager
+import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.viewmodel.EnroViewModelFactory
@@ -104,9 +106,7 @@ internal class ComposableDestinationContextReference(
         return remember(parentViewModelStoreOwner.hashCode()) {
             if (parentViewModelStoreOwner.hashCode() == defaultViewModelFactory.first) return@remember defaultViewModelFactory
 
-            val parentDefaultViewModelFactory =
-                (parentViewModelStoreOwner as? HasDefaultViewModelProviderFactory)?.defaultViewModelProviderFactory
-            val factory = if (parentDefaultViewModelFactory is HiltViewModelFactory) {
+            val factory = if (activity is GeneratedComponentManagerHolder) {
                 HiltViewModelFactory.createInternal(
                     activity,
                     this,
@@ -117,7 +117,10 @@ internal class ComposableDestinationContextReference(
                 SavedStateViewModelFactory(activity.application, this, savedState)
             }
 
-            return@remember parentViewModelStoreOwner.hashCode() to EnroViewModelFactory(navigationHandle, factory)
+            return@remember parentViewModelStoreOwner.hashCode() to EnroViewModelFactory(
+                navigationHandle,
+                factory
+            )
         }
     }
 
@@ -138,7 +141,7 @@ internal class ComposableDestinationContextReference(
 
         val isVisible = instruction == backstackState.visible
         val animations = remember(isVisible) {
-            if( backstackState.skipAnimations) return@remember DefaultAnimations.none
+            if (backstackState.skipAnimations) return@remember DefaultAnimations.none
             animationsFor(
                 parentContext,
                 backstackState.lastInstruction
@@ -200,8 +203,10 @@ internal fun getComposableDestinationContext(
     )
 }
 
-abstract class ComposableDestination : LifecycleOwner, ViewModelStoreOwner,
-    SavedStateRegistryOwner {
+abstract class ComposableDestination: LifecycleOwner,
+    ViewModelStoreOwner,
+    SavedStateRegistryOwner,
+    HasDefaultViewModelProviderFactory {
     internal lateinit var contextReference: ComposableDestinationContextReference
 
     override fun getLifecycle(): Lifecycle {
@@ -214,6 +219,10 @@ abstract class ComposableDestination : LifecycleOwner, ViewModelStoreOwner,
 
     override fun getSavedStateRegistry(): SavedStateRegistry {
         return contextReference.savedStateRegistry
+    }
+
+    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
+        return contextReference.defaultViewModelProviderFactory
     }
 
     @Composable
