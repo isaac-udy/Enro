@@ -3,6 +3,7 @@ package dev.enro.example
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
@@ -13,6 +14,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 class MainKey : NavigationKey
 
+@AndroidEntryPoint
 @NavigationDestination(MainKey::class)
 class MainActivity : AppCompatActivity() {
 

@@ -1,5 +1,6 @@
 package dev.enro.core.compose
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.saveable.Saver
@@ -12,6 +13,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationKey
+import dev.enro.core.getNavigationHandle
 import dev.enro.core.parentContext
 
 class EnroComposableManager : ViewModel() {

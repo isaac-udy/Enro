@@ -22,9 +22,26 @@ internal class EnroDestinationStorage : ViewModel() {
 }
 
 sealed class EmptyBehavior {
-    object AllowEmpty: EmptyBehavior()
-    object CloseParent: EmptyBehavior()
-    class SelectContainer(val container: EnroContainerController): EmptyBehavior()
+    /**
+     * When this container is about to become empty, allow this container to become empty
+     */
+    object AllowEmpty : EmptyBehavior()
+
+    /**
+     * When this container is about to become empty, do not close the NavigationDestination in the
+     * container, but instead close the parent NavigationDestination (i.e. the owner of this container)
+     */
+    object CloseParent : EmptyBehavior()
+
+    /**
+     * When this container is about to become empty, execute an action. If the result of the action function is
+     * "true", then the action is considered to have consumed the request to become empty, and the container
+     * will not close the last navigation destination. When the action function returns "false", the default
+     * behaviour will happen, and the container will become empty.
+     */
+    class Action(
+        val onEmpty: () -> Boolean
+    ) : EmptyBehavior()
 }
 
 @Composable
@@ -39,7 +56,6 @@ fun rememberEnroContainerController(
     val id = rememberSaveable {
         UUID.randomUUID().toString()
     }
-
 
     val controller = remember {
         EnroContainerController(
@@ -66,6 +82,7 @@ fun rememberEnroContainerController(
         )
     }
 
+    localComposableManager.registerState(controller)
     return remember {
         controller.setInitialBackstack(savedBackstack)
         controller
@@ -119,9 +136,11 @@ class EnroContainerController internal constructor(
                     navigationHandle.close()
                     return
                 }
-                is EmptyBehavior.SelectContainer -> {
-                    navigationContext.childComposableManager.setPrimaryContainer(emptyBehavior.container.id)
-                    return
+                is EmptyBehavior.Action -> {
+                    val keepGoing = emptyBehavior.onEmpty()
+                    if (!keepGoing) {
+                        return
+                    }
                 }
             }
         }
@@ -170,7 +189,6 @@ fun EnroContainer(
     modifier: Modifier = Modifier,
     controller: EnroContainerController = rememberEnroContainerController(),
 ) {
-    localComposableManager.registerState(controller)
     val backstackState by controller.backstack.collectAsState()
 
     Box(modifier = modifier) {
