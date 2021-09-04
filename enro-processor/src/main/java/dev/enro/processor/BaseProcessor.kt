@@ -6,16 +6,30 @@ import com.squareup.javapoet.TypeSpec
 import javax.annotation.Generated
 import javax.annotation.processing.AbstractProcessor
 import javax.lang.model.element.Element
+import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.QualifiedNameable
+import javax.tools.Diagnostic
 
 abstract class BaseProcessor : AbstractProcessor() {
 
     internal fun Element.getElementName(): String {
         val packageName = processingEnv.elementUtils.getPackageOf(this).toString()
-        return if (this is QualifiedNameable) {
-            qualifiedName.toString()
-        } else {
-            "$packageName.$simpleName"
+        return when (this) {
+            is QualifiedNameable -> {
+                qualifiedName.toString()
+            }
+            is ExecutableElement -> {
+                val kotlinMetadata = enclosingElement.getAnnotation(Metadata::class.java)
+                when (kotlinMetadata?.kind) {
+                    // metadata kind 1 is a "class" type, which means this method belongs to a
+                    // class or object, rather than being a top-level file function (kind 2)
+                    1 -> "${enclosingElement.getElementName()}.$simpleName"
+                    else -> "$packageName.$simpleName"
+                }
+            }
+            else -> {
+                "$packageName.$simpleName"
+            }
         }
     }
 

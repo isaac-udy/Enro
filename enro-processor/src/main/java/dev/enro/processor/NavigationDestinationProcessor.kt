@@ -10,10 +10,7 @@ import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
-import javax.lang.model.element.Element
-import javax.lang.model.element.ElementKind
-import javax.lang.model.element.Modifier
-import javax.lang.model.element.TypeElement
+import javax.lang.model.element.*
 import javax.tools.Diagnostic
 import javax.tools.StandardLocation
 
@@ -95,6 +92,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
     private fun generateDestinationForFunction(element: Element) {
         if (element.kind != ElementKind.METHOD) return
+        element as ExecutableElement
+
         element.annotationMirrors
             .firstOrNull {
                 it.annotationType.asElement()
@@ -102,9 +101,22 @@ class NavigationDestinationProcessor : BaseProcessor() {
             }
             ?: throw java.lang.IllegalStateException("Function ${element.getElementName()} was marked as @NavigationDestination, but was not marked as @Composable")
 
-        val annotation = element.getAnnotation(NavigationDestination::class.java)
 
-        val enableComposableDestination = element.getAnnotation(ExperimentalComposableDestination::class.java) != null
+        val isStatic = element.modifiers.contains(Modifier.STATIC)
+        val parentIsObject = element.enclosingElement.enclosedElements.any { it.simpleName.toString() == "INSTANCE" }
+        if(!isStatic && !parentIsObject) {
+            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "Function ${element.getElementName()} is an instance function, which is not allowed.")
+            return
+        }
+        val hasNoParameters = element.parameters.size == 0
+        if(!hasNoParameters) {
+            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "Function ${element.getElementName()} has parameters which is not allowed.")
+            return
+        }
+
+        val annotation = element.getAnnotation(NavigationDestination::class.java)
+        val enableComposableDestination =
+            element.getAnnotation(ExperimentalComposableDestination::class.java) != null
 //                  TODO: Allow compiler opt-in somehow?
 //                || processingEnv.options.entries.any {
 //                    it.key == "dev.enro.experimentalComposableDestinations" && (it.value == "enabled" || it.value == "true")
@@ -252,7 +264,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
             .createResource(
                 StandardLocation.SOURCE_OUTPUT,
                 EnroProcessor.GENERATED_PACKAGE,
-                "$composableWrapperName.kt"
+                "$composableWrapperName.kt",
+                element
             )
             .openWriter()
             .append(
