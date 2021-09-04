@@ -1,5 +1,6 @@
 package dev.enro.core.compose
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
@@ -157,7 +158,6 @@ class EnroContainerController internal constructor(
         }
     }
 
-    @Composable
     internal fun getDestination(instruction: NavigationInstruction.Open): ComposableDestinationContextReference {
         val destinationContextReference = destinations.getOrPut(instruction.instructionId) {
             val controller = navigationContext.controller
@@ -172,6 +172,12 @@ class EnroContainerController internal constructor(
             )
         }
         destinationContextReference.parentContainer = this@EnroContainerController
+        return destinationContextReference
+    }
+
+    @SuppressLint("ComposableNaming")
+    @Composable
+    internal fun bindDestination(instruction: NavigationInstruction.Open) {
         DisposableEffect(true) {
             onDispose {
                 if(!mutableBackstack.value.backstack.contains(instruction)) {
@@ -179,7 +185,6 @@ class EnroContainerController internal constructor(
                 }
             }
         }
-        return destinationContextReference
     }
 }
 
@@ -195,6 +200,7 @@ fun EnroContainer(
         backstackState.renderable.forEach {
             key(it.instructionId) {
                 controller.getDestination(it).Render()
+                controller.bindDestination(it)
             }
         }
     }

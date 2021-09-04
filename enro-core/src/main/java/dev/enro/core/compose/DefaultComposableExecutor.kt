@@ -11,6 +11,21 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
     override fun open(args: ExecutorArgs<out Any, out ComposableDestination, out NavigationKey>) {
         val host = args.fromContext.composeHostFor(args.key)
 
+        // TODO seperate destinations here? Should these go to different fragments?
+        val isDialog = DialogDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
+                || BottomSheetDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
+
+        if(isDialog) {
+            args.fromContext.controller.open(
+                args.fromContext,
+                NavigationInstruction.Open.OpenInternal(
+                    args.instruction.navigationDirection,
+                    ComposeDialogFragmentHostKey(args.instruction)
+                )
+            )
+            return
+        }
+
         if(host == null || args.instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
             val fragmentHost = if(args.instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) null else args.fromContext.fragmentHostFor(args.key)
             args.fromContext.controller.open(

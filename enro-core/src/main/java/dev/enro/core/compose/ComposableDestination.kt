@@ -2,8 +2,11 @@ package dev.enro.core.compose
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.fragment.app.FragmentActivity
@@ -190,7 +193,6 @@ internal class ComposableDestinationContextReference(
     }
 }
 
-@Composable
 internal fun getComposableDestinationContext(
     instruction: NavigationInstruction.Open,
     composableDestination: ComposableDestination,
@@ -229,10 +231,33 @@ abstract class ComposableDestination: LifecycleOwner,
     abstract fun Render()
 }
 
-class DialogConfiguration {
-
-}
+open class DialogConfiguration(
+    var scrimColor: Color = Color(0x52000000),
+    var animations: AnimationPair = AnimationPair.Attr(
+        enter = android.R.attr.activityOpenEnterAnimation,
+        exit = android.R.attr.activityCloseExitAnimation
+    )
+)
 
 interface DialogDestination {
     val dialogConfiguration: DialogConfiguration
+}
+
+@SuppressLint("ComposableNaming")
+@Composable
+fun DialogDestination.configureDialog(block: (DialogConfiguration) -> Unit) {
+    remember(true) {
+        block(dialogConfiguration)
+        true
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+class BottomSheetConfiguration(
+    var initialState: ModalBottomSheetValue = ModalBottomSheetValue.HalfExpanded
+) : DialogConfiguration()
+
+@ExperimentalMaterialApi
+interface BottomSheetDestination {
+    val bottomSheetConfiguration: BottomSheetConfiguration
 }

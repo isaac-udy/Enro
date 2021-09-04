@@ -3,31 +3,35 @@ package dev.enro.example
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationKey
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.forward
-import dev.enro.core.replace
-import dev.enro.core.replaceRoot
+import dev.enro.core.*
+import dev.enro.core.compose.*
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import java.util.*
 import javax.inject.Inject
@@ -69,6 +73,7 @@ class ComposeSimpleExampleViewModel @Inject constructor(
 @ExperimentalComposableDestination
 @NavigationDestination(ComposeSimpleExampleKey::class)
 fun ComposeSimpleExample() {
+
     val navigation = navigationHandle<ComposeSimpleExampleKey>()
     val scrollState = rememberScrollState()
     val viewModel = viewModel<ComposeSimpleExampleViewModel>()
@@ -147,7 +152,7 @@ fun ComposeSimpleExample() {
                                 launchedFrom = navigation.key.name,
                                 backstack = navigation.key.backstack + navigation.key.name
                             )
-                            navigation.forward(next)
+                            navigation.forward(ExampleComposableDialogKey())
                         }) {
                         Text("Forward")
                     }
@@ -195,7 +200,29 @@ fun ComposeSimpleExample() {
             }
         }
     }
+}
 
+@Parcelize
+class ExampleComposableDialogKey : NavigationKey
+
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
+@Composable
+@ExperimentalComposableDestination
+@NavigationDestination(ExampleComposableDialogKey::class)
+fun BottomSheetDestination.ExampleDialogComposable() {
+    LazyColumn {
+        items(50) {
+            ListItem(
+                text = { Text("Item $it") },
+                icon = {
+                    Icon(
+                        Icons.Default.Favorite,
+                        contentDescription = "Localized description"
+                    )
+                }
+            )
+        }
+    }
 }
 
 private fun ComposeSimpleExampleKey.getNextDestinationName(): String {

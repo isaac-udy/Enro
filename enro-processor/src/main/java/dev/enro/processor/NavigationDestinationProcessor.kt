@@ -112,7 +112,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val receiverTypes = element.kotlinReceiverTypes()
         val allowedReceiverTypes = listOf(
             "java.lang.Object",
-            "dev.enro.core.compose.DialogDestination"
+            "dev.enro.core.compose.DialogDestination",
+            "dev.enro.core.compose.BottomSheetDestination"
         )
         val isCompatibleReceiver = receiverTypes.all {
             allowedReceiverTypes.contains(it)
@@ -274,6 +275,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val additionalInterfaces = receiverTypes.mapNotNull {
             when (it) {
                 "dev.enro.core.compose.DialogDestination" -> "DialogDestination"
+                "dev.enro.core.compose.BottomSheetDestination" -> "BottomSheetDestination"
                 else -> null
             }
         }.joinToString(separator = "") { ", $it" }
@@ -286,6 +288,10 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     "dev.enro.core.compose.DialogDestination",
                     "dev.enro.core.compose.DialogConfiguration"
                 )
+                "dev.enro.core.compose.BottomSheetDestination" -> listOf(
+                    "dev.enro.core.compose.BottomSheetDestination",
+                    "dev.enro.core.compose.BottomSheetConfiguration"
+                )
                 else -> emptyList()
             }
         }.joinToString(separator = "") { "\n                import $it"}
@@ -295,6 +301,10 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 "dev.enro.core.compose.DialogDestination" ->
                     """
                         override val dialogConfiguration: DialogConfiguration = DialogConfiguration()
+                    """.trimIndent()
+                "dev.enro.core.compose.BottomSheetDestination" ->
+                    """
+                        override val bottomSheetConfiguration: BottomSheetConfiguration = BottomSheetConfiguration()
                     """.trimIndent()
                 else -> null
             }
