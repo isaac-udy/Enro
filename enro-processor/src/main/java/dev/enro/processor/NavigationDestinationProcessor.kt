@@ -47,14 +47,9 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
     private fun generateDestinationForClass(element: Element) {
         if (element.kind != ElementKind.CLASS) return
-        val destinationName = element.simpleName
-        val destinationPackage = processingEnv.elementUtils.getPackageOf(element).toString()
         val annotation = element.getAnnotation(NavigationDestination::class.java)
 
-        val keyType =
-            processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
-        val keyName = keyType.simpleName
-        val keyPackage = processingEnv.elementUtils.getPackageOf(keyType).toString()
+        val keyType = processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
 
         val bindingName = element.getElementName()
             .replace(".", "_")
@@ -68,9 +63,9 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 AnnotationSpec.builder(GeneratedNavigationBinding::class.java)
                     .addMember(
                         "destination",
-                        CodeBlock.of("\"$destinationPackage.$destinationName\"")
+                        CodeBlock.of("\"${element.getElementName()}\"")
                     )
-                    .addMember("navigationKey", CodeBlock.of("\"$keyPackage.$keyName\""))
+                    .addMember("navigationKey", CodeBlock.of("\"${keyType.getElementName()}\""))
                     .build()
             )
             .addGeneratedAnnotation()
@@ -124,8 +119,6 @@ class NavigationDestinationProcessor : BaseProcessor() {
         }
         val keyType =
             processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
-        val keyName = keyType.simpleName
-        val keyPackage = processingEnv.elementUtils.getPackageOf(keyType).toString()
 
         val composableWrapper = createComposableWrapper(element, keyType)
 
@@ -145,7 +138,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     )
                     .addMember(
                         "navigationKey",
-                        CodeBlock.of("\"$keyPackage.$keyName\"")
+                        CodeBlock.of("\"${keyType.getElementName()}\"")
                     )
                     .build()
             )

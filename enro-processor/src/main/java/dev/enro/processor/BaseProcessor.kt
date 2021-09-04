@@ -5,13 +5,18 @@ import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.TypeSpec
 import javax.annotation.Generated
 import javax.annotation.processing.AbstractProcessor
-import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
+import javax.lang.model.element.QualifiedNameable
 
 abstract class BaseProcessor : AbstractProcessor() {
 
     internal fun Element.getElementName(): String {
-        return processingEnv.elementUtils.getPackageOf(this).toString()+"."+this.simpleName
+        val packageName = processingEnv.elementUtils.getPackageOf(this).toString()
+        return if (this is QualifiedNameable) {
+            qualifiedName.toString()
+        } else {
+            "$packageName.$simpleName"
+        }
     }
 
     internal fun Element.extends(className: ClassName): Boolean {
