@@ -1,4 +1,6 @@
 package dev.enro
+import androidx.compose.runtime.Composable
+import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
@@ -60,6 +62,14 @@ data class GenericFragmentKey(val id: String) : NavigationKey
 
 @NavigationDestination(GenericFragmentKey::class)
 class GenericFragment : TestFragment()
+
+@Parcelize
+data class GenericComposableKey(val id: String) : NavigationKey
+
+@Composable
+@ExperimentalComposableDestination
+@NavigationDestination(GenericComposableKey::class)
+fun GenericComposableDestination() = TestComposable(name = "GenericComposableDestination")
 
 class UnboundActivity : TestActivity()
 

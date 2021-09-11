@@ -11,8 +11,22 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
+import dev.enro.core.NavigationKey
+import dev.enro.core.compose.EnroContainer
+import dev.enro.core.compose.navigationHandle
+import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.getNavigationHandle
 
 abstract class TestActivity : AppCompatActivity() {
@@ -139,3 +153,30 @@ abstract class TestFragment : Fragment() {
     }
 }
 
+@Composable
+fun TestComposable(
+    name: String,
+    primaryContainerAccepts: (NavigationKey) -> Boolean = { false },
+    secondaryContainerAccepts: (NavigationKey) -> Boolean = { false }
+) {
+    val primaryContainer = rememberEnroContainerController(
+        accept = primaryContainerAccepts
+    )
+
+    val secondaryContainer = rememberEnroContainerController(
+        accept = primaryContainerAccepts
+    )
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
+        Text(text = name, fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
+        Text(text = navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
+        EnroContainer(
+            controller = primaryContainer,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).background(Color(0x22FF0000)).padding(horizontal = 20.dp)
+        )
+        EnroContainer(
+            controller = secondaryContainer,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).background(Color(0x220000FF)).padding(20.dp)
+        )
+    }
+}

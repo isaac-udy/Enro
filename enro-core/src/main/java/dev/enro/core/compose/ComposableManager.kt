@@ -69,7 +69,7 @@ class EnroComposableManager : ViewModel() {
 
 val localComposableManager @Composable get() = LocalViewModelStoreOwner.current!!.composableManger
 
-internal val ViewModelStoreOwner.composableManger: EnroComposableManager get() {
+val ViewModelStoreOwner.composableManger: EnroComposableManager get() {
     return ViewModelLazy(
         viewModelClass = EnroComposableManager::class,
         storeProducer = { viewModelStore },

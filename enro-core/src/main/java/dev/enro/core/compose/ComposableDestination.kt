@@ -106,7 +106,11 @@ internal class ComposableDestinationContextReference(
         return remember(parentViewModelStoreOwner.hashCode()) {
             if (parentViewModelStoreOwner.hashCode() == defaultViewModelFactory.first) return@remember defaultViewModelFactory
 
-            val factory = if (activity is GeneratedComponentManagerHolder) {
+            val generatedComponentManagerHolderClass = kotlin.runCatching {
+                GeneratedComponentManagerHolder::class.java
+            }.getOrNull()
+
+            val factory = if (generatedComponentManagerHolderClass != null && activity is GeneratedComponentManagerHolder) {
                 HiltViewModelFactory.createInternal(
                     activity,
                     this,

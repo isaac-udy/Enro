@@ -109,7 +109,7 @@ class EnroContainerController internal constructor(
             it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)
         }
 
-    internal val activeContext: NavigationContext<*>? get() = currentDestination?.getNavigationHandleViewModel()?.navigationContext
+    val activeContext: NavigationContext<*>? get() = currentDestination?.getNavigationHandleViewModel()?.navigationContext
 
     internal fun setInitialBackstack(initialBackstack: EnroContainerBackstackState) {
         if(::mutableBackstack.isInitialized) throw IllegalStateException()
