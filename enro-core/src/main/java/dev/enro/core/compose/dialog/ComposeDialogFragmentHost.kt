@@ -191,9 +191,12 @@ internal fun View.animate(
     onAnimationEnd: () -> Unit = {}
 ) {
     clearAnimation()
-
-    val isAnimation = context.resources.getResourceTypeName(animOrAnimator) == "anim"
-    val isAnimator = !isAnimation && context.resources.getResourceTypeName(animOrAnimator) == "animator"
+    if (animOrAnimator == 0) {
+        onAnimationEnd()
+        return
+    }
+    val isAnimation = runCatching { context.resources.getResourceTypeName(animOrAnimator) == "anim" }.getOrElse { false }
+    val isAnimator = !isAnimation && runCatching { context.resources.getResourceTypeName(animOrAnimator) == "animator" }.getOrElse { false }
 
     when {
         isAnimator -> {
@@ -215,6 +218,8 @@ internal fun View.animate(
             })
             startAnimation(animation)
         }
-        else -> throw IllegalStateException()
+        else -> {
+            onAnimationEnd()
+        }
     }
 }

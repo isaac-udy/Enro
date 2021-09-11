@@ -7,6 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import dev.enro.core.AnimationPair
+import dev.enro.core.DefaultAnimations
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.EnroContainerController
 import dev.enro.core.getNavigationHandle
@@ -17,6 +18,10 @@ class BottomSheetConfiguration : DialogConfiguration() {
     internal var initialState: ModalBottomSheetValue = ModalBottomSheetValue.HalfExpanded
     internal var snapToInitialState: Boolean = false
     internal lateinit var bottomSheetState: ModalBottomSheetState
+
+    init {
+        animations = DefaultAnimations.none
+    }
 
     class Builder internal constructor(
         private val bottomSheetConfiguration: BottomSheetConfiguration
@@ -88,7 +93,6 @@ internal fun EnroBottomSheetContainer(
 
     ModalBottomSheetLayout(
         sheetState = state,
-        scrimColor = Color.Transparent,
         sheetContent = {
             EnroContainer(controller = controller)
         },

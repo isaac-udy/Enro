@@ -31,9 +31,7 @@ import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.compose.*
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.dialog.configureDialog
+import dev.enro.core.compose.dialog.*
 import dev.enro.core.result.closeWithResult
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -224,7 +222,6 @@ fun BottomSheetDestination.ExampleDialogComposable() {
         onCloseRequested { closeConfirmation.open(ExampleConfirmComposableKey()) }
     }
 
-
     LazyColumn {
         items(50) {
             ListItem(
@@ -248,9 +245,6 @@ class ExampleConfirmComposableKey : NavigationKey.WithResult<Boolean>
 @NavigationDestination(ExampleConfirmComposableKey::class)
 fun DialogDestination.ExampleConfirmComposable() {
     val navigationHandle = navigationHandle<ExampleConfirmComposableKey>()
-    configureDialog {
-        setScrimColor(Color.Transparent)
-    }
     AlertDialog(
         onDismissRequest = { navigationHandle.close() },
         buttons = {

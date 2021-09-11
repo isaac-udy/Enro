@@ -6,7 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import dev.enro.core.AnimationPair
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.EnroContainerController
@@ -15,10 +17,10 @@ import dev.enro.core.compose.EnroContainerController
 open class DialogConfiguration {
     internal var isDismissed = mutableStateOf(false)
 
-    internal var scrimColor: Color = Color(0x52000000)
-    internal var animations: AnimationPair = AnimationPair.Attr(
-        enter = android.R.attr.activityOpenEnterAnimation,
-        exit = android.R.attr.activityCloseExitAnimation
+    internal var scrimColor: Color = Color.Transparent
+    internal var animations: AnimationPair = AnimationPair.Resource(
+        enter = 0,
+        exit = 0
     )
 
     class Builder internal constructor(
@@ -37,6 +39,9 @@ open class DialogConfiguration {
 interface DialogDestination {
     val dialogConfiguration: DialogConfiguration
 }
+
+val DialogDestination.isDismissed: Boolean
+    @Composable get() = dialogConfiguration.isDismissed.value
 
 @SuppressLint("ComposableNaming")
 @Composable
