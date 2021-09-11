@@ -16,7 +16,8 @@ import dev.enro.core.requestClose
 @OptIn(ExperimentalMaterialApi::class)
 class BottomSheetConfiguration : DialogConfiguration() {
     internal var initialState: ModalBottomSheetValue = ModalBottomSheetValue.HalfExpanded
-    internal var snapToInitialState: Boolean = false
+    internal var animatesToInitialState: Boolean = true
+    internal var animatesToHiddenOnClose: Boolean = true
     internal lateinit var bottomSheetState: ModalBottomSheetState
 
     init {
@@ -34,8 +35,12 @@ class BottomSheetConfiguration : DialogConfiguration() {
             bottomSheetConfiguration.initialState = ModalBottomSheetValue.Expanded
         }
 
-        fun snapToInitialState() {
-            bottomSheetConfiguration.snapToInitialState = true
+        fun setAnimatesToInitialState(animatesToInitialState: Boolean) {
+            bottomSheetConfiguration.animatesToInitialState = animatesToInitialState
+        }
+
+        fun setAnimatesToHiddenOnClose(animatesToHidden: Boolean) {
+            bottomSheetConfiguration.animatesToHiddenOnClose = animatesToHidden
         }
 
         fun setScrimColor(color: Color) {
@@ -86,7 +91,7 @@ internal fun EnroBottomSheetContainer(
     )
     destination.bottomSheetConfiguration.bottomSheetState = state
     LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
-        if(destination.bottomSheetConfiguration.isDismissed.value) {
+        if(destination.bottomSheetConfiguration.isDismissed.value && destination.bottomSheetConfiguration.animatesToHiddenOnClose) {
             state.hide()
         }
     }
@@ -100,10 +105,10 @@ internal fun EnroBottomSheetContainer(
     )
 
     LaunchedEffect(true) {
-        if(destination.bottomSheetConfiguration.snapToInitialState) {
-            state.snapTo(destination.bottomSheetConfiguration.initialState)
-        } else {
+        if(destination.bottomSheetConfiguration.animatesToInitialState) {
             state.animateTo(destination.bottomSheetConfiguration.initialState)
+        } else {
+            state.snapTo(destination.bottomSheetConfiguration.initialState)
         }
     }
 }
