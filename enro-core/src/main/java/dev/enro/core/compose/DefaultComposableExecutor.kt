@@ -1,6 +1,9 @@
 package dev.enro.core.compose
 
 import dev.enro.core.*
+import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
+import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.fragment.internal.fragmentHostFor
 
 object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination, NavigationKey>(
@@ -11,7 +14,6 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
     override fun open(args: ExecutorArgs<out Any, out ComposableDestination, out NavigationKey>) {
         val host = args.fromContext.composeHostFor(args.key)
 
-        // TODO seperate destinations here? Should these go to different fragments?
         val isDialog = DialogDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
                 || BottomSheetDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
 

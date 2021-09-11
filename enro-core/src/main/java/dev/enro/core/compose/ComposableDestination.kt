@@ -2,8 +2,6 @@ package dev.enro.core.compose
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.graphics.Color
@@ -16,7 +14,6 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
-import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
@@ -25,7 +22,7 @@ import dev.enro.viewmodel.EnroViewModelFactory
 
 internal class ComposableDestinationContextReference(
     val instruction: NavigationInstruction.Open,
-    val composableDestination: ComposableDestination,
+    val destination: ComposableDestination,
     internal var parentContainer: EnroContainerController?
 ) : ViewModel(),
     LifecycleOwner,
@@ -52,7 +49,7 @@ internal class ComposableDestinationContextReference(
         0 to ViewModelProvider.NewInstanceFactory()
 
     init {
-        composableDestination.contextReference = this
+        destination.contextReference = this
 
         savedStateController.performRestore(savedState)
         lifecycleRegistry.addObserver(object : LifecycleEventObserver {
@@ -62,14 +59,14 @@ internal class ComposableDestinationContextReference(
                         parentSavedStateRegistry.registerSavedStateProvider(instruction.instructionId) {
                             val outState = Bundle()
                             navigationController.onComposeContextSaved(
-                                composableDestination,
+                                destination,
                                 outState
                             )
                             savedStateController.performSave(outState)
                             outState
                         }
                         navigationController.onComposeDestinationAttached(
-                            composableDestination,
+                            destination,
                             savedState
                         )
                     }
@@ -180,7 +177,7 @@ internal class ComposableDestinationContextReference(
                 LocalNavigationHandle provides navigationHandle
             ) {
                 saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
-                    composableDestination.Render()
+                    destination.Render()
                 }
             }
 
@@ -195,12 +192,12 @@ internal class ComposableDestinationContextReference(
 
 internal fun getComposableDestinationContext(
     instruction: NavigationInstruction.Open,
-    composableDestination: ComposableDestination,
+    destination: ComposableDestination,
     parentContainer: EnroContainerController?
 ): ComposableDestinationContextReference {
     return ComposableDestinationContextReference(
         instruction = instruction,
-        composableDestination = composableDestination,
+        destination = destination,
         parentContainer = parentContainer
     )
 }
@@ -229,35 +226,4 @@ abstract class ComposableDestination: LifecycleOwner,
 
     @Composable
     abstract fun Render()
-}
-
-open class DialogConfiguration(
-    var scrimColor: Color = Color(0x52000000),
-    var animations: AnimationPair = AnimationPair.Attr(
-        enter = android.R.attr.activityOpenEnterAnimation,
-        exit = android.R.attr.activityCloseExitAnimation
-    )
-)
-
-interface DialogDestination {
-    val dialogConfiguration: DialogConfiguration
-}
-
-@SuppressLint("ComposableNaming")
-@Composable
-fun DialogDestination.configureDialog(block: (DialogConfiguration) -> Unit) {
-    remember(true) {
-        block(dialogConfiguration)
-        true
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-class BottomSheetConfiguration(
-    var initialState: ModalBottomSheetValue = ModalBottomSheetValue.HalfExpanded
-) : DialogConfiguration()
-
-@ExperimentalMaterialApi
-interface BottomSheetDestination {
-    val bottomSheetConfiguration: BottomSheetConfiguration
 }

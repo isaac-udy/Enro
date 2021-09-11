@@ -112,8 +112,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val receiverTypes = element.kotlinReceiverTypes()
         val allowedReceiverTypes = listOf(
             "java.lang.Object",
-            "dev.enro.core.compose.DialogDestination",
-            "dev.enro.core.compose.BottomSheetDestination"
+            "dev.enro.core.compose.dialog.DialogDestination",
+            "dev.enro.core.compose.dialog.BottomSheetDestination"
         )
         val isCompatibleReceiver = receiverTypes.all {
             allowedReceiverTypes.contains(it)
@@ -274,8 +274,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val receiverTypes = element.kotlinReceiverTypes()
         val additionalInterfaces = receiverTypes.mapNotNull {
             when (it) {
-                "dev.enro.core.compose.DialogDestination" -> "DialogDestination"
-                "dev.enro.core.compose.BottomSheetDestination" -> "BottomSheetDestination"
+                "dev.enro.core.compose.dialog.DialogDestination" -> "DialogDestination"
+                "dev.enro.core.compose.dialog.BottomSheetDestination" -> "BottomSheetDestination"
                 else -> null
             }
         }.joinToString(separator = "") { ", $it" }
@@ -284,31 +284,31 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
         val additionalImports = receiverTypes.flatMap {
             when (it) {
-                "dev.enro.core.compose.DialogDestination" -> listOf(
-                    "dev.enro.core.compose.DialogDestination",
-                    "dev.enro.core.compose.DialogConfiguration"
+                "dev.enro.core.compose.dialog.DialogDestination" -> listOf(
+                    "dev.enro.core.compose.dialog.DialogDestination",
+                    "dev.enro.core.compose.dialog.DialogConfiguration"
                 )
-                "dev.enro.core.compose.BottomSheetDestination" -> listOf(
-                    "dev.enro.core.compose.BottomSheetDestination",
-                    "dev.enro.core.compose.BottomSheetConfiguration"
+                "dev.enro.core.compose.dialog.BottomSheetDestination" -> listOf(
+                    "dev.enro.core.compose.dialog.BottomSheetDestination",
+                    "dev.enro.core.compose.dialog.BottomSheetConfiguration"
                 )
                 else -> emptyList()
             }
-        }.joinToString(separator = "") { "\n                import $it"}
+        }.joinToString(separator = "") { "\n                import $it" }
 
         val additionalBody = receiverTypes.mapNotNull {
             when (it) {
-                "dev.enro.core.compose.DialogDestination" ->
+                "dev.enro.core.compose.dialog.DialogDestination" ->
                     """
                         override val dialogConfiguration: DialogConfiguration = DialogConfiguration()
                     """.trimIndent()
-                "dev.enro.core.compose.BottomSheetDestination" ->
+                "dev.enro.core.compose.dialog.BottomSheetDestination" ->
                     """
                         override val bottomSheetConfiguration: BottomSheetConfiguration = BottomSheetConfiguration()
                     """.trimIndent()
                 else -> null
             }
-        }.joinToString(separator = "\n")
+        }.joinToString(separator = "") { "\n                    $it" }
 
         processingEnv.filer
             .createResource(
@@ -334,6 +334,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 @Generated("dev.enro.processor.NavigationDestinationProcessor")
                 class $composableWrapperName : ComposableDestination()$additionalInterfaces {
                     $additionalBody
+                    
                     @Composable
                     override fun Render() {
                         ${element.simpleName}$typeParameter()

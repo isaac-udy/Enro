@@ -5,8 +5,11 @@ import dev.enro.core.Navigator
 import dev.enro.core.activity.createActivityNavigator
 import dev.enro.core.compose.*
 import dev.enro.core.compose.ComposeFragmentHostKey
-import dev.enro.core.compose.HiltComposeDialogFragmentHostKey
+import dev.enro.core.compose.dialog.HiltComposeDialogFragmentHostKey
 import dev.enro.core.compose.HiltComposeFragmentHostKey
+import dev.enro.core.compose.dialog.ComposeDialogFragmentHost
+import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
+import dev.enro.core.compose.dialog.HiltComposeDialogFragmentHost
 import dev.enro.core.fragment.createFragmentNavigator
 import dev.enro.core.fragment.internal.HiltSingleFragmentActivity
 import dev.enro.core.fragment.internal.HiltSingleFragmentKey

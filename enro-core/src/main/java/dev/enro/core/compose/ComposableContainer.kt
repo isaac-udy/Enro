@@ -102,9 +102,9 @@ class EnroContainerController internal constructor(
 
     internal val navigationContext: NavigationContext<*> get() = navigationHandle.navigationContext!!
 
-    private val destinations = destinationStorage.destinations.getOrPut(id) { mutableMapOf() }
+    private val destinationContexts = destinationStorage.destinations.getOrPut(id) { mutableMapOf() }
     private val currentDestination get() = mutableBackstack.value.backstack
-        .mapNotNull { destinations[it.instructionId] }
+        .mapNotNull { destinationContexts[it.instructionId] }
         .lastOrNull {
             it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)
         }
@@ -158,8 +158,8 @@ class EnroContainerController internal constructor(
         }
     }
 
-    internal fun getDestination(instruction: NavigationInstruction.Open): ComposableDestinationContextReference {
-        val destinationContextReference = destinations.getOrPut(instruction.instructionId) {
+    internal fun getDestinationContext(instruction: NavigationInstruction.Open): ComposableDestinationContextReference {
+        val destinationContextReference = destinationContexts.getOrPut(instruction.instructionId) {
             val controller = navigationContext.controller
             val composeKey = instruction.navigationKey
             val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
@@ -167,7 +167,7 @@ class EnroContainerController internal constructor(
 
             return@getOrPut getComposableDestinationContext(
                 instruction = instruction,
-                composableDestination = destination,
+                destination = destination,
                 parentContainer = this
             )
         }
@@ -181,7 +181,7 @@ class EnroContainerController internal constructor(
         DisposableEffect(true) {
             onDispose {
                 if(!mutableBackstack.value.backstack.contains(instruction)) {
-                    destinations.remove(instruction.instructionId)
+                    destinationContexts.remove(instruction.instructionId)
                 }
             }
         }
@@ -199,7 +199,7 @@ fun EnroContainer(
     Box(modifier = modifier) {
         backstackState.renderable.forEach {
             key(it.instructionId) {
-                controller.getDestination(it).Render()
+                controller.getDestinationContext(it).Render()
                 controller.bindDestination(it)
             }
         }
