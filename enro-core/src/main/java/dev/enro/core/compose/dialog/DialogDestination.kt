@@ -2,6 +2,8 @@ package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
@@ -11,6 +13,8 @@ import dev.enro.core.compose.EnroContainerController
 
 
 open class DialogConfiguration {
+    internal var isDismissed = mutableStateOf(false)
+
     internal var scrimColor: Color = Color(0x52000000)
     internal var animations: AnimationPair = AnimationPair.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,

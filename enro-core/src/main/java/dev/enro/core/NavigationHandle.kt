@@ -63,3 +63,6 @@ fun NavigationHandle.replaceRoot(key: NavigationKey, vararg childKeys: Navigatio
 
 fun NavigationHandle.close() =
     executeInstruction(NavigationInstruction.Close)
+
+fun NavigationHandle.requestClose() =
+    executeInstruction(NavigationInstruction.RequestClose)

@@ -31,6 +31,10 @@ import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.compose.*
+import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.DialogDestination
+import dev.enro.core.compose.dialog.configureDialog
+import dev.enro.core.result.closeWithResult
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import java.util.*
@@ -210,6 +214,17 @@ class ExampleComposableDialogKey : NavigationKey
 @ExperimentalComposableDestination
 @NavigationDestination(ExampleComposableDialogKey::class)
 fun BottomSheetDestination.ExampleDialogComposable() {
+    val navigationHandle = navigationHandle()
+    val closeConfirmation = registerForNavigationResult<Boolean> {
+        if(it) {
+            navigationHandle.close()
+        }
+    }
+    navigationHandle.configure {
+        onCloseRequested { closeConfirmation.open(ExampleConfirmComposableKey()) }
+    }
+
+
     LazyColumn {
         items(50) {
             ListItem(
@@ -223,6 +238,35 @@ fun BottomSheetDestination.ExampleDialogComposable() {
             )
         }
     }
+}
+
+@Parcelize
+class ExampleConfirmComposableKey : NavigationKey.WithResult<Boolean>
+
+@Composable
+@ExperimentalComposableDestination
+@NavigationDestination(ExampleConfirmComposableKey::class)
+fun DialogDestination.ExampleConfirmComposable() {
+    val navigationHandle = navigationHandle<ExampleConfirmComposableKey>()
+    configureDialog {
+        setScrimColor(Color.Transparent)
+    }
+    AlertDialog(
+        onDismissRequest = { navigationHandle.close() },
+        buttons = {
+            TextButton(onClick = {
+                navigationHandle.close()
+            }) {
+                Text("Close")
+            }
+            TextButton(onClick = {
+                navigationHandle.closeWithResult(true)
+            }) {
+                Text("Confirm")
+            }
+        },
+        title = { Text("Confirm Close") }
+    )
 }
 
 private fun ComposeSimpleExampleKey.getNextDestinationName(): String {

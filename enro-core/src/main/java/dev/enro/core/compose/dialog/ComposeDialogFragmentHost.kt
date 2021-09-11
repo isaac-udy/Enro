@@ -19,10 +19,15 @@ import dev.enro.core.*
 import kotlinx.parcelize.Parcelize
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.lerp
 import androidx.core.animation.addListener
 import androidx.core.view.isVisible
+import androidx.lifecycle.coroutineScope
 import dev.enro.core.compose.*
+import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 
 
@@ -131,6 +136,7 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
             super.dismiss()
             return
         }
+        dialogConfiguration.isDismissed.value = true
         view.isVisible = true
         view.clearAnimation()
         view.animateToColor(Color.Transparent)
@@ -148,7 +154,7 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
                 setOnKeyListener { _, keyCode, event ->
                     if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
                         navigationContext.leafContext().getNavigationHandleViewModel()
-                            .internalOnCloseRequested()
+                            .requestClose()
                         return@setOnKeyListener true
                     }
                     return@setOnKeyListener false

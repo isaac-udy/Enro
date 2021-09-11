@@ -1,26 +1,22 @@
 package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import dev.enro.core.AnimationPair
-import dev.enro.core.close
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.EnroContainerController
-import dev.enro.core.compose.navigationHandle
 import dev.enro.core.getNavigationHandle
+import dev.enro.core.requestClose
 
 @OptIn(ExperimentalMaterialApi::class)
 class BottomSheetConfiguration : DialogConfiguration() {
     internal var initialState: ModalBottomSheetValue = ModalBottomSheetValue.HalfExpanded
     internal var snapToInitialState: Boolean = false
+    internal lateinit var bottomSheetState: ModalBottomSheetState
 
     class Builder internal constructor(
         private val bottomSheetConfiguration: BottomSheetConfiguration
@@ -52,6 +48,8 @@ interface BottomSheetDestination {
     val bottomSheetConfiguration: BottomSheetConfiguration
 }
 
+val BottomSheetDestination.bottomSheetState get() = bottomSheetConfiguration.bottomSheetState
+
 @SuppressLint("ComposableNaming")
 @Composable
 fun BottomSheetDestination.configureBottomSheet(block: BottomSheetConfiguration.Builder.() -> Unit) {
@@ -68,16 +66,25 @@ internal fun EnroBottomSheetContainer(
     controller: EnroContainerController,
     destination: BottomSheetDestination
 ) {
-    val navigation = navigationHandle()
     val state = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         confirmStateChange = {
             if (it == ModalBottomSheetValue.Hidden) {
-                navigation.close()
+                val isDismissed = destination.bottomSheetConfiguration.isDismissed.value
+                if(!isDismissed) {
+                    controller.activeContext?.getNavigationHandle()?.requestClose()
+                    return@rememberModalBottomSheetState destination.bottomSheetConfiguration.isDismissed.value
+                }
             }
             true
         }
     )
+    destination.bottomSheetConfiguration.bottomSheetState = state
+    LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
+        if(destination.bottomSheetConfiguration.isDismissed.value) {
+            state.hide()
+        }
+    }
 
     ModalBottomSheetLayout(
         sheetState = state,
