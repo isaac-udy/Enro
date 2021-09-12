@@ -65,7 +65,7 @@ internal open class NavigationHandleViewModel(
     private fun registerOnBackPressedListener(context: NavigationContext<out Any>) {
         if (context is ActivityContext<out FragmentActivity>) {
             context.activity.addOnBackPressedListener {
-                context.leafContext().getNavigationHandleViewModel().internalOnCloseRequested()
+                context.leafContext().getNavigationHandleViewModel().requestClose()
             }
         }
     }
@@ -85,10 +85,13 @@ internal open class NavigationHandleViewModel(
         pendingInstruction = null
 
         when (instruction) {
-            NavigationInstruction.Close -> context.controller.close(context.leafContext())
             is NavigationInstruction.Open -> {
                 context.controller.open(context, instruction)
             }
+            NavigationInstruction.RequestClose -> {
+                internalOnCloseRequested()
+            }
+            NavigationInstruction.Close -> context.controller.close(context.leafContext())
         }
     }
 

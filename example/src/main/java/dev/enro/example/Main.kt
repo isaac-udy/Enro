@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
 
     private val navigation by navigationHandle<MainKey> {
         container(R.id.homeContainer) {
-            it is Home || it is SimpleExampleKey || (it is ComposeSimpleExampleKey && it.name == "A")
+            it is Home || it is SimpleExampleKey || it is ComposeSimpleExampleKey
         }
     }
 

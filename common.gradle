@@ -69,5 +69,6 @@ ext.useCompose = {
         implementation deps.compose.viewmodel
         implementation deps.compose.livedata
         implementation deps.compose.activity
+        implementation deps.compose.material
     }
 }

@@ -1,5 +1,6 @@
 package dev.enro.core.compose
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
@@ -101,14 +102,14 @@ class EnroContainerController internal constructor(
 
     internal val navigationContext: NavigationContext<*> get() = navigationHandle.navigationContext!!
 
-    private val destinations = destinationStorage.destinations.getOrPut(id) { mutableMapOf() }
+    private val destinationContexts = destinationStorage.destinations.getOrPut(id) { mutableMapOf() }
     private val currentDestination get() = mutableBackstack.value.backstack
-        .mapNotNull { destinations[it.instructionId] }
+        .mapNotNull { destinationContexts[it.instructionId] }
         .lastOrNull {
             it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)
         }
 
-    internal val activeContext: NavigationContext<*>? get() = currentDestination?.getNavigationHandleViewModel()?.navigationContext
+    val activeContext: NavigationContext<*>? get() = currentDestination?.getNavigationHandleViewModel()?.navigationContext
 
     internal fun setInitialBackstack(initialBackstack: EnroContainerBackstackState) {
         if(::mutableBackstack.isInitialized) throw IllegalStateException()
@@ -157,9 +158,8 @@ class EnroContainerController internal constructor(
         }
     }
 
-    @Composable
-    internal fun getDestination(instruction: NavigationInstruction.Open): ComposableDestinationContextReference {
-        val destinationContextReference = destinations.getOrPut(instruction.instructionId) {
+    internal fun getDestinationContext(instruction: NavigationInstruction.Open): ComposableDestinationContextReference {
+        val destinationContextReference = destinationContexts.getOrPut(instruction.instructionId) {
             val controller = navigationContext.controller
             val composeKey = instruction.navigationKey
             val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
@@ -167,19 +167,24 @@ class EnroContainerController internal constructor(
 
             return@getOrPut getComposableDestinationContext(
                 instruction = instruction,
-                composableDestination = destination,
+                destination = destination,
                 parentContainer = this
             )
         }
         destinationContextReference.parentContainer = this@EnroContainerController
+        return destinationContextReference
+    }
+
+    @SuppressLint("ComposableNaming")
+    @Composable
+    internal fun bindDestination(instruction: NavigationInstruction.Open) {
         DisposableEffect(true) {
             onDispose {
                 if(!mutableBackstack.value.backstack.contains(instruction)) {
-                    destinations.remove(instruction.instructionId)
+                    destinationContexts.remove(instruction.instructionId)
                 }
             }
         }
-        return destinationContextReference
     }
 }
 
@@ -194,7 +199,8 @@ fun EnroContainer(
     Box(modifier = modifier) {
         backstackState.renderable.forEach {
             key(it.instructionId) {
-                controller.getDestination(it).Render()
+                controller.getDestinationContext(it).Render()
+                controller.bindDestination(it)
             }
         }
     }

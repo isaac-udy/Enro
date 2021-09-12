@@ -112,7 +112,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val receiverTypes = element.kotlinReceiverTypes()
         val allowedReceiverTypes = listOf(
             "java.lang.Object",
-            "dev.enro.core.compose.DialogDestination"
+            "dev.enro.core.compose.dialog.DialogDestination",
+            "dev.enro.core.compose.dialog.BottomSheetDestination"
         )
         val isCompatibleReceiver = receiverTypes.all {
             allowedReceiverTypes.contains(it)
@@ -273,7 +274,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val receiverTypes = element.kotlinReceiverTypes()
         val additionalInterfaces = receiverTypes.mapNotNull {
             when (it) {
-                "dev.enro.core.compose.DialogDestination" -> "DialogDestination"
+                "dev.enro.core.compose.dialog.DialogDestination" -> "DialogDestination"
+                "dev.enro.core.compose.dialog.BottomSheetDestination" -> "BottomSheetDestination"
                 else -> null
             }
         }.joinToString(separator = "") { ", $it" }
@@ -282,23 +284,42 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
         val additionalImports = receiverTypes.flatMap {
             when (it) {
-                "dev.enro.core.compose.DialogDestination" -> listOf(
-                    "dev.enro.core.compose.DialogDestination",
-                    "dev.enro.core.compose.DialogConfiguration"
+                "dev.enro.core.compose.dialog.DialogDestination" -> listOf(
+                    "dev.enro.core.compose.dialog.DialogDestination",
+                    "dev.enro.core.compose.dialog.DialogConfiguration"
+                )
+                "dev.enro.core.compose.dialog.BottomSheetDestination" -> listOf(
+                    "dev.enro.core.compose.dialog.BottomSheetDestination",
+                    "dev.enro.core.compose.dialog.BottomSheetConfiguration",
+                    "androidx.compose.material.ExperimentalMaterialApi"
                 )
                 else -> emptyList()
             }
-        }.joinToString(separator = "") { "\n                import $it"}
+        }.joinToString(separator = "") { "\n                import $it" }
 
-        val additionalBody = receiverTypes.mapNotNull {
+        val additionalAnnotations = receiverTypes.mapNotNull {
             when (it) {
-                "dev.enro.core.compose.DialogDestination" ->
+                "dev.enro.core.compose.dialog.BottomSheetDestination" ->
                     """
-                        override val dialogConfiguration: DialogConfiguration = DialogConfiguration()
+                        @OptIn(ExperimentalMaterialApi::class)
                     """.trimIndent()
                 else -> null
             }
-        }.joinToString(separator = "\n")
+        }.joinToString(separator = "") { "\n                  $it" }
+
+        val additionalBody = receiverTypes.mapNotNull {
+            when (it) {
+                "dev.enro.core.compose.dialog.DialogDestination" ->
+                    """
+                        override val dialogConfiguration: DialogConfiguration = DialogConfiguration()
+                    """.trimIndent()
+                "dev.enro.core.compose.dialog.BottomSheetDestination" ->
+                    """
+                        override val bottomSheetConfiguration: BottomSheetConfiguration = BottomSheetConfiguration()
+                    """.trimIndent()
+                else -> null
+            }
+        }.joinToString(separator = "") { "\n                    $it" }
 
         processingEnv.filer
             .createResource(
@@ -321,9 +342,11 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 import ${ClassNames.composableDestination}
                 import ${keyType.getElementName()}
                 
+                $additionalAnnotations
                 @Generated("dev.enro.processor.NavigationDestinationProcessor")
                 class $composableWrapperName : ComposableDestination()$additionalInterfaces {
                     $additionalBody
+                    
                     @Composable
                     override fun Render() {
                         ${element.simpleName}$typeParameter()

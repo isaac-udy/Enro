@@ -39,6 +39,7 @@ sealed class NavigationInstruction {
     }
 
     object Close : NavigationInstruction()
+    object RequestClose : NavigationInstruction()
 
     companion object {
         @Suppress("FunctionName")

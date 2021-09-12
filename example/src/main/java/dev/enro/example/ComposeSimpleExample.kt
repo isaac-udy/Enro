@@ -1,17 +1,14 @@
 package dev.enro.example
 
-import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -23,11 +20,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationKey
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.forward
-import dev.enro.core.replace
-import dev.enro.core.replaceRoot
+import dev.enro.core.*
+import dev.enro.core.compose.*
+import dev.enro.core.compose.dialog.*
 import kotlinx.parcelize.Parcelize
 import java.util.*
 import javax.inject.Inject
@@ -69,6 +64,7 @@ class ComposeSimpleExampleViewModel @Inject constructor(
 @ExperimentalComposableDestination
 @NavigationDestination(ComposeSimpleExampleKey::class)
 fun ComposeSimpleExample() {
+
     val navigation = navigationHandle<ComposeSimpleExampleKey>()
     val scrollState = rememberScrollState()
     val viewModel = viewModel<ComposeSimpleExampleViewModel>()
@@ -191,11 +187,42 @@ fun ComposeSimpleExample() {
                         }) {
                         Text("Replace Root")
                     }
+
+                    OutlinedButton(
+                        modifier = Modifier.padding(top = 6.dp, bottom = 6.dp),
+                        onClick = {
+                            val next = ComposeSimpleExampleKey(
+                                name = navigation.key.getNextDestinationName(),
+                                launchedFrom = navigation.key.name,
+                                backstack = navigation.key.backstack + navigation.key.name
+                            )
+                            navigation.forward(ExampleComposableBottomSheetKey(NavigationInstruction.Forward(next)))
+
+                        }) {
+                        Text("Bottom Sheet")
+                    }
                 }
             }
         }
     }
+}
 
+@Parcelize
+class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open) : NavigationKey
+
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
+@Composable
+@ExperimentalComposableDestination
+@NavigationDestination(ExampleComposableBottomSheetKey::class)
+fun BottomSheetDestination.ExampleDialogComposable() {
+    val navigationHandle = navigationHandle<ExampleComposableBottomSheetKey>()
+    EnroContainer(
+        controller = rememberEnroContainerController(
+            initialState = listOf(navigationHandle.key.innerKey),
+            accept = { false },
+            emptyBehavior = EmptyBehavior.CloseParent
+        )
+    )
 }
 
 private fun ComposeSimpleExampleKey.getNextDestinationName(): String {
