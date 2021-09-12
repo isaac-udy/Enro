@@ -21,6 +21,18 @@ data class SimpleExampleKey(
 @NavigationDestination(SimpleExampleKey::class)
 class SimpleExampleFragment() : Fragment() {
 
+    private val container by navigationContainer(
+        containerId = R.id.embeddedFragment,
+        root = {
+            EmbeddedKey(
+                name = navigation.key.name,
+                launchedFrom = navigation.key.launchedFrom,
+                backstack = navigation.key.backstack,
+            )
+        },
+        accept = { false },
+        emptyBehavior = EmptyBehavior.CloseParent
+    )
     private val navigation by navigationHandle<SimpleExampleKey>()
 
     override fun onCreateView(

@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="#FFFFFFFF"
     android:padding="16dp">
 
@@ -24,8 +25,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/example_content"
-        android:layout_marginTop="16dp"
-        android:textSize="16sp"
+        android:layout_marginTop="6dp"
+        android:textSize="11sp"
         app:layout_constraintStart_toStartOf="@+id/title"
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
@@ -35,7 +36,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Current Destination:"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="0dp"
         android:fontFamily="serif-monospace"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -59,7 +60,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Launched From:"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="6dp"
         android:fontFamily="serif-monospace"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -83,7 +84,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Current Stack:"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="6dp"
         android:fontFamily="serif-monospace"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -107,7 +108,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/forwardComposeButton"
+        app:layout_constraintTop_toBottomOf="@id/currentStack"
         android:text="Forward"/>
 
     <Button
@@ -115,8 +116,8 @@
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/replaceButton"
+        app:layout_constraintStart_toEndOf="@id/forwardButton"
+        app:layout_constraintTop_toTopOf="@+id/forwardButton"
         android:text="Forward (Compose)"/>
 
     <Button
@@ -124,8 +125,8 @@
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/replaceRootButton"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/forwardButton"
         android:text="Replace"/>
 
     <Button
@@ -133,8 +134,16 @@
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/replaceButton"
+        app:layout_constraintTop_toTopOf="@id/replaceButton"
         android:text="Replace Root"/>
+
+    <androidx.fragment.app.FragmentContainerView
+        tools:context="dev.enro.example.EmbeddedFragment"
+        android:id="@+id/embeddedFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/replaceButton"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
