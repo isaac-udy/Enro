@@ -290,11 +290,22 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 )
                 "dev.enro.core.compose.dialog.BottomSheetDestination" -> listOf(
                     "dev.enro.core.compose.dialog.BottomSheetDestination",
-                    "dev.enro.core.compose.dialog.BottomSheetConfiguration"
+                    "dev.enro.core.compose.dialog.BottomSheetConfiguration",
+                    "androidx.compose.material.ExperimentalMaterialApi"
                 )
                 else -> emptyList()
             }
         }.joinToString(separator = "") { "\n                import $it" }
+
+        val additionalAnnotations = receiverTypes.mapNotNull {
+            when (it) {
+                "dev.enro.core.compose.dialog.BottomSheetDestination" ->
+                    """
+                        @OptIn(ExperimentalMaterialApi::class)
+                    """.trimIndent()
+                else -> null
+            }
+        }.joinToString(separator = "") { "\n                  $it" }
 
         val additionalBody = receiverTypes.mapNotNull {
             when (it) {
@@ -331,6 +342,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 import ${ClassNames.composableDestination}
                 import ${keyType.getElementName()}
                 
+                $additionalAnnotations
                 @Generated("dev.enro.processor.NavigationDestinationProcessor")
                 class $composableWrapperName : ComposableDestination()$additionalInterfaces {
                     $additionalBody

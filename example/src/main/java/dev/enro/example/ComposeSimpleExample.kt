@@ -1,29 +1,19 @@
 package dev.enro.example
 
-import android.annotation.SuppressLint
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,8 +23,6 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.compose.*
 import dev.enro.core.compose.dialog.*
-import dev.enro.core.result.closeWithResult
-import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import java.util.*
 import javax.inject.Inject
@@ -155,9 +143,7 @@ fun ComposeSimpleExample() {
                                 launchedFrom = navigation.key.name,
                                 backstack = navigation.key.backstack + navigation.key.name
                             )
-                            navigation.forward(ExampleComposableDialogKey(
-                                NavigationInstruction.Forward(next)
-                            ))
+                            navigation.forward(next)
                         }) {
                         Text("Forward")
                     }
@@ -201,6 +187,20 @@ fun ComposeSimpleExample() {
                         }) {
                         Text("Replace Root")
                     }
+
+                    OutlinedButton(
+                        modifier = Modifier.padding(top = 6.dp, bottom = 6.dp),
+                        onClick = {
+                            val next = ComposeSimpleExampleKey(
+                                name = navigation.key.getNextDestinationName(),
+                                launchedFrom = navigation.key.name,
+                                backstack = navigation.key.backstack + navigation.key.name
+                            )
+                            navigation.forward(ExampleComposableBottomSheetKey(NavigationInstruction.Forward(next)))
+
+                        }) {
+                        Text("Bottom Sheet")
+                    }
                 }
             }
         }
@@ -208,55 +208,20 @@ fun ComposeSimpleExample() {
 }
 
 @Parcelize
-class ExampleComposableDialogKey(val innerKey: NavigationInstruction.Open) : NavigationKey
+class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open) : NavigationKey
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
 @ExperimentalComposableDestination
-@NavigationDestination(ExampleComposableDialogKey::class)
+@NavigationDestination(ExampleComposableBottomSheetKey::class)
 fun BottomSheetDestination.ExampleDialogComposable() {
-    val navigationHandle = navigationHandle<ExampleComposableDialogKey>()
-    val closeConfirmation = registerForNavigationResult<Boolean> {
-        if(it) {
-            navigationHandle.close()
-        }
-    }
-    navigationHandle.configure {
-        onCloseRequested { closeConfirmation.open(ExampleConfirmComposableKey()) }
-    }
-
+    val navigationHandle = navigationHandle<ExampleComposableBottomSheetKey>()
     EnroContainer(
         controller = rememberEnroContainerController(
             initialState = listOf(navigationHandle.key.innerKey),
             accept = { false },
             emptyBehavior = EmptyBehavior.CloseParent
         )
-    )
-}
-
-@Parcelize
-class ExampleConfirmComposableKey : NavigationKey.WithResult<Boolean>
-
-@Composable
-@ExperimentalComposableDestination
-@NavigationDestination(ExampleConfirmComposableKey::class)
-fun DialogDestination.ExampleConfirmComposable() {
-    val navigationHandle = navigationHandle<ExampleConfirmComposableKey>()
-    AlertDialog(
-        onDismissRequest = { navigationHandle.close() },
-        buttons = {
-            TextButton(onClick = {
-                navigationHandle.close()
-            }) {
-                Text("Close")
-            }
-            TextButton(onClick = {
-                navigationHandle.closeWithResult(true)
-            }) {
-                Text("Confirm")
-            }
-        },
-        title = { Text("Confirm Close") }
     )
 }
 

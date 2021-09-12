@@ -13,7 +13,7 @@ import dev.enro.core.compose.EnroContainerController
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.requestClose
 
-@OptIn(ExperimentalMaterialApi::class)
+@ExperimentalMaterialApi
 class BottomSheetConfiguration : DialogConfiguration() {
     internal var initialState: ModalBottomSheetValue = ModalBottomSheetValue.HalfExpanded
     internal var animatesToInitialState: Boolean = true
@@ -53,13 +53,15 @@ class BottomSheetConfiguration : DialogConfiguration() {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@ExperimentalMaterialApi
 interface BottomSheetDestination {
     val bottomSheetConfiguration: BottomSheetConfiguration
 }
 
+@ExperimentalMaterialApi
 val BottomSheetDestination.bottomSheetState get() = bottomSheetConfiguration.bottomSheetState
 
+@ExperimentalMaterialApi
 @SuppressLint("ComposableNaming")
 @Composable
 fun BottomSheetDestination.configureBottomSheet(block: BottomSheetConfiguration.Builder.() -> Unit) {

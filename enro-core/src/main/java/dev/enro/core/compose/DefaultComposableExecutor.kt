@@ -1,5 +1,6 @@
 package dev.enro.core.compose
 
+import androidx.compose.material.ExperimentalMaterialApi
 import dev.enro.core.*
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
@@ -11,6 +12,7 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
     opensType = ComposableDestination::class,
     keyType = NavigationKey::class
 ) {
+    @OptIn(ExperimentalMaterialApi::class)
     override fun open(args: ExecutorArgs<out Any, out ComposableDestination, out NavigationKey>) {
         val host = args.fromContext.composeHostFor(args.key)
 
