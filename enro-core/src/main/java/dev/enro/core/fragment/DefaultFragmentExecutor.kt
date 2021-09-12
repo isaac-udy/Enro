@@ -172,14 +172,20 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
             if (previousFragmentInContainer != null && previousFragmentInContainer != previousFragment) {
                 if(previousFragmentInContainer.isDetached) attach(previousFragmentInContainer)
+                val contextIsPrimaryFragment = context.fragment.parentFragmentManager.primaryNavigationFragment == context.fragment
+                if(contextIsPrimaryFragment) {
+                    setPrimaryNavigationFragment(previousFragmentInContainer)
+                }
             }
 
             if(!differentFragmentManagers) setPrimaryNavigationFragment(previousFragment)
         }
 
         if(previousFragment != null && differentFragmentManagers) {
-            previousFragment.parentFragmentManager.commitNow {
-                setPrimaryNavigationFragment(previousFragment)
+            if(previousFragment.parentFragmentManager.primaryNavigationFragment != previousFragment) {
+                previousFragment.parentFragmentManager.commitNow {
+                    setPrimaryNavigationFragment(previousFragment)
+                }
             }
         }
     }

@@ -5,8 +5,10 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
+import dev.enro.core.EmptyBehavior
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationContainer
 import dev.enro.core.navigationHandle
@@ -21,12 +23,33 @@ class MainKey : NavigationKey
 @NavigationDestination(MainKey::class)
 class MainActivity : AppCompatActivity() {
 
-    private val homeContainer by navigationContainer(R.id.homeContainer, { Home() },  {
-        it is Home || it is SimpleExampleKey || it is ComposeSimpleExampleKey
-    })
-    private val featuresContainer by navigationContainer(R.id.featuresContainer, { Features() }, { false })
+    private val homeContainer by navigationContainer(
+        containerId = R.id.homeContainer,
+        root = { Home() },
+        accept = {
+            it is Home || it is SimpleExampleKey || it is ComposeSimpleExampleKey
+        },
+        emptyBehavior = EmptyBehavior.CloseParent
+    )
+    private val featuresContainer by navigationContainer(
+        containerId = R.id.featuresContainer,
+        root = { Features() },
+        accept = { false },
+        emptyBehavior = EmptyBehavior.Action {
+            findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home
+            true
+        }
+    )
 
-    private val profileContainer by navigationContainer(R.id.profileContainer, { Profile() }, { false })
+    private val profileContainer by navigationContainer(
+        containerId = R.id.profileContainer,
+        root = { Profile() },
+        accept = { false },
+        emptyBehavior = EmptyBehavior.Action {
+            findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home
+            true
+        }
+    )
 
     private val navigation by navigationHandle<MainKey>()
 
@@ -53,6 +76,9 @@ class MainActivity : AppCompatActivity() {
                     else -> return@setOnNavigationItemSelectedListener false
                 }
                 return@setOnNavigationItemSelectedListener true
+            }
+            if(savedInstanceState == null) {
+                bottomNavigation.selectedItemId = R.id.home
             }
         }
     }
