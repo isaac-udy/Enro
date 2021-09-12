@@ -3,7 +3,9 @@ package dev.enro.core.controller.interceptor
 import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
+import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
 import dev.enro.core.compose.ComposeFragmentHostKey
+import dev.enro.core.compose.dialog.HiltComposeDialogFragmentHostKey
 import dev.enro.core.compose.HiltComposeFragmentHostKey
 import dev.enro.core.fragment.internal.HiltSingleFragmentKey
 import dev.enro.core.fragment.internal.SingleFragmentKey
@@ -47,6 +49,14 @@ class HiltInstructionInterceptor : NavigationInstructionInterceptor {
                 navigationKey = HiltComposeFragmentHostKey(
                     instruction = navigationKey.instruction,
                     fragmentContainerId = navigationKey.fragmentContainerId
+                )
+            )
+        }
+
+        if(navigationKey is ComposeDialogFragmentHostKey && isHiltActivity) {
+            return instruction.internal.copy(
+                navigationKey = HiltComposeDialogFragmentHostKey(
+                    instruction = navigationKey.instruction,
                 )
             )
         }

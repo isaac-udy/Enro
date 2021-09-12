@@ -1,4 +1,5 @@
 androidLibrary()
+useCompose()
 apply plugin: "kotlin-kapt"
 publishAndroidModule("dev.enro", "enro")
 

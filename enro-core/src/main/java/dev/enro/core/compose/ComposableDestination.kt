@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.fragment.app.FragmentActivity
@@ -13,6 +14,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
+import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.viewmodel.EnroViewModelFactory
@@ -20,7 +22,7 @@ import dev.enro.viewmodel.EnroViewModelFactory
 
 internal class ComposableDestinationContextReference(
     val instruction: NavigationInstruction.Open,
-    val composableDestination: ComposableDestination,
+    val destination: ComposableDestination,
     internal var parentContainer: EnroContainerController?
 ) : ViewModel(),
     LifecycleOwner,
@@ -47,7 +49,7 @@ internal class ComposableDestinationContextReference(
         0 to ViewModelProvider.NewInstanceFactory()
 
     init {
-        composableDestination.contextReference = this
+        destination.contextReference = this
 
         savedStateController.performRestore(savedState)
         lifecycleRegistry.addObserver(object : LifecycleEventObserver {
@@ -57,14 +59,14 @@ internal class ComposableDestinationContextReference(
                         parentSavedStateRegistry.registerSavedStateProvider(instruction.instructionId) {
                             val outState = Bundle()
                             navigationController.onComposeContextSaved(
-                                composableDestination,
+                                destination,
                                 outState
                             )
                             savedStateController.performSave(outState)
                             outState
                         }
                         navigationController.onComposeDestinationAttached(
-                            composableDestination,
+                            destination,
                             savedState
                         )
                     }
@@ -104,9 +106,11 @@ internal class ComposableDestinationContextReference(
         return remember(parentViewModelStoreOwner.hashCode()) {
             if (parentViewModelStoreOwner.hashCode() == defaultViewModelFactory.first) return@remember defaultViewModelFactory
 
-            val parentDefaultViewModelFactory =
-                (parentViewModelStoreOwner as? HasDefaultViewModelProviderFactory)?.defaultViewModelProviderFactory
-            val factory = if (parentDefaultViewModelFactory is HiltViewModelFactory) {
+            val generatedComponentManagerHolderClass = kotlin.runCatching {
+                GeneratedComponentManagerHolder::class.java
+            }.getOrNull()
+
+            val factory = if (generatedComponentManagerHolderClass != null && activity is GeneratedComponentManagerHolder) {
                 HiltViewModelFactory.createInternal(
                     activity,
                     this,
@@ -117,7 +121,10 @@ internal class ComposableDestinationContextReference(
                 SavedStateViewModelFactory(activity.application, this, savedState)
             }
 
-            return@remember parentViewModelStoreOwner.hashCode() to EnroViewModelFactory(navigationHandle, factory)
+            return@remember parentViewModelStoreOwner.hashCode() to EnroViewModelFactory(
+                navigationHandle,
+                factory
+            )
         }
     }
 
@@ -138,7 +145,7 @@ internal class ComposableDestinationContextReference(
 
         val isVisible = instruction == backstackState.visible
         val animations = remember(isVisible) {
-            if( backstackState.skipAnimations) return@remember DefaultAnimations.none
+            if (backstackState.skipAnimations) return@remember DefaultAnimations.none
             animationsFor(
                 parentContext,
                 backstackState.lastInstruction
@@ -174,7 +181,7 @@ internal class ComposableDestinationContextReference(
                 LocalNavigationHandle provides navigationHandle
             ) {
                 saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
-                    composableDestination.Render()
+                    destination.Render()
                 }
             }
 
@@ -187,21 +194,22 @@ internal class ComposableDestinationContextReference(
     }
 }
 
-@Composable
 internal fun getComposableDestinationContext(
     instruction: NavigationInstruction.Open,
-    composableDestination: ComposableDestination,
+    destination: ComposableDestination,
     parentContainer: EnroContainerController?
 ): ComposableDestinationContextReference {
     return ComposableDestinationContextReference(
         instruction = instruction,
-        composableDestination = composableDestination,
+        destination = destination,
         parentContainer = parentContainer
     )
 }
 
-abstract class ComposableDestination : LifecycleOwner, ViewModelStoreOwner,
-    SavedStateRegistryOwner {
+abstract class ComposableDestination: LifecycleOwner,
+    ViewModelStoreOwner,
+    SavedStateRegistryOwner,
+    HasDefaultViewModelProviderFactory {
     internal lateinit var contextReference: ComposableDestinationContextReference
 
     override fun getLifecycle(): Lifecycle {
@@ -214,6 +222,10 @@ abstract class ComposableDestination : LifecycleOwner, ViewModelStoreOwner,
 
     override fun getSavedStateRegistry(): SavedStateRegistry {
         return contextReference.savedStateRegistry
+    }
+
+    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
+        return contextReference.defaultViewModelProviderFactory
     }
 
     @Composable

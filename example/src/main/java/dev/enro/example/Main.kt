@@ -5,6 +5,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
+import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationContainer
@@ -16,23 +17,18 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 class MainKey : NavigationKey
 
+@AndroidEntryPoint
 @NavigationDestination(MainKey::class)
 class MainActivity : AppCompatActivity() {
 
     private val homeContainer by navigationContainer(R.id.homeContainer, { Home() },  {
-        it is Home || it is SimpleExampleKey || (it is ComposeSimpleExampleKey && it.name == "A")
+        it is Home || it is SimpleExampleKey || it is ComposeSimpleExampleKey
     })
     private val featuresContainer by navigationContainer(R.id.featuresContainer, { Features() }, { false })
 
     private val profileContainer by navigationContainer(R.id.profileContainer, { Profile() }, { false })
 
     private val navigation by navigationHandle<MainKey>()
-
-//    private val mutlistack by multistackController {
-//        container(R.id.homeContainer, Home())
-//        container(R.id.featuresContainer, Features())
-//        container(R.id.profileContainer, Profile())
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,15 +54,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 return@setOnNavigationItemSelectedListener true
             }
-
-//            mutlistack.activeContainer.observe(this@MainActivity, Observer { selectedContainer ->
-//                bottomNavigation.selectedItemId = when (selectedContainer) {
-//                    R.id.homeContainer -> R.id.home
-//                    R.id.featuresContainer -> R.id.features
-//                    R.id.profileContainer -> R.id.profile
-//                    else -> 0
-//                }
-//            })
         }
     }
 }

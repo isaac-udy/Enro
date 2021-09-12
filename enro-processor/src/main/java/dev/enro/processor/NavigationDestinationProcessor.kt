@@ -10,10 +10,7 @@ import net.ltgt.gradle.incap.IncrementalAnnotationProcessorType
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
-import javax.lang.model.element.Element
-import javax.lang.model.element.ElementKind
-import javax.lang.model.element.Modifier
-import javax.lang.model.element.TypeElement
+import javax.lang.model.element.*
 import javax.tools.Diagnostic
 import javax.tools.StandardLocation
 
@@ -47,14 +44,9 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
     private fun generateDestinationForClass(element: Element) {
         if (element.kind != ElementKind.CLASS) return
-        val destinationName = element.simpleName
-        val destinationPackage = processingEnv.elementUtils.getPackageOf(element).toString()
         val annotation = element.getAnnotation(NavigationDestination::class.java)
 
-        val keyType =
-            processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
-        val keyName = keyType.simpleName
-        val keyPackage = processingEnv.elementUtils.getPackageOf(keyType).toString()
+        val keyType = processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
 
         val bindingName = element.getElementName()
             .replace(".", "_")
@@ -68,9 +60,9 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 AnnotationSpec.builder(GeneratedNavigationBinding::class.java)
                     .addMember(
                         "destination",
-                        CodeBlock.of("\"$destinationPackage.$destinationName\"")
+                        CodeBlock.of("\"${element.getElementName()}\"")
                     )
-                    .addMember("navigationKey", CodeBlock.of("\"$keyPackage.$keyName\""))
+                    .addMember("navigationKey", CodeBlock.of("\"${keyType.getElementName()}\""))
                     .build()
             )
             .addGeneratedAnnotation()
@@ -100,6 +92,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
     private fun generateDestinationForFunction(element: Element) {
         if (element.kind != ElementKind.METHOD) return
+        element as ExecutableElement
+
         element.annotationMirrors
             .firstOrNull {
                 it.annotationType.asElement()
@@ -107,25 +101,47 @@ class NavigationDestinationProcessor : BaseProcessor() {
             }
             ?: throw java.lang.IllegalStateException("Function ${element.getElementName()} was marked as @NavigationDestination, but was not marked as @Composable")
 
-        val annotation = element.getAnnotation(NavigationDestination::class.java)
 
-        val enableComposableDestination = element.getAnnotation(ExperimentalComposableDestination::class.java) != null
-//                  TODO: Allow compiler opt-in somehow?
-//                || processingEnv.options.entries.any {
-//                    it.key == "dev.enro.experimentalComposableDestinations" && (it.value == "enabled" || it.value == "true")
-//                }
+        val isStatic = element.modifiers.contains(Modifier.STATIC)
+        val parentIsObject = element.enclosingElement.enclosedElements.any { it.simpleName.toString() == "INSTANCE" }
+        if(!isStatic && !parentIsObject) {
+            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "Function ${element.getElementName()} is an instance function, which is not allowed.")
+            return
+        }
+
+        val receiverTypes = element.kotlinReceiverTypes()
+        val allowedReceiverTypes = listOf(
+            "java.lang.Object",
+            "dev.enro.core.compose.dialog.DialogDestination",
+            "dev.enro.core.compose.dialog.BottomSheetDestination"
+        )
+        val isCompatibleReceiver = receiverTypes.all {
+            allowedReceiverTypes.contains(it)
+        }
+
+        val hasNoParameters = element.parameters.size == 0
+        val hasAllowedParameters = element.parameters.filter { !it.simpleName.startsWith("\$this") }.all {
+            false
+        }
+
+        val parametersAreValid = (hasNoParameters || hasAllowedParameters) && isCompatibleReceiver
+        if(!parametersAreValid) {
+            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "Function ${element.getElementName()} has parameters which is not allowed.")
+            return
+        }
+
+        val annotation = element.getAnnotation(NavigationDestination::class.java)
+        val enableComposableDestination =
+            element.getAnnotation(ExperimentalComposableDestination::class.java) != null
 
         if(!enableComposableDestination) {
             val shortMessage = "Failed to create NavigationDestination for function ${element.getElementName()}. Using @Composable functions as @NavigationDestinations is an experimental feature an must be explicitly enabled."
             processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, shortMessage)
             processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "To enable @Composable @NavigationDestinations annotate the @Composable function @NavigationDestination with the @ExperimentalComposableDestination annotation")
-//            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "To enable @Composable @NavigationDestinations per-module: Set the kapt option 'dev.enro.experimentalComposableDestinations' as 'enabled'. In your build.gradle: kapt { arguments { arg(\"dev.enro.experimentalComposableDestinations\", \"enabled\") } }")
             throw RuntimeException(shortMessage)
         }
         val keyType =
             processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
-        val keyName = keyType.simpleName
-        val keyPackage = processingEnv.elementUtils.getPackageOf(keyType).toString()
 
         val composableWrapper = createComposableWrapper(element, keyType)
 
@@ -145,7 +161,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     )
                     .addMember(
                         "navigationKey",
-                        CodeBlock.of("\"$keyPackage.$keyName\"")
+                        CodeBlock.of("\"${keyType.getElementName()}\"")
                     )
                     .build()
             )
@@ -249,33 +265,91 @@ class NavigationDestinationProcessor : BaseProcessor() {
     }
 
     private fun createComposableWrapper(
-        element: Element,
+        element: ExecutableElement,
         keyType: Element
     ): String {
         val composableWrapperName =
             element.getElementName().replace(".", "_") + "_ComposableDestination"
 
+        val receiverTypes = element.kotlinReceiverTypes()
+        val additionalInterfaces = receiverTypes.mapNotNull {
+            when (it) {
+                "dev.enro.core.compose.dialog.DialogDestination" -> "DialogDestination"
+                "dev.enro.core.compose.dialog.BottomSheetDestination" -> "BottomSheetDestination"
+                else -> null
+            }
+        }.joinToString(separator = "") { ", $it" }
+
+        val typeParameter = if(element.typeParameters.isEmpty()) "" else "<$composableWrapperName>"
+
+        val additionalImports = receiverTypes.flatMap {
+            when (it) {
+                "dev.enro.core.compose.dialog.DialogDestination" -> listOf(
+                    "dev.enro.core.compose.dialog.DialogDestination",
+                    "dev.enro.core.compose.dialog.DialogConfiguration"
+                )
+                "dev.enro.core.compose.dialog.BottomSheetDestination" -> listOf(
+                    "dev.enro.core.compose.dialog.BottomSheetDestination",
+                    "dev.enro.core.compose.dialog.BottomSheetConfiguration",
+                    "androidx.compose.material.ExperimentalMaterialApi"
+                )
+                else -> emptyList()
+            }
+        }.joinToString(separator = "") { "\n                import $it" }
+
+        val additionalAnnotations = receiverTypes.mapNotNull {
+            when (it) {
+                "dev.enro.core.compose.dialog.BottomSheetDestination" ->
+                    """
+                        @OptIn(ExperimentalMaterialApi::class)
+                    """.trimIndent()
+                else -> null
+            }
+        }.joinToString(separator = "") { "\n                  $it" }
+
+        val additionalBody = receiverTypes.mapNotNull {
+            when (it) {
+                "dev.enro.core.compose.dialog.DialogDestination" ->
+                    """
+                        override val dialogConfiguration: DialogConfiguration = DialogConfiguration()
+                    """.trimIndent()
+                "dev.enro.core.compose.dialog.BottomSheetDestination" ->
+                    """
+                        override val bottomSheetConfiguration: BottomSheetConfiguration = BottomSheetConfiguration()
+                    """.trimIndent()
+                else -> null
+            }
+        }.joinToString(separator = "") { "\n                    $it" }
+
         processingEnv.filer
             .createResource(
                 StandardLocation.SOURCE_OUTPUT,
                 EnroProcessor.GENERATED_PACKAGE,
-                "$composableWrapperName.kt"
+                "$composableWrapperName.kt",
+                element
             )
             .openWriter()
             .append(
                 """
                 package ${EnroProcessor.GENERATED_PACKAGE}
                 
-                import ${element.getElementName()}
-                import ${ClassNames.composableDestination}
                 import androidx.compose.runtime.Composable
                 import dev.enro.annotations.NavigationDestination
+                import javax.annotation.Generated 
+                $additionalImports
+                
+                import ${element.getElementName()}
+                import ${ClassNames.composableDestination}
                 import ${keyType.getElementName()}
                 
-                class $composableWrapperName : ComposableDestination() {
+                $additionalAnnotations
+                @Generated("dev.enro.processor.NavigationDestinationProcessor")
+                class $composableWrapperName : ComposableDestination()$additionalInterfaces {
+                    $additionalBody
+                    
                     @Composable
                     override fun Render() {
-                        ${element.simpleName}()
+                        ${element.simpleName}$typeParameter()
                     }
                 }
                 """.trimIndent()

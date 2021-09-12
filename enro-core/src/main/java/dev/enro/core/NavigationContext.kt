@@ -124,11 +124,11 @@ fun NavigationContext<*>.leafContext(): NavigationContext<*> {
         is ActivityContext,
         is FragmentContext -> {
             val primaryNavigationFragment = childFragmentManager.primaryNavigationFragment
-                ?: return childComposableManager.primaryContainer?.activeContext?.leafContext() ?: this
+                ?: return childComposableManager.activeContainer?.activeContext?.leafContext() ?: this
             primaryNavigationFragment.view ?: return this
             primaryNavigationFragment.navigationContext.leafContext()
         }
-        is ComposeContext<*> -> childComposableManager.primaryContainer?.activeContext?.leafContext() ?: this
+        is ComposeContext<*> -> childComposableManager.activeContainer?.activeContext?.leafContext() ?: this
     }
 }
 

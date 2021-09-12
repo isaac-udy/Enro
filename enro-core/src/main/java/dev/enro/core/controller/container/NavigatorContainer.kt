@@ -3,10 +3,13 @@ package dev.enro.core.controller.container
 import dev.enro.core.NavigationKey
 import dev.enro.core.Navigator
 import dev.enro.core.activity.createActivityNavigator
-import dev.enro.core.compose.ComposeFragmentHost
+import dev.enro.core.compose.*
 import dev.enro.core.compose.ComposeFragmentHostKey
-import dev.enro.core.compose.HiltComposeFragmentHost
+import dev.enro.core.compose.dialog.HiltComposeDialogFragmentHostKey
 import dev.enro.core.compose.HiltComposeFragmentHostKey
+import dev.enro.core.compose.dialog.ComposeDialogFragmentHost
+import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
+import dev.enro.core.compose.dialog.HiltComposeDialogFragmentHost
 import dev.enro.core.fragment.createFragmentNavigator
 import dev.enro.core.fragment.internal.HiltSingleFragmentActivity
 import dev.enro.core.fragment.internal.HiltSingleFragmentKey
@@ -35,12 +38,21 @@ internal class NavigatorContainer(
             createFragmentNavigator<HiltComposeFragmentHostKey, HiltComposeFragmentHost>()
         }.getOrNull()
 
+        val composeDialogFragmentHostKey =
+            createFragmentNavigator<ComposeDialogFragmentHostKey, ComposeDialogFragmentHost>()
+
+        val hiltComposeDialogFragmentHostKey = runCatching {
+            createFragmentNavigator<HiltComposeDialogFragmentHostKey, HiltComposeDialogFragmentHost>()
+        }.getOrNull()
+
         listOfNotNull(
             singleFragmentNavigator,
             hiltSingleFragmentNavigator,
             noKeyProvidedNavigator,
             composeFragmentHostKey,
-            hiltComposeFragmentHostKey
+            hiltComposeFragmentHostKey,
+            composeDialogFragmentHostKey,
+            hiltComposeDialogFragmentHostKey,
         )
     }
 

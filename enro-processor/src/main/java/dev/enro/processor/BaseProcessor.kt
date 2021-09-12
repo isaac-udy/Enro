@@ -5,13 +5,32 @@ import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.TypeSpec
 import javax.annotation.Generated
 import javax.annotation.processing.AbstractProcessor
-import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
+import javax.lang.model.element.ExecutableElement
+import javax.lang.model.element.QualifiedNameable
+import javax.tools.Diagnostic
 
 abstract class BaseProcessor : AbstractProcessor() {
 
     internal fun Element.getElementName(): String {
-        return processingEnv.elementUtils.getPackageOf(this).toString()+"."+this.simpleName
+        val packageName = processingEnv.elementUtils.getPackageOf(this).toString()
+        return when (this) {
+            is QualifiedNameable -> {
+                qualifiedName.toString()
+            }
+            is ExecutableElement -> {
+                val kotlinMetadata = enclosingElement.getAnnotation(Metadata::class.java)
+                when (kotlinMetadata?.kind) {
+                    // metadata kind 1 is a "class" type, which means this method belongs to a
+                    // class or object, rather than being a top-level file function (kind 2)
+                    1 -> "${enclosingElement.getElementName()}.$simpleName"
+                    else -> "$packageName.$simpleName"
+                }
+            }
+            else -> {
+                "$packageName.$simpleName"
+            }
+        }
     }
 
     internal fun Element.extends(className: ClassName): Boolean {
@@ -33,5 +52,22 @@ abstract class BaseProcessor : AbstractProcessor() {
                 .build()
         )
         return this
+    }
+
+
+    fun ExecutableElement.kotlinReceiverTypes(): List<String> {
+        val receiver = parameters.firstOrNull {
+            it.simpleName.startsWith("\$this")
+        } ?: return emptyList()
+
+        val typeParameterNames = typeParameters.map { it.simpleName.toString() }
+        val superTypes = processingEnv.typeUtils.directSupertypes(receiver.asType()).map { it.toString() }
+        val receiverTypeName = receiver.asType().toString()
+
+        return if(typeParameterNames.contains(receiverTypeName)) {
+            superTypes
+        } else {
+            superTypes + receiverTypeName
+        }
     }
 }

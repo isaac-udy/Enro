@@ -87,6 +87,7 @@ fun animationsFor(
     return when (navigationInstruction) {
         is NavigationInstruction.Open -> animationsForOpen(context, navigationInstruction)
         is NavigationInstruction.Close -> animationsForClose(context)
+        is NavigationInstruction.RequestClose -> animationsForClose(context)
     }
 }
 
