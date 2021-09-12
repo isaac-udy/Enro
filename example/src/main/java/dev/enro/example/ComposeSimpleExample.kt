@@ -2,6 +2,7 @@ package dev.enro.example
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -154,7 +155,9 @@ fun ComposeSimpleExample() {
                                 launchedFrom = navigation.key.name,
                                 backstack = navigation.key.backstack + navigation.key.name
                             )
-                            navigation.forward(ExampleComposableDialogKey())
+                            navigation.forward(ExampleComposableDialogKey(
+                                NavigationInstruction.Forward(next)
+                            ))
                         }) {
                         Text("Forward")
                     }
@@ -205,14 +208,14 @@ fun ComposeSimpleExample() {
 }
 
 @Parcelize
-class ExampleComposableDialogKey : NavigationKey
+class ExampleComposableDialogKey(val innerKey: NavigationInstruction.Open) : NavigationKey
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
 @ExperimentalComposableDestination
 @NavigationDestination(ExampleComposableDialogKey::class)
 fun BottomSheetDestination.ExampleDialogComposable() {
-    val navigationHandle = navigationHandle()
+    val navigationHandle = navigationHandle<ExampleComposableDialogKey>()
     val closeConfirmation = registerForNavigationResult<Boolean> {
         if(it) {
             navigationHandle.close()
@@ -222,19 +225,13 @@ fun BottomSheetDestination.ExampleDialogComposable() {
         onCloseRequested { closeConfirmation.open(ExampleConfirmComposableKey()) }
     }
 
-    LazyColumn {
-        items(50) {
-            ListItem(
-                text = { Text("Item $it") },
-                icon = {
-                    Icon(
-                        Icons.Default.Favorite,
-                        contentDescription = "Localized description"
-                    )
-                }
-            )
-        }
-    }
+    EnroContainer(
+        controller = rememberEnroContainerController(
+            initialState = listOf(navigationHandle.key.innerKey),
+            accept = { false },
+            emptyBehavior = EmptyBehavior.CloseParent
+        )
+    )
 }
 
 @Parcelize
