@@ -350,7 +350,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 
                 $additionalAnnotations
                 @Generated("dev.enro.processor.NavigationDestinationProcessor")
-                class $composableWrapperName : ComposableDestination()$additionalInterfaces {
+                public class $composableWrapperName : ComposableDestination()$additionalInterfaces {
                     $additionalBody
                     
                     @Composable
