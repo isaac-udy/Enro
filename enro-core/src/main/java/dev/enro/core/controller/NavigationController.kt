@@ -93,15 +93,7 @@ class NavigationController internal constructor(
         executorContainer.removeOverride(navigationExecutor)
     }
 
-    fun install(navigationApplication: NavigationApplication) {
-        if (navigationApplication !is Application)
-            throw IllegalArgumentException("A NavigationApplication must extend android.app.Application")
-
-        navigationControllerBindings[navigationApplication] = this
-        contextController.install(navigationApplication)
-    }
-
-    private fun installForTest(application: Application) {
+    fun install(application: Application) {
         navigationControllerBindings[application] = this
         contextController.install(application)
     }

@@ -17,7 +17,7 @@ object EnroTest {
                 plugin(EnroLogger())
             }
             .callPrivate<NavigationController>("build")
-            .apply { callPrivate("installForTest", application) }
+            .apply { install(application) }
     }
 
     internal fun uninstallNavigationController() {

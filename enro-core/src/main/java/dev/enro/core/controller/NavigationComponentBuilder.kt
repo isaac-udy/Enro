@@ -1,5 +1,6 @@
     package dev.enro.core.controller
 
+import android.app.Application
 import dev.enro.core.*
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.NavigatorContainer
@@ -75,6 +76,9 @@ class NavigationComponentBuilder {
  * to the NavigationApplication from which this function was called.
  */
 fun NavigationApplication.navigationController(block: NavigationComponentBuilder.() -> Unit = {}): NavigationController {
+    if(this !is Application)
+            throw IllegalArgumentException("A NavigationApplication must extend android.app.Application")
+
     return NavigationComponentBuilder()
         .apply { generatedComponent?.execute(this) }
         .apply(block)
