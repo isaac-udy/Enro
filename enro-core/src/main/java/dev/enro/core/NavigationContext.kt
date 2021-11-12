@@ -1,15 +1,10 @@
 package dev.enro.core
 
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.activity.ActivityNavigator
@@ -95,11 +90,15 @@ val NavigationContext<*>.activity: FragmentActivity
 
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 internal val <T : FragmentActivity> T.navigationContext: ActivityContext<T>
-    get() = viewModels<NavigationHandleViewModel> { ViewModelProvider.NewInstanceFactory() } .value.navigationContext as ActivityContext<T>
+    get() = getNavigationHandleViewModel().navigationContext as ActivityContext<T>
 
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 internal val <T : Fragment> T.navigationContext: FragmentContext<T>
-    get() = viewModels<NavigationHandleViewModel> { ViewModelProvider.NewInstanceFactory() } .value.navigationContext as FragmentContext<T>
+    get() = getNavigationHandleViewModel().navigationContext as FragmentContext<T>
+
+@Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
+internal val <T : ComposableDestination> T.navigationContext: ComposeContext<T>
+    get() = getNavigationHandleViewModel().navigationContext as ComposeContext<T>
 
 fun NavigationContext<*>.rootContext(): NavigationContext<*> {
     var parent = this

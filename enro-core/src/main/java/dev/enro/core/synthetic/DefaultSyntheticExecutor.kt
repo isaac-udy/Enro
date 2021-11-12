@@ -15,11 +15,12 @@ object DefaultSyntheticExecutor : NavigationExecutor<Any, SyntheticDestination<*
     override fun open(args: ExecutorArgs<out Any, out SyntheticDestination<*>, out NavigationKey>) {
         args.navigator as SyntheticNavigator<NavigationKey>
 
-        args.navigator.destination.process(
+        val destination = args.navigator.destination.invoke()
+        destination.bind(
             args.fromContext,
-            args.key,
             args.instruction
         )
+        destination.process()
     }
 
     override fun close(context: NavigationContext<out SyntheticDestination<*>>) {

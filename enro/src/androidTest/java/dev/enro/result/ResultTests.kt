@@ -133,8 +133,10 @@ class ResultTests {
         val initalActivityHash = initialActivity.hashCode()
 
         scenario.recreate()
-        initialActivity.resultChannel
-            .open(ActivityResultKey())
+            .onActivity {
+                it.resultChannel
+                    .open(ActivityResultKey())
+            }
 
         expectContext<ResultActivity, ActivityResultKey>()
             .navigation

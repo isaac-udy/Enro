@@ -251,7 +251,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     builder.navigator(
                         createSyntheticNavigator(
                             $1T.class,
-                            new $2T()
+                            () -> new $2T()
                         )
                     )
                 """.trimIndent(),

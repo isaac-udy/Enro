@@ -7,18 +7,20 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import dev.enro.core.NavigationHandle
 import dev.enro.core.getNavigationHandle
+import dev.enro.core.navigationContext
 import dev.enro.core.result.EnroResult
+import dev.enro.core.synthetic.SyntheticDestination
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 @PublishedApi
 internal class LazyResultChannelProperty<T>(
-    private val owner: Any,
-    private val resultType: Class<T>,
-    private val onResult: (T) -> Unit
+    owner: Any,
+    resultType: Class<T>,
+    onResult: (T) -> Unit
 ) : ReadOnlyProperty<Any, ResultChannelImpl<T>> {
 
-    lateinit var resultChannel: ResultChannelImpl<T>
+    var resultChannel: ResultChannelImpl<T>? = null
 
     init {
         val handle = when (owner) {
@@ -31,26 +33,30 @@ internal class LazyResultChannelProperty<T>(
 
         lifecycle.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if (event != Lifecycle.Event.ON_START) return
-                lifecycle.lifecycle.removeObserver(this)
-
-                resultChannel = ResultChannelImpl(
-                    navigationHandle = handle.value,
-                    resultType = resultType,
-                    onResult = onResult
-                )
-            }
-        })
-
-        lifecycle.lifecycle.addObserver(object : LifecycleEventObserver {
-            private var enroResult: EnroResult? = null
-            override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if (event == Lifecycle.Event.ON_STOP) {
-                    enroResult = EnroResult.from(handle.value.controller)
+                if(event == Lifecycle.Event.ON_DESTROY) {
+                    lifecycle.lifecycle.removeObserver(this)
+                    this@LazyResultChannelProperty.resultChannel = null
+                    return
                 }
-                if (event == Lifecycle.Event.ON_DESTROY) {
-                    enroResult?.deregisterChannel(resultChannel)
-                    enroResult = null
+
+                if(event == Lifecycle.Event.ON_START) {
+                    if(resultChannel == null) {
+                        resultChannel = ResultChannelImpl(
+                            navigationHandle = handle.value,
+                            resultType = resultType,
+                            onResult = onResult
+                        )
+                    }
+                    EnroResult.from(handle.value.controller)
+                        .apply {
+                            registerChannel(resultChannel ?: return)
+                        }
+                }
+                if (event == Lifecycle.Event.ON_STOP) {
+                    EnroResult.from(handle.value.controller)
+                        .apply {
+                            deregisterChannel(resultChannel ?: return)
+                        }
                 }
             }
         })
@@ -59,5 +65,5 @@ internal class LazyResultChannelProperty<T>(
     override fun getValue(
         thisRef: Any,
         property: KProperty<*>
-    ): ResultChannelImpl<T> = resultChannel
+    ): ResultChannelImpl<T> = resultChannel!!
 }

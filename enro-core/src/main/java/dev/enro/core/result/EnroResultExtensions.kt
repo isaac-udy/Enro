@@ -3,29 +3,12 @@ package dev.enro.core.result
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
-import dev.enro.core.NavigationHandle
-import dev.enro.core.NavigationKey
-import dev.enro.core.TypedNavigationHandle
-import dev.enro.core.close
+import dev.enro.core.*
 import dev.enro.core.result.internal.LazyResultChannelProperty
 import dev.enro.core.result.internal.PendingResult
 import dev.enro.core.result.internal.ResultChannelImpl
+import dev.enro.core.synthetic.SyntheticDestination
 import kotlin.properties.ReadOnlyProperty
-
-
-fun <T : Any> NavigationHandle.closeWithResult(result: T) {
-    val resultId = ResultChannelImpl.getResultId(this)
-    if (resultId != null) {
-        EnroResult.from(controller).addPendingResult(
-            PendingResult(
-                resultChannelId = resultId,
-                resultType = result::class,
-                result = result
-            )
-        )
-    }
-    close()
-}
 
 fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
     val resultId = ResultChannelImpl.getResultId(this)
@@ -39,6 +22,32 @@ fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithRe
         )
     }
     close()
+}
+
+fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.sendResult(
+    result: T
+) {
+    val resultId = ResultChannelImpl.getResultId(instruction)
+    if (resultId != null) {
+        EnroResult.from(navigationContext.controller).addPendingResult(
+            PendingResult(
+                resultChannelId = resultId,
+                resultType = result::class,
+                result = result
+            )
+        )
+    }
+}
+
+fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwardResult(
+    navigationKey: NavigationKey.WithResult<T>
+) {
+    navigationContext.getNavigationHandle().executeInstruction(
+        ResultChannelImpl.overrideResultId(
+            NavigationInstruction.Forward(navigationKey),
+            ResultChannelImpl.getResultId(instruction) ?: return
+        )
+    )
 }
 
 inline fun <reified T : Any> ViewModel.registerForNavigationResult(
