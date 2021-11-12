@@ -94,7 +94,8 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
         }
 
         internal fun overrideResultId(instruction: NavigationInstruction.Open, resultId: ResultChannelId): NavigationInstruction.Open {
-            instruction.additionalData.putParcelable(EXTRA_RESULT_CHANNEL_ID, resultId)
+            instruction.additionalData.putString(EXTRA_RESULT_CHANNEL_RESULT_ID, resultId.resultId)
+            instruction.additionalData.putString(EXTRA_RESULT_CHANNEL_OWNER_ID, resultId.ownerId)
             return instruction
         }
     }

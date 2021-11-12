@@ -67,7 +67,7 @@ class NavigationController internal constructor() {
     internal fun close(
         navigationContext: NavigationContext<out Any>
     ) {
-        val processedInstruction = interceptorController.intercept(
+        val processedInstruction = interceptorContainer.intercept(
             NavigationInstruction.Close, navigationContext
         ) ?: return
 
