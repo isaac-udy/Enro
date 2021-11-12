@@ -6,12 +6,12 @@ apply plugin: 'dagger.hilt.android.plugin'
 useCompose()
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     defaultConfig {
         applicationId "dev.enro.example"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 

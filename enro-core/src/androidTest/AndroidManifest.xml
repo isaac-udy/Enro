@@ -3,8 +3,8 @@
         android:name=".TestApplication"
         android:testOnly="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".DefaultActivity"/>
-        <activity android:name=".GenericActivity"/>
-        <activity android:name=".ActivityWithFragments"/>
+        <activity android:name=".DefaultActivity" android:exported="false"/>
+        <activity android:name=".GenericActivity" android:exported="false"/>
+        <activity android:name=".ActivityWithFragments" android:exported="false"/>
     </application>
 </manifest>

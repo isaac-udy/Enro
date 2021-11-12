@@ -7,11 +7,11 @@ ext.androidLibrary = {
     apply plugin: 'kotlin-parcelize'
 
     android {
-        compileSdkVersion 30
+        compileSdkVersion 31
 
         defaultConfig {
             minSdkVersion 21
-            targetSdkVersion 30
+            targetSdkVersion 31
             versionCode versionProperties.getProperty("versionCode").toInteger()
             versionName versionProperties.getProperty("versionName")
 
@@ -54,8 +54,8 @@ ext.useCompose = {
             compose true
         }
         composeOptions {
-            kotlinCompilerVersion "1.5.21"
-            kotlinCompilerExtensionVersion "1.0.1"
+            kotlinCompilerVersion "1.5.31"
+            kotlinCompilerExtensionVersion "1.0.5"
         }
     }
 
