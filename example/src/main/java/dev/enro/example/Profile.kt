@@ -141,7 +141,7 @@ class NestedKey : NavigationKey.WithResult<String>
 @NavigationDestination(NestedKey::class)
 @ExperimentalComposableDestination
 fun NestedScreen() {
-    val navigation = navigationHandle()
+    val navigation = navigationHandle<NestedKey>()
     val state = rememberSaveable { mutableStateOf("None") }
     val channel = registerForNavigationResult<String> {
         state.value = it
@@ -164,7 +164,7 @@ class NestedKey2 : NavigationKey.WithResult<String>
 @NavigationDestination(NestedKey2::class)
 @ExperimentalComposableDestination
 fun NestedScreen2() {
-    val navigation = navigationHandle()
+    val navigation = navigationHandle<NestedKey2>()
     Column {
         Text("NESTED TWO!")
         Button(onClick = { navigation.closeWithResult("!") }) {

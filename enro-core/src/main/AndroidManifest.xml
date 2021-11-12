@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.enro.core">
     <application>
-        <activity android:name=".fragment.internal.SingleFragmentActivity" />
-        <activity android:name=".fragment.internal.HiltSingleFragmentActivity" />
+        <activity android:name=".fragment.internal.SingleFragmentActivity"/>
+        <activity android:name=".fragment.internal.HiltSingleFragmentActivity"/>
     </application>
 </manifest>

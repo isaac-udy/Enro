@@ -8,9 +8,7 @@ import dev.enro.core.fragment.FragmentNavigator
 import dev.enro.core.fragment.internal.SingleFragmentActivity
 import dev.enro.core.internal.NoKeyNavigator
 
-internal class InstructionParentInterceptor(
-    private val navigatorContainer: NavigatorContainer
-) : NavigationInstructionInterceptor{
+internal class InstructionParentInterceptor : NavigationInstructionInterceptor{
 
     override fun intercept(
         instruction: NavigationInstruction.Open,
@@ -22,7 +20,6 @@ internal class InstructionParentInterceptor(
             .setExecutorContext(parentContext)
             .setPreviouslyActiveId(parentContext)
     }
-
 
     private fun NavigationInstruction.Open.setParentInstruction(
         parentContext: NavigationContext<*>,
@@ -40,7 +37,7 @@ internal class InstructionParentInterceptor(
 
             if (instruction == null) return null
             val keyType = instruction.navigationKey::class
-            val parentNavigator = navigatorContainer.navigatorForKeyType(keyType)
+            val parentNavigator = parentContext.controller.navigatorForKeyType(keyType)
             if (parentNavigator is ActivityNavigator) return instruction
             if (parentNavigator is NoKeyNavigator) return instruction
             return findCorrectParentInstructionFor(instruction.internal.parentInstruction)

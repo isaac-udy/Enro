@@ -14,12 +14,8 @@ data class SimpleMessage(
 ) : NavigationKey
 
 @NavigationDestination(SimpleMessage::class)
-class SimpleMessageDestination : SyntheticDestination<SimpleMessage> {
-    override fun process(
-        navigationContext: NavigationContext<out Any>,
-        key: SimpleMessage,
-        instruction: NavigationInstruction.Open
-    ) {
+class SimpleMessageDestination : SyntheticDestination<SimpleMessage>() {
+    override fun process() {
         val activity = navigationContext.activity
         AlertDialog.Builder(activity).apply {
             setTitle(key.title)
@@ -30,7 +26,7 @@ class SimpleMessageDestination : SyntheticDestination<SimpleMessage> {
                 setPositiveButton("Launch") {_, _ ->
                     navigationContext
                         .getNavigationHandle()
-                        .executeInstruction(key.positiveActionInstruction)
+                        .executeInstruction(key.positiveActionInstruction!!)
                 }
             }
 

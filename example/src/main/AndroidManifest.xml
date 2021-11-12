@@ -10,7 +10,7 @@
         android:theme="@style/AppTheme"
         android:name=".ExampleApplication">
 
-        <activity android:name=".SplashScreenActivity">
+        <activity android:name=".SplashScreenActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

@@ -99,7 +99,10 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 it.annotationType.asElement()
                     .getElementName() == "androidx.compose.runtime.Composable"
             }
-            ?: throw java.lang.IllegalStateException("Function ${element.getElementName()} was marked as @NavigationDestination, but was not marked as @Composable")
+            ?: run {
+                processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "Function ${element.getElementName()} was marked as @NavigationDestination, but was not marked as @Composable")
+                return
+            }
 
 
         val isStatic = element.modifiers.contains(Modifier.STATIC)
@@ -138,7 +141,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
             val shortMessage = "Failed to create NavigationDestination for function ${element.getElementName()}. Using @Composable functions as @NavigationDestinations is an experimental feature an must be explicitly enabled."
             processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, shortMessage)
             processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "To enable @Composable @NavigationDestinations annotate the @Composable function @NavigationDestination with the @ExperimentalComposableDestination annotation")
-            throw RuntimeException(shortMessage)
+            return
         }
         val keyType =
             processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
@@ -248,7 +251,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     builder.navigator(
                         createSyntheticNavigator(
                             $1T.class,
-                            new $2T()
+                            () -> new $2T()
                         )
                     )
                 """.trimIndent(),
@@ -256,7 +259,10 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     destination
                 )
                 else -> {
-                    throw IllegalStateException("$destinationName does not extend Fragment, FragmentActivity, or SyntheticDestination")
+                    processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "$destinationName does not extend Fragment, FragmentActivity, or SyntheticDestination")
+                    CodeBlock.of("""
+                        // Error: $destinationName does not extend Fragment, FragmentActivity, or SyntheticDestination
+                    """.trimIndent())
                 }
             }
         )
@@ -344,7 +350,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 
                 $additionalAnnotations
                 @Generated("dev.enro.processor.NavigationDestinationProcessor")
-                class $composableWrapperName : ComposableDestination()$additionalInterfaces {
+                public class $composableWrapperName : ComposableDestination()$additionalInterfaces {
                     $additionalBody
                     
                     @Composable

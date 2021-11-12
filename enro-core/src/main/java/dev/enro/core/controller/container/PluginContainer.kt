@@ -5,16 +5,28 @@ import dev.enro.core.controller.NavigationController
 import dev.enro.core.plugins.EnroPlugin
 import dev.enro.core.result.EnroResult
 
-internal class PluginContainer(
-    plugins: List<EnroPlugin> = listOf()
-) {
-    private val plugins: List<EnroPlugin> = plugins + listOf(EnroResult())
+internal class PluginContainer {
+    private val plugins: MutableList<EnroPlugin> = mutableListOf()
+    private var attachedController: NavigationController? = null
+
+    fun addPlugins(
+        plugins: List<EnroPlugin>
+    ) {
+        this.plugins += plugins
+        attachedController?.let { attachedController ->
+            plugins.forEach { it.onAttached(attachedController) }
+        }
+    }
 
     fun hasPlugin(block: (EnroPlugin) -> Boolean): Boolean {
         return plugins.any(block)
     }
 
     internal fun onAttached(navigationController: NavigationController) {
+        require(attachedController == null) {
+            "This PluginContainer is already attached to a NavigationController!"
+        }
+        attachedController = navigationController
         plugins.forEach { it.onAttached(navigationController) }
     }
 

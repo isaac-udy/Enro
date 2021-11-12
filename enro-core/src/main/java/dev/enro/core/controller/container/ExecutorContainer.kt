@@ -11,17 +11,21 @@ import dev.enro.core.synthetic.DefaultSyntheticExecutor
 import dev.enro.core.synthetic.SyntheticDestination
 import kotlin.reflect.KClass
 
-internal class ExecutorContainer(
-    overrides: List<NavigationExecutor<*, *, *>>
-) {
-    private val overrides = overrides.map { (it.fromType to it.opensType) to it }.toMap()
+internal class ExecutorContainer() {
+    private val overrides: MutableMap<Pair<KClass<out Any>, KClass<out Any>>, NavigationExecutor<*,*,*>> = mutableMapOf()
     private val temporaryOverrides = mutableMapOf<Pair<KClass<out Any>, KClass<out Any>>, NavigationExecutor<*, *, *>>()
 
-    fun addOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
+    fun addOverrides(executors: List<NavigationExecutor<*, *, *>>) {
+        executors.forEach { navigationExecutor ->
+            overrides[navigationExecutor.fromType to navigationExecutor.opensType] = navigationExecutor
+        }
+    }
+
+    fun addTemporaryOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
         temporaryOverrides[navigationExecutor.fromType to navigationExecutor.opensType] = navigationExecutor
     }
 
-    fun removeOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
+    fun removeTemporaryOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
         temporaryOverrides.remove(navigationExecutor.fromType to navigationExecutor.opensType)
     }
 

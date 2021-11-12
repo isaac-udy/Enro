@@ -133,8 +133,10 @@ class ResultTests {
         val initalActivityHash = initialActivity.hashCode()
 
         scenario.recreate()
-        initialActivity.resultChannel
-            .open(ActivityResultKey())
+            .onActivity {
+                it.resultChannel
+                    .open(ActivityResultKey())
+            }
 
         expectContext<ResultActivity, ActivityResultKey>()
             .navigation
@@ -322,6 +324,150 @@ class ResultTests {
 
         assertEquals(
             result,
+            expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
+                .context
+                .result
+        )
+    }
+
+    @Test
+    fun whenActivityRequestResult_andResultProviderIsSyntheticDestination_andSyntheticDestinationSendsImmediateResult_thenResultIsReceived() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+        val expectedResult = UUID.randomUUID().toString()
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .context
+            .resultChannel
+            .open(
+                ImmediateSyntheticResultKey(
+                    reversedResult = expectedResult.reversed()
+                )
+            )
+
+        assertEquals(
+            expectedResult,
+            expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+                .context
+                .result
+        )
+    }
+
+    @Test
+    fun whenFragmentRequestResult_andResultProviderIsSyntheticDestination_andSyntheticDestinationSendsImmediateResult_thenResultIsReceived() {
+        ActivityScenario.launch(DefaultActivity::class.java)
+        val expectedResult = UUID.randomUUID().toString()
+
+        expectContext<DefaultActivity, DefaultActivityKey>()
+            .navigation
+            .forward(ResultReceiverFragmentKey())
+
+        expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
+            .context
+            .resultChannel
+            .open(
+                ImmediateSyntheticResultKey(
+                    reversedResult = expectedResult.reversed()
+                )
+            )
+
+        assertEquals(
+            expectedResult,
+            expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
+                .context
+                .result
+        )
+    }
+
+    @Test
+    fun whenActivityRequestResult_andResultProviderIsSyntheticDestination_andSyntheticDestinationForwardsResultFromActivityKey_thenResultIsReceived() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+        val expectedResult = UUID.randomUUID().toString()
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .context
+            .resultChannel
+            .open(ForwardingSyntheticActivityResultKey())
+
+        expectContext<ResultActivity, ActivityResultKey>()
+            .navigation
+            .closeWithResult(expectedResult)
+
+        assertEquals(
+            expectedResult,
+            expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+                .context
+                .result
+        )
+    }
+
+    @Test
+    fun whenFragmentRequestResult_andResultProviderIsSyntheticDestination_andSyntheticDestinationForwardsResultFromActivityKey_thenResultIsReceived() {
+        ActivityScenario.launch(DefaultActivity::class.java)
+        val expectedResult = UUID.randomUUID().toString()
+
+        expectContext<DefaultActivity, DefaultActivityKey>()
+            .navigation
+            .forward(ResultReceiverFragmentKey())
+
+        expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
+            .context
+            .resultChannel
+            .open(ForwardingSyntheticActivityResultKey())
+
+        expectContext<ResultActivity, ActivityResultKey>()
+            .navigation
+            .closeWithResult(expectedResult)
+
+        assertEquals(
+            expectedResult,
+            expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
+                .context
+                .result
+        )
+    }
+
+    @Test
+    fun whenActivityRequestResult_andResultProviderIsSyntheticDestination_andSyntheticDestinationForwardsResultFromFragmentKey_thenResultIsReceived() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+        val expectedResult = UUID.randomUUID().toString()
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .context
+            .resultChannel
+            .open(ForwardingSyntheticFragmentResultKey())
+
+        expectContext<ResultFragment, FragmentResultKey>()
+            .navigation
+            .closeWithResult(expectedResult)
+
+        assertEquals(
+            expectedResult,
+            expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+                .context
+                .result
+        )
+    }
+
+    @Test
+    fun whenFragmentRequestResult_andResultProviderIsSyntheticDestination_andSyntheticDestinationForwardsResultFromFragmentKey_thenResultIsReceived() {
+        ActivityScenario.launch(DefaultActivity::class.java)
+        val expectedResult = UUID.randomUUID().toString()
+
+        expectContext<DefaultActivity, DefaultActivityKey>()
+            .navigation
+            .forward(ResultReceiverFragmentKey())
+
+        expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
+            .context
+            .resultChannel
+            .open(ForwardingSyntheticFragmentResultKey())
+
+        expectContext<ResultFragment, FragmentResultKey>()
+            .navigation
+            .closeWithResult(expectedResult)
+
+        assertEquals(
+            expectedResult,
             expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
                 .context
                 .result

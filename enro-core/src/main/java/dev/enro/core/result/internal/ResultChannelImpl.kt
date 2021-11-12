@@ -10,7 +10,6 @@ import androidx.lifecycle.OnLifecycleEvent
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.result.EnroResult
 import dev.enro.core.result.EnroResultChannel
 
 private const val EXTRA_RESULT_CHANNEL_OWNER_ID = "com.enro.core.EXTRA_RESULT_CHANNEL_OWNER_ID"
@@ -55,10 +54,6 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
         resultId = onResult::class.java.name
     )
 
-    init {
-        EnroResult.from(navigationHandle.controller).registerChannel(this)
-    }
-
     override fun open(key: NavigationKey.WithResult<T>) {
         navigationHandle.executeInstruction(
             NavigationInstruction.Forward(key).apply {
@@ -89,8 +84,18 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
 
     internal companion object {
         private val handler = Handler(Looper.getMainLooper())
+
         internal fun getResultId(navigationHandle: NavigationHandle): ResultChannelId? {
             return getResultId(navigationHandle.additionalData)
+        }
+
+        internal fun getResultId(instruction: NavigationInstruction.Open): ResultChannelId? {
+            return getResultId(instruction.additionalData)
+        }
+
+        internal fun overrideResultId(instruction: NavigationInstruction.Open, resultId: ResultChannelId): NavigationInstruction.Open {
+            instruction.additionalData.putParcelable(EXTRA_RESULT_CHANNEL_ID, resultId)
+            return instruction
         }
     }
 }

@@ -1,10 +1,7 @@
 buildscript {
-    apply from: "$rootDir/common_dependencies.gradle"
-
     repositories {
         mavenLocal()
         google()
-        jcenter()
         mavenCentral()
     }
     dependencies {
@@ -18,14 +15,13 @@ allprojects {
     repositories {
         mavenLocal()
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 
 subprojects {
     apply from: "$rootDir/common.gradle"
     apply from: "$rootDir/common_publish.gradle"
-    apply from: "$rootDir/common_dependencies.gradle"
 }
 
 task clean(type: Delete) {

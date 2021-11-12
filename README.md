@@ -22,8 +22,8 @@ A simple navigation library for Android
 Enro is published to [Maven Central](https://search.maven.org/). Make sure your project includes the `mavenCentral()` repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
-    implementation "dev.enro:enro:1.3.7" // or use 1.4.0-beta03 for experimental Compose support
-    kapt "dev.enro:enro-processor:1.3.7" // or use 1.4.0-beta03 for experimental Compose support
+    implementation "dev.enro:enro:1.3.7" // or use 1.4.0-beta04 for experimental Compose support
+    kapt "dev.enro:enro-processor:1.3.7" // or use 1.4.0-beta04 for experimental Compose support
 }
 ```
 <details>
@@ -239,3 +239,84 @@ Enro provides a custom extension function similar to AndroidX's `by viewModels()
 
 This means that your ViewModel can be put in charge of the flow through your Application, rather than needing to use a `LiveData<NavigationEvent>()` (or similar) in your ViewModel. When we use things like `LiveData<NavigationEvent>()` we are able to test the ViewModel's intent to navigate, but there's still the reliance on the Activity/Fragment implementing the response to the navigation event correctly. In the case of retrieving a result from another screen, this gap grows even wider, and there becomes an invisible contract between the ViewModel and Activity/Fragment: The ViewModel expects that if it sets a particular `NavigationEvent` in the `LiveData`, that the Activity/Fragment will navigate to the correct place, and then once the navigation has been successful and a result has been returned, that the Activity/Fragment will call the correct method on the ViewModel to provide the result. This invisible contract results in extra boilerplate "wiring" code, and a gap for bugs to slip through. Instead, using Enro's ViewModel integration, you allow your ViewModel to be precise and clear about it's intention, and about how to handle a result. 
 
+## Experimental Compose Support
+The most recent version of Enro (1.4.0-beta04) adds experimental support for directly marking `@Composable` functions as Navigation Destinations.
+
+To support a Composable destination, you will need to add both an `@NavigationDestination` annotation, and a `@ExperimentalComposableDestination` annotation. Once the Composable support moves from the "experimental" stage into a stable state, the `@ExperimentalComposableDestination` annotation will be removed.
+
+Here is an example of a Composable function being used as a NavigationDestination:
+```kotlin
+@Composable
+@ExperimentalComposableDestination
+@NavigationDestination(MyComposeKey::class)
+fun MyComposableScreen() {
+    val navigation = navigationHandle<MyComposeKey>()
+
+    Button(
+        content = { Text("Hello, ${navigation.key}") },
+        onClick = {
+            navigation.forward(MyListKey(...))
+        }
+    )
+}
+```
+
+#### Nested Composables
+Enro's Composable support is based around the idea of an "EnroContainer" Composable, which can be added to a Fragment, Activity or another Composable. The EnroContainer works much like a FrameLayout being used as a container for Fragments.
+
+Here is an example of creating a Composable that supports nested Composable navigation in Enro:
+
+```kotlin
+@Composable
+@ExperimentalComposableDestination
+@NavigationDestination(MyComposeKey::class)
+fun MyNestedComposableScreen() {
+    val navigation = navigationHandle<MyComposeKey>()
+    val containerController = rememberEnroContainerController(
+        accept = { it is NestedComposeKey }
+    )
+
+    Column {
+        EnroContainer(
+            controller = containerController
+        )
+        Button(
+            content = { Text("Open Nested") },
+            onClick = {
+                navigation.forward(NestedComposeKey())
+            }
+        )
+    }
+}
+
+@Composable
+@ExperimentalComposableDestination
+@NavigationDestination(NestedComposeKey::class)
+fun NestedComposableScreen() = Text("Nested Screen!")
+```
+
+In the example above, we have defined an Enro Container Controller which will accept Navigation Keys of type "NestedComposeKey". When the user clicks on the button "Open Nested", we execute a forward instruction to a NestedComposeKey. Because there is an available container which accepts NestedComposeKey instructions, the Composable for the NestedComposeKey (NestedComposableScreen in the example above) will be placed inside the EnroContainer defined in MyNestedComposableScreen.
+
+EnroContainerControllers can be configured to have some instructions pre-launched as their initial state, can be configured to accept some/all/no keys, and can be configured with an "EmptyBehavior" which defines what will happen when the container becomes empty due to a close action. The default close behavior is "AllowEmpty", but this can be set to "CloseParent", which will pass the close instruction up to the Container's parent, or "Action", which will allow any custom action to occur when the container becomes empty.
+
+#### Dialog and BottomSheet support
+Composable functions declared as NavigationDestinations can be used as Dialog or ModalBottomSheet type destinations. To do this, make the Composable function an extension function on either `DialogDestination` or `BottomSheetDestination`. This will cause the Composable to be launched as a dialog, escaping the current navigation context of the screen.
+
+Here's an example:
+
+```kotlin
+@Composable
+@ExperimentalComposableDestination
+@NavigationDestination(DialogComposableKey::class)
+fun DialogDestination.DialogComposableScreen() {
+    configureDialog { ... }
+}
+
+@Composable
+@OptIn(ExperimentalMaterialApi::class)
+@ExperimentalComposableDestination
+@NavigationDestination(BottomSheetComposableKey::class)
+fun BottomSheetDestination.BottomSheetComposableScreen() {
+    configureBottomSheet { ... }
+}
+```

@@ -7,7 +7,10 @@ import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
+import dev.enro.core.result.forwardResult
 import dev.enro.core.result.registerForNavigationResult
+import dev.enro.core.result.sendResult
+import dev.enro.core.synthetic.SyntheticDestination
 
 @Parcelize
 class ActivityResultKey : NavigationKey.WithResult<String>
@@ -115,5 +118,37 @@ class NestedResultReceiverFragment : TestFragment() {
     val secondaryResultChannel by registerForNavigationResult<String> {
         secondaryResult = it
         requireView().findViewById<TextView>(debugText).text = "Result: $result\nSecondary Result: $secondaryResult"
+    }
+}
+
+@Parcelize
+class ImmediateSyntheticResultKey(
+    val reversedResult: String
+) : NavigationKey.WithResult<String>
+
+@NavigationDestination(ImmediateSyntheticResultKey::class)
+class ImmediateSyntheticResultDestination : SyntheticDestination<ImmediateSyntheticResultKey>() {
+    override fun process() {
+        sendResult(key.reversedResult.reversed())
+    }
+}
+
+@Parcelize
+class ForwardingSyntheticActivityResultKey : NavigationKey.WithResult<String>
+
+@NavigationDestination(ForwardingSyntheticActivityResultKey::class)
+class ForwardingSyntheticActivityResultDestination : SyntheticDestination<ForwardingSyntheticActivityResultKey>() {
+    override fun process() {
+        forwardResult(ActivityResultKey())
+    }
+}
+
+@Parcelize
+class ForwardingSyntheticFragmentResultKey : NavigationKey.WithResult<String>
+
+@NavigationDestination(ForwardingSyntheticFragmentResultKey::class)
+class ForwardingSyntheticFragmentResultDestination : SyntheticDestination<ForwardingSyntheticFragmentResultKey>() {
+    override fun process() {
+        forwardResult(FragmentResultKey())
     }
 }

@@ -1,5 +1,5 @@
 androidLibrary()
-publishAndroidModule("dev.enro", "enro-test", "-alpha")
+publishAndroidModule("dev.enro", "enro-test")
 
 dependencies {
     releaseApi "dev.enro:enro-core:$versionName"

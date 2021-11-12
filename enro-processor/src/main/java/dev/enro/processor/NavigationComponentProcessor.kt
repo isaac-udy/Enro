@@ -13,6 +13,7 @@ import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
+import javax.tools.Diagnostic
 
 @IncrementalAnnotationProcessor(IncrementalAnnotationProcessorType.AGGREGATING)
 @AutoService(Processor::class)
@@ -54,7 +55,16 @@ class NavigationComponentProcessor : BaseProcessor() {
 
         val destinations = processingEnv.elementUtils
             .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
-            .enclosedElements
+            .runCatching {
+                enclosedElements
+            }
+            .getOrNull()
+            .orEmpty()
+            .apply {
+                if(isEmpty()) {
+                    processingEnv.messager.printMessage(Diagnostic.Kind.WARNING, "Created a NavigationComponent but found no navigation destinations. This can indicate that the dependencies which define the @NavigationDestination annotated classes are not on the compile classpath for this module, or that you have forgotten to apply the enro-processor annotation processor to the modules that define the @NavigationDestination annotated classes.")
+                }
+            }
             .mapNotNull {
                 val annotation = it.getAnnotation(GeneratedNavigationBinding::class.java)
                     ?: return@mapNotNull null
