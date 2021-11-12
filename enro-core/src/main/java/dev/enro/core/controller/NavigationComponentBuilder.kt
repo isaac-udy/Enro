@@ -2,13 +2,7 @@
 
 import android.app.Application
 import dev.enro.core.*
-import dev.enro.core.controller.container.ExecutorContainer
-import dev.enro.core.controller.container.NavigatorContainer
-import dev.enro.core.controller.container.PluginContainer
-import dev.enro.core.controller.interceptor.HiltInstructionInterceptor
-import dev.enro.core.controller.interceptor.InstructionInterceptorController
-import dev.enro.core.controller.interceptor.InstructionParentInterceptor
-import dev.enro.core.controller.lifecycle.NavigationLifecycleController
+import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.plugins.EnroPlugin
 
 // TODO get rid of this, or give it a better name
@@ -23,6 +17,8 @@ class NavigationComponentBuilder {
     internal val overrides: MutableList<NavigationExecutor<*, *, *>> = mutableListOf()
     @PublishedApi
     internal val plugins: MutableList<EnroPlugin> = mutableListOf()
+    @PublishedApi
+    internal val interceptors: MutableList<NavigationInstructionInterceptor> = mutableListOf()
 
     fun navigator(navigator: Navigator<*, *>) {
         navigators.add(navigator)
@@ -38,36 +34,25 @@ class NavigationComponentBuilder {
         overrides.add(createOverride(From::class, Opens::class, block))
     }
 
-    fun component(builder: NavigationComponentBuilder) {
-        navigators.addAll(builder.navigators)
-        overrides.addAll(builder.overrides)
-        plugins.addAll(builder.plugins)
-    }
-
     fun plugin(enroPlugin: EnroPlugin) {
         plugins.add(enroPlugin)
     }
 
+    fun interceptor(interceptor: NavigationInstructionInterceptor) {
+        interceptors.add(interceptor)
+    }
+
+    fun component(builder: NavigationComponentBuilder) {
+        navigators.addAll(builder.navigators)
+        overrides.addAll(builder.overrides)
+        plugins.addAll(builder.plugins)
+        interceptors.addAll(builder.interceptors)
+    }
+
     internal fun build(): NavigationController {
-        val pluginContainer = PluginContainer(plugins)
-        val navigatorContainer = NavigatorContainer(navigators)
-        val executorContainer = ExecutorContainer(overrides)
-
-        val interceptorController = InstructionInterceptorController(
-            listOf(
-                InstructionParentInterceptor(navigatorContainer),
-                HiltInstructionInterceptor()
-            )
-        )
-        val contextController = NavigationLifecycleController(executorContainer, pluginContainer)
-
-        return NavigationController(
-            pluginContainer = pluginContainer,
-            navigatorContainer = navigatorContainer,
-            executorContainer = executorContainer,
-            interceptorController = interceptorController,
-            contextController = contextController,
-        )
+        return NavigationController().apply {
+            addComponent(this@NavigationComponentBuilder)
+        }
     }
 }
 

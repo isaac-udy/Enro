@@ -5,9 +5,13 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.Navigator
 
-class InstructionInterceptorController(
-    private val interceptors: List<NavigationInstructionInterceptor>
-) {
+class InstructionInterceptorContainer {
+
+    private val interceptors: MutableList<NavigationInstructionInterceptor> = mutableListOf()
+
+    fun addInterceptors(interceptors: List<NavigationInstructionInterceptor>) {
+        this.interceptors.addAll(interceptors)
+    }
 
     fun intercept(
         instruction: NavigationInstruction.Open,

@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.NavigationComponentBuilder
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.controller.navigationController
 import dev.enro.core.plugins.EnroLogger
 
 object EnroTest {
@@ -28,8 +29,7 @@ object EnroTest {
 
     fun getCurrentNavigationController(): NavigationController {
         val application = ApplicationProvider.getApplicationContext<Application>()
-        if(application is NavigationApplication) return application.navigationController
-        return NavigationController.callPrivate("getBoundApplicationForTest", application)
+        return application.navigationController
     }
 }
 

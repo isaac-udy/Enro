@@ -2,27 +2,37 @@ package dev.enro.core.controller
 
 import android.app.Application
 import android.os.Bundle
+import androidx.annotation.Keep
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.NavigatorContainer
 import dev.enro.core.controller.container.PluginContainer
-import dev.enro.core.controller.interceptor.InstructionInterceptorController
+import dev.enro.core.controller.interceptor.HiltInstructionInterceptor
+import dev.enro.core.controller.interceptor.InstructionInterceptorContainer
+import dev.enro.core.controller.interceptor.InstructionParentInterceptor
 import dev.enro.core.controller.lifecycle.NavigationLifecycleController
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
 
-class NavigationController internal constructor(
-    private val pluginContainer: PluginContainer,
-    private val navigatorContainer: NavigatorContainer,
-    private val executorContainer: ExecutorContainer,
-    private val interceptorController: InstructionInterceptorController,
-    private val contextController: NavigationLifecycleController,
-) {
+class NavigationController internal constructor() {
     internal var isInTest = false
 
+    private val pluginContainer: PluginContainer = PluginContainer()
+    private val navigatorContainer: NavigatorContainer = NavigatorContainer()
+    private val executorContainer: ExecutorContainer = ExecutorContainer()
+    private val interceptorContainer: InstructionInterceptorContainer = InstructionInterceptorContainer()
+    private val contextController: NavigationLifecycleController = NavigationLifecycleController(executorContainer, pluginContainer)
+
     init {
-        pluginContainer.onAttached(this)
+        addComponent(defaultComponent)
+    }
+
+    fun addComponent(component: NavigationComponentBuilder) {
+        pluginContainer.addPlugins(component.plugins)
+        navigatorContainer.addNavigators(component.navigators)
+        executorContainer.addOverrides(component.overrides)
+        interceptorContainer.addInterceptors(component.interceptors)
     }
 
     internal fun open(
@@ -34,7 +44,7 @@ class NavigationController internal constructor(
 
         val executor = executorContainer.executorForOpen(navigationContext, navigator)
 
-        val processedInstruction = interceptorController.intercept(
+        val processedInstruction = interceptorContainer.intercept(
             instruction, executor.context, navigator
         )
 
@@ -86,18 +96,21 @@ class NavigationController internal constructor(
         executorContainer.executorForClose(navigationContext)
 
     fun addOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
-        executorContainer.addOverride(navigationExecutor)
+        executorContainer.addTemporaryOverride(navigationExecutor)
     }
 
     fun removeOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
-        executorContainer.removeOverride(navigationExecutor)
+        executorContainer.removeTemporaryOverride(navigationExecutor)
     }
 
     fun install(application: Application) {
         navigationControllerBindings[application] = this
         contextController.install(application)
+        pluginContainer.onAttached(this)
     }
 
+    @Keep
+    // This method is called reflectively by the test module to install/uninstall Enro from test applications
     private fun uninstall(application: Application) {
         navigationControllerBindings.remove(application)
         contextController.uninstall(application)
@@ -123,9 +136,6 @@ class NavigationController internal constructor(
     companion object {
         internal val navigationControllerBindings =
             mutableMapOf<Application, NavigationController>()
-
-        private fun getBoundApplicationForTest(application: Application) =
-            navigationControllerBindings[application]
     }
 }
 
@@ -143,5 +153,6 @@ internal val NavigationController.application: Application
             .firstOrNull {
                 it.value == this
             }
-            ?.key ?: throw IllegalStateException("NavigationController is not attached to an Application")
+            ?.key
+            ?: throw IllegalStateException("NavigationController is not attached to an Application")
     }
