@@ -1,8 +1,11 @@
 package dev.enro.core.fragment
 
+import android.app.Activity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.transition.AutoTransition
+import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.*
 import dev.enro.core.*
@@ -81,6 +84,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         val animations = animationsFor(fromContext, instruction)
 
         host.fragmentManager.commitNow {
+            addSharedElementsToOpenTransaction(args, fragment)
             setCustomAnimations(animations.enter, animations.exit)
 
             if(fromContext.contextReference is DialogFragment && instruction.navigationDirection == NavigationDirection.REPLACE) {
@@ -109,9 +113,46 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                     }
                 }
             }
-
             replace(host.containerId, fragment, instruction.instructionId)
             setPrimaryNavigationFragment(fragment)
+        }
+    }
+
+    private fun FragmentTransaction.addSharedElementsToOpenTransaction(
+        args: ExecutorArgs<out Any, out Fragment, out NavigationKey>,
+        fragment: Fragment
+    ) {
+        val fromContext = args.fromContext
+        val instruction = args.instruction
+        val elements = instruction.getSharedElements()
+        if(elements.isEmpty()) return
+
+        fragment.postponeEnterTransition()
+        if(fromContext.contextReference is Fragment) {
+            elements
+                .also {
+                    if(it.isNotEmpty()) {
+                        fragment.sharedElementEnterTransition = AutoTransition()
+                        fragment.sharedElementReturnTransition = AutoTransition()
+                    }
+                }
+                .forEach {
+                    val view = fromContext.contextReference.requireView()
+                        .findViewById<View>(it.from)
+                    view.transitionName = it.transitionName
+
+                    addSharedElement(view, view.transitionName)
+                }
+        }
+
+        runOnCommit {
+            elements
+                .forEach {
+                    fragment.requireView()
+                        .findViewById<View>(it.opens)
+                        .transitionName = it.transitionName
+                }
+            fragment.startPostponedEnterTransition()
         }
     }
 
@@ -170,6 +211,10 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                 }
             }
 
+            if(previousFragment != null && !differentFragmentManagers && previousFragmentInContainer == previousFragment) {
+                addSharedElementsForClose(context, previousFragment)
+            }
+
             if (previousFragmentInContainer != null && previousFragmentInContainer != previousFragment) {
                 if(previousFragmentInContainer.isDetached) attach(previousFragmentInContainer)
                 val contextIsPrimaryFragment = context.fragment.parentFragmentManager.primaryNavigationFragment == context.fragment
@@ -187,6 +232,37 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                     setPrimaryNavigationFragment(previousFragment)
                 }
             }
+        }
+    }
+
+    fun FragmentTransaction.addSharedElementsForClose(
+        context: NavigationContext<out Fragment>,
+        previousFragment: Fragment
+    ) {
+        val elements = context.getNavigationHandleViewModel().instruction.getSharedElements()
+        if(elements.isEmpty()) return
+        previousFragment.postponeEnterTransition()
+        previousFragment.sharedElementEnterTransition = AutoTransition()
+        previousFragment.sharedElementReturnTransition = AutoTransition()
+
+        elements
+            .forEach {
+                addSharedElement(
+                    context.contextReference.requireView()
+                        .findViewById<View>(it.opens)
+                        .also { v -> v.transitionName = it.transitionName },
+                    it.transitionName
+                )
+            }
+
+        runOnCommit {
+            elements
+                .forEach {
+                    previousFragment.requireView()
+                        .findViewById<View>(it.from)
+                        .transitionName = it.transitionName
+                }
+            previousFragment.startPostponedEnterTransition()
         }
     }
 

@@ -1,5 +1,10 @@
 package dev.enro.core
 
+import android.app.Activity
+import android.os.Parcelable
+import android.transition.AutoTransition
+import android.transition.Transition
+import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import dev.enro.core.activity.ActivityNavigator
@@ -12,6 +17,7 @@ import dev.enro.core.fragment.FragmentNavigator
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
 import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.core.synthetic.SyntheticNavigator
+import kotlinx.parcelize.Parcelize
 import kotlin.reflect.KClass
 
 // This class is used primarily to simplify the lambda signature of NavigationExecutor.open
@@ -192,3 +198,16 @@ inline fun <reified From : Any, reified Opens : Any> createOverride(
     noinline block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
 ): NavigationExecutor<From, Opens, NavigationKey> =
     createOverride(From::class, Opens::class, block)
+
+inline fun <reified From : Fragment, reified Opens : Fragment>  createSharedElementOverride(
+    elements: List<Pair<Int, Int>>
+): NavigationExecutor<From, Opens, NavigationKey> {
+    return createOverride {
+        opened { args ->
+            args.instruction.setSharedElements(
+                elements.map { EnroSharedElement(it.first, it.second) }
+            )
+            defaultOpened(args)
+        }
+    }
+}
