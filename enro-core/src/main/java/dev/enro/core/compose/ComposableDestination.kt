@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.fragment.app.FragmentActivity
@@ -133,8 +132,8 @@ internal class ComposableDestinationContextReference(
         val saveableStateHolder = rememberSaveableStateHolder()
         if (!lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.CREATED)) return
 
+        val navigationHandle = remember { getNavigationHandleViewModel() }
         val backstackState by requireParentContainer().backstack.collectAsState()
-        val parentContext = requireParentContainer().navigationContext
         DisposableEffect(true) {
             onDispose {
                 if (!backstackState.backstack.contains(instruction)) {
@@ -147,7 +146,7 @@ internal class ComposableDestinationContextReference(
         val animations = remember(isVisible) {
             if (backstackState.skipAnimations) return@remember DefaultAnimations.none
             animationsFor(
-                parentContext,
+                navigationHandle.navigationContext ?: return@remember DefaultAnimations.none,
                 backstackState.lastInstruction
             )
         }
@@ -171,7 +170,6 @@ internal class ComposableDestinationContextReference(
                 }
             }
 
-            val navigationHandle = remember { getNavigationHandleViewModel() }
             defaultViewModelFactory = rememberDefaultViewModelFactory(navigationHandle)
 
             CompositionLocalProvider(

@@ -274,8 +274,9 @@ class NavigationDestinationProcessor : BaseProcessor() {
         element: ExecutableElement,
         keyType: Element
     ): String {
+        val packageName = processingEnv.elementUtils.getPackageOf(element).toString()
         val composableWrapperName =
-            element.getElementName().replace(".", "_") + "_ComposableDestination"
+            element.getElementName().split(".").last() + "Destination"
 
         val receiverTypes = element.kotlinReceiverTypes()
         val additionalInterfaces = receiverTypes.mapNotNull {
@@ -337,7 +338,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
             .openWriter()
             .append(
                 """
-                package ${EnroProcessor.GENERATED_PACKAGE}
+                package $packageName
                 
                 import androidx.compose.runtime.Composable
                 import dev.enro.annotations.NavigationDestination
@@ -362,6 +363,6 @@ class NavigationDestinationProcessor : BaseProcessor() {
             )
             .close()
 
-        return composableWrapperName
+        return "$packageName.$composableWrapperName"
     }
 }

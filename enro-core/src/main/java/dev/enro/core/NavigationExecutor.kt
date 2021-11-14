@@ -3,6 +3,8 @@ package dev.enro.core
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import dev.enro.core.activity.DefaultActivityExecutor
+import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.compose.DefaultComposableExecutor
 import dev.enro.core.fragment.DefaultFragmentExecutor
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
 import dev.enro.core.synthetic.SyntheticDestination
@@ -80,6 +82,9 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
             SyntheticDestination::class.java.isAssignableFrom(args.navigator.contextType.java) ->
                 DefaultSyntheticExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
+            ComposableDestination::class.java.isAssignableFrom(args.navigator.contextType.java) ->
+                DefaultComposableExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
+
             else -> throw IllegalArgumentException("No default launch executor found for ${opensType.java}")
         }.invoke(args)
     }
@@ -92,6 +97,9 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
 
             Fragment::class.java.isAssignableFrom(context.contextReference::class.java) ->
                 DefaultFragmentExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+
+            ComposableDestination::class.java.isAssignableFrom(context.contextReference::class.java) ->
+                DefaultComposableExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
             else -> throw IllegalArgumentException("No default close executor found for ${opensType.java}")
         }.invoke(context)
