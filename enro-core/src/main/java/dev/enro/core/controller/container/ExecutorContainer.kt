@@ -3,12 +3,16 @@ package dev.enro.core.controller.container
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import dev.enro.core.*
+import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.activity.DefaultActivityExecutor
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.compose.DefaultComposableExecutor
 import dev.enro.core.fragment.DefaultFragmentExecutor
+import dev.enro.core.fragment.FragmentNavigator
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
 import dev.enro.core.synthetic.SyntheticDestination
+import dev.enro.core.synthetic.SyntheticNavigator
 import kotlin.reflect.KClass
 
 internal class ExecutorContainer() {
@@ -33,36 +37,26 @@ internal class ExecutorContainer() {
         return temporaryOverrides[types] ?: overrides[types]
     }
 
-    // TODO - Does not properly support Composable overrides as yet
     internal fun executorForOpen(fromContext: NavigationContext<out Any>, navigator: Navigator<*, *>): OpenExecutorPair {
         val opensContext = navigator.contextType
-        val opensContextIsActivity by lazy {
-            FragmentActivity::class.java.isAssignableFrom(opensContext.java)
-        }
-
-        val opensContextIsFragment by lazy {
-            Fragment::class.java.isAssignableFrom(opensContext.java)
-        }
-
-        val opensContextIsComposable by lazy {
-            ComposableDestination::class.java.isAssignableFrom(opensContext.java)
-        }
-
-        val opensContextIsSynthetic by lazy {
-            SyntheticDestination::class.java.isAssignableFrom(opensContext.java)
-        }
+        val opensContextIsActivity = navigator is ActivityNavigator
+        val opensContextIsFragment = navigator is FragmentNavigator
+        val opensContextIsComposable = navigator is ComposableNavigator
+        val opensContextIsSynthetic = navigator is SyntheticNavigator
 
         fun getOverrideExecutor(overrideContext: NavigationContext<out Any>): OpenExecutorPair? {
             val override = overrideFor(overrideContext.contextReference::class to opensContext)
                 ?: when (overrideContext.contextReference) {
                     is FragmentActivity -> overrideFor(FragmentActivity::class to opensContext)
                     is Fragment -> overrideFor(Fragment::class to opensContext)
+                    is ComposableDestination -> overrideFor(ComposableDestination::class to opensContext)
                     else -> null
                 }
                 ?: overrideFor(Any::class to opensContext)
                 ?: when {
                     opensContextIsActivity -> overrideFor(overrideContext.contextReference::class to FragmentActivity::class)
                     opensContextIsFragment -> overrideFor(overrideContext.contextReference::class to Fragment::class)
+                    opensContextIsComposable -> overrideFor(overrideContext.contextReference::class to ComposableDestination::class)
                     else -> null
                 }
                 ?: overrideFor(overrideContext.contextReference::class to Any::class)
@@ -86,31 +80,30 @@ internal class ExecutorContainer() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    // TODO - Does not properly support Composable overrides as yet
     internal fun executorForClose(navigationContext: NavigationContext<out Any>): NavigationExecutor<Any, Any, NavigationKey> {
         val parentContextType = navigationContext.getNavigationHandleViewModel().instruction.internal.executorContext?.kotlin
         val contextType = navigationContext.contextReference::class
 
         val override = parentContextType?.let { parentContext ->
-            val parentContextIsActivity by lazy {
-                FragmentActivity::class.java.isAssignableFrom(parentContext.java)
-            }
+            val parentNavigator = navigationContext.controller.navigatorForContextType(parentContext)
 
-            val parentContextIsFragment by lazy {
-                Fragment::class.java.isAssignableFrom(parentContext.java)
-            }
+            val parentContextIsActivity = parentNavigator is ActivityNavigator
+            val parentContextIsFragment = parentNavigator is FragmentNavigator
+            val parentContextIsComposable = parentNavigator is ComposableNavigator
 
             overrideFor(parentContext to contextType)
                 ?: when  {
                     parentContextIsActivity -> overrideFor(FragmentActivity::class to contextType)
                     parentContextIsFragment -> overrideFor(Fragment::class to contextType)
+                    parentContextIsComposable -> overrideFor(ComposableDestination::class to contextType)
                     else -> null
                 }
                 ?: overrideFor(Any::class to contextType)
-                ?: when(navigationContext) {
-                    is ActivityContext -> overrideFor(parentContext to FragmentActivity::class)
-                    is FragmentContext -> overrideFor(parentContext to Fragment::class)
-                    is ComposeContext -> null
+                ?: when(navigationContext.contextReference) {
+                    is FragmentActivity -> overrideFor(parentContext to FragmentActivity::class)
+                    is Fragment -> overrideFor(parentContext to Fragment::class)
+                    is ComposableDestination -> overrideFor(parentContext to ComposableDestination::class)
+                    else -> null
                 }
                 ?: overrideFor(parentContext to Any::class)
         } as? NavigationExecutor<Any, Any, NavigationKey>
