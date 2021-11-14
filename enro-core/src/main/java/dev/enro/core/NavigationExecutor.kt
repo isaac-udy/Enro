@@ -2,12 +2,16 @@ package dev.enro.core
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.activity.DefaultActivityExecutor
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.compose.DefaultComposableExecutor
 import dev.enro.core.fragment.DefaultFragmentExecutor
+import dev.enro.core.fragment.FragmentNavigator
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
 import dev.enro.core.synthetic.SyntheticDestination
+import dev.enro.core.synthetic.SyntheticNavigator
 import kotlin.reflect.KClass
 
 // This class is used primarily to simplify the lambda signature of NavigationExecutor.open
@@ -72,17 +76,17 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
 
     @Suppress("UNCHECKED_CAST")
     fun defaultOpened(args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) {
-        when {
-            FragmentActivity::class.java.isAssignableFrom(args.navigator.contextType.java) ->
+        when(args.navigator) {
+             is ActivityNavigator ->
                 DefaultActivityExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
-            Fragment::class.java.isAssignableFrom(args.navigator.contextType.java) ->
+            is FragmentNavigator ->
                 DefaultFragmentExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
-            SyntheticDestination::class.java.isAssignableFrom(args.navigator.contextType.java) ->
+            is SyntheticNavigator ->
                 DefaultSyntheticExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
-            ComposableDestination::class.java.isAssignableFrom(args.navigator.contextType.java) ->
+            is ComposableNavigator ->
                 DefaultComposableExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
             else -> throw IllegalArgumentException("No default launch executor found for ${opensType.java}")
@@ -91,14 +95,14 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
 
     @Suppress("UNCHECKED_CAST")
     fun defaultClosed(context: NavigationContext<out OpensContext>) {
-        when {
-            FragmentActivity::class.java.isAssignableFrom(context.contextReference::class.java) ->
+        when(context.navigator) {
+            is ActivityNavigator ->
                 DefaultActivityExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
-            Fragment::class.java.isAssignableFrom(context.contextReference::class.java) ->
+            is FragmentNavigator ->
                 DefaultFragmentExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
-            ComposableDestination::class.java.isAssignableFrom(context.contextReference::class.java) ->
+            is ComposableNavigator ->
                 DefaultComposableExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
             else -> throw IllegalArgumentException("No default close executor found for ${opensType.java}")
