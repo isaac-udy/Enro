@@ -473,4 +473,48 @@ class ResultTests {
                 .result
         )
     }
+
+    @Test
+    fun whenActivityRequestsResult_andResultOpensActivityThatUsesViewModelToForwardResult_thenResultIsForwarded() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+        val expectedResult = UUID.randomUUID().toString()
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .context
+            .resultChannel
+            .open(ViewModelForwardingResultActivityKey())
+
+        expectContext<ResultActivity, ActivityResultKey>()
+            .navigation
+            .closeWithResult(expectedResult)
+
+        assertEquals(
+            expectedResult,
+            expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+                .context
+                .result
+        )
+    }
+
+    @Test
+    fun whenActivityRequestsResult_andResultOpensFragmentThatUsesViewModelToForwardResult_thenResultIsForwarded() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+        val expectedResult = UUID.randomUUID().toString()
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .context
+            .resultChannel
+            .open(ViewModelForwardingResultFragmentKey())
+
+        expectContext<ResultActivity, ActivityResultKey>()
+            .navigation
+            .closeWithResult(expectedResult)
+
+        assertEquals(
+            expectedResult,
+            expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+                .context
+                .result
+        )
+    }
 }

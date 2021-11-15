@@ -33,30 +33,33 @@ internal class LazyResultChannelProperty<T>(
 
         lifecycle.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if(event == Lifecycle.Event.ON_DESTROY) {
-                    lifecycle.lifecycle.removeObserver(this)
-                    this@LazyResultChannelProperty.resultChannel = null
-                    return
-                }
-
-                if(event == Lifecycle.Event.ON_START) {
-                    if(resultChannel == null) {
+                when (event) {
+                    Lifecycle.Event.ON_CREATE -> {
                         resultChannel = ResultChannelImpl(
                             navigationHandle = handle.value,
                             resultType = resultType,
                             onResult = onResult
                         )
                     }
-                    EnroResult.from(handle.value.controller)
-                        .apply {
-                            registerChannel(resultChannel ?: return)
-                        }
-                }
-                if (event == Lifecycle.Event.ON_STOP) {
-                    EnroResult.from(handle.value.controller)
-                        .apply {
-                            deregisterChannel(resultChannel ?: return)
-                        }
+                    Lifecycle.Event.ON_START -> {
+                        EnroResult.from(handle.value.controller)
+                            .apply {
+                                registerChannel(resultChannel ?: return)
+                            }
+                    }
+                    Lifecycle.Event.ON_STOP -> {
+                        EnroResult.from(handle.value.controller)
+                            .apply {
+                                deregisterChannel(resultChannel ?: return)
+                            }
+                    }
+                    Lifecycle.Event.ON_DESTROY -> {
+                        lifecycle.lifecycle.removeObserver(this)
+                        resultChannel = null
+                    }
+                    else -> {
+                        // Do nothing
+                    }
                 }
             }
         })

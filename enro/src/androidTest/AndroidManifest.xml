@@ -15,5 +15,6 @@
         <activity android:name=".test.EnroTestTestActivity"/>
         <activity android:name=".core.ImmediateOpenChildActivity"/>
         <activity android:name=".core.ImmediateOpenFragmentChildActivity"/>
+        <activity android:name=".result.ViewModelForwardingResultActivity"/>
     </application>
 </manifest>
