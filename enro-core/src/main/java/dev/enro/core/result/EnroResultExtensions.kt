@@ -42,12 +42,21 @@ fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.sendResult(
 fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwardResult(
     navigationKey: NavigationKey.WithResult<T>
 ) {
-    navigationContext.getNavigationHandle().executeInstruction(
-        ResultChannelImpl.overrideResultId(
-            NavigationInstruction.Forward(navigationKey),
-            ResultChannelImpl.getResultId(instruction) ?: return
+    val resultId = ResultChannelImpl.getResultId(instruction)
+
+    // If the incoming instruction does not have a resultId attached, we
+    // still want to open the screen we are being forwarded to
+    if(resultId == null) {
+        navigationContext.getNavigationHandle().executeInstruction(
+            NavigationInstruction.Forward(navigationKey)
         )
-    )
+    } else {
+        navigationContext.getNavigationHandle().executeInstruction(
+            ResultChannelImpl.overrideResultId(
+                NavigationInstruction.Forward(navigationKey), resultId
+            )
+        )
+    }
 }
 
 inline fun <reified T : Any> ViewModel.registerForNavigationResult(

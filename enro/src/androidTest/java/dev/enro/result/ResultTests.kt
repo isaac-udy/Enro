@@ -379,6 +379,33 @@ class ResultTests {
     }
 
     @Test
+    fun whenSyntheticDestinationIsOpened_andSyntheticDestinationForwardsResultFromActivity_andSyntheticDestinationWasNotOpenedForResult_thenForwardedScreenIsStillOpened() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .navigation
+            .forward(
+                ForwardingSyntheticActivityResultKey()
+            )
+
+        expectContext<ResultActivity, ActivityResultKey>()
+    }
+
+    @Test
+    fun whenSyntheticDestinationIsOpened_andSyntheticDestinationForwardsResultFromFragment_andSyntheticDestinationWasNotOpenedForResult_thenForwardedScreenIsStillOpened() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .navigation
+            .forward(
+                ForwardingSyntheticFragmentResultKey()
+            )
+
+        expectContext<ResultFragment, FragmentResultKey>()
+    }
+
+
+    @Test
     fun whenActivityRequestResult_andResultProviderIsSyntheticDestination_andSyntheticDestinationForwardsResultFromActivityKey_thenResultIsReceived() {
         ActivityScenario.launch(ResultReceiverActivity::class.java)
         val expectedResult = UUID.randomUUID().toString()
