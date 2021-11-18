@@ -31,7 +31,7 @@ dependencies {
 <p>
 Enro was previously published on JCenter, under the group name `nav.enro`. With the move to Maven Central, the group name has been changed to `dev.enro`, and the packages within the project have been updated to reflect this. 
 
-If you require older versions of Enro, these remain available on Github Packages. 
+Previously older versions of Enro were available on Gituhb, but these have now been removed. If you require pre-built artifacts, and are unable to build older versions of Enro yourself, please contact Isaac Udy via LinkedIn, and he will be happy to provide you with older versions of Enro as compiled artifacts.
 </p>
 </details>
 
