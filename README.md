@@ -102,6 +102,9 @@ fun MyComposableScreen() {
 
 ```
 
+## Applications using Enro
+[![Splitwise](/resources/splitwise-icon.png)](https://www.splitwise.com/)
+
 ## FAQ
 #### Minimum SDK Version
 Enro supports a minimum SDK version of 16. However, support for SDK 16 was only recently added and targetting any SDK below 21 should be considered experimental. If you experience issues running on an SDK below 21, please report a GitHub issue. 
