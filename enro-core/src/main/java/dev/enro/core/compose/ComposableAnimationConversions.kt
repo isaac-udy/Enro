@@ -6,15 +6,13 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.animation.Transformation
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 
@@ -51,7 +49,7 @@ internal fun getAnimationResourceState(
     if (animOrAnimator == 0) return state.value
 
     updateAnimationResourceStateFromAnim(state, animOrAnimator, size)
-    updateAnimationResourceStateFromAnimator(state, animOrAnimator)
+    updateAnimationResourceStateFromAnimator(state, animOrAnimator, size)
 
     LaunchedEffect(animOrAnimator) {
         val start = System.currentTimeMillis()
@@ -114,43 +112,39 @@ private fun updateAnimationResourceStateFromAnim(
 @Composable
 private fun updateAnimationResourceStateFromAnimator(
     state: MutableState<AnimationResourceState>,
-    animOrAnimator: Int
+    animOrAnimator: Int,
+    size: IntSize
 ) {
     val context = LocalContext.current
     val isAnimator =
         remember(animOrAnimator) { context.resources.getResourceTypeName(animOrAnimator) == "animator" }
     if (!isAnimator) return
 
-    val animator = remember(animOrAnimator) {
+    val animator = remember(animOrAnimator, size) {
         state.value = AnimationResourceState(
             alpha = 0.0f,
             isActive = true
         )
         AnimatorInflater.loadAnimator(context, animOrAnimator)
     }
-
-    AndroidView(
-        modifier = Modifier.fillMaxSize(),
-        factory = {
-            AnimatorView(it).apply {
-                animator.setTarget(this)
-                animator.start()
-                animation
-            }
-        },
-        update = {
-            state.value = AnimationResourceState(
-                alpha = it.alpha,
-                scaleX = it.scaleX,
-                scaleY = it.scaleY,
-                translationX = it.translationX,
-                translationY = it.translationY,
-                rotationX = it.rotationX,
-                rotationY = it.rotationY,
-
-                isActive = state.value.isActive && animator.isRunning,
-                playTime = state.value.playTime
-            )
+    val animatorView = remember(animOrAnimator, size) {
+        AnimatorView(context).apply {
+            layoutParams = ViewGroup.LayoutParams(size.width, size.height)
+            animator.setTarget(this)
+            animator.start()
         }
+    }
+
+    state.value = AnimationResourceState(
+        alpha = animatorView.alpha,
+        scaleX = animatorView.scaleX,
+        scaleY = animatorView.scaleY,
+        translationX = animatorView.translationX,
+        translationY = animatorView.translationY,
+        rotationX = animatorView.rotationX,
+        rotationY = animatorView.rotationY,
+
+        isActive = state.value.isActive && animator.isRunning,
+        playTime = state.value.playTime
     )
 }
