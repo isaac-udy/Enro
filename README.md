@@ -104,7 +104,9 @@ fun MyComposableScreen() {
 
 ## Applications using Enro
 <p align="center">
-    [<img width="100px" src="resources/splitwise-icon.png" />](https://www.splitwise.com/)
+    <a href="https://www.splitwise.com/">
+        <img width="100px" src="resources/splitwise-icon.png" />
+    </a>
 </p>
 
 ## FAQ
