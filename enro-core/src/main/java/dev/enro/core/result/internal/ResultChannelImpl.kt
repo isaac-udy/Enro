@@ -7,10 +7,12 @@ import androidx.annotation.Keep
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.lifecycleScope
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.result.EnroResultChannel
+import kotlinx.coroutines.delay
 
 private const val EXTRA_RESULT_CHANNEL_ID = "com.enro.core.RESULT_CHANNEL_ID"
 
@@ -68,21 +70,12 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
         if (!resultType.isAssignableFrom(result::class.java))
             throw IllegalArgumentException("Attempted to consume result with wrong type!")
         result as T
-
-        handler.post {
-            navigationHandle.lifecycle.addObserver(object : LifecycleObserver {
-                @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-                fun onResume() {
-                    onResult(result)
-                    navigationHandle.lifecycle.removeObserver(this)
-                }
-            })
+        navigationHandle.lifecycleScope.launchWhenCreated {
+            onResult(result)
         }
     }
 
     internal companion object {
-        private val handler = Handler(Looper.getMainLooper())
-
         internal fun getResultId(navigationHandle: NavigationHandle): ResultChannelId? {
             return getResultId(navigationHandle.additionalData)
         }

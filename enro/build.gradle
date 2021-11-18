@@ -27,6 +27,12 @@ dependencies {
 
     kaptAndroidTest project(":enro-processor")
 
+    testImplementation deps.testing.junit
+    testImplementation deps.testing.androidx.junit
+    testImplementation deps.testing.androidx.runner
+    testImplementation deps.testing.robolectric
+    testImplementation project(":enro-test")
+
     androidTestImplementation project(":enro-test")
 
     androidTestImplementation deps.testing.junit

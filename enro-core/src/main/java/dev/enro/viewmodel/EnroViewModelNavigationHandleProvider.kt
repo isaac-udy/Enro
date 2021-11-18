@@ -1,5 +1,6 @@
 package dev.enro.viewmodel
 
+import androidx.annotation.Keep
 import dev.enro.core.NavigationHandle
 
 internal object EnroViewModelNavigationHandleProvider {
@@ -15,5 +16,11 @@ internal object EnroViewModelNavigationHandleProvider {
 
     fun get(modelClass: Class<*>): NavigationHandle {
         return navigationHandles[modelClass] as NavigationHandle
+    }
+
+    // Called reflectively by enro-test
+    @Keep
+    private fun clearAllForTest() {
+        navigationHandles.clear()
     }
 }

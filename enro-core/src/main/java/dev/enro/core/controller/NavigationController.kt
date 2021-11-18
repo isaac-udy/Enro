@@ -141,10 +141,17 @@ class NavigationController internal constructor() {
 
 val Application.navigationController: NavigationController
     get() {
-        if (this is NavigationApplication) return navigationController
-        val bound = NavigationController.navigationControllerBindings[this]
-        if (bound != null) return bound
-        throw IllegalStateException("Application is not a NavigationApplication, and has no attached NavigationController")
+        synchronized(this) {
+            if (this is NavigationApplication) return navigationController
+            val bound = NavigationController.navigationControllerBindings[this]
+            if (bound == null) {
+                val navigationController = NavigationController()
+                NavigationController.navigationControllerBindings[this] = NavigationController()
+                navigationController.install(this)
+                return navigationController
+            }
+            return bound
+        }
     }
 
 internal val NavigationController.application: Application

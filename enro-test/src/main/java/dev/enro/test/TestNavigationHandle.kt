@@ -1,12 +1,13 @@
 package dev.enro.test
 
+import android.app.Application
 import android.os.Bundle
 import androidx.lifecycle.Lifecycle
-import dev.enro.core.NavigationHandle
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.TypedNavigationHandle
+import androidx.lifecycle.LifecycleRegistry
+import androidx.test.core.app.ApplicationProvider
+import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.controller.navigationController
 import junit.framework.TestCase
 
 class TestNavigationHandle<T : NavigationKey>(
@@ -39,6 +40,37 @@ class TestNavigationHandle<T : NavigationKey>(
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {
         navigationHandle.executeInstruction(navigationInstruction)
     }
+}
+
+fun <T: NavigationKey> createTestNavigationHandle(
+    key: NavigationKey
+) : TestNavigationHandle<T> {
+    val instruction = NavigationInstruction.Forward(
+        navigationKey = key
+    )
+
+    return TestNavigationHandle(object: NavigationHandle {
+        private val instructions = mutableListOf<NavigationInstruction>()
+        private val lifecycle = LifecycleRegistry(this).apply {
+            currentState = Lifecycle.State.RESUMED
+        }
+
+        override val id: String = instruction.instructionId
+        override val additionalData: Bundle = instruction.additionalData
+        override val key: NavigationKey = key
+
+        override val controller: NavigationController = ApplicationProvider
+            .getApplicationContext<Application>()
+            .navigationController
+
+        override fun executeInstruction(navigationInstruction: NavigationInstruction) {
+            instructions.add(navigationInstruction)
+        }
+
+        override fun getLifecycle(): Lifecycle {
+            return lifecycle
+        }
+    })
 }
 
 fun TestNavigationHandle<*>.expectCloseInstruction() {
