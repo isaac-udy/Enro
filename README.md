@@ -103,7 +103,9 @@ fun MyComposableScreen() {
 ```
 
 ## Applications using Enro
-[<img width="100px" src="resources/splitwise-icon.png" />](https://www.splitwise.com/)
+<p align="center">
+    [<img width="100px" src="resources/splitwise-icon.png" />](https://www.splitwise.com/)
+</p>
 
 ## FAQ
 #### Minimum SDK Version
