@@ -12,6 +12,7 @@ import dev.enro.TestActivity
 import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
+import dev.enro.core.close
 import dev.enro.core.forward
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.closeWithResult
@@ -201,5 +202,49 @@ class ViewModelForwardingResultFragment : TestFragment() {
     ): View? {
         viewModel.hashCode()
         return super.onCreateView(inflater, container, savedInstanceState)
+    }
+}
+
+@Parcelize
+class ResultFlowKey : NavigationKey
+
+@NavigationDestination(ResultFlowKey::class)
+class ResultFlowActivity : TestActivity() {
+    private val viewModel by enroViewModels<ResultFlowViewModel>()
+    private val navigation by navigationHandle<ResultFlowKey> {
+        container(primaryFragmentContainer)
+    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.hashCode()
+    }
+}
+
+class ResultFlowViewModel : ViewModel() {
+    val navigation by navigationHandle<ResultFlowKey>()
+    val first by registerForNavigationResult<String>(navigation) {
+        if(it == "close") {
+            navigation.close()
+        }
+        else {
+            second.open(FragmentResultKey())
+        }
+    }
+
+    val second by registerForNavigationResult<String>(navigation) {
+        if(it == "close") {
+            navigation.close()
+        }
+        else {
+            third.open(FragmentResultKey())
+        }
+    }
+
+    val third by registerForNavigationResult<String>(navigation) {
+        navigation.close()
+    }
+
+    init {
+        first.open(FragmentResultKey())
     }
 }

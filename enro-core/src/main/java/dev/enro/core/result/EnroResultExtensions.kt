@@ -24,6 +24,21 @@ fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithRe
     close()
 }
 
+fun <T : Any> ExecutorArgs<out Any, out Any, out NavigationKey>.sendResult(
+    result: T
+) {
+    val resultId = ResultChannelImpl.getResultId(instruction)
+    if (resultId != null) {
+        EnroResult.from(fromContext.controller).addPendingResult(
+            PendingResult(
+                resultChannelId = resultId,
+                resultType = result::class,
+                result = result
+            )
+        )
+    }
+}
+
 fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.sendResult(
     result: T
 ) {
@@ -46,7 +61,7 @@ fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwardResul
 
     // If the incoming instruction does not have a resultId attached, we
     // still want to open the screen we are being forwarded to
-    if(resultId == null) {
+    if (resultId == null) {
         navigationContext.getNavigationHandle().executeInstruction(
             NavigationInstruction.Forward(navigationKey)
         )

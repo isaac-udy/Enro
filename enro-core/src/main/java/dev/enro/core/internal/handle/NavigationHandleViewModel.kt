@@ -76,22 +76,20 @@ internal open class NavigationHandleViewModel(
     }
 
     private fun executePendingInstruction() {
-        if (Looper.getMainLooper() != Looper.myLooper()) {
-            Handler(Looper.getMainLooper()).post { executePendingInstruction() }
-            return
-        }
         val context = navigationContext ?: return
         val instruction = pendingInstruction ?: return
-        pendingInstruction = null
 
-        when (instruction) {
-            is NavigationInstruction.Open -> {
-                context.controller.open(context, instruction)
+        pendingInstruction = null
+        context.lifecycleOwner.lifecycleScope.launchWhenCreated {
+            when (instruction) {
+                is NavigationInstruction.Open -> {
+                    context.controller.open(context, instruction)
+                }
+                NavigationInstruction.RequestClose -> {
+                    internalOnCloseRequested()
+                }
+                NavigationInstruction.Close -> context.controller.close(context)
             }
-            NavigationInstruction.RequestClose -> {
-                internalOnCloseRequested()
-            }
-            NavigationInstruction.Close -> context.controller.close(context.leafContext())
         }
     }
 

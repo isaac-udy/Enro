@@ -11,6 +11,7 @@
         <activity android:name=".result.ResultReceiverActivity"/>
         <activity android:name=".result.NestedResultReceiverActivity"/>
         <activity android:name=".result.SideBySideNestedResultReceiverActivity"/>
+        <activity android:name=".result.ResultFlowActivity"/>
         <activity android:name=".core.PluginTestActivity"/>
         <activity android:name=".test.EnroTestTestActivity"/>
         <activity android:name=".core.ImmediateOpenChildActivity"/>
