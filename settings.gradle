@@ -73,7 +73,7 @@ dependencyResolutionManagement {
             alias("processing-jsr250").to("javax.annotation:jsr250-api:1.0")
             alias("processing-incremental").to("net.ltgt.gradle.incap:incap:0.3")
             alias("processing-incrementalProcessor").to("net.ltgt.gradle.incap:incap-processor:0.3")
-            alias("processing-autoService").to("com.google.auto.service:auto-service:1.0-rc7")
+            alias("processing-autoService").to("com.google.auto.service:auto-service:1.0.1")
             alias("processing-javaPoet").to("com.squareup:javapoet:1.13.0")
 
             alias("material").to("com.google.android.material:material:1.4.0-alpha01")
