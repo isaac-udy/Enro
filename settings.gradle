@@ -29,7 +29,7 @@ dependencyResolutionManagement {
             alias("androidx-core").to("androidx.core:core-ktx:1.3.2")
             alias("androidx-appcompat").to("androidx.appcompat:appcompat:1.3.1")
             alias("androidx-constraintlayout").to("androidx.constraintlayout:constraintlayout:2.1.1")
-            alias("androidx-fragment").to("androidx.fragment:fragment-ktx:1.3.6")
+            alias("androidx-fragment").to("androidx.fragment:fragment-ktx:1.4.0")
             alias("androidx-recyclerview").to("androidx.recyclerview:recyclerview:1.2.1")
 
             alias("androidx-activity").to("androidx.activity:activity-ktx:1.4.0")
