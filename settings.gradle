@@ -51,7 +51,7 @@ dependencyResolutionManagement {
             alias("compose-materialIconsExtended").to("androidx.compose.material:material-icons-extended:1.0.5")
 
             alias("kotlin-gradle").to("org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31")
-            alias("kotlin-stdLib").to("org.jetbrains.kotlin:kotlin-stdlib:1.5.31")
+            alias("kotlin-stdLib").to("org.jetbrains.kotlin:kotlin-stdlib:1.6.0")
 
             alias("hilt-gradle").to("com.google.dagger:hilt-android-gradle-plugin:2.40.1")
             alias("hilt-android").to("com.google.dagger:hilt-android:2.40.1")
