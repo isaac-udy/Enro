@@ -59,7 +59,7 @@ dependencyResolutionManagement {
             alias("hilt-testing").to("com.google.dagger:hilt-android-testing:2.40.1")
             alias("hilt-compiler").to("androidx.hilt:hilt-compiler:1.0.0")
 
-            alias("testing-junit").to("junit:junit:4.13.1")
+            alias("testing-junit").to("junit:junit:4.13.2")
             alias("testing-robolectric").to("org.robolectric:robolectric:4.5.1")
 
             alias("testing-androidx-junit").to("androidx.test.ext:junit:1.1.3")
