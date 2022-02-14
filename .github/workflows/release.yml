@@ -57,7 +57,7 @@ jobs:
           PUBLISH_SIGNING_KEY_ID: ${{ secrets.PUBLISH_SIGNING_KEY_ID }}
           PUBLISH_SIGNING_KEY_PASSWORD: ${{ secrets.PUBLISH_SIGNING_KEY_PASSWORD }}
           PUBLISH_SIGNING_KEY_LOCATION: ${{ secrets.PUBLISH_SIGNING_KEY_LOCATION }}
-        run: ./gradlew publishAllPublicationsToSonatypeRepository publishAllPublicationsToGitHubPackagesRepository
+        run: ./gradlew publishAllPublicationsToSonatypeRepository # publishAllPublicationsToGitHubPackagesRepository
 
       - name: Update Repo
         uses: EndBug/add-and-commit@v5
