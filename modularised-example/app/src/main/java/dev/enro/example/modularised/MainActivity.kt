@@ -56,12 +56,8 @@ class MainActivity : AppCompatActivity() {
 }
 
 @NavigationDestination(LaunchKey::class)
-class LaunchDestination : SyntheticDestination<LaunchKey> {
-    override fun process(
-        navigationContext: NavigationContext<out Any>,
-        key: LaunchKey,
-        instruction: NavigationInstruction.Open
-    ) {
+class LaunchDestination : SyntheticDestination<LaunchKey>() {
+    override fun process() {
         val navigation = navigationContext.activity.getNavigationHandle()
         val userRepo = UserRepository.instance
         val nextKey = when (val user = userRepo.activeUser) {
