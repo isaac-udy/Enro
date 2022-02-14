@@ -129,7 +129,7 @@ private class SimpleDataAdapter(
         holder.bind(getItem(position))
     }
 
-    private inner class ViewHolder(
+    inner class ViewHolder(
         view: View
     ) : RecyclerView.ViewHolder(view) {
 
