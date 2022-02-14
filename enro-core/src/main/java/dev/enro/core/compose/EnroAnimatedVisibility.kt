@@ -41,8 +41,14 @@ internal fun EnroAnimatedVisibility(
                 size.value = it.size
             },
         visible = currentVisibility.value || animationStateValues.isActive,
-        enter = fadeIn(1.0f, tween(1)),
-        exit = fadeOut(1.0f, tween(1)),
+        enter = fadeIn(
+            animationSpec = tween(1),
+            initialAlpha = 1.0f
+        ),
+        exit = fadeOut(
+            animationSpec = tween(1),
+            targetAlpha = 1.0f
+        ),
     ) {
         Box(
             modifier = Modifier
