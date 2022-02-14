@@ -9,16 +9,16 @@ on:
 jobs:
   run-ui-tests:
     name: Run Tests
-    runs-on: macos-latest
+    runs-on: macOS-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
 
-#    - name: Run Enro UI Tests
-#      uses: reactivecircus/android-emulator-runner@v2
-#      with:
-#        api-level: 29
-#        script: ./gradlew :enro:connectedCheck
+    - name: Run Enro UI Tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        script: ./gradlew :enro:connectedCheck
 
     - name: Run Modularised Example Tests
       uses: reactivecircus/android-emulator-runner@v2
