@@ -13,13 +13,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.core.*
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
 internal class EnroDestinationStorage : ViewModel() {
     val destinations = mutableMapOf<String, MutableMap<String, ComposableDestinationContextReference>>()
+
+    override fun onCleared() {
+        destinations.values
+            .flatMap { it.values }
+            .forEach { it.viewModelStore.clear() }
+
+        super.onCleared()
+    }
 }
 
 sealed class EmptyBehavior {
