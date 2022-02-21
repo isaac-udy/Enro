@@ -1,4 +1,7 @@
 package dev.enro
+import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
@@ -47,6 +50,38 @@ class ActivityChildFragment : TestFragment() {
     val navigation by navigationHandle<ActivityChildFragmentKey>() {
         container(primaryFragmentContainer) {
             it is Nothing
+        }
+    }
+}
+
+@Parcelize data class ActivityWithComposablesKey(
+    val id: String,
+    val primaryContainerAccepts: List<Class<out NavigationKey>>,
+    val secondaryContainerAccepts: List<Class<out NavigationKey>>
+) : NavigationKey
+
+@NavigationDestination(ActivityWithComposablesKey::class)
+class ActivityWithComposables : AppCompatActivity() {
+
+    val navigation by navigationHandle<ActivityWithComposablesKey> {
+        defaultKey(ActivityWithComposablesKey(
+            id = "default",
+            primaryContainerAccepts = listOf(NavigationKey::class.java),
+            secondaryContainerAccepts = emptyList()
+        ))
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            TestComposable(
+                name = "ActivityWithComposablesKey(id = ${navigation.key.id})",
+                primaryContainerAccepts = { key ->
+                    navigation.key.primaryContainerAccepts.any {
+                        it.isAssignableFrom(key::class.java)
+                    }
+                }
+            )
         }
     }
 }
