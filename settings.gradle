@@ -68,6 +68,7 @@ dependencyResolutionManagement {
             alias("testing-androidx-espresso").to("androidx.test.espresso:espresso-core:3.4.0")
             alias("testing-androidx-espressoIntents").to("androidx.test.espresso:espresso-intents:3.4.0")
             alias("testing-androidx-fragment").to("androidx.fragment:fragment-testing:1.4.1")
+            alias("testing-androidx-compose").to("androidx.compose.ui:ui-test-junit4:1.1.0")
 
             alias("processing-jsr250").to("javax.annotation:jsr250-api:1.0")
             alias("processing-incremental").to("net.ltgt.gradle.incap:incap:0.3")

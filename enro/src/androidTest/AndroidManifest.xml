@@ -1,8 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.enro">
     <application
         android:name=".TestApplication"
-        android:testOnly="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        android:testOnly="true">
         <activity android:name=".DefaultActivity"/>
         <activity android:name=".GenericActivity"/>
         <activity android:name=".ActivityWithFragments"/>
@@ -18,5 +17,7 @@
         <activity android:name=".core.ImmediateOpenFragmentChildActivity"/>
         <activity android:name=".result.ViewModelForwardingResultActivity"/>
         <activity android:name=".ActivityWithComposables"/>
+        <activity android:name=".core.ComposableTestActivity" />
+        <activity android:name="androidx.activity.ComponentActivity"/>
     </application>
 </manifest>
