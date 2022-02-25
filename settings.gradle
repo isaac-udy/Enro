@@ -47,7 +47,7 @@ dependencyResolutionManagement {
             alias("compose-livedata").to("androidx.compose.runtime:runtime-livedata:1.1.0")
             alias("compose-material").to("androidx.compose.material:material:1.1.0")
 
-            alias("compose-materialIcons").to("androidx.compose.material:material-icons-core:1.1.0")
+            alias("compose-materialIcons").to("androidx.compose.material:material-icons-core:1.1.1")
             alias("compose-materialIconsExtended").to("androidx.compose.material:material-icons-extended:1.1.0")
 
             alias("kotlin-gradle").to("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10")
