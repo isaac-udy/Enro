@@ -44,7 +44,7 @@ dependencyResolutionManagement {
             alias("compose-ui").to("androidx.compose.ui:ui:1.1.0")
             alias("compose-uiTooling").to("androidx.compose.ui:ui-tooling:1.1.0")
             alias("compose-runtime").to("androidx.compose.runtime:runtime:1.1.0")
-            alias("compose-livedata").to("androidx.compose.runtime:runtime-livedata:1.1.0")
+            alias("compose-livedata").to("androidx.compose.runtime:runtime-livedata:1.1.1")
             alias("compose-material").to("androidx.compose.material:material:1.1.0")
 
             alias("compose-materialIcons").to("androidx.compose.material:material-icons-core:1.1.0")
@@ -68,6 +68,7 @@ dependencyResolutionManagement {
             alias("testing-androidx-espresso").to("androidx.test.espresso:espresso-core:3.4.0")
             alias("testing-androidx-espressoIntents").to("androidx.test.espresso:espresso-intents:3.4.0")
             alias("testing-androidx-fragment").to("androidx.fragment:fragment-testing:1.4.1")
+            alias("testing-androidx-compose").to("androidx.compose.ui:ui-test-junit4:1.1.0")
 
             alias("processing-jsr250").to("javax.annotation:jsr250-api:1.0")
             alias("processing-incremental").to("net.ltgt.gradle.incap:incap:0.3")
