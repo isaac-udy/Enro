@@ -2,7 +2,7 @@
     <application
         android:name=".TestApplication"
         android:testOnly="true"
-        android:theme="@android:style/Theme.AppCompat.Light.NoActionBar">
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name=".DefaultActivity"/>
         <activity android:name=".GenericActivity"/>
         <activity android:name=".ActivityWithFragments"/>
