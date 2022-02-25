@@ -18,5 +18,7 @@
         <activity android:name=".core.ImmediateOpenFragmentChildActivity"/>
         <activity android:name=".result.ViewModelForwardingResultActivity"/>
         <activity android:name=".ActivityWithComposables"/>
+        <activity android:name=".core.ComposableTestActivity" />
+        <activity android:name="androidx.activity.ComponentActivity"/>
     </application>
 </manifest>

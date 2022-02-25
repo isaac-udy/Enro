@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.*
@@ -65,13 +67,15 @@ fun rememberEnroContainerController(
         UUID.randomUUID().toString()
     }
 
+    val saveableStateHolder = rememberSaveableStateHolder()
     val controller = remember {
         EnroContainerController(
             id = id,
             navigationHandle = viewModelStoreOwner.getNavigationHandleViewModel(),
             accept = accept,
             destinationStorage = destinationStorage,
-            emptyBehavior = emptyBehavior
+            emptyBehavior = emptyBehavior,
+            saveableStateHolder = saveableStateHolder
         )
     }
 
@@ -102,7 +106,8 @@ class EnroContainerController internal constructor(
     val accept: (NavigationKey) -> Boolean,
     internal val navigationHandle: NavigationHandleViewModel,
     private val destinationStorage: EnroDestinationStorage,
-    private val emptyBehavior: EmptyBehavior
+    private val emptyBehavior: EmptyBehavior,
+    internal val saveableStateHolder: SaveableStateHolder,
 ) {
     private lateinit var mutableBackstack: MutableStateFlow<EnroContainerBackstackState>
     val backstack: StateFlow<EnroContainerBackstackState> get() = mutableBackstack
@@ -201,13 +206,17 @@ fun EnroContainer(
     modifier: Modifier = Modifier,
     controller: EnroContainerController = rememberEnroContainerController(),
 ) {
-    val backstackState by controller.backstack.collectAsState()
+    key(controller.id) {
+        controller.saveableStateHolder.SaveableStateProvider(controller.id) {
+            val backstackState by controller.backstack.collectAsState()
 
-    Box(modifier = modifier) {
-        backstackState.renderable.forEach {
-            key(it.instructionId) {
-                controller.getDestinationContext(it).Render()
-                controller.bindDestination(it)
+            Box(modifier = modifier) {
+                backstackState.renderable.forEach {
+                    key(it.instructionId) {
+                        controller.getDestinationContext(it).Render()
+                        controller.bindDestination(it)
+                    }
+                }
             }
         }
     }
