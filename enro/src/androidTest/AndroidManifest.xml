@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.enro">
     <application
         android:name=".TestApplication"
-        android:testOnly="true">
+        android:testOnly="true"
+        android:theme="@android:style/Theme..AppCompat.Light.NoActionBar">
         <activity android:name=".DefaultActivity"/>
         <activity android:name=".GenericActivity"/>
         <activity android:name=".ActivityWithFragments"/>
