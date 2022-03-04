@@ -103,9 +103,13 @@ inline fun <reified T : Any> Fragment.registerForNavigationResult(
     )
 
 inline fun <reified T : Any> NavigationHandle.registerForNavigationResult(
+    id: String,
     noinline onResult: (T) -> Unit
-): EnroResultChannel<T> = ResultChannelImpl(
-    navigationHandle = this,
-    resultType = T::class.java,
-    onResult = onResult
-)
+): EnroResultChannel<T> {
+    return ResultChannelImpl(
+        navigationHandle = this,
+        resultType = T::class.java,
+        onResult = onResult,
+        resultId = id
+    ).apply { attach() }
+}

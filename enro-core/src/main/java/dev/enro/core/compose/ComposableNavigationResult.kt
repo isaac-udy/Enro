@@ -5,7 +5,6 @@ import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import dev.enro.core.result.EnroResult
 import dev.enro.core.result.EnroResultChannel
 import dev.enro.core.result.internal.ResultChannelImpl
 import java.util.*
@@ -29,9 +28,9 @@ inline fun <reified T: Any> registerForNavigationResult(
     }
 
     DisposableEffect(true) {
-        EnroResult.from(navigationHandle.controller).registerChannel(resultChannel)
+        resultChannel.attach()
         onDispose {
-            EnroResult.from(navigationHandle.controller).deregisterChannel(resultChannel)
+            resultChannel.detach()
         }
     }
     return resultChannel

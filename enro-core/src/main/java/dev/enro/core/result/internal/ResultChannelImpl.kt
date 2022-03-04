@@ -1,18 +1,15 @@
 package dev.enro.core.result.internal
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.annotation.Keep
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.result.EnroResultChannel
-import kotlinx.coroutines.delay
+import dev.enro.core.result.EnroResult
+import dev.enro.core.result.UnmanagedEnroResultChannel
 
 private const val EXTRA_RESULT_CHANNEL_ID = "com.enro.core.RESULT_CHANNEL_ID"
 
@@ -21,7 +18,7 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
     private val resultType: Class<T>,
     private val onResult: (T) -> Unit,
     private val resultId: String = "",
-) : EnroResultChannel<T> {
+) : UnmanagedEnroResultChannel<T> {
     /**
      * The resultId being set here to the JVM class name of the onResult lambda is a key part of
      * being able to make result channels work without providing an explicit id. The JVM will treat
@@ -56,6 +53,14 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
         resultId = onResult::class.java.name +"@"+resultId
     )
 
+    init {
+        navigationHandle.lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            if(event == Lifecycle.Event.ON_DESTROY) {
+                detach()
+            }
+        })
+    }
+
     override fun open(key: NavigationKey.WithResult<T>) {
         navigationHandle.executeInstruction(
             NavigationInstruction.Forward(key).apply {
@@ -74,6 +79,17 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
         navigationHandle.lifecycleScope.launchWhenCreated {
             onResult(result)
         }
+    }
+
+    override fun attach() {
+        if(navigationHandle.lifecycle.currentState == Lifecycle.State.DESTROYED) return
+        EnroResult.from(navigationHandle.controller)
+            .registerChannel(this)
+    }
+
+    override fun detach() {
+        EnroResult.from(navigationHandle.controller)
+            .deregisterChannel(this)
     }
 
     internal companion object {

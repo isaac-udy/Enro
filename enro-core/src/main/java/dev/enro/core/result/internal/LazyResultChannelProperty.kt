@@ -7,9 +7,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import dev.enro.core.NavigationHandle
 import dev.enro.core.getNavigationHandle
-import dev.enro.core.navigationContext
-import dev.enro.core.result.EnroResult
-import dev.enro.core.synthetic.SyntheticDestination
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -42,16 +39,10 @@ internal class LazyResultChannelProperty<T>(
                         )
                     }
                     Lifecycle.Event.ON_START -> {
-                        EnroResult.from(handle.value.controller)
-                            .apply {
-                                registerChannel(resultChannel ?: return)
-                            }
+                        resultChannel?.attach()
                     }
                     Lifecycle.Event.ON_STOP -> {
-                        EnroResult.from(handle.value.controller)
-                            .apply {
-                                deregisterChannel(resultChannel ?: return)
-                            }
+                        resultChannel?.detach()
                     }
                     Lifecycle.Event.ON_DESTROY -> {
                         lifecycle.lifecycle.removeObserver(this)

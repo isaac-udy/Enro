@@ -5,3 +5,8 @@ import dev.enro.core.NavigationKey
 interface EnroResultChannel<T> {
     fun open(key: NavigationKey.WithResult<T>)
 }
+
+interface UnmanagedEnroResultChannel<T> : EnroResultChannel<T> {
+    fun attach()
+    fun detach()
+}
