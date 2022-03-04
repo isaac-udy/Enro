@@ -35,10 +35,6 @@ class ComposableListResultTests {
         composeContentRule.setContent {
             ListItemWithResult(id = id)
         }
-        composeContentRule.onNodeWithTag("result@$id").assertTextEquals("EMPTY")
-        composeContentRule.onNodeWithTag("button@$id").performClick()
-        composeContentRule.onNodeWithTag("result@$id").assertTextEquals(id)
-
         assertResultIsReceivedFor(id)
     }
 
@@ -59,7 +55,7 @@ class ComposableListResultTests {
     }
 
     @Test
-    fun whenMultipleListItemWithResultsAreRenderedInLazColumn_thenResultIsRetrievedSuccessfullyToTheCorrectItem() {
+    fun whenMultipleListItemWithResultsAreRenderedInLazyColumn_thenResultIsRetrievedSuccessfullyToTheCorrectItem() {
         val ids = List(500) { UUID.randomUUID().toString() }
         val state = LazyListState()
         val scrollTarget = mutableStateOf(0)

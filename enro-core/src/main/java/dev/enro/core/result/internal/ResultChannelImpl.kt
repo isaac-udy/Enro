@@ -19,7 +19,8 @@ private const val EXTRA_RESULT_CHANNEL_ID = "com.enro.core.RESULT_CHANNEL_ID"
 class ResultChannelImpl<T> @PublishedApi internal constructor(
     private val navigationHandle: NavigationHandle,
     private val resultType: Class<T>,
-    private val onResult: (T) -> Unit
+    private val onResult: (T) -> Unit,
+    private val resultId: String = "",
 ) : EnroResultChannel<T> {
     /**
      * The resultId being set here to the JVM class name of the onResult lambda is a key part of
@@ -52,7 +53,7 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
      */
     internal val id = ResultChannelId(
         ownerId = navigationHandle.id,
-        resultId = onResult::class.java.name
+        resultId = onResult::class.java.name +"@"+resultId
     )
 
     override fun open(key: NavigationKey.WithResult<T>) {
