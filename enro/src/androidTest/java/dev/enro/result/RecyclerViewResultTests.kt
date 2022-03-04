@@ -10,26 +10,24 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso
-import androidx.test.espresso.Espresso.*
+import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
-import androidx.test.espresso.assertion.ViewAssertions
-import androidx.test.espresso.assertion.ViewAssertions.*
+import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
-import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
 import dev.enro.annotations.NavigationDestination
+import dev.enro.application
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
-import dev.enro.core.getNavigationHandle
+import dev.enro.core.controller.NavigationController
+import dev.enro.core.controller.navigationController
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.EnroResultChannel
-import dev.enro.core.result.ManagedResultChannel
 import dev.enro.core.result.registerForNavigationResult
-import dev.enro.getNavigationHandle
+import dev.enro.test.callPrivate
 import kotlinx.parcelize.Parcelize
 import org.hamcrest.Matchers
-import org.junit.Before
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.util.*
 
@@ -43,6 +41,36 @@ class RecyclerViewResultTests {
             it.setupItems(1)
         }
         scenario.assertResultIsReceivedFor(0)
+    }
+
+    @Test
+    fun whenMultipleListItemWithResultsAreRendered_andActivityIsDestroyed_thenResultChannelsAreCleanedUp() {
+        val scenario = ActivityScenario.launch(RecyclerViewResultActivity::class.java)
+        scenario.onActivity {
+            it.setupItems(5)
+        }
+        scenario.close()
+
+        val activeChannels = getActiveEnroResultChannels()
+        assertEquals(0, activeChannels.size)
+    }
+
+    @Test
+    fun whenHundredsOfListItemWithResultsAreRendered_andScreenIsScrolled_thenNonVisibleResultChannelsAreCleanedUp() {
+        val scenario = ActivityScenario.launch(RecyclerViewResultActivity::class.java)
+        scenario.onActivity {
+            it.setupItems(5000)
+        }
+        repeat(200) {
+            scenario.scrollTo(it * 10)
+        }
+        var maximumExpectedItems = 0
+        scenario.onActivity {
+            maximumExpectedItems = it.adapter.attachedViewHolderCount
+        }
+
+        val activeChannels = getActiveEnroResultChannels()
+        assertEquals(maximumExpectedItems, activeChannels.size)
     }
 
     @Test
@@ -116,7 +144,7 @@ class RecyclerViewResultActivity : AppCompatActivity() {
         defaultKey(RecyclerViewResultActivityKey())
     }
 
-    val adapter: ListAdapter<RecyclerViewItem, *> by lazy {
+    val adapter by lazy {
         ResultTestAdapter(navigation)
     }
 
@@ -129,9 +157,7 @@ class RecyclerViewResultActivity : AppCompatActivity() {
         }
     }
 
-    var items: List<RecyclerViewItem>
-        get() = adapter.currentList
-        private set(value) = adapter.submitList(value)
+    lateinit var items: List<RecyclerViewItem>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,20 +168,13 @@ class RecyclerViewResultActivity : AppCompatActivity() {
         items = List(size) { index ->
             RecyclerViewItem(
                 id = UUID.randomUUID().toString(),
-                onResultUpdated = { updateItem(index, it) }
+                onResultUpdated = {
+                    result = it
+                    adapter.notifyItemChanged(index)
+                }
             )
         }
-    }
-
-    fun updateItem(index: Int, result: String) {
-        items = items.mapIndexed { i, item ->
-            if(index == i) {
-                item.copy(
-                    result = result
-                )
-            }
-            else item
-        }
+        adapter.submitList(items)
     }
 
     companion object {
@@ -165,11 +184,11 @@ class RecyclerViewResultActivity : AppCompatActivity() {
 
 data class RecyclerViewItem(
     val id: String,
-    val result: String = "EMPTY",
-    val onResultUpdated: (String) -> Unit,
+    var result: String = "EMPTY",
+    val onResultUpdated: RecyclerViewItem.(String) -> Unit,
 )
 
-private class ResultTestAdapter(
+class ResultTestAdapter(
     val navigationHandle: NavigationHandle
 ) : ListAdapter<RecyclerViewItem, ResultViewHolder>(
     object: DiffUtil.ItemCallback<RecyclerViewItem>() {
@@ -182,6 +201,9 @@ private class ResultTestAdapter(
         }
     }
 ) {
+    var attachedViewHolderCount = 0
+        private set
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ResultViewHolder {
         return ResultViewHolder(
             textView = TextView(parent.context).apply {
@@ -193,12 +215,20 @@ private class ResultTestAdapter(
         )
     }
 
+    override fun onViewAttachedToWindow(holder: ResultViewHolder) {
+        attachedViewHolderCount++
+    }
+
+    override fun onViewDetachedFromWindow(holder: ResultViewHolder) {
+        attachedViewHolderCount--
+    }
+
     override fun onBindViewHolder(holder: ResultViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 }
 
-private class ResultViewHolder(
+class ResultViewHolder(
     val textView: TextView,
     val navigationHandle: NavigationHandle
 ) : RecyclerView.ViewHolder(textView) {
@@ -206,8 +236,8 @@ private class ResultViewHolder(
     private var channel: EnroResultChannel<String>? = null
 
     fun bind(item: RecyclerViewItem) {
-        channel = navigationHandle.registerForNavigationResult<String> {
-            item.onResultUpdated(it)
+        channel = navigationHandle.registerForNavigationResult<String>(item.id) {
+            item.onResultUpdated(item, it)
         }
 
         textView.contentDescription = item.id
@@ -216,4 +246,14 @@ private class ResultViewHolder(
             channel?.open(ImmediateSyntheticResultKey(item.id))
         }
     }
+}
+
+private fun getActiveEnroResultChannels(): List<EnroResultChannel<*>> {
+    val enroResultClass = Class.forName("dev.enro.core.result.EnroResult")
+    val getEnroResult = enroResultClass.getDeclaredMethod("from", NavigationController::class.java)
+    getEnroResult.isAccessible = true
+    val enroResult = getEnroResult.invoke(null, application.navigationController)
+    getEnroResult.isAccessible = false
+
+    return enroResult.callPrivate("getActiveChannelsForTest")
 }

@@ -163,5 +163,13 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
     }
 }
 
+private fun <T> Any.callPrivate(methodName: String, vararg args: Any): T {
+    val method = this::class.java.declaredMethods.filter { it.name.startsWith(methodName) }.first()
+    method.isAccessible = true
+    val result = method.invoke(this, *args)
+    method.isAccessible = false
+    return result as T
+}
+
 val application: Application get() =
     InstrumentationRegistry.getInstrumentation().context.applicationContext as Application
