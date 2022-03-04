@@ -163,7 +163,7 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
     }
 }
 
-private fun <T> Any.callPrivate(methodName: String, vararg args: Any): T {
+fun <T> Any.callPrivate(methodName: String, vararg args: Any): T {
     val method = this::class.java.declaredMethods.filter { it.name.startsWith(methodName) }.first()
     method.isAccessible = true
     val result = method.invoke(this, *args)

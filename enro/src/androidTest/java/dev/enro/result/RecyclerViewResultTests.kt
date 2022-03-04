@@ -17,6 +17,7 @@ import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.application
+import dev.enro.callPrivate
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationController
@@ -24,7 +25,6 @@ import dev.enro.core.controller.navigationController
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.EnroResultChannel
 import dev.enro.core.result.registerForNavigationResult
-import dev.enro.test.callPrivate
 import kotlinx.parcelize.Parcelize
 import org.hamcrest.Matchers
 import org.junit.Assert.assertEquals
