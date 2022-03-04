@@ -20,5 +20,6 @@
         <activity android:name=".ActivityWithComposables"/>
         <activity android:name=".core.ComposableTestActivity" />
         <activity android:name="androidx.activity.ComponentActivity"/>
+        <activity android:name=".result.RecyclerViewResultActivity"/>
     </application>
 </manifest>

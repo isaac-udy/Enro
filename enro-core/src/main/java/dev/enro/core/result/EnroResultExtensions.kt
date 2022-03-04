@@ -93,6 +93,32 @@ inline fun <reified T : Any> FragmentActivity.registerForNavigationResult(
         onResult = onResult
     )
 
+
+//ManagedResultChannel<T> {
+//    val navigationHandle = this
+//    return object : ManagedResultChannel<T> {
+//        val channel = ResultChannelImpl(
+//            navigationHandle = navigationHandle,
+//            resultType = T::class.java,
+//            onResult = onResult,
+//            resultId = resultId
+//        )
+//
+//        override fun open(key: NavigationKey.WithResult<T>) {
+//            channel.open(key)
+//        }
+//
+//        override fun setActive() {
+//            EnroResult.from(navigationHandle.controller)
+//                .registerChannel(channel)
+//        }
+//
+//        override fun setInactive() {
+//            EnroResult.from(navigationHandle.controller)
+//                .deregisterChannel(channel)
+//        }
+//    }
+
 inline fun <reified T : Any> Fragment.registerForNavigationResult(
     noinline onResult: (T) -> Unit
 ): ReadOnlyProperty<Fragment, EnroResultChannel<T>> =
@@ -101,3 +127,11 @@ inline fun <reified T : Any> Fragment.registerForNavigationResult(
         resultType = T::class.java,
         onResult = onResult
     )
+
+inline fun <reified T : Any> NavigationHandle.registerForNavigationResult(
+    noinline onResult: (T) -> Unit
+): EnroResultChannel<T> = ResultChannelImpl(
+    navigationHandle = this,
+    resultType = T::class.java,
+    onResult = onResult
+)

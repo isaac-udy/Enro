@@ -44,10 +44,12 @@ dependencies {
     androidTestImplementation deps.androidx.appcompat
     androidTestImplementation deps.androidx.fragment
     androidTestImplementation deps.androidx.activity
+    androidTestImplementation deps.androidx.recyclerview
 
     androidTestImplementation deps.testing.androidx.fragment
     androidTestImplementation deps.testing.androidx.junit
     androidTestImplementation deps.testing.androidx.espresso
+    androidTestImplementation deps.testing.androidx.espressoRecyclerView
     androidTestImplementation deps.testing.androidx.espressoIntents
     androidTestImplementation deps.testing.androidx.runner
 
