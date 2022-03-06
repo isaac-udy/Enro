@@ -20,6 +20,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import dev.enro.DefaultActivity
 import dev.enro.core.compose.registerForNavigationResult
+import dev.enro.getActiveEnroResultChannels
+import kotlinx.coroutines.delay
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import java.util.*
@@ -90,6 +93,54 @@ class ComposableListResultTests {
         scrollTarget.value = 0
         composeContentRule.waitForIdle()
         assertResultIsReceivedFor(ids[0])
+    }
+
+    @Test
+    fun whenMultipleListItemWithResultsAreRendered_andActivityIsDestroyed_thenResultChannelsAreCleanedUp() {
+        val ids = List(5) { UUID.randomUUID().toString() }
+        composeContentRule.setContent {
+            Column {
+                ids.forEach {
+                    ListItemWithResult(id = it)
+                }
+            }
+        }
+        Assert.assertEquals(5, getActiveEnroResultChannels().size)
+        composeContentRule.activityRule.scenario.close()
+        Assert.assertEquals(0, getActiveEnroResultChannels().size)
+    }
+
+    @Test
+    fun whenHundredsOfListItemWithResultsAreRendered_andScreenIsScrolled_thenNonVisibleResultChannelsAreCleanedUp() {
+        val ids = List(5000) { UUID.randomUUID().toString() }
+        val state = LazyListState()
+        val scrollTarget = mutableStateOf(0)
+        composeContentRule.setContent {
+            LazyColumn(
+                state = state
+            ) {
+                items(ids) {
+                    ListItemWithResult(id = it)
+                }
+            }
+            LaunchedEffect(true) {
+                repeat(30) {
+                    state.animateScrollToItem(it * 5)
+                    delay(16)
+                }
+            }
+        }
+        composeContentRule.waitUntil(20_000) { state.firstVisibleItemIndex > 99 }
+        composeContentRule.waitForIdle()
+
+        val activeChannels = getActiveEnroResultChannels()
+        // By the time we get to this assertion, there will still be some non-visible items
+        // which have not been detached from the composition tree, and will still
+        // be registered as active EnroResult channels. The important thing here is that we've
+        // scrolled past ~100 items, and that the size of the active channels should be close
+        // to the number of visible items, so we allow 50% wiggle room in this assertion
+        // when comparing active channels to visible items in the list
+        Assert.assertTrue(activeChannels.size < (state.layoutInfo.visibleItemsInfo.size * 1.5f))
     }
 
     private fun assertResultIsReceivedFor(id: String) {
