@@ -247,13 +247,3 @@ class ResultViewHolder(
         }
     }
 }
-
-private fun getActiveEnroResultChannels(): List<EnroResultChannel<*>> {
-    val enroResultClass = Class.forName("dev.enro.core.result.EnroResult")
-    val getEnroResult = enroResultClass.getDeclaredMethod("from", NavigationController::class.java)
-    getEnroResult.isAccessible = true
-    val enroResult = getEnroResult.invoke(null, application.navigationController)
-    getEnroResult.isAccessible = false
-
-    return enroResult.callPrivate("getActiveChannelsForTest")
-}
