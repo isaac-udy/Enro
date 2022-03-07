@@ -16,15 +16,10 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.*
 import dev.enro.annotations.NavigationDestination
-import dev.enro.application
-import dev.enro.callPrivate
-import dev.enro.core.NavigationHandle
-import dev.enro.core.NavigationKey
-import dev.enro.core.controller.NavigationController
-import dev.enro.core.controller.navigationController
-import dev.enro.core.navigationHandle
-import dev.enro.core.result.EnroResultChannel
+import dev.enro.core.*
+import dev.enro.core.result.managedByViewHolderItem
 import dev.enro.core.result.registerForNavigationResult
+import dev.enro.getActiveEnroResultChannels
 import kotlinx.parcelize.Parcelize
 import org.hamcrest.Matchers
 import org.junit.Assert.assertEquals
@@ -144,9 +139,7 @@ class RecyclerViewResultActivity : AppCompatActivity() {
         defaultKey(RecyclerViewResultActivityKey())
     }
 
-    val adapter by lazy {
-        ResultTestAdapter(navigation)
-    }
+    val adapter = ResultTestAdapter()
 
     val recyclerView by lazy {
         RecyclerView(this).apply {
@@ -188,9 +181,7 @@ data class RecyclerViewItem(
     val onResultUpdated: RecyclerViewItem.(String) -> Unit,
 )
 
-class ResultTestAdapter(
-    val navigationHandle: NavigationHandle
-) : ListAdapter<RecyclerViewItem, ResultViewHolder>(
+class ResultTestAdapter() : ListAdapter<RecyclerViewItem, ResultViewHolder>(
     object: DiffUtil.ItemCallback<RecyclerViewItem>() {
         override fun areItemsTheSame(oldItem: RecyclerViewItem, newItem: RecyclerViewItem): Boolean {
             return oldItem.id == newItem.id
@@ -211,7 +202,7 @@ class ResultTestAdapter(
                     30, 30, 30, 30
                 )
             },
-            navigationHandle = navigationHandle
+            navigationHandle = parent.requireNavigationHandle()
         )
     }
 
@@ -233,17 +224,18 @@ class ResultViewHolder(
     val navigationHandle: NavigationHandle
 ) : RecyclerView.ViewHolder(textView) {
 
-    private var channel: EnroResultChannel<String>? = null
-
     fun bind(item: RecyclerViewItem) {
-        channel = navigationHandle.registerForNavigationResult<String>(item.id) {
-            item.onResultUpdated(item, it)
-        }
+        val channel = navigationHandle
+            .registerForNavigationResult<String>(item.id) {
+                item.onResultUpdated(item, it)
+            }
+            .managedByViewHolderItem(this)
 
         textView.contentDescription = item.id
         textView.text = "${item.id}@${item.result}"
         textView.setOnClickListener {
-            channel?.open(ImmediateSyntheticResultKey(item.id))
+            channel.open(ImmediateSyntheticResultKey(item.id))
         }
     }
+
 }

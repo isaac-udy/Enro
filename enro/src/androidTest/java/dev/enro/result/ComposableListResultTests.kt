@@ -114,7 +114,6 @@ class ComposableListResultTests {
     fun whenHundredsOfListItemWithResultsAreRendered_andScreenIsScrolled_thenNonVisibleResultChannelsAreCleanedUp() {
         val ids = List(5000) { UUID.randomUUID().toString() }
         val state = LazyListState()
-        val scrollTarget = mutableStateOf(0)
         composeContentRule.setContent {
             LazyColumn(
                 state = state

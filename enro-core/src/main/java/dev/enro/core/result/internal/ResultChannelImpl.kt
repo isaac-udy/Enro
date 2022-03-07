@@ -53,15 +53,15 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
         resultId = onResult::class.java.name +"@"+resultId
     )
 
-    init {
-        navigationHandle.lifecycle.addObserver(LifecycleEventObserver { _, event ->
-            if(event == Lifecycle.Event.ON_DESTROY) {
-                detach()
-            }
-        })
-    }
+    private var isDestroyed = false
+    private val lifecycleObserver = LifecycleEventObserver { _, event ->
+        if(event == Lifecycle.Event.ON_DESTROY) {
+            destroy()
+        }
+    }.apply { navigationHandle.lifecycle.addObserver(this) }
 
     override fun open(key: NavigationKey.WithResult<T>) {
+        if(isDestroyed) return
         navigationHandle.executeInstruction(
             NavigationInstruction.Forward(key).apply {
                 additionalData.apply {
@@ -73,6 +73,7 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
 
     @Suppress("UNCHECKED_CAST")
     internal fun consumeResult(result: Any) {
+        if(isDestroyed) return
         if (!resultType.isAssignableFrom(result::class.java))
             throw IllegalArgumentException("Attempted to consume result with wrong type!")
         result as T
@@ -82,14 +83,22 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
     }
 
     override fun attach() {
+        if(isDestroyed) return
         if(navigationHandle.lifecycle.currentState == Lifecycle.State.DESTROYED) return
         EnroResult.from(navigationHandle.controller)
             .registerChannel(this)
     }
 
     override fun detach() {
+        if(isDestroyed) return
         EnroResult.from(navigationHandle.controller)
             .deregisterChannel(this)
+    }
+
+    override fun destroy() {
+        detach()
+        isDestroyed = true
+        navigationHandle.lifecycle.removeObserver(lifecycleObserver)
     }
 
     internal companion object {
