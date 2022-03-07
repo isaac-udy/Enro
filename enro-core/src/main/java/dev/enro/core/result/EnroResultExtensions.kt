@@ -123,7 +123,7 @@ inline fun <reified T : Any> NavigationHandle.registerForNavigationResult(
         navigationHandle = this,
         resultType = T::class.java,
         onResult = onResult,
-        resultId = id
+        additionalResultId = id
     )
 }
 

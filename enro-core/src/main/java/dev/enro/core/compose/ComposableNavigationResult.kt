@@ -15,6 +15,11 @@ inline fun <reified T: Any> registerForNavigationResult(
     noinline onResult: @DisallowComposableCalls (T) -> Unit
 ): EnroResultChannel<T> {
     val navigationHandle = navigationHandle()
+
+    // Remember a random UUID that will be used to uniquely identify this result channel
+    // within the composition. This is important to ensure that results are delivered if a Composable
+    // is used multiple times within the same composition (such as within a list).
+    // See ComposableListResultTests
     val resultId = rememberSaveable {
         UUID.randomUUID().toString()
     }
@@ -23,7 +28,7 @@ inline fun <reified T: Any> registerForNavigationResult(
             navigationHandle = navigationHandle,
             resultType = T::class.java,
             onResult = onResult,
-            resultId = resultId
+            additionalResultId = resultId
         )
     }
 
