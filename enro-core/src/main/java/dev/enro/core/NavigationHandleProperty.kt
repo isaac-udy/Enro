@@ -1,10 +1,13 @@
 package dev.enro.core
 
+import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import java.lang.IllegalStateException
 import java.lang.ref.WeakReference
 import kotlin.collections.set
 import kotlin.properties.ReadOnlyProperty
@@ -46,8 +49,6 @@ class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal const
     }
 }
 
-
-
 inline fun <reified T: NavigationKey> FragmentActivity.navigationHandle(
     noinline config: NavigationHandleConfiguration<T>.() -> Unit = {}
 ): NavigationHandleProperty<T> = NavigationHandleProperty(
@@ -71,3 +72,14 @@ fun NavigationContext<*>.getNavigationHandle(): NavigationHandle = getNavigation
 fun FragmentActivity.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
 
 fun Fragment.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
+
+fun View.getNavigationHandle(): NavigationHandle? = findViewTreeViewModelStoreOwner()?.getNavigationHandleViewModel()
+
+fun View.requireNavigationHandle(): NavigationHandle {
+    if(!isAttachedToWindow) {
+        throw IllegalStateException("$this is not attached to any Window, which is required to retrieve a NavigationHandle")
+    }
+    val viewModelStoreOwner = findViewTreeViewModelStoreOwner()
+        ?: throw IllegalStateException("Could not find ViewTreeViewModelStoreOwner for $this, which is required to retrieve a NavigationHandle")
+    return viewModelStoreOwner.getNavigationHandleViewModel()
+}

@@ -1,26 +1,43 @@
 package dev.enro.core.result.internal
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.annotation.Keep
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.result.EnroResultChannel
-import kotlinx.coroutines.delay
+import dev.enro.core.result.EnroResult
+import dev.enro.core.result.UnmanagedEnroResultChannel
 
 private const val EXTRA_RESULT_CHANNEL_ID = "com.enro.core.RESULT_CHANNEL_ID"
 
+private class ResultChannelProperties<T>(
+    val navigationHandle: NavigationHandle,
+    val resultType: Class<T>,
+    val onResult: (T) -> Unit,
+)
+
 class ResultChannelImpl<T> @PublishedApi internal constructor(
-    private val navigationHandle: NavigationHandle,
-    private val resultType: Class<T>,
-    private val onResult: (T) -> Unit
-) : EnroResultChannel<T> {
+    navigationHandle: NavigationHandle,
+    resultType: Class<T>,
+    onResult: (T) -> Unit,
+    additionalResultId: String = "",
+) : UnmanagedEnroResultChannel<T> {
+
+    /**
+     * The arguments passed to the ResultChannelImpl hold references to the external world, and
+     * can hold references to objects that could leak in memory. We store these properties inside
+     * a variable which is cleared to null when the ResultChannelImpl is destroyed, to ensure
+     * that these references are not held by the ResultChannelImpl after it has been destroyed.
+     */
+    private var arguments: ResultChannelProperties<T>? = ResultChannelProperties(
+        navigationHandle = navigationHandle,
+        resultType = resultType,
+        onResult = onResult,
+    )
+
     /**
      * The resultId being set here to the JVM class name of the onResult lambda is a key part of
      * being able to make result channels work without providing an explicit id. The JVM will treat
@@ -52,11 +69,18 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
      */
     internal val id = ResultChannelId(
         ownerId = navigationHandle.id,
-        resultId = onResult::class.java.name
+        resultId = onResult::class.java.name +"@"+additionalResultId
     )
 
+    private val lifecycleObserver = LifecycleEventObserver { _, event ->
+        if(event == Lifecycle.Event.ON_DESTROY) {
+            destroy()
+        }
+    }.apply { navigationHandle.lifecycle.addObserver(this) }
+
     override fun open(key: NavigationKey.WithResult<T>) {
-        navigationHandle.executeInstruction(
+        val properties = arguments ?: return
+        properties.navigationHandle.executeInstruction(
             NavigationInstruction.Forward(key).apply {
                 additionalData.apply {
                     putParcelable(EXTRA_RESULT_CHANNEL_ID, id)
@@ -67,12 +91,33 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
 
     @Suppress("UNCHECKED_CAST")
     internal fun consumeResult(result: Any) {
-        if (!resultType.isAssignableFrom(result::class.java))
+        val properties = arguments ?: return
+        if (!properties.resultType.isAssignableFrom(result::class.java))
             throw IllegalArgumentException("Attempted to consume result with wrong type!")
         result as T
-        navigationHandle.lifecycleScope.launchWhenCreated {
-            onResult(result)
+        properties.navigationHandle.lifecycleScope.launchWhenCreated {
+            properties.onResult(result)
         }
+    }
+
+    override fun attach() {
+        val properties = arguments ?: return
+        if(properties.navigationHandle.lifecycle.currentState == Lifecycle.State.DESTROYED) return
+        EnroResult.from(properties.navigationHandle.controller)
+            .registerChannel(this)
+    }
+
+    override fun detach() {
+        val properties = arguments ?: return
+        EnroResult.from(properties.navigationHandle.controller)
+            .deregisterChannel(this)
+    }
+
+    override fun destroy() {
+        val properties = arguments ?: return
+        detach()
+        properties.navigationHandle.lifecycle.removeObserver(lifecycleObserver)
+        arguments = null
     }
 
     internal companion object {

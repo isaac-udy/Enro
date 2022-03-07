@@ -66,6 +66,7 @@ dependencyResolutionManagement {
             alias("testing-androidx-core").to("androidx.test:core:1.4.0")
             alias("testing-androidx-runner").to("androidx.test:runner:1.4.0")
             alias("testing-androidx-espresso").to("androidx.test.espresso:espresso-core:3.4.0")
+            alias("testing-androidx-espressoRecyclerView").to("androidx.test.espresso:espresso-contrib:3.4.0")
             alias("testing-androidx-espressoIntents").to("androidx.test.espresso:espresso-intents:3.4.0")
             alias("testing-androidx-fragment").to("androidx.fragment:fragment-testing:1.4.1")
             alias("testing-androidx-compose").to("androidx.compose.ui:ui-test-junit4:1.1.0")
