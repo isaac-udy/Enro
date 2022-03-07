@@ -56,11 +56,6 @@ internal class EnroResult: EnroPlugin() {
         channels.remove(channel.id)
     }
 
-    // Called reflectively in tests
-    private fun getActiveChannelsForTest(): List<EnroResultChannel<*>> {
-        return channels.values.toList()
-    }
-
     companion object {
         private val controllerBindings = mutableMapOf<NavigationController, EnroResult>()
 

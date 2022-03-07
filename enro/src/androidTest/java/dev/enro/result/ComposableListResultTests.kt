@@ -1,5 +1,8 @@
 package dev.enro.result
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -12,7 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -114,7 +117,12 @@ class ComposableListResultTests {
     fun whenHundredsOfListItemWithResultsAreRendered_andScreenIsScrolled_thenNonVisibleResultChannelsAreCleanedUp() {
         val ids = List(5000) { UUID.randomUUID().toString() }
         val state = LazyListState()
+        var scrollFinished = false
         composeContentRule.setContent {
+            val screenHeight = with(LocalDensity.current) {
+                LocalConfiguration.current.screenHeightDp.dp.toPx()
+            }
+
             LazyColumn(
                 state = state
             ) {
@@ -122,14 +130,15 @@ class ComposableListResultTests {
                     ListItemWithResult(id = it)
                 }
             }
+
             LaunchedEffect(true) {
-                repeat(30) {
-                    state.animateScrollToItem(it * 5)
-                    delay(16)
+                while(state.firstVisibleItemIndex < 500) {
+                    state.animateScrollBy(screenHeight * 0.2f, tween(easing = LinearEasing))
                 }
+                scrollFinished = true
             }
         }
-        composeContentRule.waitUntil(20_000) { state.firstVisibleItemIndex > 99 }
+        composeContentRule.waitUntil(2 * 60 * 1000) { scrollFinished }
         composeContentRule.waitForIdle()
 
         val activeChannels = getActiveEnroResultChannels()

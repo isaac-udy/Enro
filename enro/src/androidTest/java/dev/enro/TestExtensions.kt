@@ -173,13 +173,22 @@ fun getActiveEnroResultChannels(): List<EnroResultChannel<*>> {
     val enroResult = getEnroResult.invoke(null, application.navigationController)
     getEnroResult.isAccessible = false
 
-    return enroResult.callPrivate("getActiveChannelsForTest")
+    val channels = enroResult.getPrivate<Map<Any, EnroResultChannel<*>>>("channels")
+    return channels.values.toList()
 }
 
 fun <T> Any.callPrivate(methodName: String, vararg args: Any): T {
     val method = this::class.java.declaredMethods.filter { it.name.startsWith(methodName) }.first()
     method.isAccessible = true
     val result = method.invoke(this, *args)
+    method.isAccessible = false
+    return result as T
+}
+
+fun <T> Any.getPrivate(methodName: String): T {
+    val method = this::class.java.declaredFields.filter { it.name.startsWith(methodName) }.first()
+    method.isAccessible = true
+    val result = method.get(this)
     method.isAccessible = false
     return result as T
 }
