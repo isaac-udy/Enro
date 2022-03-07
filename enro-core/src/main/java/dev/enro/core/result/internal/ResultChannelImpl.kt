@@ -29,7 +29,7 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
     /**
      * The arguments passed to the ResultChannelImpl hold references to the external world, and
      * can hold references to objects that could leak in memory. We store these properties inside
-     * an variable which is cleared to null when the ResultChannelImpl is destroyed, to ensure
+     * a variable which is cleared to null when the ResultChannelImpl is destroyed, to ensure
      * that these references are not held by the ResultChannelImpl after it has been destroyed.
      */
     private var arguments: ResultChannelProperties<T>? = ResultChannelProperties(
