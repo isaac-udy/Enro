@@ -20,7 +20,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.test.core.app.ActivityScenario
 import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.compose.EmptyBehavior
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberEnroContainerController
@@ -106,7 +105,7 @@ class ComposableTestActivity : AppCompatActivity() {
             val controllers = screens.map { key ->
                 val instruction = NavigationInstruction.Forward(key)
                 rememberEnroContainerController(
-                    initialState = listOf(instruction),
+                    initialBackstack = listOf(instruction),
                     accept = { false },
                     emptyBehavior = EmptyBehavior.CloseParent
                 )
