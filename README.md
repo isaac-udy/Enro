@@ -22,8 +22,8 @@ A simple navigation library for Android
 Enro is published to [Maven Central](https://search.maven.org/). Make sure your project includes the `mavenCentral()` repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
-    implementation "dev.enro:enro:1.4.0"
-    kapt "dev.enro:enro-processor:1.4.0"
+    implementation "dev.enro:enro:1.6.0"
+    kapt "dev.enro:enro-processor:1.6.0"
 }
 ```
 <details>
@@ -31,7 +31,7 @@ dependencies {
 <p>
 Enro was previously published on JCenter, under the group name `nav.enro`. With the move to Maven Central, the group name has been changed to `dev.enro`, and the packages within the project have been updated to reflect this. 
 
-If you require older versions of Enro, these remain available on Github Packages. 
+Previously older versions of Enro were available on Gituhb, but these have now been removed. If you require pre-built artifacts, and are unable to build older versions of Enro yourself, please contact Isaac Udy via LinkedIn, and he will be happy to provide you with older versions of Enro as compiled artifacts.
 </p>
 </details>
 
@@ -101,6 +101,13 @@ fun MyComposableScreen() {
 }
 
 ```
+
+## Applications using Enro
+<p align="center">
+    <a href="https://www.splitwise.com/">
+        <img width="100px" src="resources/splitwise-icon.png" />
+    </a>
+</p>
 
 ## FAQ
 #### Minimum SDK Version

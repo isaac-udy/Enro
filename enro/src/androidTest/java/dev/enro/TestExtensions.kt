@@ -12,6 +12,9 @@ import androidx.test.runner.lifecycle.Stage
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.composableManger
+import dev.enro.core.controller.NavigationController
+import dev.enro.core.controller.navigationController
+import dev.enro.core.result.EnroResultChannel
 
 private val debug = false
 
@@ -161,6 +164,33 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
         }
         currentResponse?.let { return it }
     }
+}
+
+fun getActiveEnroResultChannels(): List<EnroResultChannel<*>> {
+    val enroResultClass = Class.forName("dev.enro.core.result.EnroResult")
+    val getEnroResult = enroResultClass.getDeclaredMethod("from", NavigationController::class.java)
+    getEnroResult.isAccessible = true
+    val enroResult = getEnroResult.invoke(null, application.navigationController)
+    getEnroResult.isAccessible = false
+
+    val channels = enroResult.getPrivate<Map<Any, EnroResultChannel<*>>>("channels")
+    return channels.values.toList()
+}
+
+fun <T> Any.callPrivate(methodName: String, vararg args: Any): T {
+    val method = this::class.java.declaredMethods.filter { it.name.startsWith(methodName) }.first()
+    method.isAccessible = true
+    val result = method.invoke(this, *args)
+    method.isAccessible = false
+    return result as T
+}
+
+fun <T> Any.getPrivate(methodName: String): T {
+    val method = this::class.java.declaredFields.filter { it.name.startsWith(methodName) }.first()
+    method.isAccessible = true
+    val result = method.get(this)
+    method.isAccessible = false
+    return result as T
 }
 
 val application: Application get() =

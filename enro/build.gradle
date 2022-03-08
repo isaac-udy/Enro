@@ -8,6 +8,9 @@ android {
         textReport true
         textOutput 'stdout'
     }
+    packagingOptions {
+        resources.excludes.add("META-INF/*")
+    }
 }
 
 dependencies {
@@ -24,6 +27,12 @@ dependencies {
 
     kaptAndroidTest project(":enro-processor")
 
+    testImplementation deps.testing.junit
+    testImplementation deps.testing.androidx.junit
+    testImplementation deps.testing.androidx.runner
+    testImplementation deps.testing.robolectric
+    testImplementation project(":enro-test")
+
     androidTestImplementation project(":enro-test")
 
     androidTestImplementation deps.testing.junit
@@ -32,12 +41,16 @@ dependencies {
     androidTestImplementation deps.androidx.appcompat
     androidTestImplementation deps.androidx.fragment
     androidTestImplementation deps.androidx.activity
+    androidTestImplementation deps.androidx.recyclerview
 
     androidTestImplementation deps.testing.androidx.fragment
     androidTestImplementation deps.testing.androidx.junit
     androidTestImplementation deps.testing.androidx.espresso
+    androidTestImplementation deps.testing.androidx.espressoRecyclerView
     androidTestImplementation deps.testing.androidx.espressoIntents
     androidTestImplementation deps.testing.androidx.runner
+
+    androidTestImplementation deps.testing.androidx.compose
 }
 
 afterEvaluate {

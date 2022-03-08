@@ -1,11 +1,15 @@
 package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
+import android.util.Log
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import dev.enro.core.AnimationPair
 import dev.enro.core.DefaultAnimations
 import dev.enro.core.compose.EnroContainer
@@ -15,7 +19,6 @@ import dev.enro.core.requestClose
 
 @ExperimentalMaterialApi
 class BottomSheetConfiguration : DialogConfiguration() {
-    internal var initialState: ModalBottomSheetValue = ModalBottomSheetValue.HalfExpanded
     internal var animatesToInitialState: Boolean = true
     internal var animatesToHiddenOnClose: Boolean = true
     internal lateinit var bottomSheetState: ModalBottomSheetState
@@ -27,14 +30,6 @@ class BottomSheetConfiguration : DialogConfiguration() {
     class Builder internal constructor(
         private val bottomSheetConfiguration: BottomSheetConfiguration
     ) {
-        fun initialStateIsHalfExpanded() {
-            bottomSheetConfiguration.initialState = ModalBottomSheetValue.HalfExpanded
-        }
-
-        fun initialStateIsExpanded() {
-            bottomSheetConfiguration.initialState = ModalBottomSheetValue.Expanded
-        }
-
         fun setAnimatesToInitialState(animatesToInitialState: Boolean) {
             bottomSheetConfiguration.animatesToInitialState = animatesToInitialState
         }
@@ -101,16 +96,19 @@ internal fun EnroBottomSheetContainer(
     ModalBottomSheetLayout(
         sheetState = state,
         sheetContent = {
-            EnroContainer(controller = controller)
+            EnroContainer(
+                controller = controller,
+                modifier = Modifier.fillMaxWidth()
+            )
         },
         content = {}
     )
 
     LaunchedEffect(true) {
         if(destination.bottomSheetConfiguration.animatesToInitialState) {
-            state.animateTo(destination.bottomSheetConfiguration.initialState)
+            state.show()
         } else {
-            state.snapTo(destination.bottomSheetConfiguration.initialState)
+            state.snapTo(ModalBottomSheetValue.Expanded)
         }
     }
 }

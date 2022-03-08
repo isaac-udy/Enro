@@ -1,14 +1,13 @@
 package dev.enro.result
 
 import androidx.test.core.app.ActivityScenario
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertFalse
 import dev.enro.DefaultActivity
 import dev.enro.DefaultActivityKey
 import dev.enro.core.*
 import dev.enro.core.result.closeWithResult
 import dev.enro.expectActivity
 import dev.enro.expectContext
+import junit.framework.Assert.*
 import org.junit.Test
 import java.util.*
 
@@ -379,6 +378,33 @@ class ResultTests {
     }
 
     @Test
+    fun whenSyntheticDestinationIsOpened_andSyntheticDestinationForwardsResultFromActivity_andSyntheticDestinationWasNotOpenedForResult_thenForwardedScreenIsStillOpened() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .navigation
+            .forward(
+                ForwardingSyntheticActivityResultKey()
+            )
+
+        expectContext<ResultActivity, ActivityResultKey>()
+    }
+
+    @Test
+    fun whenSyntheticDestinationIsOpened_andSyntheticDestinationForwardsResultFromFragment_andSyntheticDestinationWasNotOpenedForResult_thenForwardedScreenIsStillOpened() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .navigation
+            .forward(
+                ForwardingSyntheticFragmentResultKey()
+            )
+
+        expectContext<ResultFragment, FragmentResultKey>()
+    }
+
+
+    @Test
     fun whenActivityRequestResult_andResultProviderIsSyntheticDestination_andSyntheticDestinationForwardsResultFromActivityKey_thenResultIsReceived() {
         ActivityScenario.launch(ResultReceiverActivity::class.java)
         val expectedResult = UUID.randomUUID().toString()
@@ -472,5 +498,92 @@ class ResultTests {
                 .context
                 .result
         )
+    }
+
+    @Test
+    fun whenActivityRequestsResult_andResultOpensActivityThatUsesViewModelToForwardResult_thenResultIsForwarded() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+        val expectedResult = UUID.randomUUID().toString()
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .context
+            .resultChannel
+            .open(ViewModelForwardingResultActivityKey())
+
+        expectContext<ResultActivity, ActivityResultKey>()
+            .navigation
+            .closeWithResult(expectedResult)
+
+        assertEquals(
+            expectedResult,
+            expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+                .context
+                .result
+        )
+    }
+
+    @Test
+    fun whenActivityRequestsResult_andResultOpensFragmentThatUsesViewModelToForwardResult_thenResultIsForwarded() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+        val expectedResult = UUID.randomUUID().toString()
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .context
+            .resultChannel
+            .open(ViewModelForwardingResultFragmentKey())
+
+        expectContext<ResultActivity, ActivityResultKey>()
+            .navigation
+            .closeWithResult(expectedResult)
+
+        assertEquals(
+            expectedResult,
+            expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+                .context
+                .result
+        )
+    }
+
+    @Test
+    fun whenResultFlowActivityIsLaunched_thenStringRequestIsImmediatelyLaunched() {
+        ActivityScenario.launch(DefaultActivity::class.java)
+        expectContext<DefaultActivity, DefaultActivityKey>()
+            .navigation
+            .forward(ResultFlowKey())
+
+        expectContext<ResultFlowActivity, ResultFlowKey>()
+        expectContext<ResultFragment, FragmentResultKey>()
+    }
+
+    @Test
+    fun whenResultFlowActivityIsLaunched_andFirstStringRequestIsClose_thenResultFlowActivityCloses() {
+        ActivityScenario.launch(DefaultActivity::class.java)
+        expectContext<DefaultActivity, DefaultActivityKey>()
+            .navigation
+            .forward(ResultFlowKey())
+
+        expectContext<ResultFlowActivity, ResultFlowKey>()
+        expectContext<ResultFragment, FragmentResultKey>()
+            .navigation
+            .closeWithResult("close")
+
+        expectContext<DefaultActivity, DefaultActivityKey>()
+    }
+
+    @Test
+    fun whenResultFlowActivityIsLaunched_andFirstStringRequestProceeds_thenAnotherStringRequestIsLaunched() {
+        ActivityScenario.launch(DefaultActivity::class.java)
+        expectContext<DefaultActivity, DefaultActivityKey>()
+            .navigation
+            .forward(ResultFlowKey())
+
+        expectContext<ResultFlowActivity, ResultFlowKey>()
+        val firstRequest = expectContext<ResultFragment, FragmentResultKey>()
+        firstRequest
+            .navigation
+            .closeWithResult("next")
+
+        val secondRequest = expectContext<ResultFragment, FragmentResultKey>()
+        assertNotSame(firstRequest.navigation.id, secondRequest.navigation.id)
     }
 }

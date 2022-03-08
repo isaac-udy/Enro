@@ -6,7 +6,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
@@ -38,17 +37,21 @@ internal fun EnroAnimatedVisibility(
     }
     AnimatedVisibility(
         modifier = Modifier
-            .fillMaxSize()
             .onGloballyPositioned {
                 size.value = it.size
             },
         visible = currentVisibility.value || animationStateValues.isActive,
-        enter = fadeIn(tween(1), 1.0f),
-        exit = fadeOut(tween(1), 1.0f),
+        enter = fadeIn(
+            animationSpec = tween(1),
+            initialAlpha = 1.0f
+        ),
+        exit = fadeOut(
+            animationSpec = tween(1),
+            targetAlpha = 1.0f
+        ),
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
                 .graphicsLayer(
                     alpha = animationStateValues.alpha,
                     scaleX = animationStateValues.scaleX,

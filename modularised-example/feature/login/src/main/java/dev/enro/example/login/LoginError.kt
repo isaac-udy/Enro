@@ -28,12 +28,8 @@ class LoginErrorFragment : DialogFragment() {
 }
 
 @NavigationDestination(LoginErrorKey::class)
-class LoginErrorDestination : SyntheticDestination<LoginErrorKey> {
-    override fun process(
-        navigationContext: NavigationContext<out Any>,
-        key: LoginErrorKey,
-        instruction: NavigationInstruction.Open
-    ) {
+class LoginErrorDestination : SyntheticDestination<LoginErrorKey>() {
+    override fun process() {
         val activity = navigationContext.activity
         AlertDialog.Builder(activity)
             .setTitle("Error!")

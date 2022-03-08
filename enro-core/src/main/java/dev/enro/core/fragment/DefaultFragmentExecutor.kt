@@ -223,7 +223,9 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                 }
             }
 
-            if(!differentFragmentManagers) setPrimaryNavigationFragment(previousFragment)
+            if(!differentFragmentManagers && context.fragment == context.fragment.parentFragmentManager.primaryNavigationFragment){
+                setPrimaryNavigationFragment(previousFragment)
+            }
         }
 
         if(previousFragment != null && differentFragmentManagers) {

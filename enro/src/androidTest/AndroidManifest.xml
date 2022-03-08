@@ -11,9 +11,16 @@
         <activity android:name=".result.ResultReceiverActivity"/>
         <activity android:name=".result.NestedResultReceiverActivity"/>
         <activity android:name=".result.SideBySideNestedResultReceiverActivity"/>
+        <activity android:name=".result.ResultFlowActivity"/>
         <activity android:name=".core.PluginTestActivity"/>
         <activity android:name=".test.EnroTestTestActivity"/>
         <activity android:name=".core.ImmediateOpenChildActivity"/>
         <activity android:name=".core.ImmediateOpenFragmentChildActivity"/>
+        <activity android:name=".result.ViewModelForwardingResultActivity"/>
+        <activity android:name=".ActivityWithComposables"/>
+        <activity android:name=".core.ComposableTestActivity" />
+        <activity android:name="androidx.activity.ComponentActivity"/>
+        <activity android:name=".result.RecyclerViewResultActivity"/>
+        <activity android:name=".result.ComposeRecyclerViewResultActivity"/>
     </application>
 </manifest>

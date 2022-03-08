@@ -1,16 +1,27 @@
 package dev.enro.result
 
+import android.os.Bundle
+import android.os.PersistableBundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
+import androidx.lifecycle.ViewModel
 import kotlinx.parcelize.Parcelize
 import dev.enro.TestActivity
 import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
+import dev.enro.core.close
+import dev.enro.core.forward
 import dev.enro.core.navigationHandle
+import dev.enro.core.result.closeWithResult
 import dev.enro.core.result.forwardResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.core.result.sendResult
 import dev.enro.core.synthetic.SyntheticDestination
+import dev.enro.viewmodel.enroViewModels
+import dev.enro.viewmodel.navigationHandle
 
 @Parcelize
 class ActivityResultKey : NavigationKey.WithResult<String>
@@ -150,5 +161,90 @@ class ForwardingSyntheticFragmentResultKey : NavigationKey.WithResult<String>
 class ForwardingSyntheticFragmentResultDestination : SyntheticDestination<ForwardingSyntheticFragmentResultKey>() {
     override fun process() {
         forwardResult(FragmentResultKey())
+    }
+}
+
+class ViewModelForwardingResultViewModel : ViewModel() {
+    val navigation by navigationHandle<NavigationKey.WithResult<String>>()
+    val forwardingChannel by registerForNavigationResult<String>(navigation) {
+        navigation.closeWithResult(it)
+    }
+
+    init {
+        forwardingChannel.open(ActivityResultKey())
+    }
+
+}
+
+@Parcelize
+class ViewModelForwardingResultActivityKey : NavigationKey.WithResult<String>
+
+@NavigationDestination(ViewModelForwardingResultActivityKey::class)
+class ViewModelForwardingResultActivity : TestActivity() {
+    private val viewModel by enroViewModels<ViewModelForwardingResultViewModel>()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.hashCode()
+    }
+}
+
+@Parcelize
+class ViewModelForwardingResultFragmentKey : NavigationKey.WithResult<String>
+
+@NavigationDestination(ViewModelForwardingResultFragmentKey::class)
+class ViewModelForwardingResultFragment : TestFragment() {
+    private val viewModel by enroViewModels<ViewModelForwardingResultViewModel>()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        viewModel.hashCode()
+        return super.onCreateView(inflater, container, savedInstanceState)
+    }
+}
+
+@Parcelize
+class ResultFlowKey : NavigationKey
+
+@NavigationDestination(ResultFlowKey::class)
+class ResultFlowActivity : TestActivity() {
+    private val viewModel by enroViewModels<ResultFlowViewModel>()
+    private val navigation by navigationHandle<ResultFlowKey> {
+        container(primaryFragmentContainer)
+    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.hashCode()
+    }
+}
+
+class ResultFlowViewModel : ViewModel() {
+    val navigation by navigationHandle<ResultFlowKey>()
+    val first by registerForNavigationResult<String>(navigation) {
+        if(it == "close") {
+            navigation.close()
+        }
+        else {
+            second.open(FragmentResultKey())
+        }
+    }
+
+    val second by registerForNavigationResult<String>(navigation) {
+        if(it == "close") {
+            navigation.close()
+        }
+        else {
+            third.open(FragmentResultKey())
+        }
+    }
+
+    val third by registerForNavigationResult<String>(navigation) {
+        navigation.close()
+    }
+
+    init {
+        first.open(FragmentResultKey())
     }
 }
