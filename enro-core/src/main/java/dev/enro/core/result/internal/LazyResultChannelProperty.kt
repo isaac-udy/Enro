@@ -2,7 +2,10 @@ package dev.enro.core.result.internal
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import dev.enro.core.EnroLifecycleException
 import dev.enro.core.NavigationHandle
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.result.EnroResultChannel
@@ -29,13 +32,16 @@ internal class LazyResultChannelProperty<T>(
         val lifecycleOwner = owner as LifecycleOwner
         val lifecycle = lifecycleOwner.lifecycle
 
-        lifecycle.coroutineScope.launchWhenCreated {
-            resultChannel = ResultChannelImpl(
-                navigationHandle = handle.value,
-                resultType = resultType,
-                onResult = onResult
-            ).managedByLifecycle(lifecycle)
-        }
+        lifecycle.addObserver(object : LifecycleEventObserver {
+            override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                if (event != Lifecycle.Event.ON_CREATE) return;
+                resultChannel = ResultChannelImpl(
+                    navigationHandle = handle.value,
+                    resultType = resultType,
+                    onResult = onResult
+                ).managedByLifecycle(lifecycle)
+            }
+        })
     }
 
     override fun getValue(
