@@ -50,7 +50,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
         val bindingName = element.getElementName()
             .replace(".", "_")
-            .let { "${it}_GeneratedNavigationBinding" }
+            .let { "_${it}_GeneratedNavigationBinding" }
 
         val classBuilder = TypeSpec.classBuilder(bindingName)
             .addOriginatingElement(element)
