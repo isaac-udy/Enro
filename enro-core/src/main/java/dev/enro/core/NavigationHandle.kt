@@ -24,12 +24,14 @@ interface TypedNavigationHandle<T: NavigationKey> : NavigationHandle {
 
 @PublishedApi
 internal class TypedNavigationHandleImpl<T : NavigationKey>(
-    internal val navigationHandle: NavigationHandle
+    internal val navigationHandle: NavigationHandle,
+    private val type: Class<T>
 ): TypedNavigationHandle<T> {
     override val id: String get() = navigationHandle.id
     override val controller: NavigationController get() = navigationHandle.controller
     override val additionalData: Bundle get() = navigationHandle.additionalData
-    override val key: T get() = navigationHandle.key as T
+    override val key: T get() = navigationHandle.key as? T
+        ?: throw EnroException.IncorrectlyTypedNavigationHandle("TypedNavigationHandle failed to cast key of type ${navigationHandle.key::class.java.simpleName} to ${type.simpleName}")
 
     override fun getLifecycle(): Lifecycle = navigationHandle.lifecycle
 
@@ -40,16 +42,16 @@ fun <T: NavigationKey> NavigationHandle.asTyped(type: KClass<T>): TypedNavigatio
     val keyType = key::class
     val isValidType = type.java.isAssignableFrom(keyType.java)
     if(!isValidType) {
-        throw IllegalStateException("Failed to cast NavigationHandle with key $key to TypedNavigationHandle<${type.simpleName}>")
+        throw EnroException.IncorrectlyTypedNavigationHandle("Failed to cast NavigationHandle with key of type ${keyType.java.simpleName} to TypedNavigationHandle<${type.simpleName}>")
     }
-    return TypedNavigationHandleImpl(this)
+    return TypedNavigationHandleImpl(this, type.java)
 }
 
 inline fun <reified T: NavigationKey> NavigationHandle.asTyped(): TypedNavigationHandle<T> {
     if(key !is T) {
-        throw IllegalStateException("Failed to cast NavigationHandle with key $key to TypedNavigationHandle<${T::class.java.simpleName}>")
+        throw EnroException.IncorrectlyTypedNavigationHandle("Failed to cast NavigationHandle with key of type ${key::class.java.simpleName} to TypedNavigationHandle<${T::class.java.simpleName}>")
     }
-    return TypedNavigationHandleImpl(this)
+    return TypedNavigationHandleImpl(this, T::class.java)
 }
 
 fun NavigationHandle.forward(key: NavigationKey, vararg childKeys: NavigationKey) =

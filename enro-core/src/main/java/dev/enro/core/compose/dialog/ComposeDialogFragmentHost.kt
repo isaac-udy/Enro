@@ -98,7 +98,7 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
                         EnroDialogContainer(controller, destination)
                         destination.dialogConfiguration
                     }
-                    else -> throw IllegalStateException("TODO nice error")
+                    else -> throw EnroException.DestinationIsNotDialogDestination("The @Composable destination for ${navigationHandle.key::class.java.simpleName} must be a DialogDestination or a BottomSheetDestination")
                 }
 
                 DisposableEffect(true) {

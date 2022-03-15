@@ -13,5 +13,5 @@ internal val localActivity @Composable get() = LocalContext.current.let {
         }
         ctx = ctx.baseContext
     }
-    throw IllegalStateException("TODO Exception Details")
+    throw IllegalStateException("Could not find Activity up from $it")
 }

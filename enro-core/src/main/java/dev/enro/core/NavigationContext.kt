@@ -85,7 +85,7 @@ val NavigationContext<*>.activity: FragmentActivity
         is FragmentActivity -> contextReference
         is Fragment -> contextReference.requireActivity()
         is ComposableDestination -> contextReference.contextReference.activity
-        else -> throw IllegalStateException()
+        else -> throw EnroException.UnreachableState()
     }
 
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass

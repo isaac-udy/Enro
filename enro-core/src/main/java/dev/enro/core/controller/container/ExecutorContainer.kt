@@ -75,7 +75,7 @@ internal class ExecutorContainer() {
             opensContextIsFragment -> OpenExecutorPair(fromContext, DefaultFragmentExecutor)
             opensContextIsComposable -> OpenExecutorPair(fromContext, DefaultComposableExecutor)
             opensContextIsSynthetic -> OpenExecutorPair(fromContext, DefaultSyntheticExecutor)
-            else -> throw IllegalStateException()
+            else -> throw EnroException.UnreachableState()
         }
     }
 
