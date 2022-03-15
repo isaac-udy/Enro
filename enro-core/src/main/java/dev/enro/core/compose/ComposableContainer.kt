@@ -33,9 +33,40 @@ internal class EnroDestinationStorage : ViewModel() {
 
 @Composable
 fun rememberEnroContainerController(
+    root: NavigationKey,
+    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    accept: (NavigationKey) -> Boolean = { true },
+) : EnroContainerController {
+    return rememberEnroContainerController(
+        initialBackstack = listOf(NavigationInstruction.Replace(root)),
+        emptyBehavior = emptyBehavior,
+        accept = accept
+    )
+}
+
+@Composable
+fun rememberEnroContainerController(
+    initialState: List<NavigationKey> = emptyList(),
+    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    accept: (NavigationKey) -> Boolean = { true },
+) : EnroContainerController {
+    return rememberEnroContainerController(
+        initialBackstack = initialState.mapIndexed { i, it ->
+            if(i == 0) NavigationInstruction.Replace(it)
+            else NavigationInstruction.Forward(it)
+        },
+        emptyBehavior = emptyBehavior,
+        accept = accept
+    )
+}
+
+@Composable
+@Deprecated("Use the rememberEnroContainerController that takes a List<NavigationKey> instead of a List<NavigationInstruction.Open>")
+fun rememberEnroContainerController(
     initialBackstack: List<NavigationInstruction.Open> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
+    ignore: Unit = Unit
 ): EnroContainerController {
     val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
     val destinationStorage = viewModel<EnroDestinationStorage>()

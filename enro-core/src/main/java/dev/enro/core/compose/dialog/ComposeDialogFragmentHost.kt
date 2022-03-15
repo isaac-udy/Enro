@@ -19,15 +19,10 @@ import dev.enro.core.*
 import kotlinx.parcelize.Parcelize
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.lerp
 import androidx.core.animation.addListener
 import androidx.core.view.isVisible
-import androidx.lifecycle.coroutineScope
 import dev.enro.core.compose.*
-import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 
 
