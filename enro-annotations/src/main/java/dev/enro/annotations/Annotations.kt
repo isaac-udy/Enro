@@ -19,6 +19,17 @@ annotation class GeneratedNavigationBinding(
     val navigationKey: String
 )
 
+annotation class GeneratedNavigationModule(
+    val bindings: Array<KClass<out Any>>,
+)
+
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.CLASS)
+annotation class GeneratedNavigationComponent(
+    val bindings: Array<KClass<out Any>>,
+    val modules: Array<KClass<out Any>>
+)
+
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.FUNCTION)
 annotation class ExperimentalComposableDestination

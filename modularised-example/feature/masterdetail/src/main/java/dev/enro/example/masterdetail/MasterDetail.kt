@@ -5,13 +5,11 @@ import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.EmptyBehavior
-import dev.enro.core.getNavigationHandle
 import dev.enro.core.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.example.core.navigation.DetailKey
 import dev.enro.example.core.navigation.ListKey
 import dev.enro.example.core.navigation.MasterDetailKey
-import dev.enro.masterdetail.MasterDetailProperty
 
 @AndroidEntryPoint
 @NavigationDestination(MasterDetailKey::class)
