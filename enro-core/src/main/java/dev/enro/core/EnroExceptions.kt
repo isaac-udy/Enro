@@ -1,6 +1,11 @@
 package dev.enro.core
 
-abstract class EnroException(message: String, cause: Throwable? = null) : RuntimeException(message, cause) {
+abstract class EnroException(
+    private val inputMessage: String, cause: Throwable? = null
+) : RuntimeException(cause) {
+    override val message: String?
+        get() = "${inputMessage.trim().removeSuffix(".")}. See https://github.com/isaac-udy/Enro/blob/main/docs/troubleshooting.md#${this::class.java.simpleName} for troubleshooting help"
+
     class InvalidLifecycleState(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
     class NoAttachedNavigationHandle(message: String, cause: Throwable? = null) : EnroException(message, cause)
