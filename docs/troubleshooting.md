@@ -1,7 +1,5 @@
 # Troubleshooting
 ## Enro Exceptions
-### `InvalidLifecycleState`
-
 ### `NoAttachedNavigationHandle`
 There are two primary ways to get a NavigationHandle in Enro. The first one is through the `by navigationHandle<Type>()` property delegate, which is used to create and configure a NavigationHandle that is aware of it's type. The second is through `getNavigationHandle()`, which returns an untyped NavigationHandle. This exception is thrown by `getNavigationHandle()`, as well as internally in Enro when a NavigationHandle is needed to perform some action, but the type of the NavigationHandle is unimportant (for example, when using `by registerForNavigationResult`).
 
@@ -51,8 +49,55 @@ class ExampleTest {
 ```
 
 ### `CouldNotCreateEnroViewModel`
+This exception is thrown by the `EnroViewModelFactory`, which is used when using `by enroViewModels<ViewModel>()` to create a ViewModel that has access to a NavigationHandle. `by enroViewModels` does not actually create the ViewModel itself, but rather it sets up some state and then delegates the ViewModel creation to another `ViewModelProvider.Factory`. You can pass your own `ViewModelProvider.Factory` to `by enroViewModels` if you need to use a custom ViewModel factory, but this will default to the `defaultViewModelProviderFactory` of a Fragment or Activity if you do not provide your own `ViewModelProvider.Factory`. 
+
+If you are getting this exception, check that the `defaultViewModelProviderFactory` can actually create the ViewModel type you are requesting. If you use a custom `ViewModelProvider.Factory`, make sure that you are providing this to `by enroViewModels`. 
+
+#### This occurs in a project that uses Hilt and `@HiltViewModel`
+This exception can occur in projects that use Hilt, and you are attempting to create an `@HiltViewModel` annotated ViewModel, but are not requesting the ViewModel from inside an `@AndroidEntryPoint` annotated Activity/Fragment. If a Fragment or Activity is not marked as `@AndroidEntryPoint`, Hilt will not set the `defaultViewModelProviderFactory` to the Hilt ViewModel factory, and the `defaultViewModelProviderFactory` will be a `SavedStateViewModelFactory`, which won't be able to construct your `@HiltViewModel` factory.
+
+#### Examples
+```kotlin
+@Parcelize class ExampleKey : NavigationKey
+
+class ExampleViewModel(val customArgument: Int) : ViewModel() {
+    val navigation by navigationHandle<ExampleKey>()
+}
+class ExampleViewModelFactory : ViewModelProvider.Factory {
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        return ExampleViewModel(customArgument = 1337) as T
+    }
+}
+
+@NavigationDestination(ExampleKey::class)
+class ExampleFragment : Fragment {
+    
+    // This statement will fail, because the Fragment's defaultViewModelProviderFactory will be a 
+    // SavedStateViewModelFactory(), which doesn't know how to construct an ExampleViewModel, because
+    // ExampleViewModel requires an Int parameter called "customArgument".
+    val failingViewModel by enroViewModels<ExampleViewModel>()
+
+    // This statement will succeed, because we are passing through the special "ExampleViewModelFactory"
+    // factory which does know how to create an ExampleViewModel
+    val successfulViewModel by enroViewModels<ExampleViewModel> { ExampleViewModelFactory() }
+}
+
+```
+
+### `ViewModelCouldNotGetNavigationHandle`
+This exception will occur if you attempt to create a ViewModel that uses `by navigationHandle()`, but the ViewModel is not created using `by enroViewModels` (for example, if you use `by viewModels` instead). 
+
+#### This Exception is occurring in tests
+This exception will occur in tests if you are attempting to create a ViewModel to test, but have not used `putNavigationHandleForViewModel` from the `enro-test` library.
 
 ### `MissingNavigator`
+This exception can occur when you attempt to navigate to a `NavigationKey` that has not been bound to an Activity/Fragment/Composable, if you have forgotten to add the required `kapt` dependencies to make sure that Enro's code generation runs, or if code generation has not updated correctly when you have added a new destination.
+
+1. Make sure you have the correct `kapt` dependency on `enro-processor`
+2. Make sure you've annotated your Activity/Fragment/Composable/SyntheticDestination with `@NavigationDestination` pointing to the correct NavigationKey
+3. Clean the project (in case the incremental annotation processor has had an issue)
+
+#### This Exception is occurring in tests
 
 ### `IncorrectlyTypedNavigationHandle`
 
@@ -61,6 +106,8 @@ class ExampleTest {
 ### `DestinationIsNotDialogDestination`
 
 ### `EnroResultIsNotInstalled`
+
+### `ResultChannelIsNotInitialised`
 
 ### `ReceivedIncorrectlyTypedResult`
 

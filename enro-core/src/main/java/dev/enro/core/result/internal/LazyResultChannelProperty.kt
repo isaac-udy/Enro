@@ -47,7 +47,7 @@ internal class LazyResultChannelProperty<T>(
     override fun getValue(
         thisRef: Any,
         property: KProperty<*>
-    ): EnroResultChannel<T> = resultChannel ?: throw EnroException.InvalidLifecycleState(
+    ): EnroResultChannel<T> = resultChannel ?: throw EnroException.ResultChannelIsNotInitialised(
         "LazyResultChannelProperty's EnroResultChannel is not initialised. Are you attempting to use the result channel before the result channel's lifecycle owner has entered the CREATED state?"
     )
 }

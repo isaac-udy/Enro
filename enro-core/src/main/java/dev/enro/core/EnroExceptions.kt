@@ -6,11 +6,11 @@ abstract class EnroException(
     override val message: String?
         get() = "${inputMessage.trim().removeSuffix(".")}. See https://github.com/isaac-udy/Enro/blob/main/docs/troubleshooting.md#${this::class.java.simpleName} for troubleshooting help"
 
-    class InvalidLifecycleState(message: String, cause: Throwable? = null) : EnroException(message, cause)
-
     class NoAttachedNavigationHandle(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
     class CouldNotCreateEnroViewModel(message: String, cause: Throwable? = null) : EnroException(message, cause)
+
+    class ViewModelCouldNotGetNavigationHandle(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
     class MissingNavigator(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
@@ -21,6 +21,8 @@ abstract class EnroException(
     class DestinationIsNotDialogDestination(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
     class EnroResultIsNotInstalled(message: String, cause: Throwable? = null) : EnroException(message, cause)
+
+    class ResultChannelIsNotInitialised(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
     class ReceivedIncorrectlyTypedResult(message: String, cause: Throwable? = null) : EnroException(message, cause)
 

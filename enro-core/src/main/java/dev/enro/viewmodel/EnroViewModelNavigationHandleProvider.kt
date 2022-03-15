@@ -1,6 +1,7 @@
 package dev.enro.viewmodel
 
 import androidx.annotation.Keep
+import dev.enro.core.EnroException
 import dev.enro.core.NavigationHandle
 
 internal object EnroViewModelNavigationHandleProvider {
@@ -15,7 +16,10 @@ internal object EnroViewModelNavigationHandleProvider {
     }
 
     fun get(modelClass: Class<*>): NavigationHandle {
-        return navigationHandles[modelClass] as NavigationHandle
+        return navigationHandles[modelClass]
+            ?: throw EnroException.ViewModelCouldNotGetNavigationHandle(
+                "Could not get a NavigationHandle inside of ViewModel of type ${modelClass.simpleName}. Make sure you are using `by enroViewModels` and not `by viewModels`."
+            )
     }
 
     // Called reflectively by enro-test
