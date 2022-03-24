@@ -1,8 +1,9 @@
 package dev.enro.core
 
+import android.app.Activity
 import android.view.View
+import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
@@ -49,7 +50,7 @@ class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal const
     }
 }
 
-inline fun <reified T: NavigationKey> FragmentActivity.navigationHandle(
+inline fun <reified T: NavigationKey> ComponentActivity.navigationHandle(
     noinline config: NavigationHandleConfiguration<T>.() -> Unit = {}
 ): NavigationHandleProperty<T> = NavigationHandleProperty(
     lifecycleOwner = this,
@@ -69,7 +70,7 @@ inline fun <reified T : NavigationKey> Fragment.navigationHandle(
 
 fun NavigationContext<*>.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
 
-fun FragmentActivity.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
+fun ComponentActivity.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
 
 fun Fragment.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
 

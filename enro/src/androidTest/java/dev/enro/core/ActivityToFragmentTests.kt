@@ -1,6 +1,7 @@
 package dev.enro.core
 
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
@@ -16,6 +17,23 @@ private fun expectSingleFragmentActivity(): FragmentActivity {
 }
 
 class ActivityToFragmentTests {
+
+    @Test
+    fun whenActivityIsNotAFragmentActivity_thenFragmentNavigationOpensSingleFragmentActivity() {
+        val scenario = ActivityScenario.launch(ComponentActivity::class.java)
+        scenario.onActivity {
+            it.getNavigationHandle().forward(GenericFragmentKey("fragment from component activity"))
+        }
+        expectSingleFragmentActivity()
+        assertEquals(
+            "fragment from component activity",
+            expectFragment<GenericFragment>()
+                .getNavigationHandle()
+                .asTyped<GenericFragmentKey>()
+                .key
+                .id
+        )
+    }
 
     @Test
     fun whenActivityOpensFragment_andActivityDoesNotHaveFragmentHost_thenFragmentIsLaunchedAsSingleFragmentActivity() {
@@ -273,7 +291,7 @@ class ActivityToFragmentTests {
         scenario.onActivity {
             it.supportFragmentManager.beginTransaction()
                 .detach(fragment)
-                .commit()
+                .commitNow()
 
             fragmentHandle.forward(ActivityChildFragmentKey("should not appear"))
         }
@@ -289,12 +307,14 @@ class ImmediateOpenChildActivityKey : NavigationKey
 class ImmediateOpenChildActivity : TestActivity() {
     private val navigation by navigationHandle<ImmediateOpenChildActivityKey> {
         defaultKey(ImmediateOpenChildActivityKey())
-        container(primaryFragmentContainer) {
-            it is GenericFragmentKey && it.id == "one"
-        }
-        container(secondaryFragmentContainer) {
-            it is GenericFragmentKey && it.id == "two"
-        }
+    }
+
+    val primaryContainer by navigationContainer(primaryFragmentContainer) {
+        it is GenericFragmentKey && it.id == "one"
+    }
+
+    val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+        it is GenericFragmentKey && it.id == "two"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -311,12 +331,14 @@ class ImmediateOpenFragmentChildActivityKey : NavigationKey
 class ImmediateOpenFragmentChildActivity : TestActivity() {
     private val navigation by navigationHandle<ImmediateOpenFragmentChildActivityKey> {
         defaultKey(ImmediateOpenFragmentChildActivityKey())
-        container(primaryFragmentContainer) {
-            it is ImmediateOpenChildFragmentKey && it.name == "one"
-        }
-        container(secondaryFragmentContainer) {
-            it is ImmediateOpenChildFragmentKey && it.name == "two"
-        }
+    }
+
+    val primaryContainer by navigationContainer(primaryFragmentContainer) {
+        it is ImmediateOpenChildFragmentKey && it.name == "one"
+    }
+
+    val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+        it is ImmediateOpenChildFragmentKey && it.name == "two"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -332,13 +354,14 @@ data class ImmediateOpenChildFragmentKey(val name: String) : NavigationKey
 
 @NavigationDestination(ImmediateOpenChildFragmentKey::class)
 class ImmediateOpenChildFragment : TestFragment() {
-    private val navigation by navigationHandle<ImmediateOpenChildFragmentKey> {
-        container(primaryFragmentContainer) {
-            it is GenericFragmentKey && it.id == "one"
-        }
-        container(secondaryFragmentContainer) {
-            it is GenericFragmentKey && it.id == "two"
-        }
+    private val navigation by navigationHandle<ImmediateOpenChildFragmentKey>()
+
+    val primaryContainer by navigationContainer(primaryFragmentContainer) {
+        it is GenericFragmentKey && it.id == "one"
+    }
+
+    val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+        it is GenericFragmentKey && it.id == "two"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

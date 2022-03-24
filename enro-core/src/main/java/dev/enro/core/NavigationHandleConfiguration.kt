@@ -9,22 +9,11 @@ import kotlin.reflect.KClass
 class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal constructor(
     private val keyType: KClass<T>
 ) {
-    internal var childContainers: List<NavigationContainer> = listOf()
-        private set
-
     internal var defaultKey: T? = null
         private set
 
     internal var onCloseRequested: TypedNavigationHandle<T>.() -> Unit = { close() }
         private set
-
-    @Deprecated("TODO") // TODO
-    fun container(@IdRes containerId: Int, accept: (NavigationKey) -> Boolean = { true }) {
-        childContainers = childContainers + NavigationContainer(
-            containerId = containerId,
-            accept = accept
-        )
-    }
 
     fun defaultKey(navigationKey: T) {
         defaultKey = navigationKey
@@ -36,7 +25,6 @@ class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal co
 
     // TODO Store these properties ON the navigation handle? Rather than set individual fields?
     internal fun applyTo(navigationHandleViewModel: NavigationHandleViewModel) {
-        navigationHandleViewModel.childContainers = childContainers
         navigationHandleViewModel.internalOnCloseRequested = { onCloseRequested(navigationHandleViewModel.asTyped(keyType)) }
     }
 }

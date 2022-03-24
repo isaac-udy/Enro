@@ -1,16 +1,16 @@
 package dev.enro.core.activity
 
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.ComponentActivity
 import dev.enro.core.NavigationKey
 import dev.enro.core.Navigator
 import kotlin.reflect.KClass
 
-class ActivityNavigator<KeyType : NavigationKey, ActivityType : FragmentActivity> @PublishedApi internal constructor(
+class ActivityNavigator<KeyType : NavigationKey, ActivityType : ComponentActivity> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
     override val contextType: KClass<ActivityType>,
 ) : Navigator<KeyType, ActivityType>
 
-fun <KeyType : NavigationKey, ActivityType : FragmentActivity> createActivityNavigator(
+fun <KeyType : NavigationKey, ActivityType : ComponentActivity> createActivityNavigator(
     keyType: Class<KeyType>,
     activityType: Class<ActivityType>
 ): Navigator<KeyType, ActivityType> = ActivityNavigator(
@@ -18,7 +18,7 @@ fun <KeyType : NavigationKey, ActivityType : FragmentActivity> createActivityNav
     contextType = activityType.kotlin,
 )
 
-inline fun <reified KeyType : NavigationKey, reified ActivityType : FragmentActivity> createActivityNavigator(): Navigator<KeyType, ActivityType> =
+inline fun <reified KeyType : NavigationKey, reified ActivityType : ComponentActivity> createActivityNavigator(): Navigator<KeyType, ActivityType> =
     createActivityNavigator(
         keyType = KeyType::class.java,
         activityType = ActivityType::class.java,

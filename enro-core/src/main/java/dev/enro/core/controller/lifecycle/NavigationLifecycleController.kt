@@ -7,7 +7,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.core.*
-import dev.enro.core.compose.composableManger
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.PluginContainer
 import dev.enro.core.internal.NoNavigationKey
@@ -43,6 +42,8 @@ internal class NavigationLifecycleController(
 
         val config = NavigationHandleProperty.getPendingConfig(context)
         val containers = NavigationContainerProperty.getPendingContainers(context.contextReference as LifecycleOwner)
+        context.containerManager.containers.addAll(containers)
+
         val defaultInstruction = NavigationInstruction
             .Forward(
                 navigationKey = config?.defaultKey
@@ -57,11 +58,7 @@ internal class NavigationLifecycleController(
             instruction ?: defaultInstruction
         )
 
-        // ensure the composable manager is created
-        val composableManager = viewModelStoreOwner.composableManger
-
         config?.applyTo(handle)
-        handle.childContainers += containers
         handle.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (!handle.hasKey) return
@@ -74,11 +71,12 @@ internal class NavigationLifecycleController(
             }
         })
         handle.navigationContext = context
+        context.containerManager.restore(savedInstanceState)
         if (savedInstanceState == null) {
             context.lifecycle.addObserver(object : LifecycleEventObserver {
                 override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                     if (event == Lifecycle.Event.ON_START) {
-                        handle.childContainers.forEach { it.openRoot(handle) }
+//                       TODO handle.childContainers.forEach { it.openRoot(handle) }
                         handle.executeDeeplink()
 
                         executorContainer.executorForClose(context).postOpened(context)
@@ -92,6 +90,7 @@ internal class NavigationLifecycleController(
 
     fun onContextSaved(context: NavigationContext<*>, outState: Bundle) {
         outState.putString(CONTEXT_ID_ARG, context.getNavigationHandleViewModel().id)
+        context.containerManager.save(outState)
     }
 
     private fun updateActiveNavigationContext(context: NavigationContext<*>) {
@@ -100,19 +99,7 @@ internal class NavigationLifecycleController(
         // Sometimes the context will be in an invalid state to correctly update, and will throw,
         // in which case, we just ignore the exception
         runCatching {
-            val root = context.rootContext()
-            val fragmentManager = when (context) {
-                is FragmentContext -> context.fragment.parentFragmentManager
-                else -> root.childFragmentManager
-            }
-
-            fragmentManager.beginTransaction()
-                .runOnCommit {
-                    runCatching {
-                        activeNavigationHandle = root.leafContext().getNavigationHandleViewModel()
-                    }
-                }
-                .commitAllowingStateLoss()
+            activeNavigationHandle = context.rootContext().leafContext().getNavigationHandleViewModel()
         }
     }
 

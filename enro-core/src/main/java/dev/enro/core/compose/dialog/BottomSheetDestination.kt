@@ -8,12 +8,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import dev.enro.core.AnimationPair
-import dev.enro.core.DefaultAnimations
+import dev.enro.core.*
 import dev.enro.core.compose.EnroContainer
-import dev.enro.core.compose.EnroContainerController
-import dev.enro.core.getNavigationHandle
-import dev.enro.core.requestClose
 
 @ExperimentalMaterialApi
 class BottomSheetConfiguration : DialogConfiguration() {
@@ -68,7 +64,7 @@ fun BottomSheetDestination.configureBottomSheet(block: BottomSheetConfiguration.
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun EnroBottomSheetContainer(
-    controller: EnroContainerController,
+    controller: ComposableNavigationContainer,
     destination: BottomSheetDestination
 ) {
     val state = rememberModalBottomSheetState(

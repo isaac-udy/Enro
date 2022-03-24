@@ -212,7 +212,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
     ): MethodSpec.Builder {
         val destinationName = destination.simpleName
 
-        val destinationIsActivity = destination.extends(ClassNames.fragmentActivity)
+        val destinationIsActivity = destination.extends(ClassNames.componentActivity)
         val destinationIsFragment = destination.extends(ClassNames.fragment)
         val destinationIsSynthetic = destination.implements(ClassNames.syntheticDestination)
 

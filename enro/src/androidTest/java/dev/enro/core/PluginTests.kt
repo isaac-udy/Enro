@@ -137,12 +137,13 @@ data class PluginTestActivityKey(val keyId: String = UUID.randomUUID().toString(
 class PluginTestActivity : TestActivity() {
     private val navigation by navigationHandle<PluginTestActivityKey> {
         defaultKey(PluginTestActivityKey())
-        container(primaryFragmentContainer) {
-            it is PluginPrimaryTestFragmentKey
-        }
-        container(secondaryFragmentContainer) {
-            it is PluginSecondaryTestFragmentKey
-        }
+    }
+    private val primaryContainer by navigationContainer(primaryFragmentContainer) {
+        it is PluginPrimaryTestFragmentKey
+    }
+
+    private val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+        it is PluginSecondaryTestFragmentKey
     }
 }
 
@@ -151,13 +152,13 @@ data class PluginPrimaryTestFragmentKey(val keyId: String = UUID.randomUUID().to
 
 @NavigationDestination(PluginPrimaryTestFragmentKey::class)
 class PluginPrimaryTestFragment : TestFragment() {
-    private val navigation by navigationHandle<PluginTestActivityKey> {
-        container(primaryFragmentContainer) {
-            it is PluginPrimaryTestFragmentKey
-        }
-        container(secondaryFragmentContainer) {
-            it is PluginSecondaryTestFragmentKey
-        }
+    private val navigation by navigationHandle<PluginTestActivityKey> ()
+    private val primaryContainer by navigationContainer(primaryFragmentContainer) {
+        it is PluginPrimaryTestFragmentKey
+    }
+
+    private val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+        it is PluginSecondaryTestFragmentKey
     }
 }
 
@@ -166,12 +167,13 @@ data class PluginSecondaryTestFragmentKey(val keyId: String = UUID.randomUUID().
 
 @NavigationDestination(PluginSecondaryTestFragmentKey::class)
 class PluginSecondaryTestFragment : TestFragment() {
-    private val navigation by navigationHandle<PluginTestActivityKey> {
-        container(primaryFragmentContainer) {
-            it is PluginPrimaryTestFragmentKey
-        }
-        container(secondaryFragmentContainer) {
-            it is PluginSecondaryTestFragmentKey
-        }
+    private val navigation by navigationHandle<PluginTestActivityKey>()
+
+    private val primaryContainer by navigationContainer(primaryFragmentContainer) {
+        it is PluginPrimaryTestFragmentKey
+    }
+
+    private val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+        it is PluginSecondaryTestFragmentKey
     }
 }

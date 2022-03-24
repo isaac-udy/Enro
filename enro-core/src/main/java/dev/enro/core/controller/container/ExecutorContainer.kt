@@ -1,5 +1,6 @@
 package dev.enro.core.controller.container
 
+import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import dev.enro.core.*
@@ -48,6 +49,8 @@ internal class ExecutorContainer() {
             val override = overrideFor(overrideContext.contextReference::class to opensContext)
                 ?: when (overrideContext.contextReference) {
                     is FragmentActivity -> overrideFor(FragmentActivity::class to opensContext)
+                        ?: overrideFor(ComponentActivity::class to opensContext)
+                    is ComponentActivity -> overrideFor(ComponentActivity::class to opensContext)
                     is Fragment -> overrideFor(Fragment::class to opensContext)
                     is ComposableDestination -> overrideFor(ComposableDestination::class to opensContext)
                     else -> null
@@ -55,6 +58,7 @@ internal class ExecutorContainer() {
                 ?: overrideFor(Any::class to opensContext)
                 ?: when {
                     opensContextIsActivity -> overrideFor(overrideContext.contextReference::class to FragmentActivity::class)
+                        ?: overrideFor(overrideContext.contextReference::class to ComponentActivity::class)
                     opensContextIsFragment -> overrideFor(overrideContext.contextReference::class to Fragment::class)
                     opensContextIsComposable -> overrideFor(overrideContext.contextReference::class to ComposableDestination::class)
                     else -> null
@@ -94,6 +98,7 @@ internal class ExecutorContainer() {
             overrideFor(parentContext to contextType)
                 ?: when  {
                     parentContextIsActivity -> overrideFor(FragmentActivity::class to contextType)
+                        ?: overrideFor(ComponentActivity::class to contextType)
                     parentContextIsFragment -> overrideFor(Fragment::class to contextType)
                     parentContextIsComposable -> overrideFor(ComposableDestination::class to contextType)
                     else -> null
@@ -101,6 +106,8 @@ internal class ExecutorContainer() {
                 ?: overrideFor(Any::class to contextType)
                 ?: when(navigationContext.contextReference) {
                     is FragmentActivity -> overrideFor(parentContext to FragmentActivity::class)
+                        ?: overrideFor(parentContext to ComponentActivity::class)
+                    is ComponentActivity -> overrideFor(parentContext to ComponentActivity::class)
                     is Fragment -> overrideFor(parentContext to Fragment::class)
                     is ComposableDestination -> overrideFor(parentContext to ComposableDestination::class)
                     else -> null

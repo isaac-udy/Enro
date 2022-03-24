@@ -5,6 +5,7 @@ import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.controller.container.NavigatorContainer
 import dev.enro.core.fragment.FragmentNavigator
+import dev.enro.core.fragment.internal.AbstractSingleFragmentKey
 import dev.enro.core.fragment.internal.SingleFragmentActivity
 import dev.enro.core.internal.NoKeyNavigator
 
@@ -56,7 +57,10 @@ internal class InstructionParentInterceptor : NavigationInstructionInterceptor{
         parentContext: NavigationContext<*>
     ): NavigationInstruction.Open {
         if(parentContext.contextReference is SingleFragmentActivity) {
-            return internal.copy(executorContext = parentContext.getNavigationHandleViewModel().instruction.internal.executorContext)
+            val singleFragmentKey = parentContext.getNavigationHandle().asTyped<AbstractSingleFragmentKey>().key
+            if(instructionId == singleFragmentKey.instruction.instructionId) {
+                return internal
+            }
         }
         return internal.copy(executorContext = parentContext.contextReference::class.java)
     }
@@ -66,7 +70,7 @@ internal class InstructionParentInterceptor : NavigationInstructionInterceptor{
     ): NavigationInstruction.Open {
         if(internal.previouslyActiveId != null) return this
         return internal.copy(
-            previouslyActiveId = parentContext.childFragmentManager.primaryNavigationFragment?.getNavigationHandle()?.id
+            previouslyActiveId = parentContext.containerManager.activeContainer?.id
         )
     }
 }

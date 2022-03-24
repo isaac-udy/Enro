@@ -3,6 +3,7 @@ package dev.enro.core.controller.lifecycle
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.platform.compositionContext
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -32,8 +33,13 @@ internal class NavigationContextLifecycleCallbacks (
             savedInstanceState: Bundle?
         ) {
             activity.window.decorView.compositionContext = null
-            if(activity !is FragmentActivity) return
-            activity.supportFragmentManager.registerFragmentLifecycleCallbacks(fragmentCallbacks, true)
+            if(activity is FragmentActivity) {
+                activity.supportFragmentManager.registerFragmentLifecycleCallbacks(
+                    fragmentCallbacks,
+                    true
+                )
+            }
+            if(activity !is ComponentActivity) return
             lifecycleController.onContextCreated(ActivityContext(activity), savedInstanceState)
         }
 
@@ -41,7 +47,7 @@ internal class NavigationContextLifecycleCallbacks (
             activity: Activity,
             outState: Bundle
         ) {
-            if(activity !is FragmentActivity) return
+            if(activity !is ComponentActivity) return
             lifecycleController.onContextSaved(activity.navigationContext, outState)
         }
 

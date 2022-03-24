@@ -7,28 +7,21 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
-import dev.enro.core.EmptyBehavior
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.fragment.internal.fragmentHostFrom
-import dev.enro.core.navigationHandle
+import dev.enro.core.*
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractComposeFragmentHostKey : NavigationKey {
     abstract val instruction: NavigationInstruction.Open
-    abstract val fragmentContainerId: Int?
 }
 
 @Parcelize
 internal data class ComposeFragmentHostKey(
-    override val instruction: NavigationInstruction.Open,
-    override val fragmentContainerId: Int?
+    override val instruction: NavigationInstruction.Open
 ) : AbstractComposeFragmentHostKey()
 
 @Parcelize
 internal data class HiltComposeFragmentHostKey(
-    override val instruction: NavigationInstruction.Open,
-    override val fragmentContainerId: Int?
+    override val instruction: NavigationInstruction.Open
 ) : AbstractComposeFragmentHostKey()
 
 abstract class AbstractComposeFragmentHost : Fragment() {
@@ -39,13 +32,11 @@ abstract class AbstractComposeFragmentHost : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val fragmentHost = container?.let { fragmentHostFrom(it) }
-
         return ComposeView(requireContext()).apply {
             setContent {
                 val state = rememberEnroContainerController(
                     initialBackstack = listOf(navigationHandle.key.instruction),
-                    accept = fragmentHost?.accept ?: { true },
+                    accept = { false },
                     emptyBehavior = EmptyBehavior.CloseParent
                 )
 

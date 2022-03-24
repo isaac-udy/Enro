@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
+import dev.enro.core.navigationContainer
 import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
@@ -34,11 +35,11 @@ data class ActivityWithFragmentsKey(val id: String) : NavigationKey
 
 @NavigationDestination(ActivityWithFragmentsKey::class)
 class ActivityWithFragments : TestActivity() {
-    private val navigation by navigationHandle<ActivityWithFragmentsKey> {
+    val navigation by navigationHandle<ActivityWithFragmentsKey> {
         defaultKey(ActivityWithFragmentsKey("default"))
-        container(primaryFragmentContainer) {
-            it is ActivityChildFragmentKey || it is ActivityChildFragmentTwoKey
-        }
+    }
+    val primaryContainer by navigationContainer(primaryFragmentContainer) {
+        it is ActivityChildFragmentKey || it is ActivityChildFragmentTwoKey
     }
 }
 
@@ -47,10 +48,9 @@ data class ActivityChildFragmentKey(val id: String) : NavigationKey
 
 @NavigationDestination(ActivityChildFragmentKey::class)
 class ActivityChildFragment : TestFragment() {
-    val navigation by navigationHandle<ActivityChildFragmentKey>() {
-        container(primaryFragmentContainer) {
-            it is Nothing
-        }
+    val navigation by navigationHandle<ActivityChildFragmentKey>()
+    val primaryContainer by navigationContainer(primaryFragmentContainer) {
+        it is Nothing
     }
 }
 

@@ -34,7 +34,7 @@ class MultistackComposeKey : NavigationKey
 @NavigationDestination(MultistackComposeKey::class)
 fun MultistackComposeScreen() {
 
-    val composableManager = localComposableManager
+//    val composableManager = localComposableManager
     val redController = rememberEnroContainerController(
         initialBackstack = listOf(NavigationInstruction.Forward(ComposeSimpleExampleKey("Red", "Mutlistack"))),
         emptyBehavior = EmptyBehavior.CloseParent
@@ -43,7 +43,7 @@ fun MultistackComposeScreen() {
     val greenController = rememberEnroContainerController(
         initialBackstack = listOf(NavigationInstruction.Forward(ComposeSimpleExampleKey("Green", "Mutlistack"))),
         emptyBehavior = EmptyBehavior.Action {
-            composableManager.setActiveContainer(redController)
+//            composableManager.setActiveContainer(redController)
             true
         }
     )
@@ -51,51 +51,51 @@ fun MultistackComposeScreen() {
     val blueController = rememberEnroContainerController(
         initialBackstack = listOf(NavigationInstruction.Forward(ComposeSimpleExampleKey("Blue", "Mutlistack"))),
         emptyBehavior = EmptyBehavior.Action {
-            composableManager.setActiveContainer(redController)
+//            composableManager.setActiveContainer(redController)
             true
         }
     )
 
-    Column {
-        Crossfade(
-            targetState = composableManager.activeContainer,
-            modifier = Modifier.weight(1f, true),
-            animationSpec = tween(225)
-        ) {
-            if(it == null) return@Crossfade
-            val isActive = composableManager.activeContainer == it
-            EnroContainer(
-                controller = it,
-                modifier = Modifier
-                    .weight(1f)
-                    .animateVisibilityWithScale(
-                        visible = isActive,
-                        enterScale = 0.9f,
-                        exitScale = 1.1f,
-                    )
-                    .zIndex(if (isActive) 1f else 0f)
-            )
-        }
-        BottomAppBar(
-            backgroundColor = Color.White
-        ) {
-            TextButton(onClick = {
-                composableManager.setActiveContainer(redController)
-            }) {
-                Text(text = "Red")
-            }
-            TextButton(onClick = {
-                composableManager.setActiveContainer(greenController)
-            }) {
-                Text(text = "Green")
-            }
-            TextButton(onClick = {
-                composableManager.setActiveContainer(blueController)
-            }) {
-                Text(text = "Blue")
-            }
-        }
-    }
+//    Column {
+//        Crossfade(
+//            targetState = composableManager.activeContainer,
+//            modifier = Modifier.weight(1f, true),
+//            animationSpec = tween(225)
+//        ) {
+//            if(it == null) return@Crossfade
+//            val isActive = composableManager.activeContainer == it
+//            EnroContainer(
+//                controller = it,
+//                modifier = Modifier
+//                    .weight(1f)
+//                    .animateVisibilityWithScale(
+//                        visible = isActive,
+//                        enterScale = 0.9f,
+//                        exitScale = 1.1f,
+//                    )
+//                    .zIndex(if (isActive) 1f else 0f)
+//            )
+//        }
+//        BottomAppBar(
+//            backgroundColor = Color.White
+//        ) {
+//            TextButton(onClick = {
+//                composableManager.setActiveContainer(redController)
+//            }) {
+//                Text(text = "Red")
+//            }
+//            TextButton(onClick = {
+//                composableManager.setActiveContainer(greenController)
+//            }) {
+//                Text(text = "Green")
+//            }
+//            TextButton(onClick = {
+//                composableManager.setActiveContainer(blueController)
+//            }) {
+//                Text(text = "Blue")
+//            }
+//        }
+//    }
 }
 
 @SuppressLint("UnnecessaryComposedModifier")

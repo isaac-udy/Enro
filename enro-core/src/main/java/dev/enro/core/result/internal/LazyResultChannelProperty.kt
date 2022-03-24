@@ -1,7 +1,7 @@
 package dev.enro.core.result.internal
 
+import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import dev.enro.core.NavigationHandle
 import dev.enro.core.getNavigationHandle
@@ -21,10 +21,10 @@ internal class LazyResultChannelProperty<T>(
 
     init {
         val handle = when (owner) {
-            is FragmentActivity -> lazy { owner.getNavigationHandle() }
+            is ComponentActivity -> lazy { owner.getNavigationHandle() }
             is Fragment -> lazy { owner.getNavigationHandle() }
             is NavigationHandle -> lazy { owner as NavigationHandle }
-            else -> throw IllegalArgumentException("Owner must be a Fragment, FragmentActivity, or NavigationHandle")
+            else -> throw IllegalArgumentException("Owner must be a Fragment, ComponentActivity, or NavigationHandle")
         }
         val lifecycleOwner = owner as LifecycleOwner
         val lifecycle = lifecycleOwner.lifecycle

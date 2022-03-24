@@ -13,6 +13,14 @@ data class EnroContainerBackstackEntry(
     val previouslyActiveContainerId: String?
 ) : Parcelable
 
+fun createEmptyBackStack() = EnroContainerBackstackState(
+    lastInstruction = NavigationInstruction.Close,
+    backstackEntries = listOf(),
+    exiting = null,
+    exitingIndex = -1,
+    skipAnimations = false
+)
+
 data class EnroContainerBackstackState(
     val lastInstruction: NavigationInstruction,
     val backstackEntries: List<EnroContainerBackstackEntry>,

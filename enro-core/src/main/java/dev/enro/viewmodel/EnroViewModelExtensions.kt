@@ -1,8 +1,8 @@
 package dev.enro.viewmodel
 
+import androidx.activity.ComponentActivity
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
@@ -41,7 +41,7 @@ inline fun <reified T : NavigationKey> ViewModel.navigationHandle(
 ): ViewModelNavigationHandleProperty<T> = navigationHandle(T::class, block)
 
 @MainThread
-inline fun <reified VM : ViewModel> FragmentActivity.enroViewModels(
+inline fun <reified VM : ViewModel> ComponentActivity.enroViewModels(
     noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null
 ): Lazy<VM> {
 

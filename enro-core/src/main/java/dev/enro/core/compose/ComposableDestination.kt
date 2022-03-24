@@ -2,11 +2,11 @@ package dev.enro.core.compose
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
@@ -22,17 +22,17 @@ import dev.enro.viewmodel.EnroViewModelFactory
 internal class ComposableDestinationContextReference(
     val instruction: NavigationInstruction.Open,
     val destination: ComposableDestination,
-    internal var parentContainer: EnroContainerController?
+    internal var parentContainer: ComposableNavigationContainer?
 ) : ViewModel(),
     LifecycleOwner,
     ViewModelStoreOwner,
     HasDefaultViewModelProviderFactory,
     SavedStateRegistryOwner {
 
-    private val navigationController get() = requireParentContainer().navigationContext.controller
-    private val parentViewModelStoreOwner get() = requireParentContainer().navigationContext.viewModelStoreOwner
-    private val parentSavedStateRegistry get() = requireParentContainer().navigationContext.savedStateRegistryOwner.savedStateRegistry
-    internal val activity: FragmentActivity get() = requireParentContainer().navigationContext.activity
+    private val navigationController get() = requireParentContainer().parentContext.controller
+    private val parentViewModelStoreOwner get() = requireParentContainer().parentContext.viewModelStoreOwner
+    private val parentSavedStateRegistry get() = requireParentContainer().parentContext.savedStateRegistryOwner.savedStateRegistry
+    internal val activity: ComponentActivity get() = requireParentContainer().parentContext.activity
 
     private val arguments by lazy { Bundle().addOpenInstruction(instruction) }
     private val savedState: Bundle? =
@@ -98,7 +98,7 @@ internal class ComposableDestinationContextReference(
         return savedStateController.savedStateRegistry
     }
 
-    internal fun requireParentContainer(): EnroContainerController = parentContainer!!
+    internal fun requireParentContainer(): ComposableNavigationContainer = parentContainer!!
 
     @Composable
     private fun rememberDefaultViewModelFactory(navigationHandle: NavigationHandle): Pair<Int, ViewModelProvider.Factory> {
@@ -133,7 +133,7 @@ internal class ComposableDestinationContextReference(
         if (!lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.CREATED)) return
 
         val navigationHandle = remember { getNavigationHandleViewModel() }
-        val backstackState by requireParentContainer().backstack.collectAsState()
+        val backstackState by requireParentContainer().backstackFlow.collectAsState()
         DisposableEffect(true) {
             onDispose {
                 if (!backstackState.backstack.contains(instruction)) {
@@ -195,7 +195,7 @@ internal class ComposableDestinationContextReference(
 internal fun getComposableDestinationContext(
     instruction: NavigationInstruction.Open,
     destination: ComposableDestination,
-    parentContainer: EnroContainerController?
+    parentContainer: ComposableNavigationContainer?
 ): ComposableDestinationContextReference {
     return ComposableDestinationContextReference(
         instruction = instruction,

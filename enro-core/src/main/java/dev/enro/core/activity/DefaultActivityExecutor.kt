@@ -1,15 +1,16 @@
 package dev.enro.core.activity
 
 import android.content.Intent
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.ComponentActivity
+import androidx.core.app.ActivityCompat
 import dev.enro.core.*
 
-object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, NavigationKey>(
+object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, NavigationKey>(
     fromType = Any::class,
-    opensType = FragmentActivity::class,
+    opensType = ComponentActivity::class,
     keyType = NavigationKey::class
 ) {
-    override fun open(args: ExecutorArgs<out Any, out FragmentActivity, out NavigationKey>) {
+    override fun open(args: ExecutorArgs<out Any, out ComponentActivity, out NavigationKey>) {
         val fromContext = args.fromContext
         val navigator = args.navigator
         val instruction = args.instruction
@@ -36,15 +37,15 @@ object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, Navig
         }
     }
 
-    override fun close(context: NavigationContext<out FragmentActivity>) {
-        context.activity.supportFinishAfterTransition()
+    override fun close(context: NavigationContext<out ComponentActivity>) {
+        ActivityCompat.finishAfterTransition(context.activity)
         context.navigator ?: return
 
         val animations = animationsFor(context, NavigationInstruction.Close)
         context.activity.overridePendingTransition(animations.enter, animations.exit)
     }
 
-    fun createIntent(args: ExecutorArgs<out Any, out FragmentActivity, out NavigationKey>) =
+    fun createIntent(args: ExecutorArgs<out Any, out ComponentActivity, out NavigationKey>) =
         Intent(args.fromContext.activity, args.navigator.contextType.java)
             .addOpenInstruction(args.instruction)
 }

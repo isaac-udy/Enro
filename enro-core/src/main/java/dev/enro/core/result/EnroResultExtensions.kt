@@ -1,8 +1,8 @@
 package dev.enro.core.result
 
 import android.view.View
+import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.RecyclerView
 import dev.enro.core.*
@@ -87,9 +87,9 @@ inline fun <reified T : Any> ViewModel.registerForNavigationResult(
         onResult = onResult
     )
 
-inline fun <reified T : Any> FragmentActivity.registerForNavigationResult(
+inline fun <reified T : Any> ComponentActivity.registerForNavigationResult(
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<FragmentActivity, EnroResultChannel<T>> =
+): ReadOnlyProperty<ComponentActivity, EnroResultChannel<T>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class.java,

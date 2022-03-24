@@ -15,7 +15,7 @@ internal object ClassNames {
     val jvmClassMappings = ClassName.get("kotlin.jvm", "JvmClassMappingKt")
 
     val unit = ClassName.get("kotlin", "Unit")
-    val fragmentActivity = ClassName.get( "androidx.fragment.app", "FragmentActivity")
+    val componentActivity = ClassName.get( "androidx.activity", "ComponentActivity")
 
     val activityNavigatorKt = ClassName.get("dev.enro.core.activity","ActivityNavigatorKt")
     val fragment = ClassName.get("androidx.fragment.app","Fragment")

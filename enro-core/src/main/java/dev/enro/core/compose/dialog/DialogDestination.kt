@@ -6,8 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import dev.enro.core.AnimationPair
+import dev.enro.core.ComposableNavigationContainer
 import dev.enro.core.compose.EnroContainer
-import dev.enro.core.compose.EnroContainerController
 
 
 open class DialogConfiguration {
@@ -51,7 +51,7 @@ fun DialogDestination.configureDialog(block: DialogConfiguration.Builder.() -> U
 
 @Composable
 internal fun EnroDialogContainer(
-    controller: EnroContainerController,
+    controller: ComposableNavigationContainer,
     destination: DialogDestination
 ) {
     EnroContainer(controller = controller)

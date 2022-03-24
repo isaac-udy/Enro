@@ -3,8 +3,8 @@ package dev.enro.core.internal.handle
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
@@ -28,7 +28,6 @@ internal open class NavigationHandleViewModel(
     override val id: String get() = instruction.instructionId
     override val additionalData: Bundle get() = instruction.additionalData
 
-    internal var childContainers = listOf<NavigationContainer>()
     internal var internalOnCloseRequested: () -> Unit = { close() }
 
     private val lifecycle = LifecycleRegistry(this)
@@ -40,10 +39,8 @@ internal open class NavigationHandleViewModel(
     internal var navigationContext: NavigationContext<*>? = null
         set(value) {
             field = value
-            if (value == null) {
-                childContainers = emptyList() // NavigationContainers can hold context references
-                return
-            }
+            if (value == null) return
+
             registerLifecycleObservers(value)
             registerOnBackPressedListener(value)
             executePendingInstruction()
@@ -66,7 +63,7 @@ internal open class NavigationHandleViewModel(
     }
 
     private fun registerOnBackPressedListener(context: NavigationContext<out Any>) {
-        if (context is ActivityContext<out FragmentActivity>) {
+        if (context is ActivityContext<out ComponentActivity>) {
             context.activity.addOnBackPressedListener {
                 context.leafContext().getNavigationHandleViewModel().requestClose()
             }
@@ -122,7 +119,7 @@ private fun Lifecycle.onEvent(on: Lifecycle.Event, block: () -> Unit) {
     })
 }
 
-private fun FragmentActivity.addOnBackPressedListener(block: () -> Unit) {
+private fun ComponentActivity.addOnBackPressedListener(block: () -> Unit) {
     onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             block()

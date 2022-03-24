@@ -6,7 +6,6 @@ import android.transition.AutoTransition
 import android.transition.Transition
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.activity.DefaultActivityExecutor
 import dev.enro.core.compose.ComposableDestination
