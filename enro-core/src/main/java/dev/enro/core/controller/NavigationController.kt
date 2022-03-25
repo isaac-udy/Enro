@@ -8,9 +8,7 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.NavigatorContainer
 import dev.enro.core.controller.container.PluginContainer
-import dev.enro.core.controller.interceptor.HiltInstructionInterceptor
 import dev.enro.core.controller.interceptor.InstructionInterceptorContainer
-import dev.enro.core.controller.interceptor.InstructionParentInterceptor
 import dev.enro.core.controller.lifecycle.NavigationLifecycleController
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
@@ -40,7 +38,7 @@ class NavigationController internal constructor() {
         instruction: NavigationInstruction.Open
     ) {
         val navigator = navigatorForKeyType(instruction.navigationKey::class)
-            ?: throw IllegalStateException("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
+            ?: throw EnroException.MissingNavigator("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
 
         val executor = executorContainer.executorForOpen(navigationContext, navigator)
 
@@ -170,5 +168,5 @@ internal val NavigationController.application: Application
                 it.value == this
             }
             ?.key
-            ?: throw IllegalStateException("NavigationController is not attached to an Application")
+            ?: throw EnroException.NavigationControllerIsNotAttached("NavigationController is not attached to an Application")
     }

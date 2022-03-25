@@ -8,7 +8,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
-import java.lang.IllegalStateException
 import java.lang.ref.WeakReference
 import kotlin.collections.set
 import kotlin.properties.ReadOnlyProperty
@@ -27,7 +26,7 @@ class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal const
 
     private val navigationHandle: TypedNavigationHandle<Key> by lazy {
         val navigationHandle = viewModelStoreOwner.getNavigationHandleViewModel()
-        return@lazy TypedNavigationHandleImpl<Key>(navigationHandle)
+        return@lazy TypedNavigationHandleImpl(navigationHandle, keyType.java)
     }
 
     init {
@@ -78,9 +77,9 @@ fun View.getNavigationHandle(): NavigationHandle? = findViewTreeViewModelStoreOw
 
 fun View.requireNavigationHandle(): NavigationHandle {
     if(!isAttachedToWindow) {
-        throw IllegalStateException("$this is not attached to any Window, which is required to retrieve a NavigationHandle")
+        throw EnroException.InvalidViewForNavigationHandle("$this is not attached to any Window, which is required to retrieve a NavigationHandle")
     }
     val viewModelStoreOwner = findViewTreeViewModelStoreOwner()
-        ?: throw IllegalStateException("Could not find ViewTreeViewModelStoreOwner for $this, which is required to retrieve a NavigationHandle")
+        ?: throw EnroException.InvalidViewForNavigationHandle("Could not find ViewTreeViewModelStoreOwner for $this, which is required to retrieve a NavigationHandle")
     return viewModelStoreOwner.getNavigationHandleViewModel()
 }

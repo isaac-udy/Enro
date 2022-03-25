@@ -1,11 +1,6 @@
 package dev.enro.core.synthetic
 
-import androidx.fragment.app.Fragment
-import dev.enro.core.ExecutorArgs
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationExecutor
-import dev.enro.core.NavigationKey
-import java.lang.IllegalStateException
+import dev.enro.core.*
 
 object DefaultSyntheticExecutor : NavigationExecutor<Any, SyntheticDestination<*>, NavigationKey>(
     fromType = Any::class,
@@ -24,6 +19,6 @@ object DefaultSyntheticExecutor : NavigationExecutor<Any, SyntheticDestination<*
     }
 
     override fun close(context: NavigationContext<out SyntheticDestination<*>>) {
-        throw IllegalStateException("Synthetic Destinations should not ever execute a 'close' instruction")
+        throw EnroException.UnreachableState()
     }
 }

@@ -1,5 +1,6 @@
 package dev.enro.core.result
 
+import dev.enro.core.EnroException
 import dev.enro.core.NavigationHandle
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.plugins.EnroPlugin
@@ -62,7 +63,7 @@ internal class EnroResult: EnroPlugin() {
         @JvmStatic
         fun from(navigationController: NavigationController): EnroResult {
             return controllerBindings[navigationController]
-                ?: throw IllegalStateException("Nice Error")
+                ?: throw EnroException.EnroResultIsNotInstalled("EnroResult is not installed")
         }
     }
 }
