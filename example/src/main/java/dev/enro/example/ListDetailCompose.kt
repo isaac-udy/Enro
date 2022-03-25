@@ -3,8 +3,6 @@ package dev.enro.example
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -19,11 +17,11 @@ import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.EmptyBehavior
+import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberEnroContainerController
-import dev.enro.core.forward
+import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.replace
 import kotlinx.parcelize.Parcelize
 import java.util.*
@@ -49,7 +47,7 @@ fun MasterDetailComposeScreen() {
         emptyBehavior = EmptyBehavior.CloseParent,
         accept = { it is ListComposeKey }
     )
-    val detailContainerController = rememberEnroContainerController(
+    val detailContainerController = rememberNavigationContainer(
         emptyBehavior = EmptyBehavior.AllowEmpty,
         accept = { it is DetailComposeKey }
     )

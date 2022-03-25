@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
+import dev.enro.core.container.EmptyBehavior
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractComposeFragmentHostKey : NavigationKey {

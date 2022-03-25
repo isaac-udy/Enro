@@ -1,16 +1,13 @@
 package dev.enro.core.fragment
 
-import android.app.Activity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.fragment.app.*
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.fragment.internal.SingleFragmentKey
-import java.lang.IllegalStateException
 
 private const val PREVIOUS_FRAGMENT_IN_CONTAINER = "dev.enro.core.fragment.DefaultFragmentExecutor.PREVIOUS_FRAGMENT_IN_CONTAINER"
 
@@ -116,7 +113,11 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             return
         }
 
-        container.setBackstack(container.backstackFlow.value.close())
+        container.setBackstack(
+            container.backstackFlow.value.close(
+                context.getNavigationHandle().id
+            )
+        )
     }
 
     fun createFragment(

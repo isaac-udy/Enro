@@ -1,7 +1,8 @@
-package dev.enro.core.compose
+package dev.enro.core.compose.animation
 
 import android.animation.AnimatorInflater
 import android.content.Context
+import android.graphics.Matrix
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -96,10 +97,10 @@ private fun updateAnimationResourceStateFromAnim(
     transformation.matrix.getValues(v)
     state.value = AnimationResourceState(
         alpha = transformation.alpha,
-        scaleX = v[android.graphics.Matrix.MSCALE_X],
-        scaleY = v[android.graphics.Matrix.MSCALE_Y],
-        translationX = v[android.graphics.Matrix.MTRANS_X],
-        translationY = v[android.graphics.Matrix.MTRANS_Y],
+        scaleX = v[Matrix.MSCALE_X],
+        scaleY = v[Matrix.MSCALE_Y],
+        translationX = v[Matrix.MTRANS_X],
+        translationY = v[Matrix.MTRANS_Y],
         rotationX = 0.0f,
         rotationY = 0.0f,
         transformOrigin = TransformOrigin(0f, 0f),

@@ -80,7 +80,7 @@ internal open class NavigationHandleViewModel(
         val instruction = pendingInstruction ?: return
 
         pendingInstruction = null
-        context.lifecycleOwner.lifecycleScope.launchWhenCreated {
+        val execute: () -> Unit = {
             when (instruction) {
                 is NavigationInstruction.Open -> {
                     context.controller.open(context, instruction)
@@ -89,6 +89,16 @@ internal open class NavigationHandleViewModel(
                     internalOnCloseRequested()
                 }
                 NavigationInstruction.Close -> context.controller.close(context)
+            }
+        }
+
+        val isMainLooper = Looper.getMainLooper() == Looper.myLooper()
+        if(isMainLooper && context.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+            execute()
+        }
+        else {
+            context.lifecycleOwner.lifecycleScope.launchWhenCreated {
+                execute()
             }
         }
     }

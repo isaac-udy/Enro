@@ -2,6 +2,7 @@ package dev.enro.core.compose
 
 import androidx.compose.material.ExperimentalMaterialApi
 import dev.enro.core.*
+import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
 import dev.enro.core.compose.dialog.DialogDestination

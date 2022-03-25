@@ -7,6 +7,7 @@ import dev.enro.TestActivity
 import dev.enro.TestFragment
 import dev.enro.TestPlugin
 import dev.enro.annotations.NavigationDestination
+import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.expectContext
 import org.junit.Test
 import java.util.*

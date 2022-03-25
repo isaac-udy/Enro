@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.core.animation.addListener
 import androidx.core.view.isVisible
 import dev.enro.core.compose.*
+import dev.enro.core.container.EmptyBehavior
 import java.lang.IllegalStateException
 
 

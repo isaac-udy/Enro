@@ -7,27 +7,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.core.*
+import dev.enro.core.compose.container.ComposableNavigationContainer
+import dev.enro.core.compose.container.registerState
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationContainerBackstackEntry
+import dev.enro.core.container.NavigationContainerBackstack
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.util.*
 
-internal class EnroDestinationStorage : ViewModel() {
-    val destinations = mutableMapOf<String, MutableMap<String, ComposableDestinationContextReference>>()
-
-    override fun onCleared() {
-        destinations.values
-            .flatMap { it.values }
-            .forEach { it.viewModelStore.clear() }
-
-        super.onCleared()
-    }
-}
-
 @Composable
-fun rememberEnroContainerController(
+fun rememberNavigationContainer(
     root: NavigationKey,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
@@ -40,7 +31,7 @@ fun rememberEnroContainerController(
 }
 
 @Composable
-fun rememberEnroContainerController(
+fun rememberNavigationContainer(
     initialState: List<NavigationKey> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
@@ -64,7 +55,6 @@ fun rememberEnroContainerController(
     ignore: Unit = Unit
 ): ComposableNavigationContainer {
     val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
-    val destinationStorage = viewModel<EnroDestinationStorage>()
 
     val id = rememberSaveable {
         UUID.randomUUID().toString()
@@ -76,39 +66,33 @@ fun rememberEnroContainerController(
             id = id,
             parentContext = viewModelStoreOwner.getNavigationHandleViewModel().navigationContext!!,
             accept = accept,
-            destinationStorage = destinationStorage,
             emptyBehavior = emptyBehavior,
             saveableStateHolder = saveableStateHolder
         )
     }
 
-    val savedBackstack = rememberSaveable(
-        key = id,
-        saver = EnroContainerBackstackStateSaver {
-            controller.backstackFlow.value
-        }
-    ) {
-        EnroContainerBackstackState(
-            backstackEntries = initialBackstack.map { EnroContainerBackstackEntry(it, null) },
-            exiting = null,
-            exitingIndex = -1,
-            lastInstruction = initialBackstack.lastOrNull() ?: NavigationInstruction.Close,
-            skipAnimations = true
-        )
-    }
-
     viewModelStoreOwner.getNavigationHandleViewModel().navigationContext!!.containerManager.registerState(controller)
-    return remember {
-        controller.setBackstack(savedBackstack)
-        controller
+    DisposableEffect(controller.id) {
+        if(controller.backstackFlow.value.backstack.isEmpty()) {
+            val backstack = NavigationContainerBackstack(
+                backstackEntries = initialBackstack.map { NavigationContainerBackstackEntry(it, null) },
+                exiting = null,
+                exitingIndex = -1,
+                lastInstruction = initialBackstack.lastOrNull() ?: NavigationInstruction.Close,
+                skipAnimations = true
+            )
+            controller.setBackstack(backstack)
+        }
+        onDispose {  }
     }
+    return controller
 }
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun EnroContainer(
     modifier: Modifier = Modifier,
-    controller: ComposableNavigationContainer = rememberEnroContainerController(),
+    controller: ComposableNavigationContainer = rememberNavigationContainer(),
 ) {
     key(controller.id) {
         controller.saveableStateHolder.SaveableStateProvider(controller.id) {

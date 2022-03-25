@@ -23,6 +23,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberEnroContainerController
+import dev.enro.core.container.EmptyBehavior
 import kotlinx.parcelize.Parcelize
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals

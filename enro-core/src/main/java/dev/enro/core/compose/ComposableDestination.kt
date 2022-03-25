@@ -15,6 +15,8 @@ import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
+import dev.enro.core.compose.animation.EnroAnimatedVisibility
+import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.viewmodel.EnroViewModelFactory
 
@@ -82,7 +84,7 @@ internal class ComposableDestinationContextReference(
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
     }
 
-    override fun getLifecycle(): Lifecycle {
+    override fun getLifecycle(): LifecycleRegistry {
         return lifecycleRegistry
     }
 
@@ -134,13 +136,6 @@ internal class ComposableDestinationContextReference(
 
         val navigationHandle = remember { getNavigationHandleViewModel() }
         val backstackState by requireParentContainer().backstackFlow.collectAsState()
-        DisposableEffect(true) {
-            onDispose {
-                if (!backstackState.backstack.contains(instruction)) {
-                    lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-                }
-            }
-        }
 
         val isVisible = instruction == backstackState.visible
         val animations = remember(isVisible) {
@@ -162,6 +157,7 @@ internal class ComposableDestinationContextReference(
                     lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
                 }
                 onDispose {
+                    if(lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) return@onDispose
                     if (isVisible) {
                         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
                     } else {

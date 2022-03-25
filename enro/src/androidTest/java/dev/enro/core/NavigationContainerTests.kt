@@ -12,16 +12,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.EnroContainer
-import dev.enro.core.compose.rememberEnroContainerController
-import dev.enro.expectFragment
-import junit.framework.Assert.assertFalse
-import junit.framework.Assert.assertTrue
+import dev.enro.core.compose.container.ComposableNavigationContainer
+import dev.enro.core.compose.rememberNavigationContainer
+import dev.enro.core.container.isActive
+import dev.enro.core.container.setActive
+import dev.enro.core.fragment.container.navigationContainer
+import junit.framework.Assert.*
 import kotlinx.parcelize.Parcelize
 import org.junit.Test
 
@@ -314,6 +315,252 @@ class NavigationContainerTests {
         activity.onBackPressed()
         expectNoActivity()
     }
+
+    @Test
+    fun whenMultipleFragmentsAreOpenedIntoContainersThatAcceptDifferentKeys_andAreLaterClosed_thenTheActiveContainerStateIsRememberedAndSetCorrectly() {
+        ActivityScenario.launch(MultipleFragmentContainerActivityWithAccept::class.java)
+        val activity = expectActivity<MultipleFragmentContainerActivityWithAccept>()
+
+        activity.getNavigationHandle()
+            .forward(GenericFragmentKey("One"))
+        expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "One" }
+
+        activity.getNavigationHandle()
+            .forward(GenericFragmentKey("Two"))
+        expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Two" }
+
+        activity.getNavigationHandle()
+            .forward(GenericFragmentKey("Three"))
+        expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Three" }
+
+        activity.getNavigationHandle()
+            .forward(GenericFragmentKey("Four"))
+        expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Four" }
+
+        activity.getNavigationHandle()
+            .forward(GenericFragmentKey("Five"))
+        expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Five" }
+
+        assertEquals(
+            expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Five" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Four" }.context,
+            activity.secondaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.secondaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Three" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Two" }.context,
+            activity.secondaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.secondaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "One" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+    }
+
+    @Test
+    fun whenMultipleFragmentsAreOpenedIntoContainersThatAcceptDifferentKeys_andAreClosedAfterRecreation_thenTheActiveContainerStateIsRememberedAndSetCorrectly() {
+        val scenario = ActivityScenario.launch(MultipleFragmentContainerActivityWithAccept::class.java)
+        var activity = expectActivity<MultipleFragmentContainerActivityWithAccept>()
+
+        activity.getNavigationHandle()
+            .forward(GenericFragmentKey("One"))
+        expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "One" }
+
+        activity.getNavigationHandle()
+            .forward(GenericFragmentKey("Two"))
+        expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Two" }
+
+        activity.getNavigationHandle()
+            .forward(GenericFragmentKey("Three"))
+        expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Three" }
+
+        activity.getNavigationHandle()
+            .forward(GenericFragmentKey("Four"))
+        expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Four" }
+
+        activity.getNavigationHandle()
+            .forward(GenericFragmentKey("Five"))
+        expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Five" }
+
+        scenario.recreate()
+        activity = expectActivity()
+        assertEquals(
+            expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Five" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Four" }.context,
+            activity.secondaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.secondaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Three" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Two" }.context,
+            activity.secondaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.secondaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "One" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+    }
+
+
+    @Test
+    fun whenMultipleComposablesAreOpenedIntoContainersThatAcceptDifferentKeys_andAreLaterClosed_thenTheActiveContainerStateIsRememberedAndSetCorrectly() {
+        ActivityScenario.launch(MultipleComposableContainerActivityWithAccept::class.java)
+        val activity = expectActivity<MultipleComposableContainerActivityWithAccept>()
+
+        activity.getNavigationHandle()
+            .forward(GenericComposableKey("One"))
+        expectComposableContext<GenericComposableKey> { it.navigation.key.id == "One" }
+
+        activity.getNavigationHandle()
+            .forward(GenericComposableKey("Two"))
+        expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Two" }
+
+        activity.getNavigationHandle()
+            .forward(GenericComposableKey("Three"))
+        expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Three" }
+
+        activity.getNavigationHandle()
+            .forward(GenericComposableKey("Four"))
+        expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Four" }
+
+        activity.getNavigationHandle()
+            .forward(GenericComposableKey("Five"))
+        expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Five" }
+
+        assertEquals(
+            expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Five" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Four" }.context,
+            activity.secondaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.secondaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Three" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Two" }.context,
+            activity.secondaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.secondaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectComposableContext<GenericComposableKey> { it.navigation.key.id == "One" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+    }
+
+    @Test
+    fun whenMultipleComposablesAreOpenedIntoContainersThatAcceptDifferentKeys_andAreClosedAfterRecreation_thenTheActiveContainerStateIsRememberedAndSetCorrectly() {
+        val scenario = ActivityScenario.launch(MultipleComposableContainerActivityWithAccept::class.java)
+        var activity = expectActivity<MultipleComposableContainerActivityWithAccept>()
+
+        activity.getNavigationHandle()
+            .forward(GenericComposableKey("One"))
+        expectComposableContext<GenericComposableKey> { it.navigation.key.id == "One" }
+
+        activity.getNavigationHandle()
+            .forward(GenericComposableKey("Two"))
+        expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Two" }
+
+        activity.getNavigationHandle()
+            .forward(GenericComposableKey("Three"))
+        expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Three" }
+
+        activity.getNavigationHandle()
+            .forward(GenericComposableKey("Four"))
+        expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Four" }
+
+        activity.getNavigationHandle()
+            .forward(GenericComposableKey("Five"))
+        expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Five" }
+
+        scenario.recreate()
+        activity = expectActivity()
+        assertEquals(
+            expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Five" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Four" }.context,
+            activity.secondaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.secondaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Three" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Two" }.context,
+            activity.secondaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.secondaryContainer.isActive)
+
+        activity.onBackPressed()
+        assertEquals(
+            expectComposableContext<GenericComposableKey> { it.navigation.key.id == "One" }.context,
+            activity.primaryContainer.activeContext?.contextReference
+        )
+        assertTrue(activity.primaryContainer.isActive)
+    }
+
 }
 
 @Parcelize
@@ -340,6 +587,26 @@ class MultipleFragmentContainerActivity : TestActivity() {
 }
 
 @Parcelize
+object MultipleFragmentContainerActivityWithAcceptKey: NavigationKey
+
+@NavigationDestination(MultipleFragmentContainerActivityWithAcceptKey::class)
+class MultipleFragmentContainerActivityWithAccept : TestActivity() {
+    private val navigation by navigationHandle<MultipleFragmentContainerActivityWithAcceptKey> {
+        defaultKey(MultipleFragmentContainerActivityWithAcceptKey)
+    }
+
+    private val primaryContainerKeys = listOf("One", "Three", "Five")
+    val primaryContainer by navigationContainer(primaryFragmentContainer) {
+        it is GenericFragmentKey && primaryContainerKeys.contains(it.id)
+    }
+
+    private val secondaryContainerKeys = listOf("Two", "Four", "Six")
+    val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+        it is GenericFragmentKey && secondaryContainerKeys.contains(it.id)
+    }
+}
+
+@Parcelize
 object SingleComposableContainerActivityKey: NavigationKey
 
 @NavigationDestination(SingleComposableContainerActivityKey::class)
@@ -352,7 +619,7 @@ class SingleComposableContainerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            primaryContainer = rememberEnroContainerController()
+            primaryContainer = rememberNavigationContainer()
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
                 Text(text = "SingleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
@@ -380,8 +647,49 @@ class MultipleComposableContainerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            primaryContainer = rememberEnroContainerController()
-            secondaryContainer = rememberEnroContainerController()
+            primaryContainer = rememberNavigationContainer()
+            secondaryContainer = rememberNavigationContainer()
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
+                Text(text = "MultipleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
+                Text(text = dev.enro.core.compose.navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
+                EnroContainer(
+                    controller = primaryContainer,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).weight(1f).background(Color(0x22FF0000)).padding(horizontal = 20.dp)
+                )
+                EnroContainer(
+                    controller = secondaryContainer,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).weight(1f).background(Color(0x220000FF)).padding(horizontal =20.dp)
+                )
+            }
+        }
+    }
+}
+
+
+@Parcelize
+object MultipleComposableContainerActivityWithAcceptKey: NavigationKey
+
+@NavigationDestination(MultipleComposableContainerActivityWithAcceptKey::class)
+class MultipleComposableContainerActivityWithAccept : ComponentActivity() {
+    private val navigation by navigationHandle<MultipleComposableContainerActivityWithAcceptKey> {
+        defaultKey(MultipleComposableContainerActivityWithAcceptKey)
+    }
+    private val primaryContainerKeys = listOf("One", "Three", "Five")
+    lateinit var primaryContainer: ComposableNavigationContainer
+
+    private val secondaryContainerKeys = listOf("Two", "Four", "Six")
+    lateinit var secondaryContainer: ComposableNavigationContainer
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            primaryContainer = rememberNavigationContainer {
+                it is GenericComposableKey && primaryContainerKeys.contains(it.id)
+            }
+            secondaryContainer = rememberNavigationContainer {
+                it is GenericComposableKey && secondaryContainerKeys.contains(it.id)
+            }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
                 Text(text = "MultipleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))

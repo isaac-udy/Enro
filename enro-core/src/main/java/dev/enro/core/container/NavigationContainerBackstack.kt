@@ -1,19 +1,17 @@
-package dev.enro.core.compose
+package dev.enro.core.container
 
 import android.os.Parcelable
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.SaverScope
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class EnroContainerBackstackEntry(
+data class NavigationContainerBackstackEntry(
     val instruction: NavigationInstruction.Open,
     val previouslyActiveContainerId: String?
 ) : Parcelable
 
-fun createEmptyBackStack() = EnroContainerBackstackState(
+fun createEmptyBackStack() = NavigationContainerBackstack(
     lastInstruction = NavigationInstruction.Close,
     backstackEntries = listOf(),
     exiting = null,
@@ -21,9 +19,17 @@ fun createEmptyBackStack() = EnroContainerBackstackState(
     skipAnimations = false
 )
 
-data class EnroContainerBackstackState(
+fun createRestoredBackStack(backstackEntries: List<NavigationContainerBackstackEntry>) = NavigationContainerBackstack(
+    backstackEntries = backstackEntries,
+    exiting = null,
+    exitingIndex = -1,
+    lastInstruction = backstackEntries.lastOrNull()?.instruction ?: NavigationInstruction.Close,
+    skipAnimations = true
+)
+
+data class NavigationContainerBackstack(
     val lastInstruction: NavigationInstruction,
-    val backstackEntries: List<EnroContainerBackstackEntry>,
+    val backstackEntries: List<NavigationContainerBackstackEntry>,
     val exiting: NavigationInstruction.Open?,
     val exitingIndex: Int,
     val skipAnimations: Boolean
@@ -43,11 +49,11 @@ data class EnroContainerBackstackState(
     internal fun push(
         instruction: NavigationInstruction.Open,
         activeContainerId: String?
-    ): EnroContainerBackstackState {
+    ): NavigationContainerBackstack {
         return when (instruction.navigationDirection) {
             NavigationDirection.FORWARD -> {
                 copy(
-                    backstackEntries = backstackEntries + EnroContainerBackstackEntry(
+                    backstackEntries = backstackEntries + NavigationContainerBackstackEntry(
                         instruction,
                         activeContainerId
                     ),
@@ -59,7 +65,7 @@ data class EnroContainerBackstackState(
             }
             NavigationDirection.REPLACE -> {
                 copy(
-                    backstackEntries = backstackEntries.dropLast(1) + EnroContainerBackstackEntry(
+                    backstackEntries = backstackEntries.dropLast(1) + NavigationContainerBackstackEntry(
                         instruction,
                         activeContainerId
                     ),
@@ -72,7 +78,7 @@ data class EnroContainerBackstackState(
             NavigationDirection.REPLACE_ROOT -> {
                 copy(
                     backstackEntries = listOf(
-                        EnroContainerBackstackEntry(
+                        NavigationContainerBackstackEntry(
                             instruction,
                             activeContainerId
                         )
@@ -86,7 +92,7 @@ data class EnroContainerBackstackState(
         }
     }
 
-    internal fun close(): EnroContainerBackstackState {
+    internal fun close(): NavigationContainerBackstack {
         return copy(
             backstackEntries = backstackEntries.dropLast(1),
             exiting = visible,
@@ -95,23 +101,19 @@ data class EnroContainerBackstackState(
             skipAnimations = false
         )
     }
-}
 
-internal class EnroContainerBackstackStateSaver(
-    private val getCurrentState: () -> EnroContainerBackstackState?
-) : Saver<EnroContainerBackstackState, ArrayList<EnroContainerBackstackEntry>> {
-    override fun restore(value: ArrayList<EnroContainerBackstackEntry>): EnroContainerBackstackState {
-        return EnroContainerBackstackState(
-            backstackEntries = value,
-            exiting = null,
-            exitingIndex = -1,
-            lastInstruction = value.lastOrNull()?.instruction ?: NavigationInstruction.Close,
-            skipAnimations = true
+    internal fun close(id: String): NavigationContainerBackstack {
+        val index = backstackEntries.indexOfLast {
+            it.instruction.instructionId == id
+        }
+        if(index < 0) return this
+        val exiting = backstackEntries.get(index)
+        return copy(
+            backstackEntries = backstackEntries.minus(exiting),
+            exiting = exiting.instruction,
+            exitingIndex = index,
+            lastInstruction = NavigationInstruction.Close,
+            skipAnimations = false
         )
-    }
-
-    override fun SaverScope.save(value: EnroContainerBackstackState): ArrayList<EnroContainerBackstackEntry> {
-        val entries = getCurrentState()?.backstackEntries ?: value.backstackEntries
-        return ArrayList(entries)
     }
 }

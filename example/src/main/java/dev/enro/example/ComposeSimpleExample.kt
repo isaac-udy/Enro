@@ -21,7 +21,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.EmptyBehavior
+import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.compose.*
 import dev.enro.core.compose.dialog.*
 import kotlinx.parcelize.Parcelize

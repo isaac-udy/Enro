@@ -577,12 +577,13 @@ class ResultTests {
             .navigation
             .forward(ResultFlowKey())
 
-        expectContext<ResultFlowActivity, ResultFlowKey>()
+        val activityFlow = expectContext<ResultFlowActivity, ResultFlowKey>()
         val firstRequest = expectContext<ResultFragment, FragmentResultKey>()
         firstRequest
             .navigation
             .closeWithResult("next")
 
+        activityFlow.context.supportFragmentManager.hashCode()
         val secondRequest = expectContext<ResultFragment, FragmentResultKey>()
         assertNotSame(firstRequest.navigation.id, secondRequest.navigation.id)
     }

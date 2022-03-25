@@ -1,7 +1,6 @@
 package dev.enro.result
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +11,7 @@ import dev.enro.TestActivity
 import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
+import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.result.closeWithResult
 import dev.enro.core.result.forwardResult
 import dev.enro.core.result.registerForNavigationResult

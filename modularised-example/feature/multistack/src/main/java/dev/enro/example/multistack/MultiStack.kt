@@ -8,16 +8,16 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.example.core.navigation.MultiStackKey
 import dev.enro.example.multistack.databinding.MultistackBinding
-import dev.enro.multistack.multistackController
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

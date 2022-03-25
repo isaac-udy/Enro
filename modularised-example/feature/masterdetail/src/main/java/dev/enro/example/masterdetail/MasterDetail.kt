@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.EmptyBehavior
-import dev.enro.core.navigationContainer
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.example.core.navigation.DetailKey
 import dev.enro.example.core.navigation.ListKey

@@ -1,6 +1,5 @@
 package dev.enro.core
 
-import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.core.os.bundleOf
@@ -11,6 +10,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.fragment.FragmentNavigator

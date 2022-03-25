@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import dev.enro.core.AnimationPair
-import dev.enro.core.ComposableNavigationContainer
+import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.EnroContainer
 
 

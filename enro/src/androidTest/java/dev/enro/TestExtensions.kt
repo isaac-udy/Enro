@@ -33,6 +33,18 @@ class TestNavigationContext<Context: Any, KeyType: NavigationKey>(
     val navigation: TypedNavigationHandle<KeyType>
 )
 
+inline fun <reified KeyType: NavigationKey> expectComposableContext(
+    crossinline selector: (TestNavigationContext<ComposableDestination, KeyType>) -> Boolean = { true }
+): TestNavigationContext<ComposableDestination, KeyType> {
+    return expectContext(selector)
+}
+
+inline fun <reified KeyType: NavigationKey> expectFragmentContext(
+    crossinline selector: (TestNavigationContext<Fragment, KeyType>) -> Boolean = { true }
+): TestNavigationContext<Fragment, KeyType> {
+    return expectContext(selector)
+}
+
 inline fun <reified ContextType: Any, reified KeyType: NavigationKey> expectContext(
     crossinline selector: (TestNavigationContext<ContextType, KeyType>) -> Boolean = { true }
 ): TestNavigationContext<ContextType, KeyType> {
@@ -137,7 +149,7 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
 
     while(true) {
         if (System.currentTimeMillis() - startTime > maximumTime) throw IllegalStateException("Took too long waiting")
-        Thread.sleep(250)
+        Thread.sleep(33)
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             currentResponse = block()
         }

@@ -28,7 +28,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.registerForNavigationResult
-import dev.enro.core.compose.rememberEnroContainerController
+import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.forward
 import dev.enro.core.result.closeWithResult
 import dev.enro.core.result.registerForNavigationResult
@@ -52,7 +52,7 @@ fun ProgileFragment() {
             }
             EnroContainer(modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(), controller = rememberEnroContainerController {
+                .fillMaxHeight(), controller = rememberNavigationContainer {
                 it is InitialKey
             })
         }
@@ -79,7 +79,7 @@ class ProfileFragment : Fragment() {
                         }
                         EnroContainer(modifier = Modifier
                             .fillMaxWidth()
-                            .fillMaxHeight(), controller = rememberEnroContainerController {
+                            .fillMaxHeight(), controller = rememberNavigationContainer {
                             it is InitialKey
                         })
                     }
@@ -126,11 +126,11 @@ fun InitialScreen() {
         EnroContainer(modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .border(1.dp, Color.Green), controller = rememberEnroContainerController() { it is NestedKey })
+            .border(1.dp, Color.Green), controller = rememberNavigationContainer() { it is NestedKey })
         EnroContainer(modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .border(1.dp, Color.Red), controller = rememberEnroContainerController() { it is NestedKey2 })
+            .border(1.dp, Color.Red), controller = rememberNavigationContainer() { it is NestedKey2 })
     }
 }
 

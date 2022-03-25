@@ -4,16 +4,14 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.EmptyBehavior
+import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.NavigationKey
-import dev.enro.core.navigationContainer
+import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.example.databinding.ActivityMainBinding
-import dev.enro.multistack.multistackController
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

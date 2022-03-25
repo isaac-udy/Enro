@@ -26,7 +26,7 @@ import androidx.fragment.app.Fragment
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberEnroContainerController
+import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.getNavigationHandle
 
 abstract class TestActivity : AppCompatActivity() {
@@ -159,11 +159,11 @@ fun TestComposable(
     primaryContainerAccepts: (NavigationKey) -> Boolean = { false },
     secondaryContainerAccepts: (NavigationKey) -> Boolean = { false }
 ) {
-    val primaryContainer = rememberEnroContainerController(
+    val primaryContainer = rememberNavigationContainer(
         accept = primaryContainerAccepts
     )
 
-    val secondaryContainer = rememberEnroContainerController(
+    val secondaryContainer = rememberNavigationContainer(
         accept = primaryContainerAccepts
     )
 

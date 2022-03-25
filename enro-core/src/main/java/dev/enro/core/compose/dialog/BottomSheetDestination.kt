@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import dev.enro.core.*
 import dev.enro.core.compose.EnroContainer
+import dev.enro.core.compose.container.ComposableNavigationContainer
 
 @ExperimentalMaterialApi
 class BottomSheetConfiguration : DialogConfiguration() {

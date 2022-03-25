@@ -2,6 +2,7 @@ package dev.enro.core.controller.lifecycle
 
 import android.app.Application
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -9,6 +10,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.PluginContainer
+import dev.enro.core.fragment.container.FragmentNavigationContainerProperty
 import dev.enro.core.internal.NoNavigationKey
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
@@ -41,8 +43,10 @@ internal class NavigationLifecycleController(
             ?: UUID.randomUUID().toString()
 
         val config = NavigationHandleProperty.getPendingConfig(context)
-        val containers = NavigationContainerProperty.getPendingContainers(context.contextReference as LifecycleOwner)
-        context.containerManager.containers.addAll(containers)
+        FragmentNavigationContainerProperty.getPendingContainers(context.contextReference as LifecycleOwner)
+            .forEach {
+                context.containerManager.addContainer(it)
+            }
 
         val defaultInstruction = NavigationInstruction
             .Forward(
@@ -59,6 +63,9 @@ internal class NavigationLifecycleController(
         )
 
         config?.applyTo(handle)
+        handle.navigationContext = context
+        context.containerManager.restore(savedInstanceState)
+
         handle.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (!handle.hasKey) return
@@ -70,8 +77,6 @@ internal class NavigationLifecycleController(
                 }
             }
         })
-        handle.navigationContext = context
-        context.containerManager.restore(savedInstanceState)
         if (savedInstanceState == null) {
             context.lifecycle.addObserver(object : LifecycleEventObserver {
                 override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
@@ -94,8 +99,6 @@ internal class NavigationLifecycleController(
     }
 
     private fun updateActiveNavigationContext(context: NavigationContext<*>) {
-        if (!context.lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
-
         // Sometimes the context will be in an invalid state to correctly update, and will throw,
         // in which case, we just ignore the exception
         runCatching {

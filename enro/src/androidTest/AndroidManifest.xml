@@ -23,6 +23,8 @@
         <activity android:name=".core.MultipleFragmentContainerActivity" />
         <activity android:name=".core.SingleComposableContainerActivity" />
         <activity android:name=".core.MultipleComposableContainerActivity" />
+        <activity android:name=".core.MultipleFragmentContainerActivityWithAccept" />
+        <activity android:name=".core.MultipleComposableContainerActivityWithAccept" />
         <activity android:name="androidx.activity.ComponentActivity"/>
         <activity android:name=".result.RecyclerViewResultActivity"/>
         <activity android:name=".result.ComposeRecyclerViewResultActivity"/>
