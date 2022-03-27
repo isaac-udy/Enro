@@ -32,9 +32,9 @@ class ActivityToActivityOverrideTests() {
 
         expectActivity<GenericActivity>()
 
-        assertTrue(preOpenCalled)
-        assertTrue(openCalled)
-        assertTrue(postOpenCalled)
+        waitFor { preOpenCalled }
+        waitFor { openCalled }
+        waitFor { postOpenCalled }
     }
 
     @Test
@@ -63,8 +63,8 @@ class ActivityToActivityOverrideTests() {
 
         expectActivity<DefaultActivity>()
 
-        assertTrue(closeOverrideCalled)
-        assertTrue(preCloseCalled)
+        waitFor { closeOverrideCalled }
+        waitFor { preCloseCalled }
     }
 
     @Test
@@ -94,11 +94,11 @@ class ActivityToActivityOverrideTests() {
             .getNavigationHandle<GenericActivityKey>()
             .forward(GenericActivityKey("override test 2"))
 
-        expectActivity<GenericActivity>()
+        expectActivity<GenericActivity> { it.getNavigationHandle().asTyped<GenericActivityKey>().key.id == "override test 2" }
 
-        assertTrue(preOpenCalled)
-        assertTrue(openCalled)
-        assertTrue(postOpenCalled)
+        waitFor { preOpenCalled }
+        waitFor { openCalled }
+        waitFor { postOpenCalled }
     }
 
     @Test
@@ -127,14 +127,14 @@ class ActivityToActivityOverrideTests() {
             .getNavigationHandle<GenericActivityKey>()
             .forward(GenericActivityKey("override test 2"))
 
-        expectActivity<GenericActivity>()
+        expectActivity<GenericActivity> { it.getNavigationHandle().asTyped<GenericActivityKey>().key.id == "override test 2" }
             .getNavigationHandle()
             .close()
 
         expectActivity<GenericActivity>()
 
-        assertTrue(closeOverrideCalled)
-        assertTrue(preCloseCalled)
+        waitFor { closeOverrideCalled }
+        waitFor { preCloseCalled }
     }
 
 
@@ -161,9 +161,9 @@ class ActivityToActivityOverrideTests() {
 
         expectActivity<GenericActivity>()
 
-        assertTrue(preOpenCalled)
-        assertTrue(openCalled)
-        assertTrue(postOpenCalled)
+        waitFor { preOpenCalled }
+        waitFor { openCalled }
+        waitFor { postOpenCalled }
     }
 
     @Test
@@ -185,13 +185,13 @@ class ActivityToActivityOverrideTests() {
         expectActivity<UnboundActivity>().getNavigationHandle()
             .forward(GenericActivityKey("override test 2"))
 
-        expectActivity<GenericActivity>()
+        expectActivity<GenericActivity> { it.getNavigationHandle().asTyped<GenericActivityKey>().key.id == "override test 2" }
             .getNavigationHandle()
             .close()
 
         expectActivity<UnboundActivity>()
 
-        assertTrue(closeOverrideCalled)
-        assertTrue(preCloseCalled)
+        waitFor { closeOverrideCalled }
+        waitFor { preCloseCalled }
     }
 }

@@ -114,9 +114,9 @@ class FragmentToFragmentOverrideTests() {
 
         expectFragment<GenericFragment>()
 
-        assertTrue(preOpenCalled)
-        assertTrue(openCalled)
-        assertTrue(postOpenCalled)
+        waitFor { preOpenCalled }
+        waitFor { openCalled }
+        waitFor { postOpenCalled }
     }
 
     @Test
@@ -146,8 +146,8 @@ class FragmentToFragmentOverrideTests() {
 
         expectFragment<ActivityChildFragment>()
 
-        assertTrue(closeOverrideCalled)
-        assertTrue(preCloseCalled)
+        waitFor { closeOverrideCalled }
+        waitFor { preCloseCalled }
     }
 
 

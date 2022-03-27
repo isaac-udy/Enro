@@ -30,12 +30,8 @@ class PluginTests {
             .navigation
             .forward(PluginPrimaryTestFragmentKey())
 
-        assertEquals(
-            expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
-                .navigation
-                .key,
-            TestPlugin.activeKey
-        )
+        val context = expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
+        waitFor { context.navigation.key == TestPlugin.activeKey }
     }
 
     @Test
@@ -50,12 +46,9 @@ class PluginTests {
             .navigation
             .close()
 
-        assertEquals(
-            expectContext<PluginTestActivity, PluginTestActivityKey>()
-                .navigation
-                .key,
-            TestPlugin.activeKey
-        )
+        val context = expectContext<PluginTestActivity, PluginTestActivityKey>()
+        waitFor { context.navigation.key == TestPlugin.activeKey }
+
     }
 
     @Test

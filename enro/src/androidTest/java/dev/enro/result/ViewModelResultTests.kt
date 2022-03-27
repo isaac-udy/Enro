@@ -24,11 +24,10 @@ class ViewModelResultTests {
             .getNavigationHandle<NavigationKey>()
             .forward(OrchestratorKey())
 
-        expectFragment<OrchestratorFragment>()
+        val viewModel = expectFragment<OrchestratorFragment>()
             .viewModel
-            .let {
-                assertEquals("FirstStep -> SecondStep(SecondStepNested)", it.currentResult)
-            }
+
+        waitFor { "FirstStep -> SecondStep(SecondStepNested)" == viewModel.currentResult }
     }
 }
 
