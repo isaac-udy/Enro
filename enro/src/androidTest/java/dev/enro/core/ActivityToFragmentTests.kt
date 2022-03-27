@@ -38,18 +38,18 @@ class ActivityToFragmentTests {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
 
-        val id = UUID.randomUUID().toString()
+        val target = GenericFragmentKey(UUID.randomUUID().toString())
         handle.forward(
             GenericFragmentKey("1"),
             GenericFragmentKey("2"),
-            GenericFragmentKey(id)
+            target
         )
 
         val activity = expectSingleFragmentActivity()
-        val fragment = expectFragment<GenericFragment>()
+        val fragment = expectFragment<GenericFragment> { it.getNavigationHandle().key == target}
 
         val fragmentHandle = fragment.getNavigationHandle().asTyped<GenericFragmentKey>()
-        assertEquals(id, fragmentHandle.key.id)
+        assertEquals(target.id, fragmentHandle.key.id)
         assertEquals(fragment, activity.supportFragmentManager.primaryNavigationFragment!!)
     }
 
