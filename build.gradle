@@ -47,3 +47,45 @@ task updateVersion {
         versionPropertiesFile.write("versionName=$versionName\nversionCode=$versionCode")
     }
 }
+
+task disableConnectedDeviceAnimations {
+    doLast {
+        exec {
+            commandLine(
+                    "adb", "shell", "\"settings put global window_animation_scale 0.00\""
+            )
+        }
+
+        exec {
+            commandLine(
+                    "adb", "shell", "\"settings put global transition_animation_scale  0.00\""
+            )
+        }
+        exec {
+            commandLine(
+                    "adb", "shell", "\"settings put global animator_duration_scale 0.00\""
+            )
+        }
+    }
+}
+
+task enableConnectedDeviceAnimations {
+    doLast {
+        exec {
+            commandLine(
+                    "adb", "shell", "\"settings put global window_animation_scale 1.00\""
+            )
+        }
+
+        exec {
+            commandLine(
+                    "adb", "shell", "\"settings put global transition_animation_scale  1.00\""
+            )
+        }
+        exec {
+            commandLine(
+                    "adb", "shell", "\"settings put global animator_duration_scale 1.00\""
+            )
+        }
+    }
+}

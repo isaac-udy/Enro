@@ -144,7 +144,7 @@ fun waitFor(block: () -> Boolean) {
 
     while(true) {
         if(block()) return
-        Thread.sleep(250)
+        Thread.sleep(33)
         if(System.currentTimeMillis() - startTime > maximumTime) throw IllegalStateException("Took too long waiting")
     }
 }
@@ -158,7 +158,7 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
 
     while(true) {
         if (System.currentTimeMillis() - startTime > maximumTime) throw IllegalStateException("Took too long waiting")
-        Thread.sleep(250)
+        Thread.sleep(33)
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             currentResponse = block()
         }

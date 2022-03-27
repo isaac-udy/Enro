@@ -1,13 +1,10 @@
 package dev.enro.core
 
 import androidx.test.core.app.ActivityScenario
+import dev.enro.*
 import junit.framework.Assert.assertEquals
 import kotlinx.parcelize.Parcelize
-import dev.enro.TestActivity
-import dev.enro.TestFragment
-import dev.enro.TestPlugin
 import dev.enro.annotations.NavigationDestination
-import dev.enro.expectContext
 import org.junit.Test
 import java.util.*
 
@@ -121,12 +118,12 @@ class PluginTests {
             .navigation
             .close()
 
-        assertEquals(
-            expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey> {
-                it.navigation.key.keyId == "nested"
-            }.navigation.key,
-            TestPlugin.activeKey
-        )
+        val context = expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey> {
+            it.navigation.key.keyId == "nested"
+        }
+        waitFor {
+            context.navigation.key == TestPlugin.activeKey
+        }
     }
 }
 
