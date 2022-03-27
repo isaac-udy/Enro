@@ -3,7 +3,9 @@ package dev.enro.core.internal.handle
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import dev.enro.core.*
@@ -80,7 +82,7 @@ internal open class NavigationHandleViewModel(
         val instruction = pendingInstruction ?: return
 
         pendingInstruction = null
-        context.lifecycleOwner.lifecycleScope.launchWhenCreated {
+        context.runWhenContextActive {
             when (instruction) {
                 is NavigationInstruction.Open -> {
                     context.controller.open(context, instruction)

@@ -2,9 +2,9 @@ package dev.enro.core
 
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
-import junit.framework.Assert.assertEquals
 import kotlinx.parcelize.Parcelize
 import dev.enro.annotations.NavigationDestination
+import junit.framework.TestCase.assertEquals
 import org.junit.Test
 import java.util.*
 
@@ -70,12 +70,10 @@ class PluginTests {
 
         activityNavigation.forward(PluginSecondaryTestFragmentKey())
 
-        assertEquals(
-            expectContext<PluginSecondaryTestFragment, PluginSecondaryTestFragmentKey>()
-                .navigation
-                .key,
-            TestPlugin.activeKey
-        )
+        val context = expectContext<PluginSecondaryTestFragment, PluginSecondaryTestFragmentKey>()
+        waitFor {
+            context.navigation.key == TestPlugin.activeKey
+        }
     }
 
     @Test
@@ -93,12 +91,10 @@ class PluginTests {
             .navigation
             .close()
 
-        assertEquals(
-            expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
-                .navigation
-                .key,
-            TestPlugin.activeKey
-        )
+        val context = expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
+        waitFor {
+            context.navigation.key == TestPlugin.activeKey
+        }
     }
 
     @Test

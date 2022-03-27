@@ -2,9 +2,11 @@ package dev.enro.core
 
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.annotations.NavigationDestination
+import junit.framework.TestCase.assertTrue
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNull
 import kotlinx.parcelize.Parcelize
@@ -75,7 +77,7 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.replace(ActivityChildFragmentKey(id))
 
-        val activity = expectSingleFragmentActivity()
+        expectSingleFragmentActivity()
         val activeFragment = expectFragment<ActivityChildFragment>()
         val fragmentHandle =
             activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
@@ -279,6 +281,101 @@ class ActivityToFragmentTests {
         }
 
         assertNull(expectActivity<ActivityWithFragments>().supportFragmentManager.primaryNavigationFragment)
+    }
+
+    @Test
+    fun givenFragmentOpenInActivity_whenFragmentIsClosedAfterInstanceStateIsSaved_thenNavigationIsNotClosed_untilActivityIsActiveAgain() {
+        val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
+        expectActivity<ActivityWithFragments>()
+            .getNavigationHandle()
+            .forward(ActivityChildFragmentKey(UUID.randomUUID().toString()))
+
+        val fragment = expectFragment<ActivityChildFragment>()
+        val fragmentHandle = fragment.getNavigationHandle()
+
+        scenario.moveToState(Lifecycle.State.CREATED)
+        scenario.onActivity {
+            assertTrue(it.supportFragmentManager.isStateSaved)
+        }
+        fragmentHandle.close()
+        scenario.moveToState(Lifecycle.State.RESUMED)
+        expectNoFragment<ActivityChildFragment>()
+    }
+
+    @Test
+    fun givenFragmentOpenInActivity_whenFragmentIsClosedAfterInstanceStateIsSaved_thenNavigationIsNotClosed_untilActivityIsActiveAgain_recreation() {
+        val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
+        expectActivity<ActivityWithFragments>()
+            .getNavigationHandle()
+            .forward(ActivityChildFragmentKey(UUID.randomUUID().toString()))
+
+        val fragment = expectFragment<ActivityChildFragment>()
+        val fragmentHandle = fragment.getNavigationHandle()
+
+        scenario.moveToState(Lifecycle.State.CREATED)
+        scenario.onActivity {
+            assertTrue(it.supportFragmentManager.isStateSaved)
+        }
+        fragmentHandle.close()
+        scenario.recreate()
+        scenario.moveToState(Lifecycle.State.RESUMED)
+        expectActivity<ActivityWithFragments>()
+        expectNoFragment<ActivityChildFragment>()
+    }
+
+    @Test
+    fun givenTwoFragmentsOpenInActivity_whenTopFragmentIsClosedAfterInstanceStateIsSaved_thenNavigationIsNotClosed_untilActivityIsActiveAgain_andCorrectFragmentIsActive() {
+        val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
+        val firstFragmentKey = ActivityChildFragmentKey(UUID.randomUUID().toString())
+        val secondFragmentKey = ActivityChildFragmentKey(UUID.randomUUID().toString())
+
+        expectActivity<ActivityWithFragments>()
+            .getNavigationHandle()
+            .forward(firstFragmentKey)
+
+        expectFragment<ActivityChildFragment> { it.getNavigationHandle().key == firstFragmentKey }
+            .navigation
+            .forward(secondFragmentKey)
+
+        val fragment = expectFragment<ActivityChildFragment> { it.getNavigationHandle().key == secondFragmentKey }
+        val fragmentHandle = fragment.getNavigationHandle()
+
+        scenario.moveToState(Lifecycle.State.CREATED)
+        scenario.onActivity {
+            assertTrue(it.supportFragmentManager.isStateSaved)
+        }
+        fragmentHandle.close()
+        scenario.moveToState(Lifecycle.State.RESUMED)
+        expectFragment<ActivityChildFragment> { it.getNavigationHandle().key == firstFragmentKey }
+        expectNoFragment<ActivityChildFragment> { it.getNavigationHandle().key == secondFragmentKey }
+    }
+
+    @Test
+    fun givenTwoFragmentsOpenInActivity_whenTopFragmentIsClosedAfterInstanceStateIsSaved_thenNavigationIsNotClosed_untilActivityIsActiveAgain_andCorrectFragmentIsActive_recreation() {
+        val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
+        val firstFragmentKey = ActivityChildFragmentKey(UUID.randomUUID().toString())
+        val secondFragmentKey = ActivityChildFragmentKey(UUID.randomUUID().toString())
+
+        expectActivity<ActivityWithFragments>()
+            .getNavigationHandle()
+            .forward(firstFragmentKey)
+
+        expectFragment<ActivityChildFragment> { it.getNavigationHandle().key == firstFragmentKey }
+            .navigation
+            .forward(secondFragmentKey)
+
+        val fragment = expectFragment<ActivityChildFragment> { it.getNavigationHandle().key == secondFragmentKey }
+        val fragmentHandle = fragment.getNavigationHandle()
+
+        scenario.moveToState(Lifecycle.State.CREATED)
+        scenario.onActivity {
+            assertTrue(it.supportFragmentManager.isStateSaved)
+        }
+        fragmentHandle.close()
+        scenario.recreate()
+        scenario.moveToState(Lifecycle.State.RESUMED)
+        expectFragment<ActivityChildFragment> { it.getNavigationHandle().key == firstFragmentKey }
+        expectNoFragment<ActivityChildFragment> { it.getNavigationHandle().key == secondFragmentKey }
     }
 }
 

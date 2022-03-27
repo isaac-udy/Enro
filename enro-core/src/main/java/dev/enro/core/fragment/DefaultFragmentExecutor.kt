@@ -41,7 +41,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             fromContext.contextReference.contextReference.requireParentContainer().close()
         }
 
-        if (!tryExecutePendingTransitions(navigator, fromContext, instruction)) return
+        if (!tryExecutePendingTransitions(fromContext, instruction)) return
         if (fromContext is FragmentContext && !fromContext.fragment.isAdded) return
         val fragment = createFragment(
             fromContext.childFragmentManager,
@@ -104,6 +104,11 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     }
 
     override fun close(context: NavigationContext<out Fragment>) {
+        if(!tryExecutePendingTransitions(context.fragment.parentFragmentManager)) {
+            mainThreadHandler.post { context.controller.close(context) }
+            return
+        }
+
         if (context.contextReference is DialogFragment) {
             context.contextReference.dismiss()
             return
@@ -119,6 +124,10 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         // Checking for non-null context seems to be the best way to make sure parentFragmentManager will
         // not throw an IllegalStateException when there is no parent fragment manager
         val differentFragmentManagers = previousFragment?.context != null && previousFragment.parentFragmentManager != context.fragment.parentFragmentManager
+        if(differentFragmentManagers && previousFragment != null && !tryExecutePendingTransitions(previousFragment.parentFragmentManager)) {
+            mainThreadHandler.post { context.controller.close(context) }
+            return
+        }
 
         context.fragment.parentFragmentManager.commitNow {
             setCustomAnimations(animations.enter, animations.exit)
@@ -159,7 +168,6 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     }
 
     private fun tryExecutePendingTransitions(
-        navigator: FragmentNavigator<*, *>,
         fromContext: NavigationContext<out Any>,
         instruction: NavigationInstruction.Open
     ): Boolean {
@@ -168,18 +176,22 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             return true
         } catch (ex: IllegalStateException) {
             mainThreadHandler.post {
-                when (fromContext) {
-                    is ActivityContext -> fromContext.activity.getNavigationHandle().executeInstruction(
-                        instruction
-                    )
-                    is FragmentContext -> {
-                        if(!fromContext.fragment.isAdded) return@post
-                        fromContext.fragment.getNavigationHandle().executeInstruction(
-                            instruction
-                        )
-                    }
-                }
+                if (fromContext is FragmentContext && !fromContext.fragment.isAdded) return@post
+                fromContext.getNavigationHandle().executeInstruction(
+                    instruction
+                )
             }
+            return false
+        }
+    }
+
+    private fun tryExecutePendingTransitions(
+        fragmentManager: FragmentManager
+    ): Boolean {
+        try {
+            fragmentManager.executePendingTransactions()
+            return true
+        } catch (ex: IllegalStateException) {
             return false
         }
     }

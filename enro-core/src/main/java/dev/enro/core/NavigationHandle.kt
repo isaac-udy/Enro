@@ -1,8 +1,10 @@
 package dev.enro.core
 
 import android.os.Bundle
+import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import dev.enro.core.controller.NavigationController
 import kotlin.reflect.KClass
 
@@ -30,6 +32,8 @@ internal class TypedNavigationHandleImpl<T : NavigationKey>(
     override val id: String get() = navigationHandle.id
     override val controller: NavigationController get() = navigationHandle.controller
     override val additionalData: Bundle get() = navigationHandle.additionalData
+
+    @Suppress("UNCHECKED_CAST")
     override val key: T get() = navigationHandle.key as? T
         ?: throw EnroException.IncorrectlyTypedNavigationHandle("TypedNavigationHandle failed to cast key of type ${navigationHandle.key::class.java.simpleName} to ${type.simpleName}")
 
@@ -68,3 +72,14 @@ fun NavigationHandle.close() =
 
 fun NavigationHandle.requestClose() =
     executeInstruction(NavigationInstruction.RequestClose)
+
+internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
+    val isMainThread = Looper.getMainLooper() == Looper.myLooper()
+    if(isMainThread && lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+        block()
+    } else {
+        lifecycleScope.launchWhenCreated {
+            block()
+        }
+    }
+}
