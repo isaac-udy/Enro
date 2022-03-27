@@ -2,11 +2,13 @@ package dev.enro.core
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import android.os.Looper
 import androidx.core.os.bundleOf
 import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.compose.ComposableDestination
@@ -124,6 +126,39 @@ internal fun NavigationContext<*>.getNavigationHandleViewModel(): NavigationHand
         is ActivityContext<out ComponentActivity> -> activity.getNavigationHandle()
         is ComposeContext<out ComposableDestination> -> contextReference.contextReference.getNavigationHandleViewModel()
     } as NavigationHandleViewModel
+}
+
+internal fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
+    val isMainThread = Looper.getMainLooper() == Looper.myLooper()
+    when(this) {
+        is FragmentContext<out Fragment> -> {
+            if(isMainThread && !fragment.isStateSaved && fragment.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                block()
+            } else {
+                fragment.lifecycleScope.launchWhenStarted {
+                    block()
+                }
+            }
+        }
+        is ActivityContext<out ComponentActivity> -> {
+            if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                block()
+            } else {
+                contextReference.lifecycleScope.launchWhenStarted {
+                    block()
+                }
+            }
+        }
+        is ComposeContext<out ComposableDestination> -> {
+            if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                block()
+            } else {
+                contextReference.lifecycleScope.launchWhenStarted {
+                    block()
+                }
+            }
+        }
+    }
 }
 
 val ComponentActivity.containerManager: NavigationContainerManager get() = navigationContext.containerManager

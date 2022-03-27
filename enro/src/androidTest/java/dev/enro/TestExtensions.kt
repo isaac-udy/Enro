@@ -1,5 +1,6 @@
 package dev.enro
 
+import android.app.Activity
 import android.app.Application
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
@@ -86,31 +87,41 @@ inline fun <reified ContextType: Any, reified KeyType: NavigationKey> expectCont
 }
 
 
+fun getActiveActivity(): Activity? {
+    val activities = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
+    return activities.firstOrNull()
+}
+
 inline fun <reified T: ComponentActivity> expectActivity(crossinline selector: (ComponentActivity) -> Boolean = { it is T }): T {
     return waitOnMain {
-        val activities = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
-        val activity = activities.firstOrNull()
+        val activity = getActiveActivity()
 
         return@waitOnMain when {
             activity !is ComponentActivity -> null
-            selector(activity) -> activity as T
+            activity !is T -> null
+            selector(activity) -> activity
             else -> null
         }
     }
 }
 
-
 internal inline fun <reified T: Fragment> expectFragment(crossinline selector: (Fragment) -> Boolean = { it is T }): T {
-    val activity = expectActivity<FragmentActivity>()
     return waitOnMain {
-        val fragment = activity.supportFragmentManager.primaryNavigationFragment ?: return@waitOnMain null
-        if(selector(fragment)) return@waitOnMain fragment as T else null
+        val activity = getActiveActivity() as? FragmentActivity ?: return@waitOnMain null
+        val fragment = activity.supportFragmentManager.primaryNavigationFragment
+        Log.e("FRAGMENT", "$fragment")
+        return@waitOnMain when {
+            fragment == null -> null
+            fragment !is T ->  null
+            selector(fragment) -> fragment
+            else -> null
+        }
     }
 }
 
 internal inline fun <reified T: Fragment> expectNoFragment(crossinline selector: (Fragment) -> Boolean = { it is T }): Boolean {
-    val activity = expectActivity<FragmentActivity>()
     return waitOnMain {
+        val activity = getActiveActivity() as? FragmentActivity ?: return@waitOnMain null
         val fragment = activity.supportFragmentManager.primaryNavigationFragment ?: return@waitOnMain true
         if(selector(fragment)) return@waitOnMain null else true
     }
@@ -135,7 +146,7 @@ fun waitFor(block: () -> Boolean) {
 
     while(true) {
         if(block()) return
-        Thread.sleep(250)
+        Thread.sleep(33)
         if(System.currentTimeMillis() - startTime > maximumTime) throw IllegalStateException("Took too long waiting")
     }
 }
@@ -149,11 +160,11 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
 
     while(true) {
         if (System.currentTimeMillis() - startTime > maximumTime) throw IllegalStateException("Took too long waiting")
-        Thread.sleep(33)
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             currentResponse = block()
         }
         currentResponse?.let { return it }
+        Thread.sleep(33)
     }
 }
 

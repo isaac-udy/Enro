@@ -1,14 +1,11 @@
 package dev.enro.core
 
 import androidx.test.core.app.ActivityScenario
-import junit.framework.Assert.assertEquals
+import dev.enro.*
 import kotlinx.parcelize.Parcelize
-import dev.enro.TestActivity
-import dev.enro.TestFragment
-import dev.enro.TestPlugin
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.fragment.container.navigationContainer
-import dev.enro.expectContext
+import junit.framework.TestCase.assertEquals
 import org.junit.Test
 import java.util.*
 
@@ -34,12 +31,8 @@ class PluginTests {
             .navigation
             .forward(PluginPrimaryTestFragmentKey())
 
-        assertEquals(
-            expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
-                .navigation
-                .key,
-            TestPlugin.activeKey
-        )
+        val context = expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
+        waitFor { context.navigation.key == TestPlugin.activeKey }
     }
 
     @Test
@@ -54,12 +47,9 @@ class PluginTests {
             .navigation
             .close()
 
-        assertEquals(
-            expectContext<PluginTestActivity, PluginTestActivityKey>()
-                .navigation
-                .key,
-            TestPlugin.activeKey
-        )
+        val context = expectContext<PluginTestActivity, PluginTestActivityKey>()
+        waitFor { context.navigation.key == TestPlugin.activeKey }
+
     }
 
     @Test
@@ -74,12 +64,10 @@ class PluginTests {
 
         activityNavigation.forward(PluginSecondaryTestFragmentKey())
 
-        assertEquals(
-            expectContext<PluginSecondaryTestFragment, PluginSecondaryTestFragmentKey>()
-                .navigation
-                .key,
-            TestPlugin.activeKey
-        )
+        val context = expectContext<PluginSecondaryTestFragment, PluginSecondaryTestFragmentKey>()
+        waitFor {
+            context.navigation.key == TestPlugin.activeKey
+        }
     }
 
     @Test
@@ -97,12 +85,10 @@ class PluginTests {
             .navigation
             .close()
 
-        assertEquals(
-            expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
-                .navigation
-                .key,
-            TestPlugin.activeKey
-        )
+        val context = expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
+        waitFor {
+            context.navigation.key == TestPlugin.activeKey
+        }
     }
 
     @Test
@@ -122,12 +108,12 @@ class PluginTests {
             .navigation
             .close()
 
-        assertEquals(
-            expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey> {
-                it.navigation.key.keyId == "nested"
-            }.navigation.key,
-            TestPlugin.activeKey
-        )
+        val context = expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey> {
+            it.navigation.key.keyId == "nested"
+        }
+        waitFor {
+            context.navigation.key == TestPlugin.activeKey
+        }
     }
 }
 

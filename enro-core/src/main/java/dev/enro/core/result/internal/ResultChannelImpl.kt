@@ -5,10 +5,7 @@ import androidx.annotation.Keep
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
-import dev.enro.core.EnroException
-import dev.enro.core.NavigationHandle
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
+import dev.enro.core.*
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.UnmanagedEnroResultChannel
 
@@ -98,7 +95,7 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
         if (!properties.resultType.isAssignableFrom(result::class.java))
             throw EnroException.ReceivedIncorrectlyTypedResult("Attempted to consume result with wrong type!")
         result as T
-        properties.navigationHandle.lifecycleScope.launchWhenCreated {
+        properties.navigationHandle.runWhenHandleActive {
             properties.onResult(result)
         }
     }
