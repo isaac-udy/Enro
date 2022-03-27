@@ -109,7 +109,6 @@ internal inline fun <reified T: Fragment> expectFragment(crossinline selector: (
     return waitOnMain {
         val activity = getActiveActivity() as? FragmentActivity ?: return@waitOnMain null
         val fragment = activity.supportFragmentManager.primaryNavigationFragment
-        Log.e("FRAGMENT", "$fragment")
         return@waitOnMain when {
             fragment == null -> null
             fragment !is T ->  null
