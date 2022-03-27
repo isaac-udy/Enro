@@ -5,6 +5,7 @@ import android.app.Application
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
@@ -159,6 +160,7 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
 
     while(true) {
         if (System.currentTimeMillis() - startTime > maximumTime) throw IllegalStateException("Took too long waiting")
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             currentResponse = block()
         }

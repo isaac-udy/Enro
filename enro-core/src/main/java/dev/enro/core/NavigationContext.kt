@@ -84,14 +84,17 @@ val NavigationContext<*>.activity: ComponentActivity
         else -> throw EnroException.UnreachableState()
     }
 
+@PublishedApi
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 internal val <T : ComponentActivity> T.navigationContext: ActivityContext<T>
     get() = getNavigationHandleViewModel().navigationContext as ActivityContext<T>
 
+@PublishedApi
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 internal val <T : Fragment> T.navigationContext: FragmentContext<T>
     get() = getNavigationHandleViewModel().navigationContext as FragmentContext<T>
 
+@PublishedApi
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 internal val <T : ComposableDestination> T.navigationContext: ComposeContext<T>
     get() = getNavigationHandleViewModel().navigationContext as ComposeContext<T>

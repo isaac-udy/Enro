@@ -28,5 +28,7 @@ abstract class EnroException(
 
     class NavigationControllerIsNotAttached(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
+    class NavigationContainerWrongThread(message: String, cause: Throwable? = null) : EnroException(message, cause)
+
     class UnreachableState : EnroException("This state is expected to be unreachable. If you are seeing this exception, please report an issue (with the stacktrace included) at https://github.com/isaac-udy/Enro/issues")
 }

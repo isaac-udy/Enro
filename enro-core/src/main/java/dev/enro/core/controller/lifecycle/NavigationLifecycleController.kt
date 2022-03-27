@@ -43,11 +43,6 @@ internal class NavigationLifecycleController(
             ?: UUID.randomUUID().toString()
 
         val config = NavigationHandleProperty.getPendingConfig(context)
-        FragmentNavigationContainerProperty.getPendingContainers(context.contextReference as LifecycleOwner)
-            .forEach {
-                context.containerManager.addContainer(it)
-            }
-
         val defaultInstruction = NavigationInstruction
             .Forward(
                 navigationKey = config?.defaultKey

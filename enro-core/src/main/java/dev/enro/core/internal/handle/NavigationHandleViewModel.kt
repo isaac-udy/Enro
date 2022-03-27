@@ -79,7 +79,6 @@ internal open class NavigationHandleViewModel(
     private fun executePendingInstruction() {
         val context = navigationContext ?: return
         val instruction = pendingInstruction ?: return
-
         pendingInstruction = null
         context.runWhenContextActive {
             when (instruction) {

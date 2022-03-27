@@ -16,7 +16,7 @@ fun createEmptyBackStack() = NavigationContainerBackstack(
     backstackEntries = listOf(),
     exiting = null,
     exitingIndex = -1,
-    skipAnimations = false
+    isDirectUpdate = true
 )
 
 fun createRestoredBackStack(backstackEntries: List<NavigationContainerBackstackEntry>) = NavigationContainerBackstack(
@@ -24,7 +24,7 @@ fun createRestoredBackStack(backstackEntries: List<NavigationContainerBackstackE
     exiting = null,
     exitingIndex = -1,
     lastInstruction = backstackEntries.lastOrNull()?.instruction ?: NavigationInstruction.Close,
-    skipAnimations = true
+    isDirectUpdate = true
 )
 
 data class NavigationContainerBackstack(
@@ -32,7 +32,7 @@ data class NavigationContainerBackstack(
     val backstackEntries: List<NavigationContainerBackstackEntry>,
     val exiting: NavigationInstruction.Open?,
     val exitingIndex: Int,
-    val skipAnimations: Boolean
+    val isDirectUpdate: Boolean
 ) {
     val backstack = backstackEntries.map { it.instruction }
     val visible: NavigationInstruction.Open? = backstack.lastOrNull()
@@ -60,7 +60,7 @@ data class NavigationContainerBackstack(
                     exiting = visible,
                     exitingIndex = backstack.lastIndex,
                     lastInstruction = instruction,
-                    skipAnimations = false
+                    isDirectUpdate = false
                 )
             }
             NavigationDirection.REPLACE -> {
@@ -72,7 +72,7 @@ data class NavigationContainerBackstack(
                     exiting = visible,
                     exitingIndex = backstack.lastIndex,
                     lastInstruction = instruction,
-                    skipAnimations = false
+                    isDirectUpdate = false
                 )
             }
             NavigationDirection.REPLACE_ROOT -> {
@@ -86,7 +86,7 @@ data class NavigationContainerBackstack(
                     exiting = visible,
                     exitingIndex = 0,
                     lastInstruction = instruction,
-                    skipAnimations = false
+                    isDirectUpdate = false
                 )
             }
         }
@@ -98,7 +98,7 @@ data class NavigationContainerBackstack(
             exiting = visible,
             exitingIndex = backstack.lastIndex,
             lastInstruction = NavigationInstruction.Close,
-            skipAnimations = false
+            isDirectUpdate = false
         )
     }
 
@@ -113,7 +113,7 @@ data class NavigationContainerBackstack(
             exiting = exiting.instruction,
             exitingIndex = index,
             lastInstruction = NavigationInstruction.Close,
-            skipAnimations = false
+            isDirectUpdate = false
         )
     }
 }

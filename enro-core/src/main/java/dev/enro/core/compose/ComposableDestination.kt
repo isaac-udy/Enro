@@ -139,7 +139,7 @@ internal class ComposableDestinationContextReference(
 
         val isVisible = instruction == backstackState.visible
         val animations = remember(isVisible) {
-            if (backstackState.skipAnimations) return@remember DefaultAnimations.none
+            if (backstackState.isDirectUpdate) return@remember DefaultAnimations.none
             animationsFor(
                 navigationHandle.navigationContext ?: return@remember DefaultAnimations.none,
                 backstackState.lastInstruction

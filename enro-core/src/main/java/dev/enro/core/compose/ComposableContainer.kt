@@ -79,7 +79,7 @@ fun rememberEnroContainerController(
                 exiting = null,
                 exitingIndex = -1,
                 lastInstruction = initialBackstack.lastOrNull() ?: NavigationInstruction.Close,
-                skipAnimations = true
+                isDirectUpdate = true
             )
             controller.setBackstack(backstack)
         }
@@ -102,7 +102,6 @@ fun EnroContainer(
                 backstackState.renderable.forEach {
                     key(it.instructionId) {
                         controller.getDestinationContext(it).Render()
-                        controller.bindDestination(it)
                     }
                 }
             }

@@ -1,8 +1,12 @@
 package dev.enro.core.container
 
 import android.os.Bundle
+import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.lang.IllegalStateException
+import java.lang.RuntimeException
 
 class NavigationContainerManager {
     private val restoredContainerStates = mutableMapOf<String, NavigationContainerBackstack>()
@@ -11,8 +15,7 @@ class NavigationContainerManager {
     private val _containers: MutableSet<NavigationContainer> = mutableSetOf()
     val containers: Set<NavigationContainer> = _containers
 
-    internal val activeContainerState: MutableStateFlow<NavigationContainer?> =
-        MutableStateFlow(null)
+    internal val activeContainerState: MutableState<NavigationContainer?> = mutableStateOf(null)
     val activeContainer: NavigationContainer? get() = activeContainerState.value
 
     internal fun setActiveContainerById(id: String?) {
@@ -22,6 +25,9 @@ class NavigationContainerManager {
     internal fun addContainer(container: NavigationContainer) {
         _containers.add(container)
         restore(container)
+        if(activeContainer == null) {
+            setActiveContainer(container)
+        }
     }
 
     internal fun removeContainer(container: NavigationContainer) {
@@ -34,6 +40,7 @@ class NavigationContainerManager {
                 "$BACKSTACK_KEY@${it.id}", ArrayList(it.backstackFlow.value.backstackEntries)
             )
         }
+
         outState.putStringArrayList(CONTAINER_IDS_KEY, ArrayList(containers.map { it.id }))
         outState.putString(ACTIVE_CONTAINER_KEY, activeContainer?.id)
     }
@@ -58,14 +65,15 @@ class NavigationContainerManager {
     internal fun restore(container: NavigationContainer) {
         val activeContainer = activeContainer
         val backstack = restoredContainerStates[container.id] ?: return
+        restoredContainerStates.remove(container.id)
+
         container.setBackstack(backstack)
+        // TODO this is required because setBackstack sets the active container. Need to fix that...
+        setActiveContainer(activeContainer)
+
         if(restoredActiveContainer == container.id) {
             setActiveContainer(container)
             restoredActiveContainer = null
-        }
-        else {
-            // TODO this is required because setBackstack sets the active container. Need to fix that...
-            setActiveContainer(activeContainer)
         }
     }
 

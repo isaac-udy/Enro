@@ -1,18 +1,95 @@
 package dev.enro.core.container
 
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationKey
+import android.os.Handler
+import android.os.Looper
+import androidx.annotation.MainThread
+import dev.enro.core.*
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-interface NavigationContainer {
-    val id: String
-    val parentContext: NavigationContext<*>
-    val backstackFlow: StateFlow<NavigationContainerBackstack>
-    val activeContext: NavigationContext<*>?
-    val accept: (NavigationKey) -> Boolean
+abstract class NavigationContainer(
+    val id: String,
+    val parentContext: NavigationContext<*>,
+    val accept: (NavigationKey) -> Boolean,
     val emptyBehavior: EmptyBehavior
+) {
+    private val handler = Handler(Looper.getMainLooper())
+    private val reconcileBackstack = Runnable {
+        reconcileBackstack(pendingRemovals.toList(), backstackFlow.value)
+    }
 
-    fun setBackstack(backstack: NavigationContainerBackstack)
+    abstract val activeContext: NavigationContext<*>?
+
+    private val pendingRemovals = mutableSetOf<NavigationContainerBackstackEntry>()
+    private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
+    val backstackFlow: StateFlow<NavigationContainerBackstack> get() = mutableBackstack
+
+    init {
+        parentContext.runWhenContextActive {
+            reconcileBackstack(pendingRemovals.toList(), backstackFlow.value)
+        }
+    }
+
+    @MainThread
+    fun setBackstack(backstack: NavigationContainerBackstack) {
+        handler.removeCallbacks(reconcileBackstack)
+        if(Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
+            "A NavigationContainer's setBackstack method must only be called from the main thread"
+        )
+        val lastBackstack = backstackFlow.value
+        mutableBackstack.value = backstack
+
+        val removed = lastBackstack.backstackEntries
+            .filter {
+                !backstack.backstackEntries.contains(it)
+            }
+
+        val exiting = lastBackstack.backstackEntries
+            .firstOrNull {
+                it.instruction == backstack.exiting
+            }
+
+        if(!backstack.isDirectUpdate) {
+            if (exiting != null && backstack.lastInstruction is NavigationInstruction.Close) {
+                parentContext.containerManager.setActiveContainerById(
+                    exiting.previouslyActiveContainerId
+                )
+            } else {
+                parentContext.containerManager.setActiveContainer(this)
+            }
+        }
+
+        if(backstackFlow.value.backstack.isEmpty()) {
+            if(isActive && !backstack.isDirectUpdate) parentContext.containerManager.setActiveContainer(null)
+            when(val emptyBehavior = emptyBehavior) {
+                EmptyBehavior.AllowEmpty -> {
+                    /* If allow empty, pass through to default behavior */
+                }
+                EmptyBehavior.CloseParent -> {
+                    parentContext.getNavigationHandle().close()
+                    return
+                }
+                is EmptyBehavior.Action -> {
+                    val consumed = emptyBehavior.onEmpty()
+                    if (consumed) {
+                        return
+                    }
+                }
+            }
+        }
+
+        pendingRemovals.addAll(removed)
+        val reconciledBackstack = reconcileBackstack(pendingRemovals.toList(), backstack)
+        if(!reconciledBackstack) {
+            pendingRemovals.addAll(removed)
+            handler.post(reconcileBackstack)
+        }
+        else {
+            pendingRemovals.clear()
+        }
+    }
+
+    abstract fun reconcileBackstack(removed: List<NavigationContainerBackstackEntry>, backstack: NavigationContainerBackstack): Boolean
 }
 
 val NavigationContainer.isActive: Boolean
