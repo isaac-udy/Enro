@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.fragment.app.Fragment
+import dev.enro.core.result.internal.ResultChannelId
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
@@ -34,6 +35,7 @@ sealed class NavigationInstruction {
             val parentInstruction: OpenInternal? = null,
             val previouslyActiveId: String? = null,
             val executorContext: Class<out Any>? = null,
+            val resultId: ResultChannelId? = null,
             override val instructionId: String = UUID.randomUUID().toString()
         ) : NavigationInstruction.Open()
     }

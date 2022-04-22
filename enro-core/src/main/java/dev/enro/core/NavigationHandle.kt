@@ -13,15 +13,12 @@ interface NavigationHandle : LifecycleOwner {
     val controller: NavigationController
     val additionalData: Bundle
     val key: NavigationKey
+    val instruction: NavigationInstruction.Open
     fun executeInstruction(navigationInstruction: NavigationInstruction)
 }
 
 interface TypedNavigationHandle<T: NavigationKey> : NavigationHandle {
-    override val id: String
-    override val controller: NavigationController
-    override val additionalData: Bundle
     override val key: T
-    override fun executeInstruction(navigationInstruction: NavigationInstruction)
 }
 
 @PublishedApi
@@ -32,6 +29,7 @@ internal class TypedNavigationHandleImpl<T : NavigationKey>(
     override val id: String get() = navigationHandle.id
     override val controller: NavigationController get() = navigationHandle.controller
     override val additionalData: Bundle get() = navigationHandle.additionalData
+    override val instruction: NavigationInstruction.Open = navigationHandle.instruction
 
     @Suppress("UNCHECKED_CAST")
     override val key: T get() = navigationHandle.key as? T
@@ -74,7 +72,10 @@ fun NavigationHandle.requestClose() =
     executeInstruction(NavigationInstruction.RequestClose)
 
 internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
-    val isMainThread = Looper.getMainLooper() == Looper.myLooper()
+    val isMainThread = runCatching {
+        Looper.getMainLooper() == Looper.myLooper()
+    }.getOrElse { controller.isInTest } // if the controller is in a Jvm only test, the block above may fail to run
+
     if(isMainThread && lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
         block()
     } else {

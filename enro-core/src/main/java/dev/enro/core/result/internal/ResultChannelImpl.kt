@@ -79,11 +79,9 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
     override fun open(key: NavigationKey.WithResult<T>) {
         val properties = arguments ?: return
         properties.navigationHandle.executeInstruction(
-            NavigationInstruction.Forward(key).apply {
-                additionalData.apply {
-                    putParcelable(EXTRA_RESULT_CHANNEL_ID, id)
-                }
-            }
+            NavigationInstruction.Forward(key).internal.copy(
+                resultId = id
+            )
         )
     }
 
@@ -120,28 +118,23 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
 
     internal companion object {
         internal fun getResultId(navigationHandle: NavigationHandle): ResultChannelId? {
-            return getResultId(navigationHandle.additionalData)
+            return navigationHandle.instruction.internal.resultId
         }
 
         internal fun getResultId(instruction: NavigationInstruction.Open): ResultChannelId? {
-            return getResultId(instruction.additionalData)
+            return instruction.internal.resultId
         }
 
         internal fun overrideResultId(instruction: NavigationInstruction.Open, resultId: ResultChannelId): NavigationInstruction.Open {
-            instruction.additionalData.putParcelable(EXTRA_RESULT_CHANNEL_ID, resultId)
-            return instruction
+            return instruction.internal.copy(
+                resultId = resultId
+            )
         }
     }
 }
 
 // Used reflectively by ResultExtensions in enro-test
 @Keep
-private fun getResultId(bundle: Bundle): ResultChannelId? {
-    val classLoader = bundle.classLoader
-    bundle.classLoader = ResultChannelId::class.java.classLoader
-    val resultId = bundle.getParcelable<ResultChannelId>(
-        EXTRA_RESULT_CHANNEL_ID
-    )
-    bundle.classLoader = classLoader
-    return resultId
+private fun getResultId(navigationInstruction: NavigationInstruction.Open): ResultChannelId? {
+    return navigationInstruction.internal.resultId
 }

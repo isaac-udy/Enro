@@ -10,9 +10,9 @@ fun <T: Any> NavigationInstruction.Open.sendResultForTest(type: Class<T>, result
     val navigationController = EnroTest.getCurrentNavigationController()
 
     val resultChannelClass = Class.forName("dev.enro.core.result.internal.ResultChannelImplKt")
-    val getResultId = resultChannelClass.getDeclaredMethod("getResultId", Bundle::class.java)
+    val getResultId = resultChannelClass.getDeclaredMethod("getResultId", NavigationInstruction.Open::class.java)
     getResultId.isAccessible = true
-    val resultId = getResultId.invoke(null, additionalData)
+    val resultId = getResultId.invoke(null, this)
     getResultId.isAccessible = false
 
     val pendingResultClass = Class.forName("dev.enro.core.result.internal.PendingResult")

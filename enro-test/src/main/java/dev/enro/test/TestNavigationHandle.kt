@@ -1,9 +1,9 @@
 package dev.enro.test
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Bundle
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.*
 import androidx.test.core.app.ApplicationProvider
 import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
@@ -25,6 +25,9 @@ class TestNavigationHandle<T : NavigationKey>(
     override val key: T
         get() = navigationHandle.key as T
 
+    override val instruction: NavigationInstruction.Open
+        get() = navigationHandle.instruction
+
     override fun getLifecycle(): Lifecycle {
         return navigationHandle.lifecycle
     }
@@ -42,26 +45,27 @@ class TestNavigationHandle<T : NavigationKey>(
     }
 }
 
-fun <T: NavigationKey> createTestNavigationHandle(
+fun <T : NavigationKey> createTestNavigationHandle(
     key: NavigationKey
-) : TestNavigationHandle<T> {
+): TestNavigationHandle<T> {
     val instruction = NavigationInstruction.Forward(
         navigationKey = key
     )
 
-    return TestNavigationHandle(object: NavigationHandle {
+    return TestNavigationHandle(object : NavigationHandle {
         private val instructions = mutableListOf<NavigationInstruction>()
-        private val lifecycle = LifecycleRegistry(this).apply {
+
+        @SuppressLint("VisibleForTests")
+        private val lifecycle = LifecycleRegistry.createUnsafe(this).apply {
             currentState = Lifecycle.State.RESUMED
         }
 
         override val id: String = instruction.instructionId
         override val additionalData: Bundle = instruction.additionalData
         override val key: NavigationKey = key
+        override val instruction: NavigationInstruction.Open = instruction
 
-        override val controller: NavigationController = ApplicationProvider
-            .getApplicationContext<Application>()
-            .navigationController
+        override val controller: NavigationController = EnroTest.getCurrentNavigationController()
 
         override fun executeInstruction(navigationInstruction: NavigationInstruction) {
             instructions.add(navigationInstruction)
@@ -77,7 +81,7 @@ fun TestNavigationHandle<*>.expectCloseInstruction() {
     TestCase.assertTrue(instructions.last() is NavigationInstruction.Close)
 }
 
-fun <T: Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): NavigationInstruction.Open {
+fun <T : Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): NavigationInstruction.Open {
     val instruction = instructions.last()
     TestCase.assertTrue(instruction is NavigationInstruction.Open)
     instruction as NavigationInstruction.Open
@@ -86,6 +90,6 @@ fun <T: Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): Navi
     return instruction
 }
 
-inline fun <reified T: Any> TestNavigationHandle<*>.expectOpenInstruction(): NavigationInstruction.Open {
+inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(): NavigationInstruction.Open {
     return expectOpenInstruction(T::class.java)
 }
