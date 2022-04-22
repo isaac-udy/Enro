@@ -41,12 +41,12 @@ class ComposableNavigationContainer internal constructor(
         get() = currentDestination?.destination?.navigationContext
 
     override fun reconcileBackstack(
-        removed: List<NavigationContainerBackstackEntry>,
+        removed: List<NavigationInstruction.Open>,
         backstack: NavigationContainerBackstack
     ): Boolean {
         removed
             .mapNotNull {
-                destinationContexts[it.instruction.instructionId]
+                destinationContexts[it.instructionId]
             }
             .forEach {
                 destinationContexts.remove(it.instruction.instructionId)

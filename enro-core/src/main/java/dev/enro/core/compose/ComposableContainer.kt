@@ -12,7 +12,6 @@ import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.registerState
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationContainerBackstackEntry
 import dev.enro.core.container.NavigationContainerBackstack
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.util.*
@@ -75,7 +74,7 @@ fun rememberEnroContainerController(
     DisposableEffect(controller.id) {
         if(controller.backstackFlow.value.backstack.isEmpty()) {
             val backstack = NavigationContainerBackstack(
-                backstackEntries = initialBackstack.map { NavigationContainerBackstackEntry(it, null) },
+                backstack = initialBackstack,
                 exiting = null,
                 exitingIndex = -1,
                 lastInstruction = initialBackstack.lastOrNull() ?: NavigationInstruction.Close,

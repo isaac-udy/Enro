@@ -50,7 +50,7 @@ class FragmentNavigationContainerProperty @PublishedApi internal constructor(
                 val rootKey = root()
                 rootKey?.let {
                     navigationContainer.setBackstack(
-                        createEmptyBackStack().push(NavigationInstruction.Replace(rootKey), null)
+                        createEmptyBackStack().push(NavigationInstruction.Replace(rootKey))
                     )
                 }
                 lifecycleOwner.lifecycle.removeObserver(this)

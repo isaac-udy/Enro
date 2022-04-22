@@ -3,6 +3,7 @@ package dev.enro.core.fragment
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.fragment.app.*
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
@@ -19,7 +20,6 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     override fun open(args: ExecutorArgs<out Any, out Fragment, out NavigationKey>) {
         val fromContext = args.fromContext
         val navigator = args.navigator as FragmentNavigator
-        val instruction = args.instruction
 
         val containerManager = args.fromContext.containerManager
         val host = containerManager.activeContainer?.takeIf { it.accept(args.key) }
@@ -27,24 +27,22 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                 .filterIsInstance<FragmentNavigationContainer>()
                 .firstOrNull { it.accept(args.key) }
 
+
         if (fromContext is FragmentContext && !fromContext.fragment.isAdded) return
         if (host == null) {
             val parentContext = fromContext.parentContext()
             if(parentContext == null) {
-                openFragmentAsActivity(fromContext, instruction)
+                openFragmentAsActivity(fromContext, args.instruction)
             }
             else {
-                open(
-                    ExecutorArgs(
-                        parentContext,
-                        navigator,
-                        instruction.navigationKey,
-                        instruction
-                    )
+                parentContext.controller.open(
+                    parentContext,
+                    args.instruction
                 )
             }
             return
         }
+        val instruction = args.instruction
 
         if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
             openFragmentAsActivity(fromContext, instruction)
@@ -53,11 +51,6 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
         val fragmentActivity = fromContext.activity
         if (fragmentActivity !is FragmentActivity) {
-            openFragmentAsActivity(fromContext, instruction)
-            return
-        }
-
-        if (instruction.navigationDirection == NavigationDirection.REPLACE && fromContext.contextReference is FragmentActivity) {
             openFragmentAsActivity(fromContext, instruction)
             return
         }
@@ -81,21 +74,20 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                     fromContext.contextReference.dismiss()
                 }
 
-                fragment.show(
+                fragment.showNow(
                     fragmentActivity.supportFragmentManager,
                     instruction.instructionId
                 )
             }
             else {
-                fragment.show(fragmentActivity.supportFragmentManager, instruction.instructionId)
+                fragment.showNow(fragmentActivity.supportFragmentManager, instruction.instructionId)
             }
             return
         }
 
         host.setBackstack(
             host.backstackFlow.value.push(
-                args.instruction,
-                args.fromContext.containerManager.activeContainer?.id
+                instruction
             )
         )
     }
@@ -153,7 +145,6 @@ private fun openFragmentAsActivity(
             navigationDirection = instruction.navigationDirection,
             navigationKey = SingleFragmentKey(instruction.internal.copy(
                 navigationDirection = NavigationDirection.FORWARD,
-                parentInstruction = null
             ))
         )
     )

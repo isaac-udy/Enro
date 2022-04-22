@@ -10,6 +10,8 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
+import dev.enro.core.compose.ComposableNavigator
+import dev.enro.core.compose.ComposeFragmentHostKey
 import dev.enro.core.container.*
 import dev.enro.core.fragment.DefaultFragmentExecutor
 import dev.enro.core.fragment.FragmentNavigator
@@ -32,7 +34,7 @@ class FragmentNavigationContainer internal constructor(
         get() = fragmentManager.findFragmentById(containerId)?.navigationContext
 
     override fun reconcileBackstack(
-        removed: List<NavigationContainerBackstackEntry>,
+        removed: List<NavigationInstruction.Open>,
         backstack: NavigationContainerBackstack
     ): Boolean {
         if(!tryExecutePendingTransitions()){
@@ -41,41 +43,63 @@ class FragmentNavigationContainer internal constructor(
 
         val toRemove = removed
             .mapNotNull {
-                fragmentManager.findFragmentByTag(it.instruction.instructionId)
+                fragmentManager.findFragmentByTag(it.instructionId)?.to(it)
             }
+
         val toDetach = backstack.backstack.dropLast(1)
             .mapNotNull {
-                fragmentManager.findFragmentByTag(it.instructionId)
+                fragmentManager.findFragmentByTag(it.instructionId)?.to(it)
             }
-        val activeInstruction = backstack.backstack.lastOrNull()
+
+        val activeInstruction = backstack.visible
         val activeFragment = activeInstruction?.let {
             fragmentManager.findFragmentByTag(it.instructionId)
         }
         val newFragment = if(activeFragment == null && activeInstruction != null) {
+            val navigator = parentContext.controller.navigatorForKeyType(activeInstruction.navigationKey::class)
+                ?: throw EnroException.UnreachableState()
+
             DefaultFragmentExecutor.createFragment(
                 fragmentManager,
-                parentContext.controller.navigatorForKeyType(activeInstruction.navigationKey::class)!!,
+                navigator,
                 activeInstruction
             )
         } else null
 
+        val activeIndex = backstack.renderable.indexOf(activeInstruction)
+        activeFragment?.view?.z = 0f
+        (toRemove + toDetach).forEach {
+            val isBehindActiveFragment = backstack.renderable.indexOf(it.second) < activeIndex
+            it.first.view?.z = when {
+                isBehindActiveFragment -> -1f
+                else -> 1f
+            }
+        }
+
         fragmentManager.commitNow {
+            if (!backstack.isDirectUpdate) {
+                val animations = animationsFor(parentContext, backstack.lastInstruction)
+                setCustomAnimations(animations.enter, animations.exit)
+            }
+
             toRemove.forEach {
-                remove(it)
+                remove(it.first)
             }
+
             toDetach.forEach {
-                detach(it)
+                detach(it.first)
             }
 
-            if(activeInstruction == null) return@commitNow
-
-            if(activeFragment != null) {
-                attach(activeFragment)
-                setPrimaryNavigationFragment(activeFragment)
-            }
-            if(newFragment != null) {
-                add(containerId, newFragment, activeInstruction.instructionId)
-                setPrimaryNavigationFragment(newFragment)
+            when {
+                activeInstruction == null -> { /* Pass */ }
+                activeFragment != null -> {
+                    attach(activeFragment)
+                    setPrimaryNavigationFragment(activeFragment)
+                }
+                newFragment != null -> {
+                    add(containerId, newFragment, activeInstruction.instructionId)
+                    setPrimaryNavigationFragment(newFragment)
+                }
             }
         }
 

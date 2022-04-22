@@ -64,6 +64,8 @@ internal class NavigationContextLifecycleCallbacks (
             fragment: Fragment,
             savedInstanceState: Bundle?
         ) {
+            // TODO throw exception if fragment is opened into an Enro registered NavigationContainer without
+            // being opened through Enro
             lifecycleController.onContextCreated(FragmentContext(fragment), savedInstanceState)
         }
 

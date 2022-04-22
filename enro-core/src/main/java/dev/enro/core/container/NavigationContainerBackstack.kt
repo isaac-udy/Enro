@@ -1,40 +1,31 @@
 package dev.enro.core.container
 
-import android.os.Parcelable
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
-import kotlinx.parcelize.Parcelize
-
-@Parcelize
-data class NavigationContainerBackstackEntry(
-    val instruction: NavigationInstruction.Open,
-    val previouslyActiveContainerId: String?
-) : Parcelable
 
 fun createEmptyBackStack() = NavigationContainerBackstack(
     lastInstruction = NavigationInstruction.Close,
-    backstackEntries = listOf(),
+    backstack = listOf(),
     exiting = null,
     exitingIndex = -1,
     isDirectUpdate = true
 )
 
-fun createRestoredBackStack(backstackEntries: List<NavigationContainerBackstackEntry>) = NavigationContainerBackstack(
-    backstackEntries = backstackEntries,
+fun createRestoredBackStack(backstack: List<NavigationInstruction.Open>) = NavigationContainerBackstack(
+    backstack = backstack,
     exiting = null,
     exitingIndex = -1,
-    lastInstruction = backstackEntries.lastOrNull()?.instruction ?: NavigationInstruction.Close,
+    lastInstruction = backstack.lastOrNull() ?: NavigationInstruction.Close,
     isDirectUpdate = true
 )
 
 data class NavigationContainerBackstack(
     val lastInstruction: NavigationInstruction,
-    val backstackEntries: List<NavigationContainerBackstackEntry>,
+    val backstack: List<NavigationInstruction.Open>,
     val exiting: NavigationInstruction.Open?,
     val exitingIndex: Int,
     val isDirectUpdate: Boolean
 ) {
-    val backstack = backstackEntries.map { it.instruction }
     val visible: NavigationInstruction.Open? = backstack.lastOrNull()
     val renderable: List<NavigationInstruction.Open> = run {
         if(exiting == null) return@run backstack
@@ -47,16 +38,12 @@ data class NavigationContainerBackstack(
     }
 
     internal fun push(
-        instruction: NavigationInstruction.Open,
-        activeContainerId: String?
+        instruction: NavigationInstruction.Open
     ): NavigationContainerBackstack {
         return when (instruction.navigationDirection) {
             NavigationDirection.FORWARD -> {
                 copy(
-                    backstackEntries = backstackEntries + NavigationContainerBackstackEntry(
-                        instruction,
-                        activeContainerId
-                    ),
+                    backstack = backstack + instruction,
                     exiting = visible,
                     exitingIndex = backstack.lastIndex,
                     lastInstruction = instruction,
@@ -65,10 +52,7 @@ data class NavigationContainerBackstack(
             }
             NavigationDirection.REPLACE -> {
                 copy(
-                    backstackEntries = backstackEntries.dropLast(1) + NavigationContainerBackstackEntry(
-                        instruction,
-                        activeContainerId
-                    ),
+                    backstack = backstack.dropLast(1) + instruction,
                     exiting = visible,
                     exitingIndex = backstack.lastIndex,
                     lastInstruction = instruction,
@@ -77,12 +61,7 @@ data class NavigationContainerBackstack(
             }
             NavigationDirection.REPLACE_ROOT -> {
                 copy(
-                    backstackEntries = listOf(
-                        NavigationContainerBackstackEntry(
-                            instruction,
-                            activeContainerId
-                        )
-                    ),
+                    backstack = listOf(instruction),
                     exiting = visible,
                     exitingIndex = 0,
                     lastInstruction = instruction,
@@ -94,7 +73,7 @@ data class NavigationContainerBackstack(
 
     internal fun close(): NavigationContainerBackstack {
         return copy(
-            backstackEntries = backstackEntries.dropLast(1),
+            backstack = backstack.dropLast(1),
             exiting = visible,
             exitingIndex = backstack.lastIndex,
             lastInstruction = NavigationInstruction.Close,
@@ -103,14 +82,14 @@ data class NavigationContainerBackstack(
     }
 
     internal fun close(id: String): NavigationContainerBackstack {
-        val index = backstackEntries.indexOfLast {
-            it.instruction.instructionId == id
+        val index = backstack.indexOfLast {
+            it.instructionId == id
         }
         if(index < 0) return this
-        val exiting = backstackEntries.get(index)
+        val exiting = backstack[index]
         return copy(
-            backstackEntries = backstackEntries.minus(exiting),
-            exiting = exiting.instruction,
+            backstack = backstack.minus(exiting),
+            exiting = exiting,
             exitingIndex = index,
             lastInstruction = NavigationInstruction.Close,
             isDirectUpdate = false

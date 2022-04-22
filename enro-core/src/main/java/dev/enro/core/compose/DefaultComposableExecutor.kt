@@ -1,11 +1,14 @@
 package dev.enro.core.compose
 
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.fragment.app.DialogFragment
 import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
 import dev.enro.core.compose.dialog.DialogDestination
+import dev.enro.core.fragment.container.FragmentNavigationContainer
+import dev.enro.core.fragment.internal.SingleFragmentKey
 
 object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination, NavigationKey>(
     fromType = Any::class,
@@ -14,12 +17,6 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
 ) {
     @OptIn(ExperimentalMaterialApi::class)
     override fun open(args: ExecutorArgs<out Any, out ComposableDestination, out NavigationKey>) {
-        val containerManager = args.fromContext.containerManager
-        val host = containerManager.activeContainer?.takeIf { it.accept(args.key) }
-            ?: args.fromContext.containerManager.containers
-                .filterIsInstance<ComposableNavigationContainer>()
-                .firstOrNull { it.accept(args.key) }
-
         val isDialog = DialogDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
                 || BottomSheetDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
 
@@ -34,24 +31,61 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
             return
         }
 
-        if(host == null || args.instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
-            args.fromContext.controller.open(
-                args.fromContext,
-                NavigationInstruction.Open.OpenInternal(
-                    args.instruction.navigationDirection,
-                    ComposeFragmentHostKey(args.instruction)
+        val containerManager = args.fromContext.containerManager
+        val host = containerManager.activeContainer?.takeIf { it.accept(args.key) }
+            ?: args.fromContext.containerManager.containers
+                .firstOrNull { it.accept(args.key) }
+
+        if (host == null) {
+            val parentContext = args.fromContext.parentContext()
+            if(parentContext == null) {
+                openComposableAsActivity(args.fromContext, args.instruction)
+            }
+            else {
+                parentContext.controller.open(
+                    parentContext,
+                    args.instruction
                 )
-            )
+            }
             return
         }
 
-        host.setBackstack(
-            host.backstackFlow.value.push(args.instruction, args.fromContext.containerManager.activeContainer?.id)
-        )
+        if(args.instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
+            openComposableAsActivity(args.fromContext, args.instruction)
+            return
+        }
+
+        when(host) {
+            is ComposableNavigationContainer -> host.setBackstack(
+                host.backstackFlow.value.push(args.instruction)
+            )
+            is FragmentNavigationContainer -> host.setBackstack(
+                host.backstackFlow.value.push(args.instruction.asFragmentHostInstruction())
+            )
+        }
     }
 
     override fun close(context: NavigationContext<out ComposableDestination>) {
         val container = context.contextReference.contextReference.requireParentContainer()
         container.setBackstack(container.backstackFlow.value.close())
     }
+}
+
+private fun NavigationInstruction.Open.asFragmentHostInstruction() = NavigationInstruction.Open.OpenInternal(
+    navigationDirection,
+    ComposeFragmentHostKey(this)
+)
+
+private fun openComposableAsActivity(
+    fromContext: NavigationContext<out Any>,
+    instruction: NavigationInstruction.Open
+) {
+    val fragmentInstruction = instruction.asFragmentHostInstruction()
+    fromContext.controller.open(
+        fromContext,
+        NavigationInstruction.Open.OpenInternal(
+            fragmentInstruction.navigationDirection,
+            SingleFragmentKey(fragmentInstruction)
+        )
+    )
 }

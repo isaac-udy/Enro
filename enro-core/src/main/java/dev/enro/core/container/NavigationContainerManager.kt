@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import dev.enro.core.NavigationInstruction
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.lang.IllegalStateException
 import java.lang.RuntimeException
@@ -37,7 +38,7 @@ class NavigationContainerManager {
     internal fun save(outState: Bundle) {
         containers.forEach {
             outState.putParcelableArrayList(
-                "$BACKSTACK_KEY@${it.id}", ArrayList(it.backstackFlow.value.backstackEntries)
+                "$BACKSTACK_KEY@${it.id}", ArrayList(it.backstackFlow.value.backstack)
             )
         }
 
@@ -53,7 +54,7 @@ class NavigationContainerManager {
             .forEach {
                 restoredContainerStates[it] = createRestoredBackStack(
                     savedInstanceState
-                        .getParcelableArrayList<NavigationContainerBackstackEntry>("$BACKSTACK_KEY@$it")
+                        .getParcelableArrayList<NavigationInstruction.Open>("$BACKSTACK_KEY@$it")
                         .orEmpty()
                 )
             }

@@ -32,7 +32,6 @@ sealed class NavigationInstruction {
             override val navigationKey: NavigationKey,
             override val children: List<NavigationKey> = emptyList(),
             override val additionalData: Bundle = Bundle(),
-            val parentInstruction: OpenInternal? = null,
             val previouslyActiveId: String? = null,
             val executorContext: Class<out Any>? = null,
             override val instructionId: String = UUID.randomUUID().toString()

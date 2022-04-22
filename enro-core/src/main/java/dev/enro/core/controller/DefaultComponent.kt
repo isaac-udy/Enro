@@ -10,7 +10,8 @@ import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
 import dev.enro.core.compose.dialog.HiltComposeDialogFragmentHost
 import dev.enro.core.compose.dialog.HiltComposeDialogFragmentHostKey
 import dev.enro.core.controller.interceptor.HiltInstructionInterceptor
-import dev.enro.core.controller.interceptor.InstructionParentInterceptor
+import dev.enro.core.controller.interceptor.ExecutorContextInterceptor
+import dev.enro.core.controller.interceptor.PreviouslyActiveInterceptor
 import dev.enro.core.fragment.createFragmentNavigator
 import dev.enro.core.fragment.internal.HiltSingleFragmentActivity
 import dev.enro.core.fragment.internal.HiltSingleFragmentKey
@@ -22,7 +23,8 @@ import dev.enro.core.result.EnroResult
 internal val defaultComponent = createNavigationComponent {
     plugin(EnroResult())
 
-    interceptor(InstructionParentInterceptor())
+    interceptor(ExecutorContextInterceptor())
+    interceptor(PreviouslyActiveInterceptor())
     interceptor(HiltInstructionInterceptor())
 
     navigator(createActivityNavigator<SingleFragmentKey, SingleFragmentActivity>())

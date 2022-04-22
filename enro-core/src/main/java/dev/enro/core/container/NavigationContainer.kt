@@ -2,6 +2,7 @@ package dev.enro.core.container
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.MainThread
 import dev.enro.core.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +21,7 @@ abstract class NavigationContainer(
 
     abstract val activeContext: NavigationContext<*>?
 
-    private val pendingRemovals = mutableSetOf<NavigationContainerBackstackEntry>()
+    private val pendingRemovals = mutableSetOf<NavigationInstruction.Open>()
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
     val backstackFlow: StateFlow<NavigationContainerBackstack> get() = mutableBackstack
 
@@ -32,6 +33,8 @@ abstract class NavigationContainer(
 
     @MainThread
     fun setBackstack(backstack: NavigationContainerBackstack) {
+        if(backstack == backstackFlow.value) return
+
         handler.removeCallbacks(reconcileBackstack)
         if(Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
@@ -39,20 +42,20 @@ abstract class NavigationContainer(
         val lastBackstack = backstackFlow.value
         mutableBackstack.value = backstack
 
-        val removed = lastBackstack.backstackEntries
+        val removed = lastBackstack.backstack
             .filter {
-                !backstack.backstackEntries.contains(it)
+                !backstack.backstack.contains(it)
             }
 
-        val exiting = lastBackstack.backstackEntries
+        val exiting = lastBackstack.backstack
             .firstOrNull {
-                it.instruction == backstack.exiting
+                it == backstack.exiting
             }
 
         if(!backstack.isDirectUpdate) {
             if (exiting != null && backstack.lastInstruction is NavigationInstruction.Close) {
                 parentContext.containerManager.setActiveContainerById(
-                    exiting.previouslyActiveContainerId
+                    exiting.internal.previouslyActiveId
                 )
             } else {
                 parentContext.containerManager.setActiveContainer(this)
@@ -89,7 +92,7 @@ abstract class NavigationContainer(
         }
     }
 
-    abstract fun reconcileBackstack(removed: List<NavigationContainerBackstackEntry>, backstack: NavigationContainerBackstack): Boolean
+    abstract fun reconcileBackstack(removed: List<NavigationInstruction.Open>, backstack: NavigationContainerBackstack): Boolean
 }
 
 val NavigationContainer.isActive: Boolean

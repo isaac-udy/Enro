@@ -1,5 +1,6 @@
 package dev.enro.result
 
+import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
 import dev.enro.DefaultActivity
 import dev.enro.DefaultActivityKey
@@ -149,22 +150,30 @@ class ResultTests {
 
     @Test
     fun whenFragmentRequestsResult_andResultProviderIsStandaloneFragment_thenResultIsReceived() {
-        ActivityScenario.launch(DefaultActivity::class.java)
+        val s =ActivityScenario.launch(DefaultActivity::class.java)
         val result = UUID.randomUUID().toString()
 
         expectContext<DefaultActivity, DefaultActivityKey>()
             .navigation
             .forward(ResultReceiverFragmentKey())
 
+        val activity = expectActivity<FragmentActivity>()
+        println(activity.toString())
+
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
             .open(FragmentResultKey())
 
+        val activity2 = expectActivity<FragmentActivity>()
+        println(activity2.toString())
+
         expectContext<ResultFragment, FragmentResultKey>()
             .navigation
             .closeWithResult(result)
 
+        val activity3 = expectActivity<FragmentActivity>()
+        println(activity3.toString())
         assertEquals(
             result,
             expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
