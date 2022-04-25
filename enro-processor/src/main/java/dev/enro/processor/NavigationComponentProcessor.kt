@@ -38,13 +38,16 @@ class NavigationComponentProcessor : BaseProcessor() {
         components += roundEnv.getElementsAnnotatedWith(NavigationComponent::class.java)
         bindings += roundEnv.getElementsAnnotatedWith(GeneratedNavigationBinding::class.java)
         if (roundEnv.processingOver()) {
-            generateModule(bindings)
-            components.forEach { generateComponent(it) }
+            val generatedModule = generateModule(
+                components,
+                bindings
+            )
+            components.forEach { generateComponent(it, generatedModule) }
         }
         return true
     }
 
-    private fun generateComponent(component: Element) {
+    private fun generateComponent(component: Element, generatedModuleName: String?) {
         val destinations = processingEnv.elementUtils
             .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
             .runCatching {
@@ -62,9 +65,9 @@ class NavigationComponentProcessor : BaseProcessor() {
                     ?: return@mapNotNull null
 
                 NavigationDestinationArguments(
-                    aggregate = it,
-                    destination = processingEnv.elementUtils.getTypeElement(annotation.destination),
-                    navigationKey = processingEnv.elementUtils.getTypeElement(annotation.navigationKey)
+                    generatedBinding = it,
+                    destination = annotation.destination,
+                    navigationKey = annotation.navigationKey
                 )
             }
 
@@ -78,8 +81,14 @@ class NavigationComponentProcessor : BaseProcessor() {
             .mapNotNull {
                 it.getAnnotation(GeneratedNavigationModule::class.java)
                     ?: return@mapNotNull null
-                it
+                it.getElementName() + ".class"
             }
+            .let {
+                if(generatedModuleName != null) {
+                    it + "$generatedModuleName.class"
+                } else it
+            }
+            .joinToString(separator = ",\n")
 
         val generatedName = "${component.simpleName}Navigation"
         val classBuilder = TypeSpec.classBuilder(generatedName)
@@ -90,14 +99,14 @@ class NavigationComponentProcessor : BaseProcessor() {
             )
             .apply {
                 destinations.forEach {
-                    addOriginatingElement(processingEnv.elementUtils.getPackageOf(it.destination))
+                    addOriginatingElement(it.generatedBinding)
                 }
             }
             .addGeneratedAnnotation()
             .addAnnotation(
                 AnnotationSpec.builder(GeneratedNavigationComponent::class.java)
-                    .addMember("bindings", "{\n${destinations.joinToString(separator = ",\n") { it.aggregate.toString() + ".class" }}\n}")
-                    .addMember("modules", "{\n${modules.joinToString(separator = ",\n") { it.getElementName() + ".class" }}\n}")
+                    .addMember("bindings", "{\n${destinations.joinToString(separator = ",\n") { it.generatedBinding.toString() + ".class" }}\n}")
+                    .addMember("modules", "{\n$modules\n}")
                     .build()
             )
             .addModifiers(Modifier.PUBLIC)
@@ -113,7 +122,7 @@ class NavigationComponentProcessor : BaseProcessor() {
                     )
                     .apply {
                         destinations.forEach {
-                            addStatement(CodeBlock.of("new $1T().execute(builder)", it.aggregate))
+                            addStatement(CodeBlock.of("new $1T().execute(builder)", it.generatedBinding))
                         }
                     }
                     .build()
@@ -129,9 +138,10 @@ class NavigationComponentProcessor : BaseProcessor() {
             .writeTo(processingEnv.filer)
     }
 
-    private fun generateModule(bindings: List<Element>) {
-        if(bindings.isEmpty()) return
-        val moduleId = bindings.fold(0) { acc, it -> acc + it.getElementName().hashCode() }
+    private fun generateModule(componentNames: List<Element>, bindings: List<Element>): String? {
+        if(bindings.isEmpty()) return null
+        val moduleIdElements = componentNames.ifEmpty { bindings }
+        val moduleId = moduleIdElements.fold(0) { acc, it -> acc + it.getElementName().hashCode() }
             .toString()
             .replace("-", "")
             .padStart(10, '0')
@@ -159,11 +169,13 @@ class NavigationComponentProcessor : BaseProcessor() {
             )
             .build()
             .writeTo(processingEnv.filer)
+
+        return "${EnroProcessor.GENERATED_PACKAGE}.$generatedName"
     }
 }
 
 internal data class NavigationDestinationArguments(
-    val aggregate: Element,
-    val destination: Element,
-    val navigationKey: Element
+    val generatedBinding: Element,
+    val destination: String,
+    val navigationKey: String
 )
