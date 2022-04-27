@@ -105,12 +105,33 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
     override fun close(context: NavigationContext<out Fragment>) {
         if(!tryExecutePendingTransitions(context.fragment.parentFragmentManager)) {
-            mainThreadHandler.post { context.controller.close(context) }
+            mainThreadHandler.post {
+                /*
+                 * There are some cases where a Fragment's FragmentManager can be removed from the Fragment.
+                 * There is (as far as I am aware) no easy way to check for the FragmentManager being removed from the
+                 * Fragment, other than attempting to catch the exception that is thrown in the case of a missing
+                 * parentFragmentManager.
+                 *
+                 * If a Fragment's parentFragmentManager has been destroyed or removed, there's very little we can
+                 * do to resolve the problem, and the most likely case is if
+                 *
+                 * The most common case where this can occur is if a DialogFragment is closed in response
+                 * to a nested Fragment closing with a result - this causes the DialogFragment to close,
+                 * and then for the nested Fragment to attempt to close immediately afterwards, which fails because
+                 * the nested Fragment is no longer attached to any fragment manager (and won't be again).
+                 *
+                 * see ResultTests.whenResultFlowIsLaunchedInDialogFragment_andCompletesThroughTwoNestedFragments_thenResultIsDelivered
+                 */
+                runCatching { context.fragment.parentFragmentManager }
+                    .getOrElse { return@post }
+                context.controller.close(context)
+            }
             return
         }
 
         if (context.contextReference is DialogFragment) {
             context.contextReference.dismiss()
+            context.fragment.parentFragmentManager.executePendingTransactions()
             return
         }
 

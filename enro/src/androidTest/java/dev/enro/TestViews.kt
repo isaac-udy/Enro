@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.setPadding
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
@@ -110,6 +111,70 @@ abstract class TestFragment : Fragment() {
 
             addView(TextView(requireContext()).apply {
                 text = this@TestFragment::class.java.simpleName
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 32.0f)
+                textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                gravity = Gravity.CENTER
+            })
+
+            addView(TextView(requireContext()).apply {
+                text = key.toString()
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14.0f)
+                textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                gravity = Gravity.CENTER
+            })
+
+            addView(TextView(requireContext()).apply {
+                id = debugText
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14.0f)
+                textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                gravity = Gravity.CENTER
+            })
+
+            addView(FrameLayout(requireContext()).apply {
+                id = primaryFragmentContainer
+                setPadding(50)
+                setBackgroundColor(0x22FF0000)
+            })
+
+            addView(FrameLayout(requireContext()).apply {
+                id = secondaryFragmentContainer
+                setPadding(50)
+                setBackgroundColor(0x220000FF)
+            })
+        }
+
+        return layout
+    }
+
+    companion object {
+        val debugText = View.generateViewId()
+        val primaryFragmentContainer = View.generateViewId()
+        val secondaryFragmentContainer = View.generateViewId()
+
+    }
+}
+
+abstract class TestDialogFragment : DialogFragment() {
+
+    lateinit var layout: LinearLayout
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val key = try {
+            getNavigationHandle().key
+        } catch(t: Throwable) {}
+
+        Log.e("TestFragment", "Opened $key")
+
+        layout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+
+            addView(TextView(requireContext()).apply {
+                text = this@TestDialogFragment::class.java.simpleName
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 32.0f)
                 textAlignment = TextView.TEXT_ALIGNMENT_CENTER
                 gravity = Gravity.CENTER
