@@ -21,6 +21,7 @@ import dev.enro.core.requestClose
 class BottomSheetConfiguration : DialogConfiguration() {
     internal var animatesToInitialState: Boolean = true
     internal var animatesToHiddenOnClose: Boolean = true
+    internal var skipHalfExpanded: Boolean = false
     internal lateinit var bottomSheetState: ModalBottomSheetState
 
     init {
@@ -36,6 +37,10 @@ class BottomSheetConfiguration : DialogConfiguration() {
 
         fun setAnimatesToHiddenOnClose(animatesToHidden: Boolean) {
             bottomSheetConfiguration.animatesToHiddenOnClose = animatesToHidden
+        }
+
+        fun setSkipHalfExpanded(skipHalfExpanded: Boolean) {
+            bottomSheetConfiguration.skipHalfExpanded = skipHalfExpanded
         }
 
         fun setScrimColor(color: Color) {
@@ -77,6 +82,13 @@ internal fun EnroBottomSheetContainer(
         initialValue = ModalBottomSheetValue.Hidden,
         confirmStateChange = {
             if (it == ModalBottomSheetValue.Hidden) {
+                val isDismissed = destination.bottomSheetConfiguration.isDismissed.value
+                if(!isDismissed) {
+                    controller.activeContext?.getNavigationHandle()?.requestClose()
+                    return@rememberModalBottomSheetState destination.bottomSheetConfiguration.isDismissed.value
+                }
+            }
+            if(it == ModalBottomSheetValue.HalfExpanded && destination.bottomSheetConfiguration.skipHalfExpanded) {
                 val isDismissed = destination.bottomSheetConfiguration.isDismissed.value
                 if(!isDismissed) {
                     controller.activeContext?.getNavigationHandle()?.requestClose()
