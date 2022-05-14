@@ -27,7 +27,7 @@ class FragmentNavigationContainer internal constructor(
         removed: List<OpenPushInstruction>,
         backstack: NavigationContainerBackstack
     ): Boolean {
-        if(!tryExecutePendingTransitions()){
+        if(!tryExecutePendingTransitions() || fragmentManager.isStateSaved){
             return false
         }
 
@@ -65,7 +65,6 @@ class FragmentNavigationContainer internal constructor(
                 else -> 1f
             }
         }
-
         fragmentManager.commitNow {
             if (!backstack.isDirectUpdate) {
                 val animations = animationsFor(parentContext, backstack.lastInstruction)

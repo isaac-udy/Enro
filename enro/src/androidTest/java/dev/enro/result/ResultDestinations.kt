@@ -281,7 +281,7 @@ class ResultFlowDialogFragmentKey : NavigationKey.WithResult<String>
 @NavigationDestination(ResultFlowDialogFragmentKey::class)
 class ResultFlowDialogFragment : TestDialogFragment() {
     val navigation by navigationHandle<ResultFlowDialogFragmentKey>()
-    private val primaryContainer by navigationContainer(TestActivity.primaryFragmentContainer) {
+    private val primaryContainer by navigationContainer(primaryFragmentContainer) {
         it is NestedResultFlowFragmentKey
     }
 
@@ -302,7 +302,7 @@ class NestedResultFlowFragmentKey : NavigationKey.WithResult<Int>
 @NavigationDestination(NestedResultFlowFragmentKey::class)
 class NestedResultFlowFragment : TestFragment() {
     val navigation by navigationHandle<NestedResultFlowFragmentKey>()
-    private val primaryContainer by navigationContainer(TestActivity.primaryFragmentContainer) {
+    private val primaryContainer by navigationContainer(primaryFragmentContainer) {
         it is NestedNestedResultFlowFragmentKey
     }
 
