@@ -83,6 +83,12 @@ fun NavigationHandle.close() =
 fun NavigationHandle.requestClose() =
     executeInstruction(NavigationInstruction.RequestClose)
 
+val NavigationHandle.isPushed: Boolean
+    get() = instruction.navigationDirection == NavigationDirection.Push
+
+val NavigationHandle.isPresented: Boolean
+    get() = instruction.navigationDirection == NavigationDirection.Present || instruction.navigationDirection == NavigationDirection.ReplaceRoot
+
 internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
     val isMainThread = runCatching {
         Looper.getMainLooper() == Looper.myLooper()
