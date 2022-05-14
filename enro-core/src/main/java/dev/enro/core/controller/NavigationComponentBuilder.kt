@@ -60,7 +60,10 @@ class NavigationComponentBuilder {
  * Create a NavigationController from the NavigationControllerDefinition/DSL, and immediately attach it
  * to the NavigationApplication from which this function was called.
  */
-fun NavigationApplication.navigationController(block: NavigationComponentBuilder.() -> Unit = {}): NavigationController {
+fun NavigationApplication.navigationController(
+    strictMode: Boolean = false,
+    block: NavigationComponentBuilder.() -> Unit = {}
+): NavigationController {
     if(this !is Application)
             throw IllegalArgumentException("A NavigationApplication must extend android.app.Application")
 
@@ -68,7 +71,10 @@ fun NavigationApplication.navigationController(block: NavigationComponentBuilder
         .apply { generatedComponent?.execute(this) }
         .apply(block)
         .build()
-        .apply { install(this@navigationController) }
+        .apply {
+            isStrictMode = strictMode
+            install(this@navigationController)
+        }
 }
 
 private val NavigationApplication.generatedComponent get(): NavigationComponentBuilderCommand? =

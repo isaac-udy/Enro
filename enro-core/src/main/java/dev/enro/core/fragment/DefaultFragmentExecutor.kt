@@ -66,7 +66,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                             throw EnroException.MissingContainerForPushInstruction("Attempted to Push to ${args.key::class.java.simpleName}, but could not find a valid container")
                         }
                         else {
-                            Log.e("Enro", "Attempted to Push to ${args.key::class.java.simpleName}, but could not find a valid container, so Enro opened this as Present")
+                            Log.w("Enro", "Attempted to Push to ${args.key::class.java.simpleName}, but could not find a valid container, so Enro opened this as Present")
                         }
                         openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
                         if(isReplace) {
@@ -174,8 +174,6 @@ private fun openFragmentAsActivity(
     navigationDirection: NavigationDirection,
     instruction: AnyOpenInstruction
 ) {
-    Log.e("open activity", ""+ " " +instruction.internal.toString())
-
     instruction as NavigationInstruction.Open<NavigationDirection>
     fromContext.controller.open(
         fromContext,

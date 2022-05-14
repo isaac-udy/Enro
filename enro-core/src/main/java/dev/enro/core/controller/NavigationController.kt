@@ -45,7 +45,7 @@ class NavigationController internal constructor() {
             NavigationDirection.Forward,
             NavigationDirection.Replace -> when {
                 isStrictMode -> throw EnroException.LegacyNavigationDirectionUsedInStrictMode("Strict mode is enabled, which disables the use of Forward and Replace type instructions")
-                else -> Log.w("Enro", "Forward and Replace type instructions are deprecated, please replace these with Push and Present instructions")
+                else -> Log.w("Enro", "Opened ${instruction.navigationKey::class.java.simpleName} as a ${instruction.navigationDirection::class.java.simpleName} instruction. Forward and Replace type instructions are deprecated, please replace these with Push and Present instructions")
             }
             else -> { /* Pass */ }
         }
