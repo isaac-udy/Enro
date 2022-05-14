@@ -35,6 +35,9 @@ class ComposableNavigationContainer internal constructor(
     override val activeContext: NavigationContext<*>?
         get() = currentDestination?.destination?.navigationContext
 
+    override val isVisible: Boolean
+        get() = true
+
     override fun reconcileBackstack(
         removed: List<OpenPushInstruction>,
         backstack: NavigationContainerBackstack

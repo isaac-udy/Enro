@@ -56,8 +56,10 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             }
             NavigationDirection.Push -> {
                 val containerManager = args.fromContext.containerManager
-                val host = containerManager.activeContainer?.takeIf { it.accept(args.key) }
-                    ?: args.fromContext.containerManager.containers
+                val host = containerManager.activeContainer?.takeIf {
+                    it.isVisible && it.accept(args.key)
+                } ?: args.fromContext.containerManager.containers
+                        .filter { it.isVisible }
                         .filterIsInstance<FragmentNavigationContainer>()
                         .firstOrNull { it.accept(args.key) }
 

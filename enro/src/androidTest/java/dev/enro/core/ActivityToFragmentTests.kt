@@ -1,7 +1,9 @@
 package dev.enro.core
 
 import android.os.Bundle
+import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
@@ -82,6 +84,26 @@ class ActivityToFragmentTests {
         handle.forward(ActivityChildFragmentKey(id))
 
         expectActivity<ActivityWithFragments>()
+        val activeFragment = expectFragment<ActivityChildFragment>()
+        val fragmentHandle =
+            activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
+        assertEquals(id, fragmentHandle.key.id)
+    }
+
+
+    @Test
+    fun whenActivityOpensFragment_andActivityHasFragmentHostForFragment_andFragmentContainerIsNotVisible_thenFragmentIsLaunchedIntoSingleFragmentActivity() {
+        val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
+        val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
+        scenario.onActivity {
+            it.findViewById<View>(TestActivity.primaryFragmentContainer).isVisible = false
+            it.findViewById<View>(TestActivity.secondaryFragmentContainer).isVisible = false
+        }
+
+        val id = UUID.randomUUID().toString()
+        handle.forward(ActivityChildFragmentKey(id))
+
+        expectSingleFragmentActivity()
         val activeFragment = expectFragment<ActivityChildFragment>()
         val fragmentHandle =
             activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()

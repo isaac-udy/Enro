@@ -136,13 +136,21 @@ val features = listOf(
                 "Deeplink 1 -> Deeplink 2 -> Deeplink 3"
             """.trimIndent(),
             positiveActionInstruction = NavigationInstruction.Forward(
-                navigationKey = SimpleExampleKey("Deeplink 1", "Features", listOf("Features")),
+                navigationKey = SimpleExampleKey(
+                    name = "Deeplink 1",
+                    launchedFrom = "Features",
+                    backstack = listOf("Features")
+                ),
                 children = listOf(
-                    SimpleExampleKey("Deeplink 2", "Deeplink 1", listOf("Features", "Deeplink 1")),
                     SimpleExampleKey(
-                        "Deeplink 3",
-                        "Deeplink 2",
-                        listOf("Features", "Deeplink 1", "Deeplink 2")
+                        name = "Deeplink 2",
+                        launchedFrom = "Deeplink 1",
+                        backstack = listOf("Features", "Deeplink 1")
+                    ),
+                    SimpleExampleKey(
+                        name = "Deeplink 3",
+                        launchedFrom = "Deeplink 2",
+                        backstack = listOf("Features", "Deeplink 1", "Deeplink 2")
                     )
                 )
             )

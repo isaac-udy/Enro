@@ -1,7 +1,11 @@
 package dev.enro.core.fragment.container
 
+import android.app.Activity
 import android.util.Log
+import android.view.View
 import androidx.annotation.IdRes
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
@@ -22,6 +26,13 @@ class FragmentNavigationContainer internal constructor(
 ) {
     override val activeContext: NavigationContext<*>?
         get() = fragmentManager.findFragmentById(containerId)?.navigationContext
+
+    override val isVisible: Boolean
+        get() = when(parentContext.contextReference) {
+            is Activity -> parentContext.contextReference.findViewById<View>(containerId).isVisible
+            is Fragment -> parentContext.contextReference.view?.findViewById<View>(containerId)?.isVisible ?: false
+            else -> false
+        }
 
     override fun reconcileBackstack(
         removed: List<OpenPushInstruction>,
