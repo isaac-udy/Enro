@@ -41,15 +41,6 @@ class NavigationController internal constructor() {
         navigationContext: NavigationContext<out Any>,
         instruction: AnyOpenInstruction
     ) {
-        when(instruction.navigationDirection) {
-            NavigationDirection.Forward,
-            NavigationDirection.Replace -> when {
-                isStrictMode -> throw EnroException.LegacyNavigationDirectionUsedInStrictMode("Strict mode is enabled, which disables the use of Forward and Replace type instructions")
-                else -> Log.w("Enro", "Opened ${instruction.navigationKey::class.java.simpleName} as a ${instruction.navigationDirection::class.java.simpleName} instruction. Forward and Replace type instructions are deprecated, please replace these with Push and Present instructions")
-            }
-            else -> { /* Pass */ }
-        }
-
         val navigator = navigatorForKeyType(instruction.navigationKey::class)
             ?: throw EnroException.MissingNavigator("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
 

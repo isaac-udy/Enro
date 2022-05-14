@@ -35,6 +35,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         }
         val fragmentActivity = fromContext.activity
         if (fragmentActivity !is FragmentActivity) {
+            EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
             openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
             return
         }
@@ -48,6 +49,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                     isDialog -> openFragmentAsDialog(fromContext, navigator, instruction)
                     else -> openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
                 }
+                EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
                 if(isReplace) {
                     fromContext.getNavigationHandle().close()
                 }
@@ -62,12 +64,10 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                 if (host == null) {
                     val parentContext = fromContext.parentContext()
                     if(parentContext == null) {
-                        if(fromContext.controller.isStrictMode) {
-                            throw EnroException.MissingContainerForPushInstruction("Attempted to Push to ${args.key::class.java.simpleName}, but could not find a valid container")
-                        }
-                        else {
-                            Log.w("Enro", "Attempted to Push to ${args.key::class.java.simpleName}, but could not find a valid container, so Enro opened this as Present")
-                        }
+                        EnroException.MissingContainerForPushInstruction.logForStrictMode(
+                            fromContext.controller,
+                            args
+                        )
                         openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
                         if(isReplace) {
                             fromContext.getNavigationHandle().close()
@@ -87,6 +87,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                     return
                 }
 
+                EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
                 host.setBackstack(
                     host.backstackFlow.value
                         .let {

@@ -56,7 +56,6 @@ class ComposeSimpleExampleViewModel @Inject constructor(
         val isRestored = savedStateHandle.contains("savedId")
         val savedId =  savedStateHandle.get<String>("savedId") ?: UUID.randomUUID().toString()
         savedStateHandle.set("savedId", savedId)
-        Log.e("CSEVM", "Opened $savedId/${singletonThing.id}/${thingThing.id} (was restored $isRestored)")
     }
 
 }

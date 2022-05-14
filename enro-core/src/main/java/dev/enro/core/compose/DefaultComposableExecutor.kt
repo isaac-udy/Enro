@@ -37,19 +37,32 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
             NavigationDirection.ReplaceRoot -> {
                 openComposableAsActivity(args.fromContext, NavigationDirection.ReplaceRoot, instruction)
             }
-            NavigationDirection.Present -> when {
-                isDialog -> {
-                    instruction as OpenPresentInstruction
-                    args.fromContext.controller.open(
-                        args.fromContext,
-                        NavigationInstruction.Open.OpenInternal(
-                            instruction.navigationDirection,
-                            ComposeDialogFragmentHostKey(instruction)
+            NavigationDirection.Present -> {
+                EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(
+                    fromContext.controller,
+                    args
+                )
+                when {
+                    isDialog -> {
+                        instruction as OpenPresentInstruction
+                        args.fromContext.controller.open(
+                            args.fromContext,
+                            NavigationInstruction.Open.OpenInternal(
+                                instruction.navigationDirection,
+                                ComposeDialogFragmentHostKey(instruction)
+                            )
                         )
-                    )
+                    }
+                    else -> {
+                        openComposableAsActivity(
+                            args.fromContext,
+                            NavigationDirection.Present,
+                            instruction
+                        )
+                    }
                 }
-                else -> {
-                    openComposableAsActivity(args.fromContext, NavigationDirection.Present, instruction)
+                if(isReplace) {
+                    fromContext.getNavigationHandle().close()
                 }
             }
             NavigationDirection.Push  -> {
@@ -75,6 +88,7 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
                     return
                 }
 
+                EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
                 when (host) {
                     is ComposableNavigationContainer -> host.setBackstack(
                         host.backstackFlow.value

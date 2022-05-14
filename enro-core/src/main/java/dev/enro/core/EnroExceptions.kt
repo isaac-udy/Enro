@@ -1,5 +1,8 @@
 package dev.enro.core
 
+import android.util.Log
+import dev.enro.core.controller.NavigationController
+
 abstract class EnroException(
     private val inputMessage: String, cause: Throwable? = null
 ) : RuntimeException(cause) {
@@ -30,9 +33,40 @@ abstract class EnroException(
 
     class NavigationContainerWrongThread(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
-    class LegacyNavigationDirectionUsedInStrictMode(message: String, cause: Throwable? = null) : EnroException(message, cause)
+    class LegacyNavigationDirectionUsedInStrictMode(message: String, cause: Throwable? = null) : EnroException(message, cause) {
+        companion object {
+            fun logForStrictMode(navigationController: NavigationController, args: ExecutorArgs<*,*,*>) {
+                when(args.instruction.navigationDirection) {
+                    NavigationDirection.Present,
+                    NavigationDirection.Push,
+                    NavigationDirection.ReplaceRoot -> return
+                    else -> { /* continue */ }
+                }
 
-    class MissingContainerForPushInstruction(message: String, cause: Throwable? = null) : EnroException(message, cause)
+                val message = "Opened ${args.key::class.java.simpleName} as a ${args.instruction.navigationDirection::class.java.simpleName} instruction. Forward and Replace type instructions are deprecated, please replace these with Push and Present instructions."
+                if(navigationController.isStrictMode) {
+                    throw LegacyNavigationDirectionUsedInStrictMode(message)
+                }
+                else {
+                    Log.w("Enro", "$message Enro would have thrown in strict mode.")
+                }
+            }
+        }
+    }
+
+    class MissingContainerForPushInstruction(message: String, cause: Throwable? = null) : EnroException(message, cause) {
+        companion object {
+            fun logForStrictMode(navigationController: NavigationController, args: ExecutorArgs<*,*,*>) {
+                val message = "Attempted to Push to ${args.key::class.java.simpleName}, but could not find a valid container."
+                if(navigationController.isStrictMode) {
+                    throw MissingContainerForPushInstruction(message)
+                }
+                else {
+                    Log.w("Enro", "$message Enro opened this NavigationKey as Present, but would have thrown in strict mode.")
+                }
+            }
+        }
+    }
 
     class UnreachableState : EnroException("This state is expected to be unreachable. If you are seeing this exception, please report an issue (with the stacktrace included) at https://github.com/isaac-udy/Enro/issues")
 }
