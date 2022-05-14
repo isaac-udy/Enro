@@ -1,19 +1,14 @@
 package dev.enro.core.compose.container
 
-import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaveableStateHolder
-import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.lifecycle.Lifecycle
 import dev.enro.core.*
 import dev.enro.core.compose.*
 import dev.enro.core.compose.ComposableDestinationContextReference
 import dev.enro.core.compose.getComposableDestinationContext
 import dev.enro.core.container.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 class ComposableNavigationContainer internal constructor(
     id: String,
@@ -41,7 +36,7 @@ class ComposableNavigationContainer internal constructor(
         get() = currentDestination?.destination?.navigationContext
 
     override fun reconcileBackstack(
-        removed: List<OpenForwardInstruction>,
+        removed: List<OpenPushInstruction>,
         backstack: NavigationContainerBackstack
     ): Boolean {
         removed

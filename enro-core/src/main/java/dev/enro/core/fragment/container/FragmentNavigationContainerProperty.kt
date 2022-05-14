@@ -9,7 +9,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.asContainerRoot
+import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.createEmptyBackStack
 import dev.enro.core.navigationContext
 import kotlin.properties.ReadOnlyProperty
@@ -46,7 +46,7 @@ class FragmentNavigationContainerProperty @PublishedApi internal constructor(
                 rootInstruction?.let {
                     navigationContainer.setBackstack(
                         createEmptyBackStack().push(
-                            rootInstruction.asContainerRoot()
+                            rootInstruction.asPushInstruction()
                         )
                     )
                 }

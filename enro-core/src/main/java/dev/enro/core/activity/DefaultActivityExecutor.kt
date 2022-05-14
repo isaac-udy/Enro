@@ -24,6 +24,9 @@ object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, Navi
         }
 
         val activity = fromContext.activity
+        if (instruction.navigationDirection == NavigationDirection.Replace || instruction.navigationDirection == NavigationDirection.ReplaceRoot) {
+            activity.finish()
+        }
         val animations = animationsFor(fromContext, instruction)
 
         activity.startActivity(intent)

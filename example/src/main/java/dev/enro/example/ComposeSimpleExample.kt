@@ -209,7 +209,7 @@ fun ComposeSimpleExample() {
 }
 
 @Parcelize
-class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open) : NavigationKey
+class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open<*>) : NavigationKey
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable

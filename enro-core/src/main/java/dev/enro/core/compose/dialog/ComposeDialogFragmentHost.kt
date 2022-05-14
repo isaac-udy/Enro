@@ -24,8 +24,7 @@ import androidx.core.animation.addListener
 import androidx.core.view.isVisible
 import dev.enro.core.compose.*
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.asContainerRoot
-import java.lang.IllegalStateException
+import dev.enro.core.container.asPushInstruction
 
 
 internal abstract class AbstractComposeDialogFragmentHostKey : NavigationKey {
@@ -79,7 +78,7 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
         val composeView = ComposeView(requireContext()).apply {
             id = composeViewId
             setContent {
-                val instruction = navigationHandle.key.instruction.asContainerRoot()
+                val instruction = navigationHandle.key.instruction.asPushInstruction()
                 val controller = rememberEnroContainerController(
                     initialBackstack = listOf(instruction),
                     accept = { false },

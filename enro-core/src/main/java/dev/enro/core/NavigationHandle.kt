@@ -58,19 +58,25 @@ inline fun <reified T: NavigationKey> NavigationHandle.asTyped(): TypedNavigatio
     return TypedNavigationHandleImpl(this, T::class.java)
 }
 
-fun <T> NavigationHandle.forward(key: T, vararg childKeys: NavigationKey) where T: NavigationKey =
-    executeInstruction(NavigationInstruction.Forward(key, childKeys.toList()))
-
-fun <T> NavigationHandle.replace(key: T, vararg childKeys: NavigationKey) where T: NavigationKey =
-    executeInstruction(NavigationInstruction.Replace(key, childKeys.toList()))
-
-fun <T> NavigationHandle.push(key: T, vararg childKeys: NavigationKey) where T: NavigationKey, T: NavigationKey.SupportsPush =
+fun NavigationHandle.push(key: NavigationKey.SupportsPush, vararg childKeys: NavigationKey) =
     executeInstruction(NavigationInstruction.Push(key, childKeys.toList()))
 
-fun <T> NavigationHandle.present(key: T, vararg childKeys: NavigationKey) where T: NavigationKey, T: NavigationKey.SupportsPresent =
+fun NavigationHandle.present(key: NavigationKey.SupportsPresent, vararg childKeys: NavigationKey) =
     executeInstruction(NavigationInstruction.Present(key, childKeys.toList()))
 
-fun <T> NavigationHandle.replaceRoot(key: T, vararg childKeys: NavigationKey) where T: NavigationKey, T: NavigationKey.SupportsPresent =
+fun NavigationHandle.replaceRoot(key: NavigationKey.SupportsPresent, vararg childKeys: NavigationKey) =
+    executeInstruction(NavigationInstruction.ReplaceRoot(key, childKeys.toList()))
+
+@Deprecated("You should use push or present")
+fun NavigationHandle.forward(key: NavigationKey, vararg childKeys: NavigationKey) =
+    executeInstruction(NavigationInstruction.Forward(key, childKeys.toList()))
+
+@Deprecated("You should use a close instruction followed by a push or present")
+fun NavigationHandle.replace(key: NavigationKey, vararg childKeys: NavigationKey) =
+    executeInstruction(NavigationInstruction.Replace(key, childKeys.toList()))
+
+@Deprecated("You should only use replaceRoot with a NavigationKey.SupportsPresent")
+fun NavigationHandle.replaceRoot(key: NavigationKey, vararg childKeys: NavigationKey) =
     executeInstruction(NavigationInstruction.ReplaceRoot(key, childKeys.toList()))
 
 fun NavigationHandle.close() =

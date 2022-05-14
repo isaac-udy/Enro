@@ -29,7 +29,7 @@ sealed class NavigationDirection: Parcelable {
 internal const val OPEN_ARG = "dev.enro.core.OPEN_ARG"
 
 typealias AnyOpenInstruction = NavigationInstruction.Open<*>
-typealias OpenForwardInstruction = NavigationInstruction.Open<NavigationDirection.Push>
+typealias OpenPushInstruction = NavigationInstruction.Open<NavigationDirection.Push>
 typealias OpenPresentInstruction = NavigationInstruction.Open<NavigationDirection.Present>
 
 sealed class NavigationInstruction {
@@ -40,7 +40,7 @@ sealed class NavigationInstruction {
         abstract val additionalData: Bundle
         abstract val instructionId: String
 
-        internal val internal by lazy { this as OpenInternal<T> }
+        internal val internal by lazy { this as OpenInternal<NavigationDirection> }
 
         @Parcelize
         internal data class OpenInternal<T: NavigationDirection> constructor(
@@ -123,8 +123,21 @@ sealed class NavigationInstruction {
             navigationKey = navigationKey,
             children = children
         )
+
+        @Suppress("FunctionName")
+        @Deprecated("You should only use ReplaceRoot with a NavigationKey that extends SupportsPresent")
+        fun ReplaceRoot(
+            navigationKey: NavigationKey,
+            children: List<NavigationKey> = emptyList()
+        ): Open<NavigationDirection.ReplaceRoot> = Open.OpenInternal(
+            navigationDirection = NavigationDirection.ReplaceRoot,
+            navigationKey = navigationKey,
+            children = children
+        )
     }
 }
+
+typealias Push = String
 
 fun Intent.addOpenInstruction(instruction: AnyOpenInstruction): Intent {
     putExtra(OPEN_ARG, instruction.internal)

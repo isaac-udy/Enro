@@ -1,8 +1,7 @@
 package dev.enro.core.container
 
-import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
-import dev.enro.core.OpenForwardInstruction
+import dev.enro.core.OpenPushInstruction
 
 fun createEmptyBackStack() = NavigationContainerBackstack(
     lastInstruction = NavigationInstruction.Close,
@@ -12,7 +11,7 @@ fun createEmptyBackStack() = NavigationContainerBackstack(
     isDirectUpdate = true
 )
 
-fun createRestoredBackStack(backstack: List<OpenForwardInstruction>) = NavigationContainerBackstack(
+fun createRestoredBackStack(backstack: List<OpenPushInstruction>) = NavigationContainerBackstack(
     backstack = backstack,
     exiting = null,
     exitingIndex = -1,
@@ -22,13 +21,13 @@ fun createRestoredBackStack(backstack: List<OpenForwardInstruction>) = Navigatio
 
 data class NavigationContainerBackstack(
     val lastInstruction: NavigationInstruction,
-    val backstack: List<OpenForwardInstruction>,
-    val exiting: OpenForwardInstruction?,
+    val backstack: List<OpenPushInstruction>,
+    val exiting: OpenPushInstruction?,
     val exitingIndex: Int,
     val isDirectUpdate: Boolean
 ) {
-    val visible: OpenForwardInstruction? = backstack.lastOrNull()
-    val renderable: List<OpenForwardInstruction> = run {
+    val visible: OpenPushInstruction? = backstack.lastOrNull()
+    val renderable: List<OpenPushInstruction> = run {
         if (exiting == null) return@run backstack
         if (backstack.contains(exiting)) return@run backstack
         if (exitingIndex > backstack.lastIndex) return@run backstack + exiting
@@ -39,7 +38,7 @@ data class NavigationContainerBackstack(
     }
 
     internal fun push(
-        instruction: OpenForwardInstruction
+        instruction: OpenPushInstruction
     ): NavigationContainerBackstack {
         return copy(
             backstack = backstack + instruction,

@@ -3,6 +3,8 @@ package dev.enro.core.fragment
 import android.os.Bundle
 import androidx.fragment.app.*
 import dev.enro.core.*
+import dev.enro.core.container.asPresentInstruction
+import dev.enro.core.container.asPushInstruction
 import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.fragment.internal.SingleFragmentKey
 
@@ -19,7 +21,17 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
         if (fromContext is FragmentContext && !fromContext.fragment.isAdded) return
 
-        val instruction = args.instruction
+        val isReplace = args.instruction.navigationDirection is NavigationDirection.Replace
+        val isDialog = DialogFragment::class.java.isAssignableFrom(args.navigator.contextType.java)
+        val instruction = when(args.instruction.navigationDirection) {
+            is NavigationDirection.Replace,
+            is NavigationDirection.Forward -> when {
+                isDialog -> args.instruction.asPresentInstruction()
+                else -> args.instruction.asPushInstruction()
+            }
+            else -> args.instruction
+        }
+
         val fragmentActivity = fromContext.activity
         if (fragmentActivity !is FragmentActivity) {
             openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
@@ -31,26 +43,15 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                 openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
             }
             NavigationDirection.Present -> {
-                val isDialog = DialogFragment::class.java.isAssignableFrom(args.navigator.contextType.java)
                 when {
-                    isDialog -> {
-                        val fragment = createFragment(
-                            fragmentActivity.supportFragmentManager,
-                            navigator,
-                            instruction,
-                        ) as DialogFragment
-
-                        fragment.showNow(
-                            fragmentActivity.supportFragmentManager,
-                            instruction.instructionId
-                        )
-                    }
+                    isDialog -> openFragmentAsDialog(fromContext, navigator, instruction)
                     else -> openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
+                }
+                if(isReplace) {
+                    fromContext.getNavigationHandle().close()
                 }
             }
             NavigationDirection.Push -> {
-                instruction as OpenForwardInstruction
-
                 val containerManager = args.fromContext.containerManager
                 val host = containerManager.activeContainer?.takeIf { it.accept(args.key) }
                     ?: args.fromContext.containerManager.containers
@@ -60,7 +61,10 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                 if (host == null) {
                     val parentContext = fromContext.parentContext()
                     if(parentContext == null) {
-                        openFragmentAsActivity(fromContext, NavigationDirection.Present, args.instruction)
+                        openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
+                        if(isReplace) {
+                            fromContext.getNavigationHandle().close()
+                        }
                     }
                     else {
                         parentContext.controller.open(
@@ -72,11 +76,16 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                 }
 
                 host.setBackstack(
-                    host.backstackFlow.value.push(
-                        instruction
-                    )
+                    host.backstackFlow.value
+                        .let {
+                            if(isReplace) it.close() else it
+                        }
+                        .push(
+                            instruction.asPushInstruction()
+                        )
                 )
             }
+            else -> throw IllegalStateException()
         }
     }
 
@@ -127,5 +136,23 @@ private fun openFragmentAsActivity(
                 navigationDirection = navigationDirection,
             ))
         )
+    )
+}
+
+private fun openFragmentAsDialog(
+    fromContext: NavigationContext<out Any>,
+    navigator: FragmentNavigator<*, *>,
+    instruction: AnyOpenInstruction
+) {
+    val fragmentActivity = fromContext.activity as FragmentActivity
+    val fragment = DefaultFragmentExecutor.createFragment(
+        fragmentActivity.supportFragmentManager,
+        navigator,
+        instruction,
+    ) as DialogFragment
+
+    fragment.showNow(
+        fragmentActivity.supportFragmentManager,
+        instruction.instructionId
     )
 }

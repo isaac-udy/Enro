@@ -36,11 +36,23 @@ sealed class AnimationPair : Parcelable {
 }
 
 object DefaultAnimations {
+    val push = AnimationPair.Attr(
+        enter = android.R.attr.activityOpenEnterAnimation,
+        exit = android.R.attr.activityOpenExitAnimation
+    )
+
+    val present = AnimationPair.Attr(
+        enter = android.R.attr.activityOpenEnterAnimation,
+        exit = android.R.attr.activityOpenExitAnimation
+    )
+
+    @Deprecated("Use push or present")
     val forward = AnimationPair.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,
         exit = android.R.attr.activityOpenExitAnimation
     )
 
+    @Deprecated("Use push or present")
     val replace = AnimationPair.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,
         exit = android.R.attr.activityOpenExitAnimation

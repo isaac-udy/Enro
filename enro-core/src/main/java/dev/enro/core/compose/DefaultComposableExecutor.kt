@@ -6,6 +6,8 @@ import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
 import dev.enro.core.compose.dialog.DialogDestination
+import dev.enro.core.container.asPresentInstruction
+import dev.enro.core.container.asPushInstruction
 import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.fragment.internal.SingleFragmentKey
 
@@ -16,30 +18,42 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
 ) {
     @OptIn(ExperimentalMaterialApi::class)
     override fun open(args: ExecutorArgs<out Any, out ComposableDestination, out NavigationKey>) {
+        val fromContext = args.fromContext
+
+        val isReplace = args.instruction.navigationDirection is NavigationDirection.Replace
         val isDialog = DialogDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
                 || BottomSheetDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
 
-        when (args.instruction.navigationDirection) {
-            is NavigationDirection.Present -> {
-                if(isDialog) {
-                    args.instruction as OpenPresentInstruction
+        val instruction = when(args.instruction.navigationDirection) {
+            is NavigationDirection.Replace,
+            is NavigationDirection.Forward -> when {
+                isDialog -> args.instruction.asPresentInstruction()
+                else -> args.instruction.asPushInstruction()
+            }
+            else -> args.instruction
+        }
+
+        when (instruction.navigationDirection) {
+            NavigationDirection.ReplaceRoot -> {
+                openComposableAsActivity(args.fromContext, NavigationDirection.ReplaceRoot, instruction)
+            }
+            NavigationDirection.Present -> when {
+                isDialog -> {
+                    instruction as OpenPresentInstruction
                     args.fromContext.controller.open(
                         args.fromContext,
                         NavigationInstruction.Open.OpenInternal(
-                            args.instruction.navigationDirection,
-                            ComposeDialogFragmentHostKey(args.instruction)
+                            instruction.navigationDirection,
+                            ComposeDialogFragmentHostKey(instruction)
                         )
                     )
                 }
-                else {
-                    openComposableAsActivity(args.fromContext, NavigationDirection.Present, args.instruction)
+                else -> {
+                    openComposableAsActivity(args.fromContext, NavigationDirection.Present, instruction)
                 }
             }
-            NavigationDirection.ReplaceRoot -> {
-                openComposableAsActivity(args.fromContext, NavigationDirection.ReplaceRoot, args.instruction)
-            }
             NavigationDirection.Push  -> {
-                args.instruction as OpenForwardInstruction
+                instruction as OpenPushInstruction
                 val containerManager = args.fromContext.containerManager
                 val host = containerManager.activeContainer?.takeIf { it.accept(args.key) }
                     ?: args.fromContext.containerManager.containers
@@ -48,7 +62,10 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
                 if (host == null) {
                     val parentContext = args.fromContext.parentContext()
                     if (parentContext == null) {
-                        openComposableAsActivity(args.fromContext, NavigationDirection.Present, args.instruction)
+                        openComposableAsActivity(args.fromContext, NavigationDirection.Present, instruction)
+                        if(isReplace) {
+                            fromContext.getNavigationHandle().close()
+                        }
                     } else {
                         parentContext.controller.open(
                             parentContext,
@@ -60,13 +77,22 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
 
                 when (host) {
                     is ComposableNavigationContainer -> host.setBackstack(
-                        host.backstackFlow.value.push(args.instruction)
+                        host.backstackFlow.value
+                            .let {
+                                if(isReplace) it.close() else it
+                            }
+                            .push(instruction)
                     )
                     is FragmentNavigationContainer -> host.setBackstack(
-                        host.backstackFlow.value.push(args.instruction.asFragmentHostInstruction())
+                        host.backstackFlow.value
+                            .let {
+                                if(isReplace) it.close() else it
+                            }
+                            .push(instruction.asFragmentHostInstruction())
                     )
                 }
             }
+            else -> throw IllegalStateException()
         }
     }
 

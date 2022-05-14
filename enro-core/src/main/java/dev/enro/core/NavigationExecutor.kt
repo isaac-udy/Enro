@@ -26,8 +26,10 @@ abstract class NavigationExecutor<FromContext: Any, OpensContext: Any, KeyType: 
 ) {
     open fun animation(instruction: AnyOpenInstruction): AnimationPair {
         return when(instruction.navigationDirection) {
-            NavigationDirection.Push -> DefaultAnimations.forward
-            NavigationDirection.Present -> DefaultAnimations.replace
+            NavigationDirection.Push -> DefaultAnimations.push
+            NavigationDirection.Present -> DefaultAnimations.present
+            NavigationDirection.Forward -> DefaultAnimations.forward
+            NavigationDirection.Replace -> DefaultAnimations.replace
             NavigationDirection.ReplaceRoot -> DefaultAnimations.replaceRoot
         }
     }

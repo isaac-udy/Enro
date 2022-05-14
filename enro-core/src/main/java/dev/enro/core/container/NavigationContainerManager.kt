@@ -1,14 +1,10 @@
 package dev.enro.core.container
 
 import android.os.Bundle
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.OpenForwardInstruction
-import kotlinx.coroutines.flow.MutableStateFlow
+import dev.enro.core.OpenPushInstruction
 import java.lang.IllegalStateException
-import java.lang.RuntimeException
 
 class NavigationContainerManager {
     private val restoredContainerStates = mutableMapOf<String, NavigationContainerBackstack>()
@@ -55,7 +51,7 @@ class NavigationContainerManager {
             .forEach {
                 restoredContainerStates[it] = createRestoredBackStack(
                     savedInstanceState
-                        .getParcelableArrayList<OpenForwardInstruction>("$BACKSTACK_KEY@$it")
+                        .getParcelableArrayList<OpenPushInstruction>("$BACKSTACK_KEY@$it")
                         .orEmpty()
                 )
             }

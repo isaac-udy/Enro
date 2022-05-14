@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.asContainerRoot
+import dev.enro.core.container.asPushInstruction
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractComposeFragmentHostKey : NavigationKey.SupportsPush, NavigationKey.SupportsPresent {
@@ -37,7 +37,7 @@ abstract class AbstractComposeFragmentHost : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 val state = rememberEnroContainerController(
-                    initialBackstack = listOf(navigationHandle.key.instruction.asContainerRoot()),
+                    initialBackstack = listOf(navigationHandle.key.instruction.asPushInstruction()),
                     accept = { false },
                     emptyBehavior = EmptyBehavior.CloseParent
                 )

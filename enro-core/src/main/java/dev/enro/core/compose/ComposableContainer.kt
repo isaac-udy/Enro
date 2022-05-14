@@ -13,6 +13,7 @@ import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.registerState
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerBackstack
+import dev.enro.core.container.asPushInstruction
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.util.*
 
@@ -47,7 +48,7 @@ fun rememberNavigationContainer(
 @Composable
 @Deprecated("Use the rememberEnroContainerController that takes a List<NavigationKey> instead of a List<NavigationInstruction.Open>")
 fun rememberEnroContainerController(
-    initialBackstack: List<OpenForwardInstruction> = emptyList(),
+    initialBackstack: List<AnyOpenInstruction> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
     ignore: Unit = Unit
@@ -73,7 +74,7 @@ fun rememberEnroContainerController(
     DisposableEffect(controller.id) {
         if(controller.backstackFlow.value.backstack.isEmpty()) {
             val backstack = NavigationContainerBackstack(
-                backstack = initialBackstack,
+                backstack = initialBackstack.map { it.asPushInstruction() },
                 exiting = null,
                 exitingIndex = -1,
                 lastInstruction = initialBackstack.lastOrNull() ?: NavigationInstruction.Close,

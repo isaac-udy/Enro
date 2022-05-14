@@ -2,7 +2,6 @@ package dev.enro.core.container
 
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.annotation.MainThread
 import dev.enro.core.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +20,7 @@ abstract class NavigationContainer(
 
     abstract val activeContext: NavigationContext<*>?
 
-    private val pendingRemovals = mutableSetOf<OpenForwardInstruction>()
+    private val pendingRemovals = mutableSetOf<OpenPushInstruction>()
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
     val backstackFlow: StateFlow<NavigationContainerBackstack> get() = mutableBackstack
 
@@ -92,7 +91,7 @@ abstract class NavigationContainer(
         }
     }
 
-    abstract fun reconcileBackstack(removed: List<OpenForwardInstruction>, backstack: NavigationContainerBackstack): Boolean
+    abstract fun reconcileBackstack(removed: List<OpenPushInstruction>, backstack: NavigationContainerBackstack): Boolean
 }
 
 val NavigationContainer.isActive: Boolean

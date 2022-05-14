@@ -1,22 +1,11 @@
 package dev.enro.core.fragment.container
 
-import android.app.Activity
-import android.os.Handler
-import android.os.Looper
-import android.view.View
 import androidx.annotation.IdRes
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
-import dev.enro.core.compose.ComposableNavigator
-import dev.enro.core.compose.ComposeFragmentHostKey
 import dev.enro.core.container.*
 import dev.enro.core.fragment.DefaultFragmentExecutor
-import dev.enro.core.fragment.FragmentNavigator
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 class FragmentNavigationContainer internal constructor(
     @IdRes val containerId: Int,
@@ -34,7 +23,7 @@ class FragmentNavigationContainer internal constructor(
         get() = fragmentManager.findFragmentById(containerId)?.navigationContext
 
     override fun reconcileBackstack(
-        removed: List<OpenForwardInstruction>,
+        removed: List<OpenPushInstruction>,
         backstack: NavigationContainerBackstack
     ): Boolean {
         if(!tryExecutePendingTransitions()){
