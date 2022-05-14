@@ -8,6 +8,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import dev.enro.core.*
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.container.ComposableNavigationContainer
@@ -93,7 +94,7 @@ internal fun EnroBottomSheetContainer(
         sheetContent = {
             EnroContainer(
                 controller = controller,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 0.5.dp)
             )
         },
         content = {}

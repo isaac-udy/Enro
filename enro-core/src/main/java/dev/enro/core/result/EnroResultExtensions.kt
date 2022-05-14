@@ -66,12 +66,12 @@ fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwardResul
     // still want to open the screen we are being forwarded to
     if (resultId == null) {
         navigationContext.getNavigationHandle().executeInstruction(
-            NavigationInstruction.Forward(navigationKey)
+            NavigationInstruction.DefaultDirection(navigationKey)
         )
     } else {
         navigationContext.getNavigationHandle().executeInstruction(
             ResultChannelImpl.overrideResultId(
-                NavigationInstruction.Forward(navigationKey), resultId
+                NavigationInstruction.DefaultDirection(navigationKey), resultId
             )
         )
     }

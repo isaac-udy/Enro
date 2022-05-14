@@ -23,12 +23,12 @@ data class EnroSharedElement(
     }
 }
 
-fun NavigationInstruction.Open.hasSharedElements(): Boolean {
+fun AnyOpenInstruction.hasSharedElements(): Boolean {
     return additionalData.containsKey(EnroSharedElement.ENRO_SHARED_ELEMENTS_FROM_KEY) &&
             additionalData.containsKey(EnroSharedElement.ENRO_SHARED_ELEMENTS_OPENS_KEY)
 }
 
-fun NavigationInstruction.Open.setSharedElements(list: List<EnroSharedElement>) {
+fun AnyOpenInstruction.setSharedElements(list: List<EnroSharedElement>) {
     additionalData.putIntegerArrayList(
         EnroSharedElement.ENRO_SHARED_ELEMENTS_FROM_KEY, ArrayList(list.map { it.from })
     )
@@ -37,7 +37,7 @@ fun NavigationInstruction.Open.setSharedElements(list: List<EnroSharedElement>) 
     )
 }
 
-fun NavigationInstruction.Open.getSharedElements(): List<EnroSharedElement> {
+fun AnyOpenInstruction.getSharedElements(): List<EnroSharedElement> {
     val from = additionalData.getIntegerArrayList(EnroSharedElement.ENRO_SHARED_ELEMENTS_FROM_KEY).orEmpty()
     val opens = additionalData.getIntegerArrayList(EnroSharedElement.ENRO_SHARED_ELEMENTS_OPENS_KEY).orEmpty()
     return from.zip(opens).map { EnroSharedElement(it.first, it.second) }

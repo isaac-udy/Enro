@@ -19,14 +19,11 @@ object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, Navi
 
         val intent = createIntent(args)
 
-        if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
+        if (instruction.navigationDirection == NavigationDirection.ReplaceRoot) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
 
         val activity = fromContext.activity
-        if (instruction.navigationDirection == NavigationDirection.REPLACE || instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
-            activity.finish()
-        }
         val animations = animationsFor(fromContext, instruction)
 
         activity.startActivity(intent)

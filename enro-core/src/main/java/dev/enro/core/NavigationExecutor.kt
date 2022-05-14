@@ -1,22 +1,14 @@
 package dev.enro.core
 
-import android.app.Activity
-import android.os.Parcelable
-import android.transition.AutoTransition
-import android.transition.Transition
-import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.activity.DefaultActivityExecutor
-import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.compose.DefaultComposableExecutor
 import dev.enro.core.fragment.DefaultFragmentExecutor
 import dev.enro.core.fragment.FragmentNavigator
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
-import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.core.synthetic.SyntheticNavigator
-import kotlinx.parcelize.Parcelize
 import kotlin.reflect.KClass
 
 // This class is used primarily to simplify the lambda signature of NavigationExecutor.open
@@ -24,7 +16,7 @@ class ExecutorArgs<FromContext: Any, OpensContext: Any, KeyType: NavigationKey>(
     val fromContext: NavigationContext<out FromContext>,
     val navigator: Navigator<out KeyType, out OpensContext>,
     val key: KeyType,
-    val instruction: NavigationInstruction.Open
+    val instruction: AnyOpenInstruction
 )
 
 abstract class NavigationExecutor<FromContext: Any, OpensContext: Any, KeyType: NavigationKey>(
@@ -32,11 +24,11 @@ abstract class NavigationExecutor<FromContext: Any, OpensContext: Any, KeyType: 
     val opensType: KClass<OpensContext>,
     val keyType: KClass<KeyType>
 ) {
-    open fun animation(instruction: NavigationInstruction.Open): AnimationPair {
+    open fun animation(instruction: AnyOpenInstruction): AnimationPair {
         return when(instruction.navigationDirection) {
-            NavigationDirection.FORWARD -> DefaultAnimations.forward
-            NavigationDirection.REPLACE -> DefaultAnimations.replace
-            NavigationDirection.REPLACE_ROOT -> DefaultAnimations.replaceRoot
+            NavigationDirection.Forward -> DefaultAnimations.forward
+            NavigationDirection.Present -> DefaultAnimations.replace
+            NavigationDirection.ReplaceRoot -> DefaultAnimations.replaceRoot
         }
     }
 
@@ -71,7 +63,7 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
     private val keyType: KClass<KeyType>
 ) {
 
-    private var animationFunc: ((instruction: NavigationInstruction.Open) -> AnimationPair)? = null
+    private var animationFunc: ((instruction: AnyOpenInstruction) -> AnimationPair)? = null
     private var closeAnimationFunc: ((context: NavigationContext<out OpensContext>) -> AnimationPair)? = null
     private var preOpenedFunc: (( context: NavigationContext<out FromContext>) -> Unit)? = null
     private var openedFunc: ((args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) -> Unit)? = null
@@ -114,7 +106,7 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
         }.invoke(context)
     }
 
-    fun animation(block: (instruction: NavigationInstruction.Open) -> AnimationPair) {
+    fun animation(block: (instruction: AnyOpenInstruction) -> AnimationPair) {
         if(animationFunc != null) throw IllegalStateException("Value is already set!")
         animationFunc = block
     }
@@ -154,7 +146,7 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
         opensType,
         keyType
     ) {
-        override fun animation(instruction: NavigationInstruction.Open): AnimationPair {
+        override fun animation(instruction: AnyOpenInstruction): AnimationPair {
             return animationFunc?.invoke(instruction) ?: super.animation(instruction)
         }
 

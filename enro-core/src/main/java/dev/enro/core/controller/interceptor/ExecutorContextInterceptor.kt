@@ -13,17 +13,17 @@ import dev.enro.core.internal.NoKeyNavigator
 internal class ExecutorContextInterceptor : NavigationInstructionInterceptor{
 
     override fun intercept(
-        instruction: NavigationInstruction.Open,
+        instruction: AnyOpenInstruction,
         parentContext: NavigationContext<*>,
         navigator: Navigator<out NavigationKey, out Any>
-    ): NavigationInstruction.Open {
+    ): AnyOpenInstruction {
         return instruction
             .setExecutorContext(parentContext)
     }
 
-    private fun NavigationInstruction.Open.setExecutorContext(
+    private fun AnyOpenInstruction.setExecutorContext(
         parentContext: NavigationContext<*>
-    ): NavigationInstruction.Open {
+    ): AnyOpenInstruction {
         // If the executor context has been set, don't change it
         if(internal.executorContext != null) return internal
 

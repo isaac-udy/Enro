@@ -24,21 +24,22 @@ import androidx.core.animation.addListener
 import androidx.core.view.isVisible
 import dev.enro.core.compose.*
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.asContainerRoot
 import java.lang.IllegalStateException
 
 
 internal abstract class AbstractComposeDialogFragmentHostKey : NavigationKey {
-    abstract val instruction: NavigationInstruction.Open
+    abstract val instruction: OpenPresentInstruction
 }
 
 @Parcelize
 internal data class ComposeDialogFragmentHostKey(
-    override val instruction: NavigationInstruction.Open
+    override val instruction: OpenPresentInstruction
 ) : AbstractComposeDialogFragmentHostKey()
 
 @Parcelize
 internal data class HiltComposeDialogFragmentHostKey(
-    override val instruction: NavigationInstruction.Open
+    override val instruction: OpenPresentInstruction
 ) : AbstractComposeDialogFragmentHostKey()
 
 
@@ -78,13 +79,14 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
         val composeView = ComposeView(requireContext()).apply {
             id = composeViewId
             setContent {
+                val instruction = navigationHandle.key.instruction.asContainerRoot()
                 val controller = rememberEnroContainerController(
-                    initialBackstack = listOf(navigationHandle.key.instruction),
+                    initialBackstack = listOf(instruction),
                     accept = { false },
                     emptyBehavior = EmptyBehavior.CloseParent
                 )
 
-                val destination = controller.getDestinationContext(navigationHandle.key.instruction).destination
+                val destination = controller.getDestinationContext(instruction).destination
                 dialogConfiguration = when(destination) {
                     is BottomSheetDestination -> {
                         EnroBottomSheetContainer(controller, destination)

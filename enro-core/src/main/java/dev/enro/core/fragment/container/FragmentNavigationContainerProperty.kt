@@ -7,16 +7,11 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
-import dev.enro.core.NavigationContext
+import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
+import dev.enro.core.container.asContainerRoot
 import dev.enro.core.container.createEmptyBackStack
 import dev.enro.core.navigationContext
-import dev.enro.core.result.internal.ResultChannelImpl
-import dev.enro.core.result.managedByLifecycle
-import java.lang.ref.WeakReference
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -24,7 +19,7 @@ import kotlin.reflect.KProperty
 class FragmentNavigationContainerProperty @PublishedApi internal constructor(
     private val lifecycleOwner: LifecycleOwner,
     @IdRes private val containerId: Int,
-    private val root: () -> NavigationKey?,
+    private val root: () -> AnyOpenInstruction?,
     private val navigationContext: () -> NavigationContext<*>,
     private val fragmentManager: () -> FragmentManager,
     private val emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
@@ -47,10 +42,12 @@ class FragmentNavigationContainerProperty @PublishedApi internal constructor(
                     fragmentManager = fragmentManager()
                 )
                 context.containerManager.addContainer(navigationContainer)
-                val rootKey = root()
-                rootKey?.let {
+                val rootInstruction = root()
+                rootInstruction?.let {
                     navigationContainer.setBackstack(
-                        createEmptyBackStack().push(NavigationInstruction.Replace(rootKey))
+                        createEmptyBackStack().push(
+                            rootInstruction.asContainerRoot()
+                        )
                     )
                 }
                 lifecycleOwner.lifecycle.removeObserver(this)
@@ -71,7 +68,11 @@ fun FragmentActivity.navigationContainer(
 ): FragmentNavigationContainerProperty = FragmentNavigationContainerProperty(
     lifecycleOwner = this,
     containerId = containerId,
-    root = root,
+    root = {
+        NavigationInstruction.DefaultDirection(
+            root() ?: return@FragmentNavigationContainerProperty null
+        )
+    },
     navigationContext = { navigationContext },
     emptyBehavior = emptyBehavior,
     accept = accept,
@@ -86,7 +87,11 @@ fun Fragment.navigationContainer(
 ): FragmentNavigationContainerProperty = FragmentNavigationContainerProperty(
     lifecycleOwner = this,
     containerId = containerId,
-    root = root,
+    root = {
+        NavigationInstruction.DefaultDirection(
+            root() ?: return@FragmentNavigationContainerProperty null
+        )
+    },
     navigationContext = { navigationContext },
     emptyBehavior = emptyBehavior,
     accept = accept,

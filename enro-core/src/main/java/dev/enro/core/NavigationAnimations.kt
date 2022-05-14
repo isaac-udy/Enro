@@ -66,18 +66,18 @@ fun animationsFor(
     context: NavigationContext<*>,
     navigationInstruction: NavigationInstruction
 ): AnimationPair.Resource {
-    if (navigationInstruction is NavigationInstruction.Open && navigationInstruction.children.isNotEmpty()) {
+    if (navigationInstruction is NavigationInstruction.Open<*> && navigationInstruction.children.isNotEmpty()) {
         return AnimationPair.Resource(0, 0)
     }
 
-    if (navigationInstruction is NavigationInstruction.Open && context.contextReference is AbstractSingleFragmentActivity) {
+    if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractSingleFragmentActivity) {
         val singleFragmentKey = context.getNavigationHandleViewModel().key as AbstractSingleFragmentKey
         if (navigationInstruction.instructionId == singleFragmentKey.instruction.instructionId) {
             return AnimationPair.Resource(0, 0)
         }
     }
 
-    if (navigationInstruction is NavigationInstruction.Open && context.contextReference is AbstractComposeFragmentHost) {
+    if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractComposeFragmentHost) {
         val composeHostKey = context.getNavigationHandleViewModel().key as AbstractComposeFragmentHostKey
         if (navigationInstruction.instructionId == composeHostKey.instruction.instructionId) {
             return AnimationPair.Resource(0, 0)
@@ -85,7 +85,7 @@ fun animationsFor(
     }
 
     return when (navigationInstruction) {
-        is NavigationInstruction.Open -> animationsForOpen(context, navigationInstruction)
+        is NavigationInstruction.Open<*> -> animationsForOpen(context, navigationInstruction)
         is NavigationInstruction.Close -> animationsForClose(context)
         is NavigationInstruction.RequestClose -> animationsForClose(context)
     }
@@ -93,7 +93,7 @@ fun animationsFor(
 
 private fun animationsForOpen(
     context: NavigationContext<*>,
-    navigationInstruction: NavigationInstruction.Open
+    navigationInstruction: AnyOpenInstruction
 ): AnimationPair.Resource {
     val theme = context.activity.theme
     val executor = context.activity.application.navigationController.executorForOpen(

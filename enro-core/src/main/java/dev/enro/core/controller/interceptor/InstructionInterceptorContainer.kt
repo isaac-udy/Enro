@@ -1,9 +1,6 @@
 package dev.enro.core.controller.interceptor
 
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.Navigator
+import dev.enro.core.*
 
 class InstructionInterceptorContainer {
 
@@ -14,16 +11,16 @@ class InstructionInterceptorContainer {
     }
 
     fun intercept(
-        instruction: NavigationInstruction.Open,
+        instruction: AnyOpenInstruction,
         parentContext: NavigationContext<*>,
         navigator: Navigator<out NavigationKey, out Any>
-    ): NavigationInstruction.Open? {
+    ): AnyOpenInstruction? {
         return interceptors.fold(instruction) { acc, interceptor ->
             val result = interceptor.intercept(acc, parentContext, navigator)
 
             when (result) {
-                is NavigationInstruction.Open -> {
-                    return@fold result
+                is NavigationInstruction.Open<*> -> {
+                    return@fold result as AnyOpenInstruction
                 }
                 else -> return null
             }
@@ -38,7 +35,7 @@ class InstructionInterceptorContainer {
             val result = interceptor.intercept(acc, context)
 
             when (result) {
-                is NavigationInstruction.Open -> {
+                is NavigationInstruction.Open<*> -> {
                     return result
                 }
                 is NavigationInstruction.Close -> {

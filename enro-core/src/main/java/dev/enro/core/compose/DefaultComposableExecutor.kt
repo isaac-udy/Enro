@@ -1,7 +1,6 @@
 package dev.enro.core.compose
 
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.fragment.app.DialogFragment
 import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.dialog.BottomSheetDestination
@@ -20,48 +19,54 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
         val isDialog = DialogDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
                 || BottomSheetDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
 
-        if(isDialog) {
-            args.fromContext.controller.open(
-                args.fromContext,
-                NavigationInstruction.Open.OpenInternal(
-                    args.instruction.navigationDirection,
-                    ComposeDialogFragmentHostKey(args.instruction)
-                )
-            )
-            return
-        }
-
-        val containerManager = args.fromContext.containerManager
-        val host = containerManager.activeContainer?.takeIf { it.accept(args.key) }
-            ?: args.fromContext.containerManager.containers
-                .firstOrNull { it.accept(args.key) }
-
-        if (host == null) {
-            val parentContext = args.fromContext.parentContext()
-            if(parentContext == null) {
-                openComposableAsActivity(args.fromContext, args.instruction)
+        when (args.instruction.navigationDirection) {
+            is NavigationDirection.Present -> {
+                if(isDialog) {
+                    args.instruction as OpenPresentInstruction
+                    args.fromContext.controller.open(
+                        args.fromContext,
+                        NavigationInstruction.Open.OpenInternal(
+                            args.instruction.navigationDirection,
+                            ComposeDialogFragmentHostKey(args.instruction)
+                        )
+                    )
+                }
+                else {
+                    openComposableAsActivity(args.fromContext, NavigationDirection.Present, args.instruction)
+                }
             }
-            else {
-                parentContext.controller.open(
-                    parentContext,
-                    args.instruction
-                )
+            NavigationDirection.ReplaceRoot -> {
+                openComposableAsActivity(args.fromContext, NavigationDirection.ReplaceRoot, args.instruction)
             }
-            return
-        }
+            NavigationDirection.Forward  -> {
+                args.instruction as OpenForwardInstruction
+                val containerManager = args.fromContext.containerManager
+                val host = containerManager.activeContainer?.takeIf { it.accept(args.key) }
+                    ?: args.fromContext.containerManager.containers
+                        .firstOrNull { it.accept(args.key) }
 
-        if(args.instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
-            openComposableAsActivity(args.fromContext, args.instruction)
-            return
-        }
+                if (host == null) {
+                    val parentContext = args.fromContext.parentContext()
+                    if (parentContext == null) {
+                        openComposableAsActivity(args.fromContext, NavigationDirection.Present, args.instruction)
+                    } else {
+                        parentContext.controller.open(
+                            parentContext,
+                            args.instruction
+                        )
+                    }
+                    return
+                }
 
-        when(host) {
-            is ComposableNavigationContainer -> host.setBackstack(
-                host.backstackFlow.value.push(args.instruction)
-            )
-            is FragmentNavigationContainer -> host.setBackstack(
-                host.backstackFlow.value.push(args.instruction.asFragmentHostInstruction())
-            )
+                when (host) {
+                    is ComposableNavigationContainer -> host.setBackstack(
+                        host.backstackFlow.value.push(args.instruction)
+                    )
+                    is FragmentNavigationContainer -> host.setBackstack(
+                        host.backstackFlow.value.push(args.instruction.asFragmentHostInstruction())
+                    )
+                }
+            }
         }
     }
 
@@ -71,20 +76,21 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
     }
 }
 
-private fun NavigationInstruction.Open.asFragmentHostInstruction() = NavigationInstruction.Open.OpenInternal(
+private fun <T: NavigationDirection> NavigationInstruction.Open<T>.asFragmentHostInstruction() = NavigationInstruction.Open.OpenInternal(
     navigationDirection,
     ComposeFragmentHostKey(this)
 )
 
 private fun openComposableAsActivity(
     fromContext: NavigationContext<out Any>,
-    instruction: NavigationInstruction.Open
+    direction: NavigationDirection,
+    instruction: AnyOpenInstruction
 ) {
     val fragmentInstruction = instruction.asFragmentHostInstruction()
     fromContext.controller.open(
         fromContext,
         NavigationInstruction.Open.OpenInternal(
-            fragmentInstruction.navigationDirection,
+            direction,
             SingleFragmentKey(fragmentInstruction)
         )
     )

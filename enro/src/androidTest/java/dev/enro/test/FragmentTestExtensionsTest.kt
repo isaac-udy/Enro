@@ -62,8 +62,8 @@ class FragmentTestExtensionsTest {
         val handle = scenario.getTestNavigationHandle<EnroTestTestFragmentKey>()
 
         val instruction = handle.instructions.first()
-        instruction as NavigationInstruction.Open
-        TestCase.assertEquals(NavigationDirection.FORWARD, instruction.navigationDirection)
+        instruction as NavigationInstruction.Open<*>
+        TestCase.assertEquals(NavigationDirection.Forward, instruction.navigationDirection)
         TestCase.assertEquals(expectedKey, instruction.navigationKey)
     }
 
@@ -80,7 +80,7 @@ class FragmentTestExtensionsTest {
         val handle = scenario.getTestNavigationHandle<EnroTestTestFragmentKey>()
 
         val instruction = handle.instructions.first()
-        instruction as NavigationInstruction.Open
+        instruction as NavigationInstruction.Open<*>
         instruction.sendResultForTest(expectedResult)
 
         scenario.onFragment {
@@ -131,8 +131,8 @@ class FragmentTestExtensionsTest {
         val handle = scenario.getTestNavigationHandle<EnroTestTestFragmentKey>()
 
         val instruction = handle.instructions.first()
-        instruction as NavigationInstruction.Open
-        TestCase.assertEquals(NavigationDirection.FORWARD, instruction.navigationDirection)
+        instruction as NavigationInstruction.Open<*>
+        TestCase.assertEquals(NavigationDirection.Forward, instruction.navigationDirection)
         TestCase.assertEquals(expectedKey, instruction.navigationKey)
     }
 
@@ -149,7 +149,7 @@ class FragmentTestExtensionsTest {
         val handle = scenario.getTestNavigationHandle<EnroTestTestFragmentKey>()
 
         val instruction = handle.instructions.first()
-        instruction as NavigationInstruction.Open
+        instruction as NavigationInstruction.Open<*>
         instruction.sendResultForTest(expectedResult)
 
         scenario.onFragment {

@@ -21,10 +21,10 @@ class HiltInstructionInterceptor : NavigationInstructionInterceptor {
     }.getOrNull()
 
     override fun intercept(
-        instruction: NavigationInstruction.Open,
+        instruction: AnyOpenInstruction,
         parentContext: NavigationContext<*>,
         navigator: Navigator<out NavigationKey, out Any>
-    ): NavigationInstruction.Open {
+    ): AnyOpenInstruction {
 
         val isHiltApplication = if(generatedComponentManagerClass != null) {
             parentContext.activity.application is GeneratedComponentManager<*>

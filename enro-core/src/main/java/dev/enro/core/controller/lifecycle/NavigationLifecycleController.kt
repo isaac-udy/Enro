@@ -2,7 +2,6 @@ package dev.enro.core.controller.lifecycle
 
 import android.app.Application
 import android.os.Bundle
-import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -10,7 +9,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.PluginContainer
-import dev.enro.core.fragment.container.FragmentNavigationContainerProperty
 import dev.enro.core.internal.NoNavigationKey
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
@@ -43,10 +41,16 @@ internal class NavigationLifecycleController(
             ?: UUID.randomUUID().toString()
 
         val config = NavigationHandleProperty.getPendingConfig(context)
+        val defaultKey = config?.defaultKey
+            ?: NoNavigationKey(context.contextReference::class.java, context.arguments)
         val defaultInstruction = NavigationInstruction
-            .Forward(
-                navigationKey = config?.defaultKey
-                    ?: NoNavigationKey(context.contextReference::class.java, context.arguments)
+            .Open.OpenInternal(
+                navigationKey = defaultKey,
+                navigationDirection = when(defaultKey) {
+                    is NavigationKey.SupportsPresent -> NavigationDirection.Present
+                    is NavigationKey.SupportsForward -> NavigationDirection.Forward
+                    else -> NavigationDirection.Present
+                }
             )
             .internal
             .copy(instructionId = contextId)

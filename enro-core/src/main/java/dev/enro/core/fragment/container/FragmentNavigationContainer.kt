@@ -34,7 +34,7 @@ class FragmentNavigationContainer internal constructor(
         get() = fragmentManager.findFragmentById(containerId)?.navigationContext
 
     override fun reconcileBackstack(
-        removed: List<NavigationInstruction.Open>,
+        removed: List<OpenForwardInstruction>,
         backstack: NavigationContainerBackstack
     ): Boolean {
         if(!tryExecutePendingTransitions()){

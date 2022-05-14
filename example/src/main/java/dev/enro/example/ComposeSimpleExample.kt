@@ -43,7 +43,7 @@ data class ComposeSimpleExampleKey(
     val name: String,
     val launchedFrom: String,
     val backstack: List<String> = emptyList()
-) : NavigationKey
+) : NavigationKey.SupportsForward, NavigationKey.SupportsPresent
 
 @HiltViewModel
 class ComposeSimpleExampleViewModel @Inject constructor(
@@ -170,9 +170,9 @@ fun ComposeSimpleExample() {
                                 launchedFrom = navigation.key.name,
                                 backstack = navigation.key.backstack
                             )
-                            navigation.replace(next)
+                            navigation.present(next)
                         }) {
-                        Text("Replace")
+                        Text("Present")
                     }
 
                     OutlinedButton(
@@ -197,7 +197,7 @@ fun ComposeSimpleExample() {
                                 launchedFrom = navigation.key.name,
                                 backstack = navigation.key.backstack + navigation.key.name
                             )
-                            navigation.forward(ExampleComposableBottomSheetKey(NavigationInstruction.Forward(next)))
+                            navigation.present(ExampleComposableBottomSheetKey(next))
 
                         }) {
                         Text("Bottom Sheet")
@@ -209,7 +209,7 @@ fun ComposeSimpleExample() {
 }
 
 @Parcelize
-class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open) : NavigationKey
+class ExampleComposableBottomSheetKey(val innerKey: NavigationKey.SupportsForward) : NavigationKey.SupportsPresent
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -218,8 +218,8 @@ class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open) 
 fun BottomSheetDestination.ExampleDialogComposable() {
     val navigationHandle = navigationHandle<ExampleComposableBottomSheetKey>()
     EnroContainer(
-        controller = rememberEnroContainerController(
-            initialBackstack = listOf(navigationHandle.key.innerKey),
+        controller = rememberNavigationContainer(
+            root = navigationHandle.key.innerKey,
             accept = { false },
             emptyBehavior = EmptyBehavior.CloseParent
         )

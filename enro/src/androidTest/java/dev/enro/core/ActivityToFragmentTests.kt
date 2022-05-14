@@ -94,7 +94,7 @@ class ActivityToFragmentTests {
         val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
 
         val id = UUID.randomUUID().toString()
-        handle.replace(ActivityChildFragmentKey(id))
+        handle.present(ActivityChildFragmentKey(id))
 
         expectSingleFragmentActivity()
         val activeFragment = expectFragment<ActivityChildFragment>()
@@ -127,7 +127,7 @@ class ActivityToFragmentTests {
         val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
 
         val id = UUID.randomUUID().toString()
-        handle.replace(ActivityChildFragmentKey(id))
+        handle.present(ActivityChildFragmentKey(id))
 
         val activity = expectSingleFragmentActivity()
         val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!

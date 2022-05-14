@@ -18,12 +18,12 @@ import java.util.*
 
 @Composable
 fun rememberNavigationContainer(
-    root: NavigationKey,
+    root: NavigationKey.SupportsForward,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
 ) : ComposableNavigationContainer {
     return rememberEnroContainerController(
-        initialBackstack = listOf(NavigationInstruction.Replace(root)),
+        initialBackstack = listOf(NavigationInstruction.Forward(root)),
         emptyBehavior = emptyBehavior,
         accept = accept
     )
@@ -31,14 +31,13 @@ fun rememberNavigationContainer(
 
 @Composable
 fun rememberNavigationContainer(
-    initialState: List<NavigationKey> = emptyList(),
+    initialState: List<NavigationKey.SupportsForward> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
 ) : ComposableNavigationContainer {
     return rememberEnroContainerController(
         initialBackstack = initialState.mapIndexed { i, it ->
-            if(i == 0) NavigationInstruction.Replace(it)
-            else NavigationInstruction.Forward(it)
+            NavigationInstruction.Forward(it)
         },
         emptyBehavior = emptyBehavior,
         accept = accept
@@ -48,7 +47,7 @@ fun rememberNavigationContainer(
 @Composable
 @Deprecated("Use the rememberEnroContainerController that takes a List<NavigationKey> instead of a List<NavigationInstruction.Open>")
 fun rememberEnroContainerController(
-    initialBackstack: List<NavigationInstruction.Open> = emptyList(),
+    initialBackstack: List<OpenForwardInstruction> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
     ignore: Unit = Unit

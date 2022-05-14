@@ -41,7 +41,7 @@ class ComposableNavigationContainer internal constructor(
         get() = currentDestination?.destination?.navigationContext
 
     override fun reconcileBackstack(
-        removed: List<NavigationInstruction.Open>,
+        removed: List<OpenForwardInstruction>,
         backstack: NavigationContainerBackstack
     ): Boolean {
         removed
@@ -55,7 +55,7 @@ class ComposableNavigationContainer internal constructor(
         return true
     }
 
-    internal fun onInstructionDisposed(instruction: NavigationInstruction.Open) {
+    internal fun onInstructionDisposed(instruction: AnyOpenInstruction) {
         val backstack = backstackFlow.value
         if (backstack.exiting == instruction) {
             setBackstack(
@@ -68,7 +68,7 @@ class ComposableNavigationContainer internal constructor(
         }
     }
 
-    internal fun getDestinationContext(instruction: NavigationInstruction.Open): ComposableDestinationContextReference {
+    internal fun getDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationContextReference {
         val destinationContextReference = destinationContexts.getOrPut(instruction.instructionId) {
             val controller = parentContext.controller
             val composeKey = instruction.navigationKey

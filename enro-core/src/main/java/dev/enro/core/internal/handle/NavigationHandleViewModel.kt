@@ -13,7 +13,7 @@ import dev.enro.core.internal.NoNavigationKey
 
 internal open class NavigationHandleViewModel(
     override val controller: NavigationController,
-    internal val instruction: NavigationInstruction.Open
+    internal val instruction: AnyOpenInstruction
 ) : ViewModel(), NavigationHandle {
 
     private var pendingInstruction: NavigationInstruction? = null
@@ -82,8 +82,8 @@ internal open class NavigationHandleViewModel(
         pendingInstruction = null
         context.runWhenContextActive {
             when (instruction) {
-                is NavigationInstruction.Open -> {
-                    context.controller.open(context, instruction)
+                is NavigationInstruction.Open<*> -> {
+                    context.controller.open(context, instruction as AnyOpenInstruction)
                 }
                 NavigationInstruction.RequestClose -> {
                     internalOnCloseRequested()
@@ -96,7 +96,7 @@ internal open class NavigationHandleViewModel(
     internal fun executeDeeplink() {
         if (instruction.children.isEmpty()) return
         executeInstruction(
-            NavigationInstruction.Forward(
+            NavigationInstruction.DefaultDirection(
                 navigationKey = instruction.children.first(),
                 children = instruction.children.drop(1)
             )

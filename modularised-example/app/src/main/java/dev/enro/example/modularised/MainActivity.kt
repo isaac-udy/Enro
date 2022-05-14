@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
             .animate()
             .setListener(object: AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
-                    navigation.replace(LaunchKey)
+                    navigation.present(LaunchKey)
                 }
             })
             .start()

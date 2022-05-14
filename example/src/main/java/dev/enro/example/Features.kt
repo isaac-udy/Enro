@@ -12,10 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.forward
-import dev.enro.core.navigationHandle
+import dev.enro.core.*
 import dev.enro.example.databinding.FragmentFeaturesBinding
 import kotlinx.parcelize.Parcelize
 
@@ -28,7 +25,7 @@ class FeaturesFragment : Fragment() {
 
     private val navigation by navigationHandle<Features>()
     private val adapter = FeatureAdapter {
-        navigation.forward(it.key)
+        navigation.present(it.key)
     }
 
     override fun onCreateView(
@@ -52,7 +49,7 @@ class FeaturesFragment : Fragment() {
 data class FeatureDescription(
     val name: String,
     val iconResource: Int = 0,
-    val key: NavigationKey = SimpleMessage(
+    val key: NavigationKey.SupportsPresent = SimpleMessage(
         "Missing",
         "This destination hasn't been implemented yet!"
     )
@@ -119,7 +116,7 @@ val features = listOf(
                 
                 Click the 'Launch' button to try this out.
             """.trimIndent(),
-            positiveActionInstruction = NavigationInstruction.Forward(ResultExampleKey())
+            positiveActionInstruction = NavigationInstruction.Present(ResultExampleKey())
         )
     ),
     FeatureDescription(

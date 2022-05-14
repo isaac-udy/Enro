@@ -4,10 +4,7 @@ import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.getNavigationHandle
+import dev.enro.core.*
 import dev.enro.core.result.EnroResult
 
 abstract class SyntheticDestination<T : NavigationKey> {
@@ -18,12 +15,12 @@ abstract class SyntheticDestination<T : NavigationKey> {
     lateinit var key: T
         internal set
 
-    lateinit var instruction: NavigationInstruction.Open
+    lateinit var instruction: AnyOpenInstruction
         internal set
 
     internal fun bind(
         navigationContext: NavigationContext<out Any>,
-        instruction: NavigationInstruction.Open
+        instruction: AnyOpenInstruction
     ) {
         this._navigationContext = navigationContext
         this.key = instruction.navigationKey as T

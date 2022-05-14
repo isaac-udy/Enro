@@ -5,17 +5,17 @@ import dev.enro.core.*
 internal class PreviouslyActiveInterceptor : NavigationInstructionInterceptor{
 
     override fun intercept(
-        instruction: NavigationInstruction.Open,
+        instruction: AnyOpenInstruction,
         parentContext: NavigationContext<*>,
         navigator: Navigator<out NavigationKey, out Any>
-    ): NavigationInstruction.Open {
+    ): AnyOpenInstruction {
         return instruction
-            .setPreviouslyActiveContainerId(parentContext)
+            .setPreviouslyActiveContainerId(parentContext) as AnyOpenInstruction
     }
 
-    private fun NavigationInstruction.Open.setPreviouslyActiveContainerId(
+    private fun AnyOpenInstruction.setPreviouslyActiveContainerId(
         parentContext: NavigationContext<*>
-    ): NavigationInstruction.Open {
+    ): AnyOpenInstruction {
         return internal.copy(
             previouslyActiveId = parentContext.containerManager.activeContainer?.id
         )

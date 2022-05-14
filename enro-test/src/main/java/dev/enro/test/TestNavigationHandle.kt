@@ -77,15 +77,15 @@ fun TestNavigationHandle<*>.expectCloseInstruction() {
     TestCase.assertTrue(instructions.last() is NavigationInstruction.Close)
 }
 
-fun <T: Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): NavigationInstruction.Open {
+fun <T: NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): NavigationInstruction.Open<T> {
     val instruction = instructions.last()
-    TestCase.assertTrue(instruction is NavigationInstruction.Open)
-    instruction as NavigationInstruction.Open
+    TestCase.assertTrue(instruction is NavigationInstruction.Open<*>)
+    instruction as NavigationInstruction.Open<*>
 
     TestCase.assertTrue(type.isAssignableFrom(instruction.navigationKey::class.java))
-    return instruction
+    return instruction as NavigationInstruction.Open<T>
 }
 
-inline fun <reified T: Any> TestNavigationHandle<*>.expectOpenInstruction(): NavigationInstruction.Open {
+inline fun <reified T: NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(): NavigationInstruction.Open<T> {
     return expectOpenInstruction(T::class.java)
 }

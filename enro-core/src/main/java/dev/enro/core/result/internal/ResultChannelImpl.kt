@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.annotation.Keep
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.UnmanagedEnroResultChannel
@@ -80,7 +79,7 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
     override fun open(key: NavigationKey.WithResult<T>) {
         val properties = arguments ?: return
         properties.navigationHandle.executeInstruction(
-            NavigationInstruction.Forward(key).apply {
+            NavigationInstruction.DefaultDirection(key).apply {
                 additionalData.apply {
                     putString(EXTRA_RESULT_CHANNEL_RESULT_ID, id.resultId)
                     putString(EXTRA_RESULT_CHANNEL_OWNER_ID, id.ownerId)
@@ -125,11 +124,11 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
             return getResultId(navigationHandle.additionalData)
         }
 
-        internal fun getResultId(instruction: NavigationInstruction.Open): ResultChannelId? {
+        internal fun getResultId(instruction: AnyOpenInstruction): ResultChannelId? {
             return getResultId(instruction.additionalData)
         }
 
-        internal fun overrideResultId(instruction: NavigationInstruction.Open, resultId: ResultChannelId): NavigationInstruction.Open {
+        internal fun overrideResultId(instruction: AnyOpenInstruction, resultId: ResultChannelId): AnyOpenInstruction {
             instruction.additionalData.putString(EXTRA_RESULT_CHANNEL_RESULT_ID, resultId.resultId)
             instruction.additionalData.putString(EXTRA_RESULT_CHANNEL_OWNER_ID, resultId.ownerId)
             return instruction

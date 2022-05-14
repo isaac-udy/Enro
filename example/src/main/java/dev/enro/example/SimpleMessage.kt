@@ -10,8 +10,8 @@ import kotlinx.parcelize.Parcelize
 data class SimpleMessage(
     val title: String,
     val message: String,
-    val positiveActionInstruction: NavigationInstruction.Open? = null
-) : NavigationKey
+    val positiveActionInstruction: NavigationInstruction.Open<*>? = null
+) : NavigationKey.SupportsPresent
 
 @NavigationDestination(SimpleMessage::class)
 class SimpleMessageDestination : SyntheticDestination<SimpleMessage>() {

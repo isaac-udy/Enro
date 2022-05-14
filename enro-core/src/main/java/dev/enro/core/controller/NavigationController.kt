@@ -35,7 +35,7 @@ class NavigationController internal constructor() {
 
     internal fun open(
         navigationContext: NavigationContext<out Any>,
-        instruction: NavigationInstruction.Open
+        instruction: AnyOpenInstruction
     ) {
         val navigator = navigatorForKeyType(instruction.navigationKey::class)
             ?: throw EnroException.MissingNavigator("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
@@ -93,7 +93,7 @@ class NavigationController internal constructor() {
 
     internal fun executorForOpen(
         fromContext: NavigationContext<*>,
-        instruction: NavigationInstruction.Open
+        instruction: AnyOpenInstruction
     ) = executorContainer.executorForOpen(
         fromContext,
         navigatorForKeyType(instruction.navigationKey::class) ?: throw IllegalStateException()

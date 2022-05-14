@@ -22,20 +22,21 @@ import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.replace
+import dev.enro.core.forward
+import dev.enro.core.present
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
 @Parcelize
-class ListDetailComposeKey : NavigationKey
+class ListDetailComposeKey : NavigationKey.SupportsPresent
 
 @Parcelize
-class ListComposeKey : NavigationKey
+class ListComposeKey : NavigationKey.SupportsForward
 
 @Parcelize
 class DetailComposeKey(
     val id: String
-) : NavigationKey
+) : NavigationKey.SupportsForward
 
 
 @Composable
@@ -86,7 +87,7 @@ fun ListComposeScreen() {
                 text = it,
                 modifier = Modifier
                     .clickable {
-                        navigation.replace(DetailComposeKey(it))
+                        navigation.forward(DetailComposeKey(it))
                     }
                     .padding(16.dp)
             )

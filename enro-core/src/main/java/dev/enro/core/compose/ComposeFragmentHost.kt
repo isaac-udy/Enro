@@ -9,20 +9,21 @@ import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.asContainerRoot
 import kotlinx.parcelize.Parcelize
 
-internal abstract class AbstractComposeFragmentHostKey : NavigationKey {
-    abstract val instruction: NavigationInstruction.Open
+internal abstract class AbstractComposeFragmentHostKey : NavigationKey.SupportsForward, NavigationKey.SupportsPresent {
+    abstract val instruction: AnyOpenInstruction
 }
 
 @Parcelize
 internal data class ComposeFragmentHostKey(
-    override val instruction: NavigationInstruction.Open
+    override val instruction: AnyOpenInstruction
 ) : AbstractComposeFragmentHostKey()
 
 @Parcelize
 internal data class HiltComposeFragmentHostKey(
-    override val instruction: NavigationInstruction.Open
+    override val instruction: AnyOpenInstruction
 ) : AbstractComposeFragmentHostKey()
 
 abstract class AbstractComposeFragmentHost : Fragment() {
@@ -36,7 +37,7 @@ abstract class AbstractComposeFragmentHost : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 val state = rememberEnroContainerController(
-                    initialBackstack = listOf(navigationHandle.key.instruction),
+                    initialBackstack = listOf(navigationHandle.key.instruction.asContainerRoot()),
                     accept = { false },
                     emptyBehavior = EmptyBehavior.CloseParent
                 )

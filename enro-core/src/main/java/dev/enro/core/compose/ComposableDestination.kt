@@ -22,7 +22,7 @@ import dev.enro.viewmodel.EnroViewModelFactory
 
 
 internal class ComposableDestinationContextReference(
-    val instruction: NavigationInstruction.Open,
+    val instruction: AnyOpenInstruction,
     val destination: ComposableDestination,
     internal var parentContainer: ComposableNavigationContainer?
 ) : ViewModel(),
@@ -189,7 +189,7 @@ internal class ComposableDestinationContextReference(
 }
 
 internal fun getComposableDestinationContext(
-    instruction: NavigationInstruction.Open,
+    instruction: AnyOpenInstruction,
     destination: ComposableDestination,
     parentContainer: ComposableNavigationContainer?
 ): ComposableDestinationContextReference {

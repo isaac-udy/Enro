@@ -4,105 +4,116 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.fragment.app.Fragment
-import dev.enro.core.result.internal.ResultChannelId
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
-enum class NavigationDirection {
-    FORWARD,
-    REPLACE,
-    REPLACE_ROOT
+sealed class NavigationDirection: Parcelable {
+    @Parcelize
+    object Forward : NavigationDirection()
+
+    @Parcelize
+    object Present : NavigationDirection()
+
+    @Parcelize
+    object ReplaceRoot : NavigationDirection()
 }
 
 internal const val OPEN_ARG = "dev.enro.core.OPEN_ARG"
 
+typealias AnyOpenInstruction = NavigationInstruction.Open<*>
+typealias OpenForwardInstruction = NavigationInstruction.Open<NavigationDirection.Forward>
+typealias OpenPresentInstruction = NavigationInstruction.Open<NavigationDirection.Present>
+
 sealed class NavigationInstruction {
-    sealed class Open : NavigationInstruction(), Parcelable {
-        abstract val navigationDirection: NavigationDirection
+    sealed class Open<T: NavigationDirection> : NavigationInstruction(), Parcelable {
+        abstract val navigationDirection: T
         abstract val navigationKey: NavigationKey
         abstract val children: List<NavigationKey>
         abstract val additionalData: Bundle
         abstract val instructionId: String
 
-        internal val internal by lazy { this as OpenInternal }
+        internal val internal by lazy { this as OpenInternal<T> }
 
         @Parcelize
-        internal data class OpenInternal constructor(
-            override val navigationDirection: NavigationDirection,
+        internal data class OpenInternal<T: NavigationDirection> constructor(
+            override val navigationDirection: T,
             override val navigationKey: NavigationKey,
             override val children: List<NavigationKey> = emptyList(),
             override val additionalData: Bundle = Bundle(),
             val previouslyActiveId: String? = null,
             val executorContext: Class<out Any>? = null,
             override val instructionId: String = UUID.randomUUID().toString()
-        ) : NavigationInstruction.Open()
+        ) : NavigationInstruction.Open<T>()
     }
 
     object Close : NavigationInstruction()
     object RequestClose : NavigationInstruction()
 
     companion object {
-        @Suppress("FunctionName")
-        fun Forward(
+        internal fun DefaultDirection(
             navigationKey: NavigationKey,
             children: List<NavigationKey> = emptyList()
-        ): Open = Open.OpenInternal(
-            navigationDirection = NavigationDirection.FORWARD,
+        ) : AnyOpenInstruction {
+            return Open.OpenInternal(
+                navigationDirection = when(navigationKey) {
+                    is NavigationKey.SupportsForward -> NavigationDirection.Forward
+                    else -> NavigationDirection.Present
+                },
+                navigationKey = navigationKey,
+                children = children
+            )
+        }
+
+
+        @Suppress("FunctionName")
+        fun Forward(
+            navigationKey: NavigationKey.SupportsForward,
+            children: List<NavigationKey> = emptyList()
+        ): Open<NavigationDirection.Forward> = Open.OpenInternal(
+            navigationDirection = NavigationDirection.Forward,
             navigationKey = navigationKey,
             children = children
         )
 
         @Suppress("FunctionName")
-        fun Replace(
-            navigationKey: NavigationKey,
+        fun Present(
+            navigationKey: NavigationKey.SupportsPresent,
             children: List<NavigationKey> = emptyList()
-        ): Open = Open.OpenInternal(
-            navigationDirection = NavigationDirection.REPLACE,
+        ): Open<NavigationDirection.Present> = Open.OpenInternal(
+            navigationDirection = NavigationDirection.Present,
             navigationKey = navigationKey,
             children = children
         )
 
         @Suppress("FunctionName")
         fun ReplaceRoot(
-            navigationKey: NavigationKey,
+            navigationKey: NavigationKey.SupportsPresent,
             children: List<NavigationKey> = emptyList()
-        ): Open = Open.OpenInternal(
-            navigationDirection = NavigationDirection.REPLACE_ROOT,
+        ): Open<NavigationDirection.ReplaceRoot> = Open.OpenInternal(
+            navigationDirection = NavigationDirection.ReplaceRoot,
             navigationKey = navigationKey,
             children = children
         )
     }
 }
 
-private const val TARGET_NAVIGATION_CONTAINER = "dev.enro.core.NavigationInstruction.TARGET_NAVIGATION_CONTAINER"
-
-internal fun NavigationInstruction.Open.setTargetContainer(id: Int): NavigationInstruction.Open {
-    internal.additionalData.putInt(TARGET_NAVIGATION_CONTAINER, id)
-    return this
-}
-
-internal fun NavigationInstruction.Open.getTargetContainer(): Int? {
-    return internal.additionalData.getInt(TARGET_NAVIGATION_CONTAINER, -1)
-        .takeIf { it != -1 }
-}
-
-fun Intent.addOpenInstruction(instruction: NavigationInstruction.Open): Intent {
+fun Intent.addOpenInstruction(instruction: AnyOpenInstruction): Intent {
     putExtra(OPEN_ARG, instruction.internal)
     return this
 }
 
-fun Bundle.addOpenInstruction(instruction: NavigationInstruction.Open): Bundle {
+fun Bundle.addOpenInstruction(instruction: AnyOpenInstruction): Bundle {
     putParcelable(OPEN_ARG, instruction.internal)
     return this
 }
 
-fun Fragment.addOpenInstruction(instruction: NavigationInstruction.Open): Fragment {
+fun Fragment.addOpenInstruction(instruction: AnyOpenInstruction): Fragment {
     arguments = (arguments ?: Bundle()).apply {
         putParcelable(OPEN_ARG, instruction.internal)
     }
     return this
 }
 
-fun Bundle.readOpenInstruction(): NavigationInstruction.Open? {
-    return getParcelable<NavigationInstruction.Open.OpenInternal>(OPEN_ARG)
+fun Bundle.readOpenInstruction(): AnyOpenInstruction? {
+    return getParcelable<NavigationInstruction.Open.OpenInternal<*>>(OPEN_ARG)
 }

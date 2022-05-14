@@ -21,7 +21,7 @@ abstract class NavigationContainer(
 
     abstract val activeContext: NavigationContext<*>?
 
-    private val pendingRemovals = mutableSetOf<NavigationInstruction.Open>()
+    private val pendingRemovals = mutableSetOf<OpenForwardInstruction>()
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
     val backstackFlow: StateFlow<NavigationContainerBackstack> get() = mutableBackstack
 
@@ -92,7 +92,7 @@ abstract class NavigationContainer(
         }
     }
 
-    abstract fun reconcileBackstack(removed: List<NavigationInstruction.Open>, backstack: NavigationContainerBackstack): Boolean
+    abstract fun reconcileBackstack(removed: List<OpenForwardInstruction>, backstack: NavigationContainerBackstack): Boolean
 }
 
 val NavigationContainer.isActive: Boolean
