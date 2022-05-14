@@ -12,7 +12,7 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asContainerRoot
 import kotlinx.parcelize.Parcelize
 
-internal abstract class AbstractComposeFragmentHostKey : NavigationKey.SupportsForward, NavigationKey.SupportsPresent {
+internal abstract class AbstractComposeFragmentHostKey : NavigationKey.SupportsPush, NavigationKey.SupportsPresent {
     abstract val instruction: AnyOpenInstruction
 }
 

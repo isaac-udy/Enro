@@ -48,7 +48,7 @@ internal class NavigationLifecycleController(
                 navigationKey = defaultKey,
                 navigationDirection = when(defaultKey) {
                     is NavigationKey.SupportsPresent -> NavigationDirection.Present
-                    is NavigationKey.SupportsForward -> NavigationDirection.Forward
+                    is NavigationKey.SupportsPush -> NavigationDirection.Push
                     else -> NavigationDirection.Present
                 }
             )

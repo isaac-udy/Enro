@@ -43,7 +43,7 @@ data class ComposeSimpleExampleKey(
     val name: String,
     val launchedFrom: String,
     val backstack: List<String> = emptyList()
-) : NavigationKey.SupportsForward, NavigationKey.SupportsPresent
+) : NavigationKey
 
 @HiltViewModel
 class ComposeSimpleExampleViewModel @Inject constructor(
@@ -170,9 +170,9 @@ fun ComposeSimpleExample() {
                                 launchedFrom = navigation.key.name,
                                 backstack = navigation.key.backstack
                             )
-                            navigation.present(next)
+                            navigation.replace(next)
                         }) {
-                        Text("Present")
+                        Text("Replace")
                     }
 
                     OutlinedButton(
@@ -197,7 +197,7 @@ fun ComposeSimpleExample() {
                                 launchedFrom = navigation.key.name,
                                 backstack = navigation.key.backstack + navigation.key.name
                             )
-                            navigation.present(ExampleComposableBottomSheetKey(next))
+                            navigation.forward(ExampleComposableBottomSheetKey(NavigationInstruction.Forward(next)))
 
                         }) {
                         Text("Bottom Sheet")
@@ -209,7 +209,7 @@ fun ComposeSimpleExample() {
 }
 
 @Parcelize
-class ExampleComposableBottomSheetKey(val innerKey: NavigationKey.SupportsForward) : NavigationKey.SupportsPresent
+class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open) : NavigationKey
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -218,8 +218,8 @@ class ExampleComposableBottomSheetKey(val innerKey: NavigationKey.SupportsForwar
 fun BottomSheetDestination.ExampleDialogComposable() {
     val navigationHandle = navigationHandle<ExampleComposableBottomSheetKey>()
     EnroContainer(
-        controller = rememberNavigationContainer(
-            root = navigationHandle.key.innerKey,
+        controller = rememberEnroContainerController(
+            initialBackstack = listOf(navigationHandle.key.innerKey),
             accept = { false },
             emptyBehavior = EmptyBehavior.CloseParent
         )

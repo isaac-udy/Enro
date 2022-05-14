@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.forward
+import dev.enro.core.push
 import dev.enro.core.navigationHandle
 import dev.enro.core.replaceRoot
 import dev.enro.example.core.base.SingleStateViewModel
@@ -76,7 +76,7 @@ class LoginViewModel : SingleStateViewModel<LoginState>() {
             it.equals(state.username, ignoreCase = true)
         }
         when(user) {
-            null -> navigationHandle.forward(
+            null -> navigationHandle.push(
                 LoginErrorKey(
                     state.username
                 )

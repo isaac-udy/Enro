@@ -15,7 +15,7 @@ import dev.enro.example.databinding.ActivityMainBinding
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class MainKey : NavigationKey.SupportsPresent
+class MainKey : NavigationKey
 
 @AndroidEntryPoint
 @NavigationDestination(MainKey::class)

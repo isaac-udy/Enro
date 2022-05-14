@@ -58,8 +58,14 @@ inline fun <reified T: NavigationKey> NavigationHandle.asTyped(): TypedNavigatio
     return TypedNavigationHandleImpl(this, T::class.java)
 }
 
-fun <T> NavigationHandle.forward(key: T, vararg childKeys: NavigationKey) where T: NavigationKey, T: NavigationKey.SupportsForward =
+fun <T> NavigationHandle.forward(key: T, vararg childKeys: NavigationKey) where T: NavigationKey =
     executeInstruction(NavigationInstruction.Forward(key, childKeys.toList()))
+
+fun <T> NavigationHandle.replace(key: T, vararg childKeys: NavigationKey) where T: NavigationKey =
+    executeInstruction(NavigationInstruction.Replace(key, childKeys.toList()))
+
+fun <T> NavigationHandle.push(key: T, vararg childKeys: NavigationKey) where T: NavigationKey, T: NavigationKey.SupportsPush =
+    executeInstruction(NavigationInstruction.Push(key, childKeys.toList()))
 
 fun <T> NavigationHandle.present(key: T, vararg childKeys: NavigationKey) where T: NavigationKey, T: NavigationKey.SupportsPresent =
     executeInstruction(NavigationInstruction.Present(key, childKeys.toList()))

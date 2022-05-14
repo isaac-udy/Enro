@@ -90,7 +90,7 @@ class ProfileFragment : Fragment() {
 }
 
 @Parcelize
-class InitialKey : NavigationKey.SupportsForward
+class InitialKey : NavigationKey
 
 class InitialScreenViewModel : ViewModel() {
     val navigation by navigationHandle<InitialKey>()

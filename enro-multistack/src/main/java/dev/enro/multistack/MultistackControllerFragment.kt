@@ -112,7 +112,7 @@ internal class MultistackControllerFragment : Fragment(), ViewTreeObserver.OnGlo
 
             containerInitialised = true
         } else {
-            val instruction = NavigationInstruction.Forward(container.rootKey)
+            val instruction = NavigationInstruction.Push(container.rootKey)
             val newFragment = DefaultFragmentExecutor.createFragment(
                 parentFragmentManager,
                 navigator,

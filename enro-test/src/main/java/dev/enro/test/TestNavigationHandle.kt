@@ -45,7 +45,7 @@ class TestNavigationHandle<T : NavigationKey>(
 fun <T: NavigationKey> createTestNavigationHandle(
     key: NavigationKey
 ) : TestNavigationHandle<T> {
-    val instruction = NavigationInstruction.Forward(
+    val instruction = NavigationInstruction.Push(
         navigationKey = key
     )
 

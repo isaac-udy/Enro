@@ -48,7 +48,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                     else -> openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
                 }
             }
-            NavigationDirection.Forward -> {
+            NavigationDirection.Push -> {
                 instruction as OpenForwardInstruction
 
                 val containerManager = args.fromContext.containerManager

@@ -79,7 +79,31 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
     override fun open(key: NavigationKey.WithResult<T>) {
         val properties = arguments ?: return
         properties.navigationHandle.executeInstruction(
-            NavigationInstruction.DefaultDirection(key).apply {
+            NavigationInstruction.Forward(key).apply {
+                additionalData.apply {
+                    putString(EXTRA_RESULT_CHANNEL_RESULT_ID, id.resultId)
+                    putString(EXTRA_RESULT_CHANNEL_OWNER_ID, id.ownerId)
+                }
+            }
+        )
+    }
+
+    override fun push(key: NavigationKey.SupportsPush.WithResult<T>) {
+        val properties = arguments ?: return
+        properties.navigationHandle.executeInstruction(
+            NavigationInstruction.Push(key).apply {
+                additionalData.apply {
+                    putString(EXTRA_RESULT_CHANNEL_RESULT_ID, id.resultId)
+                    putString(EXTRA_RESULT_CHANNEL_OWNER_ID, id.ownerId)
+                }
+            }
+        )
+    }
+
+    override fun present(key: NavigationKey.SupportsPresent.WithResult<T>) {
+        val properties = arguments ?: return
+        properties.navigationHandle.executeInstruction(
+            NavigationInstruction.Present(key).apply {
                 additionalData.apply {
                     putString(EXTRA_RESULT_CHANNEL_RESULT_ID, id.resultId)
                     putString(EXTRA_RESULT_CHANNEL_OWNER_ID, id.ownerId)

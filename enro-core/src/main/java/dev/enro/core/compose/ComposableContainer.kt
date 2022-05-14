@@ -18,12 +18,12 @@ import java.util.*
 
 @Composable
 fun rememberNavigationContainer(
-    root: NavigationKey.SupportsForward,
+    root: NavigationKey.SupportsPush,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
 ) : ComposableNavigationContainer {
     return rememberEnroContainerController(
-        initialBackstack = listOf(NavigationInstruction.Forward(root)),
+        initialBackstack = listOf(NavigationInstruction.Push(root)),
         emptyBehavior = emptyBehavior,
         accept = accept
     )
@@ -31,13 +31,13 @@ fun rememberNavigationContainer(
 
 @Composable
 fun rememberNavigationContainer(
-    initialState: List<NavigationKey.SupportsForward> = emptyList(),
+    initialState: List<NavigationKey.SupportsPush> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
 ) : ComposableNavigationContainer {
     return rememberEnroContainerController(
         initialBackstack = initialState.mapIndexed { i, it ->
-            NavigationInstruction.Forward(it)
+            NavigationInstruction.Push(it)
         },
         emptyBehavior = emptyBehavior,
         accept = accept

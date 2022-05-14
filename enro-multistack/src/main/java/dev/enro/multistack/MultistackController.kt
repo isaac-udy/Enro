@@ -22,7 +22,7 @@ import kotlin.reflect.KProperty
 @Parcelize
 data class MultistackContainer @PublishedApi internal constructor(
     val containerId: Int,
-    val rootKey: NavigationKey.SupportsForward
+    val rootKey: NavigationKey.SupportsPush
 ) : Parcelable
 
 class MultistackController internal constructor(
@@ -90,7 +90,7 @@ class MultistackControllerBuilder @PublishedApi internal constructor(
 
     @AnimRes private var openStackAnimation: Int? = null
 
-    fun <T: NavigationKey.SupportsForward> container(@IdRes containerId: Int, rootKey: T) {
+    fun <T: NavigationKey.SupportsPush> container(@IdRes containerId: Int, rootKey: T) {
         containerBuilders.add {
             val navigator = navigationController().navigatorForKeyType(rootKey::class)
             val actualKey = when(navigator) {
@@ -102,9 +102,9 @@ class MultistackControllerBuilder @PublishedApi internal constructor(
                             Integer::class.java
                         )
                         .newInstance(
-                            NavigationInstruction.Forward(rootKey),
+                            NavigationInstruction.Push(rootKey),
                             containerId
-                        ) as NavigationKey.SupportsForward
+                        ) as NavigationKey.SupportsPush
                 }
                 else -> throw IllegalStateException("TODO")
             }

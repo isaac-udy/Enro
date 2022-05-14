@@ -105,7 +105,7 @@ class ActivityToActivityTests {
                 GenericActivity::class.java
             )
                 .addOpenInstruction(
-                    NavigationInstruction.Present(
+                    NavigationInstruction.Replace(
                         navigationKey = GenericActivityKey(id)
                     )
                 )
@@ -122,7 +122,7 @@ class ActivityToActivityTests {
 
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
-        handle.present(GenericActivityKey(id))
+        handle.replace(GenericActivityKey(id))
 
         val next = expectActivity<GenericActivity>()
         val nextHandle = next.getNavigationHandle()
@@ -141,7 +141,7 @@ class ActivityToActivityTests {
         handle.forward(GenericActivityKey(first))
 
         val firstActivity = expectActivity<GenericActivity> { it.getNavigationHandle().asTyped<GenericActivityKey>().key.id == first }
-        firstActivity.getNavigationHandle().present(GenericActivityKey(second))
+        firstActivity.getNavigationHandle().replace(GenericActivityKey(second))
 
         val secondActivity = expectActivity<GenericActivity> { it.getNavigationHandle().asTyped<GenericActivityKey>().key.id == second }
         secondActivity.getNavigationHandle().close()

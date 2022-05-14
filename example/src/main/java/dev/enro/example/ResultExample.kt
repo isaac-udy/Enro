@@ -22,7 +22,7 @@ import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ResultExampleKey : NavigationKey.SupportsPresent
+class ResultExampleKey : NavigationKey
 
 @SuppressLint("SetTextI18n")
 @NavigationDestination(ResultExampleKey::class)

@@ -38,7 +38,7 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
             NavigationDirection.ReplaceRoot -> {
                 openComposableAsActivity(args.fromContext, NavigationDirection.ReplaceRoot, args.instruction)
             }
-            NavigationDirection.Forward  -> {
+            NavigationDirection.Push  -> {
                 args.instruction as OpenForwardInstruction
                 val containerManager = args.fromContext.containerManager
                 val host = containerManager.activeContainer?.takeIf { it.accept(args.key) }

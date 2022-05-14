@@ -9,7 +9,15 @@ import java.util.*
 
 sealed class NavigationDirection: Parcelable {
     @Parcelize
+    @Deprecated("Please use Push or Present")
     object Forward : NavigationDirection()
+
+    @Parcelize
+    @Deprecated("Please use a close instruction followed by a Push or Present")
+    object Replace : NavigationDirection()
+
+    @Parcelize
+    object Push : NavigationDirection()
 
     @Parcelize
     object Present : NavigationDirection()
@@ -21,7 +29,7 @@ sealed class NavigationDirection: Parcelable {
 internal const val OPEN_ARG = "dev.enro.core.OPEN_ARG"
 
 typealias AnyOpenInstruction = NavigationInstruction.Open<*>
-typealias OpenForwardInstruction = NavigationInstruction.Open<NavigationDirection.Forward>
+typealias OpenForwardInstruction = NavigationInstruction.Open<NavigationDirection.Push>
 typealias OpenPresentInstruction = NavigationInstruction.Open<NavigationDirection.Present>
 
 sealed class NavigationInstruction {
@@ -56,7 +64,7 @@ sealed class NavigationInstruction {
         ) : AnyOpenInstruction {
             return Open.OpenInternal(
                 navigationDirection = when(navigationKey) {
-                    is NavigationKey.SupportsForward -> NavigationDirection.Forward
+                    is NavigationKey.SupportsPush -> NavigationDirection.Push
                     else -> NavigationDirection.Present
                 },
                 navigationKey = navigationKey,
@@ -64,13 +72,34 @@ sealed class NavigationInstruction {
             )
         }
 
-
         @Suppress("FunctionName")
+        @Deprecated("Please use Push or Present")
         fun Forward(
-            navigationKey: NavigationKey.SupportsForward,
+            navigationKey: NavigationKey,
             children: List<NavigationKey> = emptyList()
         ): Open<NavigationDirection.Forward> = Open.OpenInternal(
             navigationDirection = NavigationDirection.Forward,
+            navigationKey = navigationKey,
+            children = children
+        )
+
+        @Suppress("FunctionName")
+        @Deprecated("Please use Push or Present")
+        fun Replace(
+            navigationKey: NavigationKey,
+            children: List<NavigationKey> = emptyList()
+        ): Open<NavigationDirection.Replace> = Open.OpenInternal(
+            navigationDirection = NavigationDirection.Replace,
+            navigationKey = navigationKey,
+            children = children
+        )
+
+        @Suppress("FunctionName")
+        fun Push(
+            navigationKey: NavigationKey.SupportsPush,
+            children: List<NavigationKey> = emptyList()
+        ): Open<NavigationDirection.Push> = Open.OpenInternal(
+            navigationDirection = NavigationDirection.Push,
             navigationKey = navigationKey,
             children = children
         )

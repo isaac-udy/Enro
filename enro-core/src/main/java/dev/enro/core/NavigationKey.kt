@@ -5,8 +5,8 @@ import android.os.Parcelable
 interface NavigationKey : Parcelable {
     interface WithResult<T> : NavigationKey
 
-    interface SupportsForward : NavigationKey {
-        interface WithResult<T> : SupportsForward, NavigationKey.WithResult<T>
+    interface SupportsPush : NavigationKey {
+        interface WithResult<T> : SupportsPush, NavigationKey.WithResult<T>
     }
 
     interface SupportsPresent : NavigationKey {

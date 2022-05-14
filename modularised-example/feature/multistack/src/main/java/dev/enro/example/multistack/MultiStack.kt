@@ -138,7 +138,7 @@ class MultiStackFragment : Fragment() {
                     setOnClickListener {
                         val dataValue = navigation.key.data.last().toIntOrNull() ?: 0
                         val nextKey = MultiStackItem(*navigation.key.data, (dataValue + 1).toString())
-                        navigation.forward(nextKey)
+                        navigation.push(nextKey)
                     }
                 }
             )

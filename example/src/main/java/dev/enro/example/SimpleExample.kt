@@ -16,7 +16,7 @@ data class SimpleExampleKey(
     val name: String,
     val launchedFrom: String,
     val backstack: List<String> = emptyList()
-) : NavigationKey.SupportsForward, NavigationKey.SupportsPresent
+) : NavigationKey
 
 @NavigationDestination(SimpleExampleKey::class)
 class SimpleExampleFragment() : Fragment() {
@@ -62,7 +62,7 @@ class SimpleExampleFragment() : Fragment() {
                     launchedFrom = navigation.key.name,
                     backstack = navigation.key.backstack
                 )
-                navigation.present(next)
+                navigation.replace(next)
             }
 
             replaceRootButton.setOnClickListener {
