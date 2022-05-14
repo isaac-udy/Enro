@@ -87,24 +87,18 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
     override fun push(key: NavigationKey.SupportsPush.WithResult<T>) {
         val properties = arguments ?: return
         properties.navigationHandle.executeInstruction(
-            NavigationInstruction.Push(key).apply {
-                additionalData.apply {
-                    putString(EXTRA_RESULT_CHANNEL_RESULT_ID, id.resultId)
-                    putString(EXTRA_RESULT_CHANNEL_OWNER_ID, id.ownerId)
-                }
-            }
+            NavigationInstruction.Push(key).internal.copy(
+                resultId = id
+            )
         )
     }
 
     override fun present(key: NavigationKey.SupportsPresent.WithResult<T>) {
         val properties = arguments ?: return
         properties.navigationHandle.executeInstruction(
-            NavigationInstruction.Present(key).apply {
-                additionalData.apply {
-                    putString(EXTRA_RESULT_CHANNEL_RESULT_ID, id.resultId)
-                    putString(EXTRA_RESULT_CHANNEL_OWNER_ID, id.ownerId)
-                }
-            }
+            NavigationInstruction.Present(key).internal.copy(
+                resultId = id
+            )
         )
     }
 
@@ -144,11 +138,11 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
             return navigationHandle.instruction.internal.resultId
         }
 
-        internal fun getResultId(instruction: NavigationInstruction.Open): ResultChannelId? {
+        internal fun getResultId(instruction: NavigationInstruction.Open<*>): ResultChannelId? {
             return instruction.internal.resultId
         }
 
-        internal fun overrideResultId(instruction: NavigationInstruction.Open, resultId: ResultChannelId): NavigationInstruction.Open {
+        internal fun overrideResultId(instruction: NavigationInstruction.Open<*>, resultId: ResultChannelId): NavigationInstruction.Open<*> {
             return instruction.internal.copy(
                 resultId = resultId
             )
@@ -158,6 +152,6 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
 
 // Used reflectively by ResultExtensions in enro-test
 @Keep
-private fun getResultId(navigationInstruction: NavigationInstruction.Open): ResultChannelId? {
+private fun getResultId(navigationInstruction: NavigationInstruction.Open<*>): ResultChannelId? {
     return navigationInstruction.internal.resultId
 }

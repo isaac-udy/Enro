@@ -259,8 +259,10 @@ class ResultFlowDialogFragmentRootKey : NavigationKey.WithResult<String>
 class ResultFlowFragmentRootActivity : TestActivity() {
     private val navigation by navigationHandle<ResultFlowDialogFragmentRootKey> {
         defaultKey(ResultFlowDialogFragmentRootKey())
-        container(primaryFragmentContainer) { it is ResultFlowDialogFragmentKey }
     }
+
+    private val primaryContainer by navigationContainer(primaryFragmentContainer)  { it is ResultFlowDialogFragmentKey }
+
     var lastResult: String = ""
     val nestedResult by registerForNavigationResult<String> {
         lastResult = it
@@ -278,9 +280,11 @@ class ResultFlowDialogFragmentKey : NavigationKey.WithResult<String>
 
 @NavigationDestination(ResultFlowDialogFragmentKey::class)
 class ResultFlowDialogFragment : TestDialogFragment() {
-    val navigation by navigationHandle<ResultFlowDialogFragmentKey> {
-        container(primaryFragmentContainer) { it is NestedResultFlowFragmentKey }
+    val navigation by navigationHandle<ResultFlowDialogFragmentKey>()
+    private val primaryContainer by navigationContainer(TestActivity.primaryFragmentContainer) {
+        it is NestedResultFlowFragmentKey
     }
+
     val nestedResult by registerForNavigationResult<Int> {
         navigation.closeWithResult("*".repeat(it))
     }
@@ -297,8 +301,9 @@ class NestedResultFlowFragmentKey : NavigationKey.WithResult<Int>
 
 @NavigationDestination(NestedResultFlowFragmentKey::class)
 class NestedResultFlowFragment : TestFragment() {
-    val navigation by navigationHandle<NestedResultFlowFragmentKey> {
-        container(primaryFragmentContainer) { it is NestedNestedResultFlowFragmentKey }
+    val navigation by navigationHandle<NestedResultFlowFragmentKey>()
+    private val primaryContainer by navigationContainer(TestActivity.primaryFragmentContainer) {
+        it is NestedNestedResultFlowFragmentKey
     }
 
     val nestedResult by registerForNavigationResult<Int> {

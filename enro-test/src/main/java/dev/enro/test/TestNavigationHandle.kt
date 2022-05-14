@@ -22,7 +22,7 @@ class TestNavigationHandle<T : NavigationKey>(
     override val key: T
         get() = navigationHandle.key as T
 
-    override val instruction: NavigationInstruction.Open
+    override val instruction: NavigationInstruction.Open<*>
         get() = navigationHandle.instruction
 
     override fun getLifecycle(): Lifecycle {
@@ -60,7 +60,7 @@ fun <T : NavigationKey> createTestNavigationHandle(
         override val id: String = instruction.instructionId
         override val additionalData: Bundle = instruction.additionalData
         override val key: NavigationKey = key
-        override val instruction: NavigationInstruction.Open = instruction
+        override val instruction: NavigationInstruction.Open<*> = instruction
 
         override val controller: NavigationController = EnroTest.getCurrentNavigationController()
 

@@ -13,7 +13,7 @@ interface NavigationHandle : LifecycleOwner {
     val controller: NavigationController
     val additionalData: Bundle
     val key: NavigationKey
-    val instruction: NavigationInstruction.Open
+    val instruction: NavigationInstruction.Open<*>
     fun executeInstruction(navigationInstruction: NavigationInstruction)
 }
 
@@ -29,7 +29,7 @@ internal class TypedNavigationHandleImpl<T : NavigationKey>(
     override val id: String get() = navigationHandle.id
     override val controller: NavigationController get() = navigationHandle.controller
     override val additionalData: Bundle get() = navigationHandle.additionalData
-    override val instruction: NavigationInstruction.Open = navigationHandle.instruction
+    override val instruction: NavigationInstruction.Open<*> = navigationHandle.instruction
 
     @Suppress("UNCHECKED_CAST")
     override val key: T get() = navigationHandle.key as? T
