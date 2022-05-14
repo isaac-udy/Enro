@@ -30,5 +30,9 @@ abstract class EnroException(
 
     class NavigationContainerWrongThread(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
+    class LegacyNavigationDirectionUsedInStrictMode(message: String, cause: Throwable? = null) : EnroException(message, cause)
+
+    class MissingContainerForPushInstruction(message: String, cause: Throwable? = null) : EnroException(message, cause)
+
     class UnreachableState : EnroException("This state is expected to be unreachable. If you are seeing this exception, please report an issue (with the stacktrace included) at https://github.com/isaac-udy/Enro/issues")
 }

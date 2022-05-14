@@ -39,8 +39,6 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             return
         }
 
-        Log.e("open", ""+ "${args.fromContext} " +instruction.internal.toString())
-
         when (instruction.navigationDirection) {
             NavigationDirection.ReplaceRoot -> {
                 openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
@@ -64,6 +62,12 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                 if (host == null) {
                     val parentContext = fromContext.parentContext()
                     if(parentContext == null) {
+                        if(fromContext.controller.isStrictMode) {
+                            throw EnroException.MissingContainerForPushInstruction("Attempted to Push to ${args.key::class.java.simpleName}, but could not find a valid container")
+                        }
+                        else {
+                            Log.e("Enro", "Attempted to Push to ${args.key::class.java.simpleName}, but could not find a valid container, so Enro opened this as Present")
+                        }
                         openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
                         if(isReplace) {
                             fromContext.getNavigationHandle().close()

@@ -2,6 +2,7 @@ package dev.enro.core.controller
 
 import android.app.Application
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.Keep
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
@@ -15,6 +16,9 @@ import kotlin.reflect.KClass
 
 class NavigationController internal constructor() {
     internal var isInTest = false
+
+    var isStrictMode: Boolean = false
+        internal set
 
     private val pluginContainer: PluginContainer = PluginContainer()
     private val navigatorContainer: NavigatorContainer = NavigatorContainer()
@@ -37,6 +41,15 @@ class NavigationController internal constructor() {
         navigationContext: NavigationContext<out Any>,
         instruction: AnyOpenInstruction
     ) {
+        when(instruction.navigationDirection) {
+            NavigationDirection.Forward,
+            NavigationDirection.Replace -> when {
+                isStrictMode -> throw EnroException.LegacyNavigationDirectionUsedInStrictMode("Strict mode is enabled, which disables the use of Forward and Replace type instructions")
+                else -> Log.w("Enro", "Forward and Replace type instructions are deprecated, please replace these with Push and Present instructions")
+            }
+            else -> { /* Pass */ }
+        }
+
         val navigator = navigatorForKeyType(instruction.navigationKey::class)
             ?: throw EnroException.MissingNavigator("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
 
