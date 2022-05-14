@@ -259,10 +259,6 @@ class NavigationContainerTests {
         expectNoActivity()
     }
 
-    @Rule
-    @JvmField
-    var repeatRule: RepeatRule = RepeatRule()
-
     @Test
     fun whenActivityIsRecreated_andHasMultipleComposableNavigationContainers_thenAllComposableNavigationContainersAreRestored() {
         val scenario = ActivityScenario.launch(MultipleComposableContainerActivity::class.java)
