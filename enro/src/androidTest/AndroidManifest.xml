@@ -28,5 +28,6 @@
         <activity android:name="androidx.activity.ComponentActivity"/>
         <activity android:name=".result.RecyclerViewResultActivity"/>
         <activity android:name=".result.ComposeRecyclerViewResultActivity"/>
+        <activity android:name=".result.ResultFlowFragmentRootActivity"/>
     </application>
 </manifest>

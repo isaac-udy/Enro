@@ -1,23 +1,14 @@
 package dev.enro.test
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import dev.enro.core.NavigationKey
-import dev.enro.core.close
-import dev.enro.core.result.registerForNavigationResult
 import dev.enro.test.extensions.putNavigationHandleForViewModel
 import dev.enro.test.extensions.sendResultForTest
-import dev.enro.viewmodel.navigationHandle
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertNotNull
-import kotlinx.parcelize.Parcelize
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
-class EnroTestTest {
+class EnroTestJvmTest {
 
     @Rule
     @JvmField
@@ -35,14 +26,16 @@ class EnroTestTest {
 
     @Test
     fun whenPutNavigationHandleForTesting_andViewModelIsCreated_theViewModelIsCreatedSuccessfully() {
-        val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
+        val navigationHandle =
+            putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
         val viewModel = factory.create(TestTestViewModel::class.java)
         assertNotNull(viewModel)
     }
 
     @Test
     fun whenPutNavigationHandleForTesting_andViewModelRequestsResult_thenResultIsVerified() {
-        val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
+        val navigationHandle =
+            putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
         val viewModel = factory.create(TestTestViewModel::class.java)
         assertNotNull(viewModel)
 
@@ -55,7 +48,8 @@ class EnroTestTest {
 
     @Test
     fun whenFullViewModelFlowIsCompleted_thenAllFlowDataIsAssignedCorrectly() {
-        val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
+        val navigationHandle =
+            putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
         val viewModel = factory.create(TestTestViewModel::class.java)
         assertNotNull(viewModel)
 

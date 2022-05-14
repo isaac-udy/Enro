@@ -118,6 +118,12 @@ class NavigationController internal constructor() {
 
     @Keep
     // This method is called reflectively by the test module to install/uninstall Enro from test applications
+    private fun installForJvmTests() {
+        pluginContainer.onAttached(this)
+    }
+
+    @Keep
+    // This method is called reflectively by the test module to install/uninstall Enro from test applications
     private fun uninstall(application: Application) {
         navigationControllerBindings.remove(application)
         contextController.uninstall(application)

@@ -8,8 +8,7 @@ import dev.enro.core.*
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.UnmanagedEnroResultChannel
 
-private const val EXTRA_RESULT_CHANNEL_OWNER_ID = "com.enro.core.EXTRA_RESULT_CHANNEL_OWNER_ID"
-private const val EXTRA_RESULT_CHANNEL_RESULT_ID = "com.enro.core.EXTRA_RESULT_CHANNEL_RESULT_ID"
+private const val EXTRA_RESULT_CHANNEL_ID = "com.enro.core.RESULT_CHANNEL_ID"
 
 private class ResultChannelProperties<T>(
     val navigationHandle: NavigationHandle,
@@ -79,12 +78,9 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
     override fun open(key: NavigationKey.WithResult<T>) {
         val properties = arguments ?: return
         properties.navigationHandle.executeInstruction(
-            NavigationInstruction.Forward(key).apply {
-                additionalData.apply {
-                    putString(EXTRA_RESULT_CHANNEL_RESULT_ID, id.resultId)
-                    putString(EXTRA_RESULT_CHANNEL_OWNER_ID, id.ownerId)
-                }
-            }
+            NavigationInstruction.Forward(key).internal.copy(
+                resultId = id
+            )
         )
     }
 
@@ -145,33 +141,23 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
 
     internal companion object {
         internal fun getResultId(navigationHandle: NavigationHandle): ResultChannelId? {
-            return getResultId(navigationHandle.additionalData)
+            return navigationHandle.instruction.internal.resultId
         }
 
-        internal fun getResultId(instruction: AnyOpenInstruction): ResultChannelId? {
-            return getResultId(instruction.additionalData)
+        internal fun getResultId(instruction: NavigationInstruction.Open): ResultChannelId? {
+            return instruction.internal.resultId
         }
 
-        internal fun overrideResultId(instruction: AnyOpenInstruction, resultId: ResultChannelId): AnyOpenInstruction {
-            instruction.additionalData.putString(EXTRA_RESULT_CHANNEL_RESULT_ID, resultId.resultId)
-            instruction.additionalData.putString(EXTRA_RESULT_CHANNEL_OWNER_ID, resultId.ownerId)
-            return instruction
+        internal fun overrideResultId(instruction: NavigationInstruction.Open, resultId: ResultChannelId): NavigationInstruction.Open {
+            return instruction.internal.copy(
+                resultId = resultId
+            )
         }
     }
 }
 
 // Used reflectively by ResultExtensions in enro-test
 @Keep
-private fun getResultId(bundle: Bundle): ResultChannelId? {
-    return ResultChannelId(
-
-        resultId = bundle.getString(
-            EXTRA_RESULT_CHANNEL_RESULT_ID
-        ) ?: return null,
-
-        ownerId = bundle.getString(
-            EXTRA_RESULT_CHANNEL_OWNER_ID
-        ) ?: return null
-
-    )
+private fun getResultId(navigationInstruction: NavigationInstruction.Open): ResultChannelId? {
+    return navigationInstruction.internal.resultId
 }

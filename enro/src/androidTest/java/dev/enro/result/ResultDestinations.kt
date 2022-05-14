@@ -8,8 +8,12 @@ import android.widget.TextView
 import androidx.lifecycle.ViewModel
 import kotlinx.parcelize.Parcelize
 import dev.enro.TestActivity
+import dev.enro.TestDialogFragment
 import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationKey
+import dev.enro.core.close
+import dev.enro.core.navigationHandle
 import dev.enro.core.*
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.result.closeWithResult
@@ -244,5 +248,79 @@ class ResultFlowViewModel : ViewModel() {
 
     init {
         first.open(FragmentResultKey())
+    }
+}
+
+
+@Parcelize
+class ResultFlowDialogFragmentRootKey : NavigationKey.WithResult<String>
+
+@NavigationDestination(ResultFlowDialogFragmentRootKey::class)
+class ResultFlowFragmentRootActivity : TestActivity() {
+    private val navigation by navigationHandle<ResultFlowDialogFragmentRootKey> {
+        defaultKey(ResultFlowDialogFragmentRootKey())
+        container(primaryFragmentContainer) { it is ResultFlowDialogFragmentKey }
+    }
+    var lastResult: String = ""
+    val nestedResult by registerForNavigationResult<String> {
+        lastResult = it
+    }
+
+    override fun onResume() {
+        super.onResume()
+        nestedResult
+            .open(ResultFlowDialogFragmentKey())
+    }
+}
+
+@Parcelize
+class ResultFlowDialogFragmentKey : NavigationKey.WithResult<String>
+
+@NavigationDestination(ResultFlowDialogFragmentKey::class)
+class ResultFlowDialogFragment : TestDialogFragment() {
+    val navigation by navigationHandle<ResultFlowDialogFragmentKey> {
+        container(primaryFragmentContainer) { it is NestedResultFlowFragmentKey }
+    }
+    val nestedResult by registerForNavigationResult<Int> {
+        navigation.closeWithResult("*".repeat(it))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        nestedResult
+            .open(NestedResultFlowFragmentKey())
+    }
+}
+
+@Parcelize
+class NestedResultFlowFragmentKey : NavigationKey.WithResult<Int>
+
+@NavigationDestination(NestedResultFlowFragmentKey::class)
+class NestedResultFlowFragment : TestFragment() {
+    val navigation by navigationHandle<NestedResultFlowFragmentKey> {
+        container(primaryFragmentContainer) { it is NestedNestedResultFlowFragmentKey }
+    }
+
+    val nestedResult by registerForNavigationResult<Int> {
+        navigation.closeWithResult(it)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        nestedResult
+            .open(NestedNestedResultFlowFragmentKey())
+    }
+}
+
+@Parcelize
+class NestedNestedResultFlowFragmentKey : NavigationKey.WithResult<Int>
+
+@NavigationDestination(NestedNestedResultFlowFragmentKey::class)
+class NestedNestedResultFlowFragment : TestFragment() {
+    val navigation by navigationHandle<NestedNestedResultFlowFragmentKey>()
+
+    override fun onResume() {
+        super.onResume()
+        navigation.closeWithResult(6)
     }
 }

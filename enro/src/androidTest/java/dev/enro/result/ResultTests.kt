@@ -2,12 +2,12 @@ package dev.enro.result
 
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
-import dev.enro.DefaultActivity
-import dev.enro.DefaultActivityKey
-import dev.enro.core.*
+import androidx.test.platform.app.InstrumentationRegistry
+import dev.enro.*
+import dev.enro.core.asTyped
+import dev.enro.core.forward
+import dev.enro.core.getNavigationHandle
 import dev.enro.core.result.closeWithResult
-import dev.enro.expectActivity
-import dev.enro.expectContext
 import junit.framework.Assert.*
 import org.junit.Test
 import java.util.*
@@ -595,5 +595,22 @@ class ResultTests {
         activityFlow.context.supportFragmentManager.hashCode()
         val secondRequest = expectContext<ResultFragment, FragmentResultKey>()
         assertNotSame(firstRequest.navigation.id, secondRequest.navigation.id)
+    }
+
+    @Test
+    fun whenResultFlowIsLaunchedInDialogFragment_andCompletesThroughTwoNestedFragments_thenResultIsDelivered() {
+        ActivityScenario.launch(DefaultActivity::class.java)
+        expectContext<DefaultActivity, DefaultActivityKey>()
+            .navigation
+            .forward(ResultFlowDialogFragmentRootKey())
+
+        // This is not a good solution, but the crash that this test detects happens due to an async
+        // action causing a bad fragment removal, so we need to give the test time to detect the
+        // crash before we consider the test successful
+        Thread.sleep(1000)
+
+        val root = expectContext<ResultFlowFragmentRootActivity, ResultFlowDialogFragmentRootKey>()
+            .context
+        assertEquals("******", root.lastResult)
     }
 }
