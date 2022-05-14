@@ -65,7 +65,8 @@ sealed class NavigationInstruction {
             return Open.OpenInternal(
                 navigationDirection = when(navigationKey) {
                     is NavigationKey.SupportsPush -> NavigationDirection.Push
-                    else -> NavigationDirection.Present
+                    is NavigationKey.SupportsPresent -> NavigationDirection.Present
+                    else -> NavigationDirection.Forward
                 },
                 navigationKey = navigationKey,
                 children = children

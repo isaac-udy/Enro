@@ -1,6 +1,7 @@
 package dev.enro.core.fragment
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.*
 import dev.enro.core.*
 import dev.enro.core.container.asPresentInstruction
@@ -31,12 +32,13 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             }
             else -> args.instruction
         }
-
         val fragmentActivity = fromContext.activity
         if (fragmentActivity !is FragmentActivity) {
             openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
             return
         }
+
+        Log.e("open", ""+ "${args.fromContext} " +instruction.internal.toString())
 
         when (instruction.navigationDirection) {
             NavigationDirection.ReplaceRoot -> {
@@ -72,6 +74,11 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                             args.instruction
                         )
                     }
+                    return
+                }
+                if(fromContext is ActivityContext && isReplace) {
+                    openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
+                    fromContext.activity.finish()
                     return
                 }
 
@@ -127,6 +134,8 @@ private fun openFragmentAsActivity(
     navigationDirection: NavigationDirection,
     instruction: AnyOpenInstruction
 ) {
+    Log.e("open activity", ""+ " " +instruction.internal.toString())
+
     instruction as NavigationInstruction.Open<NavigationDirection>
     fromContext.controller.open(
         fromContext,
@@ -134,7 +143,7 @@ private fun openFragmentAsActivity(
             navigationDirection = instruction.navigationDirection,
             navigationKey = SingleFragmentKey(instruction.internal.copy(
                 navigationDirection = navigationDirection,
-            ))
+            )),
         )
     )
 }

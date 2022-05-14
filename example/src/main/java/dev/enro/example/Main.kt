@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
 
     private val homeContainer by navigationContainer(
         containerId = R.id.homeContainer,
-        root = { Home() },
+        rootInstruction = { Home() },
         accept = {
             it is Home || it is SimpleExampleKey || it is ComposeSimpleExampleKey
         },
@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     )
     private val featuresContainer by navigationContainer(
         containerId = R.id.featuresContainer,
-        root = { Features() },
+        rootInstruction = { Features() },
         accept = { false },
         emptyBehavior = EmptyBehavior.Action {
             findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home
@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
 
     private val profileContainer by navigationContainer(
         containerId = R.id.profileContainer,
-        root = { Profile() },
+        rootInstruction = { Profile() },
         accept = { false },
         emptyBehavior = EmptyBehavior.Action {
             findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home

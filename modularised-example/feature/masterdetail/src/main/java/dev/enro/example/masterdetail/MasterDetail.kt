@@ -20,7 +20,7 @@ class MasterDetailActivity : AppCompatActivity() {
     private val masterContainer by navigationContainer(
         containerId = R.id.master,
         emptyBehavior = EmptyBehavior.CloseParent,
-        root = { ListKey(navigation.key.userId, navigation.key.filter) },
+        rootInstruction = { ListKey(navigation.key.userId, navigation.key.filter) },
         accept = { it is ListKey }
     )
 

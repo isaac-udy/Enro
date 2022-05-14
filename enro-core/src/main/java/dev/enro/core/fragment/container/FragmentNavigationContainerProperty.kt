@@ -79,6 +79,22 @@ fun FragmentActivity.navigationContainer(
     fragmentManager = { supportFragmentManager }
 )
 
+@JvmName("navigationContainerFromInstruction")
+fun FragmentActivity.navigationContainer(
+    @IdRes containerId: Int,
+    rootInstruction: () -> NavigationInstruction.Open<*>?,
+    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    accept: (NavigationKey) -> Boolean = { true },
+): FragmentNavigationContainerProperty = FragmentNavigationContainerProperty(
+    lifecycleOwner = this,
+    containerId = containerId,
+    root = rootInstruction,
+    navigationContext = { navigationContext },
+    emptyBehavior = emptyBehavior,
+    accept = accept,
+    fragmentManager = { supportFragmentManager }
+)
+
 fun Fragment.navigationContainer(
     @IdRes containerId: Int,
     root: () -> NavigationKey? = { null },
@@ -92,6 +108,22 @@ fun Fragment.navigationContainer(
             root() ?: return@FragmentNavigationContainerProperty null
         )
     },
+    navigationContext = { navigationContext },
+    emptyBehavior = emptyBehavior,
+    accept = accept,
+    fragmentManager = { childFragmentManager }
+)
+
+@JvmName("navigationContainerFromInstruction")
+fun Fragment.navigationContainer(
+    @IdRes containerId: Int,
+    rootInstruction: () -> NavigationInstruction.Open<*>?,
+    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    accept: (NavigationKey) -> Boolean = { true },
+): FragmentNavigationContainerProperty = FragmentNavigationContainerProperty(
+    lifecycleOwner = this,
+    containerId = containerId,
+    root = rootInstruction,
     navigationContext = { navigationContext },
     emptyBehavior = emptyBehavior,
     accept = accept,
