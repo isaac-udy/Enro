@@ -34,4 +34,34 @@ class FragmentDestinationPush {
             )
             .assertClosesWithResultTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(firstKey)
     }
+
+    @Test
+    fun givenFragmentDestination_whenExecutingPush_andTargetIsFragmentDestination_thenCorrectDestinationIsOpened() {
+        val root = launchFragmentRoot()
+        root.assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(IntoChildContainer)
+            .assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(IntoSameContainer)
+    }
+
+    @Test
+    fun givenFragmentDestination_whenExecutingPush_andTargetIsFragmentDestination_andDestinationIsClosed_thenPreviousDestinationIsActive() {
+        val root = launchFragmentRoot()
+        val firstKey = FragmentDestinations.PushesToPrimary()
+        val secondKey = FragmentDestinations.PushesToPrimary()
+        root.assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(IntoChildContainer, firstKey)
+            .assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(IntoSameContainer, secondKey)
+            .assertClosesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(firstKey)
+    }
+
+    @Test
+    fun givenFragmentDestination_whenExecutingPush_andTargetIsFragmentDestination_andDestinationDeliversResult_thenResultIsDelivered() {
+        val root = launchFragmentRoot()
+        val firstKey = FragmentDestinations.PushesToPrimary()
+        val secondKey = FragmentDestinations.PushesToPrimary()
+        root.assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(IntoChildContainer, firstKey)
+            .assertPushesForResultTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(
+                IntoSameContainer,
+                secondKey
+            )
+            .assertClosesWithResultTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(firstKey)
+    }
 }

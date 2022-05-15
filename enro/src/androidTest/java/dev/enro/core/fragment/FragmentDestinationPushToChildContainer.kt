@@ -63,4 +63,63 @@ class FragmentDestinationPushToChildContainer {
             .assertPushesForResultTo<ComposableDestination, ComposableDestinations.PushesToChildAsPrimary>(IntoSameContainer, thirdKey)
             .assertClosesWithResultTo<ComposableDestination, ComposableDestinations.PushesToChildAsPrimary>(secondKey)
     }
+
+    @Test
+    fun givenFragmentDestination_whenExecutingPushToChildContainer_andTargetIsFragmentDestination_thenCorrectDestinationIsOpened() {
+        val root = launchFragmentRoot()
+        root.assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(IntoChildContainer)
+            .assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToChildAsPrimary>(IntoChildContainer)
+    }
+
+    @Test
+    fun givenFragmentDestination_whenExecutingMultiplePushesToChildContainer_andTargetIsFragmentDestination_thenCorrectDestinationIsOpened() {
+        val root = launchFragmentRoot()
+        root.assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(IntoChildContainer)
+            .assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToChildAsPrimary>(IntoChildContainer)
+            .assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToChildAsPrimary>(IntoSameContainer)
+    }
+
+    @Test
+    fun givenFragmentDestination_whenExecutingPushToChildContainer_andTargetIsFragmentDestination_andDestinationIsClosed_thenPreviousDestinationIsActive() {
+        val root = launchFragmentRoot()
+        val firstKey = FragmentDestinations.PushesToPrimary()
+        val secondKey = FragmentDestinations.PushesToChildAsPrimary()
+        root.assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(IntoChildContainer, firstKey)
+            .assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToChildAsPrimary>(IntoChildContainer, secondKey)
+            .assertClosesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(firstKey)
+    }
+
+    @Test
+    fun givenFragmentDestination_whenExecutingMultiplePushesToChildContainer_andTargetIsFragmentDestination_andDestinationIsClosed_thenPreviousDestinationIsActive() {
+        val root = launchFragmentRoot()
+        val firstKey = FragmentDestinations.PushesToPrimary()
+        val secondKey = FragmentDestinations.PushesToChildAsPrimary()
+        val thirdKey = FragmentDestinations.PushesToChildAsPrimary()
+        root.assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(IntoChildContainer, firstKey)
+            .assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToChildAsPrimary>(IntoChildContainer, secondKey)
+            .assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToChildAsPrimary>(IntoSameContainer, thirdKey)
+            .assertClosesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToChildAsPrimary>(secondKey)
+    }
+
+    @Test
+    fun givenFragmentDestination_whenExecutingPushToChildContainer_andTargetIsFragmentDestination_andDestinationDeliversResult_thenResultIsDelivered() {
+        val root = launchFragmentRoot()
+        val firstKey = FragmentDestinations.PushesToPrimary()
+        val secondKey = FragmentDestinations.PushesToChildAsPrimary()
+        root.assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(IntoChildContainer, firstKey)
+            .assertPushesForResultTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToChildAsPrimary>(IntoChildContainer, secondKey)
+            .assertClosesWithResultTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(firstKey)
+    }
+
+    @Test
+    fun givenFragmentDestination_whenExecutingMultiplePushesToChildContainer_andTargetIsFragmentDestination_andDestinationDeliversResult_thenResultIsDelivered() {
+        val root = launchFragmentRoot()
+        val firstKey = FragmentDestinations.PushesToPrimary()
+        val secondKey = FragmentDestinations.PushesToChildAsPrimary()
+        val thirdKey = FragmentDestinations.PushesToChildAsPrimary()
+        root.assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToPrimary>(IntoChildContainer, firstKey)
+            .assertPushesTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToChildAsPrimary>(IntoChildContainer, secondKey)
+            .assertPushesForResultTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToChildAsPrimary>(IntoSameContainer, thirdKey)
+            .assertClosesWithResultTo<FragmentDestinations.Fragment, FragmentDestinations.PushesToChildAsPrimary>(secondKey)
+    }
 }
