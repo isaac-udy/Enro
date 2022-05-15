@@ -70,10 +70,9 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
                 val containerManager = args.fromContext.containerManager
                 val host = containerManager.activeContainer?.takeIf {
                     it.isVisible && it.accept(args.key)
-                } ?: args.fromContext.containerManager.containers
+                } ?: containerManager.containers
                         .filter { it.isVisible }
                         .firstOrNull { it.accept(args.key) }
-
                 if (host == null) {
                     val parentContext = args.fromContext.parentContext()
                     if (parentContext == null) {
@@ -91,22 +90,14 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
                 }
 
                 EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
-                when (host) {
-                    is ComposableNavigationContainer -> host.setBackstack(
-                        host.backstackFlow.value
-                            .let {
-                                if(isReplace) it.close() else it
-                            }
-                            .push(instruction)
-                    )
-                    is FragmentNavigationContainer -> host.setBackstack(
-                        host.backstackFlow.value
-                            .let {
-                                if(isReplace) it.close() else it
-                            }
-                            .push(instruction.asFragmentHostInstruction())
-                    )
-                }
+                 host.setBackstack(
+                    host.backstackFlow.value
+                        .let {
+                            if(isReplace) it.close() else it
+                        }
+                        .push(instruction)
+                )
+
             }
             else -> throw IllegalStateException()
         }

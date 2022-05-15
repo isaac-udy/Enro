@@ -2,10 +2,12 @@ package dev.enro
 
 import android.app.Activity
 import android.app.Application
+import android.os.Debug
+import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
@@ -15,8 +17,9 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.result.EnroResultChannel
+import org.junit.internal.management.ManagementFactory
 
-private val debug = false
+private val isDebugging: Boolean get() = Debug.isDebuggerConnected()
 
 inline fun <reified T: NavigationKey> ActivityScenario<out ComponentActivity>.getNavigationHandle(): TypedNavigationHandle<T> {
     var result: NavigationHandle? = null
@@ -33,7 +36,12 @@ inline fun <reified T: NavigationKey> ActivityScenario<out ComponentActivity>.ge
 class TestNavigationContext<Context: Any, KeyType: NavigationKey>(
     val context: Context,
     val navigation: TypedNavigationHandle<KeyType>
-)
+) {
+    val navigationContext = kotlin.run {
+        navigation.getPrivate<NavigationHandle>("navigationHandle")
+            .getPrivate<NavigationContext<*>>("navigationContext")
+    }
+}
 
 inline fun <reified KeyType: NavigationKey> expectComposableContext(
     crossinline selector: (TestNavigationContext<ComposableDestination, KeyType>) -> Boolean = { true }
@@ -47,6 +55,24 @@ inline fun <reified KeyType: NavigationKey> expectFragmentContext(
     return expectContext(selector)
 }
 
+inline fun <reified ContextType: Any, reified KeyType: NavigationKey> findContextFrom(
+    rootContext: NavigationContext<*>?,
+    crossinline selector: (TestNavigationContext<ContextType, KeyType>) -> Boolean = { true }
+): TestNavigationContext<ContextType, KeyType>? {
+    var activeContext = rootContext
+    while(activeContext != null) {
+        if (KeyType::class.java.isAssignableFrom(activeContext.getNavigationHandle().key::class.java)) {
+            val context = TestNavigationContext(
+                activeContext.contextReference as ContextType,
+                activeContext.getNavigationHandle().asTyped<KeyType>()
+            )
+            if (selector(context)) return context
+        }
+        activeContext = activeContext.containerManager.activeContainer?.activeContext
+    }
+    return null
+}
+
 inline fun <reified ContextType: Any, reified KeyType: NavigationKey> expectContext(
     crossinline selector: (TestNavigationContext<ContextType, KeyType>) -> Boolean = { true }
 ): TestNavigationContext<ContextType, KeyType> {
@@ -56,18 +82,22 @@ inline fun <reified ContextType: Any, reified KeyType: NavigationKey> expectCont
             waitOnMain {
                 val activities = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
                 val activity = activities.firstOrNull() as? ComponentActivity ?: return@waitOnMain null
-                var activeContext = activity.containerManager.activeContainer?.activeContext
 
-                while(activeContext != null) {
-                    if (KeyType::class.java.isAssignableFrom(activeContext.getNavigationHandle().key::class.java)) {
-                        val context = TestNavigationContext(
-                            activeContext.contextReference as ContextType,
-                            activeContext.getNavigationHandle().asTyped<KeyType>()
-                        )
-                        if (selector(context)) return@waitOnMain context
+                val activeContext = activity.containerManager.activeContainer?.activeContext
+                val fromActiveContext = findContextFrom(activeContext, selector)
+                if(fromActiveContext != null) return@waitOnMain fromActiveContext
+
+                val fragmentActivity = activity as? FragmentActivity ?: return@waitOnMain null
+                fragmentActivity.supportFragmentManager
+                    .fragments
+                    .filterIsInstance<DialogFragment>()
+                    .filter { it.isVisible }
+                    .forEach {
+                        val dialogContext = it.getNavigationHandle().getPrivate<NavigationContext<*>>("navigationContext")
+                        val fromDialog = findContextFrom(dialogContext, selector)
+                        if(fromDialog != null) return@waitOnMain fromDialog
                     }
-                    activeContext = activeContext.containerManager.activeContainer?.activeContext
-                }
+
                 return@waitOnMain null
             }
         }
@@ -91,6 +121,10 @@ inline fun <reified ContextType: Any, reified KeyType: NavigationKey> expectCont
 fun getActiveActivity(): Activity? {
     val activities = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
     return activities.firstOrNull()
+}
+
+fun expectSingleFragmentActivity(): FragmentActivity {
+    return expectActivity { it::class.java.simpleName == "SingleFragmentActivity" }
 }
 
 inline fun <reified T: ComponentActivity> expectActivity(crossinline selector: (ComponentActivity) -> Boolean = { it is T }): T {
@@ -152,7 +186,7 @@ fun waitFor(block: () -> Boolean) {
 }
 
 fun <T: Any> waitOnMain(block: () -> T?): T {
-    if(debug) { Thread.sleep(2000) }
+    if(isDebugging) { Thread.sleep(2000) }
 
     val maximumTime = 7_000
     val startTime = System.currentTimeMillis()

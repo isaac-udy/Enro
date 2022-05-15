@@ -51,6 +51,7 @@ dependencyResolutionManagement {
 
             alias("kotlin-gradle").to("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10")
             alias("kotlin-stdLib").to("org.jetbrains.kotlin:kotlin-stdlib:1.6.10")
+            alias("kotlin-reflect").to("org.jetbrains.kotlin:kotlin-reflect:1.6.10")
 
             alias("hilt-gradle").to("com.google.dagger:hilt-android-gradle-plugin:2.40.5")
             alias("hilt-android").to("com.google.dagger:hilt-android:2.40.5")

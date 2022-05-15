@@ -14,8 +14,8 @@
         <activity android:name=".result.ResultFlowActivity"/>
         <activity android:name=".core.PluginTestActivity"/>
         <activity android:name=".test.EnroTestTestActivity"/>
-        <activity android:name=".core.ImmediateOpenChildActivity"/>
-        <activity android:name=".core.ImmediateOpenFragmentChildActivity"/>
+        <activity android:name=".core.legacy.ImmediateOpenFragmentChildActivity"/>
+        <activity android:name=".core.legacy.ImmediateOpenChildActivity"/>
         <activity android:name=".result.ViewModelForwardingResultActivity"/>
         <activity android:name=".ActivityWithComposables"/>
         <activity android:name=".core.ComposableTestActivity" />
@@ -29,5 +29,7 @@
         <activity android:name=".result.RecyclerViewResultActivity"/>
         <activity android:name=".result.ComposeRecyclerViewResultActivity"/>
         <activity android:name=".result.ResultFlowFragmentRootActivity"/>
+        <activity android:name=".core.destinations.ActivityDestinationsRootActivity"/>
+        <activity android:name=".core.destinations.ActivityDestinationsPresentableActivity"/>
     </application>
 </manifest>

@@ -1,10 +1,14 @@
-package dev.enro.core
+package dev.enro.core.legacy
 
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
+import dev.enro.core.asTyped
+import dev.enro.core.close
+import dev.enro.core.forward
+import dev.enro.core.getNavigationHandle
 import dev.enro.expectFragment
 import junit.framework.TestCase
 import org.junit.Test

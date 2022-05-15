@@ -38,13 +38,14 @@ data class NavigationContainerBackstack(
     }
 
     internal fun push(
-        instruction: OpenPushInstruction
+        vararg instructions: OpenPushInstruction
     ): NavigationContainerBackstack {
+        if(instructions.isEmpty()) return this
         return copy(
-            backstack = backstack + instruction,
+            backstack = backstack + instructions,
             exiting = visible,
             exitingIndex = backstack.lastIndex,
-            lastInstruction = instruction,
+            lastInstruction = instructions.last(),
             isDirectUpdate = false
         )
     }

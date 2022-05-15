@@ -1,10 +1,12 @@
-package dev.enro.core
+package dev.enro.core.legacy
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
+import dev.enro.core.close
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.forward
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test

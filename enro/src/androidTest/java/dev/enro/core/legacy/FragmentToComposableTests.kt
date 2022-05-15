@@ -1,8 +1,10 @@
-package dev.enro.core
+package dev.enro.core.legacy
 
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.forward
+import dev.enro.core.getNavigationHandle
 import org.junit.Test
 import java.util.*
 

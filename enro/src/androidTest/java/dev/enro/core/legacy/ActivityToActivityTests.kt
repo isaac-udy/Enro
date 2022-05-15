@@ -1,4 +1,4 @@
-package dev.enro.core
+package dev.enro.core.legacy
 
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
@@ -7,6 +7,7 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import dev.enro.*
 import dev.enro.DefaultActivity
+import dev.enro.core.*
 import org.junit.Test
 import java.util.*
 

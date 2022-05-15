@@ -37,6 +37,7 @@ dependencies {
 
     androidTestImplementation deps.testing.junit
 
+    androidTestImplementation deps.kotlin.reflect
     androidTestImplementation deps.androidx.core
     androidTestImplementation deps.androidx.appcompat
     androidTestImplementation deps.androidx.fragment

@@ -21,7 +21,6 @@ class FragmentNavigationContainerProperty @PublishedApi internal constructor(
     @IdRes private val containerId: Int,
     private val root: () -> AnyOpenInstruction?,
     private val navigationContext: () -> NavigationContext<*>,
-    private val fragmentManager: () -> FragmentManager,
     private val emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     private val accept: (NavigationKey) -> Boolean
 ) : ReadOnlyProperty<Any, FragmentNavigationContainer> {
@@ -38,8 +37,7 @@ class FragmentNavigationContainerProperty @PublishedApi internal constructor(
                     containerId = containerId,
                     parentContext = context,
                     accept = accept,
-                    emptyBehavior = emptyBehavior,
-                    fragmentManager = fragmentManager()
+                    emptyBehavior = emptyBehavior
                 )
                 context.containerManager.addContainer(navigationContainer)
                 val rootInstruction = root()
@@ -75,8 +73,7 @@ fun FragmentActivity.navigationContainer(
     },
     navigationContext = { navigationContext },
     emptyBehavior = emptyBehavior,
-    accept = accept,
-    fragmentManager = { supportFragmentManager }
+    accept = accept
 )
 
 @JvmName("navigationContainerFromInstruction")
@@ -91,8 +88,7 @@ fun FragmentActivity.navigationContainer(
     root = rootInstruction,
     navigationContext = { navigationContext },
     emptyBehavior = emptyBehavior,
-    accept = accept,
-    fragmentManager = { supportFragmentManager }
+    accept = accept
 )
 
 fun Fragment.navigationContainer(
@@ -110,8 +106,7 @@ fun Fragment.navigationContainer(
     },
     navigationContext = { navigationContext },
     emptyBehavior = emptyBehavior,
-    accept = accept,
-    fragmentManager = { childFragmentManager }
+    accept = accept
 )
 
 @JvmName("navigationContainerFromInstruction")
@@ -126,6 +121,5 @@ fun Fragment.navigationContainer(
     root = rootInstruction,
     navigationContext = { navigationContext },
     emptyBehavior = emptyBehavior,
-    accept = accept,
-    fragmentManager = { childFragmentManager }
+    accept = accept
 )

@@ -1,4 +1,4 @@
-package dev.enro.core
+package dev.enro.core.legacy
 
 import android.os.Bundle
 import android.view.View
@@ -9,6 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.annotations.NavigationDestination
+import dev.enro.core.*
 import dev.enro.core.fragment.container.navigationContainer
 import junit.framework.TestCase.assertTrue
 import junit.framework.TestCase.assertEquals
@@ -16,10 +17,6 @@ import junit.framework.TestCase.assertNull
 import kotlinx.parcelize.Parcelize
 import org.junit.Test
 import java.util.*
-
-private fun expectSingleFragmentActivity(): FragmentActivity {
-    return expectActivity { it::class.java.simpleName == "SingleFragmentActivity" }
-}
 
 class ActivityToFragmentTests {
 

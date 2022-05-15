@@ -6,24 +6,31 @@ import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
 import dev.enro.core.container.*
 import dev.enro.core.fragment.DefaultFragmentExecutor
+import dev.enro.core.fragment.FragmentFactory
 
 class FragmentNavigationContainer internal constructor(
     @IdRes val containerId: Int,
     parentContext: NavigationContext<*>,
     accept: (NavigationKey) -> Boolean,
-    emptyBehavior: EmptyBehavior,
-    val fragmentManager: FragmentManager
+    emptyBehavior: EmptyBehavior
 ) : NavigationContainer(
     id = containerId.toString(),
     parentContext = parentContext,
     accept = accept,
     emptyBehavior = emptyBehavior,
 ) {
+    private val fragmentManager = when(parentContext.contextReference) {
+        is FragmentActivity -> parentContext.contextReference.supportFragmentManager
+        is Fragment -> parentContext.contextReference.childFragmentManager
+        else -> throw IllegalStateException()
+    }
+
     override val activeContext: NavigationContext<*>?
         get() = fragmentManager.findFragmentById(containerId)?.navigationContext
 
@@ -60,8 +67,8 @@ class FragmentNavigationContainer internal constructor(
             val navigator = parentContext.controller.navigatorForKeyType(activeInstruction.navigationKey::class)
                 ?: throw EnroException.UnreachableState()
 
-            DefaultFragmentExecutor.createFragment(
-                fragmentManager,
+            FragmentFactory.createFragment(
+                parentContext,
                 navigator,
                 activeInstruction
             )
