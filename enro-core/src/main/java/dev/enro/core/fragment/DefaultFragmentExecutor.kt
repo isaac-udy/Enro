@@ -211,6 +211,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     ): Boolean {
         try {
             fragmentManager.executePendingTransactions()
+            if(fragmentManager.isStateSaved) throw IllegalStateException()
             return true
         } catch (ex: IllegalStateException) {
             return false
