@@ -101,6 +101,11 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
                     else -> throw EnroException.DestinationIsNotDialogDestination("The @Composable destination for ${navigationHandle.key::class.java.simpleName} must be a DialogDestination or a BottomSheetDestination")
                 }
 
+                DisposableEffect(dialogConfiguration.softInputMode.value) {
+                    dialog?.window?.setSoftInputMode(dialogConfiguration.softInputMode.value.mode)
+                    onDispose {  }
+                }
+
                 DisposableEffect(true) {
                     enter()
                     onDispose { }
@@ -161,6 +166,9 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
                 }
 
                 setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+                if(::dialogConfiguration.isInitialized) {
+                    setSoftInputMode(dialogConfiguration.softInputMode.value.mode)
+                }
                 setBackgroundDrawableResource(android.R.color.transparent)
                 setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             }

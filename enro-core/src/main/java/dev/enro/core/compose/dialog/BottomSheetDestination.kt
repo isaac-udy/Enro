@@ -50,6 +50,10 @@ class BottomSheetConfiguration : DialogConfiguration() {
         fun setAnimations(animations: AnimationPair) {
             bottomSheetConfiguration.animations = animations
         }
+
+        fun setWindowInputMode(mode: WindowInputMode) {
+            bottomSheetConfiguration.softInputMode.value = mode
+        }
     }
 }
 
