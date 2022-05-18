@@ -22,15 +22,9 @@ import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
 import dev.enro.core.compose.rememberEnroContainerController
-import kotlinx.parcelize.Parcelize
-import android.graphics.drawable.ColorDrawable
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.ui.graphics.lerp
-import androidx.core.animation.addListener
-import androidx.core.view.isVisible
-import dev.enro.core.compose.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
+import kotlinx.parcelize.Parcelize
 
 
 internal abstract class AbstractComposeDialogFragmentHostKey : NavigationKey {
