@@ -1,14 +1,13 @@
 package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import dev.enro.core.*
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.container.ComposableNavigationContainer
@@ -45,6 +44,10 @@ class BottomSheetConfiguration : DialogConfiguration() {
 
         fun setAnimations(animations: AnimationPair) {
             bottomSheetConfiguration.animations = animations
+        }
+
+        fun setWindowInputMode(mode: WindowInputMode) {
+            bottomSheetConfiguration.softInputMode.value = mode
         }
     }
 }

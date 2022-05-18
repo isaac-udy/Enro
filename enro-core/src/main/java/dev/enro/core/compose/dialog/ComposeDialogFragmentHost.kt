@@ -3,19 +3,25 @@ package dev.enro.core.compose.dialog
 import android.animation.AnimatorInflater
 import android.app.Dialog
 import android.content.DialogInterface
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.animation.addListener
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
+import dev.enro.core.compose.rememberEnroContainerController
 import kotlinx.parcelize.Parcelize
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.material.ExperimentalMaterialApi
@@ -98,6 +104,11 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
                     else -> throw EnroException.DestinationIsNotDialogDestination("The @Composable destination for ${navigationHandle.key::class.java.simpleName} must be a DialogDestination or a BottomSheetDestination")
                 }
 
+                DisposableEffect(dialogConfiguration.softInputMode.value) {
+                    dialog?.window?.setSoftInputMode(dialogConfiguration.softInputMode.value.mode)
+                    onDispose {  }
+                }
+
                 DisposableEffect(true) {
                     enter()
                     onDispose { }
@@ -158,6 +169,9 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
                 }
 
                 setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+                if(::dialogConfiguration.isInitialized) {
+                    setSoftInputMode(dialogConfiguration.softInputMode.value.mode)
+                }
                 setBackgroundDrawableResource(android.R.color.transparent)
                 setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             }

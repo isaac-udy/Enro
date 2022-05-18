@@ -1,6 +1,7 @@
 package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
+import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -9,6 +10,12 @@ import dev.enro.core.AnimationPair
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.EnroContainer
 
+enum class WindowInputMode(internal val mode: Int) {
+    NOTHING(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING),
+    PAN(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN),
+    @Deprecated("See WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE")
+    RESIZE(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE),
+}
 
 open class DialogConfiguration {
     internal var isDismissed = mutableStateOf(false)
@@ -19,6 +26,8 @@ open class DialogConfiguration {
         exit = 0
     )
 
+    internal var softInputMode = mutableStateOf(WindowInputMode.RESIZE)
+
     class Builder internal constructor(
         private val dialogConfiguration: DialogConfiguration
     ) {
@@ -28,6 +37,10 @@ open class DialogConfiguration {
 
         fun setAnimations(animations: AnimationPair) {
             dialogConfiguration.animations = animations
+        }
+
+        fun setWindowInputMode(mode: WindowInputMode) {
+            dialogConfiguration.softInputMode.value = mode
         }
     }
 }

@@ -12,6 +12,7 @@ import dev.enro.core.controller.container.PluginContainer
 import dev.enro.core.internal.NoNavigationKey
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
+import java.lang.ref.WeakReference
 import java.util.*
 
 internal const val CONTEXT_ID_ARG = "dev.enro.core.ContextController.CONTEXT_ID"
@@ -101,20 +102,22 @@ internal class NavigationLifecycleController(
         // Sometimes the context will be in an invalid state to correctly update, and will throw,
         // in which case, we just ignore the exception
         runCatching {
-            activeNavigationHandle = context.rootContext().leafContext().getNavigationHandleViewModel()
+            activeNavigationHandle = WeakReference(context.rootContext().leafContext().getNavigationHandleViewModel())
         }
     }
 
-    private var activeNavigationHandle: NavigationHandle? = null
+    private var activeNavigationHandle: WeakReference<NavigationHandle> = WeakReference(null)
         set(value) {
-            if (value == field) return
+            if (value.get() == field.get()) return
             field = value
-            if (value != null) {
-                if (value is NavigationHandleViewModel && !value.hasKey) {
-                    field = null
+
+            val active = value.get()
+            if (active != null) {
+                if (active is NavigationHandleViewModel && !active.hasKey) {
+                    field = WeakReference(null)
                     return
                 }
-                pluginContainer.onActive(value)
+                pluginContainer.onActive(active)
             }
         }
 }
