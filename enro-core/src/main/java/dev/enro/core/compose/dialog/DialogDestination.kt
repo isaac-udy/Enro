@@ -13,6 +13,7 @@ import dev.enro.core.compose.EnroContainerController
 enum class WindowInputMode(internal val mode: Int) {
     NOTHING(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING),
     PAN(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN),
+    @Deprecated("See WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE")
     RESIZE(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE),
 }
 
