@@ -59,7 +59,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/requestStringBottomSheetButton"
         android:text="Request String"/>
+
+    <Button
+        android:id="@+id/requestStringBottomSheetButton"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="Request String (Bottom Sheet)"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
