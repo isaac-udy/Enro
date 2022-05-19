@@ -1,8 +1,8 @@
 package dev.enro.test.extensions
 
-import android.os.Bundle
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.result.internal.ResultChannelId
 import dev.enro.test.EnroTest
 import kotlin.reflect.KClass
 
@@ -37,4 +37,27 @@ fun <T: Any> NavigationInstruction.Open.sendResultForTest(type: Class<T>, result
 
 inline fun <reified T: Any> NavigationInstruction.Open.sendResultForTest(result: T) {
     sendResultForTest(T::class.java, result)
+}
+
+@Suppress("UNCHECKED_CAST")
+internal fun getTestResultForId(id: String): Any? {
+    val navigationController = EnroTest.getCurrentNavigationController()
+
+    val enroResultClass = Class.forName("dev.enro.core.result.EnroResult")
+    val getEnroResult = enroResultClass.getDeclaredMethod("from", NavigationController::class.java)
+    getEnroResult.isAccessible = true
+    val enroResult = getEnroResult.invoke(null, navigationController)
+    getEnroResult.isAccessible = false
+
+    val addPendingResult = enroResultClass.declaredFields.first { it.name.startsWith("pendingResults") }
+    addPendingResult.isAccessible = true
+    val results = addPendingResult.get(enroResult) as Map<ResultChannelId, Any>
+    addPendingResult.isAccessible = false
+
+    val resultChannelId = ResultChannelId(ownerId = id, resultId = id)
+    val result = results[resultChannelId] ?: return null
+
+    val pendingResultClass = Class.forName("dev.enro.core.result.internal.PendingResult")
+    val resultField = pendingResultClass.declaredFields.first { it.name.startsWith("result") }
+    return resultField.get(result)
 }

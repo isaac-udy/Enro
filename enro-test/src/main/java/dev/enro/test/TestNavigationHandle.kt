@@ -1,14 +1,17 @@
 package dev.enro.test
 
 import android.annotation.SuppressLint
-import android.app.Application
 import android.os.Bundle
-import androidx.lifecycle.*
-import androidx.test.core.app.ApplicationProvider
-import dev.enro.core.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleRegistry
+import dev.enro.core.NavigationHandle
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.TypedNavigationHandle
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.controller.navigationController
+import dev.enro.test.extensions.getTestResultForId
 import junit.framework.TestCase
+import org.junit.Assert.assertEquals
 
 class TestNavigationHandle<T : NavigationKey>(
     private val navigationHandle: NavigationHandle
@@ -92,4 +95,9 @@ fun <T : Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): Nav
 
 inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(): NavigationInstruction.Open {
     return expectOpenInstruction(T::class.java)
+}
+
+fun <T: Any> TestNavigationHandle<*>.expectResult(expected: T) {
+    val result = getTestResultForId(id)
+    assertEquals(expected, result)
 }
