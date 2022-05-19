@@ -3,19 +3,32 @@ package dev.enro.test
 import androidx.lifecycle.ViewModel
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
+import dev.enro.core.result.closeWithResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 
 @Parcelize
-class TestTestNavigationKey : NavigationKey
-
-@Parcelize
 class TestResultStringKey : NavigationKey.WithResult<String>
+
+class TestResultStringViewModel : ViewModel() {
+    private val navigation by navigationHandle<TestResultStringKey>()
+
+    fun sendResult(result: String) {
+        navigation.closeWithResult(result)
+    }
+}
 
 @Parcelize
 class TestResultIntKey : NavigationKey.WithResult<Int>
+
+class TestResultIntViewModel : ViewModel() {
+    private val navigation by navigationHandle<TestResultIntKey>()
+}
+
+@Parcelize
+class TestTestNavigationKey : NavigationKey
 
 class TestTestViewModel : ViewModel() {
     private val navigation by navigationHandle<TestTestNavigationKey>()
