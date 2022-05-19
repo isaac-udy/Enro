@@ -3,26 +3,43 @@ package dev.enro.core.result
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import dev.enro.core.*
 import dev.enro.core.result.internal.LazyResultChannelProperty
 import dev.enro.core.result.internal.PendingResult
+import dev.enro.core.result.internal.ResultChannelId
 import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.synthetic.SyntheticDestination
-import java.lang.IllegalStateException
 import kotlin.properties.ReadOnlyProperty
 
 fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
     val resultId = ResultChannelImpl.getResultId(this)
-    if (resultId != null) {
-        EnroResult.from(controller).addPendingResult(
-            PendingResult(
-                resultChannelId = resultId,
-                resultType = result::class,
-                result = result
+    when {
+        resultId != null -> {
+            EnroResult.from(controller).addPendingResult(
+                PendingResult(
+                    resultChannelId = resultId,
+                    resultType = result::class,
+                    result = result
+                )
             )
-        )
+        }
+        controller.isInTest -> {
+            EnroResult.from(controller).addPendingResult(
+                PendingResult(
+                    resultChannelId = ResultChannelId(
+                        ownerId = id,
+                        resultId = id
+                    ),
+                    resultType = result::class,
+                    result = result
+                )
+            )
+        }
     }
     close()
 }
