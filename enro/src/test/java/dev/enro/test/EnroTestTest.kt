@@ -1,20 +1,15 @@
 package dev.enro.test
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import dev.enro.core.NavigationKey
-import dev.enro.core.close
-import dev.enro.core.result.registerForNavigationResult
 import dev.enro.test.extensions.putNavigationHandleForViewModel
 import dev.enro.test.extensions.sendResultForTest
-import dev.enro.viewmodel.navigationHandle
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertNotNull
-import kotlinx.parcelize.Parcelize
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.*
 
 @RunWith(AndroidJUnit4::class)
 class EnroTestTest {
@@ -78,5 +73,17 @@ class EnroTestTest {
         assertEquals(1, viewModel.intOneResult)
         assertEquals(2, viewModel.intTwoResult)
         navigationHandle.expectCloseInstruction()
+    }
+
+    @Test
+    fun givenViewModelWithResult_whenViewModelSendsResult_thenResultIsVerified() {
+        val navigationHandle = putNavigationHandleForViewModel<TestResultStringViewModel>(TestResultStringKey())
+        val viewModel = factory.create(TestResultStringViewModel::class.java)
+        assertNotNull(viewModel)
+
+        val expectedResult = UUID.randomUUID().toString()
+        viewModel.sendResult(expectedResult)
+
+        navigationHandle.expectResult(expectedResult)
     }
 }

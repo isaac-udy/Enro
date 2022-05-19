@@ -3,10 +3,11 @@ package dev.enro.test
 import androidx.lifecycle.ViewModelProvider
 import dev.enro.test.extensions.putNavigationHandleForViewModel
 import dev.enro.test.extensions.sendResultForTest
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertNotNull
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Rule
 import org.junit.Test
+import java.util.*
 
 class EnroTestJvmTest {
 
@@ -72,5 +73,17 @@ class EnroTestJvmTest {
         assertEquals(1, viewModel.intOneResult)
         assertEquals(2, viewModel.intTwoResult)
         navigationHandle.expectCloseInstruction()
+    }
+
+    @Test
+    fun givenViewModelWithResult_whenViewModelSendsResult_thenResultIsVerified() {
+        val navigationHandle = putNavigationHandleForViewModel<TestResultStringViewModel>(TestResultStringKey())
+        val viewModel = factory.create(TestResultStringViewModel::class.java)
+        assertNotNull(viewModel)
+
+        val expectedResult = UUID.randomUUID().toString()
+        viewModel.sendResult(expectedResult)
+
+        navigationHandle.expectResult(expectedResult)
     }
 }
