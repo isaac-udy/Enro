@@ -1,16 +1,12 @@
 package dev.enro.test
 
 import android.app.Application
-import android.app.Instrumentation
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.NavigationComponentBuilder
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.controller.navigationController
 import dev.enro.core.plugins.EnroLogger
-import java.lang.IllegalStateException
 
 object EnroTest {
 
@@ -25,6 +21,9 @@ object EnroTest {
                 plugin(EnroLogger())
             }
             .callPrivate<NavigationController>("build")
+            .apply {
+                isInTest = true
+            }
 
         if (isInstrumented()) {
             val application = ApplicationProvider.getApplicationContext<Application>()
@@ -41,8 +40,11 @@ object EnroTest {
     fun uninstallNavigationController() {
         val providerClass =
             Class.forName("dev.enro.viewmodel.EnroViewModelNavigationHandleProvider")
-        val instance = providerClass.getDeclaredField("INSTANCE").get(null)
+        val instance = providerClass.getDeclaredField("INSTANCE").get(null)!!
         instance.callPrivate<Unit>("clearAllForTest")
+        navigationController?.apply {
+            isInTest = false
+        }
 
         val uninstallNavigationController = navigationController
         navigationController = null
@@ -75,3 +77,26 @@ private fun <T> Any.callPrivate(methodName: String, vararg args: Any): T {
     method.isAccessible = false
     return result as T
 }
+
+
+private var NavigationController.isInTest: Boolean
+    get() {
+        return NavigationController::class.java.getDeclaredField("isInTest")
+            .let {
+                it.isAccessible = true
+                val result = it.get(this) as Boolean
+                it.isAccessible = false
+
+                return@let result
+            }
+    }
+    set(value) {
+        NavigationController::class.java.getDeclaredField("isInTest")
+            .let {
+                it.isAccessible = true
+                val result = it.set(this, value)
+                it.isAccessible = false
+
+                return@let result
+            }
+    }
