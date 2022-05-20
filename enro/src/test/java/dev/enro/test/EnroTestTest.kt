@@ -4,8 +4,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.enro.test.extensions.putNavigationHandleForViewModel
 import dev.enro.test.extensions.sendResultForTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
+import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -84,6 +83,22 @@ class EnroTestTest {
         val expectedResult = UUID.randomUUID().toString()
         viewModel.sendResult(expectedResult)
 
+        runCatching {
+            navigationHandle.expectNoResult()
+        }.onSuccess { fail() }
         navigationHandle.expectResult(expectedResult)
+    }
+
+    @Test
+    fun givenViewModelWithResult_whenViewModelDoesNotSendResult_thenExpectResultFails() {
+        val navigationHandle = putNavigationHandleForViewModel<TestResultStringViewModel>(TestResultStringKey())
+        val viewModel = factory.create(TestResultStringViewModel::class.java)
+        assertNotNull(viewModel)
+
+        val expectedResult = UUID.randomUUID().toString()
+        runCatching {
+            navigationHandle.expectResult(expectedResult)
+        }.onSuccess { fail() }
+        navigationHandle.expectNoResult()
     }
 }

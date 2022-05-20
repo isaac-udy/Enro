@@ -12,6 +12,7 @@ import dev.enro.core.controller.NavigationController
 import dev.enro.test.extensions.getTestResultForId
 import junit.framework.TestCase
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 
 class TestNavigationHandle<T : NavigationKey>(
     private val navigationHandle: NavigationHandle
@@ -100,4 +101,9 @@ inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(): Na
 fun <T: Any> TestNavigationHandle<*>.expectResult(expected: T) {
     val result = getTestResultForId(id)
     assertEquals(expected, result)
+}
+
+fun TestNavigationHandle<*>.expectNoResult() {
+    val result = getTestResultForId(id)
+    assertNull(result)
 }
