@@ -2,7 +2,6 @@ package dev.enro.processor
 
 import com.google.auto.service.AutoService
 import com.squareup.javapoet.*
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.GeneratedNavigationBinding
 import dev.enro.annotations.NavigationDestination
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
@@ -134,15 +133,6 @@ class NavigationDestinationProcessor : BaseProcessor() {
         }
 
         val annotation = element.getAnnotation(NavigationDestination::class.java)
-        val enableComposableDestination =
-            element.getAnnotation(ExperimentalComposableDestination::class.java) != null
-
-        if(!enableComposableDestination) {
-            val shortMessage = "Failed to create NavigationDestination for function ${element.getElementName()}. Using @Composable functions as @NavigationDestinations is an experimental feature an must be explicitly enabled."
-            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, shortMessage)
-            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "To enable @Composable @NavigationDestinations annotate the @Composable function @NavigationDestination with the @ExperimentalComposableDestination annotation")
-            return
-        }
         val keyType =
             processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
 

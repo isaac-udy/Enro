@@ -1,7 +1,7 @@
 package dev.enro.example
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.*
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -11,12 +11,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.scale
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.*
+import dev.enro.core.compose.rememberEnroContainerController
+import dev.enro.core.container.EmptyBehavior
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -24,7 +23,6 @@ class MultistackComposeKey : NavigationKey
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(MultistackComposeKey::class)
 fun MultistackComposeScreen() {
 

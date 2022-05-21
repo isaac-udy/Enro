@@ -18,7 +18,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.test.core.app.ActivityScenario
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
@@ -126,7 +125,6 @@ class EnroStabilityKey(
 class EnroStabilityViewModel : ViewModel()
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(EnroStabilityKey::class)
 fun EnroStabilityScreen() {
     val navigation = navigationHandle<EnroStabilityKey>()

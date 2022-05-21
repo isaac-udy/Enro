@@ -24,7 +24,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.dialog.BottomSheetDestination
@@ -125,7 +124,6 @@ class RequestStringBottomSheetKey : NavigationKey.WithResult<String>
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 @NavigationDestination(RequestStringBottomSheetKey::class)
-@ExperimentalComposableDestination
 fun BottomSheetDestination.RequestStringBottomSheet() {
     val navigation = navigationHandle<RequestStringBottomSheetKey>()
     val result = remember {

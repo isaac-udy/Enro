@@ -11,17 +11,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.*
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.compose.rememberNavigationContainer
+import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.replace
 import kotlinx.parcelize.Parcelize
 import java.util.*
@@ -39,7 +38,6 @@ class DetailComposeKey(
 
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ListDetailComposeKey::class)
 fun MasterDetailComposeScreen() {
     val listContainerController = rememberEnroContainerController(
@@ -73,7 +71,6 @@ fun MasterDetailComposeScreen() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ListComposeKey::class)
 fun ListComposeScreen() {
     val items = rememberSaveable {
@@ -95,7 +92,6 @@ fun ListComposeScreen() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(DetailComposeKey::class)
 fun DetailComposeScreen() {
     val navigation = navigationHandle<DetailComposeKey>()

@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.TestComposable
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.ComposableDestination
@@ -73,7 +72,6 @@ val ComposableDestination.resultChannel: EnroResultChannel<TestResult, Navigatio
     }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ComposableDestinations.Root::class)
 fun ComposableDestinationRoot() {
     val viewModel = viewModel<ComposableDestinations.TestViewModel>()
@@ -85,7 +83,6 @@ fun ComposableDestinationRoot() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ComposableDestinations.Presentable::class)
 fun ComposableDestinationPresentable() {
     val viewModel = viewModel<ComposableDestinations.TestViewModel>()
@@ -97,7 +94,6 @@ fun ComposableDestinationPresentable() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ComposableDestinations.PresentableDialog::class)
 fun DialogDestination.ComposableDestinationPresentableDialog() {
     val navigation = navigationHandle()
@@ -114,7 +110,6 @@ fun DialogDestination.ComposableDestinationPresentableDialog() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ComposableDestinations.PushesToPrimary::class)
 fun ComposableDestinationPushesToPrimary() {
     val viewModel = viewModel<ComposableDestinations.TestViewModel>()
@@ -126,7 +121,6 @@ fun ComposableDestinationPushesToPrimary() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ComposableDestinations.PushesToSecondary::class)
 fun ComposableDestinationPushesToSecondary() {
     val viewModel = viewModel<ComposableDestinations.TestViewModel>()
@@ -138,7 +132,6 @@ fun ComposableDestinationPushesToSecondary() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ComposableDestinations.PushesToChildAsPrimary::class)
 fun ComposableDestinationPushesToChildAsPrimary() {
     val viewModel = viewModel<ComposableDestinations.TestViewModel>()
@@ -148,7 +141,6 @@ fun ComposableDestinationPushesToChildAsPrimary() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ComposableDestinations.PushesToChildAsSecondary::class)
 fun ComposableDestinationPushesToChildAsSecondary() {
     val viewModel = viewModel<ComposableDestinations.TestViewModel>()

@@ -56,7 +56,6 @@ class ListFragment : Fragment()
 class DetailActivity : AppCompatActivity()
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(MyComposeKey::class)
 fun MyComposableScreen() { }
 ```
@@ -87,7 +86,6 @@ class ListFragment : ListFragment() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(MyComposeKey::class)
 fun MyComposableScreen() {
     val navigation = navigationHandle<MyComposeKey>()
@@ -246,15 +244,10 @@ Enro provides a custom extension function similar to AndroidX's `by viewModels()
 
 This means that your ViewModel can be put in charge of the flow through your Application, rather than needing to use a `LiveData<NavigationEvent>()` (or similar) in your ViewModel. When we use things like `LiveData<NavigationEvent>()` we are able to test the ViewModel's intent to navigate, but there's still the reliance on the Activity/Fragment implementing the response to the navigation event correctly. In the case of retrieving a result from another screen, this gap grows even wider, and there becomes an invisible contract between the ViewModel and Activity/Fragment: The ViewModel expects that if it sets a particular `NavigationEvent` in the `LiveData`, that the Activity/Fragment will navigate to the correct place, and then once the navigation has been successful and a result has been returned, that the Activity/Fragment will call the correct method on the ViewModel to provide the result. This invisible contract results in extra boilerplate "wiring" code, and a gap for bugs to slip through. Instead, using Enro's ViewModel integration, you allow your ViewModel to be precise and clear about it's intention, and about how to handle a result. 
 
-## Experimental Compose Support
-The most recent version of Enro (1.4.0-beta04) adds experimental support for directly marking `@Composable` functions as Navigation Destinations.
-
-To support a Composable destination, you will need to add both an `@NavigationDestination` annotation, and a `@ExperimentalComposableDestination` annotation. Once the Composable support moves from the "experimental" stage into a stable state, the `@ExperimentalComposableDestination` annotation will be removed.
-
+## Compose Support
 Here is an example of a Composable function being used as a NavigationDestination:
 ```kotlin
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(MyComposeKey::class)
 fun MyComposableScreen() {
     val navigation = navigationHandle<MyComposeKey>()
@@ -275,7 +268,6 @@ Here is an example of creating a Composable that supports nested Composable navi
 
 ```kotlin
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(MyComposeKey::class)
 fun MyNestedComposableScreen() {
     val navigation = navigationHandle<MyComposeKey>()
@@ -297,7 +289,6 @@ fun MyNestedComposableScreen() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(NestedComposeKey::class)
 fun NestedComposableScreen() = Text("Nested Screen!")
 ```
@@ -313,7 +304,6 @@ Here's an example:
 
 ```kotlin
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(DialogComposableKey::class)
 fun DialogDestination.DialogComposableScreen() {
     configureDialog { ... }
@@ -321,7 +311,6 @@ fun DialogDestination.DialogComposableScreen() {
 
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
-@ExperimentalComposableDestination
 @NavigationDestination(BottomSheetComposableKey::class)
 fun BottomSheetDestination.BottomSheetComposableScreen() {
     configureBottomSheet { ... }

@@ -1,6 +1,5 @@
 package dev.enro.example
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,12 +17,13 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
+import dev.enro.core.compose.EnroContainer
+import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.navigationHandle
+import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.compose.*
-import dev.enro.core.compose.dialog.*
 import kotlinx.parcelize.Parcelize
 import java.util.*
 import javax.inject.Inject
@@ -61,7 +61,6 @@ class ComposeSimpleExampleViewModel @Inject constructor(
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ComposeSimpleExampleKey::class)
 fun ComposeSimpleExample() {
 
@@ -212,7 +211,6 @@ class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open<*
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ExampleComposableBottomSheetKey::class)
 fun BottomSheetDestination.ExampleDialogComposable() {
     val navigationHandle = navigationHandle<ExampleComposableBottomSheetKey>()

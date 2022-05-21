@@ -3,7 +3,6 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.fragment.container.navigationContainer
@@ -102,7 +101,6 @@ class GenericFragment : TestFragment()
 data class GenericComposableKey(val id: String) : NavigationKey
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(GenericComposableKey::class)
 fun GenericComposableDestination() = TestComposable(name = "GenericComposableDestination")
 

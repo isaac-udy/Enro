@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
@@ -110,7 +109,6 @@ class InitialScreenViewModel : ViewModel() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(InitialKey::class)
 fun InitialScreen() {
     val viewModel = viewModel<InitialScreenViewModel>()
@@ -139,7 +137,6 @@ class NestedKey : NavigationKey.WithResult<String>
 
 @Composable
 @NavigationDestination(NestedKey::class)
-@ExperimentalComposableDestination
 fun NestedScreen() {
     val navigation = navigationHandle<NestedKey>()
     val state = rememberSaveable { mutableStateOf("None") }
@@ -162,7 +159,6 @@ class NestedKey2 : NavigationKey.WithResult<String>
 
 @Composable
 @NavigationDestination(NestedKey2::class)
-@ExperimentalComposableDestination
 fun NestedScreen2() {
     val navigation = navigationHandle<NestedKey2>()
     Column {
