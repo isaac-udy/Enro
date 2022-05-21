@@ -13,9 +13,11 @@ import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.*
+import dev.enro.core.NavigationKey
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.forward
 import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.navigationHandle
 import dev.enro.example.core.navigation.MultiStackKey
 import dev.enro.example.multistack.databinding.MultistackBinding
 import kotlinx.parcelize.Parcelize
@@ -138,7 +140,7 @@ class MultiStackFragment : Fragment() {
                     setOnClickListener {
                         val dataValue = navigation.key.data.last().toIntOrNull() ?: 0
                         val nextKey = MultiStackItem(*navigation.key.data, (dataValue + 1).toString())
-                        navigation.push(nextKey)
+                        navigation.forward(nextKey)
                     }
                 }
             )

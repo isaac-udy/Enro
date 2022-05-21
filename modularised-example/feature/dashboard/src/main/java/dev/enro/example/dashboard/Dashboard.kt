@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.observe
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.close
-import dev.enro.core.push
+import dev.enro.core.forward
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.example.core.base.SingleStateViewModel
 import dev.enro.example.core.data.SimpleDataRepository
@@ -138,7 +138,7 @@ class DashboardViewModel(
     }
 
     fun onAllMessagesSelected() {
-        navigationHandle.push(
+        navigationHandle.forward(
             MasterDetailKey(
                 userId = key.userId,
                 filter = ListFilterType.ALL
@@ -147,7 +147,7 @@ class DashboardViewModel(
     }
 
     fun onUserInfoSelected() {
-        navigationHandle.push(
+        navigationHandle.forward(
             UserKey(
                 userId = key.userId
             )
@@ -155,7 +155,7 @@ class DashboardViewModel(
     }
 
     fun onMultiStackSelected() {
-        navigationHandle.push(MultiStackKey())
+        navigationHandle.forward(MultiStackKey())
     }
 
     fun onCloseAccepted() {
