@@ -2,6 +2,7 @@ package dev.enro.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.setNavigationHandleTag
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationHandle
 
@@ -11,7 +12,7 @@ internal class EnroViewModelFactory(
     private val delegate: ViewModelProvider.Factory
 ) : ViewModelProvider.Factory {
 
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         EnroViewModelNavigationHandleProvider.put(modelClass, navigationHandle)
         val viewModel = try {
             delegate.create(modelClass) as T
@@ -22,8 +23,8 @@ internal class EnroViewModelFactory(
                 ex
             )
         }
+        viewModel.setNavigationHandleTag(navigationHandle)
         EnroViewModelNavigationHandleProvider.clear(modelClass)
         return viewModel
     }
-
 }

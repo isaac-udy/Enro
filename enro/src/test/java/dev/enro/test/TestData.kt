@@ -50,22 +50,22 @@ class TestTestViewModel : ViewModel() {
     var intOneResult: Int? = null
     var intTwoResult: Int? = null
 
-    private val stringOne by registerForNavigationResult<String>(navigation) {
+    private val stringOne by registerForNavigationResult<String> {
         stringOneResult = it
         openStringTwo()
     }
 
-    private val stringTwo by registerForNavigationResult<String>(navigation) {
+    private val stringTwo by registerForNavigationResult<String> {
         stringTwoResult = it
         openIntOne()
     }
 
-    private val intOne by registerForNavigationResult<Int>(navigation) {
+    private val intOne by registerForNavigationResult<Int> {
         intOneResult = it
         openIntTwo()
     }
 
-    private val intTwo by registerForNavigationResult<Int>(navigation) {
+    private val intTwo by registerForNavigationResult<Int> {
         intTwoResult = it
         navigation.close()
     }

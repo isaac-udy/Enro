@@ -96,7 +96,7 @@ class InitialScreenViewModel : ViewModel() {
     val navigation by navigationHandle<InitialKey>()
     val state = MutableStateFlow("None!")
 
-    private val resultChannel by registerForNavigationResult<String>(navigation) {
+    private val resultChannel by registerForNavigationResult<String> {
         state.value = it
     }
 

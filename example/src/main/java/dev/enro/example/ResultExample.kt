@@ -81,7 +81,7 @@ class RequestExampleViewModel() : ViewModel() {
     private val mutableResults = MutableLiveData<List<String>>().apply { emptyList<String>() }
     val results = mutableResults as LiveData<List<String>>
 
-    private val requestString by registerForNavigationResult<String>(navigation) {
+    private val requestString by registerForNavigationResult<String> {
         mutableResults.value = mutableResults.value.orEmpty() + it
     }
 

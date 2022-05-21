@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.lifecycle.ViewModel
-import kotlinx.parcelize.Parcelize
 import dev.enro.TestActivity
 import dev.enro.TestDialogFragment
 import dev.enro.TestFragment
@@ -21,6 +20,7 @@ import dev.enro.core.result.sendResult
 import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 class ActivityResultKey : NavigationKey.WithResult<String>
@@ -165,7 +165,7 @@ class ForwardingSyntheticFragmentResultDestination : SyntheticDestination<Forwar
 
 class ViewModelForwardingResultViewModel : ViewModel() {
     val navigation by navigationHandle<NavigationKey.WithResult<String>>()
-    val forwardingChannel by registerForNavigationResult<String>(navigation) {
+    val forwardingChannel by registerForNavigationResult<String> {
         navigation.closeWithResult(it)
     }
 
@@ -221,7 +221,7 @@ class ResultFlowActivity : TestActivity() {
 
 class ResultFlowViewModel : ViewModel() {
     val navigation by navigationHandle<ResultFlowKey>()
-    val first by registerForNavigationResult<String>(navigation) {
+    val first by registerForNavigationResult<String> {
         if(it == "close") {
             navigation.close()
         }
@@ -230,7 +230,7 @@ class ResultFlowViewModel : ViewModel() {
         }
     }
 
-    val second by registerForNavigationResult<String>(navigation) {
+    val second by registerForNavigationResult<String> {
         if(it == "close") {
             navigation.close()
         }
@@ -239,7 +239,7 @@ class ResultFlowViewModel : ViewModel() {
         }
     }
 
-    val third by registerForNavigationResult<String>(navigation) {
+    val third by registerForNavigationResult<String> {
         navigation.close()
     }
 
