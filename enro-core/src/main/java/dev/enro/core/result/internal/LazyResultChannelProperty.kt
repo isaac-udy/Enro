@@ -2,13 +2,12 @@ package dev.enro.core.result.internal
 
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import dev.enro.core.EnroException
-import androidx.lifecycle.*
 import dev.enro.core.NavigationHandle
+import dev.enro.core.NavigationKey
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.result.EnroResultChannel
 import dev.enro.core.result.managedByLifecycle
@@ -16,13 +15,13 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 @PublishedApi
-internal class LazyResultChannelProperty<T>(
+internal class LazyResultChannelProperty<Result, Key: NavigationKey.WithResult<Result>>(
     owner: Any,
-    resultType: Class<T>,
-    onResult: (T) -> Unit
-) : ReadOnlyProperty<Any, EnroResultChannel<T>> {
+    resultType: Class<Result>,
+    onResult: (Result) -> Unit
+) : ReadOnlyProperty<Any, EnroResultChannel<Result, Key>> {
 
-    private var resultChannel: EnroResultChannel<T>? = null
+    private var resultChannel: EnroResultChannel<Result, Key>? = null
 
     init {
         val handle = when (owner) {
@@ -37,7 +36,7 @@ internal class LazyResultChannelProperty<T>(
         lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (event != Lifecycle.Event.ON_CREATE) return;
-                resultChannel = ResultChannelImpl(
+                resultChannel = ResultChannelImpl<Result, Key>(
                     navigationHandle = handle.value,
                     resultType = resultType,
                     onResult = onResult
@@ -49,7 +48,7 @@ internal class LazyResultChannelProperty<T>(
     override fun getValue(
         thisRef: Any,
         property: KProperty<*>
-    ): EnroResultChannel<T> = resultChannel ?: throw EnroException.ResultChannelIsNotInitialised(
+    ): EnroResultChannel<Result, Key> = resultChannel ?: throw EnroException.ResultChannelIsNotInitialised(
         "LazyResultChannelProperty's EnroResultChannel is not initialised. Are you attempting to use the result channel before the result channel's lifecycle owner has entered the CREATED state?"
     )
 }

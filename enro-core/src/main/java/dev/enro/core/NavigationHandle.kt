@@ -46,6 +46,9 @@ fun <T: NavigationKey> NavigationHandle.asTyped(type: KClass<T>): TypedNavigatio
     if(!isValidType) {
         throw EnroException.IncorrectlyTypedNavigationHandle("Failed to cast NavigationHandle with key of type ${keyType.java.simpleName} to TypedNavigationHandle<${type.simpleName}>")
     }
+
+    @Suppress("UNCHECKED_CAST")
+    if(this is TypedNavigationHandleImpl<*>) return this as TypedNavigationHandle<T>
     return TypedNavigationHandleImpl(this, type.java)
 }
 

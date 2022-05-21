@@ -89,11 +89,11 @@ class DashboardViewModel(
     }
     private val key = navigationHandle.key
 
-    private val viewDetail by registerForNavigationResult<Boolean>(navigationHandle) {
+    private val viewDetail by registerForNavigationResult<Boolean> {
         state = state.copy(userId = "${state.userId} FIRST($it)")
     }
 
-    private val viewDetail2 by registerForNavigationResult<Boolean>(navigationHandle) {
+    private val viewDetail2 by registerForNavigationResult<Boolean> {
         state = state.copy(userId = "${state.userId} WOW($it)")
     }
 

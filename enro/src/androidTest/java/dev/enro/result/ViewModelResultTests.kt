@@ -10,11 +10,9 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.forward
 import dev.enro.core.result.closeWithResult
 import dev.enro.core.result.registerForNavigationResult
-import dev.enro.expectFragment
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
-import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class ViewModelResultTests {
@@ -39,11 +37,11 @@ class OrchestratorViewModel : ViewModel() {
     var currentResult = ""
 
     val navigation by navigationHandle<NavigationKey>()
-    val resultOne by registerForNavigationResult<String>(navigation) {
+    val resultOne by registerForNavigationResult<String> {
         currentResult = it
         resultTwo.open(SecondStepKey())
     }
-    val resultTwo by registerForNavigationResult<String>(navigation) {
+    val resultTwo by registerForNavigationResult<String> {
         currentResult = "$currentResult -> $it"
     }
 
@@ -83,7 +81,7 @@ class SecondStepKey : NavigationKey.WithResult<String>
 
 class SecondStepViewModel : ViewModel() {
     private val navigation by navigationHandle<SecondStepKey>()
-    private val nested by registerForNavigationResult<String>(navigation) {
+    private val nested by registerForNavigationResult<String> {
         navigation.closeWithResult("SecondStep($it)")
     }
     init {

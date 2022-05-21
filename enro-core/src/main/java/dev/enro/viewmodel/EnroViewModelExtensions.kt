@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.getNavigationHandleTag
 import dev.enro.core.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -39,6 +40,11 @@ fun <T : NavigationKey> ViewModel.navigationHandle(
 inline fun <reified T : NavigationKey> ViewModel.navigationHandle(
     noinline block: LazyNavigationHandleConfiguration<T>.() -> Unit = {}
 ): ViewModelNavigationHandleProperty<T> = navigationHandle(T::class, block)
+
+@PublishedApi
+internal fun ViewModel.getNavigationHandle(): NavigationHandle {
+    return getNavigationHandleTag() ?: EnroViewModelNavigationHandleProvider.get(this::class.java)
+}
 
 @MainThread
 inline fun <reified VM : ViewModel> ComponentActivity.enroViewModels(

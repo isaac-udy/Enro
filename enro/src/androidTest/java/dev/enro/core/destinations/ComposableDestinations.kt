@@ -12,9 +12,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.dialog.configureDialog
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.registerForNavigationResult
 import dev.enro.core.requestClose
 import dev.enro.core.result.EnroResultChannel
 import dev.enro.core.result.registerForNavigationResult
@@ -61,13 +59,13 @@ object ComposableDestinations {
 
     class TestViewModel : ViewModel() {
         private val navigation by navigationHandle<NavigationKey>()
-        val resultChannel by registerForNavigationResult<TestResult>(navigation) {
+        val resultChannel by registerForNavigationResult<TestResult> {
             navigation.registerTestResult(it)
         }
     }
 }
 
-val ComposableDestination.resultChannel: EnroResultChannel<TestResult>
+val ComposableDestination.resultChannel: EnroResultChannel<TestResult, NavigationKey.WithResult<TestResult>>
     get() {
         return ViewModelProvider(viewModelStore, ViewModelProvider.NewInstanceFactory())
             .get(ComposableDestinations.TestViewModel::class.java)

@@ -3,7 +3,6 @@ package dev.enro
 import android.app.Activity
 import android.app.Application
 import android.os.Debug
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -17,7 +16,6 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.result.EnroResultChannel
-import org.junit.internal.management.ManagementFactory
 
 private val isDebugging: Boolean get() = Debug.isDebuggerConnected()
 
@@ -203,14 +201,14 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
     }
 }
 
-fun getActiveEnroResultChannels(): List<EnroResultChannel<*>> {
+fun getActiveEnroResultChannels(): List<EnroResultChannel<*, *>> {
     val enroResultClass = Class.forName("dev.enro.core.result.EnroResult")
     val getEnroResult = enroResultClass.getDeclaredMethod("from", NavigationController::class.java)
     getEnroResult.isAccessible = true
     val enroResult = getEnroResult.invoke(null, application.navigationController)
     getEnroResult.isAccessible = false
 
-    val channels = enroResult.getPrivate<Map<Any, EnroResultChannel<*>>>("channels")
+    val channels = enroResult.getPrivate<Map<Any, EnroResultChannel<*, * >>>("channels")
     return channels.values.toList()
 }
 

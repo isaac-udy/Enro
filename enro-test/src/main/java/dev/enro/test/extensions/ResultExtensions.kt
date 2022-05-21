@@ -58,6 +58,7 @@ internal fun getTestResultForId(id: String): Any? {
     val result = results[resultChannelId] ?: return null
 
     val pendingResultClass = Class.forName("dev.enro.core.result.internal.PendingResult")
-    val resultField = pendingResultClass.declaredFields.first { it.name.startsWith("result") }
+    val resultField = pendingResultClass.declaredFields.first { it.name == "result" }
+    resultField.isAccessible = true
     return resultField.get(result)
 }

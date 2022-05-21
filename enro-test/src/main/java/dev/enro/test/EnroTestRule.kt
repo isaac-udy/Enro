@@ -16,6 +16,9 @@ class EnroTestRule : TestRule {
 
 fun runEnroTest(block: () -> Unit) {
     EnroTest.installNavigationController()
-    runCatching(block)
-    EnroTest.uninstallNavigationController()
+    try {
+        block()
+    } finally {
+        EnroTest.uninstallNavigationController()
+    }
 }

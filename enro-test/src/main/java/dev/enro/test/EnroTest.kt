@@ -28,7 +28,9 @@ object EnroTest {
         if (isInstrumented()) {
             val application = ApplicationProvider.getApplicationContext<Application>()
             if (application is NavigationApplication) {
-                navigationController = application.navigationController
+                navigationController = application.navigationController.apply {
+                    isInTest = true
+                }
                 return
             }
             navigationController?.apply { install(application) }
