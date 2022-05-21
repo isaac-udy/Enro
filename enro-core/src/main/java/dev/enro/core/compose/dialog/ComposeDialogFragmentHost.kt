@@ -193,6 +193,7 @@ internal fun View.animateToColor(color: Color) {
 
 internal fun View.animate(
     animOrAnimator: Int,
+    onAnimationStart: () -> Unit = {},
     onAnimationEnd: () -> Unit = {}
 ) {
     clearAnimation()
@@ -208,6 +209,7 @@ internal fun View.animate(
             val animator = AnimatorInflater.loadAnimator(context, animOrAnimator)
             animator.setTarget(this)
             animator.addListener(
+                onStart = { onAnimationStart() },
                 onEnd = { onAnimationEnd() }
             )
             animator.start()
@@ -216,7 +218,9 @@ internal fun View.animate(
             val animation = AnimationUtils.loadAnimation(context, animOrAnimator)
             animation.setAnimationListener(object: Animation.AnimationListener {
                 override fun onAnimationRepeat(animation: Animation?) {}
-                override fun onAnimationStart(animation: Animation?) {}
+                override fun onAnimationStart(animation: Animation?) {
+                    onAnimationStart()
+                }
                 override fun onAnimationEnd(animation: Animation?) {
                     onAnimationEnd()
                 }

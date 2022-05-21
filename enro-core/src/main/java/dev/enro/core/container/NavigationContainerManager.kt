@@ -4,7 +4,8 @@ import android.os.Bundle
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import dev.enro.core.OpenPushInstruction
-import java.lang.IllegalStateException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class NavigationContainerManager {
     private val restoredContainerStates = mutableMapOf<String, NavigationContainerBackstack>()
@@ -13,11 +14,14 @@ class NavigationContainerManager {
     private val _containers: MutableSet<NavigationContainer> = mutableSetOf()
     val containers: Set<NavigationContainer> = _containers
 
-    internal val activeContainerState: MutableState<NavigationContainer?> = mutableStateOf(null)
+    private val activeContainerState: MutableState<NavigationContainer?> = mutableStateOf(null)
     val activeContainer: NavigationContainer? get() = activeContainerState.value
 
+    private val mutableActiveContainerFlow = MutableStateFlow<NavigationContainer?>(null)
+    val activeContainerFlow: StateFlow<NavigationContainer?> = mutableActiveContainerFlow
+
     internal fun setActiveContainerById(id: String?) {
-        activeContainerState.value = containers.firstOrNull { it.id == id }
+        setActiveContainer(containers.firstOrNull { it.id == id })
     }
 
     internal fun addContainer(container: NavigationContainer) {
@@ -78,11 +82,13 @@ class NavigationContainerManager {
     fun setActiveContainer(containerController: NavigationContainer?) {
         if(containerController == null) {
             activeContainerState.value = null
+            mutableActiveContainerFlow.value = null
             return
         }
         val selectedContainer = containers.firstOrNull { it.id == containerController.id }
             ?: throw IllegalStateException("NavigationContainer with id ${containerController.id} is not registered with this NavigationContainerManager")
         activeContainerState.value = selectedContainer
+        mutableActiveContainerFlow.value = selectedContainer
     }
 
     companion object {

@@ -1,17 +1,17 @@
 package dev.enro.core.fragment.container
 
 import android.app.Activity
-import android.util.Log
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
-import dev.enro.core.container.*
-import dev.enro.core.fragment.DefaultFragmentExecutor
+import dev.enro.core.compose.dialog.animate
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.NavigationContainerBackstack
 import dev.enro.core.fragment.FragmentFactory
 
 class FragmentNavigationContainer internal constructor(
@@ -34,11 +34,12 @@ class FragmentNavigationContainer internal constructor(
     override val activeContext: NavigationContext<*>?
         get() = fragmentManager.findFragmentById(containerId)?.navigationContext
 
-    override val isVisible: Boolean
-        get() = when(parentContext.contextReference) {
-            is Activity -> parentContext.contextReference.findViewById<View>(containerId).isVisible
-            is Fragment -> parentContext.contextReference.view?.findViewById<View>(containerId)?.isVisible ?: false
-            else -> false
+    override var isVisible: Boolean
+        get() {
+            return containerView?.isVisible ?: false
+        }
+        set(value) {
+            containerView?.isVisible = value
         }
 
     override fun reconcileBackstack(
@@ -121,5 +122,33 @@ class FragmentNavigationContainer internal constructor(
             }
             .getOrDefault(false)
     }
+}
 
+val FragmentNavigationContainer.containerView: View?
+    get() {
+        return when(parentContext.contextReference) {
+            is Activity -> parentContext.contextReference.findViewById(containerId)
+            is Fragment -> parentContext.contextReference.view?.findViewById(containerId)
+            else -> null
+        }
+    }
+
+fun FragmentNavigationContainer.setVisibilityAnimated(isVisible: Boolean) {
+    val view = containerView ?: return
+    if(!view.isVisible && !isVisible) return
+
+    val animations = DefaultAnimations.present.asResource(view.context.theme)
+    view.animate(
+        animOrAnimator = when(isVisible) {
+            true -> animations.enter
+            false -> animations.exit
+        },
+        onAnimationStart = {
+            view.translationZ = if(isVisible) 0f else -1f
+            view.isVisible = true
+        },
+        onAnimationEnd = {
+            view.isVisible = isVisible
+        }
+    )
 }

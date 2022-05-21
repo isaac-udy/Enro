@@ -5,10 +5,13 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.lifecycle.Lifecycle
 import dev.enro.core.*
-import dev.enro.core.compose.*
+import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableDestinationContextReference
 import dev.enro.core.compose.getComposableDestinationContext
-import dev.enro.core.container.*
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.NavigationContainerBackstack
+import dev.enro.core.container.NavigationContainerManager
 
 class ComposableNavigationContainer internal constructor(
     id: String,
@@ -89,12 +92,12 @@ internal fun NavigationContainerManager.registerState(controller: ComposableNavi
     DisposableEffect(controller.id) {
         addContainer(controller)
         if (activeContainer == null) {
-            activeContainerState.value = controller
+            setActiveContainer(controller)
         }
         onDispose {
             removeContainer(controller)
             if (activeContainer == controller) {
-                activeContainerState.value = null
+                setActiveContainer(null)
             }
         }
     }

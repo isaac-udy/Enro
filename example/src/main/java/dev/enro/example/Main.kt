@@ -1,17 +1,22 @@
 package dev.enro.example
 
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.NavigationKey
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.isActive
+import dev.enro.core.container.setActive
+import dev.enro.core.containerManager
 import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.fragment.container.setVisibilityAnimated
 import dev.enro.core.navigationHandle
 import dev.enro.example.databinding.ActivityMainBinding
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -56,28 +61,30 @@ class MainActivity : AppCompatActivity() {
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.apply {
-            bottomNavigation.setOnNavigationItemSelectedListener {
-                val homeView = findViewById<View>(R.id.homeContainer).apply { isVisible = false }
-                val featuresView = findViewById<View>(R.id.featuresContainer).apply { isVisible = false }
-                val profileView = findViewById<View>(R.id.profileContainer).apply { isVisible = false }
-                when (it.itemId) {
-                    R.id.home -> {
-                        homeView.isVisible = true
-                    }
-                    R.id.features -> {
-                        featuresView.isVisible = true
-                    }
-                    R.id.profile -> {
-                        profileView.isVisible = true
-                    }
-                    else -> return@setOnNavigationItemSelectedListener false
+        containerManager.activeContainerFlow
+            .onEach { _ ->
+                listOf(
+                    homeContainer,
+                    featuresContainer,
+                    profileContainer,
+                ).forEach {
+                    it.setVisibilityAnimated(it.isActive)
                 }
-                return@setOnNavigationItemSelectedListener true
             }
-            if(savedInstanceState == null) {
-                bottomNavigation.selectedItemId = R.id.home
+            .launchIn(lifecycleScope)
+
+        binding.bottomNavigation.setOnItemSelectedListener {
+            when (it.itemId) {
+                R.id.home -> homeContainer.setActive()
+                R.id.features -> featuresContainer.setActive()
+                R.id.profile -> profileContainer.setActive()
+                else -> return@setOnItemSelectedListener false
             }
+            return@setOnItemSelectedListener true
+        }
+
+        if(savedInstanceState == null) {
+            binding.bottomNavigation.selectedItemId = R.id.home
         }
     }
 }

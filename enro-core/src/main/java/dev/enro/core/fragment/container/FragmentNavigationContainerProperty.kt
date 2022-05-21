@@ -3,11 +3,13 @@ package dev.enro.core.fragment.container
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.createEmptyBackStack
@@ -25,29 +27,33 @@ class FragmentNavigationContainerProperty @PublishedApi internal constructor(
     private val accept: (NavigationKey) -> Boolean
 ) : ReadOnlyProperty<Any, FragmentNavigationContainer> {
 
-    private lateinit var navigationContainer: FragmentNavigationContainer
+    private val navigationContainer: FragmentNavigationContainer by lazy {
+        val context = navigationContext()
+        val container = FragmentNavigationContainer(
+            containerId = containerId,
+            parentContext = context,
+            accept = accept,
+            emptyBehavior = emptyBehavior
+        )
+        context.containerManager.addContainer(container)
+        val rootInstruction = root()
+        rootInstruction?.let {
+            container.setBackstack(
+                createEmptyBackStack().push(
+                    rootInstruction.asPushInstruction()
+                )
+            )
+        }
+
+        return@lazy container
+    }
 
     init {
         lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (event != Lifecycle.Event.ON_CREATE) return
-
-                val context = navigationContext()
-                navigationContainer = FragmentNavigationContainer(
-                    containerId = containerId,
-                    parentContext = context,
-                    accept = accept,
-                    emptyBehavior = emptyBehavior
-                )
-                context.containerManager.addContainer(navigationContainer)
-                val rootInstruction = root()
-                rootInstruction?.let {
-                    navigationContainer.setBackstack(
-                        createEmptyBackStack().push(
-                            rootInstruction.asPushInstruction()
-                        )
-                    )
-                }
+                // reference the navigation container directly so it is created
+                navigationContainer.hashCode()
                 lifecycleOwner.lifecycle.removeObserver(this)
             }
         })
