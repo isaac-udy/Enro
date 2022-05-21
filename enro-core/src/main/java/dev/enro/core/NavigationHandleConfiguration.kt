@@ -25,7 +25,7 @@ class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal co
     internal var defaultKey: T? = null
         private set
 
-    internal var onCloseRequested: TypedNavigationHandle<T>.() -> Unit = { close() }
+    internal var onCloseRequested: (TypedNavigationHandle<T>.() -> Unit)? = null
         private set
 
     fun container(@IdRes containerId: Int, accept: (NavigationKey) -> Boolean = { true }) {
@@ -43,6 +43,8 @@ class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal co
     // TODO Store these properties ON the navigation handle? Rather than set individual fields?
     internal fun applyTo(navigationHandleViewModel: NavigationHandleViewModel) {
         navigationHandleViewModel.childContainers = childContainers
+
+        val onCloseRequested = onCloseRequested ?: return
         navigationHandleViewModel.internalOnCloseRequested = { onCloseRequested(navigationHandleViewModel.asTyped(keyType)) }
     }
 }
@@ -51,7 +53,7 @@ class LazyNavigationHandleConfiguration<T : NavigationKey>(
     private val keyType: KClass<T>
 ) {
 
-    private var onCloseRequested: TypedNavigationHandle<T>.() -> Unit = { close() }
+    private var onCloseRequested: (TypedNavigationHandle<T>.() -> Unit)? = null
 
     fun onCloseRequested(block: TypedNavigationHandle<T>.() -> Unit) {
         onCloseRequested = block
@@ -61,6 +63,8 @@ class LazyNavigationHandleConfiguration<T : NavigationKey>(
         val handle = if (navigationHandle is TypedNavigationHandleImpl<*>) {
             navigationHandle.navigationHandle
         } else navigationHandle
+
+        val onCloseRequested = onCloseRequested ?: return
 
         if (handle is NavigationHandleViewModel) {
             handle.internalOnCloseRequested = { onCloseRequested(navigationHandle.asTyped(keyType)) }
