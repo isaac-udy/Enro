@@ -4,15 +4,12 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
-import dev.enro.core.NavigationHandle
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.TypedNavigationHandle
+import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
 import dev.enro.test.extensions.getTestResultForId
 import junit.framework.TestCase
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
+import org.junit.Assert.*
+import java.lang.ref.WeakReference
 
 class TestNavigationHandle<T : NavigationKey>(
     private val navigationHandle: NavigationHandle
@@ -31,6 +28,8 @@ class TestNavigationHandle<T : NavigationKey>(
 
     override val instruction: NavigationInstruction.Open
         get() = navigationHandle.instruction
+
+    internal var internalOnCloseRequested: () -> Unit = { close() }
 
     override fun getLifecycle(): Lifecycle {
         return navigationHandle.lifecycle
@@ -55,8 +54,8 @@ fun <T : NavigationKey> createTestNavigationHandle(
     val instruction = NavigationInstruction.Forward(
         navigationKey = key
     )
-
-    return TestNavigationHandle(object : NavigationHandle {
+    lateinit var navigationHandle: WeakReference<TestNavigationHandle<T>>
+    navigationHandle = WeakReference(TestNavigationHandle(object : NavigationHandle {
         private val instructions = mutableListOf<NavigationInstruction>()
 
         @SuppressLint("VisibleForTests")
@@ -73,12 +72,16 @@ fun <T : NavigationKey> createTestNavigationHandle(
 
         override fun executeInstruction(navigationInstruction: NavigationInstruction) {
             instructions.add(navigationInstruction)
+            if(navigationInstruction is NavigationInstruction.RequestClose) {
+                navigationHandle.get()?.internalOnCloseRequested?.invoke()
+            }
         }
 
         override fun getLifecycle(): Lifecycle {
             return lifecycle
         }
-    })
+    }))
+    return navigationHandle.get()!!
 }
 
 fun TestNavigationHandle<*>.expectCloseInstruction() {
@@ -86,11 +89,8 @@ fun TestNavigationHandle<*>.expectCloseInstruction() {
 }
 
 fun <T : Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): NavigationInstruction.Open {
-    val instruction = instructions.last()
-    TestCase.assertTrue(instruction is NavigationInstruction.Open)
-    instruction as NavigationInstruction.Open
-
-    TestCase.assertTrue(type.isAssignableFrom(instruction.navigationKey::class.java))
+    val instruction = instructions.filterIsInstance<NavigationInstruction.Open>().last()
+    assertTrue(type.isAssignableFrom(instruction.navigationKey::class.java))
     return instruction
 }
 
@@ -98,12 +98,80 @@ inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(): Na
     return expectOpenInstruction(T::class.java)
 }
 
-fun <T: Any> TestNavigationHandle<*>.expectResult(expected: T) {
+fun TestNavigationHandle<*>.assertRequestedClose() {
+    val instruction = instructions.filterIsInstance<NavigationInstruction.RequestClose>()
+        .lastOrNull()
+    assertNotNull(instruction)
+}
+
+fun TestNavigationHandle<*>.assertClosed() {
+    val instruction = instructions.filterIsInstance<NavigationInstruction.Close>()
+        .lastOrNull()
+    assertNotNull(instruction)
+}
+
+fun TestNavigationHandle<*>.assertNotClosed() {
+    val instruction = instructions.filterIsInstance<NavigationInstruction.Close>()
+        .lastOrNull()
+    assertNull(instruction)
+}
+
+fun <T : Any> TestNavigationHandle<*>.assertOpened(type: Class<T>, direction: NavigationDirection? = null): T {
+    val instruction = instructions.filterIsInstance<NavigationInstruction.Open>()
+        .lastOrNull()
+
+    assertNotNull(instruction)
+    requireNotNull(instruction)
+
+    assertTrue(type.isAssignableFrom(instruction.navigationKey::class.java))
+    if(direction != null) {
+        assertEquals(direction, instruction.navigationDirection)
+    }
+    return instruction.navigationKey as T
+}
+
+inline fun <reified T : Any> TestNavigationHandle<*>.assertOpened(direction: NavigationDirection? = null): T {
+    return assertOpened(T::class.java, direction)
+}
+
+fun <T : Any> TestNavigationHandle<*>.assertAnyOpened(type: Class<T>, direction: NavigationDirection? = null): T {
+    val instruction = instructions.filterIsInstance<NavigationInstruction.Open>()
+        .lastOrNull { type.isAssignableFrom(it.navigationKey::class.java) }
+
+    assertNotNull(instruction)
+    requireNotNull(instruction)
+
+    assertTrue(type.isAssignableFrom(instruction.navigationKey::class.java))
+    if(direction != null) {
+        assertEquals(direction, instruction.navigationDirection)
+    }
+    return instruction.navigationKey as T
+}
+
+inline fun <reified T : Any> TestNavigationHandle<*>.assertAnyOpened(direction: NavigationDirection? = null): T {
+    return assertAnyOpened(T::class.java, direction)
+}
+
+fun TestNavigationHandle<*>.assertNoneOpened() {
+    val instruction = instructions.filterIsInstance<NavigationInstruction.Open>()
+        .lastOrNull()
+    assertNull(instruction)
+}
+
+fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(predicate: (T) -> Boolean) {
+    val result = getTestResultForId(id)
+    assertNotNull(result)
+    requireNotNull(result)
+    result as T
+    assertTrue(predicate(result))
+}
+
+fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(expected: T) {
     val result = getTestResultForId(id)
     assertEquals(expected, result)
 }
 
-fun TestNavigationHandle<*>.expectNoResult() {
+fun TestNavigationHandle<*>.assertNoResultDelivered() {
     val result = getTestResultForId(id)
     assertNull(result)
 }

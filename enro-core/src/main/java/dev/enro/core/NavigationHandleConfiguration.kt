@@ -10,7 +10,7 @@ internal class ChildContainer(
     private val accept: (NavigationKey) -> Boolean
 ) {
     fun accept(key: NavigationKey): Boolean {
-        if(key is AbstractComposeFragmentHostKey && accept.invoke(key.instruction.navigationKey)) return true
+        if (key is AbstractComposeFragmentHostKey && accept.invoke(key.instruction.navigationKey)) return true
         return accept.invoke(key)
     }
 }
@@ -47,7 +47,7 @@ class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal co
     }
 }
 
-class LazyNavigationHandleConfiguration<T: NavigationKey>(
+class LazyNavigationHandleConfiguration<T : NavigationKey>(
     private val keyType: KClass<T>
 ) {
 
@@ -58,12 +58,18 @@ class LazyNavigationHandleConfiguration<T: NavigationKey>(
     }
 
     fun configure(navigationHandle: NavigationHandle) {
-        val handle = if(navigationHandle is TypedNavigationHandleImpl<*>) {
+        val handle = if (navigationHandle is TypedNavigationHandleImpl<*>) {
             navigationHandle.navigationHandle
         } else navigationHandle
 
-        if(handle is NavigationHandleViewModel) {
+        if (handle is NavigationHandleViewModel) {
             handle.internalOnCloseRequested = { onCloseRequested(navigationHandle.asTyped(keyType)) }
+        } else if (handle.controller.isInTest) {
+            val field = handle::class.java.declaredFields
+                .firstOrNull { it.name.startsWith("internalOnCloseRequested") }
+                ?: return
+            field.isAccessible = true
+            field.set(handle, { onCloseRequested(navigationHandle.asTyped(keyType)) })
         }
     }
 }

@@ -1,11 +1,11 @@
 package dev.enro.test
 
 import androidx.lifecycle.ViewModelProvider
+import dev.enro.core.requestClose
 import dev.enro.test.extensions.putNavigationHandleForViewModel
 import dev.enro.test.extensions.sendResultForTest
 import org.junit.Assert
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
+import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 import java.util.*
@@ -28,30 +28,55 @@ class EnroTestJvmTest {
 
     @Test
     fun whenPutNavigationHandleForTesting_andViewModelIsCreated_theViewModelIsCreatedSuccessfully() {
-        val navigationHandle =
-            putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
+        val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
         val viewModel = factory.create(TestTestViewModel::class.java)
         assertNotNull(viewModel)
     }
 
     @Test
+    fun whenNavigationRequestsClose_thenOnCloseFromConfigurationIsCalled() {
+        val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
+        val viewModel = factory.create(TestTestViewModel::class.java)
+        navigationHandle.requestClose()
+
+        navigationHandle.assertRequestedClose()
+        navigationHandle.assertClosed()
+        assertTrue(viewModel.wasCloseRequested)
+    }
+
+    @Test
     fun whenPutNavigationHandleForTesting_andViewModelRequestsResult_thenResultIsVerified() {
-        val navigationHandle =
-            putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
+        val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
         val viewModel = factory.create(TestTestViewModel::class.java)
         assertNotNull(viewModel)
 
         viewModel.openStringOne()
         val instruction = navigationHandle.expectOpenInstruction<TestResultStringKey>()
+        navigationHandle.assertOpened<TestResultStringKey>()
         instruction.sendResultForTest("wow")
 
         assertEquals("wow", viewModel.stringOneResult)
     }
 
     @Test
+    fun whenPutNavigationHandleForTesting_andViewModelOpensAnotherKey_thenAssertionWorks() {
+        val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
+        val viewModel = factory.create(TestTestViewModel::class.java)
+        assertNotNull(viewModel)
+
+        val id = UUID.randomUUID().toString()
+        viewModel.forwardToTestWithData(id)
+        val key = navigationHandle.assertOpened<TestTestKeyWithData>()
+
+        assertEquals(id, key.id)
+        runCatching {
+            navigationHandle.assertNoneOpened()
+        }.onSuccess { Assert.fail() }
+    }
+
+    @Test
     fun whenFullViewModelFlowIsCompleted_thenAllFlowDataIsAssignedCorrectly() {
-        val navigationHandle =
-            putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
+        val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
         val viewModel = factory.create(TestTestViewModel::class.java)
         assertNotNull(viewModel)
 
@@ -73,9 +98,19 @@ class EnroTestJvmTest {
         assertEquals("second", viewModel.stringTwoResult)
         assertEquals(1, viewModel.intOneResult)
         assertEquals(2, viewModel.intTwoResult)
-        navigationHandle.expectCloseInstruction()
-    }
 
+        runCatching {
+            navigationHandle.assertNoneOpened()
+        }.onSuccess { Assert.fail() }
+        navigationHandle.assertAnyOpened<TestResultIntKey>()
+        navigationHandle.assertAnyOpened<TestResultStringKey>()
+
+        navigationHandle.expectCloseInstruction()
+        navigationHandle.assertClosed()
+        runCatching {
+            navigationHandle.assertNotClosed()
+        }.onSuccess { Assert.fail() }
+    }
 
     @Test
     fun givenViewModelWithResult_whenViewModelSendsResult_thenResultIsVerified() {
@@ -87,9 +122,10 @@ class EnroTestJvmTest {
         viewModel.sendResult(expectedResult)
 
         runCatching {
-            navigationHandle.expectNoResult()
+            navigationHandle.assertNoResultDelivered()
         }.onSuccess { Assert.fail() }
-        navigationHandle.expectResult(expectedResult)
+        navigationHandle.assertResultDelivered(expectedResult)
+        navigationHandle.assertResultDelivered<String> { it == expectedResult }
     }
 
     @Test
@@ -100,8 +136,8 @@ class EnroTestJvmTest {
 
         val expectedResult = UUID.randomUUID().toString()
         runCatching {
-            navigationHandle.expectResult(expectedResult)
+            navigationHandle.assertResultDelivered(expectedResult)
         }.onSuccess { Assert.fail() }
-        navigationHandle.expectNoResult()
+        navigationHandle.assertNoResultDelivered()
     }
 }

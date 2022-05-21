@@ -3,11 +3,16 @@ package dev.enro.test
 import androidx.lifecycle.ViewModel
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
+import dev.enro.core.forward
 import dev.enro.core.result.closeWithResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
+@Parcelize
+data class TestTestKeyWithData(
+    val id: String
+) : NavigationKey
 
 @Parcelize
 class TestResultStringKey : NavigationKey.WithResult<String>
@@ -31,7 +36,14 @@ class TestResultIntViewModel : ViewModel() {
 class TestTestNavigationKey : NavigationKey
 
 class TestTestViewModel : ViewModel() {
-    private val navigation by navigationHandle<TestTestNavigationKey>()
+    private val navigation by navigationHandle<TestTestNavigationKey> {
+        onCloseRequested {
+            wasCloseRequested = true
+            close()
+        }
+    }
+
+    var wasCloseRequested: Boolean = false
 
     var stringOneResult: String? = null
     var stringTwoResult: String? = null
@@ -72,5 +84,9 @@ class TestTestViewModel : ViewModel() {
 
     fun openIntTwo() {
         intTwo.open(TestResultIntKey())
+    }
+
+    fun forwardToTestWithData(id: String) {
+        navigation.forward(TestTestKeyWithData(id))
     }
 }
