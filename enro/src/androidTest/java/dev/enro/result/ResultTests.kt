@@ -2,12 +2,14 @@ package dev.enro.result
 
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
-import androidx.test.platform.app.InstrumentationRegistry
-import dev.enro.*
+import dev.enro.DefaultActivity
+import dev.enro.DefaultActivityKey
 import dev.enro.core.asTyped
 import dev.enro.core.forward
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.result.closeWithResult
+import dev.enro.expectActivity
+import dev.enro.expectContext
 import junit.framework.Assert.*
 import org.junit.Test
 import java.util.*

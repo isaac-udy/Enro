@@ -62,8 +62,8 @@ internal class NavigationLifecycleController(
             instruction ?: defaultInstruction
         )
 
-        config?.applyTo(context, handle)
         handle.navigationContext = context
+        config?.applyTo(context, handle)
         context.containerManager.restore(savedInstanceState)
 
         handle.lifecycle.addObserver(object : LifecycleEventObserver {

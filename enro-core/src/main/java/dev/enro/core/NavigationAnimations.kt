@@ -2,6 +2,7 @@ package dev.enro.core
 
 import android.content.res.Resources
 import android.os.Parcelable
+import android.provider.Settings
 import dev.enro.core.compose.AbstractComposeFragmentHost
 import dev.enro.core.compose.AbstractComposeFragmentHostKey
 import dev.enro.core.controller.navigationController
@@ -78,6 +79,10 @@ fun animationsFor(
     context: NavigationContext<*>,
     navigationInstruction: NavigationInstruction
 ): AnimationPair.Resource {
+    val animationScale = Settings.Global.getFloat(context.activity.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE)
+    if(animationScale < 0.01f) {
+        return AnimationPair.Resource(0, 0)
+    }
     if (navigationInstruction is NavigationInstruction.Open<*> && navigationInstruction.children.isNotEmpty()) {
         return AnimationPair.Resource(0, 0)
     }

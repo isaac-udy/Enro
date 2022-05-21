@@ -5,7 +5,7 @@
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name=".DefaultActivity"/>
         <activity android:name=".GenericActivity"/>
-        <activity android:name=".ActivityWithFragments"/>
+        <activity android:name=".core.legacy.ActivityWithFragments"/>
         <activity android:name=".UnboundActivity"/>
         <activity android:name=".result.ResultActivity"/>
         <activity android:name=".result.ResultReceiverActivity"/>
@@ -17,7 +17,7 @@
         <activity android:name=".core.legacy.ImmediateOpenFragmentChildActivity"/>
         <activity android:name=".core.legacy.ImmediateOpenChildActivity"/>
         <activity android:name=".result.ViewModelForwardingResultActivity"/>
-        <activity android:name=".ActivityWithComposables"/>
+        <activity android:name=".core.legacy.ActivityWithComposables"/>
         <activity android:name=".core.ComposableTestActivity" />
         <activity android:name=".core.SingleFragmentContainerActivity" />
         <activity android:name=".core.MultipleFragmentContainerActivity" />

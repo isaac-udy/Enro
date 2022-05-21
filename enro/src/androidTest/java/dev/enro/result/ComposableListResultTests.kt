@@ -15,7 +15,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.*
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -24,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import dev.enro.DefaultActivity
 import dev.enro.core.compose.registerForNavigationResult
 import dev.enro.getActiveEnroResultChannels
-import kotlinx.coroutines.delay
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test

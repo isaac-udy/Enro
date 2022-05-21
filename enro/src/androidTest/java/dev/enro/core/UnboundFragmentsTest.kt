@@ -2,9 +2,8 @@ package dev.enro.core
 
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ActivityScenario
-import junit.framework.Assert.*
 import dev.enro.*
-import org.junit.Ignore
+import junit.framework.Assert.*
 import org.junit.Test
 
 class  UnboundFragmentsTest {

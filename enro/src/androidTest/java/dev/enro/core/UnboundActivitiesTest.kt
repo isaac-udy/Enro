@@ -2,8 +2,8 @@ package dev.enro.core
 
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
-import junit.framework.Assert.*
 import dev.enro.*
+import junit.framework.Assert.*
 import org.junit.Test
 
 class UnboundActivitiesTest {

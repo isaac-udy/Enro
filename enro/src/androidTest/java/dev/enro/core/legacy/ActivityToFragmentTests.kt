@@ -4,16 +4,12 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.fragment.container.navigationContainer
-import junit.framework.TestCase.assertTrue
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNull
+import junit.framework.TestCase.*
 import kotlinx.parcelize.Parcelize
 import org.junit.Test
 import java.util.*
@@ -64,7 +60,7 @@ class ActivityToFragmentTests {
         )
 
         val activity = expectSingleFragmentActivity()
-        val fragment = expectFragment<GenericFragment> { it.getNavigationHandle().key == target}
+        val fragment = expectFragment<GenericFragment> { it.getNavigationHandle().key == target }
 
         val fragmentHandle = fragment.getNavigationHandle().asTyped<GenericFragmentKey>()
         assertEquals(target.id, fragmentHandle.key.id)
@@ -424,14 +420,12 @@ class ImmediateOpenChildActivityKey : NavigationKey
 class ImmediateOpenChildActivity : TestActivity() {
     private val navigation by navigationHandle<ImmediateOpenChildActivityKey> {
         defaultKey(ImmediateOpenChildActivityKey())
-    }
-
-    val primaryContainer by navigationContainer(primaryFragmentContainer) {
-        it is GenericFragmentKey && it.id == "one"
-    }
-
-    val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
-        it is GenericFragmentKey && it.id == "two"
+        container(primaryFragmentContainer) {
+            it is GenericFragmentKey && it.id == "one"
+        }
+        container(secondaryFragmentContainer) {
+            it is GenericFragmentKey && it.id == "two"
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -448,14 +442,12 @@ class ImmediateOpenFragmentChildActivityKey : NavigationKey
 class ImmediateOpenFragmentChildActivity : TestActivity() {
     private val navigation by navigationHandle<ImmediateOpenFragmentChildActivityKey> {
         defaultKey(ImmediateOpenFragmentChildActivityKey())
-    }
-
-    val primaryContainer by navigationContainer(primaryFragmentContainer) {
-        it is ImmediateOpenChildFragmentKey && it.name == "one"
-    }
-
-    val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
-        it is ImmediateOpenChildFragmentKey && it.name == "two"
+        container(primaryFragmentContainer) {
+            it is ImmediateOpenChildFragmentKey && it.name == "one"
+        }
+        container(secondaryFragmentContainer) {
+            it is ImmediateOpenChildFragmentKey && it.name == "two"
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -471,14 +463,14 @@ data class ImmediateOpenChildFragmentKey(val name: String) : NavigationKey
 
 @NavigationDestination(ImmediateOpenChildFragmentKey::class)
 class ImmediateOpenChildFragment : TestFragment() {
-    private val navigation by navigationHandle<ImmediateOpenChildFragmentKey>()
+    private val navigation by navigationHandle<ImmediateOpenChildFragmentKey> {
+        container(primaryFragmentContainer) {
+            it is GenericFragmentKey && it.id == "one"
+        }
 
-    val primaryContainer by navigationContainer(primaryFragmentContainer) {
-        it is GenericFragmentKey && it.id == "one"
-    }
-
-    val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
-        it is GenericFragmentKey && it.id == "two"
+        container(secondaryFragmentContainer) {
+            it is GenericFragmentKey && it.id == "two"
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
