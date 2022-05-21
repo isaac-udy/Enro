@@ -30,6 +30,12 @@ jobs:
           api-level: 29
           script: ./gradlew :enro:connectedCheck
 
+      - name: Run Enro Unit Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: ./gradlew :enro:testDebugUnitTest
+
       - name: Run Modularised Example Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
