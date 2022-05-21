@@ -3,7 +3,6 @@ package dev.enro
 import android.app.Activity
 import android.app.Application
 import android.util.Log
-import androidx.compose.ui.input.key.Key
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
@@ -177,14 +176,14 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
     }
 }
 
-fun getActiveEnroResultChannels(): List<EnroResultChannel<*>> {
+fun getActiveEnroResultChannels(): List<EnroResultChannel<*, *>> {
     val enroResultClass = Class.forName("dev.enro.core.result.EnroResult")
     val getEnroResult = enroResultClass.getDeclaredMethod("from", NavigationController::class.java)
     getEnroResult.isAccessible = true
     val enroResult = getEnroResult.invoke(null, application.navigationController)
     getEnroResult.isAccessible = false
 
-    val channels = enroResult.getPrivate<Map<Any, EnroResultChannel<*>>>("channels")
+    val channels = enroResult.getPrivate<Map<Any, EnroResultChannel<*, * >>>("channels")
     return channels.values.toList()
 }
 

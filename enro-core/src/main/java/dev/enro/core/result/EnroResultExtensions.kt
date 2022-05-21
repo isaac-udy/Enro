@@ -97,7 +97,7 @@ fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwardResul
 inline fun <reified T : Any> ViewModel.registerForNavigationResult(
     navigationHandle: NavigationHandle,
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<Any, EnroResultChannel<T>> =
+): ReadOnlyProperty<Any, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = navigationHandle,
         resultType = T::class.java,
@@ -106,7 +106,7 @@ inline fun <reified T : Any> ViewModel.registerForNavigationResult(
 
 inline fun <reified T : Any> FragmentActivity.registerForNavigationResult(
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<FragmentActivity, EnroResultChannel<T>> =
+): ReadOnlyProperty<FragmentActivity, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class.java,
@@ -115,7 +115,7 @@ inline fun <reified T : Any> FragmentActivity.registerForNavigationResult(
 
 inline fun <reified T : Any> Fragment.registerForNavigationResult(
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<Fragment, EnroResultChannel<T>> =
+): ReadOnlyProperty<Fragment, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class.java,
@@ -135,7 +135,7 @@ inline fun <reified T : Any> Fragment.registerForNavigationResult(
 inline fun <reified T : Any> NavigationHandle.registerForNavigationResult(
     id: String,
     noinline onResult: (T) -> Unit
-): UnmanagedEnroResultChannel<T> {
+): UnmanagedEnroResultChannel<T, NavigationKey.WithResult<T>> {
     return ResultChannelImpl(
         navigationHandle = this,
         resultType = T::class.java,
@@ -150,7 +150,7 @@ inline fun <reified T : Any> NavigationHandle.registerForNavigationResult(
  * The result channel will be attached when the ON_START event occurs, detached when the ON_STOP
  * event occurs, and destroyed when ON_DESTROY occurs.
  */
-fun <T> UnmanagedEnroResultChannel<T>.managedByLifecycle(lifecycle: Lifecycle): EnroResultChannel<T> {
+fun <T, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByLifecycle(lifecycle: Lifecycle): EnroResultChannel<T, R> {
     lifecycle.addObserver(LifecycleEventObserver { _, event ->
         if(event == Lifecycle.Event.ON_START) attach()
         if(event == Lifecycle.Event.ON_STOP) detach()
@@ -166,7 +166,7 @@ fun <T> UnmanagedEnroResultChannel<T>.managedByLifecycle(lifecycle: Lifecycle): 
  * detached when the view is detached from a Window, and destroyed when the ViewTreeLifecycleOwner
  * lifecycle receives the ON_DESTROY event.
  */
-fun <T> UnmanagedEnroResultChannel<T>.managedByView(view: View): EnroResultChannel<T> {
+fun <T, R: NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByView(view: View): EnroResultChannel<T, R> {
     var activeLifecycle: Lifecycle? = null
     val lifecycleObserver = LifecycleEventObserver { _, event ->
         if(event == Lifecycle.Event.ON_DESTROY) destroy()
@@ -211,7 +211,7 @@ fun <T> UnmanagedEnroResultChannel<T>.managedByView(view: View): EnroResultChann
  * destroyed every time the ViewHolder is re-bound to data through onBindViewHolder, which means the
  * result channel should be created each time the ViewHolder is bound.
  */
-fun <T> UnmanagedEnroResultChannel<T>.managedByViewHolderItem(viewHolder: RecyclerView.ViewHolder): EnroResultChannel<T> {
+fun <T, R: NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByViewHolderItem(viewHolder: RecyclerView.ViewHolder): EnroResultChannel<T, R> {
     if(viewHolder.itemView.isAttachedToWindow) {
         attach()
     }

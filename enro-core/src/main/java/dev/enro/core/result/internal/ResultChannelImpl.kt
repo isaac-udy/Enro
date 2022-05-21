@@ -1,15 +1,11 @@
 package dev.enro.core.result.internal
 
-import android.os.Bundle
 import androidx.annotation.Keep
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.UnmanagedEnroResultChannel
-
-private const val EXTRA_RESULT_CHANNEL_ID = "com.enro.core.RESULT_CHANNEL_ID"
 
 private class ResultChannelProperties<T>(
     val navigationHandle: NavigationHandle,
@@ -17,12 +13,12 @@ private class ResultChannelProperties<T>(
     val onResult: (T) -> Unit,
 )
 
-class ResultChannelImpl<T> @PublishedApi internal constructor(
+class ResultChannelImpl<Result, Key: NavigationKey.WithResult<Result>> @PublishedApi internal constructor(
     navigationHandle: NavigationHandle,
-    resultType: Class<T>,
-    onResult: (T) -> Unit,
+    resultType: Class<Result>,
+    onResult: (Result) -> Unit,
     additionalResultId: String = "",
-) : UnmanagedEnroResultChannel<T> {
+) : UnmanagedEnroResultChannel<Result, Key> {
 
     /**
      * The arguments passed to the ResultChannelImpl hold references to the external world, and
@@ -30,7 +26,7 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
      * a variable which is cleared to null when the ResultChannelImpl is destroyed, to ensure
      * that these references are not held by the ResultChannelImpl after it has been destroyed.
      */
-    private var arguments: ResultChannelProperties<T>? = ResultChannelProperties(
+    private var arguments: ResultChannelProperties<Result>? = ResultChannelProperties(
         navigationHandle = navigationHandle,
         resultType = resultType,
         onResult = onResult,
@@ -76,7 +72,7 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
         }
     }.apply { navigationHandle.lifecycle.addObserver(this) }
 
-    override fun open(key: NavigationKey.WithResult<T>) {
+    override fun open(key: Key) {
         val properties = arguments ?: return
         properties.navigationHandle.executeInstruction(
             NavigationInstruction.Forward(key).internal.copy(
@@ -90,7 +86,7 @@ class ResultChannelImpl<T> @PublishedApi internal constructor(
         val properties = arguments ?: return
         if (!properties.resultType.isAssignableFrom(result::class.java))
             throw EnroException.ReceivedIncorrectlyTypedResult("Attempted to consume result with wrong type!")
-        result as T
+        result as Result
         properties.navigationHandle.runWhenHandleActive {
             properties.onResult(result)
         }

@@ -5,6 +5,7 @@ import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import dev.enro.core.NavigationKey
 import dev.enro.core.result.EnroResultChannel
 import dev.enro.core.result.internal.ResultChannelImpl
 import java.util.*
@@ -23,7 +24,7 @@ inline fun <reified T: Any> registerForNavigationResult(
         UUID.randomUUID().toString()
     },
     noinline onResult: @DisallowComposableCalls (T) -> Unit
-): EnroResultChannel<T> {
+): EnroResultChannel<T, NavigationKey.WithResult<T>> {
     val navigationHandle = navigationHandle()
 
     val resultChannel = remember(onResult) {

@@ -10,7 +10,7 @@ import dev.enro.core.result.internal.ResultChannelImpl
 
 @PublishedApi
 internal class EnroResult: EnroPlugin() {
-    private val channels = mutableMapOf<ResultChannelId, ResultChannelImpl<*>>()
+    private val channels = mutableMapOf<ResultChannelId, ResultChannelImpl<*, *>>()
     private val pendingResults = mutableMapOf<ResultChannelId, PendingResult>()
 
     override fun onAttached(navigationController: NavigationController) {
@@ -46,14 +46,14 @@ internal class EnroResult: EnroPlugin() {
     }
 
     @PublishedApi
-    internal fun registerChannel(channel: ResultChannelImpl<*>) {
+    internal fun registerChannel(channel: ResultChannelImpl<*, *>) {
         channels[channel.id] = channel
         val result = consumePendingResult(channel.id) ?: return
         channel.consumeResult(result.result)
     }
 
     @PublishedApi
-    internal fun deregisterChannel(channel: ResultChannelImpl<*>) {
+    internal fun deregisterChannel(channel: ResultChannelImpl<*, *>) {
         channels.remove(channel.id)
     }
 
