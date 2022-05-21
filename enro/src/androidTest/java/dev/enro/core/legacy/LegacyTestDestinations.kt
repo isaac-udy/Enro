@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package dev.enro.core.legacy
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -30,7 +31,7 @@ data class ActivityChildFragmentKey(val id: String) : NavigationKey
 class ActivityChildFragment : TestFragment() {
     val navigation by navigationHandle<ActivityChildFragmentKey>{
         container(primaryFragmentContainer) {
-            it is Nothing
+            false
         }
     }
 }

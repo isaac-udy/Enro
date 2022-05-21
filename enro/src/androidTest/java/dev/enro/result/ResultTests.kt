@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package dev.enro.result
 
 import androidx.fragment.app.FragmentActivity
@@ -152,7 +153,7 @@ class ResultTests {
 
     @Test
     fun whenFragmentRequestsResult_andResultProviderIsStandaloneFragment_thenResultIsReceived() {
-        val s =ActivityScenario.launch(DefaultActivity::class.java)
+        ActivityScenario.launch(DefaultActivity::class.java)
         val result = UUID.randomUUID().toString()
 
         expectContext<DefaultActivity, DefaultActivityKey>()

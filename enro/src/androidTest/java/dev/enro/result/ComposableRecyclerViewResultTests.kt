@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package dev.enro.result
 
 import android.os.Bundle
@@ -135,6 +136,7 @@ class ComposableRecyclerViewResultTests {
         composeContentRule.onNodeWithTag("result@${id}").assertTextEquals(id.reversed())
     }
 
+    @Suppress("unused")
     private fun ActivityScenario<ComposeRecyclerViewResultActivity>.scrollTo(index: Int) {
         onView(withId(ComposeRecyclerViewResultActivity.recyclerViewId))
             .perform(RecyclerViewActions.scrollToPosition<ResultViewHolder>(index))

@@ -1,7 +1,10 @@
+@file:Suppress("DEPRECATION")
 package dev.enro.core.legacy
 
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelLazy
+import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.core.close

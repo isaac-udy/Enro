@@ -1,9 +1,10 @@
+@file:Suppress("DEPRECATION")
 package dev.enro.core
 
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
-import junit.framework.Assert.*
+import org.junit.Assert.*
 import org.junit.Test
 
 class UnboundActivitiesTest {
@@ -19,7 +20,7 @@ class UnboundActivitiesTest {
 
         lateinit var caught: Throwable
         try {
-            val key = unboundHandle.key
+            unboundHandle.key
         }
         catch (t: Throwable) {
             caught = t

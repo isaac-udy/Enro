@@ -74,7 +74,7 @@ val ComposableDestination.resultChannel: EnroResultChannel<TestResult, Navigatio
 @Composable
 @NavigationDestination(ComposableDestinations.Root::class)
 fun ComposableDestinationRoot() {
-    val viewModel = viewModel<ComposableDestinations.TestViewModel>()
+    viewModel<ComposableDestinations.TestViewModel>()
     TestComposable(
         name = "ComposableDestination Root",
         primaryContainerAccepts = { it is TestDestination.IntoPrimaryContainer },
@@ -85,7 +85,7 @@ fun ComposableDestinationRoot() {
 @Composable
 @NavigationDestination(ComposableDestinations.Presentable::class)
 fun ComposableDestinationPresentable() {
-    val viewModel = viewModel<ComposableDestinations.TestViewModel>()
+    viewModel<ComposableDestinations.TestViewModel>()
     TestComposable(
         name = "ComposableDestination Presentable",
         primaryContainerAccepts = { it is TestDestination.IntoPrimaryContainer },
@@ -97,7 +97,7 @@ fun ComposableDestinationPresentable() {
 @NavigationDestination(ComposableDestinations.PresentableDialog::class)
 fun DialogDestination.ComposableDestinationPresentableDialog() {
     val navigation = navigationHandle()
-    val viewModel = viewModel<ComposableDestinations.TestViewModel>()
+    viewModel<ComposableDestinations.TestViewModel>()
     Dialog(onDismissRequest = { navigation.requestClose() }) {
         Card {
             TestComposable(
@@ -112,7 +112,7 @@ fun DialogDestination.ComposableDestinationPresentableDialog() {
 @Composable
 @NavigationDestination(ComposableDestinations.PushesToPrimary::class)
 fun ComposableDestinationPushesToPrimary() {
-    val viewModel = viewModel<ComposableDestinations.TestViewModel>()
+    viewModel<ComposableDestinations.TestViewModel>()
     TestComposable(
         name = "ComposableDestination Pushes To Primary",
         primaryContainerAccepts = { it is TestDestination.IntoPrimaryChildContainer },
@@ -123,7 +123,7 @@ fun ComposableDestinationPushesToPrimary() {
 @Composable
 @NavigationDestination(ComposableDestinations.PushesToSecondary::class)
 fun ComposableDestinationPushesToSecondary() {
-    val viewModel = viewModel<ComposableDestinations.TestViewModel>()
+    viewModel<ComposableDestinations.TestViewModel>()
     TestComposable(
         name = "ComposableDestination Pushes To Secondary",
         primaryContainerAccepts = { it is TestDestination.IntoPrimaryChildContainer },
@@ -134,7 +134,7 @@ fun ComposableDestinationPushesToSecondary() {
 @Composable
 @NavigationDestination(ComposableDestinations.PushesToChildAsPrimary::class)
 fun ComposableDestinationPushesToChildAsPrimary() {
-    val viewModel = viewModel<ComposableDestinations.TestViewModel>()
+    viewModel<ComposableDestinations.TestViewModel>()
     TestComposable(
         name = "ComposableDestination Pushes To Child As Primary"
     )
@@ -143,7 +143,7 @@ fun ComposableDestinationPushesToChildAsPrimary() {
 @Composable
 @NavigationDestination(ComposableDestinations.PushesToChildAsSecondary::class)
 fun ComposableDestinationPushesToChildAsSecondary() {
-    val viewModel = viewModel<ComposableDestinations.TestViewModel>()
+    viewModel<ComposableDestinations.TestViewModel>()
     TestComposable(
         name = "ComposableDestination Pushes To Child As Secondary"
     )

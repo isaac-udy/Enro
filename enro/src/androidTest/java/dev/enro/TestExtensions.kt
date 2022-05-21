@@ -26,7 +26,7 @@ inline fun <reified T: NavigationKey> ActivityScenario<out ComponentActivity>.ge
     }
 
     val handle = result ?: throw IllegalStateException("Could not retrieve NavigationHandle from Activity")
-    val key = handle.key as? T
+    handle.key as? T
         ?: throw IllegalStateException("Handle was of incorrect type. Expected ${T::class.java.name} but was ${handle.key::class.java.name}")
     return handle.asTyped()
 }
@@ -208,23 +208,29 @@ fun getActiveEnroResultChannels(): List<EnroResultChannel<*, *>> {
     val enroResult = getEnroResult.invoke(null, application.navigationController)
     getEnroResult.isAccessible = false
 
+    requireNotNull(enroResult)
     val channels = enroResult.getPrivate<Map<Any, EnroResultChannel<*, * >>>("channels")
     return channels.values.toList()
 }
 
+@Suppress("unused")
 fun <T> Any.callPrivate(methodName: String, vararg args: Any): T {
-    val method = this::class.java.declaredMethods.filter { it.name.startsWith(methodName) }.first()
+    val method = this::class.java.declaredMethods.first { it.name.startsWith(methodName) }
     method.isAccessible = true
     val result = method.invoke(this, *args)
     method.isAccessible = false
+
+    @Suppress("UNCHECKED_CAST")
     return result as T
 }
 
 fun <T> Any.getPrivate(methodName: String): T {
-    val method = this::class.java.declaredFields.filter { it.name.startsWith(methodName) }.first()
+    val method = this::class.java.declaredFields.first { it.name.startsWith(methodName) }
     method.isAccessible = true
     val result = method.get(this)
     method.isAccessible = false
+
+    @Suppress("UNCHECKED_CAST")
     return result as T
 }
 

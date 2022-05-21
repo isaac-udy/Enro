@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package dev.enro.result
 
 import android.os.Bundle
@@ -16,7 +17,10 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.*
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.*
+import dev.enro.core.NavigationHandle
+import dev.enro.core.NavigationKey
+import dev.enro.core.navigationHandle
+import dev.enro.core.requireNavigationHandle
 import dev.enro.core.result.managedByViewHolderItem
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.getActiveEnroResultChannels

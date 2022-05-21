@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package dev.enro.core
 
 import android.os.Bundle
