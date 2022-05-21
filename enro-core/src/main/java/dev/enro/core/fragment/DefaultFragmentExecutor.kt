@@ -1,7 +1,6 @@
 package dev.enro.core.fragment
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.*
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
@@ -105,6 +104,11 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     }
 
     override fun close(context: NavigationContext<out Fragment>) {
+        val fragment = context.fragment
+        if(fragment is DialogFragment) {
+            fragment.dismiss()
+            return
+        }
         val container = context.parentContext()?.containerManager?.containers?.firstOrNull { it.activeContext == context }
         if(container == null) {
             /*
