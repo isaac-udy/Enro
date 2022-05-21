@@ -6,14 +6,10 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
+import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.createEmptyBackStack
-import dev.enro.core.navigationContext
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -27,7 +23,7 @@ class FragmentNavigationContainerProperty @PublishedApi internal constructor(
     private val accept: (NavigationKey) -> Boolean
 ) : ReadOnlyProperty<Any, FragmentNavigationContainer> {
 
-    private val navigationContainer: FragmentNavigationContainer by lazy {
+    internal val navigationContainer: FragmentNavigationContainer by lazy {
         val context = navigationContext()
         val container = FragmentNavigationContainer(
             containerId = containerId,

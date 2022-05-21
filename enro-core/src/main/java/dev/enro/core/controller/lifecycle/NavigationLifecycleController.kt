@@ -62,7 +62,7 @@ internal class NavigationLifecycleController(
             instruction ?: defaultInstruction
         )
 
-        config?.applyTo(handle)
+        config?.applyTo(context, handle)
         handle.navigationContext = context
         context.containerManager.restore(savedInstanceState)
 
