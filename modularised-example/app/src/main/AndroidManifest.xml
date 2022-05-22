@@ -20,7 +20,6 @@
         <activity android:name="dev.enro.example.dashboard.DashboardActivity" />
         <activity android:name="dev.enro.example.detail.DetailActivity" />
         <activity android:name="dev.enro.example.search.SearchActivity" />
-        <activity android:name="dev.enro.example.multistack.MultiStackActivity" />
         <activity android:name="dev.enro.example.masterdetail.MasterDetailActivity" />
 
     </application>
