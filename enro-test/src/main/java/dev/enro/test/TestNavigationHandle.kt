@@ -49,7 +49,7 @@ class TestNavigationHandle<T : NavigationKey>(
 }
 
 fun <T : NavigationKey> createTestNavigationHandle(
-    key: NavigationKey
+    key: T
 ): TestNavigationHandle<T> {
     val instruction = NavigationInstruction.Forward(
         navigationKey = key
@@ -158,17 +158,23 @@ fun TestNavigationHandle<*>.assertNoneOpened() {
     assertNull(instruction)
 }
 
-fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(predicate: (T) -> Boolean) {
+fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(predicate: (T) -> Boolean): T {
     val result = getTestResultForId(id)
     assertNotNull(result)
     requireNotNull(result)
     result as T
     assertTrue(predicate(result))
+    return result
 }
 
-fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(expected: T) {
+fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(expected: T): T {
     val result = getTestResultForId(id)
     assertEquals(expected, result)
+    return result as T
+}
+
+inline fun <reified T: Any> TestNavigationHandle<*>.assertResultDelivered(): T {
+    return assertResultDelivered { true }
 }
 
 fun TestNavigationHandle<*>.assertNoResultDelivered() {

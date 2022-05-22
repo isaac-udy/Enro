@@ -123,9 +123,11 @@ class EnroTestJvmTest {
 
         runCatching {
             navigationHandle.assertNoResultDelivered()
-        }.onSuccess { Assert.fail() }
+        }.onSuccess { fail() }
         navigationHandle.assertResultDelivered(expectedResult)
         navigationHandle.assertResultDelivered<String> { it == expectedResult }
+        val result = navigationHandle.assertResultDelivered<String>()
+        assertEquals(expectedResult, result)
     }
 
     @Test
@@ -137,7 +139,10 @@ class EnroTestJvmTest {
         val expectedResult = UUID.randomUUID().toString()
         runCatching {
             navigationHandle.assertResultDelivered(expectedResult)
-        }.onSuccess { Assert.fail() }
+        }.onSuccess { fail() }
+        runCatching {
+            navigationHandle.assertResultDelivered<String>()
+        }.onSuccess { fail() }
         navigationHandle.assertNoResultDelivered()
     }
 }
