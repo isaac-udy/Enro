@@ -28,7 +28,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          script: ./gradlew disableConnectedDeviceAnimations :enro:connectedCheck
+          script: ./gradlew :enro:connectedCheck
 
       - name: Run Enro Unit Tests
         uses: reactivecircus/android-emulator-runner@v2
