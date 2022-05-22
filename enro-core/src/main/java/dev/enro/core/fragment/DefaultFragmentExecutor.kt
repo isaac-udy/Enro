@@ -205,7 +205,7 @@ private fun openFragmentAsDialog(
         instruction,
     ) as DialogFragment
 
-    fragment.showNow(
+    fragment.show(
         fragmentActivity.supportFragmentManager,
         instruction.instructionId
     )
