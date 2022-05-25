@@ -24,7 +24,7 @@ include ':enro-core'
 dependencyResolutionManagement {
     versionCatalogs {
         deps {
-            alias("android-gradle").to("com.android.tools.build:gradle:7.1.1")
+            alias("android-gradle").to("com.android.tools.build:gradle:7.2.1")
 
             alias("androidx-core").to("androidx.core:core-ktx:1.7.0")
             alias("androidx-appcompat").to("androidx.appcompat:appcompat:1.4.1")
