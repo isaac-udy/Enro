@@ -1,15 +1,17 @@
 package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
+import android.view.Window
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import dev.enro.core.AnimationPair
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.EnroContainer
 
+@Deprecated("Use 'configureWindow' and set the soft input mode on the window directly")
 enum class WindowInputMode(internal val mode: Int) {
     NOTHING(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING),
     PAN(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN),
@@ -26,7 +28,8 @@ open class DialogConfiguration {
         exit = 0
     )
 
-    internal var softInputMode = mutableStateOf(WindowInputMode.RESIZE)
+    internal var softInputMode = WindowInputMode.RESIZE
+    internal var configureWindow = mutableStateOf<(window: Window) -> Unit>({})
 
     class Builder internal constructor(
         private val dialogConfiguration: DialogConfiguration
@@ -39,8 +42,13 @@ open class DialogConfiguration {
             dialogConfiguration.animations = animations
         }
 
+        @Deprecated("Use 'configureWindow' and set the soft input mode on the window directly")
         fun setWindowInputMode(mode: WindowInputMode) {
-            dialogConfiguration.softInputMode.value = mode
+            dialogConfiguration.softInputMode = mode
+        }
+
+        fun configureWindow(block: (window: Window) -> Unit) {
+            dialogConfiguration.configureWindow.value = block
         }
     }
 }
@@ -55,10 +63,9 @@ val DialogDestination.isDismissed: Boolean
 @SuppressLint("ComposableNaming")
 @Composable
 fun DialogDestination.configureDialog(block: DialogConfiguration.Builder.() -> Unit) {
-    rememberSaveable(true) {
-        val builder = DialogConfiguration.Builder(dialogConfiguration)
-        block(builder)
-        true
+    remember {
+        DialogConfiguration.Builder(dialogConfiguration)
+            .apply(block)
     }
 }
 

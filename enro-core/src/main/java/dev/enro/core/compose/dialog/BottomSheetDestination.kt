@@ -2,11 +2,12 @@ package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.defaultMinSize
+import android.view.Window
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -51,8 +52,13 @@ class BottomSheetConfiguration : DialogConfiguration() {
             bottomSheetConfiguration.animations = animations
         }
 
+        @Deprecated("Use 'configureWindow' and set the soft input mode on the window directly")
         fun setWindowInputMode(mode: WindowInputMode) {
-            bottomSheetConfiguration.softInputMode.value = mode
+            bottomSheetConfiguration.softInputMode = mode
+        }
+
+        fun configureWindow(block: (window: Window) -> Unit) {
+            bottomSheetConfiguration.configureWindow.value = block
         }
     }
 }
@@ -69,10 +75,9 @@ val BottomSheetDestination.bottomSheetState get() = bottomSheetConfiguration.bot
 @SuppressLint("ComposableNaming")
 @Composable
 fun BottomSheetDestination.configureBottomSheet(block: BottomSheetConfiguration.Builder.() -> Unit) {
-    rememberSaveable(true) {
-        val configBuilder = BottomSheetConfiguration.Builder(bottomSheetConfiguration)
-        block(configBuilder)
-        true
+    remember {
+        BottomSheetConfiguration.Builder(bottomSheetConfiguration)
+            .apply(block)
     }
 }
 
