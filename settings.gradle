@@ -77,7 +77,7 @@ dependencyResolutionManagement {
             library("processing-autoService", "com.google.auto.service:auto-service:1.0.1")
             library("processing-javaPoet", "com.squareup:javapoet:1.13.0")
 
-            library("material", "com.google.android.material:material:1.6.0")
+            library("material", "com.google.android.material:material:1.6.1")
 
             library("lint-checks", "com.android.tools.lint:lint-checks:30.2.1")
             library("lint-api", "com.android.tools.lint:lint-api:30.2.1")
