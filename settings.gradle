@@ -27,7 +27,7 @@ dependencyResolutionManagement {
             library("android-gradle", "com.android.tools.build:gradle:7.2.1")
 
             library("androidx-core", "androidx.core:core-ktx:1.8.0")
-            library("androidx-appcompat", "androidx.appcompat:appcompat:1.4.1")
+            library("androidx-appcompat", "androidx.appcompat:appcompat:1.4.2")
             library("androidx-constraintlayout", "androidx.constraintlayout:constraintlayout:2.1.4")
             library("androidx-fragment", "androidx.fragment:fragment-ktx:1.4.1")
             library("androidx-recyclerview", "androidx.recyclerview:recyclerview:1.2.1")
