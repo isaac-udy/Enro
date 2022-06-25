@@ -2,7 +2,6 @@ package dev.enro.core.compose
 
 import android.os.Parcelable
 import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.SaverScope
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import kotlinx.parcelize.Parcelize
@@ -89,11 +88,15 @@ data class EnroContainerBackstackState(
     }
 }
 
-internal class EnroContainerBackstackStateSaver(
-    private val getCurrentState: () -> EnroContainerBackstackState?
-) : Saver<EnroContainerBackstackState, ArrayList<EnroContainerBackstackEntry>> {
-    override fun restore(value: ArrayList<EnroContainerBackstackEntry>): EnroContainerBackstackState {
-        return EnroContainerBackstackState(
+fun createEnroContainerBackstackStateSaver(
+    getCurrentState: () -> EnroContainerBackstackState?
+) = Saver<EnroContainerBackstackState, ArrayList<EnroContainerBackstackEntry>> (
+    save = { value ->
+        val entries = getCurrentState()?.backstackEntries ?: value.backstackEntries
+        return@Saver ArrayList(entries)
+    },
+    restore = { value ->
+        return@Saver EnroContainerBackstackState(
             backstackEntries = value,
             exiting = null,
             exitingIndex = -1,
@@ -101,9 +104,4 @@ internal class EnroContainerBackstackStateSaver(
             skipAnimations = true
         )
     }
-
-    override fun SaverScope.save(value: EnroContainerBackstackState): ArrayList<EnroContainerBackstackEntry> {
-        val entries = getCurrentState()?.backstackEntries ?: value.backstackEntries
-        return ArrayList(entries)
-    }
-}
+)

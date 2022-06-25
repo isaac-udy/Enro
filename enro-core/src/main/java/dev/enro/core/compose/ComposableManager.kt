@@ -5,7 +5,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelLazy
@@ -15,7 +14,6 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationKey
 import dev.enro.core.parentContext
-import java.lang.IllegalStateException
 
 class EnroComposableManager : ViewModel() {
     val containers: MutableSet<EnroContainerController> = mutableSetOf()
@@ -51,18 +49,16 @@ class EnroComposableManager : ViewModel() {
                 }
             }
         }
-        rememberSaveable(controller, saver = object : Saver<Unit, Boolean> {
-            override fun restore(value: Boolean) {
+        rememberSaveable(controller, saver = Saver<Unit, Boolean>(
+            save = { _ ->
+                (activeContainer?.id == controller.id)
+            },
+            restore = { value ->
                 if(value) {
                     activeContainerState.value = controller
                 }
-                return
             }
-
-            override fun SaverScope.save(value: Unit): Boolean {
-                return (activeContainer?.id == controller.id)
-            }
-        }) {}
+        )) {}
         return true
     }
 }

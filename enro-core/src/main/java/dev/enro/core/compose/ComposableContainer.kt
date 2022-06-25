@@ -1,7 +1,7 @@
 package dev.enro.core.compose
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.*
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
@@ -9,10 +9,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.enro.core.*
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.close
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -81,7 +85,7 @@ fun rememberEnroContainerController(
 
     val savedBackstack = rememberSaveable(
         key = id,
-        saver = EnroContainerBackstackStateSaver {
+        saver = createEnroContainerBackstackStateSaver {
             controller.backstack.value
         }
     ) {
