@@ -138,7 +138,7 @@ class ComposableListResultTests {
                 scrollFinished = true
             }
         }
-        composeContentRule.waitUntil(2 * 60 * 1000) { scrollFinished }
+        composeContentRule.mainClock.advanceTimeUntil(2 * 60 * 1000) { scrollFinished }
         composeContentRule.waitForIdle()
 
         // By the time we get to this assertion, there will still be some non-visible items
@@ -149,7 +149,7 @@ class ComposableListResultTests {
         // when comparing active channels to visible items in the list
 
         kotlin.runCatching {
-            composeContentRule.waitUntil(10 * 1000) { getActiveEnroResultChannels().size < (state.layoutInfo.visibleItemsInfo.size * 1.5f) }
+            composeContentRule.mainClock.advanceTimeUntil(10 * 1000) { getActiveEnroResultChannels().size < (state.layoutInfo.visibleItemsInfo.size * 1.5f) }
         }.onFailure {
             throw IllegalStateException("WOW! ${getActiveEnroResultChannels().size} ${state.layoutInfo.visibleItemsInfo.size}")
         }
