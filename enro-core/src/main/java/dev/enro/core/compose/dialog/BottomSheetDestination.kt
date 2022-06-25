@@ -11,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import dev.enro.core.AnimationPair
+import dev.enro.core.NavigationAnimation
 import dev.enro.core.DefaultAnimations
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.container.ComposableNavigationContainer
@@ -48,7 +48,7 @@ class BottomSheetConfiguration : DialogConfiguration() {
             bottomSheetConfiguration.scrimColor = color
         }
 
-        fun setAnimations(animations: AnimationPair) {
+        fun setAnimations(animations: NavigationAnimation) {
             bottomSheetConfiguration.animations = animations
         }
 

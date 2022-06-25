@@ -1,7 +1,6 @@
 package dev.enro.core
 
 import android.content.res.Resources
-import android.os.Parcelable
 import android.provider.Settings
 import dev.enro.core.compose.AbstractComposeFragmentHost
 import dev.enro.core.compose.AbstractComposeFragmentHostKey
@@ -9,21 +8,23 @@ import dev.enro.core.controller.navigationController
 import dev.enro.core.fragment.internal.AbstractSingleFragmentActivity
 import dev.enro.core.fragment.internal.AbstractSingleFragmentKey
 import dev.enro.core.internal.getAttributeResourceId
-import kotlinx.parcelize.Parcelize
 
-sealed class AnimationPair {
+@Deprecated("Please use NavigationAnimation")
+typealias AnimationPair = NavigationAnimation
+
+sealed class NavigationAnimation {
     abstract val enter: Int
     abstract val exit: Int
 
     class Resource(
         override val enter: Int,
         override val exit: Int
-    ) : AnimationPair()
+    ) : NavigationAnimation()
 
     class Attr(
         override val enter: Int,
         override val exit: Int
-    ) : AnimationPair()
+    ) : NavigationAnimation()
 
     fun asResource(theme: Resources.Theme) = when (this) {
         is Resource -> this
@@ -35,39 +36,39 @@ sealed class AnimationPair {
 }
 
 object DefaultAnimations {
-    val push = AnimationPair.Attr(
+    val push = NavigationAnimation.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,
         exit = android.R.attr.activityOpenExitAnimation
     )
 
-    val present = AnimationPair.Attr(
-        enter = android.R.attr.activityOpenEnterAnimation,
-        exit = android.R.attr.activityOpenExitAnimation
-    )
-
-    @Deprecated("Use push or present")
-    val forward = AnimationPair.Attr(
+    val present = NavigationAnimation.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,
         exit = android.R.attr.activityOpenExitAnimation
     )
 
     @Deprecated("Use push or present")
-    val replace = AnimationPair.Attr(
+    val forward = NavigationAnimation.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,
         exit = android.R.attr.activityOpenExitAnimation
     )
 
-    val replaceRoot = AnimationPair.Attr(
+    @Deprecated("Use push or present")
+    val replace = NavigationAnimation.Attr(
+        enter = android.R.attr.activityOpenEnterAnimation,
+        exit = android.R.attr.activityOpenExitAnimation
+    )
+
+    val replaceRoot = NavigationAnimation.Attr(
         enter = android.R.attr.taskOpenEnterAnimation,
         exit = android.R.attr.taskOpenExitAnimation
     )
 
-    val close = AnimationPair.Attr(
+    val close = NavigationAnimation.Attr(
         enter = android.R.attr.activityCloseEnterAnimation,
         exit = android.R.attr.activityCloseExitAnimation
     )
 
-    val none = AnimationPair.Resource(
+    val none = NavigationAnimation.Resource(
         enter = 0,
         exit = R.anim.enro_no_op_animation
     )
@@ -76,26 +77,26 @@ object DefaultAnimations {
 fun animationsFor(
     context: NavigationContext<*>,
     navigationInstruction: NavigationInstruction
-): AnimationPair.Resource {
+): NavigationAnimation.Resource {
     val animationScale = Settings.Global.getFloat(context.activity.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE)
     if(animationScale < 0.01f) {
-        return AnimationPair.Resource(0, 0)
+        return NavigationAnimation.Resource(0, 0)
     }
     if (navigationInstruction is NavigationInstruction.Open<*> && navigationInstruction.children.isNotEmpty()) {
-        return AnimationPair.Resource(0, 0)
+        return NavigationAnimation.Resource(0, 0)
     }
 
     if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractSingleFragmentActivity) {
         val singleFragmentKey = context.getNavigationHandleViewModel().key as AbstractSingleFragmentKey
         if (navigationInstruction.instructionId == singleFragmentKey.instruction.instructionId) {
-            return AnimationPair.Resource(0, 0)
+            return NavigationAnimation.Resource(0, 0)
         }
     }
 
     if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractComposeFragmentHost) {
         val composeHostKey = context.getNavigationHandleViewModel().key as AbstractComposeFragmentHostKey
         if (navigationInstruction.instructionId == composeHostKey.instruction.instructionId) {
-            return AnimationPair.Resource(0, 0)
+            return NavigationAnimation.Resource(0, 0)
         }
     }
 
@@ -109,7 +110,7 @@ fun animationsFor(
 private fun animationsForOpen(
     context: NavigationContext<*>,
     navigationInstruction: AnyOpenInstruction
-): AnimationPair.Resource {
+): NavigationAnimation.Resource {
     val theme = context.activity.theme
     val executor = context.activity.application.navigationController.executorForOpen(
         context,
@@ -120,7 +121,7 @@ private fun animationsForOpen(
 
 private fun animationsForClose(
     context: NavigationContext<*>
-): AnimationPair.Resource {
+): NavigationAnimation.Resource {
     val theme = context.activity.theme
     val executor = context.activity.application.navigationController.executorForClose(context)
     return executor.closeAnimation(context).asResource(theme)

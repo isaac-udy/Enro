@@ -16,14 +16,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
-import dev.enro.core.AnimationPair
+import dev.enro.core.NavigationAnimation
 import dev.enro.core.compose.localActivity
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 internal fun EnroAnimatedVisibility(
     visible: Boolean,
-    animations: AnimationPair,
+    animations: NavigationAnimation,
     content: @Composable () -> Unit
 ) {
     val context = localActivity

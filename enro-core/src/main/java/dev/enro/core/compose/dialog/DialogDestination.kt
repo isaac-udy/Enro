@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import dev.enro.core.AnimationPair
+import dev.enro.core.NavigationAnimation
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.EnroContainer
 
@@ -23,7 +23,7 @@ open class DialogConfiguration {
     internal var isDismissed = mutableStateOf(false)
 
     internal var scrimColor: Color = Color.Transparent
-    internal var animations: AnimationPair = AnimationPair.Resource(
+    internal var animations: NavigationAnimation = NavigationAnimation.Resource(
         enter = 0,
         exit = 0
     )
@@ -38,7 +38,7 @@ open class DialogConfiguration {
             dialogConfiguration.scrimColor = color
         }
 
-        fun setAnimations(animations: AnimationPair) {
+        fun setAnimations(animations: NavigationAnimation) {
             dialogConfiguration.animations = animations
         }
 

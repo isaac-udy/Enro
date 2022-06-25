@@ -24,7 +24,7 @@ abstract class NavigationExecutor<FromContext: Any, OpensContext: Any, KeyType: 
     val opensType: KClass<OpensContext>,
     val keyType: KClass<KeyType>
 ) {
-    open fun animation(instruction: AnyOpenInstruction): AnimationPair {
+    open fun animation(instruction: AnyOpenInstruction): NavigationAnimation {
         return when(instruction.navigationDirection) {
             NavigationDirection.Push -> DefaultAnimations.push
             NavigationDirection.Present -> DefaultAnimations.present
@@ -34,7 +34,7 @@ abstract class NavigationExecutor<FromContext: Any, OpensContext: Any, KeyType: 
         }
     }
 
-    open fun closeAnimation(context: NavigationContext<out OpensContext>): AnimationPair {
+    open fun closeAnimation(context: NavigationContext<out OpensContext>): NavigationAnimation {
         return DefaultAnimations.close
     }
 
@@ -65,8 +65,8 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
     private val keyType: KClass<KeyType>
 ) {
 
-    private var animationFunc: ((instruction: AnyOpenInstruction) -> AnimationPair)? = null
-    private var closeAnimationFunc: ((context: NavigationContext<out OpensContext>) -> AnimationPair)? = null
+    private var animationFunc: ((instruction: AnyOpenInstruction) -> NavigationAnimation)? = null
+    private var closeAnimationFunc: ((context: NavigationContext<out OpensContext>) -> NavigationAnimation)? = null
     private var preOpenedFunc: (( context: NavigationContext<out FromContext>) -> Unit)? = null
     private var openedFunc: ((args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) -> Unit)? = null
     private var postOpenedFunc: ((context: NavigationContext<out OpensContext>) -> Unit)? = null
@@ -108,12 +108,12 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
         }.invoke(context)
     }
 
-    fun animation(block: (instruction: AnyOpenInstruction) -> AnimationPair) {
+    fun animation(block: (instruction: AnyOpenInstruction) -> NavigationAnimation) {
         if(animationFunc != null) throw IllegalStateException("Value is already set!")
         animationFunc = block
     }
 
-    fun closeAnimation(block: ( context: NavigationContext<out OpensContext>) -> AnimationPair) {
+    fun closeAnimation(block: ( context: NavigationContext<out OpensContext>) -> NavigationAnimation) {
         if(closeAnimationFunc != null) throw IllegalStateException("Value is already set!")
         closeAnimationFunc = block
     }
@@ -148,11 +148,11 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
         opensType,
         keyType
     ) {
-        override fun animation(instruction: AnyOpenInstruction): AnimationPair {
+        override fun animation(instruction: AnyOpenInstruction): NavigationAnimation {
             return animationFunc?.invoke(instruction) ?: super.animation(instruction)
         }
 
-        override fun closeAnimation(context: NavigationContext<out OpensContext>): AnimationPair {
+        override fun closeAnimation(context: NavigationContext<out OpensContext>): NavigationAnimation {
             return closeAnimationFunc?.invoke(context) ?: super.closeAnimation(context)
         }
 
