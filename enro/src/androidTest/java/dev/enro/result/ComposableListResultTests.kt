@@ -148,6 +148,8 @@ class ComposableListResultTests {
         // scrolled past ~100 items, and that the size of the active channels should be close
         // to the number of visible items, so we allow 50% wiggle room in this assertion
         // when comparing active channels to visible items in the list
+
+        composeContentRule.waitUntil(10 * 1000) { activeChannels.size < (state.layoutInfo.visibleItemsInfo.size * 1.5f) }
         Assert.assertTrue(activeChannels.size < (state.layoutInfo.visibleItemsInfo.size * 1.5f))
     }
 
