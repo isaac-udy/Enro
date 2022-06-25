@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.annotation.Keep
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.controller.container.ComposeEnvironmentContainer
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.NavigatorContainer
 import dev.enro.core.controller.container.PluginContainer
@@ -23,6 +24,7 @@ class NavigationController internal constructor() {
     private val pluginContainer: PluginContainer = PluginContainer()
     private val navigatorContainer: NavigatorContainer = NavigatorContainer()
     private val executorContainer: ExecutorContainer = ExecutorContainer()
+    internal val composeEnvironmentContainer: ComposeEnvironmentContainer = ComposeEnvironmentContainer()
     private val interceptorContainer: InstructionInterceptorContainer = InstructionInterceptorContainer()
     private val contextController: NavigationLifecycleController = NavigationLifecycleController(executorContainer, pluginContainer)
 
@@ -35,6 +37,11 @@ class NavigationController internal constructor() {
         navigatorContainer.addNavigators(component.navigators)
         executorContainer.addOverrides(component.overrides)
         interceptorContainer.addInterceptors(component.interceptors)
+
+        component.composeEnvironment.let { environment ->
+            if(environment == null) return@let
+            composeEnvironmentContainer.setComposeEnvironment(environment)
+        }
     }
 
     internal fun open(

@@ -1,7 +1,9 @@
     package dev.enro.core.controller
 
 import android.app.Application
+import androidx.compose.runtime.Composable
 import dev.enro.core.*
+import dev.enro.core.controller.container.ComposeEnvironment
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.plugins.EnroPlugin
 
@@ -19,6 +21,8 @@ class NavigationComponentBuilder {
     internal val plugins: MutableList<EnroPlugin> = mutableListOf()
     @PublishedApi
     internal val interceptors: MutableList<NavigationInstructionInterceptor> = mutableListOf()
+    @PublishedApi
+    internal var composeEnvironment: ComposeEnvironment? = null
 
     fun navigator(navigator: Navigator<*, *>) {
         navigators.add(navigator)
@@ -42,11 +46,19 @@ class NavigationComponentBuilder {
         interceptors.add(interceptor)
     }
 
+    fun composeEnvironment(environment: @Composable (@Composable () -> Unit) -> Unit) {
+        composeEnvironment = { content -> environment(content) }
+    }
+
     fun component(builder: NavigationComponentBuilder) {
         navigators.addAll(builder.navigators)
         overrides.addAll(builder.overrides)
         plugins.addAll(builder.plugins)
         interceptors.addAll(builder.interceptors)
+
+        if(builder.composeEnvironment != null) {
+            composeEnvironment = builder.composeEnvironment
+        }
     }
 
     internal fun build(): NavigationController {

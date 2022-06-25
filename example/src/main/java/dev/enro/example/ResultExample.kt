@@ -130,26 +130,24 @@ fun BottomSheetDestination.RequestStringBottomSheet() {
         mutableStateOf("")
     }
 
-    EnroExampleTheme {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    top = 32.dp,
-                    bottom = 32.dp
-                )
-        ) {
-            Text(text = "Request String Bottom Sheet")
-            OutlinedTextField(value = result.value, onValueChange = {
-                result.value = it
-            })
-            OutlinedButton(onClick = {
-                navigation.closeWithResult(result.value)
-            }) {
-                Text(text = "Send Result")
-            }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                top = 32.dp,
+                bottom = 32.dp
+            )
+    ) {
+        Text(text = "Request String Bottom Sheet")
+        OutlinedTextField(value = result.value, onValueChange = {
+            result.value = it
+        })
+        OutlinedButton(onClick = {
+            navigation.closeWithResult(result.value)
+        }) {
+            Text(text = "Send Result")
         }
     }
 }

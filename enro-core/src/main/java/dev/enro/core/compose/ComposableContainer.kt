@@ -1,5 +1,6 @@
 package dev.enro.core.compose
 
+import android.app.Application
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
@@ -7,6 +8,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
@@ -14,6 +16,7 @@ import dev.enro.core.compose.container.registerState
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerBackstack
 import dev.enro.core.container.asPushInstruction
+import dev.enro.core.controller.navigationController
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.util.*
 
@@ -93,14 +96,19 @@ fun EnroContainer(
     modifier: Modifier = Modifier,
     controller: ComposableNavigationContainer = rememberNavigationContainer(),
 ) {
-    key(controller.id) {
-        controller.saveableStateHolder.SaveableStateProvider(controller.id) {
-            val backstackState by controller.backstackFlow.collectAsState()
+    val context = LocalContext.current
+    val navigationController = remember { (context.applicationContext as Application).navigationController }
 
-            Box(modifier = modifier) {
-                backstackState.renderable.forEach {
-                    key(it.instructionId) {
-                        controller.getDestinationContext(it).Render()
+    navigationController.composeEnvironmentContainer.Render {
+        key(controller.id) {
+            controller.saveableStateHolder.SaveableStateProvider(controller.id) {
+                val backstackState by controller.backstackFlow.collectAsState()
+
+                Box(modifier = modifier) {
+                    backstackState.renderable.forEach {
+                        key(it.instructionId) {
+                            controller.getDestinationContext(it).Render()
+                        }
                     }
                 }
             }

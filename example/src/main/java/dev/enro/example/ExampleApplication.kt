@@ -24,5 +24,9 @@ class ExampleApplication : Application(), NavigationApplication {
                 listOf(R.id.requestStringButton to R.id.sendResultButton)
             )
         )
+
+        composeEnvironment { content ->
+            EnroExampleTheme(content)
+        }
     }
 }

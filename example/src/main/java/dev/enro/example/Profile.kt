@@ -41,20 +41,18 @@ class Profile : NavigationKey
 
 @Composable
 fun ProgileFragment() {
-    EnroExampleTheme {
+    Text(text = "Open Nested!")
+    Column {
+        val navigation = navigationHandle()
         Text(text = "Open Nested!")
-        Column {
-            val navigation = navigationHandle()
-            Text(text = "Open Nested!")
-            Button(onClick = { navigation.forward(InitialKey()) }) {
-                Text(text = "Open Initial")
-            }
-            EnroContainer(modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(), controller = rememberNavigationContainer {
-                it is InitialKey
-            })
+        Button(onClick = { navigation.forward(InitialKey()) }) {
+            Text(text = "Open Initial")
         }
+        EnroContainer(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(), controller = rememberNavigationContainer {
+            it is InitialKey
+        })
     }
 }
 
