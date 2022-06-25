@@ -11,17 +11,15 @@ import dev.enro.core.fragment.internal.AbstractSingleFragmentKey
 import dev.enro.core.internal.getAttributeResourceId
 import kotlinx.parcelize.Parcelize
 
-sealed class AnimationPair : Parcelable {
+sealed class AnimationPair {
     abstract val enter: Int
     abstract val exit: Int
 
-    @Parcelize
     class Resource(
         override val enter: Int,
         override val exit: Int
     ) : AnimationPair()
 
-    @Parcelize
     class Attr(
         override val enter: Int,
         override val exit: Int
