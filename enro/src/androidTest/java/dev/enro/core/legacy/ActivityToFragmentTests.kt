@@ -426,7 +426,6 @@ class ActivityToFragmentTests {
      * thenFragmentCIsActiveInContainer
      */
     @Test
-    @Ignore
     fun givenActivityOpensFragment_andFragmentOpensForward_thenActivityOpensAnotherFragment_thenContainerBackstackIsRetained() {
         val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
         val fragmentAKey = ActivityChildFragmentKey("Fragment A")
