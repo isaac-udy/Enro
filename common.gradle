@@ -7,11 +7,11 @@ ext.androidLibrary = {
     apply plugin: 'kotlin-parcelize'
 
     android {
-        compileSdkVersion 31
+        compileSdkVersion 32
 
         defaultConfig {
             minSdkVersion 21
-            targetSdkVersion 31
+            targetSdkVersion 32
             versionCode versionProperties.getProperty("versionCode").toInteger()
             versionName versionProperties.getProperty("versionName")
 
@@ -25,6 +25,7 @@ ext.androidLibrary = {
                 proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             }
         }
+
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_8
             targetCompatibility JavaVersion.VERSION_1_8
@@ -33,6 +34,7 @@ ext.androidLibrary = {
         kotlinOptions {
             jvmTarget = JavaVersion.VERSION_1_8.toString()
         }
+
         buildFeatures {
             buildConfig = false
             viewBinding = true

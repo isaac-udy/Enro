@@ -69,4 +69,7 @@ abstract class EnroException(
     }
 
     class UnreachableState : EnroException("This state is expected to be unreachable. If you are seeing this exception, please report an issue (with the stacktrace included) at https://github.com/isaac-udy/Enro/issues")
+
+    class ComposePreviewException(message: String) : EnroException(message)
+
 }
