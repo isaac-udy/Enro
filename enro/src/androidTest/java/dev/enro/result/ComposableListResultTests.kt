@@ -148,7 +148,11 @@ class ComposableListResultTests {
         // to the number of visible items, so we allow 50% wiggle room in this assertion
         // when comparing active channels to visible items in the list
 
-        composeContentRule.mainClock.advanceTimeUntil(60 * 1000) { getActiveEnroResultChannels().size < (state.layoutInfo.visibleItemsInfo.size * 1.5f) }
+        kotlin.runCatching {
+            composeContentRule.mainClock.advanceTimeUntil(60 * 1000) { getActiveEnroResultChannels().size < (state.layoutInfo.visibleItemsInfo.size * 1.5f) }
+        }.onFailure {
+            throw IllegalStateException("WOW! ${getActiveEnroResultChannels().size} ${state.layoutInfo.visibleItemsInfo.size}")
+        }
         Assert.assertTrue(getActiveEnroResultChannels().size < (state.layoutInfo.visibleItemsInfo.size * 1.5f))
     }
 
