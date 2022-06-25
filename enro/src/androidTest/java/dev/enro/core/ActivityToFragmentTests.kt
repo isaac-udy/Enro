@@ -10,6 +10,7 @@ import junit.framework.TestCase.assertTrue
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNull
 import kotlinx.parcelize.Parcelize
+import org.junit.Ignore
 import org.junit.Test
 import java.util.*
 
@@ -376,6 +377,50 @@ class ActivityToFragmentTests {
         scenario.moveToState(Lifecycle.State.RESUMED)
         expectFragment<ActivityChildFragment> { it.getNavigationHandle().key == firstFragmentKey }
         expectNoFragment<ActivityChildFragment> { it.getNavigationHandle().key == secondFragmentKey }
+    }
+
+    // https://github.com/isaac-udy/Enro/issues/34
+    /**
+     * givenActivityOpensFragmentA
+     * andFragmentAPerformsForwardNavigationToFragmentB
+     * andFragmentBPerformsForwardNavigationToFragmentC
+     *
+     * whenActivityLaterPerformsForwardNavigationToFragmentD
+     * andFragmentDIsClosed
+     *
+     * thenFragmentCIsActiveInContainer
+     */
+    @Test
+    @Ignore
+    fun givenActivityOpensFragment_andFragmentOpensForward_thenActivityOpensAnotherFragment_thenContainerBackstackIsRetained() {
+        val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
+        val fragmentAKey = ActivityChildFragmentKey("Fragment A")
+        val fragmentBKey = ActivityChildFragmentKey("Fragment B")
+        val fragmentCKey = ActivityChildFragmentKey("Fragment C")
+        val fragmentDKey = ActivityChildFragmentKey("Fragment D")
+
+        val activity = expectActivity<ActivityWithFragments>()
+        activity.getNavigationHandle()
+            .forward(fragmentAKey)
+
+        expectContext<ActivityChildFragment, ActivityChildFragmentKey> { it.navigation.key == fragmentAKey }
+            .navigation
+            .forward(fragmentBKey)
+
+        expectContext<ActivityChildFragment, ActivityChildFragmentKey> { it.navigation.key == fragmentBKey }
+            .navigation
+            .forward(fragmentCKey)
+
+        expectContext<ActivityChildFragment, ActivityChildFragmentKey> { it.navigation.key == fragmentCKey }
+
+        activity.getNavigationHandle()
+            .forward(fragmentDKey)
+
+        expectContext<ActivityChildFragment, ActivityChildFragmentKey> { it.navigation.key == fragmentDKey }
+            .navigation
+            .close()
+
+        expectContext<ActivityChildFragment, ActivityChildFragmentKey> { it.navigation.key == fragmentCKey }
     }
 }
 
