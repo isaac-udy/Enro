@@ -141,7 +141,6 @@ class ComposableListResultTests {
         composeContentRule.waitUntil(2 * 60 * 1000) { scrollFinished }
         composeContentRule.waitForIdle()
 
-        val activeChannels = getActiveEnroResultChannels()
         // By the time we get to this assertion, there will still be some non-visible items
         // which have not been detached from the composition tree, and will still
         // be registered as active EnroResult channels. The important thing here is that we've
@@ -149,8 +148,12 @@ class ComposableListResultTests {
         // to the number of visible items, so we allow 50% wiggle room in this assertion
         // when comparing active channels to visible items in the list
 
-        composeContentRule.waitUntil(10 * 1000) { activeChannels.size < (state.layoutInfo.visibleItemsInfo.size * 1.5f) }
-        Assert.assertTrue(activeChannels.size < (state.layoutInfo.visibleItemsInfo.size * 1.5f))
+        kotlin.runCatching {
+            composeContentRule.waitUntil(10 * 1000) { getActiveEnroResultChannels().size < (state.layoutInfo.visibleItemsInfo.size * 1.5f) }
+        }.onFailure {
+            throw IllegalStateException("WOW! ${getActiveEnroResultChannels()}")
+        }
+        Assert.assertTrue(getActiveEnroResultChannels().size < (state.layoutInfo.visibleItemsInfo.size * 1.5f))
     }
 
     private fun assertResultIsReceivedFor(id: String) {
