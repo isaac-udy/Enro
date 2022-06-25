@@ -9,10 +9,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.*
@@ -24,11 +21,11 @@ import androidx.compose.ui.unit.dp
 import dev.enro.DefaultActivity
 import dev.enro.core.compose.registerForNavigationResult
 import dev.enro.getActiveEnroResultChannels
-import kotlinx.coroutines.delay
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 
 class ComposableListResultTests {
@@ -118,6 +115,7 @@ class ComposableListResultTests {
         val ids = List(5000) { UUID.randomUUID().toString() }
         val state = LazyListState()
         var scrollFinished = false
+        val activeItems = AtomicInteger(0)
         composeContentRule.setContent {
             val screenHeight = with(LocalDensity.current) {
                 LocalConfiguration.current.screenHeightDp.dp.toPx()
@@ -128,6 +126,12 @@ class ComposableListResultTests {
             ) {
                 items(ids) {
                     ListItemWithResult(id = it)
+                    DisposableEffect(true) {
+                        activeItems.incrementAndGet()
+                        onDispose {
+                            activeItems.decrementAndGet()
+                        }
+                    }
                 }
             }
 
@@ -141,19 +145,8 @@ class ComposableListResultTests {
         composeContentRule.mainClock.advanceTimeUntil(2 * 60 * 1000) { scrollFinished }
         composeContentRule.waitForIdle()
 
-        // By the time we get to this assertion, there will still be some non-visible items
-        // which have not been detached from the composition tree, and will still
-        // be registered as active EnroResult channels. The important thing here is that we've
-        // scrolled past ~100 items, and that the size of the active channels should be close
-        // to the number of visible items, so we allow 50% wiggle room in this assertion
-        // when comparing active channels to visible items in the list
-
-        kotlin.runCatching {
-            composeContentRule.mainClock.advanceTimeUntil(60 * 1000) { getActiveEnroResultChannels().size < (state.layoutInfo.visibleItemsInfo.size * 1.5f) }
-        }.onFailure {
-            throw IllegalStateException("WOW! ${getActiveEnroResultChannels().size} ${state.layoutInfo.visibleItemsInfo.size}")
-        }
-        Assert.assertTrue(getActiveEnroResultChannels().size < (state.layoutInfo.visibleItemsInfo.size * 1.5f))
+        // The number of items, as recorded by a DisposableEffect, should match the number of active ResultChannels
+        Assert.assertEquals(activeItems.get(), getActiveEnroResultChannels().size)
     }
 
     private fun assertResultIsReceivedFor(id: String) {
