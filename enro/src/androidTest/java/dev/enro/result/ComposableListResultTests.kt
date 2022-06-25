@@ -151,7 +151,7 @@ class ComposableListResultTests {
         kotlin.runCatching {
             composeContentRule.waitUntil(10 * 1000) { getActiveEnroResultChannels().size < (state.layoutInfo.visibleItemsInfo.size * 1.5f) }
         }.onFailure {
-            throw IllegalStateException("WOW! ${getActiveEnroResultChannels()}")
+            throw IllegalStateException("WOW! ${getActiveEnroResultChannels().size} ${state.layoutInfo.visibleItemsInfo.size}")
         }
         Assert.assertTrue(getActiveEnroResultChannels().size < (state.layoutInfo.visibleItemsInfo.size * 1.5f))
     }
