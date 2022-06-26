@@ -134,7 +134,7 @@ internal class ComposableDestinationContextReference(
 
         val navigationHandle = remember { getNavigationHandleViewModel() }
 
-        val isVisible = instruction == backstackState.visible || (destination is DialogDestination || destination is BottomSheetDestination)
+        val isVisible = instruction == backstackState.visible
         val animations = remember(isVisible) {
             if (backstackState.isDirectUpdate) return@remember DefaultAnimations.none
             animationsFor(
@@ -154,7 +154,9 @@ internal class ComposableDestinationContextReference(
                 LocalNavigationHandle provides navigationHandle
             ) {
                 saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
-                    destination.Render()
+                    navigationController.composeEnvironmentContainer.Render {
+                        destination.Render()
+                    }
                 }
             }
 
