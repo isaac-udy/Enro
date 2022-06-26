@@ -47,7 +47,8 @@ class HiltInstructionInterceptor : NavigationInstructionInterceptor {
         if(navigationKey is ComposeFragmentHostKey && isHiltActivity) {
             return instruction.internal.copy(
                 navigationKey = HiltComposeFragmentHostKey(
-                    instruction = navigationKey.instruction
+                    instruction = navigationKey.instruction,
+                    isRoot = navigationKey.isRoot
                 )
             )
         }

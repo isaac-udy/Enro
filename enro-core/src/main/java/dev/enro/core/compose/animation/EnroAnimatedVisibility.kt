@@ -6,16 +6,16 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.zIndex
 import dev.enro.core.NavigationAnimation
 import dev.enro.core.compose.localActivity
 
@@ -23,36 +23,23 @@ import dev.enro.core.compose.localActivity
 @Composable
 internal fun EnroAnimatedVisibility(
     visible: Boolean,
-    animations: NavigationAnimation,
+    animations: NavigationAnimation.Resource,
     content: @Composable () -> Unit
 ) {
-    val context = localActivity
+    val activity = localActivity
     val resourceAnimations = remember(animations) {
-        animations.asResource(context.theme)
+        animations.asResource(activity.theme)
     }
-
     val size = remember { mutableStateOf(IntSize(0, 0)) }
+
     val animationStateValues = getAnimationResourceState(if(visible) resourceAnimations.enter else resourceAnimations.exit, size.value)
-    val currentVisibility = remember {
-        mutableStateOf(false)
-    }
-    AnimatedVisibility(
-        modifier = Modifier
-            .onGloballyPositioned {
-                size.value = it.size
-            },
-        visible = currentVisibility.value || animationStateValues.isActive,
-        enter = fadeIn(
-            animationSpec = tween(1),
-            initialAlpha = 1.0f
-        ),
-        exit = fadeOut(
-            animationSpec = tween(1),
-            targetAlpha = 1.0f
-        ),
-    ) {
+
+    if(visible || animationStateValues.isActive) {
         Box(
             modifier = Modifier
+                .onGloballyPositioned {
+                    size.value = it.size
+                }
                 .graphicsLayer(
                     alpha = animationStateValues.alpha,
                     scaleX = animationStateValues.scaleX,
@@ -69,8 +56,5 @@ internal fun EnroAnimatedVisibility(
         ) {
             content()
         }
-    }
-    SideEffect {
-        currentVisibility.value = visible
     }
 }

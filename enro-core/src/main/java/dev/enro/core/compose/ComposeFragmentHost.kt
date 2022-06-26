@@ -14,16 +14,19 @@ import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractComposeFragmentHostKey : NavigationKey.SupportsPush, NavigationKey.SupportsPresent {
     abstract val instruction: AnyOpenInstruction
+    abstract val isRoot: Boolean
 }
 
 @Parcelize
 internal data class ComposeFragmentHostKey(
-    override val instruction: AnyOpenInstruction
+    override val instruction: AnyOpenInstruction,
+    override val isRoot: Boolean
 ) : AbstractComposeFragmentHostKey()
 
 @Parcelize
 internal data class HiltComposeFragmentHostKey(
-    override val instruction: AnyOpenInstruction
+    override val instruction: AnyOpenInstruction,
+    override val isRoot: Boolean
 ) : AbstractComposeFragmentHostKey()
 
 abstract class AbstractComposeFragmentHost : Fragment() {
@@ -38,7 +41,7 @@ abstract class AbstractComposeFragmentHost : Fragment() {
             setContent {
                 val state = rememberEnroContainerController(
                     initialBackstack = listOf(navigationHandle.key.instruction.asPushInstruction()),
-                    accept = { false },
+                    accept = { navigationHandle.key.isRoot },
                     emptyBehavior = EmptyBehavior.CloseParent
                 )
 

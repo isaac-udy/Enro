@@ -2,6 +2,9 @@ package dev.enro.core
 
 import android.content.res.Resources
 import android.provider.Settings
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.runtime.Composable
 import dev.enro.core.compose.AbstractComposeFragmentHost
 import dev.enro.core.compose.AbstractComposeFragmentHostKey
 import dev.enro.core.controller.navigationController
@@ -13,26 +16,50 @@ import dev.enro.core.internal.getAttributeResourceId
 typealias AnimationPair = NavigationAnimation
 
 sealed class NavigationAnimation {
-    abstract val enter: Int
-    abstract val exit: Int
+    sealed class ForView: NavigationAnimation()
 
     class Resource(
-        override val enter: Int,
-        override val exit: Int
-    ) : NavigationAnimation()
+        val enter: Int,
+        val exit: Int
+    ) : NavigationAnimation.ForView()
 
     class Attr(
-        override val enter: Int,
-        override val exit: Int
-    ) : NavigationAnimation()
+        val enter: Int,
+        val exit: Int
+    ) : NavigationAnimation.ForView()
 
-    fun asResource(theme: Resources.Theme) = when (this) {
+    class Composable(
+        val fallback: ForView,
+        val content: @androidx.compose.runtime.Composable (visible: Boolean) -> Unit
+    ): NavigationAnimation() {
+        constructor(
+            enter: EnterTransition,
+            exit: ExitTransition,
+            fallback: ForView
+        ) : this(
+            fallback = fallback,
+            content = {}
+        )
+    }
+
+    fun asResource(theme: Resources.Theme): Resource = when (this) {
         is Resource -> this
         is Attr -> Resource(
             theme.getAttributeResourceId(enter),
             theme.getAttributeResourceId(exit)
         )
+        is Composable -> fallback.asResource(theme)
     }
+
+//    fun asComposable() : Composable = when (this) {
+//        is Resource -> this
+//        is Attr -> Resource(
+//            theme.getAttributeResourceId(enter),
+//            theme.getAttributeResourceId(exit)
+//        )
+//        is Composable -> this
+//        is ComposableTransition -> fallback.asResource(theme)
+//    }
 }
 
 object DefaultAnimations {

@@ -111,7 +111,7 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
 
 private fun <T: NavigationDirection> NavigationInstruction.Open<T>.asFragmentHostInstruction() = NavigationInstruction.Open.OpenInternal(
     navigationDirection,
-    ComposeFragmentHostKey(this)
+    ComposeFragmentHostKey(this, isRoot = true)
 )
 
 private fun openComposableAsActivity(

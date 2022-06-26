@@ -43,8 +43,8 @@ internal object FragmentFactory {
                 } else false
 
                 val wrappedKey = when {
-                    isHiltContext -> HiltComposeFragmentHostKey(instruction)
-                    else -> ComposeFragmentHostKey(instruction)
+                    isHiltContext -> HiltComposeFragmentHostKey(instruction, isRoot = false)
+                    else -> ComposeFragmentHostKey(instruction, isRoot = false)
                 }
 
                 return createFragment(
@@ -61,8 +61,3 @@ internal object FragmentFactory {
         }
     }
 }
-
-private fun <T: NavigationDirection> NavigationInstruction.Open<T>.asFragmentHostInstruction() = NavigationInstruction.Open.OpenInternal(
-    navigationDirection,
-    ComposeFragmentHostKey(this)
-)
