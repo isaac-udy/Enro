@@ -46,21 +46,9 @@ class ComposableNavigationContainer internal constructor(
     ): Boolean {
         backstack.renderable
             .map { instruction ->
-                destinationContexts.getOrPut(instruction.instructionId) {
-                    val controller = parentContext.controller
-                    val composeKey = instruction.navigationKey
-                    val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
-                        .newInstance() as ComposableDestination
-
-                    return@getOrPut getComposableDestinationContext(
-                        instruction = instruction,
-                        destination = destination,
-                        parentContainer = this
-                    )
-                }
+                requireDestinationContext(instruction)
             }
             .forEach { context ->
-                context.parentContainer = this@ComposableNavigationContainer
                 val isVisible = context.instruction == backstack.visible
 
                 if (isVisible) {
@@ -98,6 +86,21 @@ class ComposableNavigationContainer internal constructor(
 
     internal fun getDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationContextReference? {
         return destinationContexts[instruction.instructionId]
+    }
+
+    internal fun requireDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationContextReference {
+        return destinationContexts.getOrPut(instruction.instructionId) {
+            val controller = parentContext.controller
+            val composeKey = instruction.navigationKey
+            val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
+                .newInstance() as ComposableDestination
+
+            return@getOrPut getComposableDestinationContext(
+                instruction = instruction,
+                destination = destination,
+                parentContainer = this
+            )
+        }.apply { parentContainer = this@ComposableNavigationContainer }
     }
 }
 
