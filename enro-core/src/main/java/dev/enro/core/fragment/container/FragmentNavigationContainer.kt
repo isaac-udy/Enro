@@ -75,7 +75,7 @@ class FragmentNavigationContainer internal constructor(
             )
         } else null
 
-        val activeIndex = backstack.renderable.indexOf(activeInstruction)
+        val activeIndex = backstack.renderable.indexOfFirst { it.instructionId == activeInstruction?.instructionId }
         activeFragment?.view?.z = 0f
         (toRemove + toDetach).forEach {
             val isBehindActiveFragment = backstack.renderable.indexOf(it.second) < activeIndex

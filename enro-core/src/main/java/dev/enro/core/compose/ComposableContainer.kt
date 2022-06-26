@@ -1,22 +1,24 @@
 package dev.enro.core.compose
 
-import android.app.Application
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.registerState
+import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.DialogDestination
+import dev.enro.core.compose.dialog.EnroBottomSheetContainer
+import dev.enro.core.compose.dialog.EnroDialogContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerBackstack
 import dev.enro.core.container.asPushInstruction
-import dev.enro.core.controller.navigationController
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.util.*
 
@@ -90,27 +92,22 @@ fun rememberEnroContainerController(
     return controller
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun EnroContainer(
     modifier: Modifier = Modifier,
-    controller: ComposableNavigationContainer = rememberNavigationContainer(),
+    container: ComposableNavigationContainer = rememberNavigationContainer(),
 ) {
-    val context = LocalContext.current
-    val navigationController = remember { (context.applicationContext as Application).navigationController }
+    key(container.id) {
+        container.saveableStateHolder.SaveableStateProvider(container.id) {
+            val backstackState by container.backstackFlow.collectAsState()
 
-    navigationController.composeEnvironmentContainer.Render {
-        key(controller.id) {
-            controller.saveableStateHolder.SaveableStateProvider(controller.id) {
-                val backstackState by controller.backstackFlow.collectAsState()
-
-                Box(modifier = modifier) {
-                    backstackState.renderable.forEach {
-                        key(it.instructionId) {
-                            controller.getDestinationContext(it).Render()
-                        }
+            Box(modifier = modifier) {
+                backstackState.renderable
+                    .mapNotNull { container.getDestinationContext(it) }
+                    .forEach {
+                        it.Render()
                     }
-                }
             }
         }
     }

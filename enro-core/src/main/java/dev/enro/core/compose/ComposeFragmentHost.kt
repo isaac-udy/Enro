@@ -45,7 +45,7 @@ abstract class AbstractComposeFragmentHost : Fragment() {
                     emptyBehavior = EmptyBehavior.CloseParent
                 )
 
-                EnroContainer(controller = state)
+                EnroContainer(container = state)
             }
         }
     }

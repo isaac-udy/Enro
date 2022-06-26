@@ -25,7 +25,6 @@ class ComposableNavigationContainer internal constructor(
     accept = accept,
     emptyBehavior = emptyBehavior,
 ) {
-
     private val destinationStorage: ComposableContextStorage = parentContext.getComposableContextStorage()
 
     private val destinationContexts = destinationStorage.destinations.getOrPut(id) { mutableMapOf() }
@@ -45,14 +44,42 @@ class ComposableNavigationContainer internal constructor(
         removed: List<OpenPushInstruction>,
         backstack: NavigationContainerBackstack
     ): Boolean {
+        backstack.renderable
+            .map { instruction ->
+                destinationContexts.getOrPut(instruction.instructionId) {
+                    val controller = parentContext.controller
+                    val composeKey = instruction.navigationKey
+                    val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
+                        .newInstance() as ComposableDestination
+
+                    return@getOrPut getComposableDestinationContext(
+                        instruction = instruction,
+                        destination = destination,
+                        parentContainer = this
+                    )
+                }
+            }
+            .forEach { context ->
+                context.parentContainer = this@ComposableNavigationContainer
+                val isVisible = context.instruction == backstack.visible
+
+                if (isVisible) {
+                    context.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+                } else {
+                    context.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+                }
+            }
+
         removed
+            .filter { backstack.exiting != it }
             .mapNotNull {
                 destinationContexts[it.instructionId]
             }
             .forEach {
-                destinationContexts.remove(it.instruction.instructionId)
                 it.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                destinationContexts.remove(it.instruction.instructionId)
             }
+
         return true
     }
 
@@ -69,21 +96,8 @@ class ComposableNavigationContainer internal constructor(
         }
     }
 
-    internal fun getDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationContextReference {
-        val destinationContextReference = destinationContexts.getOrPut(instruction.instructionId) {
-            val controller = parentContext.controller
-            val composeKey = instruction.navigationKey
-            val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
-                .newInstance() as ComposableDestination
-
-            return@getOrPut getComposableDestinationContext(
-                instruction = instruction,
-                destination = destination,
-                parentContainer = this
-            )
-        }
-        destinationContextReference.parentContainer = this@ComposableNavigationContainer
-        return destinationContextReference
+    internal fun getDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationContextReference? {
+        return destinationContexts[instruction.instructionId]
     }
 }
 

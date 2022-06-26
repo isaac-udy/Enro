@@ -104,8 +104,8 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
     }
 
     override fun close(context: NavigationContext<out ComposableDestination>) {
-        val container = context.contextReference.contextReference.requireParentContainer()
-        container.setBackstack(container.backstackFlow.value.close())
+        val container = context.contextReference.contextReference.parentContainer
+        container.setBackstack(container.backstackFlow.value.close(context.contextReference.contextReference.instruction.instructionId))
     }
 }
 

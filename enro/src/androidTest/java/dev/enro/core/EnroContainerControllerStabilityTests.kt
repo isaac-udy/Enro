@@ -113,7 +113,7 @@ class ComposableTestActivity : AppCompatActivity() {
                 )
             }
             EnroContainer(
-                controller = controllers[selectedIndex.value],
+                container = controllers[selectedIndex.value],
             )
         }
     }

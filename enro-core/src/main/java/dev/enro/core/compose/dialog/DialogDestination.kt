@@ -74,5 +74,5 @@ internal fun EnroDialogContainer(
     controller: ComposableNavigationContainer,
     destination: DialogDestination
 ) {
-    EnroContainer(controller = controller)
+    EnroContainer(container = controller)
 }

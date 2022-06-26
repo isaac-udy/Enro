@@ -54,18 +54,18 @@ fun MasterDetailComposeScreen() {
     if (isLandscape) {
         Row {
             EnroContainer(
-                controller = listContainerController,
+                container = listContainerController,
                 modifier = Modifier.weight(1f, true),
             )
             EnroContainer(
-                controller = detailContainerController,
+                container = detailContainerController,
                 modifier = Modifier.weight(1f, true)
             )
         }
     } else {
         Box {
-            EnroContainer(controller = listContainerController)
-            EnroContainer(controller = detailContainerController)
+            EnroContainer(container = listContainerController)
+            EnroContainer(container = detailContainerController)
         }
     }
 }

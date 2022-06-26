@@ -2,6 +2,8 @@ package dev.enro.core.controller.lifecycle
 
 import android.app.Application
 import android.os.Bundle
+import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner

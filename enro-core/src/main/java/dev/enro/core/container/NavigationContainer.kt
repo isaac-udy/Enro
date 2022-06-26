@@ -93,7 +93,10 @@ abstract class NavigationContainer(
     }
 
     // Returns true if the backstack was able to be reconciled successfully
-    abstract fun reconcileBackstack(removed: List<OpenPushInstruction>, backstack: NavigationContainerBackstack): Boolean
+    abstract fun reconcileBackstack(
+        removed: List<OpenPushInstruction>,
+        backstack: NavigationContainerBackstack
+    ): Boolean
 }
 
 val NavigationContainer.isActive: Boolean

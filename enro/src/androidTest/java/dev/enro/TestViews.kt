@@ -253,7 +253,7 @@ fun TestComposable(
             modifier = Modifier.padding(20.dp)
         )
         EnroContainer(
-            controller = primaryContainer,
+            container = primaryContainer,
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)
@@ -261,7 +261,7 @@ fun TestComposable(
                 .padding(horizontal = 20.dp)
         )
         EnroContainer(
-            controller = secondaryContainer,
+            container = secondaryContainer,
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)

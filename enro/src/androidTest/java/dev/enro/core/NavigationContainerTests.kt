@@ -627,7 +627,7 @@ class SingleComposableContainerActivity : ComponentActivity() {
                 Text(text = "SingleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
                 Text(text = dev.enro.core.compose.navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
                 EnroContainer(
-                    controller = primaryContainer,
+                    container = primaryContainer,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 56.dp)
@@ -660,7 +660,7 @@ class MultipleComposableContainerActivity : ComponentActivity() {
                 Text(text = "MultipleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
                 Text(text = dev.enro.core.compose.navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
                 EnroContainer(
-                    controller = primaryContainer,
+                    container = primaryContainer,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 56.dp)
@@ -669,7 +669,7 @@ class MultipleComposableContainerActivity : ComponentActivity() {
                         .padding(horizontal = 20.dp)
                 )
                 EnroContainer(
-                    controller = secondaryContainer,
+                    container = secondaryContainer,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 56.dp)
@@ -711,7 +711,7 @@ class MultipleComposableContainerActivityWithAccept : ComponentActivity() {
                 Text(text = "MultipleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
                 Text(text = dev.enro.core.compose.navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
                 EnroContainer(
-                    controller = primaryContainer,
+                    container = primaryContainer,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 56.dp)
@@ -720,7 +720,7 @@ class MultipleComposableContainerActivityWithAccept : ComponentActivity() {
                         .padding(horizontal = 20.dp)
                 )
                 EnroContainer(
-                    controller = secondaryContainer,
+                    container = secondaryContainer,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 56.dp)

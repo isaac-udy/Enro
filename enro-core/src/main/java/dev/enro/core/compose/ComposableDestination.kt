@@ -2,7 +2,9 @@ package dev.enro.core.compose
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -17,6 +19,11 @@ import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
 import dev.enro.core.compose.container.ComposableNavigationContainer
+import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.DialogDestination
+import dev.enro.core.compose.dialog.EnroBottomSheetContainer
+import dev.enro.core.compose.dialog.EnroDialogContainer
+import dev.enro.core.container.NavigationContainerBackstack
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.viewmodel.EnroViewModelFactory
 
@@ -24,17 +31,17 @@ import dev.enro.viewmodel.EnroViewModelFactory
 internal class ComposableDestinationContextReference(
     val instruction: AnyOpenInstruction,
     val destination: ComposableDestination,
-    internal var parentContainer: ComposableNavigationContainer?
+    internal var parentContainer: ComposableNavigationContainer
 ) : ViewModel(),
     LifecycleOwner,
     ViewModelStoreOwner,
     HasDefaultViewModelProviderFactory,
     SavedStateRegistryOwner {
 
-    private val navigationController get() = requireParentContainer().parentContext.controller
-    private val parentViewModelStoreOwner get() = requireParentContainer().parentContext.viewModelStoreOwner
-    private val parentSavedStateRegistry get() = requireParentContainer().parentContext.savedStateRegistryOwner.savedStateRegistry
-    internal val activity: ComponentActivity get() = requireParentContainer().parentContext.activity
+    private val navigationController get() = parentContainer.parentContext.controller
+    private val parentViewModelStoreOwner get() = parentContainer.parentContext.viewModelStoreOwner
+    private val parentSavedStateRegistry get() = parentContainer.parentContext.savedStateRegistryOwner.savedStateRegistry
+    internal val activity: ComponentActivity get() = parentContainer.parentContext.activity
 
     private val arguments by lazy { Bundle().addOpenInstruction(instruction) }
     private val savedState: Bundle? =
@@ -42,12 +49,10 @@ internal class ComposableDestinationContextReference(
     private val savedStateController = SavedStateRegistryController.create(this)
     private val viewModelStore: ViewModelStore = ViewModelStore()
 
-
     @SuppressLint("StaticFieldLeak")
     private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
 
-    private var defaultViewModelFactory: Pair<Int, ViewModelProvider.Factory> =
-        0 to ViewModelProvider.NewInstanceFactory()
+    private var defaultViewModelFactory: ViewModelProvider.Factory = ViewModelProvider.NewInstanceFactory()
 
     init {
         destination.contextReference = this
@@ -93,19 +98,15 @@ internal class ComposableDestinationContextReference(
     }
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
-        return defaultViewModelFactory.second
+        return defaultViewModelFactory
     }
 
     override val savedStateRegistry: SavedStateRegistry get() =
         savedStateController.savedStateRegistry
 
-    internal fun requireParentContainer(): ComposableNavigationContainer = parentContainer!!
-
     @Composable
-    private fun rememberDefaultViewModelFactory(navigationHandle: NavigationHandle): Pair<Int, ViewModelProvider.Factory> {
-        return remember(parentViewModelStoreOwner.hashCode()) {
-            if (parentViewModelStoreOwner.hashCode() == defaultViewModelFactory.first) return@remember defaultViewModelFactory
-
+    private fun rememberDefaultViewModelFactory(navigationHandle: NavigationHandle): ViewModelProvider.Factory {
+        return remember {
             val generatedComponentManagerHolderClass = kotlin.runCatching {
                 GeneratedComponentManagerHolder::class.java
             }.getOrNull()
@@ -121,22 +122,23 @@ internal class ComposableDestinationContextReference(
                 SavedStateViewModelFactory(activity.application, this, savedState)
             }
 
-            return@remember parentViewModelStoreOwner.hashCode() to EnroViewModelFactory(
+            return@remember EnroViewModelFactory(
                 navigationHandle,
                 factory
             )
         }
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun Render() {
-        val saveableStateHolder = rememberSaveableStateHolder()
+        val backstackState by parentContainer.backstackFlow.collectAsState()
         if (!lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.CREATED)) return
+        val saveableStateHolder = rememberSaveableStateHolder()
 
         val navigationHandle = remember { getNavigationHandleViewModel() }
-        val backstackState by requireParentContainer().backstackFlow.collectAsState()
 
-        val isVisible = instruction == backstackState.visible
+        val isVisible = instruction == backstackState.visible || (destination is DialogDestination || destination is BottomSheetDestination)
         val animations = remember(isVisible) {
             if (backstackState.isDirectUpdate) return@remember DefaultAnimations.none
             animationsFor(
@@ -149,22 +151,6 @@ internal class ComposableDestinationContextReference(
             visible = isVisible,
             animations = animations
         ) {
-            DisposableEffect(isVisible) {
-                if (isVisible) {
-                    lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-                } else {
-                    lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-                }
-                onDispose {
-                    if(lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) return@onDispose
-                    if (isVisible) {
-                        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-                    } else {
-                        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-                    }
-                }
-            }
-
             defaultViewModelFactory = rememberDefaultViewModelFactory(navigationHandle)
 
             CompositionLocalProvider(
@@ -180,7 +166,7 @@ internal class ComposableDestinationContextReference(
 
             DisposableEffect(true) {
                 onDispose {
-                    requireParentContainer().onInstructionDisposed(instruction)
+                    parentContainer.onInstructionDisposed(instruction)
                 }
             }
         }
@@ -190,7 +176,7 @@ internal class ComposableDestinationContextReference(
 internal fun getComposableDestinationContext(
     instruction: AnyOpenInstruction,
     destination: ComposableDestination,
-    parentContainer: ComposableNavigationContainer?
+    parentContainer: ComposableNavigationContainer
 ): ComposableDestinationContextReference {
     return ComposableDestinationContextReference(
         instruction = instruction,

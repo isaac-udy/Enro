@@ -5,9 +5,8 @@ import dev.enro.core.compose.ComposeFragmentHost
 import dev.enro.core.compose.ComposeFragmentHostKey
 import dev.enro.core.compose.HiltComposeFragmentHost
 import dev.enro.core.compose.HiltComposeFragmentHostKey
-import dev.enro.core.compose.dialog.ComposeDialogFragmentHost
+import dev.enro.core.compose.dialog.*
 import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
-import dev.enro.core.compose.dialog.HiltComposeDialogFragmentHost
 import dev.enro.core.compose.dialog.HiltComposeDialogFragmentHostKey
 import dev.enro.core.controller.interceptor.HiltInstructionInterceptor
 import dev.enro.core.controller.interceptor.ExecutorContextInterceptor

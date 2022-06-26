@@ -1,11 +1,13 @@
 package dev.enro.core.container
 
+import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationInstruction
+import dev.enro.core.OpenPresentInstruction
 import dev.enro.core.OpenPushInstruction
 
 fun createEmptyBackStack() = NavigationContainerBackstack(
     lastInstruction = NavigationInstruction.Close,
-    backstack = listOf(),
+    backstack = emptyList(),
     exiting = null,
     exitingIndex = -1,
     isDirectUpdate = true
@@ -27,7 +29,7 @@ data class NavigationContainerBackstack(
     val isDirectUpdate: Boolean
 ) {
     val visible: OpenPushInstruction? = backstack.lastOrNull()
-    val renderable: List<OpenPushInstruction> = run {
+    val renderable: List<AnyOpenInstruction> = run {
         if (exiting == null) return@run backstack
         if (backstack.contains(exiting)) return@run backstack
         if (exitingIndex > backstack.lastIndex) return@run backstack + exiting

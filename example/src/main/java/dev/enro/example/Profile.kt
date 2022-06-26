@@ -50,7 +50,7 @@ fun ProgileFragment() {
         }
         EnroContainer(modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(), controller = rememberNavigationContainer {
+            .fillMaxHeight(), container = rememberNavigationContainer {
             it is InitialKey
         })
     }
@@ -76,7 +76,7 @@ class ProfileFragment : Fragment() {
                         }
                         EnroContainer(modifier = Modifier
                             .fillMaxWidth()
-                            .fillMaxHeight(), controller = rememberNavigationContainer {
+                            .fillMaxHeight(), container = rememberNavigationContainer {
                             it is InitialKey
                         })
                     }
@@ -122,11 +122,11 @@ fun InitialScreen() {
         EnroContainer(modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .border(1.dp, Color.Green), controller = rememberNavigationContainer() { it is NestedKey })
+            .border(1.dp, Color.Green), container = rememberNavigationContainer() { it is NestedKey })
         EnroContainer(modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .border(1.dp, Color.Red), controller = rememberNavigationContainer() { it is NestedKey2 })
+            .border(1.dp, Color.Red), container = rememberNavigationContainer() { it is NestedKey2 })
     }
 }
 

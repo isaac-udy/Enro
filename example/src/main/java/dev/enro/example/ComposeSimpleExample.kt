@@ -213,7 +213,7 @@ class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open<*
 fun BottomSheetDestination.ExampleDialogComposable() {
     val navigationHandle = navigationHandle<ExampleComposableBottomSheetKey>()
     EnroContainer(
-        controller = rememberEnroContainerController(
+        container = rememberEnroContainerController(
             initialBackstack = listOf(navigationHandle.key.innerKey),
             accept = { false },
             emptyBehavior = EmptyBehavior.CloseParent

@@ -115,7 +115,7 @@ fun NavigationContext<*>.parentContext(): NavigationContext<*>? {
                 null -> fragment.requireActivity().navigationContext
                 else -> parentFragment.navigationContext
             }
-        is ComposeContext<out ComposableDestination> -> contextReference.contextReference.requireParentContainer().parentContext
+        is ComposeContext<out ComposableDestination> -> contextReference.contextReference.parentContainer.parentContext
     }
 }
 

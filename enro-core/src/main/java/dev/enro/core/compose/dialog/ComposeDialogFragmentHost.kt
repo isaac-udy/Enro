@@ -85,7 +85,7 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
                     emptyBehavior = EmptyBehavior.CloseParent
                 )
 
-                val destination = controller.getDestinationContext(instruction).destination
+                val destination = controller.getDestinationContext(instruction)?.destination ?: return@setContent
                 dialogConfiguration = when(destination) {
                     is BottomSheetDestination -> {
                         EnroBottomSheetContainer(controller, destination)

@@ -118,7 +118,7 @@ internal fun EnroBottomSheetContainer(
         sheetState = state,
         sheetContent = {
             EnroContainer(
-                controller = controller,
+                container = controller,
                 modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 0.5.dp)
             )
         },
