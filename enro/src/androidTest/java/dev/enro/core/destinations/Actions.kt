@@ -3,6 +3,7 @@ package dev.enro.core.destinations
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import androidx.test.core.app.ActivityScenario
+import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.*
 import dev.enro.core.*
 import dev.enro.core.compose.AbstractComposeFragmentHost
@@ -57,7 +58,7 @@ fun assertPushContainerType(
     pushFrom: TestNavigationContext<out Any, out NavigationKey>,
     pushOpened: TestNavigationContext<out Any, out NavigationKey>,
     containerType: ContainerType,
-) {
+) = InstrumentationRegistry.getInstrumentation().runOnMainSync {
     val parentContext = run {
         val it = pushFrom.navigationContext.parentContext()!!
         if (it.contextReference is AbstractComposeFragmentHost) it.parentContext()!! else it

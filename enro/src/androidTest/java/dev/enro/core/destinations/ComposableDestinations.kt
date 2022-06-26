@@ -6,6 +6,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.TestComposable
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
@@ -66,9 +67,13 @@ object ComposableDestinations {
 
 val ComposableDestination.resultChannel: EnroResultChannel<TestResult, NavigationKey.WithResult<TestResult>>
     get() {
-        return ViewModelProvider(viewModelStore, ViewModelProvider.NewInstanceFactory())
-            .get(ComposableDestinations.TestViewModel::class.java)
-            .resultChannel
+        lateinit var resultChannel: EnroResultChannel<TestResult, NavigationKey.WithResult<TestResult>>
+         InstrumentationRegistry.getInstrumentation().runOnMainSync {
+             resultChannel = ViewModelProvider(viewModelStore, defaultViewModelProviderFactory)
+                .get(ComposableDestinations.TestViewModel::class.java)
+                .resultChannel
+        }
+        return resultChannel
     }
 
 @Composable

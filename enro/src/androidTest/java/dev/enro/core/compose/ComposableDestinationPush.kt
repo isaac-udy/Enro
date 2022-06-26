@@ -32,10 +32,8 @@ class ComposableDestinationPush {
         val root = launchComposableRoot()
         val firstKey = ComposableDestinations.PushesToPrimary()
         val secondKey = ComposableDestinations.PushesToPrimary()
-        root.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
-            IntoChildContainer, firstKey)
-            .assertPushesForResultTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
-                IntoSameContainer, secondKey)
+        root.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer, firstKey)
+            .assertPushesForResultTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoSameContainer, secondKey)
             .assertClosesWithResultTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(firstKey)
     }
 }

@@ -52,30 +52,51 @@ internal class ComposableDestinationContextReference(
     @SuppressLint("StaticFieldLeak")
     private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
 
-    private var defaultViewModelFactory: ViewModelProvider.Factory = ViewModelProvider.NewInstanceFactory()
+    private var defaultViewModelFactory: ViewModelProvider.Factory
 
     init {
         destination.contextReference = this
 
         savedStateController.performRestore(savedState)
+        parentSavedStateRegistry.registerSavedStateProvider(instruction.instructionId) {
+            val outState = Bundle()
+            navigationController.onComposeContextSaved(
+                destination,
+                outState
+            )
+            savedStateController.performSave(outState)
+            outState
+        }
+        navigationController.onComposeDestinationAttached(
+            destination,
+            savedState
+        )
+
+        defaultViewModelFactory = run {
+            val generatedComponentManagerHolderClass = kotlin.runCatching {
+                GeneratedComponentManagerHolder::class.java
+            }.getOrNull()
+
+            val factory = if (generatedComponentManagerHolderClass != null && activity is GeneratedComponentManagerHolder) {
+                HiltViewModelFactory.createInternal(
+                    activity,
+                    this,
+                    arguments,
+                    SavedStateViewModelFactory(activity.application, this, savedState)
+                )
+            } else {
+                SavedStateViewModelFactory(activity.application, this, savedState)
+            }
+
+            return@run EnroViewModelFactory(
+                getNavigationHandleViewModel(),
+                factory
+            )
+        }
+
         lifecycleRegistry.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 when (event) {
-                    Lifecycle.Event.ON_CREATE -> {
-                        parentSavedStateRegistry.registerSavedStateProvider(instruction.instructionId) {
-                            val outState = Bundle()
-                            navigationController.onComposeContextSaved(
-                                destination,
-                                outState
-                            )
-                            savedStateController.performSave(outState)
-                            outState
-                        }
-                        navigationController.onComposeDestinationAttached(
-                            destination,
-                            savedState
-                        )
-                    }
                     Lifecycle.Event.ON_DESTROY -> {
                         parentSavedStateRegistry.unregisterSavedStateProvider(instruction.instructionId)
                         viewModelStore.clear()
@@ -104,31 +125,6 @@ internal class ComposableDestinationContextReference(
     override val savedStateRegistry: SavedStateRegistry get() =
         savedStateController.savedStateRegistry
 
-    @Composable
-    private fun rememberDefaultViewModelFactory(navigationHandle: NavigationHandle): ViewModelProvider.Factory {
-        return remember {
-            val generatedComponentManagerHolderClass = kotlin.runCatching {
-                GeneratedComponentManagerHolder::class.java
-            }.getOrNull()
-
-            val factory = if (generatedComponentManagerHolderClass != null && activity is GeneratedComponentManagerHolder) {
-                HiltViewModelFactory.createInternal(
-                    activity,
-                    this,
-                    arguments,
-                    SavedStateViewModelFactory(activity.application, this, savedState)
-                )
-            } else {
-                SavedStateViewModelFactory(activity.application, this, savedState)
-            }
-
-            return@remember EnroViewModelFactory(
-                navigationHandle,
-                factory
-            )
-        }
-    }
-
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun Render() {
@@ -151,8 +147,6 @@ internal class ComposableDestinationContextReference(
             visible = isVisible,
             animations = animations
         ) {
-            defaultViewModelFactory = rememberDefaultViewModelFactory(navigationHandle)
-
             CompositionLocalProvider(
                 LocalLifecycleOwner provides this,
                 LocalViewModelStoreOwner provides this,
