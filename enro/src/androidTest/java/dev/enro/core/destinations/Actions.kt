@@ -58,50 +58,53 @@ fun assertPushContainerType(
     pushFrom: TestNavigationContext<out Any, out NavigationKey>,
     pushOpened: TestNavigationContext<out Any, out NavigationKey>,
     containerType: ContainerType,
-) = InstrumentationRegistry.getInstrumentation().runOnMainSync {
-    val parentContext = run {
-        val it = pushFrom.navigationContext.parentContext()!!
-        if (it.contextReference is AbstractComposeFragmentHost) it.parentContext()!! else it
-    }
-
-    fun NavigationContainer.hasActiveContext(navigationContext: NavigationContext<*>): Boolean {
-        val isActiveContextComposeHost =
-            activeContext?.contextReference is AbstractComposeFragmentHost
-
-        val isActiveContextInChildContainer =
-            activeContext?.containerManager?.activeContainer?.activeContext == navigationContext
-
-        return activeContext == navigationContext || (isActiveContextComposeHost && isActiveContextInChildContainer)
-    }
-
-    when (containerType) {
-        is IntoSameContainer -> {
-            val container = parentContext
-                .containerManager
-                .containers
-                .firstOrNull {
-                    it.backstackFlow.value.backstack.contains(pushFrom.navigation.instruction)
-                }
-            assertNotNull(container)
+) {
+    InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+    InstrumentationRegistry.getInstrumentation().runOnMainSync {
+        val parentContext = run {
+            val it = pushFrom.navigationContext.parentContext()!!
+            if (it.contextReference is AbstractComposeFragmentHost) it.parentContext()!! else it
         }
-        is IntoChildContainer -> {
-            val container = pushFrom.navigationContext
-                .containerManager
-                .containers
-                .firstOrNull {
-                    it.hasActiveContext(pushOpened.navigationContext)
-                }
-            assertNotNull(container)
+
+        fun NavigationContainer.hasActiveContext(navigationContext: NavigationContext<*>): Boolean {
+            val isActiveContextComposeHost =
+                activeContext?.contextReference is AbstractComposeFragmentHost
+
+            val isActiveContextInChildContainer =
+                activeContext?.containerManager?.activeContainer?.activeContext == navigationContext
+
+            return activeContext == navigationContext || (isActiveContextComposeHost && isActiveContextInChildContainer)
         }
-        is IntoSiblingContainer -> {
-            val container = parentContext
-                .containerManager
-                .containers
-                .firstOrNull {
-                    it.hasActiveContext(pushOpened.navigationContext) &&
-                            !it.backstackFlow.value.backstack.contains(pushFrom.navigation.instruction)
-                }
-            assertNotNull(container)
+
+        when (containerType) {
+            is IntoSameContainer -> {
+                val container = parentContext
+                    .containerManager
+                    .containers
+                    .firstOrNull {
+                        it.backstackFlow.value.backstack.contains(pushFrom.navigation.instruction)
+                    }
+                assertNotNull(container)
+            }
+            is IntoChildContainer -> {
+                val container = pushFrom.navigationContext
+                    .containerManager
+                    .containers
+                    .firstOrNull {
+                        it.hasActiveContext(pushOpened.navigationContext)
+                    }
+                assertNotNull(container)
+            }
+            is IntoSiblingContainer -> {
+                val container = parentContext
+                    .containerManager
+                    .containers
+                    .firstOrNull {
+                        it.hasActiveContext(pushOpened.navigationContext) &&
+                                !it.backstackFlow.value.backstack.contains(pushFrom.navigation.instruction)
+                    }
+                assertNotNull(container)
+            }
         }
     }
 }
