@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.os.Debug
 import androidx.activity.ComponentActivity
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
@@ -16,6 +15,7 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.result.EnroResultChannel
+import kotlin.reflect.KClass
 
 private val isDebugging: Boolean get() = Debug.isDebuggerConnected()
 
@@ -42,38 +42,63 @@ class TestNavigationContext<Context: Any, KeyType: NavigationKey>(
 }
 
 inline fun <reified KeyType: NavigationKey> expectComposableContext(
-    crossinline selector: (TestNavigationContext<ComposableDestination, KeyType>) -> Boolean = { true }
+    noinline selector: (TestNavigationContext<ComposableDestination, KeyType>) -> Boolean = { true }
 ): TestNavigationContext<ComposableDestination, KeyType> {
     return expectContext(selector)
 }
 
 inline fun <reified KeyType: NavigationKey> expectFragmentContext(
-    crossinline selector: (TestNavigationContext<Fragment, KeyType>) -> Boolean = { true }
+    noinline selector: (TestNavigationContext<Fragment, KeyType>) -> Boolean = { true }
 ): TestNavigationContext<Fragment, KeyType> {
     return expectContext(selector)
 }
 
 inline fun <reified ContextType: Any, reified KeyType: NavigationKey> findContextFrom(
     rootContext: NavigationContext<*>?,
-    crossinline selector: (TestNavigationContext<ContextType, KeyType>) -> Boolean = { true }
+    noinline selector: (TestNavigationContext<ContextType, KeyType>) -> Boolean = { true }
+): TestNavigationContext<ContextType, KeyType>? = findContextFrom(ContextType::class, KeyType::class, rootContext, selector)
+
+fun <ContextType: Any, KeyType: NavigationKey> findContextFrom(
+    contextType: KClass<ContextType>,
+    keyType: KClass<KeyType>,
+    rootContext: NavigationContext<*>?,
+    selector: (TestNavigationContext<ContextType, KeyType>) -> Boolean = { true }
 ): TestNavigationContext<ContextType, KeyType>? {
     var activeContext = rootContext
     while(activeContext != null) {
-        if (KeyType::class.java.isAssignableFrom(activeContext.getNavigationHandle().key::class.java)) {
+        if (
+            keyType.java.isAssignableFrom(activeContext.getNavigationHandle().key::class.java)
+            && contextType.java.isAssignableFrom(activeContext.contextReference::class.java)
+        ) {
             val context = TestNavigationContext(
                 activeContext.contextReference as ContextType,
-                activeContext.getNavigationHandle().asTyped<KeyType>()
+                activeContext.getNavigationHandle().asTyped(keyType)
             )
             if (selector(context)) return context
         }
+
+        activeContext.containerManager.presentationContainer?.activeContext
+            ?.let {
+                findContextFrom(contextType, keyType, it, selector)
+            }
+            ?.let {
+                return it
+            }
+
         activeContext = activeContext.containerManager.activeContainer?.activeContext
+            ?: when(val reference = activeContext.contextReference) {
+                is FragmentActivity -> reference.supportFragmentManager.primaryNavigationFragment?.navigationContext
+                is Fragment -> reference.childFragmentManager.primaryNavigationFragment?.navigationContext
+                else -> null
+            }
     }
     return null
 }
 
 inline fun <reified ContextType: Any, reified KeyType: NavigationKey> expectContext(
-    crossinline selector: (TestNavigationContext<ContextType, KeyType>) -> Boolean = { true }
+    noinline selector: (TestNavigationContext<ContextType, KeyType>) -> Boolean = { true }
 ): TestNavigationContext<ContextType, KeyType> {
+
     return when {
         ComposableDestination::class.java.isAssignableFrom(ContextType::class.java) ||
         Fragment::class.java.isAssignableFrom(ContextType::class.java) -> {
@@ -81,22 +106,7 @@ inline fun <reified ContextType: Any, reified KeyType: NavigationKey> expectCont
                 val activities = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
                 val activity = activities.firstOrNull() as? ComponentActivity ?: return@waitOnMain null
 
-                val activeContext = activity.containerManager.activeContainer?.activeContext
-                val fromActiveContext = findContextFrom(activeContext, selector)
-                if(fromActiveContext != null) return@waitOnMain fromActiveContext
-
-                val fragmentActivity = activity as? FragmentActivity ?: return@waitOnMain null
-                fragmentActivity.supportFragmentManager
-                    .fragments
-                    .filterIsInstance<DialogFragment>()
-                    .filter { it.isVisible }
-                    .forEach {
-                        val dialogContext = it.getNavigationHandle().getPrivate<NavigationContext<*>>("navigationContext")
-                        val fromDialog = findContextFrom(dialogContext, selector)
-                        if(fromDialog != null) return@waitOnMain fromDialog
-                    }
-
-                return@waitOnMain null
+                return@waitOnMain findContextFrom(activity.navigationContext, selector)
             }
         }
         ComponentActivity::class.java.isAssignableFrom(ContextType::class.java) -> waitOnMain {
@@ -125,38 +135,27 @@ fun expectSingleFragmentActivity(): FragmentActivity {
     return expectActivity { it::class.java.simpleName == "SingleFragmentActivity" }
 }
 
-inline fun <reified T: ComponentActivity> expectActivity(crossinline selector: (ComponentActivity) -> Boolean = { it is T }): T {
-    return waitOnMain {
-        val activity = getActiveActivity()
+fun expectFullscreenDialogFragment(): Fragment {
+    return expectFragment { it::class.java.simpleName == "FullscreenDialogFragment" }
+}
 
-        return@waitOnMain when {
-            activity !is ComponentActivity -> null
-            activity !is T -> null
-            selector(activity) -> activity
-            else -> null
-        }
-    }
+inline fun <reified T: ComponentActivity> expectActivity(crossinline selector: (ComponentActivity) -> Boolean = { it is T }): T {
+    return expectContext<T, NavigationKey> {
+        selector(it.context)
+    }.context
 }
 
 internal inline fun <reified T: Fragment> expectFragment(crossinline selector: (Fragment) -> Boolean = { it is T }): T {
-    return waitOnMain {
-        val activity = getActiveActivity() as? FragmentActivity ?: return@waitOnMain null
-        val fragment = activity.supportFragmentManager.primaryNavigationFragment
-        return@waitOnMain when {
-            fragment == null -> null
-            fragment !is T ->  null
-            selector(fragment) -> fragment
-            else -> null
-        }
-    }
+    return expectContext<T, NavigationKey> {
+        selector(it.context)
+    }.context
 }
 
 internal inline fun <reified T: Fragment> expectNoFragment(crossinline selector: (Fragment) -> Boolean = { it is T }): Boolean {
-    return waitOnMain {
-        val activity = getActiveActivity() as? FragmentActivity ?: return@waitOnMain null
-        val fragment = activity.supportFragmentManager.primaryNavigationFragment ?: return@waitOnMain true
-        if(selector(fragment)) return@waitOnMain null else true
+    waitFor {
+        runCatching { expectFragment<T>(selector) }.isFailure
     }
+    return true
 }
 
 fun expectNoActivity() {
@@ -236,3 +235,9 @@ fun <T> Any.getPrivate(methodName: String): T {
 
 val application: Application get() =
     InstrumentationRegistry.getInstrumentation().context.applicationContext as Application
+
+val ComponentActivity.navigationContext get() =
+    getNavigationHandle().getPrivate<NavigationContext<*>>("navigationContext")
+
+val Fragment.navigationContext get() =
+    getNavigationHandle().getPrivate<NavigationContext<*>>("navigationContext")

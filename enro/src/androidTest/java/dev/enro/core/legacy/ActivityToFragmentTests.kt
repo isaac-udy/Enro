@@ -36,15 +36,15 @@ class ActivityToFragmentTests {
     }
 
     @Test
-    fun whenActivityOpensFragment_andActivityDoesNotHaveFragmentHost_thenFragmentIsLaunchedAsSingleFragmentActivity() {
+    fun whenActivityOpensFragment_andActivityDoesNotHaveFragmentHost_thenFragmentIsLaunchedAsFullscreenDialogFragment() {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
 
         val id = UUID.randomUUID().toString()
         handle.forward(GenericFragmentKey(id))
 
-        val activity = expectSingleFragmentActivity()
-        val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
+        val activity = expectFullscreenDialogFragment()
+        val activeFragment = activity.childFragmentManager.primaryNavigationFragment!!
         val fragmentHandle = activeFragment.getNavigationHandle().asTyped<GenericFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }
@@ -61,12 +61,9 @@ class ActivityToFragmentTests {
             target
         )
 
-        val activity = expectSingleFragmentActivity()
         val fragment = expectFragment<GenericFragment> { it.getNavigationHandle().key == target }
-
         val fragmentHandle = fragment.getNavigationHandle().asTyped<GenericFragmentKey>()
         assertEquals(target.id, fragmentHandle.key.id)
-        assertEquals(fragment, activity.supportFragmentManager.primaryNavigationFragment!!)
     }
 
 
@@ -87,7 +84,7 @@ class ActivityToFragmentTests {
 
 
     @Test
-    fun whenActivityOpensFragment_andActivityHasFragmentHostForFragment_andFragmentContainerIsNotVisible_thenFragmentIsLaunchedIntoSingleFragmentActivity() {
+    fun whenActivityOpensFragment_andActivityHasFragmentHostForFragment_andFragmentContainerIsNotVisible_thenFragmentIsLaunchedIntoFullscreenDialogFragment() {
         val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
         val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
         scenario.onActivity {
@@ -98,7 +95,7 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.forward(ActivityChildFragmentKey(id))
 
-        expectSingleFragmentActivity()
+        expectFullscreenDialogFragment()
         val activeFragment = expectFragment<ActivityChildFragment>()
         val fragmentHandle =
             activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
@@ -125,29 +122,29 @@ class ActivityToFragmentTests {
 
 
     @Test
-    fun whenActivityOpensFragment_andActivityHasFragmentHostThatDoesNotAcceptFragment_thenFragmentIsLaunchedAsSingleFragmentActivity() {
+    fun whenActivityOpensFragment_andActivityHasFragmentHostThatDoesNotAcceptFragment_thenFragmentIsLaunchedAsFullscreenDialogFragment() {
         val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
         val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
 
         val id = UUID.randomUUID().toString()
         handle.forward(GenericFragmentKey(id))
 
-        val activity = expectSingleFragmentActivity()
-        val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
+        val activity = expectFullscreenDialogFragment()
+        val activeFragment = activity.childFragmentManager.primaryNavigationFragment!!
         val fragmentHandle = activeFragment.getNavigationHandle().asTyped<GenericFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
     }
 
     @Test
-    fun whenActivityOpensFragmentAsReplacement_andActivityHasFragmentHostForFragment_thenFragmentIsLaunchedAsSingleFragmentActivity() {
+    fun whenActivityOpensFragmentAsReplacement_andActivityHasFragmentHostForFragment_thenFragmentIsLaunchedAsFullscreenDialogFragment() {
         val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
         val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
 
         val id = UUID.randomUUID().toString()
         handle.replace(ActivityChildFragmentKey(id))
 
-        val activity = expectSingleFragmentActivity()
-        val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
+        val activity = expectFullscreenDialogFragment()
+        val activeFragment = activity.childFragmentManager.primaryNavigationFragment!!
         val fragmentHandle =
             activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)

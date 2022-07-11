@@ -7,12 +7,9 @@ class ComposableDestinationPushToChildContainer {
     @Test
     fun givenComposableDestination_whenExecutingPushToChildContainer_andTargetIsComposableDestination_thenCorrectDestinationIsOpened() {
          val root = launchComposableRoot()
-        root.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
-            IntoChildContainer
-        )
-            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToChildAsPrimary>(
-                IntoChildContainer
-            )
+        root
+            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToChildAsPrimary>(IntoChildContainer)
     }
 
     @Test

@@ -2,10 +2,13 @@ package dev.enro.core.container
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.MainThread
+import androidx.lifecycle.Lifecycle
 import dev.enro.core.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.getAndUpdate
 
 abstract class NavigationContainer(
     val id: String,
@@ -15,32 +18,31 @@ abstract class NavigationContainer(
 ) {
     private val handler = Handler(Looper.getMainLooper())
     private val reconcileBackstack = Runnable {
-        reconcileBackstack(pendingRemovals.toList(), backstackFlow.value)
+        reconcileBackstack(pendingRemovals.toList(), mutableBackstack.value)
     }
 
     abstract val activeContext: NavigationContext<*>?
     abstract val isVisible: Boolean
 
-    private val pendingRemovals = mutableSetOf<OpenPushInstruction>()
+    private val pendingRemovals = mutableSetOf<AnyOpenInstruction>()
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
     val backstackFlow: StateFlow<NavigationContainerBackstack> get() = mutableBackstack
 
     init {
         parentContext.runWhenContextActive {
-            reconcileBackstack(pendingRemovals.toList(), backstackFlow.value)
+            reconcileBackstack.run()
         }
     }
 
     @MainThread
-    fun setBackstack(backstack: NavigationContainerBackstack) {
-        if(backstack == backstackFlow.value) return
-
-        handler.removeCallbacks(reconcileBackstack)
+    fun setBackstack(backstack: NavigationContainerBackstack) = synchronized(this) {
         if(Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
-        val lastBackstack = backstackFlow.value
-        mutableBackstack.value = backstack
+        if(backstack == backstackFlow.value) return@synchronized
+
+        handler.removeCallbacks(reconcileBackstack)
+        val lastBackstack = mutableBackstack.getAndUpdate { backstack }
 
         val removed = lastBackstack.backstack
             .filter {
@@ -69,7 +71,9 @@ abstract class NavigationContainer(
                     /* If allow empty, pass through to default behavior */
                 }
                 EmptyBehavior.CloseParent -> {
-                    parentContext.getNavigationHandle().close()
+                    if(parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                        parentContext.getNavigationHandle().close()
+                    }
                     return
                 }
                 is EmptyBehavior.Action -> {
@@ -82,7 +86,7 @@ abstract class NavigationContainer(
         }
 
         pendingRemovals.addAll(removed)
-        val reconciledBackstack = reconcileBackstack(pendingRemovals.toList(), backstack)
+        val reconciledBackstack = reconcileBackstack(pendingRemovals.toList(), mutableBackstack.value)
         if(!reconciledBackstack) {
             pendingRemovals.addAll(removed)
             handler.post(reconcileBackstack)
@@ -94,9 +98,14 @@ abstract class NavigationContainer(
 
     // Returns true if the backstack was able to be reconciled successfully
     abstract fun reconcileBackstack(
-        removed: List<OpenPushInstruction>,
+        removed: List<AnyOpenInstruction>,
         backstack: NavigationContainerBackstack
     ): Boolean
+
+    companion object {
+        internal const val PRESENTATION_CONTAINER_LAYOUT_ID = -1
+        internal const val PRESENTATION_CONTAINER = PRESENTATION_CONTAINER_LAYOUT_ID.toString()
+    }
 }
 
 val NavigationContainer.isActive: Boolean
@@ -105,4 +114,3 @@ val NavigationContainer.isActive: Boolean
 fun NavigationContainer.setActive() {
     parentContext.containerManager.setActiveContainer(this)
 }
-

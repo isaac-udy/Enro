@@ -3,13 +3,25 @@ package dev.enro.core.controller.lifecycle
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.View
 import androidx.activity.ComponentActivity
-import androidx.compose.ui.platform.compositionContext
+import androidx.activity.OnBackPressedCallback
+import androidx.core.view.ViewCompat
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
+import dev.enro.core.*
 import dev.enro.core.ActivityContext
 import dev.enro.core.FragmentContext
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationContainer
+import dev.enro.core.fragment.container.FragmentNavigationContainer
+import dev.enro.core.fragment.container.FragmentNavigationContainerProperty
+import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.core.navigationContext
 
 internal class NavigationContextLifecycleCallbacks (
@@ -32,15 +44,31 @@ internal class NavigationContextLifecycleCallbacks (
             activity: Activity,
             savedInstanceState: Bundle?
         ) {
-            activity.window.decorView.compositionContext = null
+            if(activity !is ComponentActivity) return
+
+            val navigationContext = ActivityContext(activity)
+
             if(activity is FragmentActivity) {
                 activity.supportFragmentManager.registerFragmentLifecycleCallbacks(
                     fragmentCallbacks,
                     true
                 )
+
+                FragmentNavigationContainerProperty(
+                    lifecycleOwner = activity,
+                    containerId = NavigationContainer.PRESENTATION_CONTAINER_LAYOUT_ID,
+                    root = { null },
+                    navigationContext = { activity.navigationContext },
+                    emptyBehavior = EmptyBehavior.AllowEmpty,
+                    accept = { false }
+                )
             }
-            if(activity !is ComponentActivity) return
-            lifecycleController.onContextCreated(ActivityContext(activity), savedInstanceState)
+
+            lifecycleController.onContextCreated(navigationContext, savedInstanceState)
+
+            activity.addOnBackPressedListener {
+                navigationContext.leafContext().getNavigationHandleViewModel().requestClose()
+            }
         }
 
         override fun onActivitySaveInstanceState(
@@ -67,6 +95,14 @@ internal class NavigationContextLifecycleCallbacks (
             // TODO throw exception if fragment is opened into an Enro registered NavigationContainer without
             // being opened through Enro
             lifecycleController.onContextCreated(FragmentContext(fragment), savedInstanceState)
+            FragmentNavigationContainerProperty(
+                lifecycleOwner = fragment,
+                containerId = NavigationContainer.PRESENTATION_CONTAINER_LAYOUT_ID,
+                root = { null },
+                navigationContext = { fragment.navigationContext },
+                emptyBehavior = EmptyBehavior.AllowEmpty,
+                accept = { false }
+            )
         }
 
         override fun onFragmentSaveInstanceState(
@@ -76,5 +112,34 @@ internal class NavigationContextLifecycleCallbacks (
         ) {
             lifecycleController.onContextSaved(fragment.navigationContext, outState)
         }
+
+        override fun onFragmentViewCreated(
+            fm: FragmentManager,
+            fragment: Fragment,
+            view: View,
+            outState: Bundle?
+        ) {
+            if(fragment is DialogFragment && fragment.showsDialog) {
+                ViewCompat.addOnUnhandledKeyEventListener(view, DialogFragmentBackPressedListener)
+            }
+        }
+    }
+}
+
+private fun ComponentActivity.addOnBackPressedListener(block: () -> Unit) {
+    onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            block()
+        }
+    })
+}
+
+private object DialogFragmentBackPressedListener : ViewCompat.OnUnhandledKeyEventListenerCompat {
+    override fun onUnhandledKeyEvent(view: View, event: KeyEvent): Boolean {
+        val isBackPressed = event.keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP
+        if(!isBackPressed) return false
+
+        view.findViewTreeViewModelStoreOwner()?.getNavigationHandleViewModel()?.requestClose()
+        return true
     }
 }

@@ -10,6 +10,7 @@ import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.createEmptyBackStack
+import dev.enro.core.container.createRootBackStack
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -25,6 +26,14 @@ class FragmentNavigationContainerProperty @PublishedApi internal constructor(
 
     internal val navigationContainer: FragmentNavigationContainer by lazy {
         val context = navigationContext()
+
+        val isExistingContainer = context.containerManager.containers
+            .any { it.id == containerId.toString() }
+
+        if(isExistingContainer) {
+            throw EnroException.DuplicateFragmentNavigationContainer("A FragmentNavigationContainer with id $containerId already exists")
+        }
+
         val container = FragmentNavigationContainer(
             containerId = containerId,
             parentContext = context,
@@ -35,9 +44,7 @@ class FragmentNavigationContainerProperty @PublishedApi internal constructor(
         val rootInstruction = root()
         rootInstruction?.let {
             container.setBackstack(
-                createEmptyBackStack().push(
-                    rootInstruction.asPushInstruction()
-                )
+                createRootBackStack(it)
             )
         }
 

@@ -3,7 +3,7 @@ package dev.enro.core.container
 import android.os.Bundle
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import dev.enro.core.OpenPushInstruction
+import dev.enro.core.AnyOpenInstruction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -19,6 +19,8 @@ class NavigationContainerManager {
 
     private val mutableActiveContainerFlow = MutableStateFlow<NavigationContainer?>(null)
     val activeContainerFlow: StateFlow<NavigationContainer?> = mutableActiveContainerFlow
+    
+    val presentationContainer: NavigationContainer? get() = containers.firstOrNull { it.id == NavigationContainer.PRESENTATION_CONTAINER }
 
     internal fun setActiveContainerById(id: String?) {
         setActiveContainer(containers.firstOrNull { it.id == id })
@@ -27,7 +29,7 @@ class NavigationContainerManager {
     internal fun addContainer(container: NavigationContainer) {
         _containers.add(container)
         restore(container)
-        if(activeContainer == null) {
+        if(activeContainer == null && container.id != NavigationContainer.PRESENTATION_CONTAINER) {
             setActiveContainer(container)
         }
     }
@@ -55,7 +57,7 @@ class NavigationContainerManager {
             .forEach {
                 restoredContainerStates[it] = createRestoredBackStack(
                     savedInstanceState
-                        .getParcelableArrayList<OpenPushInstruction>("$BACKSTACK_KEY@$it")
+                        .getParcelableArrayList<AnyOpenInstruction>("$BACKSTACK_KEY@$it")
                         .orEmpty()
                 )
             }

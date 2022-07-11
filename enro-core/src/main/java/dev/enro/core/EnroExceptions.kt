@@ -72,4 +72,6 @@ abstract class EnroException(
 
     class ComposePreviewException(message: String) : EnroException(message)
 
+    class DuplicateFragmentNavigationContainer(message: String, cause: Throwable? = null) : EnroException(message, cause)
+
 }

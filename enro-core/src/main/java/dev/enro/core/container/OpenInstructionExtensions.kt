@@ -10,7 +10,7 @@ internal fun AnyOpenInstruction.asPushInstruction(): OpenPushInstruction {
 }
 
 internal fun AnyOpenInstruction.asPresentInstruction(): OpenPresentInstruction {
-    if(navigationDirection is NavigationDirection.Push) return this as OpenPresentInstruction
+    if(navigationDirection is NavigationDirection.Present) return this as OpenPresentInstruction
     return internal.copy(
         navigationDirection = NavigationDirection.Present
     ) as OpenPresentInstruction

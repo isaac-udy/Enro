@@ -1,8 +1,6 @@
 package dev.enro.core.internal.handle
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.*
 import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
@@ -18,9 +16,6 @@ internal open class NavigationHandleViewModel(
     internal val hasKey get() = instruction.navigationKey !is NoNavigationKey
 
     override val key: NavigationKey get() {
-        if(instruction.navigationKey is NoNavigationKey) throw IllegalStateException(
-            "The navigation handle for the context ${navigationContext?.contextReference} has no NavigationKey"
-        )
         return instruction.navigationKey
     }
     override val id: String get() = instruction.instructionId
@@ -40,7 +35,6 @@ internal open class NavigationHandleViewModel(
             if (value == null) return
 
             registerLifecycleObservers(value)
-            registerOnBackPressedListener(value)
             executePendingInstruction()
 
             if (lifecycle.currentState == Lifecycle.State.INITIALIZED) {
@@ -57,14 +51,6 @@ internal open class NavigationHandleViewModel(
         })
         context.lifecycle.onEvent(Lifecycle.Event.ON_DESTROY) {
             if (context == navigationContext) navigationContext = null
-        }
-    }
-
-    private fun registerOnBackPressedListener(context: NavigationContext<out Any>) {
-        if (context is ActivityContext<out ComponentActivity>) {
-            context.activity.addOnBackPressedListener {
-                context.leafContext().getNavigationHandleViewModel().requestClose()
-            }
         }
     }
 
@@ -112,14 +98,6 @@ private fun Lifecycle.onEvent(on: Lifecycle.Event, block: () -> Unit) {
             if(on == event) {
                 block()
             }
-        }
-    })
-}
-
-private fun ComponentActivity.addOnBackPressedListener(block: () -> Unit) {
-    onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-        override fun handleOnBackPressed() {
-            block()
         }
     })
 }

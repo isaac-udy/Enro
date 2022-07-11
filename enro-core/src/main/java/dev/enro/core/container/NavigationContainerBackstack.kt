@@ -1,9 +1,6 @@
 package dev.enro.core.container
 
-import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.OpenPresentInstruction
-import dev.enro.core.OpenPushInstruction
+import dev.enro.core.*
 
 fun createEmptyBackStack() = NavigationContainerBackstack(
     lastInstruction = NavigationInstruction.Close,
@@ -13,7 +10,15 @@ fun createEmptyBackStack() = NavigationContainerBackstack(
     isDirectUpdate = true
 )
 
-fun createRestoredBackStack(backstack: List<OpenPushInstruction>) = NavigationContainerBackstack(
+fun createRootBackStack(rootInstruction: AnyOpenInstruction) = NavigationContainerBackstack(
+    lastInstruction = NavigationInstruction.Close,
+    backstack = listOf(rootInstruction),
+    exiting = null,
+    exitingIndex = -1,
+    isDirectUpdate = true
+)
+
+fun createRestoredBackStack(backstack: List<AnyOpenInstruction>) = NavigationContainerBackstack(
     backstack = backstack,
     exiting = null,
     exitingIndex = -1,
@@ -23,12 +28,14 @@ fun createRestoredBackStack(backstack: List<OpenPushInstruction>) = NavigationCo
 
 data class NavigationContainerBackstack(
     val lastInstruction: NavigationInstruction,
-    val backstack: List<OpenPushInstruction>,
-    val exiting: OpenPushInstruction?,
+    val backstack: List<AnyOpenInstruction>,
+    val exiting: AnyOpenInstruction?,
     val exitingIndex: Int,
     val isDirectUpdate: Boolean
 ) {
-    val visible: OpenPushInstruction? = backstack.lastOrNull()
+    val visible: OpenPushInstruction? = backstack
+        .lastOrNull { it.navigationDirection != NavigationDirection.Present } as? OpenPushInstruction
+
     val renderable: List<AnyOpenInstruction> = run {
         if (exiting == null) return@run backstack
         if (backstack.contains(exiting)) return@run backstack
@@ -52,10 +59,21 @@ data class NavigationContainerBackstack(
         )
     }
 
+    internal fun present(
+        vararg instructions: OpenPresentInstruction
+    ): NavigationContainerBackstack {
+        if(instructions.isEmpty()) return this
+        return copy(
+            backstack = backstack + instructions,
+            lastInstruction = instructions.last(),
+            isDirectUpdate = false
+        )
+    }
+
     internal fun close(): NavigationContainerBackstack {
         return copy(
             backstack = backstack.dropLast(1),
-            exiting = visible,
+            exiting = backstack.lastOrNull(),
             exitingIndex = backstack.lastIndex,
             lastInstruction = NavigationInstruction.Close,
             isDirectUpdate = false

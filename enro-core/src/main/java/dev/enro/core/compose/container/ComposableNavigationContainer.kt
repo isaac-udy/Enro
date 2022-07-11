@@ -41,7 +41,7 @@ class ComposableNavigationContainer internal constructor(
         get() = true
 
     override fun reconcileBackstack(
-        removed: List<OpenPushInstruction>,
+        removed: List<AnyOpenInstruction>,
         backstack: NavigationContainerBackstack
     ): Boolean {
         backstack.renderable

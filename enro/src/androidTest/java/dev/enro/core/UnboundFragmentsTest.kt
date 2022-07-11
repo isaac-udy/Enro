@@ -10,7 +10,7 @@ import org.junit.Test
 class  UnboundFragmentsTest {
 
     @Test
-    fun whenUnboundFragmentIsOpened_thenNavigationKeyIsUnbound() {
+    fun whenUnboundFragmentIsOpened_thenNavigationKeyIsNoNavigationKey() {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         scenario.onActivity {
             it.supportFragmentManager.commitNow {
@@ -21,17 +21,7 @@ class  UnboundFragmentsTest {
         }
         val unboundFragment = expectFragment<UnboundFragment>()
         val unboundHandle = unboundFragment.getNavigationHandle()
-
-        lateinit var caught: Throwable
-        try {
-            unboundHandle.key
-        }
-        catch (t: Throwable) {
-            caught = t
-        }
-        assertTrue(caught is IllegalStateException)
-        assertNotNull(caught.message)
-        assertTrue(caught.message!!.matches(Regex("The navigation handle for the context UnboundFragment.*has no NavigationKey")))
+        assertEquals("NoNavigationKey", unboundHandle.key::class.java.simpleName)
     }
 
     @Test

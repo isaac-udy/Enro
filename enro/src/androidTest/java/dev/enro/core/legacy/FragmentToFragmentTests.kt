@@ -1,6 +1,7 @@
 @file:Suppress("DEPRECATION")
 package dev.enro.core.legacy
 
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commit
 import androidx.test.core.app.ActivityScenario
@@ -10,12 +11,10 @@ import dev.enro.core.close
 import dev.enro.core.forward
 import dev.enro.core.getNavigationHandle
 import junit.framework.TestCase
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.*
-
-private fun expectSingleFragmentActivity(): FragmentActivity {
-    return expectActivity { it::class.java.simpleName == "SingleFragmentActivity"}
-}
 
 class FragmentToFragmentTests {
 
@@ -37,22 +36,23 @@ class FragmentToFragmentTests {
     }
 
     @Test
-    fun whenFragmentOpensFragment_andFragmentIsNotInAHost_thenFragmentIsLaunchedAsSingleFragmentActivity() {
+    fun whenFragmentOpensFragment_andFragmentIsNotInAHost_thenFragmentIsLaunchedAsFullscreenDialogFragment() {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
 
         val id = UUID.randomUUID().toString()
         handle.forward(ActivityChildFragmentKey(id))
 
-        val activity = expectSingleFragmentActivity()
-        val parentFragment = activity.supportFragmentManager.primaryNavigationFragment!!
+        val dialogFragment = expectFullscreenDialogFragment()
+        val parentFragment = dialogFragment.childFragmentManager.primaryNavigationFragment!!
         val id2 = UUID.randomUUID().toString()
         parentFragment.getNavigationHandle().forward(ActivityChildFragmentTwoKey(id2))
 
-        val activity2 = expectSingleFragmentActivity()
-        val childFragment = activity2.supportFragmentManager.primaryNavigationFragment!!
+        val childFragment = expectContext<Fragment, ActivityChildFragmentTwoKey>().context
         val fragmentHandle = childFragment.getNavigationHandle().asTyped<ActivityChildFragmentTwoKey>()
-        TestCase.assertEquals(id2, fragmentHandle.key.id)
+        assertEquals(id2, fragmentHandle.key.id)
+        assertTrue(childFragment.parentFragmentManager.primaryNavigationFragment == childFragment)
+        assertTrue(childFragment.parentFragment?.parentFragmentManager?.primaryNavigationFragment == childFragment.parentFragment)
     }
 
     @Test

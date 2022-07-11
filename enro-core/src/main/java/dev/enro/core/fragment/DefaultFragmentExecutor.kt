@@ -1,6 +1,7 @@
 package dev.enro.core.fragment
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.*
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
@@ -44,19 +45,42 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                 openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
             }
             NavigationDirection.Present -> {
-                when {
-                    isDialog -> openFragmentAsDialog(fromContext, navigator, instruction)
-                    else -> openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
-                }
-                EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
-                if(isReplace) {
-                    fromContext.getNavigationHandle().close()
+                val host = args.fromContext.containerManager.presentationContainer as? FragmentNavigationContainer
+                when (host) {
+                    null -> {
+                        val parentContext = fromContext.parentContext()
+                        if(parentContext == null) {
+                            EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
+                            openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
+                            if(isReplace) {
+                                fromContext.getNavigationHandle().close()
+                            }
+                        } else {
+                            parentContext.controller.open(
+                                parentContext,
+                                args.instruction
+                            )
+                        }
+                        return
+                    }
+                    else -> {
+                        EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
+                        host.setBackstack(
+                            host.backstackFlow.value
+                                .let {
+                                    if(isReplace) it.close() else it
+                                }
+                                .present(
+                                    instruction.asPresentInstruction()
+                                )
+                        )
+                    }
                 }
             }
             NavigationDirection.Push -> {
                 val containerManager = args.fromContext.containerManager
                 val host = containerManager.activeContainer?.takeIf {
-                    it.isVisible && it.accept(args.key)
+                    it.isVisible && it.accept(args.key) && it is FragmentNavigationContainer
                 } ?: args.fromContext.containerManager.containers
                         .filter { it.isVisible }
                         .filterIsInstance<FragmentNavigationContainer>()
@@ -64,12 +88,21 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
                 if (host == null) {
                     val parentContext = fromContext.parentContext()
-                    if(parentContext == null) {
+                    if(parentContext == null || fromContext.getNavigationHandle().instruction.navigationDirection == NavigationDirection.Present) {
                         EnroException.MissingContainerForPushInstruction.logForStrictMode(
                             fromContext.controller,
                             args
                         )
-                        openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
+                        open(
+                            ExecutorArgs(
+                                fromContext = fromContext,
+                                navigator = args.navigator,
+                                key = args.key,
+                                instruction = args.instruction.internal.copy(
+                                    navigationDirection = NavigationDirection.Present
+                                )
+                            )
+                        )
                         if(isReplace) {
                             fromContext.getNavigationHandle().close()
                         }
@@ -105,11 +138,19 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 
     override fun close(context: NavigationContext<out Fragment>) {
         val fragment = context.fragment
-        if(fragment is DialogFragment) {
+        if(fragment is DialogFragment && fragment.showsDialog) {
             fragment.dismiss()
             return
         }
-        val container = context.parentContext()?.containerManager?.containers?.firstOrNull { it.activeContext == context }
+
+        val parentContext = context.parentContext()
+        val container = parentContext
+            ?.containerManager
+            ?.containers
+            ?.firstOrNull {
+                it.backstackFlow.value.backstack.any { it.instructionId == context.getNavigationHandle().id }
+            }
+
         if(container == null) {
             /*
              * There are some cases where a Fragment's FragmentManager can be removed from the Fragment.
@@ -189,24 +230,7 @@ private fun openFragmentAsActivity(
             navigationKey = SingleFragmentKey(instruction.internal.copy(
                 navigationDirection = navigationDirection,
             )),
-        )
-    )
-}
-
-private fun openFragmentAsDialog(
-    fromContext: NavigationContext<out Any>,
-    navigator: FragmentNavigator<*, *>,
-    instruction: AnyOpenInstruction
-) {
-    val fragmentActivity = fromContext.activity as FragmentActivity
-    val fragment = DefaultFragmentExecutor.createFragment(
-        fragmentActivity.supportFragmentManager,
-        navigator,
-        instruction,
-    ) as DialogFragment
-
-    fragment.show(
-        fragmentActivity.supportFragmentManager,
-        instruction.instructionId
+            resultId = instruction.internal.resultId
+        ),
     )
 }
