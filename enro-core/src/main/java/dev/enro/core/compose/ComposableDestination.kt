@@ -94,9 +94,8 @@ internal class ComposableDestinationContextReference(
         return defaultViewModelFactory.second
     }
 
-    override fun getSavedStateRegistry(): SavedStateRegistry {
-        return savedStateController.savedStateRegistry
-    }
+    override val savedStateRegistry: SavedStateRegistry
+        get() = savedStateController.savedStateRegistry
 
     internal fun requireParentContainer(): EnroContainerController = parentContainer!!
 
@@ -218,9 +217,8 @@ abstract class ComposableDestination: LifecycleOwner,
         return contextReference.viewModelStore
     }
 
-    override fun getSavedStateRegistry(): SavedStateRegistry {
-        return contextReference.savedStateRegistry
-    }
+    override val savedStateRegistry: SavedStateRegistry
+        get() = contextReference.savedStateRegistry
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
         return contextReference.defaultViewModelProviderFactory
