@@ -1,12 +1,16 @@
 androidLibrary()
 useCompose()
 apply plugin: "kotlin-kapt"
+apply plugin: "dagger.hilt.android.plugin"
 publishAndroidModule("dev.enro", "enro")
 
 android {
     lintOptions {
         textReport true
         textOutput 'stdout'
+    }
+    defaultConfig {
+        testInstrumentationRunner "dev.enro.HiltTestApplicationRunner"
     }
     packagingOptions {
         resources.excludes.add("META-INF/*")
@@ -45,6 +49,11 @@ dependencies {
     androidTestImplementation deps.androidx.fragment
     androidTestImplementation deps.androidx.activity
     androidTestImplementation deps.androidx.recyclerview
+
+    androidTestImplementation deps.hilt.android
+    androidTestImplementation deps.hilt.testing
+    kaptAndroidTest deps.hilt.compiler
+    kaptAndroidTest deps.hilt.androidCompiler
 
     androidTestImplementation deps.testing.androidx.fragment
     androidTestImplementation deps.testing.androidx.junit
