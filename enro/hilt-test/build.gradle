@@ -2,7 +2,6 @@ androidLibrary()
 useCompose()
 apply plugin: "kotlin-kapt"
 apply plugin: "dagger.hilt.android.plugin"
-publishAndroidModule("dev.enro", "enro")
 
 android {
     lintOptions {
