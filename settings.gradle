@@ -53,7 +53,7 @@ dependencyResolutionManagement {
             library("kotlin-gradle", "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0")
             library("kotlin-stdLib", "org.jetbrains.kotlin:kotlin-stdlib:1.7.0")
 
-            library("hilt-gradle", "com.google.dagger:hilt-android-gradle-plugin:2.42")
+            library("hilt-gradle", "com.google.dagger:hilt-android-gradle-plugin:2.43")
             library("hilt-android", "com.google.dagger:hilt-android:2.42")
             library("hilt-androidCompiler", "com.google.dagger:hilt-android-compiler:2.42")
             library("hilt-testing", "com.google.dagger:hilt-android-testing:2.42")
