@@ -1,1 +1,1 @@
- ../../../../../../src/androidTest/java/dev/enro
+ ../../../../../../src/androidTest/java/dev/enro/TestApplication.kt
