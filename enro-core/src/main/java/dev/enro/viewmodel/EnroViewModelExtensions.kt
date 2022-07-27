@@ -3,9 +3,7 @@ package dev.enro.viewmodel
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.*
-import androidx.lifecycle.getNavigationHandleTag
 import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.*
 import kotlin.properties.ReadOnlyProperty
@@ -48,7 +46,8 @@ internal fun ViewModel.getNavigationHandle(): NavigationHandle {
 
 @MainThread
 inline fun <reified VM : ViewModel> FragmentActivity.enroViewModels(
-    noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null
+    noinline extrasProducer: (() -> CreationExtras)? = null,
+    noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null,
 ): Lazy<VM> {
 
     val factory = factoryProducer ?: {
@@ -59,12 +58,18 @@ inline fun <reified VM : ViewModel> FragmentActivity.enroViewModels(
         getNavigationHandle()
     }
 
-    return enroViewModels({viewModelStore}, navigationHandle, factory)
+    return enroViewModels(
+        navigationHandle = navigationHandle,
+        storeProducer = { viewModelStore },
+        factoryProducer = factory,
+        extrasProducer = { extrasProducer?.invoke() ?: defaultViewModelCreationExtras }
+    )
 }
 
 @MainThread
 inline fun <reified VM : ViewModel> Fragment.enroViewModels(
-    noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null
+    noinline extrasProducer: (() -> CreationExtras)? = null,
+    noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null,
 ): Lazy<VM> {
 
     val factory = factoryProducer ?: {
@@ -75,14 +80,19 @@ inline fun <reified VM : ViewModel> Fragment.enroViewModels(
         getNavigationHandle()
     }
 
-    return enroViewModels({viewModelStore}, navigationHandle, factory)
+    return enroViewModels(
+        navigationHandle = navigationHandle,
+        storeProducer = { viewModelStore },
+        factoryProducer = factory,
+        extrasProducer = { extrasProducer?.invoke() ?: defaultViewModelCreationExtras }
+    )
 }
 
 @MainThread
 @PublishedApi
 internal inline fun <reified VM : ViewModel> enroViewModels(
-    noinline storeProducer: (() -> ViewModelStore),
     noinline navigationHandle: (() -> NavigationHandle),
+    noinline storeProducer: (() -> ViewModelStore),
     noinline factoryProducer: (() -> ViewModelProvider.Factory),
     noinline extrasProducer: () -> CreationExtras = { CreationExtras.Empty }
 ): Lazy<VM> {

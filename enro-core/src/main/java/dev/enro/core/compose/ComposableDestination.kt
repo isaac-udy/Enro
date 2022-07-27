@@ -8,6 +8,8 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
@@ -15,6 +17,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
+import dev.enro.core.controller.application
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.viewmodel.EnroViewModelFactory
 
@@ -49,6 +52,7 @@ internal class ComposableDestinationContextReference(
 
     init {
         destination.contextReference = this
+        destination.enableSavedStateHandles()
 
         savedStateController.performRestore(savedState)
         lifecycleRegistry.addObserver(object : LifecycleEventObserver {
@@ -93,6 +97,15 @@ internal class ComposableDestinationContextReference(
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
         return defaultViewModelFactory.second
     }
+
+    override fun getDefaultViewModelCreationExtras(): CreationExtras {
+        return MutableCreationExtras().apply {
+            set(ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY, navigationController.application)
+            set(SAVED_STATE_REGISTRY_OWNER_KEY, this@ComposableDestinationContextReference)
+            set(VIEW_MODEL_STORE_OWNER_KEY, this@ComposableDestinationContextReference)
+        }
+    }
+
 
     override val savedStateRegistry: SavedStateRegistry get() =
         savedStateController.savedStateRegistry
@@ -222,6 +235,10 @@ abstract class ComposableDestination: LifecycleOwner,
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
         return contextReference.defaultViewModelProviderFactory
+    }
+
+    override fun getDefaultViewModelCreationExtras(): CreationExtras {
+        return contextReference.defaultViewModelCreationExtras
     }
 
     @Composable
