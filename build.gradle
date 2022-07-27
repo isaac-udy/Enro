@@ -8,7 +8,7 @@ buildscript {
         classpath deps.android.gradle
         classpath deps.kotlin.gradle
         classpath deps.hilt.gradle
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10'
     }
 }
 
