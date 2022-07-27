@@ -1,1 +1,1 @@
-/Users/isaacudy/work/Enro/enro/src/androidTest/java/dev/enro/TestDestinations.kt
+../../../../../../src/androidTest/java/dev/enro/TestDestinations.kt
