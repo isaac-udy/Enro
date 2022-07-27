@@ -84,3 +84,4 @@ dependencyResolutionManagement {
         }
     }
 }
+include ':enro:hilt-test'

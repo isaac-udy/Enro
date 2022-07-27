@@ -23,6 +23,5 @@
         <activity android:name="dev.enro.result.RecyclerViewResultActivity"/>
         <activity android:name="dev.enro.result.ComposeRecyclerViewResultActivity"/>
         <activity android:name="dev.enro.result.ResultFlowFragmentRootActivity"/>
-        <activity android:name="dev.enro.viewmodel.ViewModelCreationTests$ContainerActivity"/>
     </application>
 </manifest>

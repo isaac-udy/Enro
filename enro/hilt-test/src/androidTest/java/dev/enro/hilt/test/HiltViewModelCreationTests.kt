@@ -1,4 +1,4 @@
-package dev.enro.viewmodel
+package dev.enro.hilt.test
 
 import android.app.Application
 import android.os.Bundle
@@ -29,6 +29,8 @@ import dev.enro.core.compose.composableManger
 import dev.enro.core.forward
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.navigationHandle
+import dev.enro.viewmodel.enroViewModels
+import dev.enro.viewmodel.navigationHandle
 import junit.framework.TestCase.assertTrue
 import kotlinx.parcelize.Parcelize
 import org.junit.Rule
@@ -38,7 +40,7 @@ import javax.inject.Singleton
 
 
 @HiltAndroidTest
-class ViewModelCreationTests {
+class HiltViewModelCreationTests {
 
     @get:Rule
     val hilt = HiltAndroidRule(this)
@@ -84,7 +86,7 @@ class ViewModelCreationTests {
     class ContainerActivity : TestActivity() {
 
         val viewModel by enroViewModels<TestViewModel>()
-        private val navigation by navigationHandle<ContainerActivity.Key> {
+        private val navigation by navigationHandle<Key> {
             container(primaryFragmentContainer) {
                 it is ContainerFragment.Key
             }
@@ -142,7 +144,7 @@ class ViewModelCreationTests {
     object Compose {
         @Composable
         @ExperimentalComposableDestination
-        @NavigationDestination(Compose.Key::class)
+        @NavigationDestination(Key::class)
         fun Draw() {
             val viewModel = viewModel<TestViewModel>()
 

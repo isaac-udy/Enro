@@ -1,6 +1,7 @@
 androidLibrary()
 useCompose()
 apply plugin: "kotlin-kapt"
+apply plugin: "dagger.hilt.android.plugin"
 publishAndroidModule("dev.enro", "enro")
 
 android {
@@ -8,43 +9,30 @@ android {
         textReport true
         textOutput 'stdout'
     }
+    defaultConfig {
+        testInstrumentationRunner "dev.enro.HiltTestApplicationRunner"
+    }
     packagingOptions {
         resources.excludes.add("META-INF/*")
     }
 }
 
 dependencies {
-    releaseApi "dev.enro:enro-core:$versionName"
-    debugApi project(":enro-core")
-
-    releaseApi "dev.enro:enro-masterdetail:$versionName"
-    debugApi project(":enro-masterdetail")
-
-    releaseApi "dev.enro:enro-multistack:$versionName"
-    debugApi project(":enro-multistack")
-
-    releaseApi "dev.enro:enro-annotations:$versionName"
-    debugApi project(":enro-annotations")
-
-    lintPublish(project(":enro-lint"))
+    implementation(project(":enro"))
 
     kaptAndroidTest project(":enro-processor")
 
-    testImplementation deps.testing.junit
-    testImplementation deps.testing.androidx.junit
-    testImplementation deps.testing.androidx.runner
-    testImplementation deps.testing.robolectric
-    testImplementation project(":enro-test")
-
     androidTestImplementation project(":enro-test")
-
     androidTestImplementation deps.testing.junit
-
     androidTestImplementation deps.androidx.core
     androidTestImplementation deps.androidx.appcompat
     androidTestImplementation deps.androidx.fragment
     androidTestImplementation deps.androidx.activity
     androidTestImplementation deps.androidx.recyclerview
+    androidTestImplementation deps.hilt.android
+    androidTestImplementation deps.hilt.testing
+    kaptAndroidTest deps.hilt.compiler
+    kaptAndroidTest deps.hilt.androidCompiler
 
     androidTestImplementation deps.testing.androidx.fragment
     androidTestImplementation deps.testing.androidx.junit
@@ -55,14 +43,3 @@ dependencies {
 
     androidTestImplementation deps.testing.androidx.compose
 }
-
-afterEvaluate {
-    tasks.findByName("preReleaseBuild")
-            .dependsOn(
-                    ":enro-core:publishToMavenLocal",
-                    ":enro-masterdetail:publishToMavenLocal",
-                    ":enro-multistack:publishToMavenLocal",
-                    ":enro-annotations:publishToMavenLocal"
-            )
-}
-

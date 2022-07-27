@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.enro.hilt.test">
+
+    <application
+        android:allowBackup="true"
+        android:label="Enro Hilt Test"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
+        <activity android:name="dev.enro.DefaultActivity"/>
+        <activity android:name="dev.enro.hilt.test.HiltViewModelCreationTests$ContainerActivity"/>
+    </application>
+
+</manifest>

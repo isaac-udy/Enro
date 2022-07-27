@@ -3,10 +3,10 @@ package dev.enro.viewmodel
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStore
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.*
 import androidx.lifecycle.getNavigationHandleTag
+import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -81,17 +81,20 @@ inline fun <reified VM : ViewModel> Fragment.enroViewModels(
 @MainThread
 @PublishedApi
 internal inline fun <reified VM : ViewModel> enroViewModels(
-    noinline viewModelStore: (() -> ViewModelStore),
+    noinline storeProducer: (() -> ViewModelStore),
     noinline navigationHandle: (() -> NavigationHandle),
-    noinline factoryProducer: (() -> ViewModelProvider.Factory)
+    noinline factoryProducer: (() -> ViewModelProvider.Factory),
+    noinline extrasProducer: () -> CreationExtras = { CreationExtras.Empty }
 ): Lazy<VM> {
-
-    return lazy {
-        val factory = EnroViewModelFactory(
-            navigationHandle.invoke(),
-            factoryProducer.invoke()
-        )
-        ViewModelProvider(viewModelStore.invoke(), factory)
-            .get(VM::class.java)
-    }
+    return ViewModelLazy(
+        VM::class,
+        storeProducer,
+        {
+            EnroViewModelFactory(
+                navigationHandle.invoke(),
+                factoryProducer.invoke()
+            )
+        },
+        extrasProducer,
+    )
 }
