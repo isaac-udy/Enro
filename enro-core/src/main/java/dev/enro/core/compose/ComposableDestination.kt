@@ -2,7 +2,6 @@ package dev.enro.core.compose
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
@@ -21,11 +20,7 @@ import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
 import dev.enro.core.compose.container.ComposableNavigationContainer
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.dialog.EnroBottomSheetContainer
-import dev.enro.core.compose.dialog.EnroDialogContainer
-import dev.enro.core.container.NavigationContainerBackstack
+import dev.enro.core.controller.application
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.viewmodel.EnroViewModelFactory
 

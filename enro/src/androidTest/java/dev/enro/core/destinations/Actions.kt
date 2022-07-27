@@ -10,7 +10,8 @@ import dev.enro.core.compose.AbstractComposeFragmentHost
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.result.closeWithResult
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -76,36 +77,28 @@ fun assertPushContainerType(
             return activeContext == navigationContext || (isActiveContextComposeHost && isActiveContextInChildContainer)
         }
 
-        when (containerType) {
-            is IntoSameContainer -> {
-                val container = parentContext
-                    .containerManager
-                    .containers
-                    .firstOrNull {
-                        it.backstackFlow.value.backstack.contains(pushFrom.navigation.instruction)
-                    }
-                assertNotNull(container)
-            }
-            is IntoChildContainer -> {
-                val container = pushFrom.navigationContext
-                    .containerManager
-                    .containers
-                    .firstOrNull {
-                        it.hasActiveContext(pushOpened.navigationContext)
-                    }
-                assertNotNull(container)
-            }
-            is IntoSiblingContainer -> {
-                val container = parentContext
-                    .containerManager
-                    .containers
-                    .firstOrNull {
-                        it.hasActiveContext(pushOpened.navigationContext) &&
-                                !it.backstackFlow.value.backstack.contains(pushFrom.navigation.instruction)
-                    }
-                assertNotNull(container)
-            }
+        val container = when (containerType) {
+            is IntoSameContainer -> parentContext
+                .containerManager
+                .containers
+                .firstOrNull {
+                    it.backstackFlow.value.backstack.contains(pushFrom.navigation.instruction)
+                }
+            is IntoChildContainer -> pushFrom.navigationContext
+                .containerManager
+                .containers
+                .firstOrNull {
+                    it.hasActiveContext(pushOpened.navigationContext)
+                }
+            is IntoSiblingContainer -> parentContext
+                .containerManager
+                .containers
+                .firstOrNull {
+                    it.hasActiveContext(pushOpened.navigationContext) &&
+                            !it.backstackFlow.value.backstack.contains(pushFrom.navigation.instruction)
+                }
         }
+        assertNotNull(container)
     }
 }
 

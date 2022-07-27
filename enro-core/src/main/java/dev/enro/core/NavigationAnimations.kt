@@ -105,7 +105,10 @@ fun animationsFor(
     context: NavigationContext<*>,
     navigationInstruction: NavigationInstruction
 ): NavigationAnimation.Resource {
-    val animationScale = Settings.Global.getFloat(context.activity.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE)
+    val animationScale = runCatching {
+        Settings.Global.getFloat(context.activity.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE)
+    }.getOrDefault(1.0f)
+
     if(animationScale < 0.01f) {
         return NavigationAnimation.Resource(0, 0)
     }
