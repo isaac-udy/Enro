@@ -10,6 +10,8 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.lifecycle.*
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
@@ -56,6 +58,7 @@ internal class ComposableDestinationContextReference(
 
     init {
         destination.contextReference = this
+        destination.enableSavedStateHandles()
 
         savedStateController.performRestore(savedState)
         parentSavedStateRegistry.registerSavedStateProvider(instruction.instructionId) {
@@ -120,6 +123,14 @@ internal class ComposableDestinationContextReference(
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
         return defaultViewModelFactory
+    }
+
+    override fun getDefaultViewModelCreationExtras(): CreationExtras {
+        return MutableCreationExtras().apply {
+            set(ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY, navigationController.application)
+            set(SAVED_STATE_REGISTRY_OWNER_KEY, this@ComposableDestinationContextReference)
+            set(VIEW_MODEL_STORE_OWNER_KEY, this@ComposableDestinationContextReference)
+        }
     }
 
     override val savedStateRegistry: SavedStateRegistry get() =
@@ -200,6 +211,10 @@ abstract class ComposableDestination: LifecycleOwner,
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
         return contextReference.defaultViewModelProviderFactory
+    }
+
+    override fun getDefaultViewModelCreationExtras(): CreationExtras {
+        return contextReference.defaultViewModelCreationExtras
     }
 
     @Composable

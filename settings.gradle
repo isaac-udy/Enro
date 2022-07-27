@@ -27,35 +27,35 @@ dependencyResolutionManagement {
             library("androidx-core", "androidx.core:core-ktx:1.8.0")
             library("androidx-appcompat", "androidx.appcompat:appcompat:1.4.2")
             library("androidx-constraintlayout", "androidx.constraintlayout:constraintlayout:2.1.4")
-            library("androidx-fragment", "androidx.fragment:fragment-ktx:1.4.1")
+            library("androidx-fragment", "androidx.fragment:fragment-ktx:1.5.0")
             library("androidx-recyclerview", "androidx.recyclerview:recyclerview:1.2.1")
 
-            library("androidx-activity", "androidx.activity:activity-ktx:1.4.0")
-            library("compose-activity", "androidx.activity:activity-compose:1.4.0")
+            library("androidx-activity", "androidx.activity:activity-ktx:1.5.0")
+            library("compose-activity", "androidx.activity:activity-compose:1.5.0")
 
-            library("androidx-lifecycle", "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1")
-            library("compose-viewmodel", "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.1")
+            library("androidx-lifecycle", "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.0")
+            library("compose-viewmodel", "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0")
 
-            library("compose-compiler", "androidx.compose.compiler:compiler:1.2.0-rc02")
-            library("compose-foundation", "androidx.compose.foundation:foundation:1.2.0-rc02")
-            library("compose-foundationLayout", "androidx.compose.foundation:foundation-layout:1.2.0-rc02")
-            library("compose-ui", "androidx.compose.ui:ui:1.2.0-rc02")
-            library("compose-uiTooling", "androidx.compose.ui:ui-tooling:1.2.0-rc02")
-            library("compose-runtime", "androidx.compose.runtime:runtime:1.2.0-rc02")
-            library("compose-livedata", "androidx.compose.runtime:runtime-livedata:1.2.0-rc02")
-            library("compose-material", "androidx.compose.material:material:1.2.0-rc02")
+            library("compose-compiler", "androidx.compose.compiler:compiler:1.2.0")
+            library("compose-foundation", "androidx.compose.foundation:foundation:1.2.0-rc03")
+            library("compose-foundationLayout", "androidx.compose.foundation:foundation-layout:1.2.0-rc03")
+            library("compose-ui", "androidx.compose.ui:ui:1.2.0-rc03")
+            library("compose-uiTooling", "androidx.compose.ui:ui-tooling:1.2.0-rc03")
+            library("compose-runtime", "androidx.compose.runtime:runtime:1.2.0-rc03")
+            library("compose-livedata", "androidx.compose.runtime:runtime-livedata:1.2.0-rc03")
+            library("compose-material", "androidx.compose.material:material:1.2.0-rc03")
 
-            library("compose-materialIcons", "androidx.compose.material:material-icons-core:1.2.0-rc02")
-            library("compose-materialIconsExtended", "androidx.compose.material:material-icons-extended:1.2.0-rc02")
+            library("compose-materialIcons", "androidx.compose.material:material-icons-core:1.2.0-rc03")
+            library("compose-materialIconsExtended", "androidx.compose.material:material-icons-extended:1.2.0-rc03")
 
-            library("kotlin-gradle", "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10")
+            library("kotlin-gradle", "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0")
             library("kotlin-stdLib", "org.jetbrains.kotlin:kotlin-stdlib:1.7.0")
             library("kotlin-reflect", "org.jetbrains.kotlin:kotlin-reflect:1.7.0")
 
-            library("hilt-gradle", "com.google.dagger:hilt-android-gradle-plugin:2.42")
-            library("hilt-android", "com.google.dagger:hilt-android:2.42")
-            library("hilt-androidCompiler", "com.google.dagger:hilt-android-compiler:2.42")
-            library("hilt-testing", "com.google.dagger:hilt-android-testing:2.42")
+            library("hilt-gradle", "com.google.dagger:hilt-android-gradle-plugin:2.43")
+            library("hilt-android", "com.google.dagger:hilt-android:2.43")
+            library("hilt-androidCompiler", "com.google.dagger:hilt-android-compiler:2.43")
+            library("hilt-testing", "com.google.dagger:hilt-android-testing:2.43")
             library("hilt-compiler", "androidx.hilt:hilt-compiler:1.0.0")
 
             library("testing-junit", "junit:junit:4.13.2")
@@ -67,7 +67,7 @@ dependencyResolutionManagement {
             library("testing-androidx-espresso", "androidx.test.espresso:espresso-core:3.4.0")
             library("testing-androidx-espressoRecyclerView", "androidx.test.espresso:espresso-contrib:3.4.0")
             library("testing-androidx-espressoIntents", "androidx.test.espresso:espresso-intents:3.4.0")
-            library("testing-androidx-fragment", "androidx.fragment:fragment-testing:1.4.1")
+            library("testing-androidx-fragment", "androidx.fragment:fragment-testing:1.5.0")
             library("testing-androidx-compose", "androidx.compose.ui:ui-test-junit4:1.1.0")
 
             library("processing-jsr250", "javax.annotation:jsr250-api:1.0")
@@ -83,3 +83,4 @@ dependencyResolutionManagement {
         }
     }
 }
+include ':enro:hilt-test'

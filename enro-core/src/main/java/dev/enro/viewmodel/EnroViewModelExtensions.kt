@@ -3,10 +3,8 @@ package dev.enro.viewmodel
 import androidx.activity.ComponentActivity
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.getNavigationHandleTag
+import androidx.lifecycle.*
+import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -48,7 +46,8 @@ internal fun ViewModel.getNavigationHandle(): NavigationHandle {
 
 @MainThread
 inline fun <reified VM : ViewModel> ComponentActivity.enroViewModels(
-    noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null
+    noinline extrasProducer: (() -> CreationExtras)? = null,
+    noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null,
 ): Lazy<VM> {
 
     val factory = factoryProducer ?: {
@@ -59,12 +58,18 @@ inline fun <reified VM : ViewModel> ComponentActivity.enroViewModels(
         getNavigationHandle()
     }
 
-    return enroViewModels({viewModelStore}, navigationHandle, factory)
+    return enroViewModels(
+        navigationHandle = navigationHandle,
+        storeProducer = { viewModelStore },
+        factoryProducer = factory,
+        extrasProducer = { extrasProducer?.invoke() ?: defaultViewModelCreationExtras }
+    )
 }
 
 @MainThread
 inline fun <reified VM : ViewModel> Fragment.enroViewModels(
-    noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null
+    noinline extrasProducer: (() -> CreationExtras)? = null,
+    noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null,
 ): Lazy<VM> {
 
     val factory = factoryProducer ?: {
@@ -75,23 +80,31 @@ inline fun <reified VM : ViewModel> Fragment.enroViewModels(
         getNavigationHandle()
     }
 
-    return enroViewModels({viewModelStore}, navigationHandle, factory)
+    return enroViewModels(
+        navigationHandle = navigationHandle,
+        storeProducer = { viewModelStore },
+        factoryProducer = factory,
+        extrasProducer = { extrasProducer?.invoke() ?: defaultViewModelCreationExtras }
+    )
 }
 
 @MainThread
 @PublishedApi
 internal inline fun <reified VM : ViewModel> enroViewModels(
-    noinline viewModelStore: (() -> ViewModelStore),
     noinline navigationHandle: (() -> NavigationHandle),
-    noinline factoryProducer: (() -> ViewModelProvider.Factory)
+    noinline storeProducer: (() -> ViewModelStore),
+    noinline factoryProducer: (() -> ViewModelProvider.Factory),
+    noinline extrasProducer: () -> CreationExtras = { CreationExtras.Empty }
 ): Lazy<VM> {
-
-    return lazy {
-        val factory = EnroViewModelFactory(
-            navigationHandle.invoke(),
-            factoryProducer.invoke()
-        )
-        ViewModelProvider(viewModelStore.invoke(), factory)
-            .get(VM::class.java)
-    }
+    return ViewModelLazy(
+        VM::class,
+        storeProducer,
+        {
+            EnroViewModelFactory(
+                navigationHandle.invoke(),
+                factoryProducer.invoke()
+            )
+        },
+        extrasProducer,
+    )
 }

@@ -7,9 +7,10 @@ import dev.enro.core.controller.navigationController
 import dev.enro.core.plugins.EnroLogger
 
 @NavigationComponent
-class TestApplication : Application(), NavigationApplication {
+open class TestApplication : Application(), NavigationApplication {
     override val navigationController = navigationController {
         plugin(EnroLogger())
         plugin(TestPlugin)
     }
 }
+

@@ -42,7 +42,9 @@ class DashboardActivity : AppCompatActivity() {
             otherMessagesTitle.setOnClickListener { viewModel.onOtherMessagesSelected() }
             allMessagesTitle.setOnClickListener { viewModel.onAllMessagesSelected() }
             userInfoButton.setOnClickListener { viewModel.onUserInfoSelected() }
-            multiStackButton.setOnClickListener { viewModel.onMultiStackSelected() }
+            multiStackButton.setOnClickListener {
+                viewModel.onMultiStackSelected()
+            }
 
             viewModel.observableState.observe(this@DashboardActivity) {
                 subtitle.text = "Welcome back, ${it.userId}"

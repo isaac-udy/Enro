@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 
 private class AnimatorView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -34,7 +35,7 @@ internal data class AnimationResourceState(
     val translationY: Float = 0.0f,
     val rotationX: Float = 0.0f,
     val rotationY: Float = 0.0f,
-    val transformOrigin: TransformOrigin = TransformOrigin.Center,
+    val transformOrigin: @RawValue TransformOrigin = TransformOrigin.Center,
 
     val playTime: Long = 0,
     val isActive: Boolean = false

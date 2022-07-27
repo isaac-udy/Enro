@@ -118,6 +118,14 @@ class RecyclerViewResultTests {
 
     private fun ActivityScenario<RecyclerViewResultActivity>.assertResultIsReceivedFor(index: Int) {
         val id = items[index].id
+
+        // TODO: On very fast emulated devices (i.e. those hosted by an M1 MacBook),
+        // these tests run too fast and fail because the click event is handled before
+        // the activity can actually do anything about it. For now, this sleep will
+        // make sure the test runs on these fast devices, but there should be a nicer
+        // way to do this in the future.
+        Thread.sleep(1000)
+
         onView(withContentDescription(Matchers.equalTo(id)))
             .check(matches(withText("$id@EMPTY")))
 
@@ -172,6 +180,7 @@ class RecyclerViewResultActivity : AppCompatActivity() {
             )
         }
         adapter.submitList(items)
+        recyclerView.invalidate()
     }
 
     companion object {
