@@ -1,19 +1,17 @@
 package dev.enro.core.fragment.container
 
 import android.app.Activity
-import android.util.Log
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.*
 import dev.enro.core.*
-import dev.enro.core.compose.dialog.ComposeDialogFragmentHost
 import dev.enro.core.compose.dialog.animate
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainer
-import dev.enro.core.container.NavigationContainerBackstack
+import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.close
 import dev.enro.core.fragment.FragmentFactory
-import dev.enro.core.fragment.internal.FullScreenDialogKey
 import dev.enro.core.fragment.internal.FullscreenDialogFragment
 
 class FragmentNavigationContainer internal constructor(
@@ -58,7 +56,7 @@ class FragmentNavigationContainer internal constructor(
 
     override fun reconcileBackstack(
         removed: List<AnyOpenInstruction>,
-        backstack: NavigationContainerBackstack
+        backstack: NavigationBackstack
     ): Boolean {
         if(!tryExecutePendingTransitions() || fragmentManager.isStateSaved || backstack != backstackFlow.value){
             return false
@@ -75,7 +73,7 @@ class FragmentNavigationContainer internal constructor(
 
         val toDetach = backstack.backstack
             .filter { it.navigationDirection !is NavigationDirection.Present }
-            .filter { it != backstack.visible }
+            .filter { it != backstack.active }
             .mapNotNull { fragmentManager.findFragmentByTag(it.instructionId)?.to(it) }
 
         val toPresent = backstack.backstack
@@ -100,7 +98,7 @@ class FragmentNavigationContainer internal constructor(
             }
 
 
-        val activeInstruction = backstack.visible
+        val activeInstruction = backstack.active
         val activeFragment = activeInstruction?.let {
             fragmentManager.findFragmentByTag(it.instructionId)
         }

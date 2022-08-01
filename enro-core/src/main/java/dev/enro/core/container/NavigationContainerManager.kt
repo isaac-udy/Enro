@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class NavigationContainerManager {
-    private val restoredContainerStates = mutableMapOf<String, NavigationContainerBackstack>()
+    private val restoredContainerStates = mutableMapOf<String, NavigationBackstack>()
     private var restoredActiveContainer: String? = null
 
     private val _containers: MutableSet<NavigationContainer> = mutableSetOf()

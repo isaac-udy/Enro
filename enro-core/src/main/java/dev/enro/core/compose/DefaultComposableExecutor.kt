@@ -2,13 +2,13 @@ package dev.enro.core.compose
 
 import androidx.compose.material.ExperimentalMaterialApi
 import dev.enro.core.*
-import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.container.asPushInstruction
-import dev.enro.core.fragment.container.FragmentNavigationContainer
+import dev.enro.core.container.close
+import dev.enro.core.container.push
 import dev.enro.core.fragment.internal.SingleFragmentKey
 
 object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination, NavigationKey>(

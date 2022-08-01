@@ -5,8 +5,11 @@ import android.util.Log
 import androidx.fragment.app.*
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
+import dev.enro.core.container.*
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.container.asPushInstruction
+import dev.enro.core.container.close
+import dev.enro.core.container.present
 import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.fragment.internal.SingleFragmentKey
 import kotlinx.coroutines.delay

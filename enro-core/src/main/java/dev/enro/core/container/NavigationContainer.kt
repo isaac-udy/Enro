@@ -2,7 +2,6 @@ package dev.enro.core.container
 
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.annotation.MainThread
 import androidx.lifecycle.Lifecycle
 import dev.enro.core.*
@@ -26,7 +25,7 @@ abstract class NavigationContainer(
 
     private val pendingRemovals = mutableSetOf<AnyOpenInstruction>()
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
-    val backstackFlow: StateFlow<NavigationContainerBackstack> get() = mutableBackstack
+    val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
 
     init {
         parentContext.runWhenContextActive {
@@ -35,7 +34,7 @@ abstract class NavigationContainer(
     }
 
     @MainThread
-    fun setBackstack(backstack: NavigationContainerBackstack) = synchronized(this) {
+    fun setBackstack(backstack: NavigationBackstack) = synchronized(this) {
         if(Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
@@ -99,7 +98,7 @@ abstract class NavigationContainer(
     // Returns true if the backstack was able to be reconciled successfully
     abstract fun reconcileBackstack(
         removed: List<AnyOpenInstruction>,
-        backstack: NavigationContainerBackstack
+        backstack: NavigationBackstack
     ): Boolean
 
     companion object {

@@ -10,7 +10,7 @@ import dev.enro.core.compose.ComposableDestinationContextReference
 import dev.enro.core.compose.getComposableDestinationContext
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainer
-import dev.enro.core.container.NavigationContainerBackstack
+import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainerManager
 
 class ComposableNavigationContainer internal constructor(
@@ -42,14 +42,14 @@ class ComposableNavigationContainer internal constructor(
 
     override fun reconcileBackstack(
         removed: List<AnyOpenInstruction>,
-        backstack: NavigationContainerBackstack
+        backstack: NavigationBackstack
     ): Boolean {
         backstack.renderable
             .map { instruction ->
                 requireDestinationContext(instruction)
             }
             .forEach { context ->
-                val isVisible = context.instruction == backstack.visible
+                val isVisible = context.instruction == backstack.active
 
                 if (isVisible) {
                     context.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)

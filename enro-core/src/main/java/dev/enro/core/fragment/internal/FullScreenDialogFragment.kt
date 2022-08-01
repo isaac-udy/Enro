@@ -19,6 +19,7 @@ import dev.enro.core.compose.dialog.animate
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.createEmptyBackStack
+import dev.enro.core.container.push
 import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.fragment.container.containerView
 import dev.enro.core.fragment.container.navigationContainer

@@ -12,12 +12,8 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.registerState
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.dialog.EnroBottomSheetContainer
-import dev.enro.core.compose.dialog.EnroDialogContainer
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationContainerBackstack
+import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.util.*
@@ -78,7 +74,7 @@ fun rememberEnroContainerController(
     viewModelStoreOwner.getNavigationHandleViewModel().navigationContext!!.containerManager.registerState(controller)
     DisposableEffect(controller.id) {
         if(controller.backstackFlow.value.backstack.isEmpty()) {
-            val backstack = NavigationContainerBackstack(
+            val backstack = NavigationBackstack(
                 backstack = initialBackstack.map { it.asPushInstruction() },
                 exiting = null,
                 exitingIndex = -1,
