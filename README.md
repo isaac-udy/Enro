@@ -215,6 +215,30 @@ override<MasterDetailActivity, DetailFragment>(
 )
 ```
 
+#### I'd like to add a custom animation (using an override) for a @Composable @NavigationDestination
+Unlike Activities and Fragments, when you want to write an override for a @Composable @NavigationDestination (particularly to specify custom animations), you don't have a class to reference in the To or From type arguments to the `override<To, From>()` function. At first glance, it may appear that it is not possible to create an override for a @Composable @NavigationDestination.
+
+However, when you define a @Composable @NavigationDestination, Enro generates a class, called `<YourComposableName>Destination`. This class can be used when specifying overrides for @Composable @NavigationDestinations. 
+
+Example:
+```kotlin
+val navigationController = navigationController {
+   /**
+    * This example assumes you have a @Composable function that is also a @NavigationDestination, and that the name
+    * of the @Composable function is `MyComposableScreen`. 
+    * 
+    * This example will set both the open and close animations for this screen to be the default "no animation" animation
+    * that Enro provides. 
+    */
+    override<MyActivityOrFragment, MyComposableScreenDestination> {
+       animation { DefaultAnimations.none }
+       closeAnimation { DefaultAnimations.none }
+    }
+}
+```
+
+Please note, that the `<YourComposableName>Destination` is a generated class, and will not be available until you've compiled the project at least once since defining your @Composable @NavigationDestination (similar to how Dagger generates Components).
+
 #### My Activity crashes on launch, what's going on?!
 It's possible for an Activity to be launched from multiple places. Most of these can be controlled by Enro, but some of them cannot. For example, an Activity that's declared in the manifest as a MAIN/LAUNCHER Activity might be launched by the Android operating system when the user opens your application for the first time. Because Enro hasn't launched the Activity, it's not going to know what the NavigationKey for that Activity is, and won't be able to read it from the Activity's intent. 
 
