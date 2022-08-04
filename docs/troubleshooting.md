@@ -51,7 +51,7 @@ class ExampleTest {
 ### `CouldNotCreateEnroViewModel`
 This exception is thrown by the `EnroViewModelFactory`, which is used when using `by enroViewModels<ViewModel>()` to create a ViewModel that has access to a NavigationHandle. `by enroViewModels` does not actually create the ViewModel itself, but rather it sets up some state and then delegates the ViewModel creation to another `ViewModelProvider.Factory`. You can pass your own `ViewModelProvider.Factory` to `by enroViewModels` if you need to use a custom ViewModel factory, but this will default to the `defaultViewModelProviderFactory` of a Fragment or Activity if you do not provide your own `ViewModelProvider.Factory`. 
 
-If you are getting this exception, check that the `defaultViewModelProviderFactory` can actually create the ViewModel type you are requesting. If you use a custom `ViewModelProvider.Factory`, make sure that you are providing this to `by enroViewModels`. 
+If you are getting this exception, check that the `defaultViewModelProviderFactory` can actually create the ViewModel type you are requesting. If you use a custom `ViewModelProvider.Factory`, make sure that you are providing this to `by enroViewModels`, or calling `withNavigationHandle()` if you are using `by viewModels()`. 
 
 #### This occurs in a project that uses Hilt and `@HiltViewModel`
 This exception can occur in projects that use Hilt, and you are attempting to create an `@HiltViewModel` annotated ViewModel, but are not requesting the ViewModel from inside an `@AndroidEntryPoint` annotated Activity/Fragment. If a Fragment or Activity is not marked as `@AndroidEntryPoint`, Hilt will not set the `defaultViewModelProviderFactory` to the Hilt ViewModel factory, and the `defaultViewModelProviderFactory` will be a `SavedStateViewModelFactory`, which won't be able to construct your `@HiltViewModel` factory.
@@ -85,7 +85,65 @@ class ExampleFragment : Fragment {
 ```
 
 ### `ViewModelCouldNotGetNavigationHandle`
-This exception will occur if you attempt to create a ViewModel that uses `by navigationHandle()`, but the ViewModel is not created using `by enroViewModels` (for example, if you use `by viewModels` instead). 
+This exception will occur if you attempt to create a ViewModel that uses `by navigationHandle()`, but the ViewModel does not have access to a NavigationHandle during it's initialisation. This can be solved in a few different ways: 
+
+1. Activities and Fragments:
+```kotlin
+@NavigationDestination(MyNavigationKey::class)
+class ActivityOrFragment : Activity /*or Fragment*/ {
+    /**
+     * viewModelFromDefault and viewModelFromCustom below show how to use `ViewModelProvider.Factory.withNavigationHandle()`
+     * to bind a NavigationHandle to a ViewModelProvider through a normal call to `by viewModels()`
+     */
+    val viewModelFromDefault by viewModels<MyViewModel>(
+        factoryProducer = {
+            defaultViewModelProviderFactory.withNavigationHandle(getNavigationHandle())
+        }
+    )
+
+    val viewModelFromCustom by viewModels<MyViewModel>(
+        factoryProducer = {
+            MyCustomViewModelFactory(/* ... */).withNavigationHandle(getNavigationHandle())
+        }
+    )
+
+    /**
+     * enroViewModelFromDefault and enroViewModelFromCustom below show how to use `by enroViewModels()` to create a ViewModel that
+     * requests a NavigationHandle. `by enroViewModels()` essentially takes care of the `.withNavigationHandle()` call for you.
+     */
+    val enroViewModelFromDefault by enroViewModels<MyViewModel>()
+
+    val enroViewModelFromCustom by enroViewModels<MyViewModel>(
+        factoryProducer = { MyCustomViewModelFactory(/* ... */) }
+    )
+}
+```
+
+2. Composables
+```kotlin
+@Composable
+@NavigationDestination(MyNavigationKey::class)
+fun MyEnroComposable() {
+ 
+    /**
+     * In a @Composable function that is also marked as @NavigationDestination
+     * any call to `= viewModel()` will by default use a ViewModelProvider.Factory that 
+     * has a the `LocalNavigationHandle.current` bound
+     */
+    val viewModelFromDefault = viewModel<MyViewModel>()
+    
+    /**
+     * If you need to provide a custom ViewModelProvider.Factory, you can use the `.withNavigationHandle()` 
+     * function which as shown in the Activity/Fragment examples above. In a @Composable function, 
+     * passing the `navigationHandle =` argument is optional, as this will use the `LocalNavigationHandle.current` 
+     * unless you explicitly provide the argument. 
+     */
+    val viewModelFromCustomer = viewModel<MyViewModel>(
+        factory = MyCustomViewModelFactory(/* ... */).withNavigationHandle()
+    )
+    
+}
+```
 
 #### This Exception is occurring in tests
 This exception will occur in tests if you are attempting to create a ViewModel to test, but have not used `putNavigationHandleForViewModel` from the `enro-test` library.
