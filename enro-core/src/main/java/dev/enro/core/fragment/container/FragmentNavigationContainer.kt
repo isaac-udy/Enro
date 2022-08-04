@@ -24,35 +24,18 @@ class FragmentNavigationContainer internal constructor(
     parentContext = parentContext,
     accept = accept,
     emptyBehavior = emptyBehavior,
+    supportedNavigationDirections = setOf(NavigationDirection.Push)
 ) {
-    private val fragmentManager = when(parentContext.contextReference) {
-        is FragmentActivity -> parentContext.contextReference.supportFragmentManager
-        is Fragment -> parentContext.contextReference.childFragmentManager
-        else -> throw IllegalStateException("Expected Fragment or FragmentActivity, but was ${parentContext.contextReference}")
-    }
-
     override val activeContext: NavigationContext<*>?
         get() = fragmentManager.findFragmentById(containerId)?.navigationContext
 
     override var isVisible: Boolean
         get() {
-            if(id == PRESENTATION_CONTAINER) return true
             return containerView?.isVisible ?: false
         }
         set(value) {
-            if(id == PRESENTATION_CONTAINER) return
             containerView?.isVisible = value
         }
-
-    init {
-        fragmentManager.registerFragmentLifecycleCallbacks(object: FragmentManager.FragmentLifecycleCallbacks() {
-            override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
-                if(f is DialogFragment && f.showsDialog) {
-                    setBackstack(backstackFlow.value.close(f.tag ?: return))
-                }
-            }
-        }, false)
-    }
 
     override fun reconcileBackstack(
         removed: List<AnyOpenInstruction>,
@@ -75,28 +58,6 @@ class FragmentNavigationContainer internal constructor(
             .filter { it.navigationDirection !is NavigationDirection.Present }
             .filter { it != backstack.active }
             .mapNotNull { fragmentManager.findFragmentByTag(it.instructionId)?.to(it) }
-
-        val toPresent = backstack.backstack
-            .filter {
-                it.navigationDirection is NavigationDirection.Present
-            }
-            .filter { fragmentManager.findFragmentByTag(it.instructionId) == null }
-            .map {
-                val navigator = parentContext.controller.navigatorForKeyType(it.navigationKey::class)
-                    ?: throw EnroException.UnreachableState()
-
-                FragmentFactory.createFragment(
-                    parentContext,
-                    navigator,
-                    it
-                ) to it
-            }
-            .map {
-                if(it.second.navigationDirection is NavigationDirection.Present && it.first !is DialogFragment) {
-                    FullscreenDialogFragment().apply { fragment = it.first } to it.second
-                } else it
-            }
-
 
         val activeInstruction = backstack.active
         val activeFragment = activeInstruction?.let {
@@ -126,7 +87,6 @@ class FragmentNavigationContainer internal constructor(
         val primaryFragment = backstack.backstack.lastOrNull()
             ?.let {
                 fragmentManager.findFragmentByTag(it.instructionId)
-                    ?: toPresent.firstOrNull { presented -> presented.second.instructionId == it.instructionId }?.first
             }
             ?: newFragment
 
@@ -144,10 +104,6 @@ class FragmentNavigationContainer internal constructor(
                 detach(it.first)
             }
 
-            toPresent.forEach {
-                add(it.first, it.second.instructionId)
-            }
-
             when {
                 activeInstruction == null -> { /* Pass */ }
                 activeFragment != null -> {
@@ -163,15 +119,6 @@ class FragmentNavigationContainer internal constructor(
         }
 
         return true
-    }
-
-    private fun tryExecutePendingTransitions(): Boolean {
-        return kotlin
-            .runCatching {
-                fragmentManager.executePendingTransactions()
-                true
-            }
-            .getOrDefault(false)
     }
 }
 

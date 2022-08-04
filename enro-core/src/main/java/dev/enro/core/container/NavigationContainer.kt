@@ -8,12 +8,14 @@ import dev.enro.core.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.getAndUpdate
+import kotlin.reflect.KClass
 
 abstract class NavigationContainer(
     val id: String,
     val parentContext: NavigationContext<*>,
-    val accept: (NavigationKey) -> Boolean,
-    val emptyBehavior: EmptyBehavior
+    private val accept: (NavigationKey) -> Boolean,
+    val emptyBehavior: EmptyBehavior,
+    val supportedNavigationDirections: Set<NavigationDirection>
 ) {
     private val handler = Handler(Looper.getMainLooper())
     private val reconcileBackstack = Runnable {
@@ -26,6 +28,7 @@ abstract class NavigationContainer(
     private val pendingRemovals = mutableSetOf<AnyOpenInstruction>()
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
     val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
+    val backstack: NavigationBackstack get() = backstackFlow.value
 
     init {
         parentContext.runWhenContextActive {
@@ -39,6 +42,11 @@ abstract class NavigationContainer(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
         if(backstack == backstackFlow.value) return@synchronized
+        backstack.backstack
+            .map { it.navigationDirection }
+            .toSet()
+            .minus { supportedNavigationDirections }
+            .let { require(it.isEmpty()) }
 
         handler.removeCallbacks(reconcileBackstack)
         val lastBackstack = mutableBackstack.getAndUpdate { backstack }
@@ -101,9 +109,10 @@ abstract class NavigationContainer(
         backstack: NavigationBackstack
     ): Boolean
 
-    companion object {
-        internal const val PRESENTATION_CONTAINER_LAYOUT_ID = -1
-        internal const val PRESENTATION_CONTAINER = PRESENTATION_CONTAINER_LAYOUT_ID.toString()
+    fun accept(
+        instruction: AnyOpenInstruction
+    ): Boolean {
+        return accept.invoke(instruction.navigationKey) && supportedNavigationDirections.contains(instruction.navigationDirection)
     }
 }
 
