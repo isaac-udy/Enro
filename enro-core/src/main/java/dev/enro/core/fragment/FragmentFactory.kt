@@ -1,6 +1,7 @@
 package dev.enro.core.fragment
 
 import android.os.Bundle
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import dagger.hilt.internal.GeneratedComponentManagerHolder
@@ -8,6 +9,9 @@ import dev.enro.core.*
 import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.compose.ComposeFragmentHostKey
 import dev.enro.core.compose.HiltComposeFragmentHostKey
+import dev.enro.core.compose.dialog.*
+import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
+import dev.enro.core.container.asPresentInstruction
 
 internal object FragmentFactory {
 
@@ -15,6 +19,7 @@ internal object FragmentFactory {
         GeneratedComponentManagerHolder::class.java
     }.getOrNull()
 
+    @OptIn(ExperimentalMaterialApi::class)
     fun createFragment(
         parentContext: NavigationContext<*>,
         navigator: Navigator<*, *>,
@@ -42,9 +47,18 @@ internal object FragmentFactory {
                     parentContext.contextReference is GeneratedComponentManagerHolder
                 } else false
 
+                val isDialog = DialogDestination::class.java.isAssignableFrom(navigator.contextType.java)
+                        || BottomSheetDestination::class.java.isAssignableFrom(navigator.contextType.java)
+
                 val wrappedKey = when {
-                    isHiltContext -> HiltComposeFragmentHostKey(instruction, isRoot = false)
-                    else -> ComposeFragmentHostKey(instruction, isRoot = false)
+                    isDialog -> when {
+                        isHiltContext -> HiltComposeDialogFragmentHostKey(instruction.asPresentInstruction())
+                        else -> ComposeDialogFragmentHostKey(instruction.asPresentInstruction())
+                    }
+                    else -> when {
+                        isHiltContext -> HiltComposeFragmentHostKey(instruction, isRoot = false)
+                        else -> ComposeFragmentHostKey(instruction, isRoot = false)
+                    }
                 }
 
                 return createFragment(

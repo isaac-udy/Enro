@@ -44,7 +44,7 @@ inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPush> Tes
     containerType: ContainerType,
     expected: Key = Key::class.createFromDefaultConstructor(),
 ): TestNavigationContext<Context, Key> {
-    navigation.push(expected)
+    navigation.add(expected)
     val expectedContext = expectContext<Context, Key> { it.navigation.key == expected }
     assertEquals(expected, expectedContext.navigation.key)
     assertPushContainerType(

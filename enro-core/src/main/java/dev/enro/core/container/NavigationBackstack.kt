@@ -10,9 +10,17 @@ fun createEmptyBackStack() = NavigationBackstack(
     isDirectUpdate = true
 )
 
-fun createRootBackStack(rootInstruction: AnyOpenInstruction) = NavigationBackstack(
+fun createRootBackStack(rootInstruction: AnyOpenInstruction?) = NavigationBackstack(
     lastInstruction = NavigationInstruction.Close,
-    backstack = listOf(rootInstruction),
+    backstack = listOfNotNull(rootInstruction),
+    exiting = null,
+    exitingIndex = -1,
+    isDirectUpdate = true
+)
+
+fun createRootBackStack(backstack: List<AnyOpenInstruction>) = NavigationBackstack(
+    lastInstruction = NavigationInstruction.Close,
+    backstack = backstack,
     exiting = null,
     exitingIndex = -1,
     isDirectUpdate = true
@@ -46,25 +54,14 @@ data class NavigationBackstack(
     }
 }
 
-internal fun NavigationBackstack.push(
-    vararg instructions: OpenPushInstruction
+internal fun NavigationBackstack.add(
+    vararg instructions: AnyOpenInstruction
 ): NavigationBackstack {
     if(instructions.isEmpty()) return this
     return copy(
         backstack = backstack + instructions,
         exiting = active,
         exitingIndex = backstack.lastIndex,
-        lastInstruction = instructions.last(),
-        isDirectUpdate = false
-    )
-}
-
-internal fun NavigationBackstack.present(
-    vararg instructions: OpenPresentInstruction
-): NavigationBackstack {
-    if(instructions.isEmpty()) return this
-    return copy(
-        backstack = backstack + instructions,
         lastInstruction = instructions.last(),
         isDirectUpdate = false
     )

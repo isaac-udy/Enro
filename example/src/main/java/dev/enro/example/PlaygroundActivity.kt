@@ -2,7 +2,6 @@ package dev.enro.example
 
 import android.os.Bundle
 import android.widget.TextView
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,11 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
-import dev.enro.core.forward
-import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.present
-import dev.enro.core.push
+import dev.enro.core.add
 
 @AndroidEntryPoint
 class PlaygroundActivity : FragmentActivity() {
@@ -38,7 +35,7 @@ class PlaygroundActivity : FragmentActivity() {
                     Text(text = "Present Example Dialog")
                 }
 
-                Button(onClick = { getNavigationHandle().push(ExampleDialogKey()) }) {
+                Button(onClick = { getNavigationHandle().add(ExampleDialogKey()) }) {
                     Text(text = "Push Example Dialog")
                 }
 

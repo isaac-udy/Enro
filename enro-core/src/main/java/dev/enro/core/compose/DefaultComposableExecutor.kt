@@ -8,7 +8,7 @@ import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.close
-import dev.enro.core.container.push
+import dev.enro.core.container.add
 import dev.enro.core.fragment.internal.SingleFragmentKey
 
 object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination, NavigationKey>(
@@ -37,42 +37,17 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
             NavigationDirection.ReplaceRoot -> {
                 openComposableAsActivity(args.fromContext, NavigationDirection.ReplaceRoot, instruction)
             }
-            NavigationDirection.Present -> {
-                EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(
-                    fromContext.controller,
-                    args
-                )
-                when {
-                    isDialog -> {
-                        instruction as OpenPresentInstruction
-                        args.fromContext.controller.open(
-                            args.fromContext,
-                            NavigationInstruction.Open.OpenInternal(
-                                instruction.navigationDirection,
-                                ComposeDialogFragmentHostKey(instruction)
-                            )
-                        )
-                    }
-                    else -> {
-                        openComposableAsActivity(
-                            args.fromContext,
-                            NavigationDirection.Present,
-                            instruction
-                        )
-                    }
-                }
-                if(isReplace) {
-                    fromContext.getNavigationHandle().close()
-                }
-            }
+            NavigationDirection.Present,
             NavigationDirection.Push  -> {
-                instruction as OpenPushInstruction
+
                 val containerManager = args.fromContext.containerManager
+
                 val host = containerManager.activeContainer?.takeIf {
-                    it.isVisible && it.accept(args.key)
+                    it.isVisible && it.accept(instruction)
                 } ?: containerManager.containers
                         .filter { it.isVisible }
-                        .firstOrNull { it.accept(args.key) }
+                        .firstOrNull { it.accept(instruction) }
+
                 if (host == null) {
                     val parentContext = args.fromContext.parentContext()
                     if (parentContext == null) {
@@ -95,7 +70,7 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
                         .let {
                             if(isReplace) it.close() else it
                         }
-                        .push(instruction)
+                        .add(instruction)
                 )
 
             }

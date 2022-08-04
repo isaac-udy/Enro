@@ -36,7 +36,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class Profile : NavigationKey
+class Profile : NavigationKey.SupportsPush
 
 
 @Composable

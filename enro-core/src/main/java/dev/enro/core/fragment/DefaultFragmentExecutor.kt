@@ -1,15 +1,13 @@
 package dev.enro.core.fragment
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.*
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
-import dev.enro.core.container.*
+import dev.enro.core.container.add
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.close
-import dev.enro.core.container.present
 import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.fragment.internal.SingleFragmentKey
 import kotlinx.coroutines.delay
@@ -47,65 +45,43 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             NavigationDirection.ReplaceRoot -> {
                 openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
             }
-            NavigationDirection.Present -> {
-                val host = args.fromContext.containerManager.presentationContainer as? FragmentNavigationContainer
-                when (host) {
-                    null -> {
-                        val parentContext = fromContext.parentContext()
-                        if(parentContext == null) {
-                            EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
-                            openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
-                            if(isReplace) {
-                                fromContext.getNavigationHandle().close()
-                            }
-                        } else {
-                            parentContext.controller.open(
-                                parentContext,
-                                args.instruction
-                            )
-                        }
-                        return
-                    }
-                    else -> {
-                        EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
-                        host.setBackstack(
-                            host.backstackFlow.value
-                                .let {
-                                    if(isReplace) it.close() else it
-                                }
-                                .present(
-                                    instruction.asPresentInstruction()
-                                )
-                        )
-                    }
-                }
-            }
+            NavigationDirection.Present,
             NavigationDirection.Push -> {
                 val containerManager = args.fromContext.containerManager
                 val host = containerManager.activeContainer?.takeIf {
-                    it.isVisible && it.accept(args.key) && it is FragmentNavigationContainer
+                    it.isVisible && it.accept(instruction) && it is FragmentNavigationContainer
                 } ?: args.fromContext.containerManager.containers
                         .filter { it.isVisible }
                         .filterIsInstance<FragmentNavigationContainer>()
-                        .firstOrNull { it.accept(args.key) }
+                        .firstOrNull { it.accept(instruction) }
 
                 if (host == null) {
                     val parentContext = fromContext.parentContext()
-                    if(parentContext == null || fromContext.getNavigationHandle().instruction.navigationDirection == NavigationDirection.Present) {
+                    if(parentContext == null) {
                         EnroException.MissingContainerForPushInstruction.logForStrictMode(
                             fromContext.controller,
                             args
                         )
-                        open(
-                            ExecutorArgs(
-                                fromContext = fromContext,
-                                navigator = args.navigator,
-                                key = args.key,
-                                instruction = args.instruction.internal.copy(
-                                    navigationDirection = NavigationDirection.Present
+
+                        if(instruction.navigationDirection == NavigationDirection.Present) {
+                            openFragmentAsActivity(
+                                fromContext,
+                                NavigationDirection.Present,
+                                instruction
+                            )
+                        }
+                        else {
+                            open(
+                                ExecutorArgs(
+                                    fromContext = fromContext,
+                                    navigator = args.navigator,
+                                    key = args.key,
+                                    instruction = args.instruction.internal.copy(
+                                        navigationDirection = NavigationDirection.Present
+                                    )
                                 )
                             )
-                        )
+                        }
                         if(isReplace) {
                             fromContext.getNavigationHandle().close()
                         }
@@ -118,6 +94,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                     }
                     return
                 }
+
                 if(fromContext is ActivityContext && isReplace) {
                     openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
                     fromContext.activity.finish()
@@ -130,7 +107,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                         .let {
                             if(isReplace) it.close() else it
                         }
-                        .push(
+                        .add(
                             instruction.asPushInstruction()
                         )
                 )

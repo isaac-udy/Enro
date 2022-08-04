@@ -18,12 +18,14 @@ class ComposableNavigationContainer internal constructor(
     parentContext: NavigationContext<*>,
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
-    internal val saveableStateHolder: SaveableStateHolder
+    internal val saveableStateHolder: SaveableStateHolder,
+    initialBackstack: NavigationBackstack
 ) : NavigationContainer(
     id = id,
     parentContext = parentContext,
     accept = accept,
     emptyBehavior = emptyBehavior,
+    supportedNavigationDirections = setOf(NavigationDirection.Push, NavigationDirection.Forward)
 ) {
     private val destinationStorage: ComposableContextStorage = parentContext.getComposableContextStorage()
 
@@ -39,6 +41,13 @@ class ComposableNavigationContainer internal constructor(
 
     override val isVisible: Boolean
         get() = true
+
+
+    init {
+        parentContext.runWhenContextActive {
+            setBackstack(initialBackstack)
+        }
+    }
 
     override fun reconcileBackstack(
         removed: List<AnyOpenInstruction>,

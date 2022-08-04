@@ -14,15 +14,9 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import dev.enro.core.*
-import dev.enro.core.ActivityContext
-import dev.enro.core.FragmentContext
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationContainer
-import dev.enro.core.fragment.container.FragmentNavigationContainer
-import dev.enro.core.fragment.container.FragmentNavigationContainerProperty
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.container.NavigationContainerProperty
+import dev.enro.core.fragment.container.FragmentPresentationContainer
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
-import dev.enro.core.navigationContext
 
 internal class NavigationContextLifecycleCallbacks (
     private val lifecycleController: NavigationLifecycleController
@@ -54,13 +48,13 @@ internal class NavigationContextLifecycleCallbacks (
                     true
                 )
 
-                FragmentNavigationContainerProperty(
+                NavigationContainerProperty(
                     lifecycleOwner = activity,
-                    containerId = NavigationContainer.PRESENTATION_CONTAINER_LAYOUT_ID,
-                    root = { null },
-                    navigationContext = { activity.navigationContext },
-                    emptyBehavior = EmptyBehavior.AllowEmpty,
-                    accept = { false }
+                    navigationContainerProducer = {
+                        FragmentPresentationContainer(
+                            parentContext = activity.navigationContext,
+                        )
+                    }
                 )
             }
 
@@ -95,13 +89,13 @@ internal class NavigationContextLifecycleCallbacks (
             // TODO throw exception if fragment is opened into an Enro registered NavigationContainer without
             // being opened through Enro
             lifecycleController.onContextCreated(FragmentContext(fragment), savedInstanceState)
-            FragmentNavigationContainerProperty(
+            NavigationContainerProperty(
                 lifecycleOwner = fragment,
-                containerId = NavigationContainer.PRESENTATION_CONTAINER_LAYOUT_ID,
-                root = { null },
-                navigationContext = { fragment.navigationContext },
-                emptyBehavior = EmptyBehavior.AllowEmpty,
-                accept = { false }
+                navigationContainerProducer = {
+                    FragmentPresentationContainer(
+                        parentContext = fragment.navigationContext,
+                    )
+                }
             )
         }
 

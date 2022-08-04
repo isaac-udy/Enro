@@ -21,7 +21,7 @@ import kotlinx.parcelize.Parcelize
 
 
 @Parcelize
-class Features : NavigationKey
+class Features : NavigationKey.SupportsPush
 
 @NavigationDestination(Features::class)
 class FeaturesFragment : Fragment() {

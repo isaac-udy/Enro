@@ -12,8 +12,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.registerState
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.*
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.util.*
@@ -61,34 +60,22 @@ fun rememberEnroContainerController(
     }
 
     val saveableStateHolder = rememberSaveableStateHolder()
+
     val controller = remember {
         ComposableNavigationContainer(
             id = id,
             parentContext = viewModelStoreOwner.getNavigationHandleViewModel().navigationContext!!,
             accept = accept,
             emptyBehavior = emptyBehavior,
-            saveableStateHolder = saveableStateHolder
+            saveableStateHolder = saveableStateHolder,
+            initialBackstack = createRootBackStack(initialBackstack)
         )
     }
 
     viewModelStoreOwner.getNavigationHandleViewModel().navigationContext!!.containerManager.registerState(controller)
-    DisposableEffect(controller.id) {
-        if(controller.backstackFlow.value.backstack.isEmpty()) {
-            val backstack = NavigationBackstack(
-                backstack = initialBackstack.map { it.asPushInstruction() },
-                exiting = null,
-                exitingIndex = -1,
-                lastInstruction = initialBackstack.lastOrNull() ?: NavigationInstruction.Close,
-                isDirectUpdate = true
-            )
-            controller.setBackstack(backstack)
-        }
-        onDispose {  }
-    }
     return controller
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun EnroContainer(
     modifier: Modifier = Modifier,

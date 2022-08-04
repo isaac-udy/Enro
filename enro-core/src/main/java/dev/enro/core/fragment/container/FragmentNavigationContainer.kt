@@ -4,27 +4,27 @@ import android.app.Activity
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
-import androidx.fragment.app.*
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.commitNow
 import dev.enro.core.*
 import dev.enro.core.compose.dialog.animate
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationBackstack
-import dev.enro.core.container.close
+import dev.enro.core.container.NavigationContainer
 import dev.enro.core.fragment.FragmentFactory
-import dev.enro.core.fragment.internal.FullscreenDialogFragment
 
 class FragmentNavigationContainer internal constructor(
     @IdRes val containerId: Int,
     parentContext: NavigationContext<*>,
     accept: (NavigationKey) -> Boolean,
-    emptyBehavior: EmptyBehavior
+    emptyBehavior: EmptyBehavior,
+    initialBackstack: NavigationBackstack
 ) : NavigationContainer(
     id = containerId.toString(),
     parentContext = parentContext,
     accept = accept,
     emptyBehavior = emptyBehavior,
-    supportedNavigationDirections = setOf(NavigationDirection.Push)
+    supportedNavigationDirections = setOf(NavigationDirection.Push, NavigationDirection.Forward),
 ) {
     override val activeContext: NavigationContext<*>?
         get() = fragmentManager.findFragmentById(containerId)?.navigationContext
@@ -37,18 +37,24 @@ class FragmentNavigationContainer internal constructor(
             containerView?.isVisible = value
         }
 
+    init {
+        parentContext.runWhenContextActive {
+            setBackstack(initialBackstack)
+        }
+    }
+
     override fun reconcileBackstack(
         removed: List<AnyOpenInstruction>,
         backstack: NavigationBackstack
     ): Boolean {
-        if(!tryExecutePendingTransitions() || fragmentManager.isStateSaved || backstack != backstackFlow.value){
-            return false
-        }
+        if (!tryExecutePendingTransitions()) return false
+        if (fragmentManager.isStateSaved) return false
+        if (backstack != backstackFlow.value) return false
 
         val toRemove = removed
             .mapNotNull {
                 val fragment = fragmentManager.findFragmentByTag(it.instructionId)
-                when(fragment) {
+                when (fragment) {
                     null -> null
                     else -> fragment to it
                 }
@@ -63,9 +69,10 @@ class FragmentNavigationContainer internal constructor(
         val activeFragment = activeInstruction?.let {
             fragmentManager.findFragmentByTag(it.instructionId)
         }
-        val newFragment = if(activeFragment == null && activeInstruction != null) {
-            val navigator = parentContext.controller.navigatorForKeyType(activeInstruction.navigationKey::class)
-                ?: throw EnroException.UnreachableState()
+        val newFragment = if (activeFragment == null && activeInstruction != null) {
+            val navigator =
+                parentContext.controller.navigatorForKeyType(activeInstruction.navigationKey::class)
+                    ?: throw EnroException.UnreachableState()
 
             FragmentFactory.createFragment(
                 parentContext,
@@ -74,7 +81,8 @@ class FragmentNavigationContainer internal constructor(
             )
         } else null
 
-        val activeIndex = backstack.renderable.indexOfFirst { it.instructionId == activeInstruction?.instructionId }
+        val activeIndex =
+            backstack.renderable.indexOfFirst { it.instructionId == activeInstruction?.instructionId }
         activeFragment?.view?.z = 0f
         (toRemove + toDetach).forEach {
             val isBehindActiveFragment = backstack.renderable.indexOf(it.second) < activeIndex
@@ -105,7 +113,8 @@ class FragmentNavigationContainer internal constructor(
             }
 
             when {
-                activeInstruction == null -> { /* Pass */ }
+                activeInstruction == null -> { /* Pass */
+                }
                 activeFragment != null -> {
                     attach(activeFragment)
                 }
@@ -113,7 +122,7 @@ class FragmentNavigationContainer internal constructor(
                     add(containerId, newFragment, activeInstruction.instructionId)
                 }
             }
-            if(primaryFragment != null) {
+            if (primaryFragment != null) {
                 setPrimaryNavigationFragment(primaryFragment)
             }
         }
@@ -124,7 +133,7 @@ class FragmentNavigationContainer internal constructor(
 
 val FragmentNavigationContainer.containerView: View?
     get() {
-        return when(parentContext.contextReference) {
+        return when (parentContext.contextReference) {
             is Activity -> parentContext.contextReference.findViewById(containerId)
             is Fragment -> parentContext.contextReference.view?.findViewById(containerId)
             else -> null
@@ -133,16 +142,16 @@ val FragmentNavigationContainer.containerView: View?
 
 fun FragmentNavigationContainer.setVisibilityAnimated(isVisible: Boolean) {
     val view = containerView ?: return
-    if(!view.isVisible && !isVisible) return
+    if (!view.isVisible && !isVisible) return
 
     val animations = DefaultAnimations.present.asResource(view.context.theme)
     view.animate(
-        animOrAnimator = when(isVisible) {
+        animOrAnimator = when (isVisible) {
             true -> animations.enter
             false -> animations.exit
         },
         onAnimationStart = {
-            view.translationZ = if(isVisible) 0f else -1f
+            view.translationZ = if (isVisible) 0f else -1f
             view.isVisible = true
         },
         onAnimationEnd = {

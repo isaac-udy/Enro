@@ -1,5 +1,6 @@
 package dev.enro.example
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -9,10 +10,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -21,6 +24,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
@@ -60,6 +64,7 @@ class ComposeSimpleExampleViewModel @Inject constructor(
 
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 @NavigationDestination(ComposeSimpleExampleKey::class)
 fun ComposeSimpleExample() {

@@ -77,12 +77,16 @@ fun <ContextType: Any, KeyType: NavigationKey> findContextFrom(
             if (selector(context)) return context
         }
 
-        activeContext.containerManager.presentationContainer?.activeContext
-            ?.let {
-                findContextFrom(contextType, keyType, it, selector)
-            }
-            ?.let {
-                return it
+        activeContext.containerManager.containers
+            .filter { it.supportedNavigationDirections.contains(NavigationDirection.Present) }
+            .forEach { presentationContainer ->
+                presentationContainer.activeContext
+                    ?.let {
+                        findContextFrom(contextType, keyType, it, selector)
+                    }
+                    ?.let {
+                        return it
+                    }
             }
 
         activeContext = activeContext.containerManager.activeContainer?.activeContext

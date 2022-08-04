@@ -30,12 +30,6 @@ abstract class NavigationContainer(
     val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
     val backstack: NavigationBackstack get() = backstackFlow.value
 
-    init {
-        parentContext.runWhenContextActive {
-            reconcileBackstack.run()
-        }
-    }
-
     @MainThread
     fun setBackstack(backstack: NavigationBackstack) = synchronized(this) {
         if(Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
@@ -45,8 +39,12 @@ abstract class NavigationContainer(
         backstack.backstack
             .map { it.navigationDirection }
             .toSet()
-            .minus { supportedNavigationDirections }
-            .let { require(it.isEmpty()) }
+            .minus(supportedNavigationDirections)
+            .let {
+                require(it.isEmpty()) {
+                    "Backstack does not support the following NavigationDirections: ${it.joinToString { it::class.java.simpleName } }"
+                }
+            }
 
         handler.removeCallbacks(reconcileBackstack)
         val lastBackstack = mutableBackstack.getAndUpdate { backstack }
@@ -112,7 +110,8 @@ abstract class NavigationContainer(
     fun accept(
         instruction: AnyOpenInstruction
     ): Boolean {
-        return accept.invoke(instruction.navigationKey) && supportedNavigationDirections.contains(instruction.navigationDirection)
+        return accept.invoke(instruction.navigationKey)
+                && supportedNavigationDirections.contains(instruction.navigationDirection)
     }
 }
 

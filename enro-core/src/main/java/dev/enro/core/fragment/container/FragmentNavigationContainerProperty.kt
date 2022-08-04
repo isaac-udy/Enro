@@ -3,132 +3,68 @@ package dev.enro.core.fragment.container
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
 import dev.enro.core.*
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.asPushInstruction
-import dev.enro.core.container.createEmptyBackStack
-import dev.enro.core.container.createRootBackStack
-import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KProperty
+import dev.enro.core.container.*
 
 
-class FragmentNavigationContainerProperty @PublishedApi internal constructor(
-    private val lifecycleOwner: LifecycleOwner,
-    @IdRes private val containerId: Int,
-    private val root: () -> AnyOpenInstruction?,
-    private val navigationContext: () -> NavigationContext<*>,
-    private val emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
-    private val accept: (NavigationKey) -> Boolean
-) : ReadOnlyProperty<Any, FragmentNavigationContainer> {
+fun FragmentActivity.navigationContainer(
+    @IdRes containerId: Int,
+    root: () -> NavigationKey.SupportsPush? = { null },
+    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    accept: (NavigationKey) -> Boolean = { true },
+): NavigationContainerProperty<FragmentNavigationContainer> = navigationContainer(
+    containerId = containerId,
+    rootInstruction = { root()?.let { NavigationInstruction.Push(it) } },
+    emptyBehavior = emptyBehavior,
+    accept = accept,
+)
 
-    internal val navigationContainer: FragmentNavigationContainer by lazy {
-        val context = navigationContext()
-
-        val isExistingContainer = context.containerManager.containers
-            .any { it.id == containerId.toString() }
-
-        if(isExistingContainer) {
-            throw EnroException.DuplicateFragmentNavigationContainer("A FragmentNavigationContainer with id $containerId already exists")
-        }
-
-        val container = FragmentNavigationContainer(
+@JvmName("navigationContainerFromInstruction")
+fun FragmentActivity.navigationContainer(
+    @IdRes containerId: Int,
+    rootInstruction: () -> NavigationInstruction.Open<NavigationDirection.Push>?,
+    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    accept: (NavigationKey) -> Boolean = { true },
+): NavigationContainerProperty<FragmentNavigationContainer> = NavigationContainerProperty(
+    lifecycleOwner = this,
+    navigationContainerProducer = {
+        FragmentNavigationContainer(
             containerId = containerId,
-            parentContext = context,
+            parentContext = navigationContext,
             accept = accept,
-            emptyBehavior = emptyBehavior
+            emptyBehavior = emptyBehavior,
+            initialBackstack = createRootBackStack(rootInstruction())
         )
-        context.containerManager.addContainer(container)
-        val rootInstruction = root()
-        rootInstruction?.let {
-            container.setBackstack(
-                createRootBackStack(it)
-            )
-        }
-
-        return@lazy container
     }
-
-    init {
-        lifecycleOwner.lifecycle.addObserver(object : LifecycleEventObserver {
-            override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if (event != Lifecycle.Event.ON_CREATE) return
-                // reference the navigation container directly so it is created
-                navigationContainer.hashCode()
-                lifecycleOwner.lifecycle.removeObserver(this)
-            }
-        })
-    }
-
-    override fun getValue(thisRef: Any, property: KProperty<*>): FragmentNavigationContainer {
-        return navigationContainer
-    }
-}
-
-fun FragmentActivity.navigationContainer(
-    @IdRes containerId: Int,
-    root: () -> NavigationKey? = { null },
-    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
-    accept: (NavigationKey) -> Boolean = { true },
-): FragmentNavigationContainerProperty = FragmentNavigationContainerProperty(
-    lifecycleOwner = this,
-    containerId = containerId,
-    root = {
-        NavigationInstruction.DefaultDirection(
-            root() ?: return@FragmentNavigationContainerProperty null
-        )
-    },
-    navigationContext = { navigationContext },
-    emptyBehavior = emptyBehavior,
-    accept = accept
-)
-
-@JvmName("navigationContainerFromInstruction")
-fun FragmentActivity.navigationContainer(
-    @IdRes containerId: Int,
-    rootInstruction: () -> NavigationInstruction.Open<*>?,
-    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
-    accept: (NavigationKey) -> Boolean = { true },
-): FragmentNavigationContainerProperty = FragmentNavigationContainerProperty(
-    lifecycleOwner = this,
-    containerId = containerId,
-    root = rootInstruction,
-    navigationContext = { navigationContext },
-    emptyBehavior = emptyBehavior,
-    accept = accept
 )
 
 fun Fragment.navigationContainer(
     @IdRes containerId: Int,
-    root: () -> NavigationKey? = { null },
+    root: () -> NavigationKey.SupportsPush? = { null },
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
-): FragmentNavigationContainerProperty = FragmentNavigationContainerProperty(
-    lifecycleOwner = this,
+): NavigationContainerProperty<FragmentNavigationContainer> = navigationContainer(
     containerId = containerId,
-    root = {
-        NavigationInstruction.DefaultDirection(
-            root() ?: return@FragmentNavigationContainerProperty null
-        )
-    },
-    navigationContext = { navigationContext },
+    rootInstruction = { root()?.let { NavigationInstruction.Push(it) } },
     emptyBehavior = emptyBehavior,
-    accept = accept
+    accept = accept,
 )
 
 @JvmName("navigationContainerFromInstruction")
 fun Fragment.navigationContainer(
     @IdRes containerId: Int,
-    rootInstruction: () -> NavigationInstruction.Open<*>?,
+    rootInstruction: () -> NavigationInstruction.Open<NavigationDirection.Push>?,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
-): FragmentNavigationContainerProperty = FragmentNavigationContainerProperty(
+): NavigationContainerProperty<FragmentNavigationContainer> = NavigationContainerProperty(
     lifecycleOwner = this,
-    containerId = containerId,
-    root = rootInstruction,
-    navigationContext = { navigationContext },
-    emptyBehavior = emptyBehavior,
-    accept = accept
+    navigationContainerProducer = {
+        FragmentNavigationContainer(
+            containerId = containerId,
+            parentContext = navigationContext,
+            accept = accept,
+            emptyBehavior = emptyBehavior,
+            initialBackstack = createRootBackStack(rootInstruction())
+        )
+    }
 )

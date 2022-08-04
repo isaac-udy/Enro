@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroException
+import dev.enro.core.NavigationDirection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -20,16 +22,21 @@ class NavigationContainerManager {
     private val mutableActiveContainerFlow = MutableStateFlow<NavigationContainer?>(null)
     val activeContainerFlow: StateFlow<NavigationContainer?> = mutableActiveContainerFlow
     
-    val presentationContainer: NavigationContainer? get() = containers.firstOrNull { it.id == NavigationContainer.PRESENTATION_CONTAINER }
-
     internal fun setActiveContainerById(id: String?) {
         setActiveContainer(containers.firstOrNull { it.id == id })
     }
 
     internal fun addContainer(container: NavigationContainer) {
+        val isExistingContainer = containers
+            .any { it.id == container.id }
+
+        if(isExistingContainer) {
+            throw EnroException.DuplicateFragmentNavigationContainer("A NavigationContainer with id ${container.id} already exists")
+        }
+
         _containers.add(container)
         restore(container)
-        if(activeContainer == null && container.id != NavigationContainer.PRESENTATION_CONTAINER) {
+        if(activeContainer == null && !container.supportedNavigationDirections.contains(NavigationDirection.Present)) {
             setActiveContainer(container)
         }
     }

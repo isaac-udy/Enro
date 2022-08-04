@@ -59,7 +59,7 @@ inline fun <reified T: NavigationKey> NavigationHandle.asTyped(): TypedNavigatio
     return TypedNavigationHandleImpl(this, T::class.java)
 }
 
-fun NavigationHandle.push(key: NavigationKey.SupportsPush, vararg childKeys: NavigationKey) =
+fun NavigationHandle.add(key: NavigationKey.SupportsPush, vararg childKeys: NavigationKey) =
     executeInstruction(NavigationInstruction.Push(key, childKeys.toList()))
 
 fun NavigationHandle.present(key: NavigationKey.SupportsPresent, vararg childKeys: NavigationKey) =

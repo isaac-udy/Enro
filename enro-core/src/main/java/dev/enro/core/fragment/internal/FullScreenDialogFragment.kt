@@ -2,26 +2,19 @@ package dev.enro.core.fragment.internal
 
 import android.app.Dialog
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.FrameLayout
-import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
-import dev.enro.core.compose.dialog.animate
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.createEmptyBackStack
-import dev.enro.core.container.push
-import dev.enro.core.fragment.container.FragmentNavigationContainer
-import dev.enro.core.fragment.container.containerView
+import dev.enro.core.container.add
 import dev.enro.core.fragment.container.navigationContainer
 import kotlinx.parcelize.Parcelize
 
@@ -63,7 +56,7 @@ abstract class AbstractFullscreenDialogFragment : DialogFragment() {
                 add(R.id.enro_internal_single_fragment_frame_layout, it, tag)
                 setPrimaryNavigationFragment(it)
                 runOnCommit {
-                    container.setBackstack(createEmptyBackStack().push(it.requireArguments().readOpenInstruction()!!.asPushInstruction()))
+                    container.setBackstack(createEmptyBackStack().add(it.requireArguments().readOpenInstruction()!!.asPushInstruction()))
                 }
             }
         }
