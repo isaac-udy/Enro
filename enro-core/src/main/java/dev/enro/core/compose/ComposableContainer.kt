@@ -1,19 +1,18 @@
 package dev.enro.core.compose
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.registerState
-import dev.enro.core.container.*
-import dev.enro.core.container.asPushInstruction
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.createRootBackStack
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.util.*
 

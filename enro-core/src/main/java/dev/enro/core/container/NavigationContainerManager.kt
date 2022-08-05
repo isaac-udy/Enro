@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class NavigationContainerManager {
-    private val restoredContainerStates = mutableMapOf<String, NavigationBackstack>()
     private var restoredActiveContainer: String? = null
 
     private val _containers: MutableSet<NavigationContainer> = mutableSetOf()
@@ -46,42 +45,15 @@ class NavigationContainerManager {
     }
 
     internal fun save(outState: Bundle) {
-        containers.forEach {
-            outState.putParcelableArrayList(
-                "$BACKSTACK_KEY@${it.id}", ArrayList(it.backstackFlow.value.backstack)
-            )
-        }
-
-        outState.putStringArrayList(CONTAINER_IDS_KEY, ArrayList(containers.map { it.id }))
         outState.putString(ACTIVE_CONTAINER_KEY, activeContainer?.id)
     }
 
     internal fun restore(savedInstanceState: Bundle?) {
         if(savedInstanceState == null) return
-
-        savedInstanceState.getStringArrayList(CONTAINER_IDS_KEY)
-            .orEmpty()
-            .forEach {
-                restoredContainerStates[it] = createRestoredBackStack(
-                    savedInstanceState
-                        .getParcelableArrayList<AnyOpenInstruction>("$BACKSTACK_KEY@$it")
-                        .orEmpty()
-                )
-            }
-
         restoredActiveContainer = savedInstanceState.getString(ACTIVE_CONTAINER_KEY)
-        containers.forEach { restore(it) }
     }
 
     internal fun restore(container: NavigationContainer) {
-        val activeContainer = activeContainer
-        val backstack = restoredContainerStates[container.id] ?: return
-        restoredContainerStates.remove(container.id)
-
-        container.setBackstack(backstack)
-        // TODO this is required because setBackstack sets the active container. Need to fix that...
-        setActiveContainer(activeContainer)
-
         if(restoredActiveContainer == container.id) {
             setActiveContainer(container)
             restoredActiveContainer = null
@@ -102,7 +74,5 @@ class NavigationContainerManager {
 
     companion object {
         const val ACTIVE_CONTAINER_KEY = "dev.enro.core.container.NavigationContainerManager.ACTIVE_CONTAINER_KEY"
-        const val CONTAINER_IDS_KEY = "dev.enro.core.container.NavigationContainerManager.CONTAINER_IDS_KEY"
-        const val BACKSTACK_KEY = "dev.enro.core.container.NavigationContainerManager.BACKSTACK_KEY"
     }
 }

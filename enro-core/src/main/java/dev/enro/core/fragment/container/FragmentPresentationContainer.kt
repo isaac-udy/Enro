@@ -34,10 +34,6 @@ class FragmentPresentationContainer internal constructor(
             }
 
     init {
-        parentContext.runWhenContextActive {
-            setBackstack(createEmptyBackStack())
-        }
-
         fragmentManager.registerFragmentLifecycleCallbacks(object :
             FragmentManager.FragmentLifecycleCallbacks() {
             override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
@@ -46,6 +42,8 @@ class FragmentPresentationContainer internal constructor(
                 }
             }
         }, false)
+
+        setOrLoadInitialBackstack(createEmptyBackStack())
     }
 
     override fun reconcileBackstack(

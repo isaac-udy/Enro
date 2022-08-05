@@ -38,9 +38,7 @@ class FragmentNavigationContainer internal constructor(
         }
 
     init {
-        parentContext.runWhenContextActive {
-            setBackstack(initialBackstack)
-        }
+        setOrLoadInitialBackstack(initialBackstack)
     }
 
     override fun reconcileBackstack(

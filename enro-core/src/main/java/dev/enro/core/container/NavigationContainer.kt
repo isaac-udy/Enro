@@ -3,12 +3,13 @@ package dev.enro.core.container
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.MainThread
+import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
+import androidx.savedstate.SavedStateRegistry
 import dev.enro.core.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.getAndUpdate
-import kotlin.reflect.KClass
 
 abstract class NavigationContainer(
     val id: String,
@@ -112,6 +113,29 @@ abstract class NavigationContainer(
     ): Boolean {
         return accept.invoke(instruction.navigationKey)
                 && supportedNavigationDirections.contains(instruction.navigationDirection)
+    }
+
+    protected fun setOrLoadInitialBackstack(initialBackstack: NavigationBackstack) {
+        val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
+
+        val restoredBackstack = savedStateRegistry
+            .consumeRestoredStateForKey(id)
+            ?.getParcelableArrayList<AnyOpenInstruction>(BACKSTACK_KEY)
+            ?.let { createRestoredBackStack(it) }
+
+        savedStateRegistry.registerSavedStateProvider(id, SavedStateRegistry.SavedStateProvider {
+            bundleOf(
+                BACKSTACK_KEY to ArrayList(backstack.backstack)
+            )
+        })
+
+        parentContext.runWhenContextActive {
+            setBackstack(restoredBackstack ?: initialBackstack)
+        }
+    }
+
+    companion object {
+        private const val BACKSTACK_KEY = "NavigationContainer.BACKSTACK_KEY"
     }
 }
 
