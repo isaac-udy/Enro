@@ -5,7 +5,6 @@ import android.os.Looper
 import androidx.annotation.MainThread
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
-import androidx.savedstate.SavedStateRegistry
 import dev.enro.core.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,9 +13,10 @@ import kotlinx.coroutines.flow.getAndUpdate
 abstract class NavigationContainer(
     val id: String,
     val parentContext: NavigationContext<*>,
-    private val accept: (NavigationKey) -> Boolean,
     val emptyBehavior: EmptyBehavior,
-    val supportedNavigationDirections: Set<NavigationDirection>
+    val acceptsNavigationKey: (NavigationKey) -> Boolean,
+    val acceptsDirection: (NavigationDirection) -> Boolean,
+    val acceptsNavigator: (Navigator<*, *>) -> Boolean
 ) {
     private val handler = Handler(Looper.getMainLooper())
     private val reconcileBackstack = Runnable {
@@ -38,9 +38,12 @@ abstract class NavigationContainer(
         )
         if(backstack == backstackFlow.value) return@synchronized
         backstack.backstack
-            .map { it.navigationDirection }
+            .map {
+                it.navigationDirection to acceptsDirection(it.navigationDirection)
+            }
+            .filter { !it.second }
+            .map { it.first }
             .toSet()
-            .minus(supportedNavigationDirections)
             .let {
                 require(it.isEmpty()) {
                     "Backstack does not support the following NavigationDirections: ${it.joinToString { it::class.java.simpleName } }"
@@ -111,25 +114,30 @@ abstract class NavigationContainer(
     fun accept(
         instruction: AnyOpenInstruction
     ): Boolean {
-        return accept.invoke(instruction.navigationKey)
-                && supportedNavigationDirections.contains(instruction.navigationDirection)
+        return acceptsNavigationKey.invoke(instruction.navigationKey)
+                && acceptsDirection(instruction.navigationDirection)
+                && acceptsNavigator(
+                    parentContext.controller.navigatorForKeyType(instruction.navigationKey::class)
+                        ?: throw EnroException.UnreachableState()
+                )
     }
 
     protected fun setOrLoadInitialBackstack(initialBackstack: NavigationBackstack) {
         val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
 
-        val restoredBackstack = savedStateRegistry
-            .consumeRestoredStateForKey(id)
-            ?.getParcelableArrayList<AnyOpenInstruction>(BACKSTACK_KEY)
-            ?.let { createRestoredBackStack(it) }
-
-        savedStateRegistry.registerSavedStateProvider(id, SavedStateRegistry.SavedStateProvider {
+        savedStateRegistry.unregisterSavedStateProvider(id)
+        savedStateRegistry.registerSavedStateProvider(id) {
             bundleOf(
                 BACKSTACK_KEY to ArrayList(backstack.backstack)
             )
-        })
+        }
 
         parentContext.runWhenContextActive {
+            if (!backstack.backstack.isEmpty()) return@runWhenContextActive
+            val restoredBackstack = savedStateRegistry
+                .consumeRestoredStateForKey(id)
+                ?.getParcelableArrayList<AnyOpenInstruction>(BACKSTACK_KEY)
+                ?.let { createRestoredBackStack(it) }
             setBackstack(restoredBackstack ?: initialBackstack)
         }
     }

@@ -2,6 +2,7 @@ package dev.enro.core.destinations
 
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.*
@@ -44,7 +45,7 @@ inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPush> Tes
     containerType: ContainerType,
     expected: Key = Key::class.createFromDefaultConstructor(),
 ): TestNavigationContext<Context, Key> {
-    navigation.add(expected)
+    navigation.push(expected)
     val expectedContext = expectContext<Context, Key> { it.navigation.key == expected }
     assertEquals(expected, expectedContext.navigation.key)
     assertPushContainerType(

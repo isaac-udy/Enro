@@ -3,9 +3,11 @@ package dev.enro.core.compose
 import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.background
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.lifecycle.*
@@ -166,9 +168,19 @@ internal class ComposableDestinationContextReference(
                 }
             }
 
-            DisposableEffect(true) {
+            DisposableEffect(backstackState.active) {
+                val isActive = backstackState.active == instruction
+                val isStarted = lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED)
+                when {
+                    isActive -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+                    isStarted -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+                }
+
                 onDispose {
-                    parentContainer.onInstructionDisposed(instruction)
+                    if(!backstackState.backstack.contains(instruction)) {
+                        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                        parentContainer.onInstructionDisposed(instruction)
+                    }
                 }
             }
         }

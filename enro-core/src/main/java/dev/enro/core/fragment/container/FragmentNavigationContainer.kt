@@ -7,11 +7,13 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
+import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.compose.dialog.animate
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.fragment.FragmentFactory
+import dev.enro.core.fragment.FragmentNavigator
 
 class FragmentNavigationContainer internal constructor(
     @IdRes val containerId: Int,
@@ -22,9 +24,10 @@ class FragmentNavigationContainer internal constructor(
 ) : NavigationContainer(
     id = containerId.toString(),
     parentContext = parentContext,
-    accept = accept,
+    acceptsNavigationKey = accept,
     emptyBehavior = emptyBehavior,
-    supportedNavigationDirections = setOf(NavigationDirection.Push, NavigationDirection.Forward),
+    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
+    acceptsNavigator = { it is FragmentNavigator<*, *>  || it is ComposableNavigator<*, *> }
 ) {
     override val activeContext: NavigationContext<*>?
         get() = fragmentManager.findFragmentById(containerId)?.navigationContext
@@ -111,8 +114,7 @@ class FragmentNavigationContainer internal constructor(
             }
 
             when {
-                activeInstruction == null -> { /* Pass */
-                }
+                activeInstruction == null -> { /* Pass */ }
                 activeFragment != null -> {
                     attach(activeFragment)
                 }

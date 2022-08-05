@@ -153,7 +153,7 @@ internal fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
             }
         }
         is ComposeContext<out ComposableDestination> -> {
-            if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+            if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 block()
             } else {
                 contextReference.lifecycleScope.launchWhenStarted {

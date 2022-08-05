@@ -143,8 +143,8 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.replace(ActivityChildFragmentKey(id))
 
-        val activity = expectFullscreenDialogFragment()
-        val activeFragment = activity.childFragmentManager.primaryNavigationFragment!!
+        val activity = expectSingleFragmentActivity()
+        val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
         val fragmentHandle =
             activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)

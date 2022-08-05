@@ -7,6 +7,7 @@ import androidx.lifecycle.Lifecycle
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableDestinationContextReference
+import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.compose.getComposableDestinationContext
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainer
@@ -23,9 +24,10 @@ class ComposableNavigationContainer internal constructor(
 ) : NavigationContainer(
     id = id,
     parentContext = parentContext,
-    accept = accept,
     emptyBehavior = emptyBehavior,
-    supportedNavigationDirections = setOf(NavigationDirection.Push, NavigationDirection.Forward)
+    acceptsNavigationKey = accept,
+    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
+    acceptsNavigator = { it is ComposableNavigator<*, *> }
 ) {
     private val destinationStorage: ComposableContextStorage = parentContext.getComposableContextStorage()
 
@@ -55,15 +57,6 @@ class ComposableNavigationContainer internal constructor(
             .map { instruction ->
                 requireDestinationContext(instruction)
             }
-            .forEach { context ->
-                val isVisible = context.instruction == backstack.active
-
-                if (isVisible) {
-                    context.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-                } else {
-                    context.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-                }
-            }
 
         removed
             .filter { backstack.exiting != it }
@@ -71,7 +64,6 @@ class ComposableNavigationContainer internal constructor(
                 destinationContexts[it.instructionId]
             }
             .forEach {
-                it.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
                 destinationContexts.remove(it.instruction.instructionId)
             }
 

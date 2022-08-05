@@ -49,10 +49,9 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
             NavigationDirection.Push -> {
                 val containerManager = args.fromContext.containerManager
                 val host = containerManager.activeContainer?.takeIf {
-                    it.isVisible && it.accept(instruction) && it is FragmentNavigationContainer
+                    it.isVisible && it.accept(instruction)
                 } ?: args.fromContext.containerManager.containers
                         .filter { it.isVisible }
-                        .filterIsInstance<FragmentNavigationContainer>()
                         .firstOrNull { it.accept(instruction) }
 
                 if (host == null) {
@@ -108,7 +107,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                             if(isReplace) it.close() else it
                         }
                         .add(
-                            instruction.asPushInstruction()
+                            instruction
                         )
                 )
             }

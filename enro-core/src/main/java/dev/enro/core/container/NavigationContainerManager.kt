@@ -35,7 +35,7 @@ class NavigationContainerManager {
 
         _containers.add(container)
         restore(container)
-        if(activeContainer == null && !container.supportedNavigationDirections.contains(NavigationDirection.Present)) {
+        if(activeContainer == null && !container.acceptsDirection(NavigationDirection.Present)) {
             setActiveContainer(container)
         }
     }

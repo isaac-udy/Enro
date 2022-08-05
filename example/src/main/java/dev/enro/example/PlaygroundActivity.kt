@@ -16,7 +16,7 @@ import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.present
-import dev.enro.core.add
+import dev.enro.core.push
 
 @AndroidEntryPoint
 class PlaygroundActivity : FragmentActivity() {
@@ -35,7 +35,7 @@ class PlaygroundActivity : FragmentActivity() {
                     Text(text = "Present Example Dialog")
                 }
 
-                Button(onClick = { getNavigationHandle().add(ExampleDialogKey()) }) {
+                Button(onClick = { getNavigationHandle().push(ExampleDialogKey()) }) {
                     Text(text = "Push Example Dialog")
                 }
 

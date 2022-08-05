@@ -1,15 +1,12 @@
 package dev.enro.core.fragment.container
 
-import android.app.Activity
-import android.view.View
-import androidx.annotation.IdRes
-import androidx.core.view.isVisible
 import androidx.fragment.app.*
 import dev.enro.core.*
-import dev.enro.core.compose.dialog.animate
+import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.container.*
 import dev.enro.core.container.close
 import dev.enro.core.fragment.FragmentFactory
+import dev.enro.core.fragment.FragmentNavigator
 import dev.enro.core.fragment.internal.FullscreenDialogFragment
 
 class FragmentPresentationContainer internal constructor(
@@ -17,9 +14,10 @@ class FragmentPresentationContainer internal constructor(
 ) : NavigationContainer(
     id = "FragmentPresentationContainer",
     parentContext = parentContext,
-    accept = { true },
+    acceptsNavigationKey = { true },
     emptyBehavior = EmptyBehavior.AllowEmpty,
-    supportedNavigationDirections = setOf(NavigationDirection.Present)
+    acceptsDirection = { it is NavigationDirection.Present },
+    acceptsNavigator = { it is FragmentNavigator<*, *> || it is ComposableNavigator<*, *> }
 ) {
 
     override var isVisible: Boolean = true
@@ -91,6 +89,17 @@ class FragmentPresentationContainer internal constructor(
                 add(it.first, it.second.instructionId)
             }
         }
+
+
+        backstack.backstack.lastOrNull()
+            ?.let {
+                fragmentManager.findFragmentByTag(it.instructionId)
+            }
+            ?.let { primaryFragment ->
+                fragmentManager.commitNow {
+                    setPrimaryNavigationFragment(primaryFragment)
+                }
+            }
 
         return true
     }
