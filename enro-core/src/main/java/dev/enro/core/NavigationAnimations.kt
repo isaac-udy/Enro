@@ -164,7 +164,7 @@ private fun animationsForClose(
 
     val contextForAnimation = when (context.contextReference) {
         is AbstractComposeFragmentHost -> {
-            context.childComposableManager.containers
+            context.containerManager.containers
                 .firstOrNull()
                 ?.activeContext
                 ?: context
