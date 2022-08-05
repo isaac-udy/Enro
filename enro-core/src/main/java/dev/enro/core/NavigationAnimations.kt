@@ -142,9 +142,17 @@ private fun animationsForOpen(
     navigationInstruction: AnyOpenInstruction
 ): NavigationAnimation.Resource {
     val theme = context.activity.theme
+
+    val instructionForAnimation =  when (
+        val navigationKey = navigationInstruction.navigationKey
+    ) {
+        is AbstractComposeFragmentHostKey -> navigationKey.instruction
+        else -> navigationInstruction
+    }
+
     val executor = context.activity.application.navigationController.executorForOpen(
         context,
-        navigationInstruction
+        instructionForAnimation
     )
     return executor.executor.animation(navigationInstruction).asResource(theme)
 }
@@ -153,6 +161,17 @@ private fun animationsForClose(
     context: NavigationContext<*>
 ): NavigationAnimation.Resource {
     val theme = context.activity.theme
-    val executor = context.activity.application.navigationController.executorForClose(context)
+
+    val contextForAnimation = when (context.contextReference) {
+        is AbstractComposeFragmentHost -> {
+            context.childComposableManager.containers
+                .firstOrNull()
+                ?.activeContext
+                ?: context
+        }
+        else -> context
+    }
+
+    val executor = context.activity.application.navigationController.executorForClose(contextForAnimation)
     return executor.closeAnimation(context).asResource(theme)
 }
