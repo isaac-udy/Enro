@@ -116,8 +116,8 @@ private fun animationsForClose(
 ): AnimationPair.Resource {
     val theme = context.activity.theme
 
-    val contextForAnimation = when (context.getNavigationHandle().key) {
-        is AbstractComposeFragmentHostKey -> {
+    val contextForAnimation = when (context.contextReference) {
+        is AbstractComposeFragmentHost -> {
             context.childComposableManager.containers
                 .firstOrNull()
                 ?.activeContext
