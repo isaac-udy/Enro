@@ -19,7 +19,7 @@ import androidx.compose.ui.zIndex
 import dev.enro.core.NavigationAnimation
 import dev.enro.core.compose.localActivity
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun EnroAnimatedVisibility(
     visible: Boolean,

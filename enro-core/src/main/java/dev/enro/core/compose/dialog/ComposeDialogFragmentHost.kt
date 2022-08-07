@@ -140,11 +140,11 @@ internal fun View.animate(
     animOrAnimator: Int,
     onAnimationStart: () -> Unit = {},
     onAnimationEnd: () -> Unit = {}
-) {
+): Long {
     clearAnimation()
     if (animOrAnimator == 0) {
         onAnimationEnd()
-        return
+        return 0
     }
     val isAnimation = runCatching { context.resources.getResourceTypeName(animOrAnimator) == "anim" }.getOrElse { false }
     val isAnimator = !isAnimation && runCatching { context.resources.getResourceTypeName(animOrAnimator) == "animator" }.getOrElse { false }
@@ -158,6 +158,7 @@ internal fun View.animate(
                 onEnd = { onAnimationEnd() }
             )
             animator.start()
+            return animator.duration
         }
         isAnimation -> {
             val animation = AnimationUtils.loadAnimation(context, animOrAnimator)
@@ -171,9 +172,11 @@ internal fun View.animate(
                 }
             })
             startAnimation(animation)
+            return animation.duration
         }
         else -> {
             onAnimationEnd()
+            return 0
         }
     }
 }

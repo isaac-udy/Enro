@@ -142,6 +142,7 @@ val FragmentNavigationContainer.containerView: View?
 fun FragmentNavigationContainer.setVisibilityAnimated(isVisible: Boolean) {
     val view = containerView ?: return
     if (!view.isVisible && !isVisible) return
+    if (view.isVisible && isVisible) return
 
     val animations = DefaultAnimations.present.asResource(view.context.theme)
     view.animate(

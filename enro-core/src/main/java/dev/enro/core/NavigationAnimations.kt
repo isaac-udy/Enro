@@ -4,13 +4,13 @@ import android.content.res.Resources
 import android.provider.Settings
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.runtime.Composable
 import dev.enro.core.compose.AbstractComposeFragmentHost
 import dev.enro.core.compose.AbstractComposeFragmentHostKey
 import dev.enro.core.controller.navigationController
 import dev.enro.core.fragment.internal.AbstractSingleFragmentActivity
 import dev.enro.core.fragment.internal.AbstractSingleFragmentKey
 import dev.enro.core.internal.getAttributeResourceId
+import dev.enro.core.internal.getNestedAttribute
 
 @Deprecated("Please use NavigationAnimation")
 typealias AnimationPair = NavigationAnimation
@@ -21,12 +21,17 @@ sealed class NavigationAnimation {
     class Resource(
         val enter: Int,
         val exit: Int
-    ) : NavigationAnimation.ForView()
+    ) : ForView()
 
     class Attr(
         val enter: Int,
         val exit: Int
-    ) : NavigationAnimation.ForView()
+    ) : ForView()
+
+    class Theme(
+        val enter: (Resources.Theme) -> Int,
+        val exit: (Resources.Theme) -> Int
+    ) : ForView()
 
     class Composable(
         val fallback: ForView,
@@ -48,6 +53,10 @@ sealed class NavigationAnimation {
             theme.getAttributeResourceId(enter),
             theme.getAttributeResourceId(exit)
         )
+        is Theme -> Resource(
+            enter(theme),
+            exit(theme)
+        )
         is Composable -> fallback.asResource(theme)
     }
 
@@ -68,9 +77,21 @@ object DefaultAnimations {
         exit = android.R.attr.activityOpenExitAnimation
     )
 
-    val present = NavigationAnimation.Attr(
-        enter = android.R.attr.activityOpenEnterAnimation,
-        exit = android.R.attr.activityOpenExitAnimation
+    val present = NavigationAnimation.Theme(
+        enter = { theme ->
+            theme.getNestedAttribute(
+                android.R.attr.dialogTheme,
+                android.R.attr.windowAnimationStyle,
+                android.R.attr.windowEnterAnimation
+            ) ?: 0
+        },
+        exit = { theme ->
+            theme.getNestedAttribute(
+                android.R.attr.dialogTheme,
+                android.R.attr.windowAnimationStyle,
+                android.R.attr.windowExitAnimation
+            ) ?: 0
+        }
     )
 
     @Deprecated("Use push or present")

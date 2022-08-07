@@ -75,7 +75,10 @@ class FragmentPresentationContainer internal constructor(
             }
             .map {
                 if (it.first !is DialogFragment) {
-                    FullscreenDialogFragment().apply { fragment = it.first } to it.second
+                    FullscreenDialogFragment().apply {
+                        fragment = it.first
+                        animations = animationsFor(parentContext, it.second)
+                    } to it.second
                 } else it
             }
 

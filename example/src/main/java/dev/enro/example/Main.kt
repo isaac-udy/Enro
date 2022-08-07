@@ -11,6 +11,7 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.isActive
 import dev.enro.core.container.setActive
 import dev.enro.core.containerManager
+import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.fragment.container.setVisibilityAnimated
 import dev.enro.core.navigationHandle
@@ -61,30 +62,36 @@ class MainActivity : AppCompatActivity() {
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.bottomNavigation.bindContainers(
+            R.id.home to homeContainer,
+            R.id.features to featuresContainer,
+            R.id.profile to profileContainer,
+        )
+
+        if(savedInstanceState == null) {
+            binding.bottomNavigation.selectedItemId = R.id.home
+        }
+    }
+
+    private fun BottomNavigationView.bindContainers(
+        vararg containers: Pair<Int, FragmentNavigationContainer>
+    ) {
         containerManager.activeContainerFlow
             .onEach { _ ->
-                listOf(
-                    homeContainer,
-                    featuresContainer,
-                    profileContainer,
-                ).forEach {
-                    it.setVisibilityAnimated(it.isActive)
+                val activeContainer = containers.firstOrNull { it.second.isActive }
+                    ?: containers.firstOrNull { it.first == selectedItemId}
+
+                containers.forEach {
+                    it.second.setVisibilityAnimated(it.second == activeContainer?.second)
                 }
             }
             .launchIn(lifecycleScope)
 
-        binding.bottomNavigation.setOnItemSelectedListener {
-            when (it.itemId) {
-                R.id.home -> homeContainer.setActive()
-                R.id.features -> featuresContainer.setActive()
-                R.id.profile -> profileContainer.setActive()
-                else -> return@setOnItemSelectedListener false
-            }
+        setOnItemSelectedListener { item ->
+            containers.firstOrNull { it.first == item.itemId }
+                ?.second
+                ?.setActive()
             return@setOnItemSelectedListener true
-        }
-
-        if(savedInstanceState == null) {
-            binding.bottomNavigation.selectedItemId = R.id.home
         }
     }
 }
