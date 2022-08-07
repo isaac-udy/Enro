@@ -2,6 +2,7 @@ package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
 import android.view.Window
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -9,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import dev.enro.core.AnimationPair
 import dev.enro.core.DefaultAnimations
 import dev.enro.core.compose.EnroContainer
@@ -87,22 +89,19 @@ internal fun EnroBottomSheetContainer(
 ) {
     val state = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
-        confirmStateChange = {
-            if (it == ModalBottomSheetValue.Hidden) {
+        confirmStateChange = remember(Unit) {
+            fun(it: ModalBottomSheetValue): Boolean {
+                val isHidden = it == ModalBottomSheetValue.Hidden
+                val isHalfExpandedAndSkipped = it == ModalBottomSheetValue.HalfExpanded
+                        && destination.bottomSheetConfiguration.skipHalfExpanded
                 val isDismissed = destination.bottomSheetConfiguration.isDismissed.value
-                if(!isDismissed) {
+
+                if (!isDismissed && (isHidden || isHalfExpandedAndSkipped)) {
                     controller.activeContext?.getNavigationHandle()?.requestClose()
-                    return@rememberModalBottomSheetState destination.bottomSheetConfiguration.isDismissed.value
+                    return destination.bottomSheetConfiguration.isDismissed.value
                 }
+                return true
             }
-            if(it == ModalBottomSheetValue.HalfExpanded && destination.bottomSheetConfiguration.skipHalfExpanded) {
-                val isDismissed = destination.bottomSheetConfiguration.isDismissed.value
-                if(!isDismissed) {
-                    controller.activeContext?.getNavigationHandle()?.requestClose()
-                    return@rememberModalBottomSheetState destination.bottomSheetConfiguration.isDismissed.value
-                }
-            }
-            true
         }
     )
     destination.bottomSheetConfiguration.bottomSheetState = state
@@ -117,14 +116,16 @@ internal fun EnroBottomSheetContainer(
         sheetContent = {
             EnroContainer(
                 controller = controller,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 0.5.dp)
             )
         },
         content = {}
     )
 
     LaunchedEffect(true) {
-        if(destination.bottomSheetConfiguration.animatesToInitialState) {
+        if (destination.bottomSheetConfiguration.animatesToInitialState) {
             state.show()
         } else {
             state.snapTo(ModalBottomSheetValue.Expanded)
