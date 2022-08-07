@@ -1,6 +1,5 @@
 package dev.enro.example
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -64,7 +62,6 @@ class ComposeSimpleExampleViewModel @Inject constructor(
 
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 @NavigationDestination(ComposeSimpleExampleKey::class)
 fun ComposeSimpleExample() {
@@ -212,7 +209,7 @@ fun ComposeSimpleExample() {
 @Parcelize
 class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open<*>) : NavigationKey
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 @NavigationDestination(ExampleComposableBottomSheetKey::class)
 fun BottomSheetDestination.ExampleDialogComposable() {

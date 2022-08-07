@@ -10,7 +10,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import dev.enro.core.NavigationAnimation
 import dev.enro.core.DefaultAnimations
@@ -43,10 +42,6 @@ class BottomSheetConfiguration : DialogConfiguration() {
 
         fun setSkipHalfExpanded(skipHalfExpanded: Boolean) {
             bottomSheetConfiguration.skipHalfExpanded = skipHalfExpanded
-        }
-
-        fun setScrimColor(color: Color) {
-            bottomSheetConfiguration.scrimColor = color
         }
 
         fun setAnimations(animations: NavigationAnimation) {
@@ -121,6 +116,7 @@ internal fun EnroBottomSheetContainer(
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 0.5.dp)
             )
+            destination.bottomSheetConfiguration.ConfigureWindow()
         },
         content = {}
     )

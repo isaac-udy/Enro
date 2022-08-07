@@ -47,8 +47,6 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
 
     private lateinit var dialogConfiguration: DialogConfiguration
 
-    private val composeViewId = View.generateViewId()
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         setStyle(
             STYLE_NO_FRAME,
@@ -57,16 +55,13 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
                 0
             ).themeResource
         )
-        return super.onCreateDialog(savedInstanceState)
-    }
-
-    override fun onDismiss(dialog: DialogInterface) {
-        if (dialog is Dialog) {
-            dialog.setOnKeyListener { _, _, _ ->
-                false
+        return super.onCreateDialog(savedInstanceState).apply {
+            window!!.apply {
+                setBackgroundDrawableResource(android.R.color.transparent)
+                setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+                setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             }
         }
-        super.onDismiss(dialog)
     }
 
     @OptIn(ExperimentalMaterialApi::class)
@@ -74,60 +69,45 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        val composeView = ComposeView(requireContext()).apply {
-            id = composeViewId
-            setContent {
-                val instruction = navigationHandle.key.instruction.asPushInstruction()
-                val controller = rememberEnroContainerController(
-                    initialBackstack = listOf(instruction),
-                    accept = { false },
-                    emptyBehavior = EmptyBehavior.CloseParent
-                )
+    ): View  = ComposeView(requireContext()).apply {
+        id = R.id.enro_internal_compose_dialog_fragment_view_id
+        isVisible = false
 
-                val destination = controller.requireDestinationContext(instruction).destination
-                dialogConfiguration = when(destination) {
-                    is BottomSheetDestination -> {
-                        EnroBottomSheetContainer(controller, destination)
-                        destination.bottomSheetConfiguration
-                    }
-                    is DialogDestination -> {
-                        EnroDialogContainer(controller, destination)
-                        destination.dialogConfiguration
-                    }
-                    else -> throw EnroException.DestinationIsNotDialogDestination("The @Composable destination for ${navigationHandle.key::class.java.simpleName} must be a DialogDestination or a BottomSheetDestination")
-                }
+        setContent {
+            val instruction = navigationHandle.key.instruction.asPushInstruction()
+            val controller = rememberEnroContainerController(
+                initialBackstack = listOf(instruction),
+                accept = { false },
+                emptyBehavior = EmptyBehavior.CloseParent
+            )
 
-                DisposableEffect(dialogConfiguration.configureWindow.value) {
-                    dialog?.window?.let {
-                        it.setSoftInputMode(dialogConfiguration.softInputMode.mode)
-                        dialogConfiguration.configureWindow.value.invoke(it)
-                    }
-                    onDispose {  }
+            val destination = controller.requireDestinationContext(instruction).destination
+            dialogConfiguration = when (destination) {
+                is BottomSheetDestination -> {
+                    EnroBottomSheetContainer(controller, destination)
+                    destination.bottomSheetConfiguration
                 }
-
-                DisposableEffect(true) {
-                    enter()
-                    onDispose { }
+                is DialogDestination -> {
+                    EnroDialogContainer(controller, destination)
+                    destination.dialogConfiguration
                 }
+                else -> throw EnroException.DestinationIsNotDialogDestination("The @Composable destination for ${navigationHandle.key::class.java.simpleName} must be a DialogDestination or a BottomSheetDestination")
             }
-        }
 
-        return FrameLayout(requireContext()).apply {
-            isVisible = false
-            addView(composeView)
+            DisposableEffect(true) {
+                enter()
+                onDispose { }
+            }
         }
     }
 
     private fun enter() {
         val activity = activity ?: return
-        val dialogView = view ?: return
-        val composeView = view?.findViewById<View>(composeViewId) ?: return
+        val view = view ?: return
 
-        dialogView.isVisible = true
-        dialogView.clearAnimation()
-        dialogView.animateToColor(dialogConfiguration.scrimColor)
-        composeView.animate(
+        view.isVisible = true
+        view.clearAnimation()
+        view.animate(
             dialogConfiguration.animations.asResource(activity.theme).enter,
         )
     }
@@ -137,44 +117,17 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
             super.dismiss()
             return
         }
-        val composeView = view.findViewById<View>(composeViewId) ?: run {
-            super.dismiss()
-            return
-        }
+        if(dialogConfiguration.isDismissed.value) return
         dialogConfiguration.isDismissed.value = true
+
         view.isVisible = true
         view.clearAnimation()
-        view.animateToColor(Color.Transparent)
-        composeView.animate(
+        view.animate(
             dialogConfiguration.animations.asResource(requireActivity().theme).exit,
             onAnimationEnd = {
                 super.dismiss()
             }
         )
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        dialog!!.apply {
-            window!!.apply {
-                setOnKeyListener { _, keyCode, event ->
-                    if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
-                        navigationContext.leafContext().getNavigationHandleViewModel()
-                            .requestClose()
-                        return@setOnKeyListener true
-                    }
-                    return@setOnKeyListener false
-                }
-
-                setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-                setBackgroundDrawableResource(android.R.color.transparent)
-                setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-
-                if(::dialogConfiguration.isInitialized) {
-                    setSoftInputMode(dialogConfiguration.softInputMode.mode)
-                    dialogConfiguration.configureWindow.value.invoke(this)
-                }
-            }
-        }
     }
 }
 
@@ -182,19 +135,6 @@ class ComposeDialogFragmentHost : AbstractComposeDialogFragmentHost()
 
 @AndroidEntryPoint
 class HiltComposeDialogFragmentHost : AbstractComposeDialogFragmentHost()
-
-internal fun View.animateToColor(color: Color) {
-    val backgroundColorInt = if (background is ColorDrawable) (background as ColorDrawable).color else 0
-    val backgroundColor = Color(backgroundColorInt)
-
-    animate()
-        .setDuration(225)
-        .setInterpolator(AccelerateDecelerateInterpolator())
-        .setUpdateListener {
-            setBackgroundColor(lerp(backgroundColor, color, it.animatedFraction).toArgb())
-        }
-        .start()
-}
 
 internal fun View.animate(
     animOrAnimator: Int,

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +28,7 @@ import androidx.lifecycle.ViewModel
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.configureBottomSheet
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.closeWithResult
@@ -125,6 +127,12 @@ class RequestStringBottomSheetKey : NavigationKey.WithResult<String>
 @Composable
 @NavigationDestination(RequestStringBottomSheetKey::class)
 fun BottomSheetDestination.RequestStringBottomSheet() {
+    configureBottomSheet {
+        configureWindow {
+            it.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        }
+    }
+
     val navigation = navigationHandle<RequestStringBottomSheetKey>()
     val result = remember {
         mutableStateOf("")
