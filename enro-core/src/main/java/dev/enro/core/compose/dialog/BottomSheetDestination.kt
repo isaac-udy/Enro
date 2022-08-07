@@ -20,8 +20,6 @@ import dev.enro.core.requestClose
 
 @ExperimentalMaterialApi
 class BottomSheetConfiguration : DialogConfiguration() {
-    internal var animatesToInitialState: Boolean = true
-    internal var animatesToHiddenOnClose: Boolean = true
     internal var skipHalfExpanded: Boolean = false
     internal lateinit var bottomSheetState: ModalBottomSheetState
 
@@ -32,20 +30,8 @@ class BottomSheetConfiguration : DialogConfiguration() {
     class Builder internal constructor(
         private val bottomSheetConfiguration: BottomSheetConfiguration
     ) {
-        fun setAnimatesToInitialState(animatesToInitialState: Boolean) {
-            bottomSheetConfiguration.animatesToInitialState = animatesToInitialState
-        }
-
-        fun setAnimatesToHiddenOnClose(animatesToHidden: Boolean) {
-            bottomSheetConfiguration.animatesToHiddenOnClose = animatesToHidden
-        }
-
         fun setSkipHalfExpanded(skipHalfExpanded: Boolean) {
             bottomSheetConfiguration.skipHalfExpanded = skipHalfExpanded
-        }
-
-        fun setAnimations(animations: NavigationAnimation) {
-            bottomSheetConfiguration.animations = animations
         }
 
         @Deprecated("Use 'configureWindow' and set the soft input mode on the window directly")
@@ -101,12 +87,6 @@ internal fun EnroBottomSheetContainer(
         }
     )
     destination.bottomSheetConfiguration.bottomSheetState = state
-    LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
-        if(destination.bottomSheetConfiguration.isDismissed.value && destination.bottomSheetConfiguration.animatesToHiddenOnClose) {
-            state.hide()
-        }
-    }
-
     ModalBottomSheetLayout(
         sheetState = state,
         sheetContent = {
@@ -121,11 +101,12 @@ internal fun EnroBottomSheetContainer(
         content = {}
     )
 
-    LaunchedEffect(true) {
-        if (destination.bottomSheetConfiguration.animatesToInitialState) {
+    LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
+        if(destination.bottomSheetConfiguration.isDismissed.value) {
+            state.hide()
+        }
+        else {
             state.show()
-        } else {
-            state.snapTo(ModalBottomSheetValue.Expanded)
         }
     }
 }
