@@ -12,7 +12,6 @@ import dev.enro.core.compose.dialog.animate
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
-import dev.enro.core.fragment.FragmentFactory
 import dev.enro.core.fragment.FragmentNavigator
 
 class FragmentNavigationContainer internal constructor(

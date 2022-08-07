@@ -1,4 +1,4 @@
-package dev.enro.core.fragment
+package dev.enro.core.fragment.container
 
 import android.os.Bundle
 import androidx.compose.material.ExperimentalMaterialApi
@@ -12,6 +12,7 @@ import dev.enro.core.compose.HiltComposeFragmentHostKey
 import dev.enro.core.compose.dialog.*
 import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
 import dev.enro.core.container.asPresentInstruction
+import dev.enro.core.fragment.FragmentNavigator
 
 internal object FragmentFactory {
 
