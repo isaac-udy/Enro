@@ -1,22 +1,13 @@
 package dev.enro.core.compose.dialog
 
-import android.animation.AnimatorInflater
 import android.app.Dialog
-import android.content.DialogInterface
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.view.*
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import android.widget.FrameLayout
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
-import androidx.core.animation.addListener
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,6 +15,8 @@ import dev.enro.core.*
 import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
+import dev.enro.extensions.animate
+import dev.enro.extensions.createFullscreenDialog
 import kotlinx.parcelize.Parcelize
 
 
@@ -47,22 +40,7 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
 
     private lateinit var dialogConfiguration: DialogConfiguration
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        setStyle(
-            STYLE_NO_FRAME,
-            requireActivity().packageManager.getActivityInfo(
-                requireActivity().componentName,
-                0
-            ).themeResource
-        )
-        return super.onCreateDialog(savedInstanceState).apply {
-            window!!.apply {
-                setBackgroundDrawableResource(android.R.color.transparent)
-                setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-                setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            }
-        }
-    }
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = createFullscreenDialog()
 
     @OptIn(ExperimentalMaterialApi::class)
     override fun onCreateView(
@@ -135,48 +113,3 @@ class ComposeDialogFragmentHost : AbstractComposeDialogFragmentHost()
 
 @AndroidEntryPoint
 class HiltComposeDialogFragmentHost : AbstractComposeDialogFragmentHost()
-
-internal fun View.animate(
-    animOrAnimator: Int,
-    onAnimationStart: () -> Unit = {},
-    onAnimationEnd: () -> Unit = {}
-): Long {
-    clearAnimation()
-    if (animOrAnimator == 0) {
-        onAnimationEnd()
-        return 0
-    }
-    val isAnimation = runCatching { context.resources.getResourceTypeName(animOrAnimator) == "anim" }.getOrElse { false }
-    val isAnimator = !isAnimation && runCatching { context.resources.getResourceTypeName(animOrAnimator) == "animator" }.getOrElse { false }
-
-    when {
-        isAnimator -> {
-            val animator = AnimatorInflater.loadAnimator(context, animOrAnimator)
-            animator.setTarget(this)
-            animator.addListener(
-                onStart = { onAnimationStart() },
-                onEnd = { onAnimationEnd() }
-            )
-            animator.start()
-            return animator.duration
-        }
-        isAnimation -> {
-            val animation = AnimationUtils.loadAnimation(context, animOrAnimator)
-            animation.setAnimationListener(object: Animation.AnimationListener {
-                override fun onAnimationRepeat(animation: Animation?) {}
-                override fun onAnimationStart(animation: Animation?) {
-                    onAnimationStart()
-                }
-                override fun onAnimationEnd(animation: Animation?) {
-                    onAnimationEnd()
-                }
-            })
-            startAnimation(animation)
-            return animation.duration
-        }
-        else -> {
-            onAnimationEnd()
-            return 0
-        }
-    }
-}

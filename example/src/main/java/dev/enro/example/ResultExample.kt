@@ -129,7 +129,7 @@ class RequestStringBottomSheetKey : NavigationKey.WithResult<String>
 fun BottomSheetDestination.RequestStringBottomSheet() {
     configureBottomSheet {
         configureWindow {
-            it.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+            it.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         }
     }
 

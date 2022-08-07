@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
-import dev.enro.core.compose.dialog.animate
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.add
 import dev.enro.core.container.asPushInstruction
@@ -21,6 +20,8 @@ import dev.enro.core.container.createEmptyBackStack
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.internal.getAttributeResourceId
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import dev.enro.extensions.animate
+import dev.enro.extensions.createFullscreenDialog
 import kotlinx.parcelize.Parcelize
 
 
@@ -31,25 +32,14 @@ abstract class AbstractFullscreenDialogFragment : DialogFragment() {
     internal var fragment: Fragment? = null
     internal var animations: NavigationAnimation.Resource? = null
 
-    private val navigation by navigationHandle<FullScreenDialogKey> { defaultKey(FullScreenDialogKey) }
+    private val navigation by navigationHandle { defaultKey(FullScreenDialogKey) }
     private val container by navigationContainer(
         containerId = R.id.enro_internal_single_fragment_frame_layout,
         emptyBehavior = EmptyBehavior.CloseParent,
         accept = { false }
     )
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val theme = requireActivity().packageManager.getActivityInfo(requireActivity().componentName, 0).themeResource
-        setStyle(STYLE_NO_FRAME, theme)
-        return super.onCreateDialog(savedInstanceState).apply {
-            setCanceledOnTouchOutside(false)
-            window!!.apply {
-                setWindowAnimations(0)
-                setBackgroundDrawableResource(android.R.color.transparent)
-                setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            }
-        }
-    }
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = createFullscreenDialog()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return FrameLayout(requireContext()).apply {
@@ -103,7 +93,7 @@ abstract class AbstractFullscreenDialogFragment : DialogFragment() {
             animOrAnimator = animations.exit
         )
 
-        val delay = maxOf(0, animationDuration - 75)
+        val delay = maxOf(0, animationDuration - 100)
         requireView()
             .animate()
             .setInterpolator(AccelerateInterpolator())

@@ -27,7 +27,7 @@ open class DialogConfiguration {
         exit = 0
     )
 
-    internal var softInputMode = WindowInputMode.RESIZE
+    internal var softInputMode: WindowInputMode? = null
     internal var configureWindow = mutableStateOf<(window: Window) -> Unit>({})
 
     class Builder internal constructor(
@@ -58,7 +58,9 @@ internal fun DialogConfiguration.ConfigureWindow() {
     ) {
         val window = windowProvider?.window ?: return@DisposableEffect onDispose {  }
 
-        window.setSoftInputMode(softInputMode.mode)
+        softInputMode?.mode?.let {
+            window.setSoftInputMode(it)
+        }
         configureWindow.value.invoke(window)
 
         onDispose { }
