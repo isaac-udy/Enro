@@ -6,7 +6,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.*
 import dev.enro.core.*
-import dev.enro.core.hosts.AbstractComposeFragmentHost
+import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.result.closeWithResult
@@ -64,12 +64,12 @@ fun assertPushContainerType(
     InstrumentationRegistry.getInstrumentation().runOnMainSync {
         val parentContext = run {
             val it = pushFrom.navigationContext.parentContext()!!
-            if (it.contextReference is AbstractComposeFragmentHost) it.parentContext()!! else it
+            if (it.contextReference is AbstractFragmentHostForComposable) it.parentContext()!! else it
         }
 
         fun NavigationContainer.hasActiveContext(navigationContext: NavigationContext<*>): Boolean {
             val isActiveContextComposeHost =
-                activeContext?.contextReference is AbstractComposeFragmentHost
+                activeContext?.contextReference is AbstractFragmentHostForComposable
 
             val isActiveContextInChildContainer =
                 activeContext?.containerManager?.activeContainer?.activeContext == navigationContext

@@ -3,7 +3,7 @@ package dev.enro.core
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import dev.enro.core.hosts.AbstractComposeFragmentHostKey
+import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
@@ -13,7 +13,7 @@ internal class ChildContainer(
     private val accept: (NavigationKey) -> Boolean
 ) {
     fun accept(key: NavigationKey): Boolean {
-        if (key is AbstractComposeFragmentHostKey && accept.invoke(key.instruction.navigationKey)) return true
+        if (key is AbstractOpenComposableInFragmentKey && accept.invoke(key.instruction.navigationKey)) return true
         return accept.invoke(key)
     }
 }

@@ -10,21 +10,21 @@ import dev.enro.core.container.asPushInstruction
 import dev.enro.core.fragment.container.navigationContainer
 import kotlinx.parcelize.Parcelize
 
-internal abstract class AbstractSingleFragmentKey : NavigationKey {
+internal abstract class AbstractOpenInstructionInActivityKey : NavigationKey {
     abstract val instruction: AnyOpenInstruction
 }
 
 @Parcelize
-internal data class SingleFragmentKey(
+internal data class OpenInstructionInActivity(
     override val instruction: AnyOpenInstruction
-) : AbstractSingleFragmentKey()
+) : AbstractOpenInstructionInActivityKey()
 
 @Parcelize
-internal data class HiltSingleFragmentKey(
+internal data class OpenInstructionInHiltActivity(
     override val instruction: AnyOpenInstruction
-) : AbstractSingleFragmentKey()
+) : AbstractOpenInstructionInActivityKey()
 
-internal abstract class AbstractSingleFragmentActivity : AppCompatActivity() {
+internal abstract class AbstractActivityHostForAnyInstruction : AppCompatActivity() {
 
     private val container by navigationContainer(
         containerId = R.id.enro_internal_single_fragment_frame_layout,
@@ -32,7 +32,7 @@ internal abstract class AbstractSingleFragmentActivity : AppCompatActivity() {
         emptyBehavior = EmptyBehavior.CloseParent,
     )
 
-    private val handle by navigationHandle<AbstractSingleFragmentKey>()
+    private val handle by navigationHandle<AbstractOpenInstructionInActivityKey>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +42,7 @@ internal abstract class AbstractSingleFragmentActivity : AppCompatActivity() {
     }
 }
 
-internal class SingleFragmentActivity : AbstractSingleFragmentActivity()
+internal class ActivityHostForAnyInstruction : AbstractActivityHostForAnyInstruction()
 
 @AndroidEntryPoint
-internal class HiltSingleFragmentActivity : AbstractSingleFragmentActivity()
+internal class HiltActivityHostForAnyInstruction : AbstractActivityHostForAnyInstruction()

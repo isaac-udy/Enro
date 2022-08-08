@@ -8,7 +8,7 @@ import dev.enro.core.container.add
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.close
-import dev.enro.core.hosts.SingleFragmentKey
+import dev.enro.core.hosts.OpenInstructionInActivity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -205,7 +205,7 @@ private fun openFragmentAsActivity(
         fromContext,
         NavigationInstruction.Open.OpenInternal(
             navigationDirection = instruction.navigationDirection,
-            navigationKey = SingleFragmentKey(instruction.internal.copy(
+            navigationKey = OpenInstructionInActivity(instruction.internal.copy(
                 navigationDirection = navigationDirection,
             )),
             resultId = instruction.internal.resultId

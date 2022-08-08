@@ -23,23 +23,23 @@ import dev.enro.extensions.createFullscreenDialog
 import kotlinx.parcelize.Parcelize
 
 
-internal abstract class AbstractComposeDialogFragmentHostKey : NavigationKey {
+internal abstract class AbstractOpenComposableDialogInFragmentKey : NavigationKey {
     abstract val instruction: OpenPresentInstruction
 }
 
 @Parcelize
-internal data class ComposeDialogFragmentHostKey(
+internal data class OpenComposableDialogInFragment(
     override val instruction: OpenPresentInstruction
-) : AbstractComposeDialogFragmentHostKey()
+) : AbstractOpenComposableDialogInFragmentKey()
 
 @Parcelize
-internal data class HiltComposeDialogFragmentHostKey(
+internal data class OpenComposableDialogInHiltFragment(
     override val instruction: OpenPresentInstruction
-) : AbstractComposeDialogFragmentHostKey()
+) : AbstractOpenComposableDialogInFragmentKey()
 
 
-abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
-    private val navigationHandle by navigationHandle<AbstractComposeDialogFragmentHostKey>()
+abstract class AbstractFragmentHostForComposableDialog : DialogFragment() {
+    private val navigationHandle by navigationHandle<AbstractOpenComposableDialogInFragmentKey>()
 
     private lateinit var dialogConfiguration: DialogConfiguration
 
@@ -50,7 +50,7 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View  = ComposeView(requireContext()).apply {
+    ): View = ComposeView(requireContext()).apply {
         id = R.id.enro_internal_compose_dialog_fragment_view_id
         isVisible = false
 
@@ -112,7 +112,7 @@ abstract class AbstractComposeDialogFragmentHost : DialogFragment() {
     }
 }
 
-class ComposeDialogFragmentHost : AbstractComposeDialogFragmentHost()
+class FragmentHostForComposableDialog : AbstractFragmentHostForComposableDialog()
 
 @AndroidEntryPoint
-class HiltComposeDialogFragmentHost : AbstractComposeDialogFragmentHost()
+class HiltFragmentHostForComposableDialog : AbstractFragmentHostForComposableDialog()

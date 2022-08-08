@@ -24,18 +24,27 @@ import dev.enro.extensions.createFullscreenDialog
 import dev.enro.extensions.getAttributeResourceId
 import kotlinx.parcelize.Parcelize
 
+internal abstract class AbstractOpenPresentableFragmentInFragmentKey : NavigationKey {
+    abstract val instruction: OpenPresentInstruction
+}
 
 @Parcelize
-internal object FullScreenDialogKey : NavigationKey.SupportsPresent
+internal data class OpenPresentableFragmentInFragment(
+    override val instruction: OpenPresentInstruction
+) : AbstractOpenPresentableFragmentInFragmentKey()
 
-abstract class AbstractFullscreenDialogFragment : DialogFragment() {
-    internal var fragment: Fragment? = null
-    internal var animations: NavigationAnimation.Resource? = null
+@Parcelize
+internal data class OpenPresentableFragmentInHiltFragment(
+    override val instruction: OpenPresentInstruction
+) : AbstractOpenPresentableFragmentInFragmentKey()
 
-    private val navigation by navigationHandle { defaultKey(FullScreenDialogKey) }
+abstract class AbstractFragmentHostForPresentableFragment : DialogFragment() {
+
+    private val navigationHandle by navigationHandle<AbstractOpenPresentableFragmentInFragmentKey>()
     private val container by navigationContainer(
         containerId = R.id.enro_internal_single_fragment_frame_layout,
         emptyBehavior = EmptyBehavior.CloseParent,
+        rootInstruction = { navigationHandle.key.instruction.asPushInstruction() },
         accept = { false }
     )
 
@@ -52,34 +61,6 @@ abstract class AbstractFullscreenDialogFragment : DialogFragment() {
                     .setDuration(100)
                     .alpha(1f)
                     .start()
-            }
-        }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        val fragment = fragment.also { fragment = null } ?: return
-        val animations = animations.also { animations = null }
-            ?.asResource(requireActivity().theme)
-
-        childFragmentManager.commitNow {
-            attach(fragment)
-        }
-
-        view.post {
-            childFragmentManager.commitNow {
-                if(animations != null) setCustomAnimations(animations.enter, animations.exit)
-
-                add(R.id.enro_internal_single_fragment_frame_layout, fragment, tag)
-                setPrimaryNavigationFragment(fragment)
-                runOnCommit {
-                    container.setBackstack(
-                        createEmptyBackStack().add(
-                            fragment.getNavigationHandle().instruction.asPushInstruction()
-                        )
-                    )
-                }
             }
         }
     }
@@ -107,7 +88,7 @@ abstract class AbstractFullscreenDialogFragment : DialogFragment() {
     }
 }
 
-internal class FullscreenDialogFragment : AbstractFullscreenDialogFragment()
+internal class FragmentHostForPresentableFragment : AbstractFragmentHostForPresentableFragment()
 
 @AndroidEntryPoint
-internal class HiltFullscreenDialogFragment : AbstractFullscreenDialogFragment()
+internal class HiltFragmentHostForPresentableFragment : AbstractFragmentHostForPresentableFragment()

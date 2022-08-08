@@ -1,8 +1,8 @@
 package dev.enro.core.controller.interceptor
 
 import dev.enro.core.*
-import dev.enro.core.hosts.AbstractSingleFragmentKey
-import dev.enro.core.hosts.SingleFragmentActivity
+import dev.enro.core.hosts.AbstractOpenInstructionInActivityKey
+import dev.enro.core.hosts.ActivityHostForAnyInstruction
 
 internal class ExecutorContextInterceptor : NavigationInstructionInterceptor{
 
@@ -21,9 +21,9 @@ internal class ExecutorContextInterceptor : NavigationInstructionInterceptor{
         // If the executor context has been set, don't change it
         if(internal.executorContext != null) return internal
 
-        if(parentContext.contextReference is SingleFragmentActivity) {
-            val singleFragmentKey = parentContext.getNavigationHandle().asTyped<AbstractSingleFragmentKey>().key
-            if(instructionId == singleFragmentKey.instruction.instructionId) {
+        if(parentContext.contextReference is ActivityHostForAnyInstruction) {
+            val openActivityKey = parentContext.getNavigationHandle().asTyped<AbstractOpenInstructionInActivityKey>().key
+            if(instructionId == openActivityKey.instruction.instructionId) {
                 return internal
             }
         }

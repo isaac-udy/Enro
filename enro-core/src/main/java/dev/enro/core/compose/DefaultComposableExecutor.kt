@@ -8,8 +8,8 @@ import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.close
 import dev.enro.core.container.add
-import dev.enro.core.hosts.ComposeFragmentHostKey
-import dev.enro.core.hosts.SingleFragmentKey
+import dev.enro.core.hosts.OpenComposableInFragment
+import dev.enro.core.hosts.OpenInstructionInActivity
 
 object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination, NavigationKey>(
     fromType = Any::class,
@@ -86,7 +86,7 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
 
 private fun <T: NavigationDirection> NavigationInstruction.Open<T>.asFragmentHostInstruction() = NavigationInstruction.Open.OpenInternal(
     navigationDirection,
-    ComposeFragmentHostKey(this, isRoot = true)
+    OpenComposableInFragment(this, isRoot = true)
 )
 
 private fun openComposableAsActivity(
@@ -99,7 +99,7 @@ private fun openComposableAsActivity(
         fromContext,
         NavigationInstruction.Open.OpenInternal(
             direction,
-            SingleFragmentKey(fragmentInstruction)
+            OpenInstructionInActivity(fragmentInstruction)
         )
     )
 }

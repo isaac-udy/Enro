@@ -2,7 +2,6 @@
 package dev.enro.core.legacy
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commit
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
@@ -43,7 +42,7 @@ class FragmentToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.forward(ActivityChildFragmentKey(id))
 
-        val dialogFragment = expectFullscreenDialogFragment()
+        val dialogFragment = expectFragmentHostForPresentableFragment()
         val parentFragment = dialogFragment.childFragmentManager.primaryNavigationFragment!!
         val id2 = UUID.randomUUID().toString()
         parentFragment.getNavigationHandle().forward(ActivityChildFragmentTwoKey(id2))

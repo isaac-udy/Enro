@@ -12,7 +12,6 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import junit.framework.TestCase.*
 import kotlinx.parcelize.Parcelize
-import org.junit.Ignore
 import org.junit.Test
 import java.util.*
 
@@ -24,7 +23,7 @@ class ActivityToFragmentTests {
         scenario.onActivity {
             it.getNavigationHandle().forward(GenericFragmentKey("fragment from component activity"))
         }
-        expectSingleFragmentActivity()
+        expectActivityHostForAnyInstruction()
         assertEquals(
             "fragment from component activity",
             expectFragment<GenericFragment>()
@@ -43,7 +42,7 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.forward(GenericFragmentKey(id))
 
-        val activity = expectFullscreenDialogFragment()
+        val activity = expectFragmentHostForPresentableFragment()
         val activeFragment = activity.childFragmentManager.primaryNavigationFragment!!
         val fragmentHandle = activeFragment.getNavigationHandle().asTyped<GenericFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
@@ -95,7 +94,7 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.forward(ActivityChildFragmentKey(id))
 
-        expectFullscreenDialogFragment()
+        expectFragmentHostForPresentableFragment()
         val activeFragment = expectFragment<ActivityChildFragment>()
         val fragmentHandle =
             activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
@@ -110,7 +109,7 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.replace(ActivityChildFragmentKey(id))
 
-        expectSingleFragmentActivity()
+        expectActivityHostForAnyInstruction()
         val activeFragment = expectFragment<ActivityChildFragment>()
         val fragmentHandle =
             activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()
@@ -129,7 +128,7 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.forward(GenericFragmentKey(id))
 
-        val activity = expectFullscreenDialogFragment()
+        val activity = expectFragmentHostForPresentableFragment()
         val activeFragment = activity.childFragmentManager.primaryNavigationFragment!!
         val fragmentHandle = activeFragment.getNavigationHandle().asTyped<GenericFragmentKey>()
         assertEquals(id, fragmentHandle.key.id)
@@ -143,7 +142,7 @@ class ActivityToFragmentTests {
         val id = UUID.randomUUID().toString()
         handle.replace(ActivityChildFragmentKey(id))
 
-        val activity = expectSingleFragmentActivity()
+        val activity = expectActivityHostForAnyInstruction()
         val activeFragment = activity.supportFragmentManager.primaryNavigationFragment!!
         val fragmentHandle =
             activeFragment.getNavigationHandle().asTyped<ActivityChildFragmentKey>()

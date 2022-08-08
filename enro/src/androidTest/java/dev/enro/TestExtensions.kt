@@ -135,12 +135,12 @@ fun getActiveActivity(): Activity? {
     return activities.firstOrNull()
 }
 
-fun expectSingleFragmentActivity(): FragmentActivity {
-    return expectActivity { it::class.java.simpleName == "SingleFragmentActivity" }
+fun expectActivityHostForAnyInstruction(): FragmentActivity {
+    return expectActivity { it::class.java.simpleName == "ActivityHostForAnyInstruction" }
 }
 
-fun expectFullscreenDialogFragment(): Fragment {
-    return expectFragment { it::class.java.simpleName == "FullscreenDialogFragment" }
+fun expectFragmentHostForPresentableFragment(): Fragment {
+    return expectFragment { it::class.java.simpleName == "FragmentHostForPresentableFragment" }
 }
 
 inline fun <reified T: ComponentActivity> expectActivity(crossinline selector: (ComponentActivity) -> Boolean = { it is T }): T {

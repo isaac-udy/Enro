@@ -4,11 +4,11 @@ import android.content.res.Resources
 import android.provider.Settings
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import dev.enro.core.hosts.AbstractComposeFragmentHost
-import dev.enro.core.hosts.AbstractComposeFragmentHostKey
+import dev.enro.core.hosts.AbstractFragmentHostForComposable
+import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
 import dev.enro.core.controller.navigationController
-import dev.enro.core.hosts.AbstractSingleFragmentActivity
-import dev.enro.core.hosts.AbstractSingleFragmentKey
+import dev.enro.core.hosts.AbstractActivityHostForAnyInstruction
+import dev.enro.core.hosts.AbstractOpenInstructionInActivityKey
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
 
@@ -137,16 +137,16 @@ fun animationsFor(
         return NavigationAnimation.Resource(0, 0)
     }
 
-    if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractSingleFragmentActivity) {
-        val singleFragmentKey = context.getNavigationHandleViewModel().key as AbstractSingleFragmentKey
-        if (navigationInstruction.instructionId == singleFragmentKey.instruction.instructionId) {
+    if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractActivityHostForAnyInstruction) {
+        val openActivityKey = context.getNavigationHandleViewModel().key as AbstractOpenInstructionInActivityKey
+        if (navigationInstruction.instructionId == openActivityKey.instruction.instructionId) {
             return NavigationAnimation.Resource(0, 0)
         }
     }
 
-    if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractComposeFragmentHost) {
-        val composeHostKey = context.getNavigationHandleViewModel().key as AbstractComposeFragmentHostKey
-        if (navigationInstruction.instructionId == composeHostKey.instruction.instructionId) {
+    if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractFragmentHostForComposable) {
+        val openFragmentKey = context.getNavigationHandleViewModel().key as AbstractOpenComposableInFragmentKey
+        if (navigationInstruction.instructionId == openFragmentKey.instruction.instructionId) {
             return NavigationAnimation.Resource(0, 0)
         }
     }
@@ -167,7 +167,7 @@ private fun animationsForOpen(
     val instructionForAnimation =  when (
         val navigationKey = navigationInstruction.navigationKey
     ) {
-        is AbstractComposeFragmentHostKey -> navigationKey.instruction
+        is AbstractOpenComposableInFragmentKey -> navigationKey.instruction
         else -> navigationInstruction
     }
 
@@ -184,7 +184,7 @@ private fun animationsForClose(
     val theme = context.activity.theme
 
     val contextForAnimation = when (context.contextReference) {
-        is AbstractComposeFragmentHost -> {
+        is AbstractFragmentHostForComposable -> {
             context.containerManager.containers
                 .firstOrNull()
                 ?.activeContext

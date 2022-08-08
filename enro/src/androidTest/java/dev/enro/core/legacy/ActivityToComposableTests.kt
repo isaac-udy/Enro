@@ -15,8 +15,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.*
 
-private fun expectSingleFragmentActivity(): FragmentActivity {
-    return expectActivity { it::class.java.simpleName == "SingleFragmentActivity" }
+private fun expectActivityHostForAnyInstruction(): FragmentActivity {
+    return expectActivity { it::class.java.simpleName == "ActivityHostForAnyInstruction" }
 }
 
 class ActivityToComposableTests {
@@ -29,7 +29,7 @@ class ActivityToComposableTests {
         val id = UUID.randomUUID().toString()
         handle.forward(GenericComposableKey(id))
 
-        expectSingleFragmentActivity()
+        expectActivityHostForAnyInstruction()
         expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == id
         }
@@ -42,7 +42,7 @@ class ActivityToComposableTests {
 
         handle.forward(GenericComposableKey(id = "StandaloneComposable"))
 
-        expectSingleFragmentActivity()
+        expectActivityHostForAnyInstruction()
 
         val context = expectContext<ComposableDestination, GenericComposableKey>()
 

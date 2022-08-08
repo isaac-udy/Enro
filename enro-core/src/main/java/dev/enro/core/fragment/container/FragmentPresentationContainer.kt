@@ -6,7 +6,7 @@ import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.container.*
 import dev.enro.core.container.close
 import dev.enro.core.fragment.FragmentNavigator
-import dev.enro.core.hosts.FullscreenDialogFragment
+import dev.enro.core.hosts.FragmentHostForPresentableFragment
 
 class FragmentPresentationContainer internal constructor(
     parentContext: NavigationContext<*>,
@@ -72,14 +72,6 @@ class FragmentPresentationContainer internal constructor(
                     navigator,
                     it
                 ) to it
-            }
-            .map {
-                if (it.first !is DialogFragment) {
-                    FullscreenDialogFragment().apply {
-                        fragment = it.first
-                        animations = animationsFor(parentContext, it.second)
-                    } to it.second
-                } else it
             }
 
         fragmentManager.commitNow {

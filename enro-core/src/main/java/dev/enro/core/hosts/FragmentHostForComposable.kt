@@ -14,25 +14,25 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import kotlinx.parcelize.Parcelize
 
-internal abstract class AbstractComposeFragmentHostKey : NavigationKey.SupportsPush, NavigationKey.SupportsPresent {
+internal abstract class AbstractOpenComposableInFragmentKey : NavigationKey.SupportsPush, NavigationKey.SupportsPresent {
     abstract val instruction: AnyOpenInstruction
     abstract val isRoot: Boolean
 }
 
 @Parcelize
-internal data class ComposeFragmentHostKey(
+internal data class OpenComposableInFragment(
     override val instruction: AnyOpenInstruction,
     override val isRoot: Boolean
-) : AbstractComposeFragmentHostKey()
+) : AbstractOpenComposableInFragmentKey()
 
 @Parcelize
-internal data class HiltComposeFragmentHostKey(
+internal data class OpenComposableInHiltFragment(
     override val instruction: AnyOpenInstruction,
     override val isRoot: Boolean
-) : AbstractComposeFragmentHostKey()
+) : AbstractOpenComposableInFragmentKey()
 
-abstract class AbstractComposeFragmentHost : Fragment() {
-    private val navigationHandle by navigationHandle<AbstractComposeFragmentHostKey>()
+abstract class AbstractFragmentHostForComposable : Fragment() {
+    private val navigationHandle by navigationHandle<AbstractOpenComposableInFragmentKey>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,7 +53,7 @@ abstract class AbstractComposeFragmentHost : Fragment() {
     }
 }
 
-class ComposeFragmentHost : AbstractComposeFragmentHost()
+class FragmentHostForComposable : AbstractFragmentHostForComposable()
 
 @AndroidEntryPoint
-class HiltComposeFragmentHost : AbstractComposeFragmentHost()
+class HiltFragmentHostForComposable : AbstractFragmentHostForComposable()
