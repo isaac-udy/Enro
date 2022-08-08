@@ -2,12 +2,11 @@ package dev.enro.core.destinations
 
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.*
 import dev.enro.core.*
-import dev.enro.core.compose.AbstractComposeFragmentHost
+import dev.enro.core.hosts.AbstractComposeFragmentHost
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.result.closeWithResult

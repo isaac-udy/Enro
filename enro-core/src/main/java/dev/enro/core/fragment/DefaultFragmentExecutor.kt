@@ -8,8 +8,7 @@ import dev.enro.core.container.add
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.close
-import dev.enro.core.fragment.container.FragmentNavigationContainer
-import dev.enro.core.fragment.internal.SingleFragmentKey
+import dev.enro.core.hosts.SingleFragmentKey
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

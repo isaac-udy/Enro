@@ -4,11 +4,11 @@ import android.content.res.Resources
 import android.provider.Settings
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import dev.enro.core.compose.AbstractComposeFragmentHost
-import dev.enro.core.compose.AbstractComposeFragmentHostKey
+import dev.enro.core.hosts.AbstractComposeFragmentHost
+import dev.enro.core.hosts.AbstractComposeFragmentHostKey
 import dev.enro.core.controller.navigationController
-import dev.enro.core.fragment.internal.AbstractSingleFragmentActivity
-import dev.enro.core.fragment.internal.AbstractSingleFragmentKey
+import dev.enro.core.hosts.AbstractSingleFragmentActivity
+import dev.enro.core.hosts.AbstractSingleFragmentKey
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
 

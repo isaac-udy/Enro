@@ -1,4 +1,4 @@
-package dev.enro.core.compose.dialog
+package dev.enro.core.hosts
 
 import android.app.Dialog
 import android.os.Bundle
@@ -12,6 +12,9 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
+import dev.enro.core.compose.dialog.*
+import dev.enro.core.compose.dialog.EnroBottomSheetContainer
+import dev.enro.core.compose.dialog.EnroDialogContainer
 import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction

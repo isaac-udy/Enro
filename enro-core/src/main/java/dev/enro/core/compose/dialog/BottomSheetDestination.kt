@@ -1,8 +1,8 @@
 package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.defaultMinSize
 import android.view.Window
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -11,7 +11,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.enro.core.NavigationAnimation
 import dev.enro.core.DefaultAnimations
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.container.ComposableNavigationContainer

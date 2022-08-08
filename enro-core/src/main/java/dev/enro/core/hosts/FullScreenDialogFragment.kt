@@ -1,4 +1,4 @@
-package dev.enro.core.fragment.internal
+package dev.enro.core.hosts
 
 import android.app.Dialog
 import android.os.Bundle

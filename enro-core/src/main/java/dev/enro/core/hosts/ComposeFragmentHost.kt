@@ -1,4 +1,4 @@
-package dev.enro.core.compose
+package dev.enro.core.hosts
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,6 +8,8 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
+import dev.enro.core.compose.EnroContainer
+import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import kotlinx.parcelize.Parcelize

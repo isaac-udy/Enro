@@ -3,11 +3,8 @@ package dev.enro.core.compose
 import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.background
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.lifecycle.*
@@ -22,6 +19,7 @@ import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
 import dev.enro.core.compose.container.ComposableNavigationContainer
+import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.application
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.viewmodel.EnroViewModelFactory
@@ -30,7 +28,7 @@ import dev.enro.viewmodel.EnroViewModelFactory
 internal class ComposableDestinationContextReference(
     val instruction: AnyOpenInstruction,
     val destination: ComposableDestination,
-    internal var parentContainer: ComposableNavigationContainer
+    internal var parentContainer: NavigationContainer
 ) : ViewModel(),
     LifecycleOwner,
     ViewModelStoreOwner,
@@ -38,7 +36,6 @@ internal class ComposableDestinationContextReference(
     SavedStateRegistryOwner {
 
     private val navigationController get() = parentContainer.parentContext.controller
-    private val parentViewModelStoreOwner get() = parentContainer.parentContext.viewModelStoreOwner
     private val parentSavedStateRegistry get() = parentContainer.parentContext.savedStateRegistryOwner.savedStateRegistry
     internal val activity: ComponentActivity get() = parentContainer.parentContext.activity
 
@@ -133,7 +130,6 @@ internal class ComposableDestinationContextReference(
     override val savedStateRegistry: SavedStateRegistry get() =
         savedStateController.savedStateRegistry
 
-    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun Render() {
         val backstackState by parentContainer.backstackFlow.collectAsState()
@@ -179,7 +175,6 @@ internal class ComposableDestinationContextReference(
                 onDispose {
                     if(!backstackState.backstack.contains(instruction)) {
                         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-                        parentContainer.onInstructionDisposed(instruction)
                     }
                 }
             }

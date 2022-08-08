@@ -7,12 +7,13 @@ import androidx.fragment.app.FragmentActivity
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableNavigator
-import dev.enro.core.compose.ComposeFragmentHostKey
-import dev.enro.core.compose.HiltComposeFragmentHostKey
+import dev.enro.core.hosts.ComposeFragmentHostKey
+import dev.enro.core.hosts.HiltComposeFragmentHostKey
 import dev.enro.core.compose.dialog.*
-import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
+import dev.enro.core.hosts.ComposeDialogFragmentHostKey
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.fragment.FragmentNavigator
+import dev.enro.core.hosts.HiltComposeDialogFragmentHostKey
 
 internal object FragmentFactory {
 

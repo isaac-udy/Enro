@@ -8,11 +8,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableNavigator
-import dev.enro.core.compose.dialog.animate
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.fragment.FragmentNavigator
+import dev.enro.extensions.animate
 
 class FragmentNavigationContainer internal constructor(
     @IdRes val containerId: Int,

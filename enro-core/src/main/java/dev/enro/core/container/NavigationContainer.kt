@@ -19,8 +19,17 @@ abstract class NavigationContainer(
     val acceptsNavigator: (Navigator<*, *>) -> Boolean
 ) {
     private val handler = Handler(Looper.getMainLooper())
-    private val reconcileBackstack = Runnable {
+    private val reconcileBackstack: Runnable = Runnable {
         reconcileBackstack(pendingRemovals.toList(), mutableBackstack.value)
+    }
+    private val removeExitingFromBackstack: Runnable = Runnable {
+        if(backstack.exiting == null) return@Runnable
+        val nextBackstack = backstack.copy(
+            exiting = null,
+            exitingIndex = -1,
+            isDirectUpdate = true
+        )
+        setBackstack(nextBackstack)
     }
 
     abstract val activeContext: NavigationContext<*>?
@@ -51,6 +60,7 @@ abstract class NavigationContainer(
             }
 
         handler.removeCallbacks(reconcileBackstack)
+        handler.removeCallbacks(removeExitingFromBackstack)
         val lastBackstack = mutableBackstack.getAndUpdate { backstack }
 
         val removed = lastBackstack.backstack
@@ -102,6 +112,7 @@ abstract class NavigationContainer(
         }
         else {
             pendingRemovals.clear()
+            handler.postDelayed(removeExitingFromBackstack, 1000)
         }
     }
 

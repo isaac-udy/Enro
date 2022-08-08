@@ -3,7 +3,7 @@ package dev.enro.core
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import dev.enro.core.compose.AbstractComposeFragmentHostKey
+import dev.enro.core.hosts.AbstractComposeFragmentHostKey
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass

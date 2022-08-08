@@ -70,19 +70,6 @@ class ComposableNavigationContainer internal constructor(
         return true
     }
 
-    internal fun onInstructionDisposed(instruction: AnyOpenInstruction) {
-        val backstack = backstackFlow.value
-        if (backstack.exiting == instruction) {
-            setBackstack(
-                backstack.copy(
-                    exiting = null,
-                    exitingIndex = -1,
-                    isDirectUpdate = true
-                )
-            )
-        }
-    }
-
     internal fun getDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationContextReference? {
         return destinationContexts[instruction.instructionId]
     }

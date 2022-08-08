@@ -6,7 +6,7 @@ import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.container.*
 import dev.enro.core.container.close
 import dev.enro.core.fragment.FragmentNavigator
-import dev.enro.core.fragment.internal.FullscreenDialogFragment
+import dev.enro.core.hosts.FullscreenDialogFragment
 
 class FragmentPresentationContainer internal constructor(
     parentContext: NavigationContext<*>,
