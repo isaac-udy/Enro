@@ -9,8 +9,8 @@ import dev.enro.core.compose.AbstractComposeFragmentHostKey
 import dev.enro.core.controller.navigationController
 import dev.enro.core.fragment.internal.AbstractSingleFragmentActivity
 import dev.enro.core.fragment.internal.AbstractSingleFragmentKey
-import dev.enro.core.internal.getAttributeResourceId
-import dev.enro.core.internal.getNestedAttribute
+import dev.enro.extensions.getAttributeResourceId
+import dev.enro.extensions.getNestedAttributeResourceId
 
 @Deprecated("Please use NavigationAnimation")
 typealias AnimationPair = NavigationAnimation
@@ -79,14 +79,14 @@ object DefaultAnimations {
 
     val present = NavigationAnimation.Theme(
         enter = { theme ->
-            theme.getNestedAttribute(
+            theme.getNestedAttributeResourceId(
                 android.R.attr.dialogTheme,
                 android.R.attr.windowAnimationStyle,
                 android.R.attr.windowEnterAnimation
             ) ?: 0
         },
         exit = { theme ->
-            theme.getNestedAttribute(
+            theme.getNestedAttributeResourceId(
                 android.R.attr.dialogTheme,
                 android.R.attr.windowAnimationStyle,
                 android.R.attr.windowExitAnimation

@@ -18,10 +18,10 @@ import dev.enro.core.container.add
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.createEmptyBackStack
 import dev.enro.core.fragment.container.navigationContainer
-import dev.enro.core.internal.getAttributeResourceId
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.extensions.animate
 import dev.enro.extensions.createFullscreenDialog
+import dev.enro.extensions.getAttributeResourceId
 import kotlinx.parcelize.Parcelize
 
 

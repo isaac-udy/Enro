@@ -1,4 +1,4 @@
-package dev.enro.core.internal
+package dev.enro.extensions
 
 import android.content.res.Resources
 import android.util.TypedValue
@@ -8,13 +8,14 @@ internal fun Resources.Theme.getAttributeResourceId(attr: Int) = TypedValue().le
     it.resourceId
 }
 
-internal fun Resources.Theme.getNestedAttribute(vararg attrs: Int): Int? {
+internal fun Resources.Theme.getNestedAttributeResourceId(vararg attrs: Int): Int? {
     val attribute = getAttributeResourceId(attrs.firstOrNull() ?: return null)
     return attrs.drop(1).fold(attribute) { currentAttr, nextAttr ->
         getStyledAttribute(currentAttr, nextAttr) ?: return null
     }
 }
-internal fun Resources.Theme.getStyledAttribute(resId: Int, attr: Int): Int? {
+
+private fun Resources.Theme.getStyledAttribute(resId: Int, attr: Int): Int? {
     val id = obtainStyledAttributes(resId, intArrayOf(attr)).use {
         it.getResourceId(0, -1)
     }
