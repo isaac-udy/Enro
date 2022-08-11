@@ -41,7 +41,7 @@ dependencyResolutionManagement {
             library("compose-compiler", "androidx.compose.compiler:compiler:1.2.0")
             library("compose-foundation", "androidx.compose.foundation:foundation:1.2.0")
             library("compose-foundationLayout", "androidx.compose.foundation:foundation-layout:1.2.0")
-            library("compose-ui", "androidx.compose.ui:ui:1.2.0")
+            library("compose-ui", "androidx.compose.ui:ui:1.2.1")
             library("compose-uiTooling", "androidx.compose.ui:ui-tooling:1.2.0")
             library("compose-runtime", "androidx.compose.runtime:runtime:1.2.0")
             library("compose-livedata", "androidx.compose.runtime:runtime-livedata:1.2.0")
