@@ -48,7 +48,7 @@ dependencyResolutionManagement {
             library("compose-material", "androidx.compose.material:material:1.2.0")
 
             library("compose-materialIcons", "androidx.compose.material:material-icons-core:1.2.0")
-            library("compose-materialIconsExtended", "androidx.compose.material:material-icons-extended:1.2.0")
+            library("compose-materialIconsExtended", "androidx.compose.material:material-icons-extended:1.2.1")
 
             library("kotlin-gradle", "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0")
             library("kotlin-stdLib", "org.jetbrains.kotlin:kotlin-stdlib:1.7.10")
