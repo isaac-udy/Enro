@@ -167,6 +167,8 @@ This exception can occur when you attempt to navigate to a `NavigationKey` that 
 
 ### `ResultChannelIsNotInitialised`
 
+### `ResultChannelIsAlreadyRegistered`
+
 ### `ReceivedIncorrectlyTypedResult`
 
 ### `NavigationControllerIsNotAttached`

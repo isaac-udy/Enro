@@ -47,6 +47,11 @@ internal class EnroResult: EnroPlugin() {
 
     @PublishedApi
     internal fun registerChannel(channel: ResultChannelImpl<*, *>) {
+        if(channels.containsKey(channel.id)) {
+            throw EnroException.ResultChannelIsAlreadyRegistered(
+                "A result channel with the id ${channel.id} has already been registered"
+            )
+        }
         channels[channel.id] = channel
         val result = consumePendingResult(channel.id) ?: return
         channel.consumeResult(result.result)

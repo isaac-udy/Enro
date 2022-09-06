@@ -24,6 +24,8 @@ abstract class EnroException(
 
     class ResultChannelIsNotInitialised(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
+    class ResultChannelIsAlreadyRegistered(message: String, cause: Throwable? = null) : EnroException(message, cause)
+
     class ReceivedIncorrectlyTypedResult(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
     class NavigationControllerIsNotAttached(message: String, cause: Throwable? = null) : EnroException(message, cause)

@@ -19,6 +19,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import dev.enro.DefaultActivity
+import dev.enro.core.EnroException
 import dev.enro.core.compose.registerForNavigationResult
 import dev.enro.getActiveEnroResultChannels
 import org.junit.Assert
@@ -42,6 +43,15 @@ class ComposableListResultTests {
     }
 
     @Test
+    fun whenListItemWithStaticResultIdIsRenderedOnItsOwn_thenResultIsRetrievedSuccessfully() {
+        val id = UUID.randomUUID().toString()
+        composeContentRule.setContent {
+            ListItemWithStaticResultId(id = id)
+        }
+        assertResultIsReceivedFor(id)
+    }
+
+    @Test
     fun whenMultipleListItemWithResultsAreRendered_thenResultIsRetrievedSuccessfullyToTheCorrectItem() {
         val ids = List(5) { UUID.randomUUID().toString() }
         composeContentRule.setContent {
@@ -56,6 +66,21 @@ class ComposableListResultTests {
         assertResultIsReceivedFor(ids[2])
         assertResultIsReceivedFor(ids[4])
     }
+
+    @Test(expected = EnroException.ResultChannelIsAlreadyRegistered::class)
+    fun whenMultipleListItemWithStaticResultIdsAreRendered_thenRuntimeExceptionIsThrownDueToDuplicateResultRegistration() {
+        val ids = List(5) { UUID.randomUUID().toString() }
+        composeContentRule.setContent {
+            Column {
+                ids.forEach {
+                    ListItemWithStaticResultId(id = it)
+                }
+            }
+        }
+
+        Assert.fail()
+    }
+
 
     @Test
     fun whenMultipleListItemWithResultsAreRenderedInLazyColumn_thenResultIsRetrievedSuccessfullyToTheCorrectItem() {
@@ -177,6 +202,39 @@ private fun ListItemWithResult(
             onClick = {
                 channel.open(ImmediateSyntheticResultKey(id))
              },
+            content = {
+                Text(text = "Get Result")
+            },
+            modifier = Modifier.testTag("button@$id")
+        )
+        Text(
+            text = title.value,
+            modifier = Modifier.testTag("result@$id")
+        )
+    }
+}
+
+@Composable
+private fun ListItemWithStaticResultId(
+    id: String,
+) {
+    val title = remember { mutableStateOf("EMPTY") }
+    val channel = registerForNavigationResult<String>("this is a static result id") {
+        title.value = it
+    }
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .testTag("row@$id")
+    ) {
+        Button(
+            onClick = {
+                channel.open(ImmediateSyntheticResultKey(id))
+            },
             content = {
                 Text(text = "Get Result")
             },
