@@ -154,6 +154,7 @@ This exception can occur when you attempt to navigate to a `NavigationKey` that 
 1. Make sure you have the correct `kapt` dependency on `enro-processor`
 2. Make sure you've annotated your Activity/Fragment/Composable/SyntheticDestination with `@NavigationDestination` pointing to the correct NavigationKey
 3. Clean the project (in case the incremental annotation processor has had an issue)
+4. Make sure that your app module has a dependency on all modules that contain `@NavigationDestination` classes. The app module needs to be able to "see" all the `@NavigationDestination` classes that exist, and will not pick these up through transient dependencies. 
 
 #### This Exception is occurring in tests
 
