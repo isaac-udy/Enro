@@ -10,7 +10,10 @@ import dev.enro.core.container.asPushInstruction
 import dev.enro.core.fragment.container.navigationContainer
 import kotlinx.parcelize.Parcelize
 
-internal abstract class AbstractOpenInstructionInActivityKey : NavigationKey {
+internal abstract class AbstractOpenInstructionInActivityKey :
+    NavigationKey,
+    EnroInternalNavigationKey {
+
     abstract val instruction: AnyOpenInstruction
 }
 

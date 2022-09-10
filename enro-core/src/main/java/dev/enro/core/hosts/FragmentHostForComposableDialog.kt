@@ -23,7 +23,10 @@ import dev.enro.extensions.createFullscreenDialog
 import kotlinx.parcelize.Parcelize
 
 
-internal abstract class AbstractOpenComposableDialogInFragmentKey : NavigationKey {
+internal abstract class AbstractOpenComposableDialogInFragmentKey :
+    NavigationKey,
+    EnroInternalNavigationKey {
+
     abstract val instruction: OpenPresentInstruction
 }
 
@@ -98,7 +101,7 @@ abstract class AbstractFragmentHostForComposableDialog : DialogFragment() {
             super.dismiss()
             return
         }
-        if(dialogConfiguration.isDismissed.value) return
+        if (dialogConfiguration.isDismissed.value) return
         dialogConfiguration.isDismissed.value = true
 
         view.isVisible = true

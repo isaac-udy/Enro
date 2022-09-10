@@ -14,7 +14,11 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import kotlinx.parcelize.Parcelize
 
-internal abstract class AbstractOpenComposableInFragmentKey : NavigationKey.SupportsPush, NavigationKey.SupportsPresent {
+internal abstract class AbstractOpenComposableInFragmentKey :
+    NavigationKey.SupportsPush,
+    NavigationKey.SupportsPresent,
+    EnroInternalNavigationKey {
+
     abstract val instruction: AnyOpenInstruction
     abstract val isRoot: Boolean
 }

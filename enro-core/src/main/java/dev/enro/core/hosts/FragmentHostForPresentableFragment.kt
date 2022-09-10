@@ -24,7 +24,9 @@ import dev.enro.extensions.createFullscreenDialog
 import dev.enro.extensions.getAttributeResourceId
 import kotlinx.parcelize.Parcelize
 
-internal abstract class AbstractOpenPresentableFragmentInFragmentKey : NavigationKey {
+internal abstract class AbstractOpenPresentableFragmentInFragmentKey : NavigationKey,
+    EnroInternalNavigationKey {
+
     abstract val instruction: OpenPresentInstruction
 }
 
