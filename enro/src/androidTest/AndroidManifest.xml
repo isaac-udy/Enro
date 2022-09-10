@@ -12,7 +12,7 @@
         <activity android:name="dev.enro.result.NestedResultReceiverActivity"/>
         <activity android:name="dev.enro.result.SideBySideNestedResultReceiverActivity"/>
         <activity android:name="dev.enro.result.ResultFlowActivity"/>
-        <activity android:name="dev.enro.core.PluginTestActivity"/>
+        <activity android:name="dev.enro.core.plugins.PluginTestActivity"/>
         <activity android:name="dev.enro.test.EnroTestTestActivity"/>
         <activity android:name="dev.enro.core.legacy.ImmediateOpenFragmentChildActivity"/>
         <activity android:name="dev.enro.core.legacy.ImmediateOpenChildActivity"/>
@@ -31,5 +31,6 @@
         <activity android:name="dev.enro.result.ResultFlowFragmentRootActivity"/>
         <activity android:name="dev.enro.core.destinations.ActivityDestinationsRootActivity"/>
         <activity android:name="dev.enro.core.destinations.ActivityDestinationsPresentableActivity"/>
+        <activity android:name="dev.enro.core.plugins.MultipleFragmentContainerActivity"/>
     </application>
 </manifest>

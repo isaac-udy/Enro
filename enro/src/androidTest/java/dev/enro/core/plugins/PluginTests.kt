@@ -1,11 +1,15 @@
-package dev.enro.core
+package dev.enro.core.plugins
 
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
-import kotlinx.parcelize.Parcelize
 import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationKey
+import dev.enro.core.close
+import dev.enro.core.forward
 import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.navigationHandle
 import junit.framework.TestCase.assertEquals
+import kotlinx.parcelize.Parcelize
 import org.junit.Test
 import java.util.*
 
@@ -135,7 +139,8 @@ class PluginTestActivity : TestActivity() {
 }
 
 @Parcelize
-data class PluginPrimaryTestFragmentKey(val keyId: String = UUID.randomUUID().toString()) : NavigationKey
+data class PluginPrimaryTestFragmentKey(val keyId: String = UUID.randomUUID().toString()) :
+    NavigationKey
 
 @NavigationDestination(PluginPrimaryTestFragmentKey::class)
 class PluginPrimaryTestFragment : TestFragment() {
@@ -150,7 +155,8 @@ class PluginPrimaryTestFragment : TestFragment() {
 }
 
 @Parcelize
-data class PluginSecondaryTestFragmentKey(val keyId: String = UUID.randomUUID().toString()) : NavigationKey
+data class PluginSecondaryTestFragmentKey(val keyId: String = UUID.randomUUID().toString()) :
+    NavigationKey
 
 @NavigationDestination(PluginSecondaryTestFragmentKey::class)
 class PluginSecondaryTestFragment : TestFragment() {

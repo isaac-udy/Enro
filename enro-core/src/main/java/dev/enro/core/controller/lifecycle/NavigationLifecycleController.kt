@@ -2,18 +2,15 @@ package dev.enro.core.controller.lifecycle
 
 import android.app.Application
 import android.os.Bundle
-import android.view.ViewGroup
-import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.*
 import dev.enro.core.*
 import dev.enro.core.controller.container.ExecutorContainer
 import dev.enro.core.controller.container.PluginContainer
 import dev.enro.core.internal.NoNavigationKey
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import java.lang.ref.WeakReference
 import java.util.*
 
@@ -33,7 +30,10 @@ internal class NavigationLifecycleController(
         callbacks.uninstall(application)
     }
 
-    fun onContextCreated(context: NavigationContext<*>, savedInstanceState: Bundle?): NavigationHandleViewModel {
+    fun onContextCreated(
+        context: NavigationContext<*>,
+        savedInstanceState: Bundle?
+    ): NavigationHandleViewModel {
         if (context is ActivityContext) {
             context.activity.theme.applyStyle(android.R.style.Animation_Activity, false)
         }
@@ -49,7 +49,7 @@ internal class NavigationLifecycleController(
         val defaultInstruction = NavigationInstruction
             .Open.OpenInternal(
                 navigationKey = defaultKey,
-                navigationDirection = when(defaultKey) {
+                navigationDirection = when (defaultKey) {
                     is NavigationKey.SupportsPresent -> NavigationDirection.Present
                     is NavigationKey.SupportsPush -> NavigationDirection.Push
                     else -> NavigationDirection.Present
@@ -79,6 +79,16 @@ internal class NavigationLifecycleController(
                 }
             }
         })
+
+        context.containerManager.activeContainerFlow
+            .onEach {
+                val context = handle.navigationContext ?: return@onEach
+                if (context.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                    updateActiveNavigationContext(context)
+                }
+            }
+            .launchIn(context.lifecycle.coroutineScope)
+
         if (savedInstanceState == null) {
             context.lifecycle.addObserver(object : LifecycleEventObserver {
                 override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
@@ -104,7 +114,9 @@ internal class NavigationLifecycleController(
         // Sometimes the context will be in an invalid state to correctly update, and will throw,
         // in which case, we just ignore the exception
         runCatching {
-            activeNavigationHandle = WeakReference(context.rootContext().leafContext().getNavigationHandleViewModel())
+            val active = context.rootContext().leafContext().getNavigationHandleViewModel()
+            if (!active.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return@runCatching
+            activeNavigationHandle = WeakReference(active)
         }
     }
 

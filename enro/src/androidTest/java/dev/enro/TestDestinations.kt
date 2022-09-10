@@ -27,7 +27,7 @@ data class GenericActivityKey(val id: String) : NavigationKey
 class GenericActivity : TestActivity()
 
 @Parcelize
-data class GenericFragmentKey(val id: String) : NavigationKey
+data class GenericFragmentKey(val id: String) : NavigationKey, NavigationKey.SupportsPush
 
 @NavigationDestination(GenericFragmentKey::class)
 class GenericFragment : TestFragment()
