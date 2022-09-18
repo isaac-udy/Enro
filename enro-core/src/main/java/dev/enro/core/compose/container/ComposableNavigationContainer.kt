@@ -1,8 +1,16 @@
 package dev.enro.core.compose.container
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.Lifecycle
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
@@ -44,6 +52,7 @@ class ComposableNavigationContainer internal constructor(
     override val isVisible: Boolean
         get() = true
 
+    val animation: MutableState<NavigationAnimation.Composable> = mutableStateOf( DefaultAnimations.none.asComposable() )
 
     init {
         setOrLoadInitialBackstack(initialBackstack)
@@ -57,6 +66,15 @@ class ComposableNavigationContainer internal constructor(
             .map { instruction ->
                 requireDestinationContext(instruction)
             }
+
+        if(!backstack.isDirectUpdate) {
+            activeContext?.let {
+                animation.value =
+                    animationsFor(it, backstack.lastInstruction).asComposable()
+            }
+        } else {
+            animation.value = DefaultAnimations.none.asComposable()
+        }
 
         removed
             .filter { backstack.exiting != it }

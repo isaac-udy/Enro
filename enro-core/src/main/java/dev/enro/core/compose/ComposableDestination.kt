@@ -17,7 +17,6 @@ import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
-import dev.enro.core.compose.animation.EnroAnimatedVisibility
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.application
@@ -138,47 +137,50 @@ internal class ComposableDestinationContextReference(
 
         val navigationHandle = remember { getNavigationHandleViewModel() }
 
-        val isVisible = instruction == backstackState.active
-        val animations = remember(isVisible) {
-            if (backstackState.isDirectUpdate) return@remember DefaultAnimations.none
-            animationsFor(
-                navigationHandle.navigationContext ?: return@remember DefaultAnimations.none,
-                backstackState.lastInstruction
-            )
-        }
+        val firstRender = remember { mutableStateOf(false) }
+        val isVisible = if(!firstRender.value) false else instruction == backstackState.active
 
-        EnroAnimatedVisibility(
-            visible = isVisible,
-            animations = animations
-        ) {
-            CompositionLocalProvider(
-                LocalLifecycleOwner provides this,
-                LocalViewModelStoreOwner provides this,
-                LocalSavedStateRegistryOwner provides this,
-                LocalNavigationHandle provides navigationHandle
-            ) {
-                saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
-                    navigationController.composeEnvironmentContainer.Render {
-                        destination.Render()
-                    }
-                }
-            }
-
-            DisposableEffect(backstackState.active) {
-                val isActive = backstackState.active == instruction
-                val isStarted = lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED)
-                when {
-                    isActive -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-                    isStarted -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-                }
-
-                onDispose {
-                    if(!backstackState.backstack.contains(instruction)) {
-                        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        val contentRender = remember {
+            movableContentOf {
+                CompositionLocalProvider(
+                    LocalLifecycleOwner provides this@ComposableDestinationContextReference,
+                    LocalViewModelStoreOwner provides this@ComposableDestinationContextReference,
+                    LocalSavedStateRegistryOwner provides this@ComposableDestinationContextReference,
+                    LocalNavigationHandle provides navigationHandle
+                ) {
+                    saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
+                        navigationController.composeEnvironmentContainer.Render {
+                            destination.Render()
+                        }
                     }
                 }
             }
         }
+        val currentAnimation = remember(instruction == backstackState.active) {
+            (parentContainer as ComposableNavigationContainer).animation.value
+        }
+        currentAnimation.content (isVisible) {
+            contentRender()
+        }
+        DisposableEffect(backstackState) {
+            val isActive = backstackState.active == instruction
+            val isStarted = lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED)
+            when {
+                isActive -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+                isStarted -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+            }
+
+            onDispose {
+                if(!backstackState.backstack.contains(instruction)) {
+                    lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                }
+            }
+        }
+        DisposableEffect(Unit) {
+            firstRender.value = true
+            onDispose {  }
+        }
+
     }
 }
 
