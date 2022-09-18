@@ -120,6 +120,7 @@ fun NavigationContext<*>.parentContext(): NavigationContext<*>? {
 }
 
 fun NavigationContext<*>.leafContext(): NavigationContext<*> {
+    // TODO This currently includes inactive contexts, should it only check for actual active contexts?
     return containerManager.activeContainer?.activeContext?.leafContext() ?: this
 }
 

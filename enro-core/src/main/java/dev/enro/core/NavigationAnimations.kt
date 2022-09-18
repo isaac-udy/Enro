@@ -2,8 +2,19 @@ package dev.enro.core
 
 import android.content.res.Resources
 import android.provider.Settings
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInteropFilter
+import dev.enro.core.compose.LocalNavigationHandle
+import dev.enro.core.compose.animation.EnroAnimatedVisibility
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
 import dev.enro.core.controller.navigationController
@@ -35,7 +46,10 @@ sealed class NavigationAnimation {
 
     class Composable(
         val fallback: ForView,
-        val content: @androidx.compose.runtime.Composable (visible: Boolean) -> Unit
+        val content: @androidx.compose.runtime.Composable (
+            visible: Boolean,
+            content: @androidx.compose.runtime.Composable () -> Unit
+        ) -> Unit
     ): NavigationAnimation() {
         constructor(
             enter: EnterTransition,
@@ -43,7 +57,16 @@ sealed class NavigationAnimation {
             fallback: ForView
         ) : this(
             fallback = fallback,
-            content = {}
+            content = { visible, content ->
+                AnimatedVisibility(
+                    visible = visible,
+                    enter = enter,
+                    exit = exit,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    content()
+                }
+            }
         )
     }
 
@@ -60,15 +83,24 @@ sealed class NavigationAnimation {
         is Composable -> fallback.asResource(theme)
     }
 
-//    fun asComposable() : Composable = when (this) {
-//        is Resource -> this
-//        is Attr -> Resource(
-//            theme.getAttributeResourceId(enter),
-//            theme.getAttributeResourceId(exit)
-//        )
-//        is Composable -> this
-//        is ComposableTransition -> fallback.asResource(theme)
-//    }
+    fun asComposable() : Composable {
+        return when (this) {
+            is Resource,
+            is Theme,
+            is Attr -> Composable(
+                fallback = DefaultAnimations.none,
+                content = { visible, content ->
+                    EnroAnimatedVisibility(
+                        visible = visible,
+                        animations = this
+                    ) {
+                        content()
+                    }
+                }
+            )
+            is Composable -> this
+        }
+    }
 }
 
 object DefaultAnimations {
@@ -125,7 +157,7 @@ object DefaultAnimations {
 fun animationsFor(
     context: NavigationContext<*>,
     navigationInstruction: NavigationInstruction
-): NavigationAnimation.Resource {
+): NavigationAnimation {
     val animationScale = runCatching {
         Settings.Global.getFloat(context.activity.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE)
     }.getOrDefault(1.0f)
