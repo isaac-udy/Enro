@@ -12,7 +12,6 @@ import dev.enro.core.compose.DefaultComposableExecutor
 import dev.enro.core.fragment.DefaultFragmentExecutor
 import dev.enro.core.fragment.FragmentNavigator
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
-import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.core.synthetic.SyntheticNavigator
 import kotlin.reflect.KClass
 

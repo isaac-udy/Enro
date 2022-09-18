@@ -2,7 +2,6 @@ package dev.enro.core.controller
 
 import android.app.Application
 import android.os.Bundle
-import android.util.Log
 import androidx.annotation.Keep
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination

@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.core.AnyOpenInstruction
 import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.EnroException
-import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.NavigationController
 
 internal class NavigationHandleViewModelFactory(
