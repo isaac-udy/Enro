@@ -161,9 +161,7 @@ fun animationsFor(
 private fun animationsForOpen(
     context: NavigationContext<*>,
     navigationInstruction: AnyOpenInstruction
-): NavigationAnimation.Resource {
-    val theme = context.activity.theme
-
+): NavigationAnimation {
     val instructionForAnimation =  when (
         val navigationKey = navigationInstruction.navigationKey
     ) {
@@ -175,14 +173,12 @@ private fun animationsForOpen(
         context,
         instructionForAnimation
     )
-    return executor.executor.animation(navigationInstruction).asResource(theme)
+    return executor.executor.animation(navigationInstruction)
 }
 
 private fun animationsForClose(
     context: NavigationContext<*>
-): NavigationAnimation.Resource {
-    val theme = context.activity.theme
-
+): NavigationAnimation {
     val contextForAnimation = when (context.contextReference) {
         is AbstractFragmentHostForComposable -> {
             context.containerManager.containers
@@ -194,5 +190,5 @@ private fun animationsForClose(
     }
 
     val executor = context.activity.application.navigationController.executorForClose(contextForAnimation)
-    return executor.closeAnimation(context).asResource(theme)
+    return executor.closeAnimation(context)
 }

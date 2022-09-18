@@ -27,7 +27,7 @@ object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, Navi
         if (instruction.navigationDirection == NavigationDirection.Replace || instruction.navigationDirection == NavigationDirection.ReplaceRoot) {
             activity.finish()
         }
-        val animations = animationsFor(fromContext, instruction)
+        val animations = animationsFor(fromContext, instruction).asResource(activity.theme)
 
         activity.startActivity(intent)
         if (instruction.children.isEmpty()) {
@@ -41,7 +41,7 @@ object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, Navi
         ActivityCompat.finishAfterTransition(context.activity)
         context.navigator ?: return
 
-        val animations = animationsFor(context, NavigationInstruction.Close)
+        val animations = animationsFor(context, NavigationInstruction.Close).asResource(context.activity.theme)
         context.activity.overridePendingTransition(animations.enter, animations.exit)
     }
 

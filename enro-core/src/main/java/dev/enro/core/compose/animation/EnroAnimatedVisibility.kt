@@ -23,7 +23,7 @@ import dev.enro.core.compose.localActivity
 @Composable
 internal fun EnroAnimatedVisibility(
     visible: Boolean,
-    animations: NavigationAnimation.Resource,
+    animations: NavigationAnimation,
     content: @Composable () -> Unit
 ) {
     val activity = localActivity

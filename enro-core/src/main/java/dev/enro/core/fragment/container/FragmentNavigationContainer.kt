@@ -101,6 +101,7 @@ class FragmentNavigationContainer internal constructor(
         fragmentManager.commitNow {
             if (!backstack.isDirectUpdate) {
                 val animations = animationsFor(parentContext, backstack.lastInstruction)
+                    .asResource(parentContext.activity.theme)
                 setCustomAnimations(animations.enter, animations.exit)
             }
 

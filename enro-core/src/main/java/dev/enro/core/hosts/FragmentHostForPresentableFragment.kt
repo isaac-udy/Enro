@@ -9,14 +9,10 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.commitNow
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.add
 import dev.enro.core.container.asPushInstruction
-import dev.enro.core.container.createEmptyBackStack
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.extensions.animate
@@ -72,6 +68,7 @@ abstract class AbstractFragmentHostForPresentableFragment : DialogFragment() {
             ?: return super.dismiss()
 
         val animations = animationsFor(fragment.navigationContext, fragment.getNavigationHandleViewModel().instruction)
+            .asResource(fragment.requireActivity().theme)
         val animationDuration = fragment.requireView().animate(
             animOrAnimator = animations.exit
         )
