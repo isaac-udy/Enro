@@ -47,7 +47,7 @@ internal fun getAnimationResourceState(
     size: IntSize
 ): AnimationResourceState {
     val state =
-        remember(animOrAnimator) { mutableStateOf(AnimationResourceState(isActive = true)) }
+        remember(animOrAnimator) { mutableStateOf(AnimationResourceState(isActive = animOrAnimator != 0)) }
     if (animOrAnimator == 0) return state.value
 
     updateAnimationResourceStateFromAnim(state, animOrAnimator, size)
