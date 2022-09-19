@@ -16,9 +16,8 @@ internal fun Resources.Theme.getNestedAttributeResourceId(vararg attrs: Int): In
 }
 
 private fun Resources.Theme.getStyledAttribute(resId: Int, attr: Int): Int? {
-    val id = obtainStyledAttributes(resId, intArrayOf(attr)).use {
-        it.getResourceId(0, -1)
-    }
+    val attributes = obtainStyledAttributes(resId, intArrayOf(attr))
+    val id = attributes.getResourceId(0, -1)
     if(id == -1) return null
     return id
 }

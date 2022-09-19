@@ -1,22 +1,15 @@
 package dev.enro.core.compose.container
 
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideIn
-import androidx.compose.animation.slideOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.SaveableStateHolder
-import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.Lifecycle
 import dev.enro.core.*
+import dev.enro.core.compose.*
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.ComposableDestinationContextReference
-import dev.enro.core.compose.ComposableNavigator
-import dev.enro.core.compose.getComposableDestinationContext
+import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationBackstack
@@ -37,7 +30,7 @@ class ComposableNavigationContainer internal constructor(
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
     acceptsNavigator = { it is ComposableNavigator<*, *> }
 ) {
-    private val destinationStorage: ComposableContextStorage = parentContext.getComposableContextStorage()
+    private val destinationStorage: ComposableDestinationOwnerStorage = parentContext.getComposableContextStorage()
 
     private val destinationContexts = destinationStorage.destinations.getOrPut(id) { mutableMapOf() }
     private val currentDestination get() = backstackFlow.value.backstack
@@ -64,16 +57,24 @@ class ComposableNavigationContainer internal constructor(
     ): Boolean {
         backstack.renderable
             .map { instruction ->
-                requireDestinationContext(instruction)
+                val context = requireDestinationContext(instruction)
+                if(backstack.isDirectUpdate) {
+                    context.animation = DefaultAnimations.none.asComposable()
+                }
             }
 
-        if(!backstack.isDirectUpdate) {
-            activeContext?.let {
-                animation.value =
-                    animationsFor(it, backstack.lastInstruction).asComposable()
+        val contextForAnimation = when(backstack.lastInstruction) {
+            is NavigationInstruction.Close -> backstack.exiting?.let { requireDestinationContext(it) }?.destination?.navigationContext
+            else -> backstack.active?.let { requireDestinationContext(it) }?.destination?.navigationContext
+        }
+        if(contextForAnimation != null) {
+            val animations = animationsFor(contextForAnimation, backstack.lastInstruction).asComposable()
+            backstack.exiting?.let {
+                requireDestinationContext(it).animation = animations
             }
-        } else {
-            animation.value = DefaultAnimations.none.asComposable()
+            backstack.active?.let {
+                requireDestinationContext(it).animation = animations
+            }
         }
 
         removed
@@ -88,21 +89,21 @@ class ComposableNavigationContainer internal constructor(
         return true
     }
 
-    internal fun getDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationContextReference? {
+    internal fun getDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationOwner? {
         return destinationContexts[instruction.instructionId]
     }
 
-    internal fun requireDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationContextReference {
+    internal fun requireDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationOwner {
         return destinationContexts.getOrPut(instruction.instructionId) {
             val controller = parentContext.controller
             val composeKey = instruction.navigationKey
             val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
                 .newInstance() as ComposableDestination
 
-            return@getOrPut getComposableDestinationContext(
+            return@getOrPut ComposableDestinationOwner(
+                parentContainer = this,
                 instruction = instruction,
                 destination = destination,
-                parentContainer = this
             )
         }.apply { parentContainer = this@ComposableNavigationContainer }
     }

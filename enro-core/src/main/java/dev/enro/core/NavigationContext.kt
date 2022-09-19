@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.compose.destination.activity
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
@@ -65,9 +66,9 @@ internal class FragmentContext<ContextType : Fragment>(
 internal class ComposeContext<ContextType : ComposableDestination>(
     contextReference: ContextType
 ) : NavigationContext<ContextType>(contextReference) {
-    override val controller: NavigationController get() = contextReference.contextReference.activity.application.navigationController
-    override val lifecycle: Lifecycle get() = contextReference.contextReference.lifecycle
-    override val arguments: Bundle by lazy { bundleOf(OPEN_ARG to contextReference.contextReference.instruction) }
+    override val controller: NavigationController get() = contextReference.owner.activity.application.navigationController
+    override val lifecycle: Lifecycle get() = contextReference.owner.lifecycle
+    override val arguments: Bundle by lazy { bundleOf(OPEN_ARG to contextReference.owner.instruction) }
 
     override val viewModelStoreOwner: ViewModelStoreOwner get() = contextReference
     override val savedStateRegistryOwner: SavedStateRegistryOwner get() = contextReference
@@ -80,7 +81,7 @@ val NavigationContext<*>.activity: ComponentActivity
     get() = when (contextReference) {
         is ComponentActivity -> contextReference
         is Fragment -> contextReference.requireActivity()
-        is ComposableDestination -> contextReference.contextReference.activity
+        is ComposableDestination -> contextReference.owner.activity
         else -> throw EnroException.UnreachableState()
     }
 
@@ -115,7 +116,7 @@ fun NavigationContext<*>.parentContext(): NavigationContext<*>? {
                 null -> fragment.requireActivity().navigationContext
                 else -> parentFragment.navigationContext
             }
-        is ComposeContext<out ComposableDestination> -> contextReference.contextReference.parentContainer.parentContext
+        is ComposeContext<out ComposableDestination> -> contextReference.owner.parentContainer.parentContext
     }
 }
 
@@ -128,7 +129,7 @@ internal fun NavigationContext<*>.getNavigationHandleViewModel(): NavigationHand
     return when (this) {
         is FragmentContext<out Fragment> -> fragment.getNavigationHandle()
         is ActivityContext<out ComponentActivity> -> activity.getNavigationHandle()
-        is ComposeContext<out ComposableDestination> -> contextReference.contextReference.getNavigationHandleViewModel()
+        is ComposeContext<out ComposableDestination> -> contextReference.owner.getNavigationHandleViewModel()
     } as NavigationHandleViewModel
 }
 

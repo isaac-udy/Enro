@@ -72,15 +72,14 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
                         }
                         .add(instruction)
                 )
-
             }
             else -> throw IllegalStateException()
         }
     }
 
     override fun close(context: NavigationContext<out ComposableDestination>) {
-        val container = context.contextReference.contextReference.parentContainer
-        container.setBackstack(container.backstackFlow.value.close(context.contextReference.contextReference.instruction.instructionId))
+        val container = context.contextReference.owner.parentContainer
+        container.setBackstack(container.backstackFlow.value.close(context.contextReference.owner.instruction.instructionId))
     }
 }
 

@@ -2,18 +2,11 @@ package dev.enro.core
 
 import android.content.res.Resources
 import android.provider.Settings
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInteropFilter
-import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
@@ -45,7 +38,7 @@ sealed class NavigationAnimation {
     ) : ForView()
 
     class Composable(
-        val fallback: ForView,
+        val forView: ForView,
         val content: @androidx.compose.runtime.Composable (
             visible: Boolean,
             content: @androidx.compose.runtime.Composable () -> Unit
@@ -54,9 +47,9 @@ sealed class NavigationAnimation {
         constructor(
             enter: EnterTransition,
             exit: ExitTransition,
-            fallback: ForView
+            forView: ForView
         ) : this(
-            fallback = fallback,
+            forView = forView,
             content = { visible, content ->
                 AnimatedVisibility(
                     visible = visible,
@@ -80,7 +73,7 @@ sealed class NavigationAnimation {
             enter(theme),
             exit(theme)
         )
-        is Composable -> fallback.asResource(theme)
+        is Composable -> forView.asResource(theme)
     }
 
     fun asComposable() : Composable {
@@ -88,7 +81,7 @@ sealed class NavigationAnimation {
             is Resource,
             is Theme,
             is Attr -> Composable(
-                fallback = DefaultAnimations.none,
+                forView = DefaultAnimations.none,
                 content = { visible, content ->
                     EnroAnimatedVisibility(
                         visible = visible,

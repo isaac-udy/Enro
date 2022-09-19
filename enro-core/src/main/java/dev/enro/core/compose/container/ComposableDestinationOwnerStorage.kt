@@ -1,15 +1,13 @@
 package dev.enro.core.compose.container
 
-import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.core.NavigationContext
-import dev.enro.core.compose.ComposableDestinationContextReference
+import dev.enro.core.compose.destination.ComposableDestinationOwner
 
-internal class ComposableContextStorage : ViewModel() {
-    val destinations = mutableMapOf<String, MutableMap<String, ComposableDestinationContextReference>>()
+internal class ComposableDestinationOwnerStorage : ViewModel() {
+    val destinations = mutableMapOf<String, MutableMap<String, ComposableDestinationOwner>>()
 
     override fun onCleared() {
         destinations.values
@@ -20,8 +18,8 @@ internal class ComposableContextStorage : ViewModel() {
     }
 }
 
-internal fun NavigationContext<*>.getComposableContextStorage(): ComposableContextStorage = ViewModelLazy(
-    viewModelClass = ComposableContextStorage::class,
+internal fun NavigationContext<*>.getComposableContextStorage(): ComposableDestinationOwnerStorage = ViewModelLazy(
+    viewModelClass = ComposableDestinationOwnerStorage::class,
     storeProducer = { viewModelStoreOwner.viewModelStore },
     factoryProducer = { ViewModelProvider.NewInstanceFactory() },
 ).value
