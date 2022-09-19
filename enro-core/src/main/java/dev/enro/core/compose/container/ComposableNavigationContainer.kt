@@ -45,8 +45,6 @@ class ComposableNavigationContainer internal constructor(
     override val isVisible: Boolean
         get() = true
 
-    val animation: MutableState<NavigationAnimation.Composable> = mutableStateOf( DefaultAnimations.none.asComposable() )
-
     init {
         setOrLoadInitialBackstack(initialBackstack)
     }
