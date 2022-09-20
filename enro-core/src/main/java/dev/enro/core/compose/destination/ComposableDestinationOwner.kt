@@ -56,7 +56,7 @@ class ComposableDestinationOwner(
             animationState.value = value
         }
 
-    private val transitionState = MutableTransitionState<Boolean>(false)
+    private val transitionState = MutableTransitionState(false)
 
     @SuppressLint("StaticFieldLeak")
     @Suppress("LeakingThis")
@@ -120,15 +120,12 @@ class ComposableDestinationOwner(
             }
         }
 
-        val isVisible = instruction == backstackState.active
-        LaunchedEffect(isVisible) {
-            while(!transitionState.isIdle) delay(8)
-            transitionState.targetState = isVisible
-        }
-
-        animation.content(transitionState) {
+        animation.content(
+            transitionState.apply {
+                targetState = instruction == backstackState.active
+            }
+        ) {
             renderDestination()
-            RegisterComposableLifecycleState(backstackState)
         }
     }
 
