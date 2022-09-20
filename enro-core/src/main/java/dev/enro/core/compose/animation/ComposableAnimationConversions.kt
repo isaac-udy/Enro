@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.animation.Transformation
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.platform.LocalContext
@@ -43,11 +44,13 @@ internal data class AnimationResourceState(
 
 @Composable
 internal fun getAnimationResourceState(
+    transitionState: MutableTransitionState<Boolean>,
     animOrAnimator: Int,
     size: IntSize
 ): AnimationResourceState {
     val state =
         remember(animOrAnimator) { mutableStateOf(AnimationResourceState(isActive = animOrAnimator != 0)) }
+    if (transitionState.isIdle) return AnimationResourceState(isActive = false)
     if (animOrAnimator == 0) return state.value
 
     updateAnimationResourceStateFromAnim(state, animOrAnimator, size)

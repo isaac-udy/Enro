@@ -2,8 +2,11 @@ package dev.enro.core.compose.destination
 
 import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
@@ -21,6 +24,7 @@ import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -43,7 +47,7 @@ class ComposableDestinationOwner(
             parentContainerState.value = value
         }
 
-    private val animationState = MutableStateFlow(DefaultAnimations.none.asComposable())
+    private val animationState = mutableStateOf(DefaultAnimations.none.asComposable())
     internal var animation: NavigationAnimation.Composable
         get() {
             return animationState.value
@@ -51,6 +55,8 @@ class ComposableDestinationOwner(
         set(value) {
             animationState.value = value
         }
+
+    private val transitionState = MutableTransitionState<Boolean>(false)
 
     @SuppressLint("StaticFieldLeak")
     @Suppress("LeakingThis")
@@ -92,29 +98,31 @@ class ComposableDestinationOwner(
         return viewModelStoreOwner.defaultViewModelCreationExtras
     }
 
+    @OptIn(ExperimentalAnimationApi::class)
     @Composable
-    internal fun Render() {
-        val backstackState by parentContainer.backstackFlow.collectAsState()
+    internal fun Render(backstackState: NavigationBackstack) {
         val lifecycleState by lifecycleFlow.collectAsState()
         if (!lifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
 
         val saveableStateHolder = rememberSaveableStateHolder()
 
-        val isVisible = instruction == backstackState.active
-        val isExiting = instruction == backstackState.exiting
-        val isRendering = isVisible || isExiting
-        if(!isRendering) return
 
         val renderDestination = remember {
             movableContentOf {
                 ProvideRenderingEnvironment(saveableStateHolder) {
                     destination.Render()
+                    RegisterComposableLifecycleState(backstackState)
                 }
             }
         }
-        animation.content (
-            visible = isFirstRender(isVisible)
-        ) {
+
+        val isVisible = instruction == backstackState.active
+        LaunchedEffect(isVisible) {
+            while(!transitionState.isIdle) delay(8)
+            transitionState.targetState = isVisible
+        }
+
+        animation.content(transitionState) {
             renderDestination()
             RegisterComposableLifecycleState(backstackState)
         }
@@ -124,7 +132,7 @@ class ComposableDestinationOwner(
     private fun RegisterComposableLifecycleState(
         backstackState: NavigationBackstack
     ) {
-        DisposableEffect(backstackState) {
+        DisposableEffect(instruction == backstackState.active) {
             val isActive = backstackState.active == instruction
             val isStarted = lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED)
             when {
@@ -175,15 +183,14 @@ private fun LifecycleOwner.createLifecycleFlow(): StateFlow<Lifecycle.State> {
 }
 
 @Composable
-fun isFirstRender(visible: Boolean): Boolean {
-    val isFirstRender = remember {
+fun rememberVisibleState(visible: Boolean): Boolean {
+    val visibleState = rememberSaveable {
         mutableStateOf(!visible)
     }
 
-    DisposableEffect(visible) {
-        isFirstRender.value = visible
-        onDispose {  }
+    SideEffect {
+        visibleState.value = visible
     }
 
-    return isFirstRender.value
+    return visibleState.value
 }

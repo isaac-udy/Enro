@@ -5,6 +5,7 @@ import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
@@ -37,10 +38,10 @@ sealed class NavigationAnimation {
         val exit: (Resources.Theme) -> Int
     ) : ForView()
 
-    class Composable(
+    class Composable private constructor(
         val forView: ForView,
         val content: @androidx.compose.runtime.Composable (
-            visible: Boolean,
+            visible: MutableTransitionState<Boolean>,
             content: @androidx.compose.runtime.Composable () -> Unit
         ) -> Unit
     ): NavigationAnimation() {
@@ -52,10 +53,24 @@ sealed class NavigationAnimation {
             forView = forView,
             content = { visible, content ->
                 AnimatedVisibility(
-                    visible = visible,
+                    visibleState = visible,
                     enter = enter,
                     exit = exit,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    content()
+                }
+            }
+        )
+
+        constructor(
+            forView: ForView
+        ) : this(
+            forView = forView,
+            content = { visible, content ->
+                EnroAnimatedVisibility(
+                    visibleState = visible,
+                    animations = forView
                 ) {
                     content()
                 }
@@ -78,19 +93,7 @@ sealed class NavigationAnimation {
 
     fun asComposable() : Composable {
         return when (this) {
-            is Resource,
-            is Theme,
-            is Attr -> Composable(
-                forView = DefaultAnimations.none,
-                content = { visible, content ->
-                    EnroAnimatedVisibility(
-                        visible = visible,
-                        animations = this
-                    ) {
-                        content()
-                    }
-                }
-            )
+            is ForView -> Composable(forView = this)
             is Composable -> this
         }
     }

@@ -2,17 +2,17 @@ package dev.enro.core.compose.container
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import dev.enro.core.*
-import dev.enro.core.compose.*
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
 
 class ComposableNavigationContainer internal constructor(
@@ -102,7 +102,14 @@ class ComposableNavigationContainer internal constructor(
                 parentContainer = this,
                 instruction = instruction,
                 destination = destination,
-            )
+            ).also { owner ->
+                owner.lifecycle.addObserver(object : LifecycleEventObserver {
+                    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                        if(event != Lifecycle.Event.ON_DESTROY) return
+                        destinationContexts.remove(owner.instruction.instructionId)
+                    }
+                })
+            }
         }.apply { parentContainer = this@ComposableNavigationContainer }
     }
 }

@@ -1,28 +1,21 @@
 package dev.enro.core.compose.animation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.zIndex
 import dev.enro.core.NavigationAnimation
 import dev.enro.core.compose.localActivity
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalTransitionApi::class)
 @Composable
 internal fun EnroAnimatedVisibility(
-    visible: Boolean,
+    visibleState: MutableTransitionState<Boolean>,
     animations: NavigationAnimation,
     content: @Composable () -> Unit
 ) {
@@ -32,9 +25,12 @@ internal fun EnroAnimatedVisibility(
     }
     val size = remember { mutableStateOf(IntSize(0, 0)) }
 
-    val animationStateValues = getAnimationResourceState(if(visible) resourceAnimations.enter else resourceAnimations.exit, size.value)
+    val animationStateValues = getAnimationResourceState(visibleState, if(visibleState.targetState) resourceAnimations.enter else  resourceAnimations.exit, size.value)
 
-    if(visible || animationStateValues.isActive) {
+    if(!animationStateValues.isActive && !visibleState.isIdle) {
+        updateTransition(visibleState, "EnroAnimatedVisibility")
+    }
+    if(visibleState.targetState || animationStateValues.isActive) {
         Box(
             modifier = Modifier
                 .onGloballyPositioned {
@@ -51,8 +47,8 @@ internal fun EnroAnimatedVisibility(
                     transformOrigin = animationStateValues.transformOrigin
                 )
                 .pointerInteropFilter { _ ->
-                    !visible
-                }
+                    !visibleState.targetState
+                },
         ) {
             content()
         }

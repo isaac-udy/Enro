@@ -1,5 +1,6 @@
 package dev.enro.core.compose
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -75,6 +76,7 @@ fun rememberEnroContainerController(
     return controller
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun EnroContainer(
     modifier: Modifier = Modifier,
@@ -88,7 +90,7 @@ fun EnroContainer(
                 backstackState.renderable
                     .mapNotNull { container.getDestinationContext(it) }
                     .forEach {
-                        it.Render()
+                        it.Render(backstackState)
                     }
             }
         }

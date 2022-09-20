@@ -112,7 +112,7 @@ abstract class NavigationContainer(
         }
         else {
             pendingRemovals.clear()
-            handler.postDelayed(removeExitingFromBackstack, 1000)
+            handler.postDelayed(removeExitingFromBackstack, 2000)
         }
     }
 
