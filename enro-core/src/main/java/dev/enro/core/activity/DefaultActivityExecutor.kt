@@ -3,6 +3,7 @@ package dev.enro.core.activity
 import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityOptionsCompat
 import dev.enro.core.*
 
 object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, NavigationKey>(
@@ -29,12 +30,8 @@ object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, Navi
         }
         val animations = animationsFor(fromContext, instruction).asResource(activity.theme)
 
-        activity.startActivity(intent)
-        if (instruction.children.isEmpty()) {
-            activity.overridePendingTransition(animations.enter, animations.exit)
-        } else {
-            activity.overridePendingTransition(0, 0)
-        }
+        val options = ActivityOptionsCompat.makeCustomAnimation(activity, animations.enter, animations.exit)
+        activity.startActivity(intent, options.toBundle())
     }
 
     override fun close(context: NavigationContext<out ComponentActivity>) {

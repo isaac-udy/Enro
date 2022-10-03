@@ -6,7 +6,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
@@ -24,7 +23,6 @@ import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -120,11 +118,8 @@ class ComposableDestinationOwner(
             }
         }
 
-        animation.content(
-            transitionState.apply {
-                targetState = instruction == backstackState.active
-            }
-        ) {
+        transitionState.targetState = instruction == backstackState.active
+        animation.content(transitionState) {
             renderDestination()
         }
     }
@@ -181,17 +176,4 @@ private fun LifecycleOwner.createLifecycleFlow(): StateFlow<Lifecycle.State> {
         }
     })
     return lifecycleFlow
-}
-
-@Composable
-fun rememberVisibleState(visible: Boolean): Boolean {
-    val visibleState = rememberSaveable {
-        mutableStateOf(!visible)
-    }
-
-    SideEffect {
-        visibleState.value = visible
-    }
-
-    return visibleState.value
 }

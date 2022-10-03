@@ -146,7 +146,7 @@ object DefaultAnimations {
 
     val none = NavigationAnimation.Resource(
         enter = 0,
-        exit = R.anim.enro_no_op_animation
+        exit = R.anim.enro_no_op_exit_animation
     )
 }
 
@@ -161,6 +161,7 @@ fun animationsFor(
     if(animationScale < 0.01f) {
         return NavigationAnimation.Resource(0, 0)
     }
+
     if (navigationInstruction is NavigationInstruction.Open<*> && navigationInstruction.children.isNotEmpty()) {
         return NavigationAnimation.Resource(0, 0)
     }

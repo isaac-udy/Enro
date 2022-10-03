@@ -18,7 +18,7 @@ class ExampleApplication : Application(), NavigationApplication {
 
         override<MainActivity, Any> {
             animation {
-                NavigationAnimation.Resource(android.R.anim.fade_in, R.anim.enro_no_op_animation)
+                NavigationAnimation.Resource(android.R.anim.fade_in, R.anim.enro_no_op_exit_animation)
             }
         }
     }

@@ -19,7 +19,7 @@ fun createRootBackStack(rootInstruction: AnyOpenInstruction?) = NavigationBackst
 )
 
 fun createRootBackStack(backstack: List<AnyOpenInstruction>) = NavigationBackstack(
-    lastInstruction = NavigationInstruction.Close,
+    lastInstruction = backstack.lastOrNull() ?: NavigationInstruction.Close,
     backstack = backstack,
     exiting = null,
     exitingIndex = -1,
