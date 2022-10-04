@@ -84,7 +84,7 @@ internal class ExecutorContainer() {
 
     @Suppress("UNCHECKED_CAST")
     internal fun executorForClose(navigationContext: NavigationContext<out Any>): NavigationExecutor<Any, Any, NavigationKey> {
-        val parentContextType = navigationContext.getNavigationHandleViewModel().instruction.internal.executorContext?.kotlin
+        val parentContextType = navigationContext.getNavigationHandleViewModel().instruction.internal.openExecutedBy?.kotlin
         val contextType = navigationContext.contextReference::class
 
         val override = parentContextType?.let { parentContext ->

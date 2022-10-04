@@ -11,6 +11,7 @@ dependencies {
     implementation deps.androidx.fragment
     implementation deps.androidx.activity
     implementation deps.androidx.recyclerview
+    implementation deps.androidx.lifecycle.process
 
     compileOnly deps.hilt.android
     kapt deps.hilt.compiler
