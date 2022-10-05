@@ -96,7 +96,7 @@ internal class NavigationLifecycleController(
 //                       TODO handle.childContainers.forEach { it.openRoot(handle) }
                         handle.executeDeeplink()
 
-                        executorContainer.executorForClose(context).postOpened(context)
+                        context.controller.executorForClose(context).postOpened(context)
                         context.lifecycle.removeObserver(this)
                     }
                 }

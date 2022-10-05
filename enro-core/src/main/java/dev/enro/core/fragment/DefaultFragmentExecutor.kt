@@ -85,9 +85,16 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                         }
                     }
                     else {
-                        parentContext.controller.open(
-                            parentContext,
-                            args.instruction
+                        open(
+                            ExecutorArgs(
+                                fromContext = parentContext,
+                                navigator = args.navigator,
+                                key = args.key,
+                                // TODO: This is gross, need to do something else instead, run interceptors inside here? Another way of managing the active container stuff?
+                                instruction = args.instruction.internal.copy(
+                                    previouslyActiveId = parentContext.containerManager.activeContainer?.id
+                                )
+                            )
                         )
                     }
                     return

@@ -34,7 +34,7 @@ class NavigationController internal constructor() {
     fun addComponent(component: NavigationComponentBuilder) {
         pluginContainer.addPlugins(component.plugins)
         navigatorContainer.addNavigators(component.navigators)
-        executorContainer.addOverrides(component.overrides)
+        executorContainer.addExecutors(component.overrides)
         interceptorContainer.addInterceptors(component.interceptors)
 
         component.composeEnvironment.let { environment ->
@@ -50,10 +50,10 @@ class NavigationController internal constructor() {
         val navigator = navigatorForKeyType(instruction.navigationKey::class)
             ?: throw EnroException.MissingNavigator("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
 
-        val executor = executorContainer.executorForOpen(navigationContext, navigator)
+        val executor = executorContainer.executorFor(navigationContext.contextReference::class to navigator.contextType)
 
         val processedInstruction = interceptorContainer.intercept(
-            instruction, executor.context, navigator
+            instruction, navigationContext, navigator
         ) ?: return
 
         if (processedInstruction.navigationKey::class != navigator.keyType) {
@@ -62,14 +62,14 @@ class NavigationController internal constructor() {
         }
 
         val args = ExecutorArgs(
-            executor.context,
+            navigationContext,
             navigator,
             processedInstruction.navigationKey,
             processedInstruction
         )
 
-        executor.executor.preOpened(executor.context)
-        executor.executor.open(args)
+        executor.preOpened(navigationContext)
+        executor.open(args)
     }
 
     internal fun close(
@@ -83,8 +83,9 @@ class NavigationController internal constructor() {
             navigationContext.getNavigationHandle().executeInstruction(processedInstruction)
             return
         }
+        val f: NavigationExecutor<out Any, out Any, out NavigationKey>
 
-        val executor = executorContainer.executorForClose(navigationContext)
+        val executor: NavigationExecutor<Any, Any, NavigationKey> = executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openExecutedBy.kotlin to navigationContext.contextReference::class)
         executor.preClosed(navigationContext)
         executor.close(navigationContext)
     }
@@ -104,20 +105,18 @@ class NavigationController internal constructor() {
     internal fun executorForOpen(
         fromContext: NavigationContext<*>,
         instruction: AnyOpenInstruction
-    ) = executorContainer.executorForOpen(
-        fromContext,
-        navigatorForKeyType(instruction.navigationKey::class) ?: throw IllegalStateException()
-    )
+    ) = executorContainer.executorFor(fromContext.contextReference::class to navigatorForKeyType(instruction.navigationKey::class)!!.contextType)
+
 
     internal fun executorForClose(navigationContext: NavigationContext<*>) =
-        executorContainer.executorForClose(navigationContext)
+        executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openExecutedBy.kotlin to navigationContext.contextReference::class)
 
     fun addOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
-        executorContainer.addTemporaryOverride(navigationExecutor)
+        executorContainer.addExecutorOverride(navigationExecutor)
     }
 
     fun removeOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
-        executorContainer.removeTemporaryOverride(navigationExecutor)
+        executorContainer.removeExecutorOverride(navigationExecutor)
     }
 
     fun install(application: Application) {
@@ -186,3 +185,16 @@ internal val NavigationController.application: Application
             ?.key
             ?: throw EnroException.NavigationControllerIsNotAttached("NavigationController is not attached to an Application")
     }
+
+//fun profile(name: String, repeat: Int = 1, block: () -> Unit) {
+//    val start = System.nanoTime()
+//
+//    repeat(repeat) {
+//        block()
+//    }
+//
+//    val end = System.nanoTime()
+//    val diff = end - start
+//    val perRun = BigDecimal(diff / repeat).divide(BigDecimal(1_000_000)).setScale(4, RoundingMode.HALF_UP)
+//    Log.e("Profiler", "$name = ${perRun.toPlainString()} millis per run")
+//}

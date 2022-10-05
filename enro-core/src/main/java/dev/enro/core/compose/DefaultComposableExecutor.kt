@@ -56,9 +56,15 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
                             fromContext.getNavigationHandle().close()
                         }
                     } else {
-                        parentContext.controller.open(
-                            parentContext,
-                            args.instruction
+                        open(
+                            ExecutorArgs(
+                                fromContext = parentContext,
+                                navigator = args.navigator,
+                                key = args.key,
+                                instruction = args.instruction.internal.copy(
+                                    previouslyActiveId = parentContext.containerManager.activeContainer?.id
+                                )
+                            )
                         )
                     }
                     return

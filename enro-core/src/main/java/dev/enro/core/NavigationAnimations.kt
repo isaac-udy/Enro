@@ -202,7 +202,7 @@ private fun animationsForOpen(
         context,
         instructionForAnimation
     )
-    return executor.executor.animation(navigationInstruction)
+    return executor.animation(navigationInstruction)
 }
 
 private fun animationsForClose(
