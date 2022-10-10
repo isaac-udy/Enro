@@ -103,6 +103,7 @@ abstract class TestFragment : Fragment() {
         val key = try {
             getNavigationHandle().key
         } catch (t: Throwable) {
+        "No Navigation Key"
         }
 
         Log.e("TestFragment", "Opened $key")

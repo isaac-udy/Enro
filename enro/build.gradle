@@ -49,6 +49,10 @@ dependencies {
     androidTestImplementation deps.testing.androidx.runner
 
     androidTestImplementation deps.testing.androidx.compose
+
+    androidTestImplementation deps.androidx.navigation.fragment
+    androidTestImplementation deps.androidx.navigation.ui
+
 }
 
 afterEvaluate {

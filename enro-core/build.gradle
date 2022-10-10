@@ -13,6 +13,7 @@ dependencies {
     implementation deps.androidx.recyclerview
     implementation deps.androidx.lifecycle.process
 
+    compileOnly deps.androidx.navigation.fragment
     compileOnly deps.hilt.android
     kapt deps.hilt.compiler
     kapt deps.hilt.androidCompiler

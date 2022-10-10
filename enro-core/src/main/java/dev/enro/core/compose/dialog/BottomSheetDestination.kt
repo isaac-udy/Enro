@@ -8,7 +8,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.core.DefaultAnimations
@@ -62,7 +61,7 @@ fun BottomSheetDestination.configureBottomSheet(block: BottomSheetConfiguration.
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun EnroBottomSheetContainer(
     controller: ComposableNavigationContainer,
@@ -101,7 +100,7 @@ internal fun EnroBottomSheetContainer(
     )
 
     LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
-        if(destination.bottomSheetConfiguration.isDismissed.value) {
+        if (destination.bottomSheetConfiguration.isDismissed.value) {
             state.hide()
         }
         else {

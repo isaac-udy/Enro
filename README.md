@@ -22,8 +22,8 @@ A simple navigation library for Android
 Enro is published to [Maven Central](https://search.maven.org/). Make sure your project includes the `mavenCentral()` repository, and then include the following in your module's build.gradle: 
 ```gradle
 dependencies {
-    implementation "dev.enro:enro:1.6.0"
-    kapt "dev.enro:enro-processor:1.6.0"
+    implementation "dev.enro:enro:1.17.1"
+    kapt "dev.enro:enro-processor:1.17.1"
 }
 ```
 <details>
