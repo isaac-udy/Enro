@@ -149,7 +149,7 @@ inline fun <reified T: ComponentActivity> expectActivity(crossinline selector: (
     }.context
 }
 
-internal inline fun <reified T: Fragment> expectFragment(crossinline selector: (Fragment) -> Boolean = { it is T }): T {
+internal inline fun <reified T: Fragment> expectFragment(crossinline selector: (T) -> Boolean = { true }): T {
     return expectContext<T, NavigationKey> {
         selector(it.context)
     }.context

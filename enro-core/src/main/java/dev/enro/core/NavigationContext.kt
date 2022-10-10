@@ -1,10 +1,11 @@
 package dev.enro.core
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import android.os.Looper
+import androidx.activity.ComponentActivity
 import androidx.core.os.bundleOf
-import androidx.fragment.app.*
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
@@ -122,7 +123,14 @@ fun NavigationContext<*>.parentContext(): NavigationContext<*>? {
 
 fun NavigationContext<*>.leafContext(): NavigationContext<*> {
     // TODO This currently includes inactive contexts, should it only check for actual active contexts?
-    return containerManager.activeContainer?.activeContext?.leafContext() ?: this
+    val fragmentManager = when(contextReference) {
+        is FragmentActivity -> contextReference.supportFragmentManager
+        is Fragment -> contextReference.childFragmentManager
+        else -> null
+    }
+    return containerManager.activeContainer?.activeContext?.leafContext()
+        ?: fragmentManager?.primaryNavigationFragment?.navigationContext?.leafContext()
+        ?: this
 }
 
 internal fun NavigationContext<*>.getNavigationHandleViewModel(): NavigationHandleViewModel {
