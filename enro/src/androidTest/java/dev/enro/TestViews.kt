@@ -101,7 +101,9 @@ abstract class TestFragment : Fragment() {
     ): View? {
         val key = try {
             getNavigationHandle().key
-        } catch(t: Throwable) {}
+        } catch (t: Throwable) {
+            "No Navigation Key"
+        }
 
         Log.e("TestFragment", "Opened $key")
 
@@ -237,11 +239,19 @@ fun TestComposable(
         Text(text = navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
         EnroContainer(
             controller = primaryContainer,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).background(Color(0x22FF0000)).padding(horizontal = 20.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .background(Color(0x22FF0000))
+                .padding(horizontal = 20.dp)
         )
         EnroContainer(
             controller = secondaryContainer,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).background(Color(0x220000FF)).padding(20.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .background(Color(0x220000FF))
+                .padding(20.dp)
         )
     }
 }

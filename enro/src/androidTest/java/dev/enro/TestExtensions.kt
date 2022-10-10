@@ -2,7 +2,6 @@ package dev.enro
 
 import android.app.Activity
 import android.app.Application
-import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
@@ -113,17 +112,25 @@ inline fun <reified T: FragmentActivity> expectActivity(crossinline selector: (F
     }
 }
 
-internal inline fun <reified T: Fragment> expectFragment(crossinline selector: (Fragment) -> Boolean = { it is T }): T {
+internal inline fun <reified T : Fragment> expectFragment(
+    extra: Unit = Unit,
+    crossinline selector: (T) -> Boolean = { true }
+): T {
     return waitOnMain {
         val activity = getActiveActivity() as? FragmentActivity ?: return@waitOnMain null
-        val fragment = activity.supportFragmentManager.primaryNavigationFragment
-        Log.e("FRAGMENT", "$fragment")
-        return@waitOnMain when {
-            fragment == null -> null
-            fragment !is T ->  null
-            selector(fragment) -> fragment
-            else -> null
+        var fragment: Fragment? = activity.supportFragmentManager.primaryNavigationFragment
+        while (fragment != null) {
+            fragment = when {
+                fragment !is T -> {
+                    fragment.childFragmentManager.primaryNavigationFragment
+                }
+                !selector(fragment) -> {
+                    fragment.childFragmentManager.primaryNavigationFragment
+                }
+                else -> return@waitOnMain fragment
+            }
         }
+        return@waitOnMain null
     }
 }
 
