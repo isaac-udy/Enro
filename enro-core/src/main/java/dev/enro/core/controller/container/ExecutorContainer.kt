@@ -11,7 +11,6 @@ import dev.enro.core.compose.DefaultComposableExecutor
 import dev.enro.core.fragment.DefaultFragmentExecutor
 import dev.enro.core.fragment.FragmentNavigator
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
-import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.core.synthetic.SyntheticNavigator
 import kotlin.reflect.KClass
 
@@ -81,16 +80,17 @@ internal class ExecutorContainer() {
 
     @Suppress("UNCHECKED_CAST")
     internal fun executorForClose(navigationContext: NavigationContext<out Any>): NavigationExecutor<Any, Any, NavigationKey> {
-        val parentContextType = navigationContext.getNavigationHandleViewModel().instruction.internal.executorContext?.kotlin
+        val parentContext = navigationContext.getNavigationHandleViewModel().instruction.internal.executorContext?.kotlin
+                ?: Any::class
         val contextType = navigationContext.contextReference::class
 
-        val override = parentContextType?.let { parentContext ->
-            val parentNavigator = navigationContext.controller.navigatorForContextType(parentContext)
+        val parentNavigator = navigationContext.controller.navigatorForContextType(parentContext)
 
-            val parentContextIsActivity = parentNavigator is ActivityNavigator
-            val parentContextIsFragment = parentNavigator is FragmentNavigator
-            val parentContextIsComposable = parentNavigator is ComposableNavigator
+        val parentContextIsActivity = parentNavigator is ActivityNavigator
+        val parentContextIsFragment = parentNavigator is FragmentNavigator
+        val parentContextIsComposable = parentNavigator is ComposableNavigator
 
+        val override = run {
             overrideFor(parentContext to contextType)
                 ?: when  {
                     parentContextIsActivity -> overrideFor(FragmentActivity::class to contextType)

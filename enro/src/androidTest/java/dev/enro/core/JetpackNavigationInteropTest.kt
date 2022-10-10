@@ -7,18 +7,44 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.core.view.children
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso
 import dev.enro.TestFragment
+import dev.enro.application
+import dev.enro.core.controller.navigationController
 import dev.enro.expectFragment
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 
 class JetpackNavigationInteropTest {
 
+    val override = createOverride<Any, Fragment> {
+        closed {
+            when (val parent = it.contextReference.parentFragment) {
+                is NavHostFragment ->  parent.navController.popBackStack()
+                else -> defaultClosed(it)
+            }
+        }
+    }
+
+    @Before
+    fun before() {
+        application.navigationController.addOverride(override)
+    }
+
+    @After
+    fun after() {
+        application.navigationController.removeOverride(override)
+    }
+
     @Test
     fun whenBackButtonIsPressed_thenJetpackNavigationReceivesBackButtonPress() {
         val scenario = ActivityScenario.launch(JetpackNavigationActivity::class.java)
+
         expectFragment<JetpackNavigationFragment> {
             it.navigationArgument == 0
         }.openNext(scenario)
