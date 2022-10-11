@@ -1,15 +1,12 @@
 package dev.enro.core.internal.handle
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
-import androidx.activity.OnBackPressedCallback
-import androidx.fragment.app.Fragment
+import androidx.activity.addCallback
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.fragment.interceptBackPressForAndroidxNavigation
 import dev.enro.core.internal.NoNavigationKey
 
 internal open class NavigationHandleViewModel(
@@ -21,12 +18,13 @@ internal open class NavigationHandleViewModel(
 
     internal val hasKey get() = instruction.navigationKey !is NoNavigationKey
 
-    override val key: NavigationKey get() {
-        if(instruction.navigationKey is NoNavigationKey) throw IllegalStateException(
-            "The navigation handle for the context ${navigationContext?.contextReference} has no NavigationKey"
-        )
-        return instruction.navigationKey
-    }
+    override val key: NavigationKey
+        get() {
+            if (instruction.navigationKey is NoNavigationKey) throw IllegalStateException(
+                "The navigation handle for the context ${navigationContext?.contextReference} has no NavigationKey"
+            )
+            return instruction.navigationKey
+        }
     override val id: String get() = instruction.instructionId
     override val additionalData: Bundle get() = instruction.additionalData
 
@@ -66,8 +64,10 @@ internal open class NavigationHandleViewModel(
 
     private fun registerOnBackPressedListener(context: NavigationContext<out Any>) {
         if (context is ActivityContext<out FragmentActivity>) {
-            context.activity.addOnBackPressedListener {
-                context.leafContext().getNavigationHandleViewModel().requestClose()
+            context.activity.onBackPressedDispatcher.addCallback(this) {
+                val leafContext = context.leafContext()
+                if (interceptBackPressForAndroidxNavigation(this, leafContext)) return@addCallback
+                leafContext.getNavigationHandleViewModel().requestClose()
             }
         }
     }
@@ -110,21 +110,12 @@ internal open class NavigationHandleViewModel(
     }
 }
 
-
 private fun Lifecycle.onEvent(on: Lifecycle.Event, block: () -> Unit) {
     addObserver(object : LifecycleEventObserver {
         override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-            if(on == event) {
+            if (on == event) {
                 block()
             }
-        }
-    })
-}
-
-private fun FragmentActivity.addOnBackPressedListener(block: () -> Unit) {
-    onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-        override fun handleOnBackPressed() {
-            block()
         }
     })
 }

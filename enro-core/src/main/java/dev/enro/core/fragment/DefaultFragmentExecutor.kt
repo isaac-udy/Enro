@@ -104,8 +104,6 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     }
 
     override fun close(context: NavigationContext<out Fragment>) {
-        if (interceptCloseInstructionForAndroidxNavigation(context)) return
-
         if(!tryExecutePendingTransitions(context.fragment.parentFragmentManager)) {
             mainThreadHandler.post {
                 /*
