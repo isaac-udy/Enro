@@ -1,7 +1,6 @@
 package dev.enro.core.controller.container
 
 import android.app.Activity
-import android.util.Log
 import androidx.fragment.app.Fragment
 import dev.enro.core.*
 import dev.enro.core.activity.DefaultActivityExecutor
@@ -40,7 +39,6 @@ internal class ExecutorContainer {
     }
 
     fun executorFor(types: Pair<KClass<out Any>, KClass<out Any>>): NavigationExecutor<Any, Any, NavigationKey> {
-        Log.e("CHECKING", "$types")
         return ReflectionCache.getClassHierarchyPairs(types.first.java, types.second.java)
             .asSequence()
             .mapNotNull {

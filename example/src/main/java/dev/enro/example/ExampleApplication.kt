@@ -41,7 +41,7 @@ class ExampleApplication : Application(), NavigationApplication {
             }
             closeAnimation {
                 NavigationAnimation.Composable(
-                    forView = DefaultAnimations.push,
+                    forView = DefaultAnimations.close,
                     enter = slideIn(tween(700)) { IntOffset(0, 300) },
                     exit = slideOut(tween(700)) { IntOffset(0, 300) },
                 )

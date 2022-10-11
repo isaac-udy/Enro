@@ -12,6 +12,7 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.fragment.FragmentNavigator
+import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.extensions.animate
 
 class FragmentNavigationContainer internal constructor(
@@ -26,7 +27,7 @@ class FragmentNavigationContainer internal constructor(
     acceptsNavigationKey = accept,
     emptyBehavior = emptyBehavior,
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
-    acceptsNavigator = { it is FragmentNavigator<*, *>  || it is ComposableNavigator<*, *> }
+    acceptsNavigator = { it is FragmentNavigator<*, *> || it is ComposableNavigator<*, *> }
 ) {
     override val activeContext: NavigationContext<*>?
         get() = fragmentManager.findFragmentById(containerId)?.navigationContext
@@ -66,20 +67,22 @@ class FragmentNavigationContainer internal constructor(
             .mapNotNull { fragmentManager.findFragmentByTag(it.instructionId)?.to(it) }
 
         val activeInstruction = backstack.active
-        val activeFragment = activeInstruction?.let {
-            fragmentManager.findFragmentByTag(it.instructionId)
-        }
-        val newFragment = if (activeFragment == null && activeInstruction != null) {
-            val navigator =
-                parentContext.controller.navigatorForKeyType(activeInstruction.navigationKey::class)
-                    ?: throw EnroException.UnreachableState()
+        val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
+        val activeFragment = activeInstruction
+            ?.let {
+                fragmentManager.findFragmentByTag(it.instructionId)
+            }
+            ?: activeInstruction?.let {
+                val navigator =
+                    parentContext.controller.navigatorForKeyType(activeInstruction.navigationKey::class)
+                        ?: throw EnroException.UnreachableState()
 
-            FragmentFactory.createFragment(
-                parentContext,
-                navigator,
-                activeInstruction
-            )
-        } else null
+                FragmentFactory.createFragment(
+                    parentContext,
+                    navigator,
+                    activeInstruction
+                )
+            }
 
         val activeIndex =
             backstack.renderable.indexOfFirst { it.instructionId == activeInstruction?.instructionId }
@@ -92,17 +95,15 @@ class FragmentNavigationContainer internal constructor(
             }
         }
 
-        val primaryFragment = backstack.backstack.lastOrNull()
-            ?.let {
-                fragmentManager.findFragmentByTag(it.instructionId)
-            }
-            ?: newFragment
-
         fragmentManager.commitNow {
             if (!backstack.isDirectUpdate) {
                 val animations = animationsFor(parentContext, backstack.lastInstruction)
                     .asResource(parentContext.activity.theme)
-                setCustomAnimations(animations.enter, animations.exit)
+
+                setCustomAnimations(
+                    if(activeFragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_enter_animation else animations.enter,
+                    if(previouslyActiveFragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_exit_animation else animations.exit
+                )
             }
 
             toRemove.forEach {
@@ -113,17 +114,16 @@ class FragmentNavigationContainer internal constructor(
                 detach(it.first)
             }
 
-            when {
-                activeInstruction == null -> { /* Pass */ }
-                activeFragment != null -> {
-                    attach(activeFragment)
+            if (activeFragment != null) {
+                when {
+                    activeFragment.id != 0 -> {
+                        attach(activeFragment)
+                    }
+                    else -> {
+                        add(containerId, activeFragment, activeFragment.requireArguments().readOpenInstruction()!!.instructionId)
+                    }
                 }
-                newFragment != null -> {
-                    add(containerId, newFragment, activeInstruction.instructionId)
-                }
-            }
-            if (primaryFragment != null) {
-                setPrimaryNavigationFragment(primaryFragment)
+                setPrimaryNavigationFragment(activeFragment)
             }
         }
 

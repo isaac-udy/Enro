@@ -9,10 +9,10 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
-import dev.enro.core.hosts.AbstractFragmentHostForComposable
-import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
 import dev.enro.core.controller.navigationController
 import dev.enro.core.hosts.AbstractActivityHostForAnyInstruction
+import dev.enro.core.hosts.AbstractFragmentHostForComposable
+import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
 import dev.enro.core.hosts.AbstractOpenInstructionInActivityKey
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
