@@ -3,10 +3,12 @@ package dev.enro.core.fragment.container
 import android.app.Activity
 import android.view.View
 import androidx.annotation.IdRes
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
+import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
@@ -96,37 +98,50 @@ class FragmentNavigationContainer internal constructor(
         }
 
         fragmentManager.commitNow {
+            setReorderingAllowed(true)
+
             if (!backstack.isDirectUpdate) {
-                val animations = animationsFor(parentContext, backstack.lastInstruction)
-                    .asResource(parentContext.activity.theme)
+                val animations = animationsFor(previouslyActiveFragment?.navigationContext ?: parentContext, backstack.lastInstruction)
+                val resourceAnimations = animations.asResource(parentContext.activity.theme)
 
                 setCustomAnimations(
-                    if(activeFragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_enter_animation else animations.enter,
-                    if(previouslyActiveFragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_exit_animation else animations.exit
+                    if(activeFragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_enter_animation else resourceAnimations.enter,
+                    if(previouslyActiveFragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_exit_animation else resourceAnimations.exit
                 )
-            }
 
-            toRemove.forEach {
-                remove(it.first)
-            }
-
-            toDetach.forEach {
-                detach(it.first)
-            }
-
-            if (activeFragment != null) {
-                when {
-                    activeFragment.id != 0 -> {
-                        attach(activeFragment)
+                runOnCommit {
+                    if (previouslyActiveFragment is AbstractFragmentHostForComposable) {
+                        previouslyActiveFragment.containerManager.activeContainer!!
+                        val ref = previouslyActiveFragment.containerManager.activeContainer?.activeContext?.contextReference
+                        if(ref is ComposableDestination) {
+                            ref.owner.animation = animations.asComposable()
+                            ref.owner.transitionStateThing.value = MutableTransitionState(true).apply {
+                                targetState = false
+                            }
+                        }
                     }
-                    else -> {
-                        add(containerId, activeFragment, activeFragment.requireArguments().readOpenInstruction()!!.instructionId)
+                    if (activeFragment is AbstractFragmentHostForComposable) {
+                        val ref = activeFragment.containerManager.activeContainer?.activeContext?.contextReference
+                        if(ref is ComposableDestination) {
+                            ref.owner.animation = animations.asComposable()
+                            ref.owner.transitionStateThing.value = MutableTransitionState(false).apply {
+                                targetState = true
+                            }
+                        }
                     }
                 }
-                setPrimaryNavigationFragment(activeFragment)
             }
-        }
 
+            toRemove.forEach { remove(it.first) }
+            toDetach.forEach { detach(it.first) }
+            if (activeFragment == null) return@commitNow
+
+            when {
+                activeFragment.id != 0 -> attach(activeFragment)
+                else -> add(containerId, activeFragment, activeFragment.requireArguments().readOpenInstruction()!!.instructionId)
+            }
+            setPrimaryNavigationFragment(activeFragment)
+        }
         return true
     }
 }

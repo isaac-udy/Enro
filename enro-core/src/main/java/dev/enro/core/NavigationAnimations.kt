@@ -2,6 +2,7 @@ package dev.enro.core
 
 import android.content.res.Resources
 import android.provider.Settings
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -9,7 +10,6 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
-import dev.enro.core.controller.navigationController
 import dev.enro.core.hosts.AbstractActivityHostForAnyInstruction
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
@@ -22,6 +22,8 @@ typealias AnimationPair = NavigationAnimation
 
 sealed class NavigationAnimation {
     sealed class ForView: NavigationAnimation()
+
+    var name = toString()
 
     class Resource(
         val enter: Int,
@@ -89,13 +91,13 @@ sealed class NavigationAnimation {
             exit(theme)
         )
         is Composable -> forView.asResource(theme)
-    }
+    }.also { it.name = name }
 
     fun asComposable() : Composable {
         return when (this) {
             is ForView -> Composable(forView = this)
             is Composable -> this
-        }
+        }.also { it.name = name }
     }
 }
 
@@ -103,7 +105,7 @@ object DefaultAnimations {
     val push = NavigationAnimation.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,
         exit = android.R.attr.activityOpenExitAnimation
-    )
+    ).apply { name = "DefaultAnimations.push" }
 
     val present = NavigationAnimation.Theme(
         enter = { theme ->
@@ -120,71 +122,73 @@ object DefaultAnimations {
                 android.R.attr.windowExitAnimation
             ) ?: 0
         }
-    )
+    ).apply { name = "DefaultAnimations.present" }
 
     @Deprecated("Use push or present")
     val forward = NavigationAnimation.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,
         exit = android.R.attr.activityOpenExitAnimation
-    )
+    ).apply { name = "DefaultAnimations.forward" }
 
     @Deprecated("Use push or present")
     val replace = NavigationAnimation.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,
         exit = android.R.attr.activityOpenExitAnimation
-    )
+    ).apply { name = "DefaultAnimations.replace" }
 
     val replaceRoot = NavigationAnimation.Attr(
         enter = android.R.attr.taskOpenEnterAnimation,
         exit = android.R.attr.taskOpenExitAnimation
-    )
+    ).apply { name = "DefaultAnimations.replaceRoot" }
 
     val close = NavigationAnimation.Attr(
         enter = android.R.attr.activityCloseEnterAnimation,
         exit = android.R.attr.activityCloseExitAnimation
-    )
+    ).apply { name = "DefaultAnimations.close" }
 
     val none = NavigationAnimation.Resource(
         enter = 0,
         exit = R.anim.enro_no_op_exit_animation
-    )
+    ).apply { name = "DefaultAnimations.none" }
 }
 
 fun animationsFor(
     context: NavigationContext<*>,
     navigationInstruction: NavigationInstruction
-): NavigationAnimation {
+): NavigationAnimation = run {
     val animationScale = runCatching {
         Settings.Global.getFloat(context.activity.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE)
     }.getOrDefault(1.0f)
 
     if(animationScale < 0.01f) {
-        return NavigationAnimation.Resource(0, 0)
+        return@run  NavigationAnimation.Resource(0, 0)
     }
 
     if (navigationInstruction is NavigationInstruction.Open<*> && navigationInstruction.children.isNotEmpty()) {
-        return NavigationAnimation.Resource(0, 0)
+        return@run  NavigationAnimation.Resource(0, 0)
     }
 
     if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractActivityHostForAnyInstruction) {
         val openActivityKey = context.getNavigationHandleViewModel().key as AbstractOpenInstructionInActivityKey
         if (navigationInstruction.instructionId == openActivityKey.instruction.instructionId) {
-            return NavigationAnimation.Resource(0, 0)
+            return@run NavigationAnimation.Resource(0, 0)
         }
     }
+//
+//    if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractFragmentHostForComposable) {
+//        val openFragmentKey = context.getNavigationHandleViewModel().key as AbstractOpenComposableInFragmentKey
+//        if (navigationInstruction.instructionId == openFragmentKey.instruction.instructionId) {
+//            return@run NavigationAnimation.Resource(0, 0)
+//        }
+//    }
 
-    if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractFragmentHostForComposable) {
-        val openFragmentKey = context.getNavigationHandleViewModel().key as AbstractOpenComposableInFragmentKey
-        if (navigationInstruction.instructionId == openFragmentKey.instruction.instructionId) {
-            return NavigationAnimation.Resource(0, 0)
-        }
-    }
-
-    return when (navigationInstruction) {
+    return@run when (navigationInstruction) {
         is NavigationInstruction.Open<*> -> animationsForOpen(context, navigationInstruction)
         is NavigationInstruction.Close -> animationsForClose(context)
         is NavigationInstruction.RequestClose -> animationsForClose(context)
     }
+}.apply {
+    Log.e("AnimationsFor", "${context.arguments.readOpenInstruction()?.navigationKey?.let { it::class.java.simpleName } } -> ${if(navigationInstruction is NavigationInstruction.Open<*>) navigationInstruction.navigationKey::class.java.simpleName else "Close"} -> ${name}")
 }
 
 private fun animationsForOpen(
@@ -198,8 +202,7 @@ private fun animationsForOpen(
         else -> navigationInstruction
     }
 
-    val executor = context.activity.application.navigationController.executorForOpen(
-        context,
+    val executor = context.controller.executorForOpen(
         instructionForAnimation
     )
     return executor.animation(navigationInstruction)
@@ -210,14 +213,14 @@ private fun animationsForClose(
 ): NavigationAnimation {
     val contextForAnimation = when (context.contextReference) {
         is AbstractFragmentHostForComposable -> {
-            context.containerManager.containers
-                .firstOrNull()
+            context.containerManager
+                .activeContainer
                 ?.activeContext
                 ?: context
         }
         else -> context
     }
 
-    val executor = context.activity.application.navigationController.executorForClose(contextForAnimation)
+    val executor = context.controller.executorForClose(contextForAnimation)
     return executor.closeAnimation(context)
 }

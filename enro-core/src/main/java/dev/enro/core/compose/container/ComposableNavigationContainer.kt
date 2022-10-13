@@ -62,18 +62,27 @@ class ComposableNavigationContainer internal constructor(
             }
 
         val contextForAnimation = kotlin.runCatching {
-            when (backstack.lastInstruction) {
-                is NavigationInstruction.Close -> backstack.exiting?.let { getDestinationContext(it) }?.destination?.navigationContext
-                else -> backstack.active?.let { getDestinationContext(it) }?.destination?.navigationContext
+            val previouslyOpenContext = backstack.exiting?.let { getDestinationContext(it) }?.destination?.navigationContext
+            when {
+                previouslyOpenContext == null -> parentContext
+                else -> previouslyOpenContext
             }
         }.getOrNull()
+
         if(contextForAnimation != null) {
             val animations = animationsFor(contextForAnimation, backstack.lastInstruction).asComposable()
+
             backstack.exiting?.let {
-                requireDestinationContext(it).animation = animations
+                requireDestinationContext(it).apply {
+                    animation = animations
+                    transitionState.targetState = false
+                }
             }
             backstack.active?.let {
-                requireDestinationContext(it).animation = animations
+                requireDestinationContext(it).apply {
+                    animation = animations
+                    transitionState.targetState = true
+                }
             }
         }
 

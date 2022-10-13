@@ -13,10 +13,7 @@ object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, Navi
 ) {
     override fun open(args: ExecutorArgs<out Any, out ComponentActivity, out NavigationKey>) {
         val fromContext = args.fromContext
-        val navigator = args.navigator
         val instruction = args.instruction
-
-        navigator as ActivityNavigator
 
         val intent = createIntent(args)
 

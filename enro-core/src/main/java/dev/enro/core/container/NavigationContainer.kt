@@ -24,12 +24,14 @@ abstract class NavigationContainer(
     }
     private val removeExitingFromBackstack: Runnable = Runnable {
         if(backstack.exiting == null) return@Runnable
-        val nextBackstack = backstack.copy(
-            exiting = null,
-            exitingIndex = -1,
-            isDirectUpdate = true
-        )
-        setBackstack(nextBackstack)
+        if (parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+            val nextBackstack = backstack.copy(
+                exiting = null,
+                exitingIndex = -1,
+                isDirectUpdate = true
+            )
+            setBackstack(nextBackstack)
+        }
     }
 
     abstract val activeContext: NavigationContext<*>?
@@ -61,6 +63,28 @@ abstract class NavigationContainer(
 
         handler.removeCallbacks(reconcileBackstack)
         handler.removeCallbacks(removeExitingFromBackstack)
+
+        if(backstack.backstack.isEmpty()) {
+            when(val emptyBehavior = emptyBehavior) {
+                EmptyBehavior.AllowEmpty -> {
+                    /* If allow empty, pass through to default behavior */
+                }
+                EmptyBehavior.CloseParent -> {
+                    if(parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                        parentContext.getNavigationHandle().close()
+                    }
+                    return
+                }
+                is EmptyBehavior.Action -> {
+                    val consumed = emptyBehavior.onEmpty()
+                    if (consumed) {
+                        return
+                    }
+                }
+            }
+            if(isActive && !backstack.isDirectUpdate) parentContext.containerManager.setActiveContainer(null)
+        }
+
         val lastBackstack = mutableBackstack.getAndUpdate { backstack }
 
         val removed = lastBackstack.backstack
@@ -83,27 +107,6 @@ abstract class NavigationContainer(
             }
         }
 
-        if(backstackFlow.value.backstack.isEmpty()) {
-            if(isActive && !backstack.isDirectUpdate) parentContext.containerManager.setActiveContainer(null)
-            when(val emptyBehavior = emptyBehavior) {
-                EmptyBehavior.AllowEmpty -> {
-                    /* If allow empty, pass through to default behavior */
-                }
-                EmptyBehavior.CloseParent -> {
-                    if(parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-                        parentContext.getNavigationHandle().close()
-                    }
-                    return
-                }
-                is EmptyBehavior.Action -> {
-                    val consumed = emptyBehavior.onEmpty()
-                    if (consumed) {
-                        return
-                    }
-                }
-            }
-        }
-
         pendingRemovals.addAll(removed)
         val reconciledBackstack = reconcileBackstack(pendingRemovals.toList(), mutableBackstack.value)
         if(!reconciledBackstack) {
@@ -117,7 +120,7 @@ abstract class NavigationContainer(
     }
 
     // Returns true if the backstack was able to be reconciled successfully
-    abstract fun reconcileBackstack(
+    protected abstract fun reconcileBackstack(
         removed: List<AnyOpenInstruction>,
         backstack: NavigationBackstack
     ): Boolean
@@ -152,6 +155,7 @@ abstract class NavigationContainer(
             setBackstack(restoredBackstack ?: initialBackstack)
         }
     }
+
 
     companion object {
         private const val BACKSTACK_KEY = "NavigationContainer.BACKSTACK_KEY"

@@ -1,8 +1,6 @@
 package dev.enro.core.controller.interceptor
 
 import dev.enro.core.*
-import dev.enro.core.hosts.AbstractOpenInstructionInActivityKey
-import dev.enro.core.hosts.ActivityHostForAnyInstruction
 
 internal class ExecutorContextInterceptor : NavigationInstructionInterceptor{
 
@@ -12,31 +10,27 @@ internal class ExecutorContextInterceptor : NavigationInstructionInterceptor{
         navigator: Navigator<out NavigationKey, out Any>
     ): AnyOpenInstruction {
         return instruction
-            .setOpenTarget(parentContext)
-            .setOpenExecutedBy(parentContext)
-            .setOpenRequestedBy(parentContext)
+            .setOpeningType(parentContext)
+            .setOpenedBy(parentContext)
     }
 
-    private fun AnyOpenInstruction.setOpenTarget(
+    private fun AnyOpenInstruction.setOpeningType(
         parentContext: NavigationContext<*>
     ) : AnyOpenInstruction {
-        if (internal.openTarget != Any::class.java) return internal
+        if (internal.openingType != Any::class.java) return internal
         return internal.copy(
-            openTarget = parentContext.controller.navigatorForKeyType(navigationKey::class)!!.contextType.java
+            openingType = parentContext.controller.navigatorForKeyType(navigationKey::class)!!.contextType.java
         )
     }
 
-    private fun AnyOpenInstruction.setOpenRequestedBy(
+    private fun AnyOpenInstruction.setOpenedBy(
         parentContext: NavigationContext<*>
     ): AnyOpenInstruction {
         // If openRequestedBy has been set, don't change it
-        if(internal.openRequestedBy != Any::class.java) return internal
-        return internal.copy(openRequestedBy = parentContext.contextReference::class.java)
-    }
-
-    private fun AnyOpenInstruction.setOpenExecutedBy(
-        parentContext: NavigationContext<*>
-    ): AnyOpenInstruction {
-        return internal.copy(openExecutedBy = parentContext.contextReference::class.java)
+        if(internal.openedByType != Any::class.java) return internal
+        return internal.copy(
+            openedByType = parentContext.contextReference::class.java,
+            openedById = parentContext.arguments.readOpenInstruction()?.instructionId
+        )
     }
 }

@@ -173,6 +173,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                     }
                     .onSuccess {
                         fragmentManager.commitNow {
+                            setReorderingAllowed(true)
                             remove(context.contextReference)
                         }
                     }

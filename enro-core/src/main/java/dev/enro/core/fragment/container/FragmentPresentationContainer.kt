@@ -1,12 +1,13 @@
 package dev.enro.core.fragment.container
 
-import androidx.fragment.app.*
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.commitNow
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.container.*
-import dev.enro.core.container.close
 import dev.enro.core.fragment.FragmentNavigator
-import dev.enro.core.hosts.FragmentHostForPresentableFragment
 
 class FragmentPresentationContainer internal constructor(
     parentContext: NavigationContext<*>,
@@ -75,6 +76,8 @@ class FragmentPresentationContainer internal constructor(
             }
 
         fragmentManager.commitNow {
+            setReorderingAllowed(true)
+
             toRemove.forEach {
                 remove(it.first)
             }
@@ -83,7 +86,6 @@ class FragmentPresentationContainer internal constructor(
                 add(it.first, it.second.instructionId)
             }
         }
-
 
         backstack.backstack.lastOrNull()
             ?.let {

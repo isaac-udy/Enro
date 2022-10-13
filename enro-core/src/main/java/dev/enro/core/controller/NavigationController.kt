@@ -83,9 +83,7 @@ class NavigationController internal constructor() {
             navigationContext.getNavigationHandle().executeInstruction(processedInstruction)
             return
         }
-        val f: NavigationExecutor<out Any, out Any, out NavigationKey>
-
-        val executor: NavigationExecutor<Any, Any, NavigationKey> = executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openExecutedBy.kotlin to navigationContext.contextReference::class)
+        val executor: NavigationExecutor<Any, Any, NavigationKey> = executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openedByType.kotlin to navigationContext.contextReference::class)
         executor.preClosed(navigationContext)
         executor.close(navigationContext)
     }
@@ -103,13 +101,13 @@ class NavigationController internal constructor() {
     }
 
     internal fun executorForOpen(
-        fromContext: NavigationContext<*>,
         instruction: AnyOpenInstruction
-    ) = executorContainer.executorFor(fromContext.contextReference::class to navigatorForKeyType(instruction.navigationKey::class)!!.contextType)
+    ) = executorContainer.executorFor(instruction.internal.openedByType.kotlin to instruction.internal.openingType.kotlin)
+
 
 
     internal fun executorForClose(navigationContext: NavigationContext<*>) =
-        executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openExecutedBy.kotlin to navigationContext.contextReference::class)
+        executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openedByType.kotlin to navigationContext.contextReference::class)
 
     fun addOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
         executorContainer.addExecutorOverride(navigationExecutor)

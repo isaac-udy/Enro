@@ -1,8 +1,8 @@
 package dev.enro.core.compose.destination
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
@@ -45,7 +45,18 @@ class ComposableDestinationOwner(
             parentContainerState.value = value
         }
 
+
+    internal val transitionStateThing = mutableStateOf(MutableTransitionState(false))
+    internal var transitionState: MutableTransitionState<Boolean>
+        get() {
+            return transitionStateThing.value
+        }
+        set(value) {
+            transitionStateThing.value = value
+        }
+
     private val animationState = mutableStateOf(DefaultAnimations.none.asComposable())
+
     internal var animation: NavigationAnimation.Composable
         get() {
             return animationState.value
@@ -53,8 +64,6 @@ class ComposableDestinationOwner(
         set(value) {
             animationState.value = value
         }
-
-    private val transitionState = MutableTransitionState(false)
 
     @SuppressLint("StaticFieldLeak")
     @Suppress("LeakingThis")
@@ -96,7 +105,6 @@ class ComposableDestinationOwner(
         return viewModelStoreOwner.defaultViewModelCreationExtras
     }
 
-    @OptIn(ExperimentalAnimationApi::class)
     @Composable
     internal fun Render(backstackState: NavigationBackstack) {
         val lifecycleState by lifecycleFlow.collectAsState()
@@ -113,14 +121,14 @@ class ComposableDestinationOwner(
             movableContentOf {
                 ProvideRenderingEnvironment(saveableStateHolder) {
                     destination.Render()
-                    RegisterComposableLifecycleState(backstackState)
                 }
             }
         }
 
-        transitionState.targetState = instruction == backstackState.active
+        Log.e("Composeable", "${instruction.instructionId.take(4)} ${transitionState.currentState} -> ${transitionState.targetState} @${animation.name}")
         animation.content(transitionState) {
             renderDestination()
+            RegisterComposableLifecycleState(backstackState)
         }
     }
 
@@ -128,8 +136,8 @@ class ComposableDestinationOwner(
     private fun RegisterComposableLifecycleState(
         backstackState: NavigationBackstack
     ) {
-        DisposableEffect(instruction == backstackState.active) {
-            val isActive = backstackState.active == instruction
+        DisposableEffect(transitionState.currentState) {
+            val isActive = transitionState.currentState
             val isStarted = lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED)
             when {
                 isActive -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -137,8 +145,11 @@ class ComposableDestinationOwner(
             }
 
             onDispose {
-                if (!backstackState.backstack.contains(instruction)) {
-                    lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                val isDestroyed = !backstackState.backstack.contains(instruction)
+                when {
+                    isDestroyed -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                    isActive ->  lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+                    else ->  lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
                 }
             }
         }

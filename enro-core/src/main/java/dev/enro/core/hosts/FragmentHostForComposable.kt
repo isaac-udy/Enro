@@ -48,7 +48,10 @@ abstract class AbstractFragmentHostForComposable : Fragment() {
                 val state = rememberEnroContainerController(
                     initialBackstack = listOf(navigationHandle.key.instruction.asPushInstruction()),
                     accept = { navigationHandle.key.isRoot },
-                    emptyBehavior = EmptyBehavior.CloseParent
+                    emptyBehavior = EmptyBehavior.Action {
+                        navigationHandle.close()
+                        false
+                    }
                 )
 
                 EnroContainer(container = state)

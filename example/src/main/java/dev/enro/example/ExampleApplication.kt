@@ -5,7 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideIn
-import androidx.compose.animation.slideOut
 import androidx.compose.ui.unit.IntOffset
 import dagger.hilt.android.HiltAndroidApp
 import dev.enro.annotations.NavigationComponent
@@ -33,18 +32,10 @@ class ExampleApplication : Application(), NavigationApplication {
 
         override<ComposeSimpleExampleDestination, ComposeSimpleExampleDestination> {
             animation {
-                NavigationAnimation.Composable(
-                    forView = DefaultAnimations.push,
-                    enter = fadeIn(tween(700)),
-                    exit = fadeOut(tween(700)),
-                )
+                open
             }
             closeAnimation {
-                NavigationAnimation.Composable(
-                    forView = DefaultAnimations.close,
-                    enter = slideIn(tween(700)) { IntOffset(0, 300) },
-                    exit = slideOut(tween(700)) { IntOffset(0, 300) },
-                )
+                close
             }
         }
         composeEnvironment { content ->
@@ -52,3 +43,15 @@ class ExampleApplication : Application(), NavigationApplication {
         }
     }
 }
+val open =
+    NavigationAnimation.Composable(
+        forView = DefaultAnimations.push,
+        enter = fadeIn(tween(700, delayMillis = 700)),
+        exit = fadeOut(tween(700)),
+    ).apply { name = "ExampleApplication.open" }
+
+val close = NavigationAnimation.Composable(
+    forView = DefaultAnimations.close,
+    enter = slideIn(tween(700, delayMillis = 500)) { IntOffset(0, 300) },
+    exit = fadeOut(tween(500)),
+).apply { name = "ExampleApplication.close" }

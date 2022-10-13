@@ -51,9 +51,9 @@ sealed class NavigationInstruction {
             override val additionalData: Bundle = Bundle(),
             override val instructionId: String = UUID.randomUUID().toString(),
             val previouslyActiveId: String? = null,
-            val openTarget: Class<out Any> = Any::class.java,
-            val openRequestedBy: Class<out Any> = Any::class.java, // the type of context that requested this open instruction was executed
-            val openExecutedBy: Class<out Any> = Any::class.java, // the type of context that actually executed this open instruction
+            val openingType: Class<out Any> = Any::class.java,
+            val openedByType: Class<out Any> = Any::class.java, // the type of context that requested this open instruction was executed
+            val openedById: String? = null,
             val resultId: ResultChannelId? = null,
         ) : NavigationInstruction.Open<T>()
     }
