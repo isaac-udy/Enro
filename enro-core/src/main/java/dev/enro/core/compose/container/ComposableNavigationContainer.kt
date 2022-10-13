@@ -1,5 +1,6 @@
 package dev.enro.core.compose.container
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.saveable.SaveableStateHolder
@@ -53,6 +54,9 @@ class ComposableNavigationContainer internal constructor(
         removed: List<AnyOpenInstruction>,
         backstack: NavigationBackstack
     ): Boolean {
+        if(!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return false
+        if(parentContext.runCatching { activity }.getOrNull() == null) return false
+
         backstack.renderable
             .map { instruction ->
                 val context = requireDestinationContext(instruction)
@@ -70,7 +74,14 @@ class ComposableNavigationContainer internal constructor(
         }.getOrNull()
 
         if(contextForAnimation != null) {
-            val animations = animationsFor(contextForAnimation, backstack.lastInstruction).asComposable()
+
+            val animations = kotlin.runCatching {
+                animationsFor(contextForAnimation, backstack.lastInstruction).asComposable()
+            }
+                .onFailure {
+                    Log.e("FAILEDANIMATIONS", "${contextForAnimation.lifecycle.currentState} ${parentContext.lifecycle.currentState}")
+                }
+                .getOrThrow()
 
             backstack.exiting?.let {
                 requireDestinationContext(it).apply {

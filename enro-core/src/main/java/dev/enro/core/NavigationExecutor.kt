@@ -1,5 +1,6 @@
 package dev.enro.core
 
+import android.util.Log
 import androidx.fragment.app.Fragment
 import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.activity.DefaultActivityExecutor
@@ -16,8 +17,14 @@ class ExecutorArgs<FromContext: Any, OpensContext: Any, KeyType: NavigationKey>(
     val fromContext: NavigationContext<out FromContext>,
     val navigator: Navigator<out KeyType, out OpensContext>,
     val key: KeyType,
-    val instruction: AnyOpenInstruction
-)
+    instruction: AnyOpenInstruction
+) {
+    val instruction: AnyOpenInstruction = instruction.internal.copy(
+        previouslyActiveId = fromContext.containerManager.activeContainer?.id
+    ).apply {
+        Log.e("CONTAINER", "opening $key and active container active key is ${fromContext.containerManager.activeContainer?.backstack?.active?.navigationKey}")
+    }
+}
 
 abstract class NavigationExecutor<FromContext: Any, OpensContext: Any, KeyType: NavigationKey>(
     val fromType: KClass<FromContext>,

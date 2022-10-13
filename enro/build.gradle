@@ -8,6 +8,9 @@ android {
         textReport true
         textOutput 'stdout'
     }
+    testOptions {
+        animationsDisabled = true
+    }
     packagingOptions {
         resources.excludes.add("META-INF/*")
     }

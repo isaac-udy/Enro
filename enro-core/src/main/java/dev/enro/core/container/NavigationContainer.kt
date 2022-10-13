@@ -2,6 +2,7 @@ package dev.enro.core.container
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.MainThread
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
@@ -23,15 +24,13 @@ abstract class NavigationContainer(
         reconcileBackstack(pendingRemovals.toList(), mutableBackstack.value)
     }
     private val removeExitingFromBackstack: Runnable = Runnable {
-        if(backstack.exiting == null) return@Runnable
-        if (parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-            val nextBackstack = backstack.copy(
-                exiting = null,
-                exitingIndex = -1,
-                isDirectUpdate = true
-            )
-            setBackstack(nextBackstack)
-        }
+        if (backstack.exiting == null) return@Runnable
+        val nextBackstack = backstack.copy(
+            exiting = null,
+            exitingIndex = -1,
+            isDirectUpdate = true
+        )
+        setBackstack(nextBackstack)
     }
 
     abstract val activeContext: NavigationContext<*>?
@@ -44,10 +43,10 @@ abstract class NavigationContainer(
 
     @MainThread
     fun setBackstack(backstack: NavigationBackstack) = synchronized(this) {
-        if(Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
+        if (Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
-        if(backstack == backstackFlow.value) return@synchronized
+        if (backstack == backstackFlow.value) return@synchronized
         backstack.backstack
             .map {
                 it.navigationDirection to acceptsDirection(it.navigationDirection)
@@ -57,20 +56,20 @@ abstract class NavigationContainer(
             .toSet()
             .let {
                 require(it.isEmpty()) {
-                    "Backstack does not support the following NavigationDirections: ${it.joinToString { it::class.java.simpleName } }"
+                    "Backstack does not support the following NavigationDirections: ${it.joinToString { it::class.java.simpleName }}"
                 }
             }
 
         handler.removeCallbacks(reconcileBackstack)
         handler.removeCallbacks(removeExitingFromBackstack)
 
-        if(backstack.backstack.isEmpty()) {
-            when(val emptyBehavior = emptyBehavior) {
+        if (backstack.backstack.isEmpty()) {
+            when (val emptyBehavior = emptyBehavior) {
                 EmptyBehavior.AllowEmpty -> {
                     /* If allow empty, pass through to default behavior */
                 }
                 EmptyBehavior.CloseParent -> {
-                    if(parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                    if (parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
                         parentContext.getNavigationHandle().close()
                     }
                     return
@@ -82,7 +81,6 @@ abstract class NavigationContainer(
                     }
                 }
             }
-            if(isActive && !backstack.isDirectUpdate) parentContext.containerManager.setActiveContainer(null)
         }
 
         val lastBackstack = mutableBackstack.getAndUpdate { backstack }
@@ -97,7 +95,7 @@ abstract class NavigationContainer(
                 it == backstack.exiting
             }
 
-        if(!backstack.isDirectUpdate) {
+        if (!backstack.isDirectUpdate) {
             if (exiting != null && backstack.lastInstruction is NavigationInstruction.Close) {
                 parentContext.containerManager.setActiveContainerById(
                     exiting.internal.previouslyActiveId
@@ -105,15 +103,15 @@ abstract class NavigationContainer(
             } else {
                 parentContext.containerManager.setActiveContainer(this)
             }
+            if(isActive && !backstack.isDirectUpdate && backstack.backstack.isEmpty()) parentContext.containerManager.setActiveContainer(null)
         }
 
         pendingRemovals.addAll(removed)
         val reconciledBackstack = reconcileBackstack(pendingRemovals.toList(), mutableBackstack.value)
-        if(!reconciledBackstack) {
+        if (!reconciledBackstack) {
             pendingRemovals.addAll(removed)
             handler.post(reconcileBackstack)
-        }
-        else {
+        } else {
             pendingRemovals.clear()
             handler.postDelayed(removeExitingFromBackstack, 2000)
         }
@@ -131,9 +129,9 @@ abstract class NavigationContainer(
         return acceptsNavigationKey.invoke(instruction.navigationKey)
                 && acceptsDirection(instruction.navigationDirection)
                 && acceptsNavigator(
-                    parentContext.controller.navigatorForKeyType(instruction.navigationKey::class)
-                        ?: throw EnroException.UnreachableState()
-                )
+            parentContext.controller.navigatorForKeyType(instruction.navigationKey::class)
+                ?: throw EnroException.UnreachableState()
+        )
     }
 
     protected fun setOrLoadInitialBackstack(initialBackstack: NavigationBackstack) {
