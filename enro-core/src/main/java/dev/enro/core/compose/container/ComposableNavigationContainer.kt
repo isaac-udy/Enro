@@ -75,13 +75,7 @@ class ComposableNavigationContainer internal constructor(
 
         if(contextForAnimation != null) {
 
-            val animations = kotlin.runCatching {
-                animationsFor(contextForAnimation, backstack.lastInstruction).asComposable()
-            }
-                .onFailure {
-                    Log.e("FAILEDANIMATIONS", "${contextForAnimation.lifecycle.currentState} ${parentContext.lifecycle.currentState}")
-                }
-                .getOrThrow()
+            val animations = animationsFor(contextForAnimation, backstack.lastInstruction).asComposable()
 
             backstack.exiting?.let {
                 requireDestinationContext(it).apply {

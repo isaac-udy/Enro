@@ -61,7 +61,7 @@ abstract class NavigationContainer(
             }
 
         pendingRemovals.addAll(removed)
-        val reconciledBackstack = reconcileBackstack(pendingRemovals.toList(), mutableBackstack.value)
+        val reconciledBackstack = reconcileBackstack(pendingRemovals.toList(), backstack)
         if (!reconciledBackstack) {
             handler.post(reconcileBackstack)
         } else {

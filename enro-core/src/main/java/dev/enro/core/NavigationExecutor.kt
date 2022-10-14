@@ -21,9 +21,7 @@ class ExecutorArgs<FromContext: Any, OpensContext: Any, KeyType: NavigationKey>(
 ) {
     val instruction: AnyOpenInstruction = instruction.internal.copy(
         previouslyActiveId = fromContext.containerManager.activeContainer?.id
-    ).apply {
-        Log.e("CONTAINER", "opening $key and active container active key is ${fromContext.containerManager.activeContainer?.backstack?.active?.navigationKey}")
-    }
+    )
 }
 
 abstract class NavigationExecutor<FromContext: Any, OpensContext: Any, KeyType: NavigationKey>(

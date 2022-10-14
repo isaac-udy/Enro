@@ -115,18 +115,14 @@ class FragmentNavigationContainer internal constructor(
                         val ref = previouslyActiveFragment.containerManager.activeContainer?.activeContext?.contextReference
                         if(ref is ComposableDestination) {
                             ref.owner.animation = animations.asComposable()
-                            ref.owner.transitionStateThing.value = MutableTransitionState(true).apply {
-                                targetState = false
-                            }
+                            ref.owner.transitionState.targetState = false
                         }
                     }
                     if (activeFragment is AbstractFragmentHostForComposable) {
                         val ref = activeFragment.containerManager.activeContainer?.activeContext?.contextReference
                         if(ref is ComposableDestination) {
                             ref.owner.animation = animations.asComposable()
-                            ref.owner.transitionStateThing.value = MutableTransitionState(false).apply {
-                                targetState = true
-                            }
+                            ref.owner.transitionState.targetState = true
                         }
                     }
                 }

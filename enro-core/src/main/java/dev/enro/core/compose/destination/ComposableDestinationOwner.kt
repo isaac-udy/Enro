@@ -46,14 +46,7 @@ class ComposableDestinationOwner(
         }
 
 
-    internal val transitionStateThing = mutableStateOf(MutableTransitionState(false))
-    internal var transitionState: MutableTransitionState<Boolean>
-        get() {
-            return transitionStateThing.value
-        }
-        set(value) {
-            transitionStateThing.value = value
-        }
+    internal val transitionState = MutableTransitionState(false)
 
     private val animationState = mutableStateOf(DefaultAnimations.none.asComposable())
 
@@ -125,7 +118,6 @@ class ComposableDestinationOwner(
             }
         }
 
-        Log.e("Composeable", "${instruction.instructionId.take(4)} ${transitionState.currentState} -> ${transitionState.targetState} @${animation.name}")
         animation.content(transitionState) {
             renderDestination()
             RegisterComposableLifecycleState(backstackState)

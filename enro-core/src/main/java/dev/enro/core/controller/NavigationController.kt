@@ -183,16 +183,3 @@ internal val NavigationController.application: Application
             ?.key
             ?: throw EnroException.NavigationControllerIsNotAttached("NavigationController is not attached to an Application")
     }
-
-//fun profile(name: String, repeat: Int = 1, block: () -> Unit) {
-//    val start = System.nanoTime()
-//
-//    repeat(repeat) {
-//        block()
-//    }
-//
-//    val end = System.nanoTime()
-//    val diff = end - start
-//    val perRun = BigDecimal(diff / repeat).divide(BigDecimal(1_000_000)).setScale(4, RoundingMode.HALF_UP)
-//    Log.e("Profiler", "$name = ${perRun.toPlainString()} millis per run")
-//}
