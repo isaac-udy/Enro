@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -16,6 +16,7 @@ import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.container.NavigationContainerProperty
 import dev.enro.core.fragment.container.FragmentPresentationContainer
+import dev.enro.core.fragment.interceptBackPressForAndroidxNavigation
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
 internal class NavigationContextLifecycleCallbacks (
@@ -60,8 +61,10 @@ internal class NavigationContextLifecycleCallbacks (
 
             lifecycleController.onContextCreated(navigationContext, savedInstanceState)
 
-            activity.addOnBackPressedListener {
-                navigationContext.leafContext().getNavigationHandleViewModel().requestClose()
+            activity.onBackPressedDispatcher.addCallback(activity) {
+                val leafContext = navigationContext.leafContext()
+                if (interceptBackPressForAndroidxNavigation(this, leafContext)) return@addCallback
+                leafContext.getNavigationHandleViewModel().requestClose()
             }
         }
 
@@ -118,14 +121,6 @@ internal class NavigationContextLifecycleCallbacks (
             }
         }
     }
-}
-
-private fun ComponentActivity.addOnBackPressedListener(block: () -> Unit) {
-    onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-        override fun handleOnBackPressed() {
-            block()
-        }
-    })
 }
 
 private object DialogFragmentBackPressedListener : ViewCompat.OnUnhandledKeyEventListenerCompat {
