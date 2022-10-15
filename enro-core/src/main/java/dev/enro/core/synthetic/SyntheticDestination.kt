@@ -1,21 +1,21 @@
 package dev.enro.core.synthetic
 
-import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import dev.enro.core.*
-import dev.enro.core.result.EnroResult
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationKey
 
-abstract class SyntheticDestination<T : NavigationKey> {
+public abstract class SyntheticDestination<T : NavigationKey> {
 
     private var _navigationContext: NavigationContext<out Any>? = null
-    val navigationContext get() = _navigationContext!!
+    public val navigationContext: NavigationContext<out Any> get() = _navigationContext!!
 
-    lateinit var key: T
+    public lateinit var key: T
         internal set
 
-    lateinit var instruction: AnyOpenInstruction
+    public lateinit var instruction: AnyOpenInstruction
         internal set
 
     internal fun bind(
@@ -36,5 +36,5 @@ abstract class SyntheticDestination<T : NavigationKey> {
         })
     }
 
-    abstract fun process()
+    public abstract fun process()
 }

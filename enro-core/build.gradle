@@ -5,6 +5,12 @@ apply plugin: 'dagger.hilt.android.plugin'
 
 publishAndroidModule("dev.enro", "enro-core")
 
+android {
+    kotlinOptions {
+        freeCompilerArgs += '-Xexplicit-api=strict'
+    }
+}
+
 dependencies {
     implementation deps.androidx.core
     implementation deps.androidx.appcompat

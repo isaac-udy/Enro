@@ -8,28 +8,18 @@ import dev.enro.core.*
 import dev.enro.core.activity.createActivityNavigationBinding
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.createComposableNavigationBinding
-import dev.enro.core.controller.container.ComposeEnvironment
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
+import dev.enro.core.controller.repository.ComposeEnvironment
 import dev.enro.core.fragment.createFragmentNavigationBinding
 import dev.enro.core.plugins.EnroPlugin
 import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.core.synthetic.createSyntheticNavigationBinding
 
-interface NavigationComponentBuilderCommand {
-    fun execute(builder: NavigationComponentBuilder)
+public interface NavigationComponentBuilderCommand {
+    public fun execute(builder: NavigationComponentBuilder)
 }
 
-abstract class NavigationBindingBuilder<T : NavigationKey>(
-
-) {
-    internal abstract fun activity(destination: Class<ComponentActivity>)
-    internal abstract fun fragment(destination: Class<Fragment>)
-    internal abstract fun composable(destination: Class<ComposableDestination>)
-    internal abstract fun composable(destination: @Composable () -> Unit)
-    internal abstract fun synthetic(destination: Class<SyntheticDestination<T>>)
-}
-
-class NavigationComponentBuilder {
+public class NavigationComponentBuilder {
     @PublishedApi
     internal val bindings: MutableList<NavigationBinding<*, *>> = mutableListOf()
 
@@ -45,63 +35,63 @@ class NavigationComponentBuilder {
     @PublishedApi
     internal var composeEnvironment: ComposeEnvironment? = null
 
-    fun binding(binding: NavigationBinding<*, *>) {
+    public fun binding(binding: NavigationBinding<*, *>) {
         bindings.add(binding)
     }
 
-    inline fun <reified KeyType : NavigationKey, reified DestinationType : ComponentActivity> activityDestination() {
+    public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComponentActivity> activityDestination() {
         bindings.add(createActivityNavigationBinding<KeyType, DestinationType>())
     }
 
-    inline fun <reified KeyType : NavigationKey, reified DestinationType : Fragment> fragmentDestination() {
+    public inline fun <reified KeyType : NavigationKey, reified DestinationType : Fragment> fragmentDestination() {
         bindings.add(createFragmentNavigationBinding<KeyType, DestinationType>())
     }
 
-    inline fun <reified KeyType : NavigationKey, reified DestinationType : ComposableDestination> composableDestination() {
+    public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComposableDestination> composableDestination() {
         bindings.add(createComposableNavigationBinding<KeyType, DestinationType>())
     }
 
-    inline fun <reified KeyType : NavigationKey> composableDestination(noinline content: @Composable () -> Unit) {
+    public inline fun <reified KeyType : NavigationKey> composableDestination(noinline content: @Composable () -> Unit) {
         bindings.add(createComposableNavigationBinding<KeyType>(content))
     }
 
-    inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> syntheticDestination() {
+    public inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> syntheticDestination() {
         bindings.add(createSyntheticNavigationBinding<KeyType, DestinationType>())
     }
 
-    inline fun <reified KeyType : NavigationKey> syntheticDestination(noinline destination: () -> SyntheticDestination<KeyType>) {
+    public inline fun <reified KeyType : NavigationKey> syntheticDestination(noinline destination: () -> SyntheticDestination<KeyType>) {
         bindings.add(createSyntheticNavigationBinding(destination))
     }
 
-    fun override(override: NavigationExecutor<*, *, *>) {
+    public fun override(override: NavigationExecutor<*, *, *>) {
         overrides.add(override)
     }
 
-    inline fun <reified From : Any, reified Opens : Any> override(
+    public inline fun <reified From : Any, reified Opens : Any> override(
         noinline block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
     ) {
         overrides.add(createOverride(From::class, Opens::class, block))
     }
 
-    fun plugin(enroPlugin: EnroPlugin) {
+    public fun plugin(enroPlugin: EnroPlugin) {
         plugins.add(enroPlugin)
     }
 
-    fun interceptor(interceptor: NavigationInstructionInterceptor) {
+    public fun interceptor(interceptor: NavigationInstructionInterceptor) {
         interceptors.add(interceptor)
     }
 
-    fun composeEnvironment(environment: @Composable (@Composable () -> Unit) -> Unit) {
+    public fun composeEnvironment(environment: @Composable (@Composable () -> Unit) -> Unit) {
         composeEnvironment = { content -> environment(content) }
     }
 
-    fun component(builder: NavigationComponentBuilder) {
+    public fun component(builder: NavigationComponentBuilder) {
         bindings.addAll(builder.bindings)
         overrides.addAll(builder.overrides)
         plugins.addAll(builder.plugins)
         interceptors.addAll(builder.interceptors)
 
-        if(builder.composeEnvironment != null) {
+        if (builder.composeEnvironment != null) {
             composeEnvironment = builder.composeEnvironment
         }
     }
@@ -117,12 +107,12 @@ class NavigationComponentBuilder {
  * Create a NavigationController from the NavigationControllerDefinition/DSL, and immediately attach it
  * to the NavigationApplication from which this function was called.
  */
-fun NavigationApplication.navigationController(
+public fun NavigationApplication.navigationController(
     strictMode: Boolean = false,
     block: NavigationComponentBuilder.() -> Unit = {}
 ): NavigationController {
-    if(this !is Application)
-            throw IllegalArgumentException("A NavigationApplication must extend android.app.Application")
+    if (this !is Application)
+        throw IllegalArgumentException("A NavigationApplication must extend android.app.Application")
 
     return NavigationComponentBuilder()
         .apply { generatedComponent?.execute(this) }
@@ -145,7 +135,7 @@ private val NavigationApplication.generatedComponent get(): NavigationComponentB
  *
  * This method is primarily used for composing several builder definitions together in a final NavigationControllerBuilder.
  */
-fun createNavigationComponent(block: NavigationComponentBuilder.() -> Unit): NavigationComponentBuilder {
+public fun createNavigationComponent(block: NavigationComponentBuilder.() -> Unit): NavigationComponentBuilder {
     return NavigationComponentBuilder()
         .apply(block)
 }

@@ -35,7 +35,7 @@ internal data class OpenComposableInHiltFragment(
     override val isRoot: Boolean
 ) : AbstractOpenComposableInFragmentKey()
 
-abstract class AbstractFragmentHostForComposable : Fragment() {
+public abstract class AbstractFragmentHostForComposable : Fragment() {
     private val navigationHandle by navigationHandle<AbstractOpenComposableInFragmentKey>()
 
     override fun onCreateView(
@@ -60,7 +60,7 @@ abstract class AbstractFragmentHostForComposable : Fragment() {
     }
 }
 
-class FragmentHostForComposable : AbstractFragmentHostForComposable()
+internal class FragmentHostForComposable : AbstractFragmentHostForComposable()
 
 @AndroidEntryPoint
-class HiltFragmentHostForComposable : AbstractFragmentHostForComposable()
+internal class HiltFragmentHostForComposable : AbstractFragmentHostForComposable()

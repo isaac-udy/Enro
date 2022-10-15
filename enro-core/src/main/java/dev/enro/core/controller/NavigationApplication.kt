@@ -1,5 +1,5 @@
 package dev.enro.core.controller
 
-interface NavigationApplication {
-    val navigationController: NavigationController
+public interface NavigationApplication {
+    public val navigationController: NavigationController
 }

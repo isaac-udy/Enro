@@ -6,7 +6,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityOptionsCompat
 import dev.enro.core.*
 
-object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, NavigationKey>(
+public object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, NavigationKey>(
     fromType = Any::class,
     opensType = ComponentActivity::class,
     keyType = NavigationKey::class
@@ -39,7 +39,7 @@ object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, Navi
         context.activity.overridePendingTransition(animations.enter, animations.exit)
     }
 
-    fun createIntent(args: ExecutorArgs<out Any, out ComponentActivity, out NavigationKey>) =
+    public fun createIntent(args: ExecutorArgs<out Any, out ComponentActivity, out NavigationKey>): Intent =
         Intent(args.fromContext.activity, args.binding.destinationType.java)
             .addOpenInstruction(args.instruction)
 }

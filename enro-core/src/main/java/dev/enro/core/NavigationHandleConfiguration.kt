@@ -3,8 +3,8 @@ package dev.enro.core
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
 import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
 
@@ -19,7 +19,7 @@ internal class ChildContainer(
 }
 
 // TODO Move this to being a "Builder" and add data class for configuration?
-class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal constructor(
+public class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal constructor(
     private val keyType: KClass<T>
 ) {
     internal var childContainers: List<ChildContainer> = listOf()
@@ -32,15 +32,15 @@ class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal co
         private set
 
     @Deprecated("Please use the `by navigationContainer` extensions in FragmentActivity and Fragment to create containers")
-    fun container(@IdRes containerId: Int, accept: (NavigationKey) -> Boolean = { true }) {
+    public fun container(@IdRes containerId: Int, accept: (NavigationKey) -> Boolean = { true }) {
         childContainers = childContainers + ChildContainer(containerId, accept)
     }
 
-    fun defaultKey(navigationKey: T) {
+    public fun defaultKey(navigationKey: T) {
         defaultKey = navigationKey
     }
 
-    fun onCloseRequested(block: TypedNavigationHandle<T>.() -> Unit) {
+    public fun onCloseRequested(block: TypedNavigationHandle<T>.() -> Unit) {
         onCloseRequested = block
     }
 
@@ -71,17 +71,17 @@ class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal co
     }
 }
 
-class LazyNavigationHandleConfiguration<T : NavigationKey>(
+public class LazyNavigationHandleConfiguration<T : NavigationKey>(
     private val keyType: KClass<T>
 ) {
 
     private var onCloseRequested: (TypedNavigationHandle<T>.() -> Unit)? = null
 
-    fun onCloseRequested(block: TypedNavigationHandle<T>.() -> Unit) {
+    public fun onCloseRequested(block: TypedNavigationHandle<T>.() -> Unit) {
         onCloseRequested = block
     }
 
-    fun configure(navigationHandle: NavigationHandle) {
+    public fun configure(navigationHandle: NavigationHandle) {
         val handle = if (navigationHandle is TypedNavigationHandleImpl<*>) {
             navigationHandle.navigationHandle
         } else navigationHandle
@@ -89,7 +89,8 @@ class LazyNavigationHandleConfiguration<T : NavigationKey>(
         val onCloseRequested = onCloseRequested ?: return
 
         if (handle is NavigationHandleViewModel) {
-            handle.internalOnCloseRequested = { onCloseRequested(navigationHandle.asTyped(keyType)) }
+            handle.internalOnCloseRequested =
+                { onCloseRequested(navigationHandle.asTyped(keyType)) }
         } else if (handle.controller.isInTest) {
             val field = handle::class.java.declaredFields
                 .firstOrNull { it.name.startsWith("internalOnCloseRequested") }

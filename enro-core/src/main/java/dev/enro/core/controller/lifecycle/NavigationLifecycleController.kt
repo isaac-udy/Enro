@@ -4,8 +4,8 @@ import android.app.Application
 import android.os.Bundle
 import androidx.lifecycle.*
 import dev.enro.core.*
-import dev.enro.core.controller.container.ExecutorContainer
-import dev.enro.core.controller.container.PluginContainer
+import dev.enro.core.controller.repository.ExecutorRepository
+import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.internal.NoNavigationKey
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
@@ -17,8 +17,8 @@ import java.util.*
 internal const val CONTEXT_ID_ARG = "dev.enro.core.ContextController.CONTEXT_ID"
 
 internal class NavigationLifecycleController(
-    private val executorContainer: ExecutorContainer,
-    private val pluginContainer: PluginContainer
+    private val executorRepository: ExecutorRepository,
+    private val pluginRepository: PluginRepository
 ) {
     private val callbacks = NavigationContextLifecycleCallbacks(this)
 
@@ -71,8 +71,8 @@ internal class NavigationLifecycleController(
         handle.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (!handle.hasKey) return
-                if (event == Lifecycle.Event.ON_CREATE) pluginContainer.onOpened(handle)
-                if (event == Lifecycle.Event.ON_DESTROY) pluginContainer.onClosed(handle)
+                if (event == Lifecycle.Event.ON_CREATE) pluginRepository.onOpened(handle)
+                if (event == Lifecycle.Event.ON_DESTROY) pluginRepository.onClosed(handle)
 
                 handle.navigationContext?.let {
                     updateActiveNavigationContext(it)
@@ -131,7 +131,7 @@ internal class NavigationLifecycleController(
                     field = WeakReference(null)
                     return
                 }
-                pluginContainer.onActive(active)
+                pluginRepository.onActive(active)
             }
         }
 }

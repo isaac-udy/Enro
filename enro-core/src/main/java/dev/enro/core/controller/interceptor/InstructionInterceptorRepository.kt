@@ -2,7 +2,7 @@ package dev.enro.core.controller.interceptor
 
 import dev.enro.core.*
 
-class InstructionInterceptorContainer {
+internal class InstructionInterceptorRepository {
 
     private val interceptors: MutableList<NavigationInstructionInterceptor> = mutableListOf()
 

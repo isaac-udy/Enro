@@ -16,8 +16,8 @@ import dev.enro.core.fragment.FragmentNavigationBinding
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.extensions.animate
 
-class FragmentNavigationContainer internal constructor(
-    @IdRes val containerId: Int,
+public class FragmentNavigationContainer internal constructor(
+    @IdRes public val containerId: Int,
     parentContext: NavigationContext<*>,
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
@@ -162,7 +162,7 @@ private data class FragmentAndInstruction(
     val instruction: AnyOpenInstruction
 )
 
-val FragmentNavigationContainer.containerView: View?
+public val FragmentNavigationContainer.containerView: View?
     get() {
         return when (parentContext.contextReference) {
             is Activity -> parentContext.contextReference.findViewById(containerId)
@@ -171,7 +171,7 @@ val FragmentNavigationContainer.containerView: View?
         }
     }
 
-fun FragmentNavigationContainer.setVisibilityAnimated(
+public fun FragmentNavigationContainer.setVisibilityAnimated(
     isVisible: Boolean,
     animations: NavigationAnimation = DefaultAnimations.present
 ) {

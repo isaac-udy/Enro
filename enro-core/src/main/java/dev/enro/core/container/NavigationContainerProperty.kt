@@ -6,7 +6,7 @@ import androidx.lifecycle.LifecycleOwner
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-class NavigationContainerProperty<T: NavigationContainer> @PublishedApi internal constructor(
+public class NavigationContainerProperty<T : NavigationContainer> @PublishedApi internal constructor(
     private val lifecycleOwner: LifecycleOwner,
     private val navigationContainerProducer: () -> T
 ) : ReadOnlyProperty<Any, T> {

@@ -9,7 +9,7 @@ import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.container.*
 import dev.enro.core.fragment.FragmentNavigationBinding
 
-class FragmentPresentationContainer internal constructor(
+public class FragmentPresentationContainer internal constructor(
     parentContext: NavigationContext<*>,
 ) : NavigationContainer(
     id = "FragmentPresentationContainer",

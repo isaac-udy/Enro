@@ -3,7 +3,7 @@ package dev.enro.core.plugins
 import android.util.Log
 import dev.enro.core.NavigationHandle
 
-class EnroLogger : EnroPlugin() {
+public class EnroLogger : EnroPlugin() {
     override fun onOpened(navigationHandle: NavigationHandle) {
         Log.d("Enro", "Opened: ${navigationHandle.key}")
     }

@@ -1,10 +1,10 @@
-package dev.enro.core.controller.reflection
+package dev.enro.core.controller.repository
 
 import android.app.Activity
 import androidx.fragment.app.Fragment
 import java.util.concurrent.ConcurrentHashMap
 
-object ReflectionCache {
+internal class ClassHierarchyRepository {
     private val classHierarchy = ConcurrentHashMap<Class<*>, List<Class<*>>>()
 
     init {
@@ -12,11 +12,12 @@ object ReflectionCache {
         classHierarchy[Activity::class.java] = listOf(Activity::class.java, Any::class.java)
     }
 
-    fun getClassHierarchy(cls: Class<*>): List<Class<*>> {
+    private fun getClassHierarchy(cls: Class<*>): List<Class<*>> {
         val existing = classHierarchy[cls]
-        if(existing != null) return existing
+        if (existing != null) return existing
         val thisHierarchy = listOf(cls)
-        val childHierarchy = if (cls.superclass != null) getClassHierarchy(cls.superclass) else emptyList()
+        val childHierarchy =
+            if (cls.superclass != null) getClassHierarchy(cls.superclass) else emptyList()
         val next = thisHierarchy + childHierarchy
         classHierarchy[cls] = next
         return next

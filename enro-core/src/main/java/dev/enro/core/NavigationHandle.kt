@@ -8,16 +8,16 @@ import androidx.lifecycle.lifecycleScope
 import dev.enro.core.controller.NavigationController
 import kotlin.reflect.KClass
 
-interface NavigationHandle : LifecycleOwner {
-    val id: String
-    val controller: NavigationController
-    val additionalData: Bundle
-    val key: NavigationKey
-    val instruction: NavigationInstruction.Open<*>
-    fun executeInstruction(navigationInstruction: NavigationInstruction)
+public interface NavigationHandle : LifecycleOwner {
+    public val id: String
+    public val controller: NavigationController
+    public val additionalData: Bundle
+    public val key: NavigationKey
+    public val instruction: NavigationInstruction.Open<*>
+    public fun executeInstruction(navigationInstruction: NavigationInstruction)
 }
 
-interface TypedNavigationHandle<T: NavigationKey> : NavigationHandle {
+public interface TypedNavigationHandle<T : NavigationKey> : NavigationHandle {
     override val key: T
 }
 
@@ -40,56 +40,70 @@ internal class TypedNavigationHandleImpl<T : NavigationKey>(
     override fun executeInstruction(navigationInstruction: NavigationInstruction) = navigationHandle.executeInstruction(navigationInstruction)
 }
 
-fun <T: NavigationKey> NavigationHandle.asTyped(type: KClass<T>): TypedNavigationHandle<T> {
+public fun <T : NavigationKey> NavigationHandle.asTyped(type: KClass<T>): TypedNavigationHandle<T> {
     val keyType = key::class
     val isValidType = type.java.isAssignableFrom(keyType.java)
-    if(!isValidType) {
+    if (!isValidType) {
         throw EnroException.IncorrectlyTypedNavigationHandle("Failed to cast NavigationHandle with key of type ${keyType.java.simpleName} to TypedNavigationHandle<${type.simpleName}>")
     }
 
     @Suppress("UNCHECKED_CAST")
-    if(this is TypedNavigationHandleImpl<*>) return this as TypedNavigationHandle<T>
+    if (this is TypedNavigationHandleImpl<*>) return this as TypedNavigationHandle<T>
     return TypedNavigationHandleImpl(this, type.java)
 }
 
-inline fun <reified T: NavigationKey> NavigationHandle.asTyped(): TypedNavigationHandle<T> {
-    if(key !is T) {
+public inline fun <reified T : NavigationKey> NavigationHandle.asTyped(): TypedNavigationHandle<T> {
+    if (key !is T) {
         throw EnroException.IncorrectlyTypedNavigationHandle("Failed to cast NavigationHandle with key of type ${key::class.java.simpleName} to TypedNavigationHandle<${T::class.java.simpleName}>")
     }
     return TypedNavigationHandleImpl(this, T::class.java)
 }
 
-fun NavigationHandle.push(key: NavigationKey.SupportsPush, vararg childKeys: NavigationKey) =
+public fun NavigationHandle.push(key: NavigationKey.SupportsPush, vararg childKeys: NavigationKey) {
     executeInstruction(NavigationInstruction.Push(key, childKeys.toList()))
+}
 
-fun NavigationHandle.present(key: NavigationKey.SupportsPresent, vararg childKeys: NavigationKey) =
+public fun NavigationHandle.present(
+    key: NavigationKey.SupportsPresent,
+    vararg childKeys: NavigationKey
+) {
     executeInstruction(NavigationInstruction.Present(key, childKeys.toList()))
+}
 
-fun NavigationHandle.replaceRoot(key: NavigationKey.SupportsPresent, vararg childKeys: NavigationKey) =
+public fun NavigationHandle.replaceRoot(
+    key: NavigationKey.SupportsPresent,
+    vararg childKeys: NavigationKey
+) {
     executeInstruction(NavigationInstruction.ReplaceRoot(key, childKeys.toList()))
+}
 
 @Deprecated("You should use push or present")
-fun NavigationHandle.forward(key: NavigationKey, vararg childKeys: NavigationKey) =
+public fun NavigationHandle.forward(key: NavigationKey, vararg childKeys: NavigationKey) {
     executeInstruction(NavigationInstruction.Forward(key, childKeys.toList()))
+}
 
 @Deprecated("You should use a close instruction followed by a push or present")
-fun NavigationHandle.replace(key: NavigationKey, vararg childKeys: NavigationKey) =
+public fun NavigationHandle.replace(key: NavigationKey, vararg childKeys: NavigationKey) {
     executeInstruction(NavigationInstruction.Replace(key, childKeys.toList()))
+}
 
 @Deprecated("You should only use replaceRoot with a NavigationKey.SupportsPresent")
-fun NavigationHandle.replaceRoot(key: NavigationKey, vararg childKeys: NavigationKey) =
+public fun NavigationHandle.replaceRoot(key: NavigationKey, vararg childKeys: NavigationKey) {
     executeInstruction(NavigationInstruction.ReplaceRoot(key, childKeys.toList()))
+}
 
-fun NavigationHandle.close() =
+public fun NavigationHandle.close() {
     executeInstruction(NavigationInstruction.Close)
+}
 
-fun NavigationHandle.requestClose() =
+public fun NavigationHandle.requestClose() {
     executeInstruction(NavigationInstruction.RequestClose)
+}
 
-val NavigationHandle.isPushed: Boolean
+public val NavigationHandle.isPushed: Boolean
     get() = instruction.navigationDirection == NavigationDirection.Push
 
-val NavigationHandle.isPresented: Boolean
+public val NavigationHandle.isPresented: Boolean
     get() = instruction.navigationDirection == NavigationDirection.Present || instruction.navigationDirection == NavigationDirection.ReplaceRoot
 
 internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {

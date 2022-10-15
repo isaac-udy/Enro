@@ -12,14 +12,15 @@ import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.container.ComposableNavigationContainer
 
 @Deprecated("Use 'configureWindow' and set the soft input mode on the window directly")
-enum class WindowInputMode(internal val mode: Int) {
+public enum class WindowInputMode(internal val mode: Int) {
     NOTHING(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING),
     PAN(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN),
+
     @Deprecated("See WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE")
     RESIZE(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE),
 }
 
-open class DialogConfiguration {
+public open class DialogConfiguration {
     internal var isDismissed = mutableStateOf(false)
 
     internal var animations: NavigationAnimation = NavigationAnimation.Resource(
@@ -30,19 +31,19 @@ open class DialogConfiguration {
     internal var softInputMode: WindowInputMode? = null
     internal var configureWindow = mutableStateOf<(window: Window) -> Unit>({})
 
-    class Builder internal constructor(
+    public class Builder internal constructor(
         private val dialogConfiguration: DialogConfiguration
     ) {
-        fun setAnimations(animations: NavigationAnimation) {
+        public fun setAnimations(animations: NavigationAnimation) {
             dialogConfiguration.animations = animations
         }
 
         @Deprecated("Use 'configureWindow' and set the soft input mode on the window directly")
-        fun setWindowInputMode(mode: WindowInputMode) {
+        public fun setWindowInputMode(mode: WindowInputMode) {
             dialogConfiguration.softInputMode = mode
         }
 
-        fun configureWindow(block: (window: Window) -> Unit) {
+        public fun configureWindow(block: (window: Window) -> Unit) {
             dialogConfiguration.configureWindow.value = block
         }
     }
@@ -67,16 +68,16 @@ internal fun DialogConfiguration.ConfigureWindow() {
     }
 }
 
-interface DialogDestination {
-    val dialogConfiguration: DialogConfiguration
+public interface DialogDestination {
+    public val dialogConfiguration: DialogConfiguration
 }
 
-val DialogDestination.isDismissed: Boolean
+public val DialogDestination.isDismissed: Boolean
     @Composable get() = dialogConfiguration.isDismissed.value
 
 @SuppressLint("ComposableNaming")
 @Composable
-fun DialogDestination.configureDialog(block: DialogConfiguration.Builder.() -> Unit) {
+public fun DialogDestination.configureDialog(block: DialogConfiguration.Builder.() -> Unit) {
     remember {
         DialogConfiguration.Builder(dialogConfiguration)
             .apply(block)

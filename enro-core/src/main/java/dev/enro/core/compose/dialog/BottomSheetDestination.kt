@@ -17,7 +17,7 @@ import dev.enro.core.getNavigationHandle
 import dev.enro.core.requestClose
 
 @ExperimentalMaterialApi
-class BottomSheetConfiguration : DialogConfiguration() {
+public class BottomSheetConfiguration : DialogConfiguration() {
     internal var skipHalfExpanded: Boolean = false
     internal lateinit var bottomSheetState: ModalBottomSheetState
 
@@ -25,36 +25,36 @@ class BottomSheetConfiguration : DialogConfiguration() {
         animations = DefaultAnimations.none
     }
 
-    class Builder internal constructor(
+    public class Builder internal constructor(
         private val bottomSheetConfiguration: BottomSheetConfiguration
     ) {
-        fun setSkipHalfExpanded(skipHalfExpanded: Boolean) {
+        public fun setSkipHalfExpanded(skipHalfExpanded: Boolean) {
             bottomSheetConfiguration.skipHalfExpanded = skipHalfExpanded
         }
 
         @Deprecated("Use 'configureWindow' and set the soft input mode on the window directly")
-        fun setWindowInputMode(mode: WindowInputMode) {
+        public fun setWindowInputMode(mode: WindowInputMode) {
             bottomSheetConfiguration.softInputMode = mode
         }
 
-        fun configureWindow(block: (window: Window) -> Unit) {
+        public fun configureWindow(block: (window: Window) -> Unit) {
             bottomSheetConfiguration.configureWindow.value = block
         }
     }
 }
 
 @ExperimentalMaterialApi
-interface BottomSheetDestination {
-    val bottomSheetConfiguration: BottomSheetConfiguration
+public interface BottomSheetDestination {
+    public val bottomSheetConfiguration: BottomSheetConfiguration
 }
 
 @ExperimentalMaterialApi
-val BottomSheetDestination.bottomSheetState get() = bottomSheetConfiguration.bottomSheetState
+public val BottomSheetDestination.bottomSheetState: ModalBottomSheetState get() = bottomSheetConfiguration.bottomSheetState
 
 @ExperimentalMaterialApi
 @SuppressLint("ComposableNaming")
 @Composable
-fun BottomSheetDestination.configureBottomSheet(block: BottomSheetConfiguration.Builder.() -> Unit) {
+public fun BottomSheetDestination.configureBottomSheet(block: BottomSheetConfiguration.Builder.() -> Unit) {
     remember {
         BottomSheetConfiguration.Builder(bottomSheetConfiguration)
             .apply(block)

@@ -16,11 +16,11 @@ import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.util.*
 
 @Composable
-fun rememberNavigationContainer(
+public fun rememberNavigationContainer(
     root: NavigationKey.SupportsPush,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
-) : ComposableNavigationContainer {
+): ComposableNavigationContainer {
     return rememberNavigationContainer(
         initialState = listOf(root),
         emptyBehavior = emptyBehavior,
@@ -29,11 +29,11 @@ fun rememberNavigationContainer(
 }
 
 @Composable
-fun rememberNavigationContainer(
+public fun rememberNavigationContainer(
     initialState: List<NavigationKey.SupportsPush> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
-) : ComposableNavigationContainer {
+): ComposableNavigationContainer {
     return rememberEnroContainerController(
         initialBackstack = initialState.mapIndexed { i, it ->
             val id = rememberSaveable(it) { UUID.randomUUID().toString() }
@@ -48,7 +48,7 @@ fun rememberNavigationContainer(
 
 @Composable
 @Deprecated("Use the rememberEnroContainerController that takes a List<NavigationKey> instead of a List<NavigationInstruction.Open>")
-fun rememberEnroContainerController(
+public fun rememberEnroContainerController(
     initialBackstack: List<AnyOpenInstruction> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
@@ -78,7 +78,7 @@ fun rememberEnroContainerController(
 }
 
 @Composable
-fun EnroContainer(
+public fun EnroContainer(
     modifier: Modifier = Modifier,
     container: ComposableNavigationContainer = rememberNavigationContainer(),
 ) {

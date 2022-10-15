@@ -16,7 +16,7 @@ import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 
-class ComposableNavigationContainer internal constructor(
+public class ComposableNavigationContainer internal constructor(
     id: String,
     parentContext: NavigationContext<*>,
     accept: (NavigationKey) -> Boolean,

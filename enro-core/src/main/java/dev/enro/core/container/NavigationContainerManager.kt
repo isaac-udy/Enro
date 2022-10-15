@@ -3,23 +3,22 @@ package dev.enro.core.container
 import android.os.Bundle
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationDirection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class NavigationContainerManager {
+public class NavigationContainerManager {
     private var restoredActiveContainer: String? = null
 
     private val _containers: MutableSet<NavigationContainer> = mutableSetOf()
-    val containers: Set<NavigationContainer> = _containers
+    public val containers: Set<NavigationContainer> = _containers
 
     private val activeContainerState: MutableState<NavigationContainer?> = mutableStateOf(null)
-    val activeContainer: NavigationContainer? get() = activeContainerState.value
+    public val activeContainer: NavigationContainer? get() = activeContainerState.value
 
     private val mutableActiveContainerFlow = MutableStateFlow<NavigationContainer?>(null)
-    val activeContainerFlow: StateFlow<NavigationContainer?> = mutableActiveContainerFlow
+    public val activeContainerFlow: StateFlow<NavigationContainer?> = mutableActiveContainerFlow
     
     internal fun setActiveContainerById(id: String?) {
         setActiveContainer(containers.firstOrNull { it.id == id })
@@ -60,8 +59,8 @@ class NavigationContainerManager {
         }
     }
 
-    fun setActiveContainer(containerController: NavigationContainer?) {
-        if(containerController == null) {
+    public fun setActiveContainer(containerController: NavigationContainer?) {
+        if (containerController == null) {
             activeContainerState.value = null
             mutableActiveContainerFlow.value = null
             return
@@ -72,7 +71,8 @@ class NavigationContainerManager {
         mutableActiveContainerFlow.value = selectedContainer
     }
 
-    companion object {
-        const val ACTIVE_CONTAINER_KEY = "dev.enro.core.container.NavigationContainerManager.ACTIVE_CONTAINER_KEY"
+    public companion object {
+        private const val ACTIVE_CONTAINER_KEY: String =
+            "dev.enro.core.container.NavigationContainerManager.ACTIVE_CONTAINER_KEY"
     }
 }

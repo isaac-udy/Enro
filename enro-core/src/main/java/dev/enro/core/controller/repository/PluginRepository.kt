@@ -1,11 +1,10 @@
-package dev.enro.core.controller.container
+package dev.enro.core.controller.repository
 
 import dev.enro.core.NavigationHandle
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.plugins.EnroPlugin
-import dev.enro.core.result.EnroResult
 
-internal class PluginContainer {
+internal class PluginRepository {
     private val plugins: MutableList<EnroPlugin> = mutableListOf()
     private var attachedController: NavigationController? = null
 

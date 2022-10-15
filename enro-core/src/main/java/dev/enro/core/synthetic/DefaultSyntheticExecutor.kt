@@ -2,11 +2,12 @@ package dev.enro.core.synthetic
 
 import dev.enro.core.*
 
-object DefaultSyntheticExecutor : NavigationExecutor<Any, SyntheticDestination<*>, NavigationKey>(
-    fromType = Any::class,
-    opensType = SyntheticDestination::class,
-    keyType = NavigationKey::class
-) {
+public object DefaultSyntheticExecutor :
+    NavigationExecutor<Any, SyntheticDestination<*>, NavigationKey>(
+        fromType = Any::class,
+        opensType = SyntheticDestination::class,
+        keyType = NavigationKey::class
+    ) {
     override fun open(args: ExecutorArgs<out Any, out SyntheticDestination<*>, out NavigationKey>) {
         args.binding as SyntheticNavigationBinding<NavigationKey>
 

@@ -5,14 +5,14 @@ import dev.enro.core.NavigationKey
 import kotlin.reflect.KClass
 
 
-class SyntheticNavigationBinding<KeyType : NavigationKey> @PublishedApi internal constructor(
+public class SyntheticNavigationBinding<KeyType : NavigationKey> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
-    val destination: () -> SyntheticDestination<KeyType>
+    internal val destination: () -> SyntheticDestination<KeyType>
 ) : NavigationBinding<KeyType, SyntheticDestination<*>> {
     override val destinationType: KClass<SyntheticDestination<*>> = SyntheticDestination::class
 }
 
-fun <T : NavigationKey> createSyntheticNavigationBinding(
+public fun <T : NavigationKey> createSyntheticNavigationBinding(
     navigationKeyType: Class<T>,
     destination: () -> SyntheticDestination<T>
 ): NavigationBinding<T, SyntheticDestination<*>> =
@@ -21,7 +21,7 @@ fun <T : NavigationKey> createSyntheticNavigationBinding(
         destination = destination
     )
 
-inline fun <reified KeyType : NavigationKey> createSyntheticNavigationBinding(
+public inline fun <reified KeyType : NavigationKey> createSyntheticNavigationBinding(
     noinline destination: () -> SyntheticDestination<KeyType>
 ): NavigationBinding<KeyType, SyntheticDestination<*>> =
     SyntheticNavigationBinding(
@@ -29,7 +29,7 @@ inline fun <reified KeyType : NavigationKey> createSyntheticNavigationBinding(
         destination = destination
     )
 
-inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> createSyntheticNavigationBinding(): NavigationBinding<KeyType, SyntheticDestination<*>> =
+public inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> createSyntheticNavigationBinding(): NavigationBinding<KeyType, SyntheticDestination<*>> =
     SyntheticNavigationBinding(
         keyType = KeyType::class,
         destination = { DestinationType::class.java.newInstance() }

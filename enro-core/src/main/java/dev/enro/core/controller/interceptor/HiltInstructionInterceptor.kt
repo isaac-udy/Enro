@@ -5,7 +5,7 @@ import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
 import dev.enro.core.hosts.*
 
-object HiltInstructionInterceptor : NavigationInstructionInterceptor {
+internal object HiltInstructionInterceptor : NavigationInstructionInterceptor {
 
     private val generatedComponentManagerClass = kotlin.runCatching {
         GeneratedComponentManager::class.java

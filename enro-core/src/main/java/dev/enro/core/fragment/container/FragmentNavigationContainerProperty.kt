@@ -3,11 +3,16 @@ package dev.enro.core.fragment.container
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import dev.enro.core.*
-import dev.enro.core.container.*
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationContainerProperty
+import dev.enro.core.container.createRootBackStack
+import dev.enro.core.navigationContext
 
 
-fun FragmentActivity.navigationContainer(
+public fun FragmentActivity.navigationContainer(
     @IdRes containerId: Int,
     root: () -> NavigationKey.SupportsPush? = { null },
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
@@ -20,7 +25,7 @@ fun FragmentActivity.navigationContainer(
 )
 
 @JvmName("navigationContainerFromInstruction")
-fun FragmentActivity.navigationContainer(
+public fun FragmentActivity.navigationContainer(
     @IdRes containerId: Int,
     rootInstruction: () -> NavigationInstruction.Open<NavigationDirection.Push>?,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
@@ -38,7 +43,7 @@ fun FragmentActivity.navigationContainer(
     }
 )
 
-fun Fragment.navigationContainer(
+public fun Fragment.navigationContainer(
     @IdRes containerId: Int,
     root: () -> NavigationKey.SupportsPush? = { null },
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
@@ -51,7 +56,7 @@ fun Fragment.navigationContainer(
 )
 
 @JvmName("navigationContainerFromInstruction")
-fun Fragment.navigationContainer(
+public fun Fragment.navigationContainer(
     @IdRes containerId: Int,
     rootInstruction: () -> NavigationInstruction.Open<NavigationDirection.Push>?,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,

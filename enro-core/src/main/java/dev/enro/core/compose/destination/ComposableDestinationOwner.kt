@@ -23,11 +23,11 @@ import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class ComposableDestinationOwner(
+internal class ComposableDestinationOwner(
     parentContainer: NavigationContainer,
     val instruction: AnyOpenInstruction,
     val destination: ComposableDestination
-): ViewModel(),
+) : ViewModel(),
     LifecycleOwner,
     ViewModelStoreOwner,
     SavedStateRegistryOwner,
@@ -147,7 +147,7 @@ class ComposableDestinationOwner(
             LocalNavigationHandle provides remember { getNavigationHandleViewModel() }
         ) {
             saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
-                navigationController.composeEnvironmentContainer.Render {
+                navigationController.composeEnvironmentRepository.Render {
                     content()
                 }
             }

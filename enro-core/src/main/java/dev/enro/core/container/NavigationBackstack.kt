@@ -1,8 +1,9 @@
 package dev.enro.core.container
 
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationInstruction
 
-fun createEmptyBackStack() = NavigationBackstack(
+public fun createEmptyBackStack(): NavigationBackstack = NavigationBackstack(
     lastInstruction = NavigationInstruction.Close,
     backstack = emptyList(),
     exiting = null,
@@ -10,31 +11,34 @@ fun createEmptyBackStack() = NavigationBackstack(
     isDirectUpdate = true
 )
 
-fun createRootBackStack(rootInstruction: AnyOpenInstruction?) = NavigationBackstack(
-    lastInstruction = NavigationInstruction.Close,
-    backstack = listOfNotNull(rootInstruction),
-    exiting = null,
-    exitingIndex = -1,
-    isDirectUpdate = true
-)
+public fun createRootBackStack(rootInstruction: AnyOpenInstruction?): NavigationBackstack =
+    NavigationBackstack(
+        lastInstruction = NavigationInstruction.Close,
+        backstack = listOfNotNull(rootInstruction),
+        exiting = null,
+        exitingIndex = -1,
+        isDirectUpdate = true
+    )
 
-fun createRootBackStack(backstack: List<AnyOpenInstruction>) = NavigationBackstack(
-    lastInstruction = backstack.lastOrNull() ?: NavigationInstruction.Close,
-    backstack = backstack,
-    exiting = null,
-    exitingIndex = -1,
-    isDirectUpdate = true
-)
+public fun createRootBackStack(backstack: List<AnyOpenInstruction>): NavigationBackstack =
+    NavigationBackstack(
+        lastInstruction = backstack.lastOrNull() ?: NavigationInstruction.Close,
+        backstack = backstack,
+        exiting = null,
+        exitingIndex = -1,
+        isDirectUpdate = true
+    )
 
-fun createRestoredBackStack(backstack: List<AnyOpenInstruction>) = NavigationBackstack(
-    backstack = backstack,
-    exiting = null,
-    exitingIndex = -1,
-    lastInstruction = backstack.lastOrNull() ?: NavigationInstruction.Close,
-    isDirectUpdate = true
-)
+public fun createRestoredBackStack(backstack: List<AnyOpenInstruction>): NavigationBackstack =
+    NavigationBackstack(
+        backstack = backstack,
+        exiting = null,
+        exitingIndex = -1,
+        lastInstruction = backstack.lastOrNull() ?: NavigationInstruction.Close,
+        isDirectUpdate = true
+    )
 
-data class NavigationBackstack(
+public data class NavigationBackstack(
     val lastInstruction: NavigationInstruction,
     val backstack: List<AnyOpenInstruction>,
     val exiting: AnyOpenInstruction?,

@@ -35,7 +35,7 @@ internal class PreviewNavigationHandle(
 }
 
 @Composable
-fun <T : NavigationKey> EnroPreview(
+public fun <T : NavigationKey> EnroPreview(
     navigationKey: T,
     content: @Composable () -> Unit
 ) {

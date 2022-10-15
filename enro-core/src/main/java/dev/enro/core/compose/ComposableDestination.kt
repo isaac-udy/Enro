@@ -7,7 +7,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.compose.destination.ComposableDestinationOwner
 
-abstract class ComposableDestination: LifecycleOwner,
+public abstract class ComposableDestination : LifecycleOwner,
     ViewModelStoreOwner,
     SavedStateRegistryOwner,
     HasDefaultViewModelProviderFactory {
@@ -33,5 +33,5 @@ abstract class ComposableDestination: LifecycleOwner,
     }
 
     @Composable
-    abstract fun Render()
+    public abstract fun Render()
 }

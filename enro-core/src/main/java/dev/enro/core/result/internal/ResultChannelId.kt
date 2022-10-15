@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class ResultChannelId(
+internal data class ResultChannelId(
     val ownerId: String,
     val resultId: String
 ) : Parcelable

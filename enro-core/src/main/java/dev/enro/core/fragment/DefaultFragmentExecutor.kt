@@ -12,7 +12,7 @@ import dev.enro.core.hosts.OpenInstructionInActivity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey>(
+public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey>(
     fromType = Any::class,
     opensType = Fragment::class,
     keyType = NavigationKey::class
@@ -184,7 +184,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     }
 
     @Deprecated("Please create a fragment and use `fragment.arguments = Bundle().addOpenInstruction(instruction)` yourself")
-    fun createFragment(
+    public fun createFragment(
         fragmentManager: FragmentManager,
         binding: NavigationBinding<*, *>,
         instruction: AnyOpenInstruction

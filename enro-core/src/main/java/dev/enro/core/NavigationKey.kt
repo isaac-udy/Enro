@@ -2,15 +2,15 @@ package dev.enro.core
 
 import android.os.Parcelable
 
-interface NavigationKey : Parcelable {
-    interface WithResult<T> : NavigationKey
+public interface NavigationKey : Parcelable {
+    public interface WithResult<T> : NavigationKey
 
-    interface SupportsPush : NavigationKey {
-        interface WithResult<T> : SupportsPush, NavigationKey.WithResult<T>
+    public interface SupportsPush : NavigationKey {
+        public interface WithResult<T> : SupportsPush, NavigationKey.WithResult<T>
     }
 
-    interface SupportsPresent : NavigationKey {
-        interface WithResult<T> : SupportsPresent, NavigationKey.WithResult<T>
+    public interface SupportsPresent : NavigationKey {
+        public interface WithResult<T> : SupportsPresent, NavigationKey.WithResult<T>
     }
 }
 
@@ -28,4 +28,4 @@ interface NavigationKey : Parcelable {
  * In these cases, you likely want to ignore NavigationHandles that have a NavigationKey that implements
  * InternalEnroNavigationKey.
  */
-interface EnroInternalNavigationKey
+public interface EnroInternalNavigationKey

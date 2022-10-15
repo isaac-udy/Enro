@@ -18,34 +18,34 @@ import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
 
 @Deprecated("Please use NavigationAnimation")
-typealias AnimationPair = NavigationAnimation
+public typealias AnimationPair = NavigationAnimation
 
-sealed class NavigationAnimation {
-    sealed class ForView: NavigationAnimation()
+public sealed class NavigationAnimation {
+    public sealed class ForView : NavigationAnimation()
 
-    class Resource(
-        val enter: Int,
-        val exit: Int
+    public class Resource(
+        public val enter: Int,
+        public val exit: Int
     ) : ForView()
 
-    class Attr(
-        val enter: Int,
-        val exit: Int
+    public class Attr(
+        public val enter: Int,
+        public val exit: Int
     ) : ForView()
 
-    class Theme(
-        val enter: (Resources.Theme) -> Int,
-        val exit: (Resources.Theme) -> Int
+    public class Theme(
+        public val enter: (Resources.Theme) -> Int,
+        public val exit: (Resources.Theme) -> Int
     ) : ForView()
 
-    class Composable private constructor(
-        val forView: ForView,
-        val content: @androidx.compose.runtime.Composable (
+    public class Composable private constructor(
+        public val forView: ForView,
+        public val content: @androidx.compose.runtime.Composable (
             visible: MutableTransitionState<Boolean>,
             content: @androidx.compose.runtime.Composable () -> Unit
         ) -> Unit
-    ): NavigationAnimation() {
-        constructor(
+    ) : NavigationAnimation() {
+        public constructor(
             enter: EnterTransition,
             exit: ExitTransition,
             forView: ForView
@@ -63,7 +63,7 @@ sealed class NavigationAnimation {
             }
         )
 
-        constructor(
+        public constructor(
             forView: ForView
         ) : this(
             forView = forView,
@@ -78,7 +78,7 @@ sealed class NavigationAnimation {
         )
     }
 
-    fun asResource(theme: Resources.Theme): Resource = when (this) {
+    public fun asResource(theme: Resources.Theme): Resource = when (this) {
         is Resource -> this
         is Attr -> Resource(
             theme.getAttributeResourceId(enter),
@@ -91,7 +91,7 @@ sealed class NavigationAnimation {
         is Composable -> forView.asResource(theme)
     }
 
-    fun asComposable() : Composable {
+    public fun asComposable(): Composable {
         return when (this) {
             is ForView -> Composable(forView = this)
             is Composable -> this
@@ -99,13 +99,13 @@ sealed class NavigationAnimation {
     }
 }
 
-object DefaultAnimations {
-    val push = NavigationAnimation.Attr(
+public object DefaultAnimations {
+    public val push: NavigationAnimation.ForView = NavigationAnimation.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,
         exit = android.R.attr.activityOpenExitAnimation
     )
 
-    val present = NavigationAnimation.Theme(
+    public val present: NavigationAnimation.ForView = NavigationAnimation.Theme(
         enter = { theme ->
             theme.getNestedAttributeResourceId(
                 android.R.attr.dialogTheme,
@@ -123,43 +123,46 @@ object DefaultAnimations {
     )
 
     @Deprecated("Use push or present")
-    val forward = NavigationAnimation.Attr(
+    public val forward: NavigationAnimation.ForView = NavigationAnimation.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,
         exit = android.R.attr.activityOpenExitAnimation
     )
 
     @Deprecated("Use push or present")
-    val replace = NavigationAnimation.Attr(
+    public val replace: NavigationAnimation.ForView = NavigationAnimation.Attr(
         enter = android.R.attr.activityOpenEnterAnimation,
         exit = android.R.attr.activityOpenExitAnimation
     )
 
-    val replaceRoot = NavigationAnimation.Attr(
+    public val replaceRoot: NavigationAnimation.ForView = NavigationAnimation.Attr(
         enter = android.R.attr.taskOpenEnterAnimation,
         exit = android.R.attr.taskOpenExitAnimation
     )
 
-    val close = NavigationAnimation.Attr(
+    public val close: NavigationAnimation.ForView = NavigationAnimation.Attr(
         enter = android.R.attr.activityCloseEnterAnimation,
         exit = android.R.attr.activityCloseExitAnimation
     )
 
-    val none = NavigationAnimation.Resource(
+    public val none: NavigationAnimation.ForView = NavigationAnimation.Resource(
         enter = 0,
         exit = R.anim.enro_no_op_exit_animation
     )
 }
 
-fun animationsFor(
+public fun animationsFor(
     context: NavigationContext<*>,
     navigationInstruction: NavigationInstruction
 ): NavigationAnimation {
     val animationScale = runCatching {
-        Settings.Global.getFloat(context.activity.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE)
+        Settings.Global.getFloat(
+            context.activity.contentResolver,
+            Settings.Global.ANIMATOR_DURATION_SCALE
+        )
     }.getOrDefault(1.0f)
 
-    if(animationScale < 0.01f) {
-        return  NavigationAnimation.Resource(0, 0)
+    if (animationScale < 0.01f) {
+        return NavigationAnimation.Resource(0, 0)
     }
 
     if (navigationInstruction is NavigationInstruction.Open<*> && navigationInstruction.children.isNotEmpty()) {

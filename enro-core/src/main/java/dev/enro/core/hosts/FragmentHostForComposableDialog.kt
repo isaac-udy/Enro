@@ -39,7 +39,7 @@ internal data class OpenComposableDialogInHiltFragment(
 ) : AbstractOpenComposableDialogInFragmentKey()
 
 
-abstract class AbstractFragmentHostForComposableDialog : DialogFragment() {
+public abstract class AbstractFragmentHostForComposableDialog : DialogFragment() {
     private val navigationHandle by navigationHandle<AbstractOpenComposableDialogInFragmentKey>()
 
     private lateinit var dialogConfiguration: DialogConfiguration
@@ -113,7 +113,7 @@ abstract class AbstractFragmentHostForComposableDialog : DialogFragment() {
     }
 }
 
-class FragmentHostForComposableDialog : AbstractFragmentHostForComposableDialog()
+internal class FragmentHostForComposableDialog : AbstractFragmentHostForComposableDialog()
 
 @AndroidEntryPoint
-class HiltFragmentHostForComposableDialog : AbstractFragmentHostForComposableDialog()
+internal class HiltFragmentHostForComposableDialog : AbstractFragmentHostForComposableDialog()

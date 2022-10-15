@@ -12,7 +12,7 @@ import java.util.*
 
 
 @Composable
-inline fun <reified T: Any> registerForNavigationResult(
+public inline fun <reified T : Any> registerForNavigationResult(
     // Sometimes, particularly when interoperating between Compose and the legacy View system,
     // it may be required to provide an id explicitly. This should not be required when using
     // registerForNavigationResult from an entirely Compose-based screen.

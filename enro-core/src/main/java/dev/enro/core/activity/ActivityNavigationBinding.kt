@@ -5,12 +5,12 @@ import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
 import kotlin.reflect.KClass
 
-class ActivityNavigationBinding<KeyType : NavigationKey, ActivityType : ComponentActivity> @PublishedApi internal constructor(
+public class ActivityNavigationBinding<KeyType : NavigationKey, ActivityType : ComponentActivity> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
     override val destinationType: KClass<ActivityType>,
 ) : NavigationBinding<KeyType, ActivityType>
 
-fun <KeyType : NavigationKey, ActivityType : ComponentActivity> createActivityNavigationBinding(
+public fun <KeyType : NavigationKey, ActivityType : ComponentActivity> createActivityNavigationBinding(
     keyType: Class<KeyType>,
     activityType: Class<ActivityType>
 ): NavigationBinding<KeyType, ActivityType> = ActivityNavigationBinding(
@@ -18,7 +18,7 @@ fun <KeyType : NavigationKey, ActivityType : ComponentActivity> createActivityNa
     destinationType = activityType.kotlin,
 )
 
-inline fun <reified KeyType : NavigationKey, reified ActivityType : ComponentActivity> createActivityNavigationBinding(): NavigationBinding<KeyType, ActivityType> =
+public inline fun <reified KeyType : NavigationKey, reified ActivityType : ComponentActivity> createActivityNavigationBinding(): NavigationBinding<KeyType, ActivityType> =
     createActivityNavigationBinding(
         keyType = KeyType::class.java,
         activityType = ActivityType::class.java,

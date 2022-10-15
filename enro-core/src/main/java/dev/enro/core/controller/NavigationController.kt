@@ -5,42 +5,43 @@ import android.os.Bundle
 import androidx.annotation.Keep
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.controller.container.ComposeEnvironmentContainer
-import dev.enro.core.controller.container.ExecutorContainer
-import dev.enro.core.controller.container.NavigationBindingRepository
-import dev.enro.core.controller.container.PluginContainer
-import dev.enro.core.controller.interceptor.InstructionInterceptorContainer
+import dev.enro.core.controller.interceptor.InstructionInterceptorRepository
 import dev.enro.core.controller.lifecycle.NavigationLifecycleController
+import dev.enro.core.controller.repository.*
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
 
-class NavigationController internal constructor() {
+public class NavigationController internal constructor() {
     internal var isInTest = false
 
-    var isStrictMode: Boolean = false
-        internal set
+    internal var isStrictMode: Boolean = false
 
-    private val pluginContainer: PluginContainer = PluginContainer()
+    private val pluginRepository: PluginRepository = PluginRepository()
+    private val classHierarchyRepository: ClassHierarchyRepository = ClassHierarchyRepository()
     private val navigationBindingRepository: NavigationBindingRepository =
         NavigationBindingRepository()
-    private val executorContainer: ExecutorContainer = ExecutorContainer()
-    internal val composeEnvironmentContainer: ComposeEnvironmentContainer = ComposeEnvironmentContainer()
-    private val interceptorContainer: InstructionInterceptorContainer = InstructionInterceptorContainer()
-    private val contextController: NavigationLifecycleController = NavigationLifecycleController(executorContainer, pluginContainer)
+    private val executorRepository: ExecutorRepository =
+        ExecutorRepository(classHierarchyRepository)
+    internal val composeEnvironmentRepository: ComposeEnvironmentRepository =
+        ComposeEnvironmentRepository()
+    private val interceptorContainer: InstructionInterceptorRepository =
+        InstructionInterceptorRepository()
+    private val contextController: NavigationLifecycleController =
+        NavigationLifecycleController(executorRepository, pluginRepository)
 
     init {
         addComponent(defaultComponent)
     }
 
-    fun addComponent(component: NavigationComponentBuilder) {
-        pluginContainer.addPlugins(component.plugins)
+    public fun addComponent(component: NavigationComponentBuilder) {
+        pluginRepository.addPlugins(component.plugins)
         navigationBindingRepository.addNavigationBindings(component.bindings)
-        executorContainer.addExecutors(component.overrides)
+        executorRepository.addExecutors(component.overrides)
         interceptorContainer.addInterceptors(component.interceptors)
 
         component.composeEnvironment.let { environment ->
-            if(environment == null) return@let
-            composeEnvironmentContainer.setComposeEnvironment(environment)
+            if (environment == null) return@let
+            composeEnvironmentRepository.setComposeEnvironment(environment)
         }
     }
 
@@ -60,7 +61,7 @@ class NavigationController internal constructor() {
             return
         }
         val executor =
-            executorContainer.executorFor(processedInstruction.internal.openedByType to processedInstruction.internal.openingType)
+            executorRepository.executorFor(processedInstruction.internal.openedByType to processedInstruction.internal.openingType)
 
         val args = ExecutorArgs(
             navigationContext,
@@ -85,47 +86,47 @@ class NavigationController internal constructor() {
             return
         }
         val executor: NavigationExecutor<Any, Any, NavigationKey> =
-            executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openedByType to navigationContext.contextReference::class.java)
+            executorRepository.executorFor(navigationContext.getNavigationHandle().instruction.internal.openedByType to navigationContext.contextReference::class.java)
         executor.preClosed(navigationContext)
         executor.close(navigationContext)
     }
 
-    fun bindingForDestinationType(
+    public fun bindingForDestinationType(
         destinationType: KClass<*>
     ): NavigationBinding<*, *>? {
         return navigationBindingRepository.bindingForDestinationType(destinationType)
     }
 
-    fun bindingForKeyType(
+    public fun bindingForKeyType(
         keyType: KClass<out NavigationKey>
     ): NavigationBinding<*, *>? {
         return navigationBindingRepository.bindingForKeyType(keyType)
     }
 
     internal fun executorForOpen(instruction: AnyOpenInstruction) =
-        executorContainer.executorFor(instruction.internal.openedByType to instruction.internal.openingType)
+        executorRepository.executorFor(instruction.internal.openedByType to instruction.internal.openingType)
 
     internal fun executorForClose(navigationContext: NavigationContext<*>) =
-        executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openedByType to navigationContext.contextReference::class.java)
+        executorRepository.executorFor(navigationContext.getNavigationHandle().instruction.internal.openedByType to navigationContext.contextReference::class.java)
 
-    fun addOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
-        executorContainer.addExecutorOverride(navigationExecutor)
+    public fun addOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
+        executorRepository.addExecutorOverride(navigationExecutor)
     }
 
-    fun removeOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
-        executorContainer.removeExecutorOverride(navigationExecutor)
+    public fun removeOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
+        executorRepository.removeExecutorOverride(navigationExecutor)
     }
 
-    fun install(application: Application) {
+    public fun install(application: Application) {
         navigationControllerBindings[application] = this
         contextController.install(application)
-        pluginContainer.onAttached(this)
+        pluginRepository.onAttached(this)
     }
 
     @Keep
     // This method is called reflectively by the test module to install/uninstall Enro from test applications
     private fun installForJvmTests() {
-        pluginContainer.onAttached(this)
+        pluginRepository.onAttached(this)
     }
 
     @Keep
@@ -152,13 +153,13 @@ class NavigationController internal constructor() {
         )
     }
 
-    companion object {
+    public companion object {
         internal val navigationControllerBindings =
             mutableMapOf<Application, NavigationController>()
     }
 }
 
-val Application.navigationController: NavigationController
+public val Application.navigationController: NavigationController
     get() {
         synchronized(this) {
             if (this is NavigationApplication) return navigationController

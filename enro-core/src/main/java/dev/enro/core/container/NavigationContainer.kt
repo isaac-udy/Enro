@@ -10,13 +10,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.getAndUpdate
 
-abstract class NavigationContainer(
-    val id: String,
-    val parentContext: NavigationContext<*>,
-    val emptyBehavior: EmptyBehavior,
-    val acceptsNavigationKey: (NavigationKey) -> Boolean,
-    val acceptsDirection: (NavigationDirection) -> Boolean,
-    val acceptsBinding: (NavigationBinding<*, *>) -> Boolean
+
+public abstract class NavigationContainer(
+    public val id: String,
+    public val parentContext: NavigationContext<*>,
+    public val emptyBehavior: EmptyBehavior,
+    public val acceptsNavigationKey: (NavigationKey) -> Boolean,
+    public val acceptsDirection: (NavigationDirection) -> Boolean,
+    public val acceptsBinding: (NavigationBinding<*, *>) -> Boolean
 ) {
     private val handler = Handler(Looper.getMainLooper())
     private val reconcileBackstack: Runnable = Runnable {
@@ -32,17 +33,17 @@ abstract class NavigationContainer(
         setBackstack(nextBackstack)
     }
 
-    abstract val activeContext: NavigationContext<*>?
-    abstract val isVisible: Boolean
+    public abstract val activeContext: NavigationContext<*>?
+    public abstract val isVisible: Boolean
     internal abstract val currentAnimations: NavigationAnimation
 
     private val pendingRemovals = mutableSetOf<AnyOpenInstruction>()
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
-    val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
-    val backstack: NavigationBackstack get() = backstackFlow.value
+    public val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
+    public val backstack: NavigationBackstack get() = backstackFlow.value
 
     @MainThread
-    fun setBackstack(backstack: NavigationBackstack) = synchronized(this) {
+    public fun setBackstack(backstack: NavigationBackstack): Unit = synchronized(this) {
         if (Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
@@ -51,7 +52,7 @@ abstract class NavigationContainer(
         handler.removeCallbacks(removeExitingFromBackstack)
 
         requireBackstackIsAccepted(backstack)
-        if(handleEmptyBehaviour(backstack)) return
+        if (handleEmptyBehaviour(backstack)) return
         setActiveContainerFrom(backstack)
 
         val lastBackstack = mutableBackstack.getAndUpdate { backstack }
@@ -77,7 +78,7 @@ abstract class NavigationContainer(
         backstack: NavigationBackstack
     ): Boolean
 
-    fun accept(
+    public fun accept(
         instruction: AnyOpenInstruction
     ): Boolean {
         return acceptsNavigationKey.invoke(instruction.navigationKey)
@@ -163,14 +164,14 @@ abstract class NavigationContainer(
     }
 
 
-    companion object {
+    public companion object {
         private const val BACKSTACK_KEY = "NavigationContainer.BACKSTACK_KEY"
     }
 }
 
-val NavigationContainer.isActive: Boolean
+public val NavigationContainer.isActive: Boolean
     get() = parentContext.containerManager.activeContainer == this
 
-fun NavigationContainer.setActive() {
+public fun NavigationContainer.setActive() {
     parentContext.containerManager.setActiveContainer(this)
 }

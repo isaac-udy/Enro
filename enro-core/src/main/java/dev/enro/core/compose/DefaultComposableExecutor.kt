@@ -11,11 +11,12 @@ import dev.enro.core.container.close
 import dev.enro.core.hosts.OpenComposableInFragment
 import dev.enro.core.hosts.OpenInstructionInActivity
 
-object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination, NavigationKey>(
-    fromType = Any::class,
-    opensType = ComposableDestination::class,
-    keyType = NavigationKey::class
-) {
+public object DefaultComposableExecutor :
+    NavigationExecutor<Any, ComposableDestination, NavigationKey>(
+        fromType = Any::class,
+        opensType = ComposableDestination::class,
+        keyType = NavigationKey::class
+    ) {
     @OptIn(ExperimentalMaterialApi::class)
     override fun open(args: ExecutorArgs<out Any, out ComposableDestination, out NavigationKey>) {
         val fromContext = args.fromContext

@@ -19,6 +19,8 @@ annotation class GeneratedNavigationBinding(
     val navigationKey: String
 )
 
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.CLASS)
 annotation class GeneratedNavigationModule(
     val bindings: Array<KClass<out Any>>,
 )

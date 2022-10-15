@@ -1,6 +1,7 @@
 package dev.enro.core.result.internal
 
 import androidx.annotation.Keep
+import androidx.compose.runtime.DisallowComposableCalls
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import dev.enro.core.*
@@ -13,10 +14,10 @@ private class ResultChannelProperties<T>(
     val onResult: (T) -> Unit,
 )
 
-class ResultChannelImpl<Result, Key: NavigationKey.WithResult<Result>> @PublishedApi internal constructor(
+public class ResultChannelImpl<Result, Key : NavigationKey.WithResult<Result>> @PublishedApi internal constructor(
     navigationHandle: NavigationHandle,
     resultType: Class<Result>,
-    onResult: (Result) -> Unit,
+    onResult: @DisallowComposableCalls (Result) -> Unit,
     additionalResultId: String = "",
 ) : UnmanagedEnroResultChannel<Result, Key> {
 

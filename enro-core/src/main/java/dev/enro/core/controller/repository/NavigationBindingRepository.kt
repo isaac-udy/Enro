@@ -1,4 +1,4 @@
-package dev.enro.core.controller.container
+package dev.enro.core.controller.repository
 
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey

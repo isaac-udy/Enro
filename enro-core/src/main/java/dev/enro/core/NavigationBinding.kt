@@ -2,7 +2,7 @@ package dev.enro.core
 
 import kotlin.reflect.KClass
 
-interface NavigationBinding<KeyType : NavigationKey, ContextType : Any> {
-    val keyType: KClass<KeyType>
-    val destinationType: KClass<ContextType>
+public interface NavigationBinding<KeyType : NavigationKey, ContextType : Any> {
+    public val keyType: KClass<KeyType>
+    public val destinationType: KClass<ContextType>
 }
