@@ -119,8 +119,6 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     }
 
     override fun close(context: NavigationContext<out Fragment>) {
-        if (interceptCloseInstructionForAndroidxNavigation(context)) return
-
         val fragment = context.fragment
         if(fragment is DialogFragment && fragment.showsDialog) {
             fragment.dismiss()
