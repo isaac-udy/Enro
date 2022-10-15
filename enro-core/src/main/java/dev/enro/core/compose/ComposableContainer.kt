@@ -10,7 +10,6 @@ import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.container.ComposableNavigationContainer
-import dev.enro.core.compose.container.registerState
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.createRootBackStack
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
@@ -22,8 +21,8 @@ fun rememberNavigationContainer(
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     accept: (NavigationKey) -> Boolean = { true },
 ) : ComposableNavigationContainer {
-    return rememberEnroContainerController(
-        initialBackstack = listOf(NavigationInstruction.Push(root)),
+    return rememberNavigationContainer(
+        initialState = listOf(root),
         emptyBehavior = emptyBehavior,
         accept = accept
     )
@@ -37,7 +36,10 @@ fun rememberNavigationContainer(
 ) : ComposableNavigationContainer {
     return rememberEnroContainerController(
         initialBackstack = initialState.mapIndexed { i, it ->
+            val id = rememberSaveable(it) { UUID.randomUUID().toString() }
             NavigationInstruction.Push(it)
+                .internal
+                .copy(instructionId = id)
         },
         emptyBehavior = emptyBehavior,
         accept = accept
@@ -71,7 +73,7 @@ fun rememberEnroContainerController(
         )
     }
 
-    viewModelStoreOwner.getNavigationHandleViewModel().navigationContext!!.containerManager.registerState(controller)
+    controller.registerWithContainerManager()
     return controller
 }
 
@@ -86,7 +88,7 @@ fun EnroContainer(
 
             Box(modifier = modifier) {
                 backstackState.renderable
-                    .mapNotNull { container.getDestinationContext(it) }
+                    .mapNotNull { container.getDestinationOwner(it) }
                     .forEach {
                         it.Render(backstackState)
                     }

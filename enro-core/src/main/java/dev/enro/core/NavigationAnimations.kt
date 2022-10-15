@@ -2,7 +2,6 @@ package dev.enro.core
 
 import android.content.res.Resources
 import android.provider.Settings
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -10,6 +9,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
+import dev.enro.core.controller.NavigationController
 import dev.enro.core.hosts.AbstractActivityHostForAnyInstruction
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
@@ -174,14 +174,14 @@ fun animationsFor(
     }
 
     return when (navigationInstruction) {
-        is NavigationInstruction.Open<*> -> animationsForOpen(context, navigationInstruction)
+        is NavigationInstruction.Open<*> -> animationsForOpen(context.controller, navigationInstruction)
         is NavigationInstruction.Close -> animationsForClose(context)
         is NavigationInstruction.RequestClose -> animationsForClose(context)
     }
 }
 
 private fun animationsForOpen(
-    context: NavigationContext<*>,
+    controller: NavigationController,
     navigationInstruction: AnyOpenInstruction
 ): NavigationAnimation {
     val instructionForAnimation =  when (
@@ -191,7 +191,7 @@ private fun animationsForOpen(
         else -> navigationInstruction
     }
 
-    val executor = context.controller.executorForOpen(
+    val executor = controller.executorForOpen(
         instructionForAnimation
     )
     return executor.animation(navigationInstruction)

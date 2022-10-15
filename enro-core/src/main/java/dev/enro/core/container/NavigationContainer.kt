@@ -34,6 +34,7 @@ abstract class NavigationContainer(
 
     abstract val activeContext: NavigationContext<*>?
     abstract val isVisible: Boolean
+    internal abstract val currentAnimations: NavigationAnimation
 
     private val pendingRemovals = mutableSetOf<AnyOpenInstruction>()
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())

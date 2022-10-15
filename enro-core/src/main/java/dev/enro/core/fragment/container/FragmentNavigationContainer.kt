@@ -3,12 +3,11 @@ package dev.enro.core.fragment.container
 import android.app.Activity
 import android.view.View
 import androidx.annotation.IdRes
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
-import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
@@ -31,9 +30,6 @@ class FragmentNavigationContainer internal constructor(
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
     acceptsNavigator = { it is FragmentNavigator<*, *> || it is ComposableNavigator<*, *> }
 ) {
-    override val activeContext: NavigationContext<*>?
-        get() = fragmentManager.findFragmentById(containerId)?.navigationContext
-
     override var isVisible: Boolean
         get() {
             return containerView?.isVisible ?: false
@@ -41,6 +37,12 @@ class FragmentNavigationContainer internal constructor(
         set(value) {
             containerView?.isVisible = value
         }
+
+    override val activeContext: NavigationContext<out Fragment>?
+        get() = fragmentManager.findFragmentById(containerId)?.navigationContext
+
+    override var currentAnimations: NavigationAnimation = DefaultAnimations.none
+        private set
 
     init {
         setOrLoadInitialBackstack(initialBackstack)
@@ -54,93 +56,110 @@ class FragmentNavigationContainer internal constructor(
         if (fragmentManager.isStateSaved) return false
         if (backstack != backstackFlow.value) return false
 
-        val toRemove = removed
-            .mapNotNull {
-                val fragment = fragmentManager.findFragmentByTag(it.instructionId)
-                when (fragment) {
-                    null -> null
-                    else -> fragment to it
-                }
-            }
+        val toRemove = removed.asFragmentAndInstruction()
+        val toDetach = getFragmentsToDetach(backstack)
+        val active = getOrCreateActiveFragment(backstack)
 
-        val toDetach = backstack.backstack
-            .filter { it.navigationDirection !is NavigationDirection.Present }
-            .filter { it != backstack.active }
-            .mapNotNull { fragmentManager.findFragmentByTag(it.instructionId)?.to(it) }
-
-        val activeInstruction = backstack.active
-        val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
-        val activeFragment = activeInstruction
-            ?.let {
-                fragmentManager.findFragmentByTag(it.instructionId)
+        (toRemove + toDetach + active)
+            .filterNotNull()
+            .forEach {
+                setZIndexForAnimations(backstack, it)
             }
-            ?: activeInstruction?.let {
-                val navigator =
-                    parentContext.controller.navigatorForKeyType(activeInstruction.navigationKey::class)
-                        ?: throw EnroException.UnreachableState()
-
-                FragmentFactory.createFragment(
-                    parentContext,
-                    navigator,
-                    activeInstruction
-                )
-            }
-
-        val activeIndex =
-            backstack.renderable.indexOfFirst { it.instructionId == activeInstruction?.instructionId }
-        activeFragment?.view?.z = 0f
-        (toRemove + toDetach).forEach {
-            val isBehindActiveFragment = backstack.renderable.indexOf(it.second) < activeIndex
-            it.first.view?.z = when {
-                isBehindActiveFragment -> -1f
-                else -> 1f
-            }
-        }
 
         fragmentManager.commitNow {
             setReorderingAllowed(true)
+            setAnimationsForTransaction(
+                backstack = backstack,
+                active = active
+            )
 
-            if (!backstack.isDirectUpdate) {
-                val animations = animationsFor(previouslyActiveFragment?.navigationContext ?: parentContext, backstack.lastInstruction)
-                val resourceAnimations = animations.asResource(parentContext.activity.theme)
-
-                setCustomAnimations(
-                    if(activeFragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_enter_animation else resourceAnimations.enter,
-                    if(previouslyActiveFragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_exit_animation else resourceAnimations.exit
-                )
-
-                runOnCommit {
-                    if (previouslyActiveFragment is AbstractFragmentHostForComposable) {
-                        previouslyActiveFragment.containerManager.activeContainer!!
-                        val ref = previouslyActiveFragment.containerManager.activeContainer?.activeContext?.contextReference
-                        if(ref is ComposableDestination) {
-                            ref.owner.animation = animations.asComposable()
-                            ref.owner.transitionState.targetState = false
-                        }
-                    }
-                    if (activeFragment is AbstractFragmentHostForComposable) {
-                        val ref = activeFragment.containerManager.activeContainer?.activeContext?.contextReference
-                        if(ref is ComposableDestination) {
-                            ref.owner.animation = animations.asComposable()
-                            ref.owner.transitionState.targetState = true
-                        }
-                    }
-                }
-            }
-
-            toRemove.forEach { remove(it.first) }
-            toDetach.forEach { detach(it.first) }
-            if (activeFragment == null) return@commitNow
+            toRemove.forEach { remove(it.fragment) }
+            toDetach.forEach { detach(it.fragment) }
+            if (active == null) return@commitNow
 
             when {
-                activeFragment.id != 0 -> attach(activeFragment)
-                else -> add(containerId, activeFragment, activeFragment.requireArguments().readOpenInstruction()!!.instructionId)
+                active.fragment.id != 0 -> attach(active.fragment)
+                else -> add(
+                    containerId,
+                    active.fragment,
+                    active.instruction.instructionId
+                )
             }
-            setPrimaryNavigationFragment(activeFragment)
+            setPrimaryNavigationFragment(active.fragment)
         }
         return true
     }
+
+    private fun List<AnyOpenInstruction>.asFragmentAndInstruction(): List<FragmentAndInstruction> {
+        return mapNotNull { instruction ->
+            val fragment = fragmentManager.findFragmentByTag(instruction.instructionId) ?: return@mapNotNull null
+            FragmentAndInstruction(
+                fragment = fragment,
+                instruction = instruction
+            )
+        }
+    }
+
+    private fun getFragmentsToDetach(backstack: NavigationBackstack): List<FragmentAndInstruction> {
+        return backstack.backstack
+            .filter { it.navigationDirection !is NavigationDirection.Present }
+            .filter { it != backstack.active }
+            .asFragmentAndInstruction()
+    }
+
+    private fun getOrCreateActiveFragment(backstack: NavigationBackstack): FragmentAndInstruction? {
+        backstack.active ?: return null
+        val existingFragment = fragmentManager.findFragmentByTag(backstack.active.instructionId)
+        if (existingFragment != null) return FragmentAndInstruction(
+            fragment = existingFragment,
+            instruction = backstack.active
+        )
+
+        val navigator = parentContext.controller.navigatorForKeyType(backstack.active.navigationKey::class)
+            ?: throw EnroException.UnreachableState()
+
+        return FragmentAndInstruction(
+            fragment = FragmentFactory.createFragment(
+                parentContext,
+                navigator,
+                backstack.active
+            ),
+            instruction = backstack.active
+        )
+    }
+
+    private fun setZIndexForAnimations(backstack: NavigationBackstack, fragmentAndInstruction: FragmentAndInstruction) {
+        val activeIndex = backstack.renderable.indexOfFirst { it.instructionId == backstack.active?.instructionId }
+        val index = backstack.renderable.indexOf(fragmentAndInstruction.instruction)
+
+        fragmentAndInstruction.fragment.view?.z = when {
+            index == activeIndex -> 0f
+            index < activeIndex -> -1f
+            else -> 1f
+        }
+    }
+
+    private fun FragmentTransaction.setAnimationsForTransaction(
+        backstack: NavigationBackstack,
+        active: FragmentAndInstruction?
+    ) {
+        if (backstack.isDirectUpdate) return
+        val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
+        currentAnimations =
+            animationsFor(previouslyActiveFragment?.navigationContext ?: parentContext, backstack.lastInstruction)
+        val resourceAnimations = currentAnimations.asResource(parentContext.activity.theme)
+
+        setCustomAnimations(
+            if (active?.fragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_enter_animation else resourceAnimations.enter,
+            if (previouslyActiveFragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_exit_animation else resourceAnimations.exit
+        )
+    }
 }
+
+private data class FragmentAndInstruction(
+    val fragment: Fragment,
+    val instruction: AnyOpenInstruction
+)
 
 val FragmentNavigationContainer.containerView: View?
     get() {
@@ -151,16 +170,19 @@ val FragmentNavigationContainer.containerView: View?
         }
     }
 
-fun FragmentNavigationContainer.setVisibilityAnimated(isVisible: Boolean) {
+fun FragmentNavigationContainer.setVisibilityAnimated(
+    isVisible: Boolean,
+    animations: NavigationAnimation = DefaultAnimations.present
+) {
     val view = containerView ?: return
     if (!view.isVisible && !isVisible) return
     if (view.isVisible && isVisible) return
 
-    val animations = DefaultAnimations.present.asResource(view.context.theme)
+    val resourceAnimations = animations.asResource(view.context.theme)
     view.animate(
         animOrAnimator = when (isVisible) {
-            true -> animations.enter
-            false -> animations.exit
+            true -> resourceAnimations.enter
+            false -> resourceAnimations.exit
         },
         onAnimationStart = {
             view.translationZ = if (isVisible) 0f else -1f

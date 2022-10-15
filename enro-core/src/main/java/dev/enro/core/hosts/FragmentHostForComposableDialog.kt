@@ -13,8 +13,6 @@ import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
 import dev.enro.core.compose.dialog.*
-import dev.enro.core.compose.dialog.EnroBottomSheetContainer
-import dev.enro.core.compose.dialog.EnroDialogContainer
 import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
@@ -65,7 +63,7 @@ abstract class AbstractFragmentHostForComposableDialog : DialogFragment() {
                 emptyBehavior = EmptyBehavior.CloseParent
             )
 
-            val destination = controller.requireDestinationContext(instruction).destination
+            val destination = controller.requireDestinationOwner(instruction).destination
             dialogConfiguration = when (destination) {
                 is BottomSheetDestination -> {
                     EnroBottomSheetContainer(controller, destination)

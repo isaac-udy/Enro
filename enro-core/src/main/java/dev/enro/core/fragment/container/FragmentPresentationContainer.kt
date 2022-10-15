@@ -22,7 +22,9 @@ class FragmentPresentationContainer internal constructor(
 
     override var isVisible: Boolean = true
 
-    override val activeContext: NavigationContext<*>?
+    override val currentAnimations: NavigationAnimation = DefaultAnimations.present
+
+    override val activeContext: NavigationContext<out Fragment>?
         get() = backstackFlow.value.backstack
             .lastOrNull { fragmentManager.findFragmentByTag(it.instructionId) != null }
             ?.let {

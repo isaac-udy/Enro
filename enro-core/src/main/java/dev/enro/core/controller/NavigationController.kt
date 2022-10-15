@@ -50,8 +50,6 @@ class NavigationController internal constructor() {
         val navigator = navigatorForKeyType(instruction.navigationKey::class)
             ?: throw EnroException.MissingNavigator("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
 
-        val executor = executorContainer.executorFor(navigationContext.contextReference::class to navigator.contextType)
-
         val processedInstruction = interceptorContainer.intercept(
             instruction, navigationContext, navigator
         ) ?: return
@@ -60,6 +58,8 @@ class NavigationController internal constructor() {
             navigationContext.getNavigationHandle().executeInstruction(processedInstruction)
             return
         }
+        val executor =
+            executorContainer.executorFor(processedInstruction.internal.openedByType to processedInstruction.internal.openingType)
 
         val args = ExecutorArgs(
             navigationContext,
@@ -83,7 +83,8 @@ class NavigationController internal constructor() {
             navigationContext.getNavigationHandle().executeInstruction(processedInstruction)
             return
         }
-        val executor: NavigationExecutor<Any, Any, NavigationKey> = executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openedByType.kotlin to navigationContext.contextReference::class)
+        val executor: NavigationExecutor<Any, Any, NavigationKey> =
+            executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openedByType to navigationContext.contextReference::class.java)
         executor.preClosed(navigationContext)
         executor.close(navigationContext)
     }
@@ -100,14 +101,11 @@ class NavigationController internal constructor() {
         return navigatorContainer.navigatorForKeyType(keyType)
     }
 
-    internal fun executorForOpen(
-        instruction: AnyOpenInstruction
-    ) = executorContainer.executorFor(instruction.internal.openedByType.kotlin to instruction.internal.openingType.kotlin)
-
-
+    internal fun executorForOpen(instruction: AnyOpenInstruction) =
+        executorContainer.executorFor(instruction.internal.openedByType to instruction.internal.openingType)
 
     internal fun executorForClose(navigationContext: NavigationContext<*>) =
-        executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openedByType.kotlin to navigationContext.contextReference::class)
+        executorContainer.executorFor(navigationContext.getNavigationHandle().instruction.internal.openedByType to navigationContext.contextReference::class.java)
 
     fun addOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
         executorContainer.addExecutorOverride(navigationExecutor)

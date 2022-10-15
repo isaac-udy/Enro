@@ -1,7 +1,6 @@
 package dev.enro.core.compose.destination
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.*
@@ -15,8 +14,6 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.DefaultAnimations
-import dev.enro.core.NavigationAnimation
 import dev.enro.core.activity
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
@@ -47,16 +44,6 @@ class ComposableDestinationOwner(
 
 
     internal val transitionState = MutableTransitionState(false)
-
-    private val animationState = mutableStateOf(DefaultAnimations.none.asComposable())
-
-    internal var animation: NavigationAnimation.Composable
-        get() {
-            return animationState.value
-        }
-        set(value) {
-            animationState.value = value
-        }
 
     @SuppressLint("StaticFieldLeak")
     @Suppress("LeakingThis")
@@ -118,6 +105,7 @@ class ComposableDestinationOwner(
             }
         }
 
+        val animation = remember(transitionState.targetState) { parentContainer.currentAnimations.asComposable() }
         animation.content(transitionState) {
             renderDestination()
             RegisterComposableLifecycleState(backstackState)

@@ -14,6 +14,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.destination.activity
+import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
@@ -77,6 +78,14 @@ internal class ComposeContext<ContextType : ComposableDestination>(
 }
 
 val NavigationContext<out Fragment>.fragment get() = contextReference
+
+fun NavigationContext<*>.parentContainer(): NavigationContainer? {
+    return when (this) {
+        is ActivityContext -> null
+        is FragmentContext<out Fragment> -> parentContext()?.containerManager?.containers?.firstOrNull { it.id == fragment.id.toString() }
+        is ComposeContext<out ComposableDestination> -> contextReference.owner.parentContainer
+    }
+}
 
 val NavigationContext<*>.activity: ComponentActivity
     get() = when (contextReference) {

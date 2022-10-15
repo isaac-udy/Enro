@@ -1,9 +1,9 @@
 package dev.enro.core.compose.container
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -14,7 +14,7 @@ import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
-import dev.enro.core.container.NavigationContainerManager
+import dev.enro.core.hosts.AbstractFragmentHostForComposable
 
 class ComposableNavigationContainer internal constructor(
     id: String,
@@ -33,18 +33,22 @@ class ComposableNavigationContainer internal constructor(
 ) {
     private val destinationStorage: ComposableDestinationOwnerStorage = parentContext.getComposableContextStorage()
 
-    private val destinationContexts = destinationStorage.destinations.getOrPut(id) { mutableMapOf() }
-    private val currentDestination get() = backstackFlow.value.backstack
-        .mapNotNull { destinationContexts[it.instructionId] }
-        .lastOrNull {
-            it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)
-        }
+    private val destinationOwners = destinationStorage.destinations.getOrPut(id) { mutableMapOf() }
+    private val currentDestination
+        get() = backstackFlow.value.backstack
+            .mapNotNull { destinationOwners[it.instructionId] }
+            .lastOrNull {
+                it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)
+            }
 
-    override val activeContext: NavigationContext<*>?
+    override val activeContext: NavigationContext<out ComposableDestination>?
         get() = currentDestination?.destination?.navigationContext
 
     override val isVisible: Boolean
         get() = true
+
+    override var currentAnimations: NavigationAnimation = DefaultAnimations.none
+        private set
 
     init {
         setOrLoadInitialBackstack(initialBackstack)
@@ -54,61 +58,22 @@ class ComposableNavigationContainer internal constructor(
         removed: List<AnyOpenInstruction>,
         backstack: NavigationBackstack
     ): Boolean {
-        if(!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return false
-        if(parentContext.runCatching { activity }.getOrNull() == null) return false
+        if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return false
+        if (parentContext.runCatching { activity }.getOrNull() == null) return false
 
-        backstack.renderable
-            .map { instruction ->
-                val context = requireDestinationContext(instruction)
-                if(backstack.isDirectUpdate) {
-                    context.animation = DefaultAnimations.none.asComposable()
-                }
-            }
-
-        val contextForAnimation = kotlin.runCatching {
-            val previouslyOpenContext = backstack.exiting?.let { getDestinationContext(it) }?.destination?.navigationContext
-            when {
-                previouslyOpenContext == null -> parentContext
-                else -> previouslyOpenContext
-            }
-        }.getOrNull()
-
-        if(contextForAnimation != null) {
-
-            val animations = animationsFor(contextForAnimation, backstack.lastInstruction).asComposable()
-
-            backstack.exiting?.let {
-                requireDestinationContext(it).apply {
-                    animation = animations
-                    transitionState.targetState = false
-                }
-            }
-            backstack.active?.let {
-                requireDestinationContext(it).apply {
-                    animation = animations
-                    transitionState.targetState = true
-                }
-            }
-        }
-
-        removed
-            .filter { backstack.exiting != it }
-            .mapNotNull {
-                destinationContexts[it.instructionId]
-            }
-            .forEach {
-                destinationContexts.remove(it.instruction.instructionId)
-            }
-
+        clearDestinationOwnersFor(removed)
+        createDestinationOwnersFor(backstack)
+        setAnimationsForBackstack(backstack)
+        setVisibilityForBackstack(backstack)
         return true
     }
 
-    internal fun getDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationOwner? {
-        return destinationContexts[instruction.instructionId]
+    internal fun getDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner? {
+        return destinationOwners[instruction.instructionId]
     }
 
-    internal fun requireDestinationContext(instruction: AnyOpenInstruction): ComposableDestinationOwner {
-        return destinationContexts.getOrPut(instruction.instructionId) {
+    internal fun requireDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner {
+        return destinationOwners.getOrPut(instruction.instructionId) {
             val controller = parentContext.controller
             val composeKey = instruction.navigationKey
             val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
@@ -121,28 +86,96 @@ class ComposableNavigationContainer internal constructor(
             ).also { owner ->
                 owner.lifecycle.addObserver(object : LifecycleEventObserver {
                     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                        if(event != Lifecycle.Event.ON_DESTROY) return
-                        destinationContexts.remove(owner.instruction.instructionId)
+                        if (event != Lifecycle.Event.ON_DESTROY) return
+                        destinationOwners.remove(owner.instruction.instructionId)
                     }
                 })
             }
         }.apply { parentContainer = this@ComposableNavigationContainer }
     }
-}
 
-@Composable
-internal fun NavigationContainerManager.registerState(controller: ComposableNavigationContainer): Boolean {
-    DisposableEffect(controller.id) {
-        addContainer(controller)
-        if (activeContainer == null) {
-            setActiveContainer(controller)
+    private fun clearDestinationOwnersFor(removed: List<AnyOpenInstruction>) {
+        removed
+            .filter { backstack.exiting != it }
+            .mapNotNull {
+                destinationOwners[it.instructionId]
+            }
+            .forEach {
+                destinationOwners.remove(it.instruction.instructionId)
+            }
+    }
+
+    private fun createDestinationOwnersFor(backstack: NavigationBackstack) {
+        backstack.renderable
+            .forEach { instruction ->
+                requireDestinationOwner(instruction)
+            }
+    }
+
+    private fun setAnimationsForBackstack(backstack: NavigationBackstack) {
+        val shouldTakeAnimationsFromParentContainer = parentContext is FragmentContext<out Fragment>
+                && parentContext.contextReference is AbstractFragmentHostForComposable
+                && backstack.backstack.size <= 1
+
+        val contextForAnimation = when (backstack.lastInstruction) {
+            is NavigationInstruction.Close -> backstack.exiting?.let { getDestinationOwner(it) }?.destination?.navigationContext
+            else -> activeContext
+        } ?: parentContext
+
+        currentAnimations = when {
+            shouldTakeAnimationsFromParentContainer -> {
+                parentContext as FragmentContext<out Fragment>
+                val parentContainer = parentContext.parentContainer()
+                parentContainer?.currentAnimations ?: DefaultAnimations.none
+            }
+            backstack.isDirectUpdate -> DefaultAnimations.none
+            else -> animationsFor(contextForAnimation, backstack.lastInstruction)
+        }.asComposable()
+    }
+
+    private fun setVisibilityForBackstack(backstack: NavigationBackstack) {
+        val isParentBeingRemoved = when {
+            parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded -> true
+            else -> false
         }
-        onDispose {
-            removeContainer(controller)
-            if (activeContainer == controller) {
-                setActiveContainer(null)
+        backstack.renderable.forEach {
+            requireDestinationOwner(it).transitionState.targetState = when (it) {
+                backstack.active -> !isParentBeingRemoved
+                else -> false
             }
         }
     }
-    return true
+
+    @Composable
+    internal fun registerWithContainerManager(): Boolean {
+        DisposableEffect(id) {
+            val containerManager = parentContext.containerManager
+            containerManager.addContainer(this@ComposableNavigationContainer)
+            if (containerManager.activeContainer == null) {
+                containerManager.setActiveContainer(this@ComposableNavigationContainer)
+            }
+            onDispose {
+                containerManager.removeContainer(this@ComposableNavigationContainer)
+                if (containerManager.activeContainer == this@ComposableNavigationContainer) {
+                    val previouslyActive = backstack.active?.internal?.previouslyActiveId?.takeIf { it != id }
+                    containerManager.setActiveContainerById(previouslyActive)
+                }
+            }
+        }
+
+        DisposableEffect(id) {
+            val lifecycleObserver = LifecycleEventObserver { _, event ->
+                if (event != Lifecycle.Event.ON_PAUSE) return@LifecycleEventObserver
+                if (parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded) {
+                    setAnimationsForBackstack(backstack)
+                    setVisibilityForBackstack(backstack)
+                }
+            }
+            parentContext.lifecycle.addObserver(lifecycleObserver)
+            onDispose {
+                parentContext.lifecycle.removeObserver(lifecycleObserver)
+            }
+        }
+        return true
+    }
 }

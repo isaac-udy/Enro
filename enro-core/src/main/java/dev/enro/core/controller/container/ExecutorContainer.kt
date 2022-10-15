@@ -2,7 +2,8 @@ package dev.enro.core.controller.container
 
 import android.app.Activity
 import androidx.fragment.app.Fragment
-import dev.enro.core.*
+import dev.enro.core.NavigationExecutor
+import dev.enro.core.NavigationKey
 import dev.enro.core.activity.DefaultActivityExecutor
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.DefaultComposableExecutor
@@ -38,8 +39,8 @@ internal class ExecutorContainer {
         overrides.remove(navigationExecutor.fromType to navigationExecutor.opensType)
     }
 
-    fun executorFor(types: Pair<KClass<out Any>, KClass<out Any>>): NavigationExecutor<Any, Any, NavigationKey> {
-        return ReflectionCache.getClassHierarchyPairs(types.first.java, types.second.java)
+    fun executorFor(types: Pair<Class<out Any>, Class<out Any>>): NavigationExecutor<Any, Any, NavigationKey> {
+        return ReflectionCache.getClassHierarchyPairs(types.first, types.second)
             .asSequence()
             .mapNotNull {
                 overrides[it.first.kotlin to it.second.kotlin] as? NavigationExecutor<Any, Any, NavigationKey>
