@@ -185,6 +185,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
         )
     }
 
+    @Deprecated("Please create a fragment and use `fragment.arguments = Bundle().addOpenInstruction(instruction)` yourself")
     fun createFragment(
         fragmentManager: FragmentManager,
         navigator: Navigator<*, *>,

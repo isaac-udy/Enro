@@ -4,20 +4,14 @@ import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
 import dev.enro.core.hosts.*
-import dev.enro.core.hosts.OpenComposableDialogInFragment
-import dev.enro.core.hosts.OpenComposableDialogInHiltFragment
-import dev.enro.core.hosts.OpenComposableInFragment
-import dev.enro.core.hosts.OpenComposableInHiltFragment
-import dev.enro.core.hosts.OpenInstructionInActivity
-import dev.enro.core.hosts.OpenInstructionInHiltActivity
 
-class HiltInstructionInterceptor : NavigationInstructionInterceptor {
+object HiltInstructionInterceptor : NavigationInstructionInterceptor {
 
-    val generatedComponentManagerClass = kotlin.runCatching {
+    private val generatedComponentManagerClass = kotlin.runCatching {
         GeneratedComponentManager::class.java
     }.getOrNull()
 
-    val generatedComponentManagerHolderClass = kotlin.runCatching {
+    private val generatedComponentManagerHolderClass = kotlin.runCatching {
         GeneratedComponentManagerHolder::class.java
     }.getOrNull()
 

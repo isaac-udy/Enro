@@ -2,7 +2,7 @@ package dev.enro.core.controller.interceptor
 
 import dev.enro.core.*
 
-internal class ExecutorContextInterceptor : NavigationInstructionInterceptor{
+internal object InstructionOpenedByInterceptor : NavigationInstructionInterceptor {
 
     override fun intercept(
         instruction: AnyOpenInstruction,
