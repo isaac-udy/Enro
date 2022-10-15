@@ -9,7 +9,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.ComposableNavigator
+import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
@@ -29,7 +29,7 @@ class ComposableNavigationContainer internal constructor(
     emptyBehavior = emptyBehavior,
     acceptsNavigationKey = accept,
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
-    acceptsNavigator = { it is ComposableNavigator<*, *> }
+    acceptsBinding = { it is ComposableNavigationBinding<*, *> }
 ) {
     private val destinationStorage: ComposableDestinationOwnerStorage = parentContext.getComposableContextStorage()
 
@@ -76,7 +76,7 @@ class ComposableNavigationContainer internal constructor(
         return destinationOwners.getOrPut(instruction.instructionId) {
             val controller = parentContext.controller
             val composeKey = instruction.navigationKey
-            val destination = controller.navigatorForKeyType(composeKey::class)!!.contextType.java
+            val destination = controller.bindingForKeyType(composeKey::class)!!.destinationType.java
                 .newInstance() as ComposableDestination
 
             return@getOrPut ComposableDestinationOwner(

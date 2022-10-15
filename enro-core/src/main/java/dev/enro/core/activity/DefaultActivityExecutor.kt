@@ -33,13 +33,13 @@ object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, Navi
 
     override fun close(context: NavigationContext<out ComponentActivity>) {
         ActivityCompat.finishAfterTransition(context.activity)
-        context.navigator ?: return
+        context.binding ?: return
 
         val animations = animationsFor(context, NavigationInstruction.Close).asResource(context.activity.theme)
         context.activity.overridePendingTransition(animations.enter, animations.exit)
     }
 
     fun createIntent(args: ExecutorArgs<out Any, out ComponentActivity, out NavigationKey>) =
-        Intent(args.fromContext.activity, args.navigator.contextType.java)
+        Intent(args.fromContext.activity, args.binding.destinationType.java)
             .addOpenInstruction(args.instruction)
 }

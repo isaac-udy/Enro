@@ -21,7 +21,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dev.enro.*
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
@@ -143,7 +142,6 @@ class HiltViewModelCreationTests {
 
     object Compose {
         @Composable
-        @ExperimentalComposableDestination
         @NavigationDestination(Key::class)
         fun Draw() {
             val viewModel = viewModel<TestViewModel>()

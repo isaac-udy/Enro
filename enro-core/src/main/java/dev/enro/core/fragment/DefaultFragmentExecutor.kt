@@ -19,13 +19,13 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
 ) {
     override fun open(args: ExecutorArgs<out Any, out Fragment, out NavigationKey>) {
         val fromContext = args.fromContext
-        val navigator = args.navigator as FragmentNavigator
 
         if (fromContext is FragmentContext && !fromContext.fragment.isAdded) return
 
         val isReplace = args.instruction.navigationDirection is NavigationDirection.Replace
-        val isDialog = DialogFragment::class.java.isAssignableFrom(args.navigator.contextType.java)
-        val instruction = when(args.instruction.navigationDirection) {
+        val isDialog =
+            DialogFragment::class.java.isAssignableFrom(args.binding.destinationType.java)
+        val instruction = when (args.instruction.navigationDirection) {
             is NavigationDirection.Replace,
             is NavigationDirection.Forward -> when {
                 isDialog -> args.instruction.asPresentInstruction()
@@ -72,7 +72,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                             open(
                                 ExecutorArgs(
                                     fromContext = fromContext,
-                                    navigator = args.navigator,
+                                    binding = args.binding,
                                     key = args.key,
                                     instruction = args.instruction.internal.copy(
                                         navigationDirection = NavigationDirection.Present
@@ -88,7 +88,7 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
                         open(
                             ExecutorArgs(
                                 fromContext = parentContext,
-                                navigator = args.navigator,
+                                binding = args.binding,
                                 key = args.key,
                                 instruction = args.instruction
                             )
@@ -186,12 +186,12 @@ object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, NavigationKey
     @Deprecated("Please create a fragment and use `fragment.arguments = Bundle().addOpenInstruction(instruction)` yourself")
     fun createFragment(
         fragmentManager: FragmentManager,
-        navigator: Navigator<*, *>,
+        binding: NavigationBinding<*, *>,
         instruction: AnyOpenInstruction
     ): Fragment {
         val fragment = fragmentManager.fragmentFactory.instantiate(
-            navigator.contextType.java.classLoader!!,
-            navigator.contextType.java.name
+            binding.destinationType.java.classLoader!!,
+            binding.destinationType.java.name
         )
 
         fragment.arguments = Bundle()

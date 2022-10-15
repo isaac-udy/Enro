@@ -11,14 +11,14 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.savedstate.SavedStateRegistryOwner
-import dev.enro.core.activity.ActivityNavigator
+import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.destination.activity
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
-import dev.enro.core.fragment.FragmentNavigator
+import dev.enro.core.fragment.FragmentNavigationBinding
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
@@ -32,8 +32,8 @@ sealed class NavigationContext<ContextType : Any>(
     abstract val savedStateRegistryOwner: SavedStateRegistryOwner
     abstract val lifecycleOwner: LifecycleOwner
 
-    internal open val navigator: Navigator<*, ContextType>? by lazy {
-        controller.navigatorForContextType(contextReference::class) as? Navigator<*, ContextType>
+    internal open val binding: NavigationBinding<*, ContextType>? by lazy {
+        controller.bindingForDestinationType(contextReference::class) as? NavigationBinding<*, ContextType>
     }
 
     val containerManager: NavigationContainerManager = NavigationContainerManager()
@@ -44,7 +44,7 @@ internal class ActivityContext<ContextType : ComponentActivity>(
 ) : NavigationContext<ContextType>(contextReference) {
     override val controller get() = contextReference.application.navigationController
     override val lifecycle get() = contextReference.lifecycle
-    override val navigator get() = super.navigator as? ActivityNavigator<*, ContextType>
+    override val binding get() = super.binding as? ActivityNavigationBinding<*, ContextType>
     override val arguments: Bundle by lazy { contextReference.intent.extras ?: Bundle() }
 
     override val viewModelStoreOwner: ViewModelStoreOwner get() = contextReference
@@ -57,7 +57,7 @@ internal class FragmentContext<ContextType : Fragment>(
 ) : NavigationContext<ContextType>(contextReference) {
     override val controller get() = contextReference.requireActivity().application.navigationController
     override val lifecycle get() = contextReference.lifecycle
-    override val navigator get() = super.navigator as? FragmentNavigator<*, ContextType>
+    override val binding get() = super.binding as? FragmentNavigationBinding<*, ContextType>
     override val arguments: Bundle by lazy { contextReference.arguments ?: Bundle() }
 
     override val viewModelStoreOwner: ViewModelStoreOwner get() = contextReference

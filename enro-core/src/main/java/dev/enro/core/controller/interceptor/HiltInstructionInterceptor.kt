@@ -18,7 +18,7 @@ object HiltInstructionInterceptor : NavigationInstructionInterceptor {
     override fun intercept(
         instruction: AnyOpenInstruction,
         parentContext: NavigationContext<*>,
-        navigator: Navigator<out NavigationKey, out Any>
+        binding: NavigationBinding<out NavigationKey, out Any>
     ): AnyOpenInstruction {
 
         val isHiltApplication = if(generatedComponentManagerClass != null) {

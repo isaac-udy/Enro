@@ -15,7 +15,8 @@ abstract class EnroException(
 
     class ViewModelCouldNotGetNavigationHandle(message: String, cause: Throwable? = null) : EnroException(message, cause)
 
-    class MissingNavigator(message: String, cause: Throwable? = null) : EnroException(message, cause)
+    class MissingNavigationBinding(message: String, cause: Throwable? = null) :
+        EnroException(message, cause)
 
     class IncorrectlyTypedNavigationHandle(message: String, cause: Throwable? = null) : EnroException(message, cause)
 

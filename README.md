@@ -141,8 +141,11 @@ Enro supports multiple arguments to these instructions.
 
 #### How does Enro support Activities navigating to Fragments? 
 When an Activity executes a navigation instruction that resolves to a Fragment, one of two things will happen: 
-1. The Activity's navigator defines a "container" that accepts the Fragment's type, in which case, the Fragment will be opened into the container view defined by that container.
-2. The Activity's navigation **does not** define a fragment host that acccepts the Fragment's type, in which case, the Fragment will be opened into a new, full screen Activity. 
+1. The Activity defines a "navigationContainer" that accepts the Fragment's type, in which case, the
+   Fragment will be opened into the container view defined by that container.
+2. The Activity **does not** define a navigationContainer that acccepts the Fragment's type, in
+   which case, the Fragment will be opened into a either a floating, full window dialog, or a full
+   screen Activity (depending on the situation).
 
 #### How do I deal with Activity results? 
 Enro supports any NavigationKey/NavigationDestination providing a result. Instead of implementing the NavigationKey interface on the NavigationKey that provides the result, implement NavigationKey.WithResult<T> where T is the type of the result. Once you're ready to navigate to that NavigationKey and consume a result, you'll want to call "registerForNavigationResult" in your Fragment/Activity/ViewModel. This API is very similar to the AndroidX Activity 1.2.0 ActivityResultLauncher.
@@ -186,8 +189,11 @@ There will be an example project that shows how this all works in the future, bu
 1. A NavigationExecutor is typed for a "From", an "Opens", and a NavigationKey type. 
 2. Enro performs navigation on a "NavigationContext", which is basically either a Fragment or a FragmentActivity
 3. A NavigationExecutor defines two methods
-    * `open`, which takes a NavigationContext of the "From" type, a Navigator for the "Opens" type, and a NavigationInstruction (i.e. the From context is attempting to open the Navigator with the input NavigationInstruction)
-    * `close`, which takes a NavigationContext of the "Opens" type (i.e. you're closing what you've already opened)
+   * `open`, which takes a NavigationContext of the "From" type, a NavigationBinding for the "Opens"
+     type, and a NavigationInstruction (i.e. the From context is attempting to open the
+     NavigationBinding with the input NavigationInstruction)
+   * `close`, which takes a NavigationContext of the "Opens" type (i.e. you're closing what you've
+     already opened)
 4. By creating a NavigationExecutor between two specific screens and registering this with the NavigationController, you're able to override the default navigation behaviour (although you're still able to call back to the DefaultActivityExecutor or DefaultFragmentExecutor if you need to)
 5. See the method in NavigationControllerBuilder for `override`
 6. When a NavigationContext decides what NavigationExecutor to execute an instruction on, Enro will look at the NavigationContext originating the NavigationInstruction and then walk up toward's it's root NavigationContext (i.e. a Fragment will check itself, then its parent Fragment, and then that parent Fragment's Activity), checking for an appropriate override along the way. If it finds no override, the default will be used. NavigationContexts that are the children of the current NavigationContext will not be searched, only the parents. 

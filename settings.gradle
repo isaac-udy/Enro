@@ -22,7 +22,7 @@ include ':enro-core'
 dependencyResolutionManagement {
     versionCatalogs {
         deps {
-            library("android-gradle", "com.android.tools.build:gradle:7.2.1")
+            library("android-gradle", "com.android.tools.build:gradle:7.3.0")
 
             library("androidx-core", "androidx.core:core-ktx:1.8.0")
             library("androidx-appcompat", "androidx.appcompat:appcompat:1.4.2")
@@ -72,7 +72,7 @@ dependencyResolutionManagement {
             library("testing-androidx-espresso", "androidx.test.espresso:espresso-core:3.4.0")
             library("testing-androidx-espressoRecyclerView", "androidx.test.espresso:espresso-contrib:3.4.0")
             library("testing-androidx-espressoIntents", "androidx.test.espresso:espresso-intents:3.4.0")
-            library("testing-androidx-fragment", "androidx.fragment:fragment-testing:1.5.1")
+            library("testing-androidx-fragment", "androidx.fragment:fragment-testing:1.5.3")
             library("testing-androidx-compose", "androidx.compose.ui:ui-test-junit4:1.1.0")
 
             library("processing-jsr250", "javax.annotation:jsr250-api:1.0")

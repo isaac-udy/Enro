@@ -16,7 +16,7 @@ abstract class NavigationContainer(
     val emptyBehavior: EmptyBehavior,
     val acceptsNavigationKey: (NavigationKey) -> Boolean,
     val acceptsDirection: (NavigationDirection) -> Boolean,
-    val acceptsNavigator: (Navigator<*, *>) -> Boolean
+    val acceptsBinding: (NavigationBinding<*, *>) -> Boolean
 ) {
     private val handler = Handler(Looper.getMainLooper())
     private val reconcileBackstack: Runnable = Runnable {
@@ -82,7 +82,8 @@ abstract class NavigationContainer(
     ): Boolean {
         return acceptsNavigationKey.invoke(instruction.navigationKey)
                 && acceptsDirection(instruction.navigationDirection)
-                && acceptsNavigator(parentContext.controller.navigatorForKeyType(instruction.navigationKey::class)
+                && acceptsBinding(
+            parentContext.controller.bindingForKeyType(instruction.navigationKey::class)
                 ?: throw EnroException.UnreachableState()
         )
     }

@@ -7,7 +7,7 @@ import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.container.ComposeEnvironmentContainer
 import dev.enro.core.controller.container.ExecutorContainer
-import dev.enro.core.controller.container.NavigatorContainer
+import dev.enro.core.controller.container.NavigationBindingRepository
 import dev.enro.core.controller.container.PluginContainer
 import dev.enro.core.controller.interceptor.InstructionInterceptorContainer
 import dev.enro.core.controller.lifecycle.NavigationLifecycleController
@@ -21,7 +21,8 @@ class NavigationController internal constructor() {
         internal set
 
     private val pluginContainer: PluginContainer = PluginContainer()
-    private val navigatorContainer: NavigatorContainer = NavigatorContainer()
+    private val navigationBindingRepository: NavigationBindingRepository =
+        NavigationBindingRepository()
     private val executorContainer: ExecutorContainer = ExecutorContainer()
     internal val composeEnvironmentContainer: ComposeEnvironmentContainer = ComposeEnvironmentContainer()
     private val interceptorContainer: InstructionInterceptorContainer = InstructionInterceptorContainer()
@@ -33,7 +34,7 @@ class NavigationController internal constructor() {
 
     fun addComponent(component: NavigationComponentBuilder) {
         pluginContainer.addPlugins(component.plugins)
-        navigatorContainer.addNavigators(component.navigators)
+        navigationBindingRepository.addNavigationBindings(component.bindings)
         executorContainer.addExecutors(component.overrides)
         interceptorContainer.addInterceptors(component.interceptors)
 
@@ -47,14 +48,14 @@ class NavigationController internal constructor() {
         navigationContext: NavigationContext<out Any>,
         instruction: AnyOpenInstruction
     ) {
-        val navigator = navigatorForKeyType(instruction.navigationKey::class)
-            ?: throw EnroException.MissingNavigator("Attempted to execute $instruction but could not find a valid navigator for the key type on this instruction")
+        val binding = bindingForKeyType(instruction.navigationKey::class)
+            ?: throw EnroException.MissingNavigationBinding("Attempted to execute $instruction but could not find a valid navigation binding for the key type on this instruction")
 
         val processedInstruction = interceptorContainer.intercept(
-            instruction, navigationContext, navigator
+            instruction, navigationContext, binding
         ) ?: return
 
-        if (processedInstruction.navigationKey::class != navigator.keyType) {
+        if (processedInstruction.navigationKey::class != binding.keyType) {
             navigationContext.getNavigationHandle().executeInstruction(processedInstruction)
             return
         }
@@ -63,7 +64,7 @@ class NavigationController internal constructor() {
 
         val args = ExecutorArgs(
             navigationContext,
-            navigator,
+            binding,
             processedInstruction.navigationKey,
             processedInstruction
         )
@@ -79,7 +80,7 @@ class NavigationController internal constructor() {
             NavigationInstruction.Close, navigationContext
         ) ?: return
 
-        if(processedInstruction !is NavigationInstruction.Close) {
+        if (processedInstruction !is NavigationInstruction.Close) {
             navigationContext.getNavigationHandle().executeInstruction(processedInstruction)
             return
         }
@@ -89,16 +90,16 @@ class NavigationController internal constructor() {
         executor.close(navigationContext)
     }
 
-    fun navigatorForContextType(
-        contextType: KClass<*>
-    ): Navigator<*, *>? {
-        return navigatorContainer.navigatorForContextType(contextType)
+    fun bindingForDestinationType(
+        destinationType: KClass<*>
+    ): NavigationBinding<*, *>? {
+        return navigationBindingRepository.bindingForDestinationType(destinationType)
     }
 
-    fun navigatorForKeyType(
+    fun bindingForKeyType(
         keyType: KClass<out NavigationKey>
-    ): Navigator<*, *>? {
-        return navigatorContainer.navigatorForKeyType(keyType)
+    ): NavigationBinding<*, *>? {
+        return navigationBindingRepository.bindingForKeyType(keyType)
     }
 
     internal fun executorForOpen(instruction: AnyOpenInstruction) =

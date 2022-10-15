@@ -13,10 +13,10 @@ class InstructionInterceptorContainer {
     fun intercept(
         instruction: AnyOpenInstruction,
         parentContext: NavigationContext<*>,
-        navigator: Navigator<out NavigationKey, out Any>
+        binding: NavigationBinding<out NavigationKey, out Any>
     ): AnyOpenInstruction? {
         return interceptors.fold(instruction) { acc, interceptor ->
-            val result = interceptor.intercept(acc, parentContext, navigator)
+            val result = interceptor.intercept(acc, parentContext, binding)
 
             when (result) {
                 is NavigationInstruction.Open<*> -> {

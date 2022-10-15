@@ -5,9 +5,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
-import dev.enro.core.compose.ComposableNavigator
+import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.container.*
-import dev.enro.core.fragment.FragmentNavigator
+import dev.enro.core.fragment.FragmentNavigationBinding
 
 class FragmentPresentationContainer internal constructor(
     parentContext: NavigationContext<*>,
@@ -17,7 +17,7 @@ class FragmentPresentationContainer internal constructor(
     acceptsNavigationKey = { true },
     emptyBehavior = EmptyBehavior.AllowEmpty,
     acceptsDirection = { it is NavigationDirection.Present },
-    acceptsNavigator = { it is FragmentNavigator<*, *> || it is ComposableNavigator<*, *> }
+    acceptsBinding = { it is FragmentNavigationBinding<*, *> || it is ComposableNavigationBinding<*, *> }
 ) {
 
     override var isVisible: Boolean = true
@@ -66,13 +66,13 @@ class FragmentPresentationContainer internal constructor(
         val toPresent = backstack.backstack
             .filter { fragmentManager.findFragmentByTag(it.instructionId) == null }
             .map {
-                val navigator =
-                    parentContext.controller.navigatorForKeyType(it.navigationKey::class)
+                val binding =
+                    parentContext.controller.bindingForKeyType(it.navigationKey::class)
                         ?: throw EnroException.UnreachableState()
 
                 FragmentFactory.createFragment(
                     parentContext,
-                    navigator,
+                    binding,
                     it
                 ) to it
             }

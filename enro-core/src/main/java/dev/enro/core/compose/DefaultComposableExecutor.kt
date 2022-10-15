@@ -4,10 +4,10 @@ import androidx.compose.material.ExperimentalMaterialApi
 import dev.enro.core.*
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogDestination
+import dev.enro.core.container.add
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.close
-import dev.enro.core.container.add
 import dev.enro.core.hosts.OpenComposableInFragment
 import dev.enro.core.hosts.OpenInstructionInActivity
 
@@ -21,10 +21,11 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
         val fromContext = args.fromContext
 
         val isReplace = args.instruction.navigationDirection is NavigationDirection.Replace
-        val isDialog = DialogDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
-                || BottomSheetDestination::class.java.isAssignableFrom(args.navigator.contextType.java)
+        val isDialog =
+            DialogDestination::class.java.isAssignableFrom(args.binding.destinationType.java)
+                    || BottomSheetDestination::class.java.isAssignableFrom(args.binding.destinationType.java)
 
-        val instruction = when(args.instruction.navigationDirection) {
+        val instruction = when (args.instruction.navigationDirection) {
             is NavigationDirection.Replace,
             is NavigationDirection.Forward -> when {
                 isDialog -> args.instruction.asPresentInstruction()
@@ -59,7 +60,7 @@ object DefaultComposableExecutor : NavigationExecutor<Any, ComposableDestination
                         open(
                             ExecutorArgs(
                                 fromContext = parentContext,
-                                navigator = args.navigator,
+                                binding = args.binding,
                                 key = args.key,
                                 instruction = args.instruction
                             )

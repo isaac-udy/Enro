@@ -148,7 +148,7 @@ fun MyEnroComposable() {
 #### This Exception is occurring in tests
 This exception will occur in tests if you are attempting to create a ViewModel to test, but have not used `putNavigationHandleForViewModel` from the `enro-test` library.
 
-### `MissingNavigator`
+### `MissingNavigationBinding`
 This exception can occur when you attempt to navigate to a `NavigationKey` that has not been bound to an Activity/Fragment/Composable, if you have forgotten to add the required `kapt` dependencies to make sure that Enro's code generation runs, or if code generation has not updated correctly when you have added a new destination.
 
 1. Make sure you have the correct `kapt` dependency on `enro-processor`

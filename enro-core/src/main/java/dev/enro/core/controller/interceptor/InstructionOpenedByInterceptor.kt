@@ -7,7 +7,7 @@ internal object InstructionOpenedByInterceptor : NavigationInstructionIntercepto
     override fun intercept(
         instruction: AnyOpenInstruction,
         parentContext: NavigationContext<*>,
-        navigator: Navigator<out NavigationKey, out Any>
+        binding: NavigationBinding<out NavigationKey, out Any>
     ): AnyOpenInstruction {
         return instruction
             .setOpeningType(parentContext)
@@ -19,7 +19,7 @@ internal object InstructionOpenedByInterceptor : NavigationInstructionIntercepto
     ) : AnyOpenInstruction {
         if (internal.openingType != Any::class.java) return internal
         return internal.copy(
-            openingType = parentContext.controller.navigatorForKeyType(navigationKey::class)!!.contextType.java
+            openingType = parentContext.controller.bindingForKeyType(navigationKey::class)!!.destinationType.java
         )
     }
 

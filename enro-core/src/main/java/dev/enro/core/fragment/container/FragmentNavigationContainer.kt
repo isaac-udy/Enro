@@ -8,11 +8,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
-import dev.enro.core.compose.ComposableNavigator
+import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
-import dev.enro.core.fragment.FragmentNavigator
+import dev.enro.core.fragment.FragmentNavigationBinding
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.extensions.animate
 
@@ -28,7 +28,7 @@ class FragmentNavigationContainer internal constructor(
     acceptsNavigationKey = accept,
     emptyBehavior = emptyBehavior,
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
-    acceptsNavigator = { it is FragmentNavigator<*, *> || it is ComposableNavigator<*, *> }
+    acceptsBinding = { it is FragmentNavigationBinding<*, *> || it is ComposableNavigationBinding<*, *> }
 ) {
     override var isVisible: Boolean
         get() {
@@ -115,13 +115,14 @@ class FragmentNavigationContainer internal constructor(
             instruction = backstack.active
         )
 
-        val navigator = parentContext.controller.navigatorForKeyType(backstack.active.navigationKey::class)
-            ?: throw EnroException.UnreachableState()
+        val binding =
+            parentContext.controller.bindingForKeyType(backstack.active.navigationKey::class)
+                ?: throw EnroException.UnreachableState()
 
         return FragmentAndInstruction(
             fragment = FragmentFactory.createFragment(
                 parentContext,
-                navigator,
+                binding,
                 backstack.active
             ),
             instruction = backstack.active

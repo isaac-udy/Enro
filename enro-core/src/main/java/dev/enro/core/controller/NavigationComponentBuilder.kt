@@ -1,31 +1,76 @@
-    package dev.enro.core.controller
+package dev.enro.core.controller
 
 import android.app.Application
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
+import androidx.fragment.app.Fragment
 import dev.enro.core.*
+import dev.enro.core.activity.createActivityNavigationBinding
+import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.compose.createComposableNavigationBinding
 import dev.enro.core.controller.container.ComposeEnvironment
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
+import dev.enro.core.fragment.createFragmentNavigationBinding
 import dev.enro.core.plugins.EnroPlugin
+import dev.enro.core.synthetic.SyntheticDestination
+import dev.enro.core.synthetic.createSyntheticNavigationBinding
 
-// TODO get rid of this, or give it a better name
 interface NavigationComponentBuilderCommand {
     fun execute(builder: NavigationComponentBuilder)
 }
 
+abstract class NavigationBindingBuilder<T : NavigationKey>(
+
+) {
+    internal abstract fun activity(destination: Class<ComponentActivity>)
+    internal abstract fun fragment(destination: Class<Fragment>)
+    internal abstract fun composable(destination: Class<ComposableDestination>)
+    internal abstract fun composable(destination: @Composable () -> Unit)
+    internal abstract fun synthetic(destination: Class<SyntheticDestination<T>>)
+}
+
 class NavigationComponentBuilder {
     @PublishedApi
-    internal val navigators: MutableList<Navigator<*, *>> = mutableListOf()
+    internal val bindings: MutableList<NavigationBinding<*, *>> = mutableListOf()
+
     @PublishedApi
     internal val overrides: MutableList<NavigationExecutor<*, *, *>> = mutableListOf()
+
     @PublishedApi
     internal val plugins: MutableList<EnroPlugin> = mutableListOf()
+
     @PublishedApi
     internal val interceptors: MutableList<NavigationInstructionInterceptor> = mutableListOf()
+
     @PublishedApi
     internal var composeEnvironment: ComposeEnvironment? = null
 
-    fun navigator(navigator: Navigator<*, *>) {
-        navigators.add(navigator)
+    fun binding(binding: NavigationBinding<*, *>) {
+        bindings.add(binding)
+    }
+
+    inline fun <reified KeyType : NavigationKey, reified DestinationType : ComponentActivity> activityDestination() {
+        bindings.add(createActivityNavigationBinding<KeyType, DestinationType>())
+    }
+
+    inline fun <reified KeyType : NavigationKey, reified DestinationType : Fragment> fragmentDestination() {
+        bindings.add(createFragmentNavigationBinding<KeyType, DestinationType>())
+    }
+
+    inline fun <reified KeyType : NavigationKey, reified DestinationType : ComposableDestination> composableDestination() {
+        bindings.add(createComposableNavigationBinding<KeyType, DestinationType>())
+    }
+
+    inline fun <reified KeyType : NavigationKey> composableDestination(noinline content: @Composable () -> Unit) {
+        bindings.add(createComposableNavigationBinding<KeyType>(content))
+    }
+
+    inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> syntheticDestination() {
+        bindings.add(createSyntheticNavigationBinding<KeyType, DestinationType>())
+    }
+
+    inline fun <reified KeyType : NavigationKey> syntheticDestination(noinline destination: () -> SyntheticDestination<KeyType>) {
+        bindings.add(createSyntheticNavigationBinding(destination))
     }
 
     fun override(override: NavigationExecutor<*, *, *>) {
@@ -51,7 +96,7 @@ class NavigationComponentBuilder {
     }
 
     fun component(builder: NavigationComponentBuilder) {
-        navigators.addAll(builder.navigators)
+        bindings.addAll(builder.bindings)
         overrides.addAll(builder.overrides)
         plugins.addAll(builder.plugins)
         interceptors.addAll(builder.interceptors)

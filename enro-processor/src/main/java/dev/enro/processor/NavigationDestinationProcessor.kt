@@ -81,9 +81,18 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
         JavaFile
             .builder(EnroProcessor.GENERATED_PACKAGE, classBuilder)
-            .addStaticImport(ClassNames.activityNavigatorKt, "createActivityNavigator")
-            .addStaticImport(ClassNames.fragmentNavigatorKt, "createFragmentNavigator")
-            .addStaticImport(ClassNames.syntheticNavigatorKt, "createSyntheticNavigator")
+            .addStaticImport(
+                ClassNames.activityNavigationBindingKt,
+                "createActivityNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.fragmentNavigationBindingKt,
+                "createFragmentNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.syntheticNavigationBindingKt,
+                "createSyntheticNavigationBinding"
+            )
             .addStaticImport(ClassNames.jvmClassMappings, "getKotlinClass")
             .build()
             .writeTo(processingEnv.filer)
@@ -171,8 +180,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     .addStatement(
                         CodeBlock.of(
                             """
-                                builder.navigator(
-                                    createComposableNavigator(
+                                builder.binding(
+                                    createComposableNavigationBinding(
                                         $1T.class,
                                         $composableWrapper.class
                                     )
@@ -187,10 +196,22 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
         JavaFile
             .builder(EnroProcessor.GENERATED_PACKAGE, classBuilder)
-            .addStaticImport(ClassNames.activityNavigatorKt, "createActivityNavigator")
-            .addStaticImport(ClassNames.fragmentNavigatorKt, "createFragmentNavigator")
-            .addStaticImport(ClassNames.syntheticNavigatorKt, "createSyntheticNavigator")
-            .addStaticImport(ClassNames.composeNavigatorKt, "createComposableNavigator")
+            .addStaticImport(
+                ClassNames.activityNavigationBindingKt,
+                "createActivityNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.fragmentNavigationBindingKt,
+                "createFragmentNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.syntheticNavigationBindingKt,
+                "createSyntheticNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.composeNavigationBindingKt,
+                "createComposableNavigationBinding"
+            )
             .addStaticImport(ClassNames.jvmClassMappings, "getKotlinClass")
             .build()
             .writeTo(processingEnv.filer)
@@ -212,8 +233,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
             when {
                 destinationIsActivity -> CodeBlock.of(
                     """
-                    builder.navigator(
-                        createActivityNavigator(
+                    builder.binding(
+                        createActivityNavigationBinding(
                             $1T.class,
                             $2T.class
                         )
@@ -225,8 +246,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
                 destinationIsFragment -> CodeBlock.of(
                     """
-                    builder.navigator(
-                        createFragmentNavigator(
+                    builder.binding(
+                        createFragmentNavigationBinding(
                             $1T.class,
                             $2T.class
                         )
@@ -238,8 +259,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
                 destinationIsSynthetic -> CodeBlock.of(
                     """
-                    builder.navigator(
-                        createSyntheticNavigator(
+                    builder.binding(
+                        createSyntheticNavigationBinding(
                             $1T.class,
                             () -> new $2T()
                         )
