@@ -22,7 +22,7 @@ public object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivit
         }
 
         val activity = fromContext.activity
-        if (instruction.navigationDirection == NavigationDirection.Replace || instruction.navigationDirection == NavigationDirection.ReplaceRoot) {
+        if (instruction.navigationDirection == NavigationDirection.Replace) {
             activity.finish()
         }
         val animations = animationsFor(fromContext, instruction).asResource(activity.theme)

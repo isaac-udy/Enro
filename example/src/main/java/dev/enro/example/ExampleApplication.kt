@@ -22,7 +22,9 @@ class ExampleApplication : Application(), NavigationApplication {
         plugin(EnroLogger())
 
         override<SplashScreenActivity, Any> {
-            animation { DefaultAnimations.none }
+            animation {
+                DefaultAnimations.present
+            }
         }
         override(
             createSharedElementOverride<RequestExampleFragment, RequestStringFragment>(
