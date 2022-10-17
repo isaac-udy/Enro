@@ -29,20 +29,22 @@ class ActivityToComposableTests {
         val id = UUID.randomUUID().toString()
         handle.forward(GenericComposableKey(id))
 
-        expectActivityHostForAnyInstruction()
+        // The Composable should be opened as an AbstractFragmentHostForComposable inside of an AbstractFragmentHostForPresentableFragment
+        expectFragmentHostForPresentableFragment()
         expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == id
         }
     }
 
     @Test
-    fun givenStandaloneComposable_whenHostActivityCloses_thenComposableViewModelStoreIsCleared() {
+    fun givenStandaloneComposable_whenHostFragmentCloses_thenComposableViewModelStoreIsCleared() {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
 
         handle.forward(GenericComposableKey(id = "StandaloneComposable"))
 
-        expectActivityHostForAnyInstruction()
+        // The Composable should be opened as an AbstractFragmentHostForComposable inside of an AbstractFragmentHostForPresentableFragment
+        expectFragmentHostForPresentableFragment()
 
         val context = expectContext<ComposableDestination, GenericComposableKey>()
 
