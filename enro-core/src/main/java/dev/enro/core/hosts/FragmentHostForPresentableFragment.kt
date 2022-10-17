@@ -93,7 +93,7 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
         val animations = animationsFor(fragment.navigationContext, NavigationInstruction.Close)
             .asResource(fragment.requireActivity().theme)
         val animationDuration = fragment.requireView().animate(
-            animOrAnimator = animations.exit
+            animOrAnimator = if (fragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_exit_animation else animations.exit
         )
 
         val delay = maxOf(0, animationDuration - 16)
