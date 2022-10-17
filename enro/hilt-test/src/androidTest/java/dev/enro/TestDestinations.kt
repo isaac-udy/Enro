@@ -1,1 +1,1 @@
-C:/Work/Enro/enro/src/androidTest/java/dev/enro/TestDestinations.kt
+../../../../../../src/androidTest/java/dev/enro/TestDestinations.kt

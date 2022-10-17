@@ -20,15 +20,16 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dev.enro.DefaultActivity
-import dev.enro.TestActivity
+import dev.enro.*
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.*
+import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
-import dev.enro.expectContext
+import dev.enro.core.compose.composableManger
+import dev.enro.core.forward
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.navigationHandle
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
-import dev.enro.waitOnMain
 import junit.framework.TestCase.assertTrue
 import kotlinx.parcelize.Parcelize
 import org.junit.Rule
@@ -73,7 +74,7 @@ class HiltViewModelCreationTests {
 
         // TODO: Once Enro 2.0 is released, this hacky way of checking the current top composable can be removed
         val activeNavigation = waitOnMain {
-            fragment.context.containerManager.activeContainer?.activeContext?.getNavigationHandle()
+            fragment.context.composableManger.activeContainer?.activeContext?.getNavigationHandle()
         }
         Thread.sleep(1000)
         assertTrue(activeNavigation.key is Compose.Key)
