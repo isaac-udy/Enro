@@ -105,7 +105,10 @@ public abstract class NavigationContainer(
                 .consumeRestoredStateForKey(id)
                 ?.getParcelableArrayList<AnyOpenInstruction>(BACKSTACK_KEY)
                 ?.let { createRestoredBackStack(it) }
-            setBackstack(restoredBackstack ?: initialBackstack)
+
+            val backstack =
+                (restoredBackstack ?: initialBackstack).ensureOpeningTypeIsSet(parentContext)
+            setBackstack(backstack)
         }
     }
 

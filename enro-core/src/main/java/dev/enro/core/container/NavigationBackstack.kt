@@ -1,7 +1,9 @@
 package dev.enro.core.container
 
 import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
+import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
 
 public fun createEmptyBackStack(): NavigationBackstack = NavigationBackstack(
     lastInstruction = NavigationInstruction.Close,
@@ -102,5 +104,21 @@ internal fun NavigationBackstack.close(id: String): NavigationBackstack {
         exitingIndex = index,
         lastInstruction = NavigationInstruction.Close,
         updateType = NavigationBackstack.UpdateType.STANDARD
+    )
+}
+
+internal fun NavigationBackstack.ensureOpeningTypeIsSet(
+    parentContext: NavigationContext<*>
+): NavigationBackstack {
+    return copy(
+        backstack = backstack.map {
+            if (it.internal.openingType != Any::class.java) return@map it
+
+            InstructionOpenedByInterceptor.intercept(
+                it,
+                parentContext,
+                requireNotNull(parentContext.controller.bindingForKeyType(it.navigationKey::class)),
+            )
+        }
     )
 }
