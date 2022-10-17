@@ -22,7 +22,8 @@ public class FragmentPresentationContainer internal constructor(
 
     override var isVisible: Boolean = true
 
-    override val currentAnimations: NavigationAnimation = DefaultAnimations.present
+    override var currentAnimations: NavigationAnimation = DefaultAnimations.present
+        private set
 
     override val activeContext: NavigationContext<out Fragment>?
         get() = backstackFlow.value.backstack
@@ -77,6 +78,7 @@ public class FragmentPresentationContainer internal constructor(
                 ) to it
             }
 
+        setAnimations(backstack)
         fragmentManager.commitNow {
             setReorderingAllowed(true)
 
@@ -100,5 +102,14 @@ public class FragmentPresentationContainer internal constructor(
             }
 
         return true
+    }
+
+    private fun setAnimations(backstack: NavigationBackstack) {
+        val previouslyActiveFragment =
+            backstack.exiting?.let { fragmentManager.findFragmentByTag(it.instructionId) }
+        currentAnimations = animationsFor(
+            previouslyActiveFragment?.navigationContext ?: parentContext,
+            backstack.lastInstruction
+        )
     }
 }

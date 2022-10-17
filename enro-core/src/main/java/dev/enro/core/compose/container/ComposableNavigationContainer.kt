@@ -123,12 +123,12 @@ public class ComposableNavigationContainer internal constructor(
         } ?: parentContext
 
         currentAnimations = when {
+            backstack.isRestoredState -> DefaultAnimations.none
             shouldTakeAnimationsFromParentContainer -> {
                 parentContext as FragmentContext<out Fragment>
                 val parentContainer = parentContext.parentContainer()
                 parentContainer?.currentAnimations ?: DefaultAnimations.none
             }
-            backstack.isDirectUpdate -> DefaultAnimations.none
             else -> animationsFor(contextForAnimation, backstack.lastInstruction)
         }.asComposable()
     }

@@ -47,13 +47,13 @@ class ExampleApplication : Application(), NavigationApplication {
 }
 val open =
     NavigationAnimation.Composable(
-        forView = DefaultAnimations.push,
+        forView = DefaultAnimations.ForView.push,
         enter = fadeIn(tween(700, delayMillis = 700)),
         exit = fadeOut(tween(700)),
     )
 
 val close = NavigationAnimation.Composable(
-    forView = DefaultAnimations.close,
+    forView = DefaultAnimations.ForView.close,
     enter = slideIn(tween(700, delayMillis = 500)) { IntOffset(0, 300) },
     exit = fadeOut(tween(500)),
 )

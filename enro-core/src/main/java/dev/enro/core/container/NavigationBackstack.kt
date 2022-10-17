@@ -8,7 +8,7 @@ public fun createEmptyBackStack(): NavigationBackstack = NavigationBackstack(
     backstack = emptyList(),
     exiting = null,
     exitingIndex = -1,
-    isDirectUpdate = true
+    updateType = NavigationBackstack.UpdateType.INITIAL_STATE
 )
 
 public fun createRootBackStack(rootInstruction: AnyOpenInstruction?): NavigationBackstack =
@@ -17,7 +17,7 @@ public fun createRootBackStack(rootInstruction: AnyOpenInstruction?): Navigation
         backstack = listOfNotNull(rootInstruction),
         exiting = null,
         exitingIndex = -1,
-        isDirectUpdate = true
+        updateType = NavigationBackstack.UpdateType.INITIAL_STATE
     )
 
 public fun createRootBackStack(backstack: List<AnyOpenInstruction>): NavigationBackstack =
@@ -26,7 +26,7 @@ public fun createRootBackStack(backstack: List<AnyOpenInstruction>): NavigationB
         backstack = backstack,
         exiting = null,
         exitingIndex = -1,
-        isDirectUpdate = true
+        updateType = NavigationBackstack.UpdateType.INITIAL_STATE
     )
 
 public fun createRestoredBackStack(backstack: List<AnyOpenInstruction>): NavigationBackstack =
@@ -35,7 +35,7 @@ public fun createRestoredBackStack(backstack: List<AnyOpenInstruction>): Navigat
         exiting = null,
         exitingIndex = -1,
         lastInstruction = backstack.lastOrNull() ?: NavigationInstruction.Close,
-        isDirectUpdate = true
+        updateType = NavigationBackstack.UpdateType.RESTORED_STATE
     )
 
 public data class NavigationBackstack(
@@ -43,7 +43,7 @@ public data class NavigationBackstack(
     val backstack: List<AnyOpenInstruction>,
     val exiting: AnyOpenInstruction?,
     val exitingIndex: Int,
-    val isDirectUpdate: Boolean
+    val updateType: UpdateType
 ) {
     val active: AnyOpenInstruction? = backstack.lastOrNull()
 
@@ -56,6 +56,15 @@ public data class NavigationBackstack(
             return@flatMapIndexed listOf(open)
         }
     }
+
+    public val isRestoredState: Boolean get() = updateType == UpdateType.RESTORED_STATE
+    public val isInitialState: Boolean get() = updateType == UpdateType.INITIAL_STATE
+
+    public enum class UpdateType {
+        RESTORED_STATE,
+        INITIAL_STATE,
+        STANDARD;
+    }
 }
 
 internal fun NavigationBackstack.add(
@@ -67,7 +76,7 @@ internal fun NavigationBackstack.add(
         exiting = active,
         exitingIndex = backstack.lastIndex,
         lastInstruction = instructions.last(),
-        isDirectUpdate = false
+        updateType = NavigationBackstack.UpdateType.STANDARD
     )
 }
 
@@ -77,7 +86,7 @@ internal fun NavigationBackstack.close(): NavigationBackstack {
         exiting = backstack.lastOrNull(),
         exitingIndex = backstack.lastIndex,
         lastInstruction = NavigationInstruction.Close,
-        isDirectUpdate = false
+        updateType = NavigationBackstack.UpdateType.STANDARD
     )
 }
 
@@ -92,6 +101,6 @@ internal fun NavigationBackstack.close(id: String): NavigationBackstack {
         exiting = exiting,
         exitingIndex = index,
         lastInstruction = NavigationInstruction.Close,
-        isDirectUpdate = false
+        updateType = NavigationBackstack.UpdateType.STANDARD
     )
 }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.core.os.bundleOf
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
@@ -19,6 +20,7 @@ import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.fragment.FragmentNavigationBinding
+import dev.enro.core.fragment.container.FragmentPresentationContainer
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
@@ -82,7 +84,10 @@ public val NavigationContext<out Fragment>.fragment: Fragment get() = contextRef
 public fun NavigationContext<*>.parentContainer(): NavigationContainer? {
     return when (this) {
         is ActivityContext -> null
-        is FragmentContext<out Fragment> -> parentContext()?.containerManager?.containers?.firstOrNull { it.id == fragment.id.toString() }
+        is FragmentContext<out Fragment> -> when (contextReference) {
+            is DialogFragment -> parentContext()?.containerManager?.containers?.firstOrNull { it is FragmentPresentationContainer }
+            else -> parentContext()?.containerManager?.containers?.firstOrNull { it.id == fragment.id.toString() }
+        }
         is ComposeContext<out ComposableDestination> -> contextReference.owner.parentContainer
     }
 }

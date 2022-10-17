@@ -14,6 +14,7 @@ import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.fragment.FragmentNavigationBinding
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
+import dev.enro.core.hosts.AbstractFragmentHostForPresentableFragment
 import dev.enro.extensions.animate
 
 public class FragmentNavigationContainer internal constructor(
@@ -66,9 +67,10 @@ public class FragmentNavigationContainer internal constructor(
                 setZIndexForAnimations(backstack, it)
             }
 
+        setAnimations(backstack)
         fragmentManager.commitNow {
             setReorderingAllowed(true)
-            setAnimationsForTransaction(
+            applyAnimationsForTransaction(
                 backstack = backstack,
                 active = active
             )
@@ -130,7 +132,8 @@ public class FragmentNavigationContainer internal constructor(
     }
 
     private fun setZIndexForAnimations(backstack: NavigationBackstack, fragmentAndInstruction: FragmentAndInstruction) {
-        val activeIndex = backstack.renderable.indexOfFirst { it.instructionId == backstack.active?.instructionId }
+        val activeIndex =
+            backstack.renderable.indexOfFirst { it.instructionId == backstack.active?.instructionId }
         val index = backstack.renderable.indexOf(fragmentAndInstruction.instruction)
 
         fragmentAndInstruction.fragment.view?.z = when {
@@ -140,14 +143,27 @@ public class FragmentNavigationContainer internal constructor(
         }
     }
 
-    private fun FragmentTransaction.setAnimationsForTransaction(
+    private fun setAnimations(backstack: NavigationBackstack) {
+        val shouldTakeAnimationsFromParentContainer = parentContext is FragmentContext<out Fragment>
+                && parentContext.contextReference is AbstractFragmentHostForPresentableFragment
+                && backstack.backstack.size <= 1
+
+        val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
+        currentAnimations = when {
+            shouldTakeAnimationsFromParentContainer -> parentContext.parentContainer()!!.currentAnimations
+            else -> animationsFor(
+                previouslyActiveFragment?.navigationContext ?: parentContext,
+                backstack.lastInstruction
+            )
+        }
+    }
+
+    private fun FragmentTransaction.applyAnimationsForTransaction(
         backstack: NavigationBackstack,
         active: FragmentAndInstruction?
     ) {
-        if (backstack.isDirectUpdate) return
+        if (backstack.isRestoredState) return
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
-        currentAnimations =
-            animationsFor(previouslyActiveFragment?.navigationContext ?: parentContext, backstack.lastInstruction)
         val resourceAnimations = currentAnimations.asResource(parentContext.activity.theme)
 
         setCustomAnimations(

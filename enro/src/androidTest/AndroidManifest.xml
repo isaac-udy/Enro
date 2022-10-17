@@ -1,14 +1,16 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.enro.tests">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.enro.test">
+
     <application
         android:name="dev.enro.TestApplication"
         android:testOnly="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name="dev.enro.DefaultActivity"/>
-        <activity android:name="dev.enro.GenericActivity"/>
-        <activity android:name="dev.enro.core.legacy.ActivityWithFragments"/>
-        <activity android:name="dev.enro.UnboundActivity"/>
-        <activity android:name="dev.enro.result.ResultActivity"/>
-        <activity android:name="dev.enro.result.ResultReceiverActivity"/>
+        <activity android:name="dev.enro.DefaultActivity" />
+        <activity android:name="dev.enro.GenericActivity" />
+        <activity android:name="dev.enro.core.legacy.ActivityWithFragments" />
+        <activity android:name="dev.enro.UnboundActivity" />
+        <activity android:name="dev.enro.result.ResultActivity" />
+        <activity android:name="dev.enro.result.ResultReceiverActivity" />
         <activity android:name="dev.enro.result.NestedResultReceiverActivity"/>
         <activity android:name="dev.enro.result.SideBySideNestedResultReceiverActivity"/>
         <activity android:name="dev.enro.result.ResultFlowActivity"/>

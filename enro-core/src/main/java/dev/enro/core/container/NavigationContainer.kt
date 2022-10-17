@@ -28,7 +28,7 @@ public abstract class NavigationContainer(
         val nextBackstack = backstack.copy(
             exiting = null,
             exitingIndex = -1,
-            isDirectUpdate = true
+            updateType = NavigationBackstack.UpdateType.RESTORED_STATE
         )
         setBackstack(nextBackstack)
     }
@@ -145,7 +145,7 @@ public abstract class NavigationContainer(
     }
 
     private fun setActiveContainerFrom(backstack: NavigationBackstack) {
-        if (backstack.isDirectUpdate) return
+        if (backstack.isRestoredState || backstack.isInitialState) return
         val isClosing = backstack.lastInstruction is NavigationInstruction.Close
         val isEmpty = backstack.backstack.isEmpty()
 

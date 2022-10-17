@@ -1,6 +1,7 @@
 package dev.enro.core
 
 import android.content.res.Resources
+import android.os.Build
 import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -99,55 +100,78 @@ public sealed class NavigationAnimation {
     }
 }
 
+
 public object DefaultAnimations {
-    public val push: NavigationAnimation.ForView = NavigationAnimation.Attr(
-        enter = android.R.attr.activityOpenEnterAnimation,
-        exit = android.R.attr.activityOpenExitAnimation
-    )
-
-    public val present: NavigationAnimation.ForView = NavigationAnimation.Theme(
-        enter = { theme ->
-            theme.getNestedAttributeResourceId(
-                android.R.attr.dialogTheme,
-                android.R.attr.windowAnimationStyle,
-                android.R.attr.windowEnterAnimation
-            ) ?: 0
-        },
-        exit = { theme ->
-            theme.getNestedAttributeResourceId(
-                android.R.attr.dialogTheme,
-                android.R.attr.windowAnimationStyle,
-                android.R.attr.windowExitAnimation
-            ) ?: 0
-        }
-    )
+    public val push: NavigationAnimation = DefaultAnimations.ForView.push
+    public val present: NavigationAnimation = DefaultAnimations.ForView.present
+    public val replaceRoot: NavigationAnimation = DefaultAnimations.ForView.replaceRoot
+    public val close: NavigationAnimation = DefaultAnimations.ForView.close
+    public val none: NavigationAnimation = DefaultAnimations.ForView.none
 
     @Deprecated("Use push or present")
-    public val forward: NavigationAnimation.ForView = NavigationAnimation.Attr(
-        enter = android.R.attr.activityOpenEnterAnimation,
-        exit = android.R.attr.activityOpenExitAnimation
-    )
+    public val forward: NavigationAnimation = DefaultAnimations.ForView.forward
 
     @Deprecated("Use push or present")
-    public val replace: NavigationAnimation.ForView = NavigationAnimation.Attr(
-        enter = android.R.attr.activityOpenEnterAnimation,
-        exit = android.R.attr.activityOpenExitAnimation
-    )
+    public val replace: NavigationAnimation = DefaultAnimations.ForView.replace
 
-    public val replaceRoot: NavigationAnimation.ForView = NavigationAnimation.Attr(
-        enter = android.R.attr.taskOpenEnterAnimation,
-        exit = android.R.attr.taskOpenExitAnimation
-    )
+    public object ForView {
+        public val push: NavigationAnimation.ForView = NavigationAnimation.Attr(
+            enter = android.R.attr.activityOpenEnterAnimation,
+            exit = android.R.attr.activityOpenExitAnimation
+        )
 
-    public val close: NavigationAnimation.ForView = NavigationAnimation.Attr(
-        enter = android.R.attr.activityCloseEnterAnimation,
-        exit = android.R.attr.activityCloseExitAnimation
-    )
+        public val present: NavigationAnimation.ForView = NavigationAnimation.Theme(
+            enter = { theme ->
+                if (Build.VERSION.SDK_INT >= 33) {
+                    theme.getNestedAttributeResourceId(
+                        android.R.attr.dialogTheme,
+                        android.R.attr.windowAnimationStyle,
+                        android.R.attr.windowEnterAnimation
+                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
+                } else {
+                    theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
+                }
+            },
+            exit = { theme ->
+                if (Build.VERSION.SDK_INT >= 33) {
+                    theme.getNestedAttributeResourceId(
+                        android.R.attr.dialogTheme,
+                        android.R.attr.windowAnimationStyle,
+                        android.R.attr.windowExitAnimation
+                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+                } else {
+                    theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+                }
+            }
+        )
 
-    public val none: NavigationAnimation.ForView = NavigationAnimation.Resource(
-        enter = 0,
-        exit = R.anim.enro_no_op_exit_animation
-    )
+        @Deprecated("Use push or present")
+        public val forward: NavigationAnimation.ForView = NavigationAnimation.Attr(
+            enter = android.R.attr.activityOpenEnterAnimation,
+            exit = android.R.attr.activityOpenExitAnimation
+        )
+
+        @Deprecated("Use push or present")
+        public val replace: NavigationAnimation.ForView = NavigationAnimation.Attr(
+            enter = android.R.attr.activityOpenEnterAnimation,
+            exit = android.R.attr.activityOpenExitAnimation
+        )
+
+        public val replaceRoot: NavigationAnimation.ForView = NavigationAnimation.Attr(
+            enter = android.R.attr.taskOpenEnterAnimation,
+            exit = android.R.attr.taskOpenExitAnimation
+        )
+
+        public val close: NavigationAnimation.ForView = NavigationAnimation.Attr(
+            enter = android.R.attr.activityCloseEnterAnimation,
+            exit = android.R.attr.activityCloseExitAnimation
+        )
+
+        public val none: NavigationAnimation.ForView = NavigationAnimation.Resource(
+            enter = 0,
+            exit = R.anim.enro_no_op_exit_animation
+        )
+    }
 }
 
 public fun animationsFor(

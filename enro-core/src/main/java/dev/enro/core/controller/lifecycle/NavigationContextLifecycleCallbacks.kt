@@ -19,7 +19,7 @@ import dev.enro.core.fragment.container.FragmentPresentationContainer
 import dev.enro.core.fragment.interceptBackPressForAndroidxNavigation
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
-internal class NavigationContextLifecycleCallbacks (
+internal class NavigationContextLifecycleCallbacks(
     private val lifecycleController: NavigationLifecycleController
 ) {
 
@@ -34,16 +34,16 @@ internal class NavigationContextLifecycleCallbacks (
         application.registerActivityLifecycleCallbacks(activityCallbacks)
     }
 
-    inner class ActivityCallbacks :  Application.ActivityLifecycleCallbacks  {
+    inner class ActivityCallbacks : Application.ActivityLifecycleCallbacks {
         override fun onActivityCreated(
             activity: Activity,
             savedInstanceState: Bundle?
         ) {
-            if(activity !is ComponentActivity) return
+            if (activity !is ComponentActivity) return
 
             val navigationContext = ActivityContext(activity)
 
-            if(activity is FragmentActivity) {
+            if (activity is FragmentActivity) {
                 activity.supportFragmentManager.registerFragmentLifecycleCallbacks(
                     fragmentCallbacks,
                     true
@@ -72,7 +72,7 @@ internal class NavigationContextLifecycleCallbacks (
             activity: Activity,
             outState: Bundle
         ) {
-            if(activity !is ComponentActivity) return
+            if (activity !is ComponentActivity) return
             lifecycleController.onContextSaved(activity.navigationContext, outState)
         }
 
@@ -83,7 +83,7 @@ internal class NavigationContextLifecycleCallbacks (
         override fun onActivityDestroyed(activity: Activity) {}
     }
 
-    inner class FragmentCallbacks :  FragmentManager.FragmentLifecycleCallbacks() {
+    inner class FragmentCallbacks : FragmentManager.FragmentLifecycleCallbacks() {
         override fun onFragmentPreCreated(
             fm: FragmentManager,
             fragment: Fragment,
@@ -116,7 +116,7 @@ internal class NavigationContextLifecycleCallbacks (
             view: View,
             outState: Bundle?
         ) {
-            if(fragment is DialogFragment && fragment.showsDialog) {
+            if (fragment is DialogFragment && fragment.showsDialog) {
                 ViewCompat.addOnUnhandledKeyEventListener(view, DialogFragmentBackPressedListener)
             }
         }
@@ -125,10 +125,17 @@ internal class NavigationContextLifecycleCallbacks (
 
 private object DialogFragmentBackPressedListener : ViewCompat.OnUnhandledKeyEventListenerCompat {
     override fun onUnhandledKeyEvent(view: View, event: KeyEvent): Boolean {
-        val isBackPressed = event.keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP
-        if(!isBackPressed) return false
+        val isBackPressed =
+            event.keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP
+        if (!isBackPressed) return false
 
-        view.findViewTreeViewModelStoreOwner()?.getNavigationHandleViewModel()?.requestClose()
+        view.findViewTreeViewModelStoreOwner()
+            ?.getNavigationHandleViewModel()
+            ?.navigationContext
+            ?.leafContext()
+            ?.getNavigationHandle()
+            ?.requestClose() ?: return false
+
         return true
     }
 }

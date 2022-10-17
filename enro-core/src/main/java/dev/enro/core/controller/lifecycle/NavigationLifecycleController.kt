@@ -90,12 +90,10 @@ internal class NavigationLifecycleController(
             .launchIn(context.lifecycle.coroutineScope)
 
         if (savedInstanceState == null) {
+            handle.runWhenHandleActive { handle.executeDeeplink() }
             context.lifecycle.addObserver(object : LifecycleEventObserver {
                 override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                     if (event == Lifecycle.Event.ON_START) {
-//                       TODO handle.childContainers.forEach { it.openRoot(handle) }
-                        handle.executeDeeplink()
-
                         context.controller.executorForClose(context).postOpened(context)
                         context.lifecycle.removeObserver(this)
                     }

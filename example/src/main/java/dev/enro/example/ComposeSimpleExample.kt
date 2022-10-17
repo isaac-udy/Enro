@@ -7,13 +7,11 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -22,7 +20,6 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
@@ -45,7 +42,7 @@ data class ComposeSimpleExampleKey(
     val name: String,
     val launchedFrom: String,
     val backstack: List<String> = emptyList()
-) : NavigationKey
+) : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
 
 @HiltViewModel
 class ComposeSimpleExampleViewModel @Inject constructor(

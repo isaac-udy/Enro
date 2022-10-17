@@ -101,10 +101,12 @@ val features = listOf(
                 
                 To see how this example is built, look at ComposeSimpleExample.kt in the examples.
             """.trimIndent(),
-            positiveActionInstruction = NavigationInstruction.Forward(ComposeSimpleExampleKey(
-                name = "Start",
-                launchedFrom = "Features"
-            ))
+            positiveActionInstruction = NavigationInstruction.Present(
+                ComposeSimpleExampleKey(
+                    name = "Start",
+                    launchedFrom = "Features"
+                )
+            )
         )
     ),
     FeatureDescription(

@@ -70,11 +70,14 @@ public object DefaultComposableExecutor :
                     return
                 }
 
-                EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
-                 host.setBackstack(
+                EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(
+                    fromContext.controller,
+                    args
+                )
+                host.setBackstack(
                     host.backstackFlow.value
                         .let {
-                            if(isReplace) it.close() else it
+                            if (isReplace) it.close() else it
                         }
                         .add(instruction)
                 )
