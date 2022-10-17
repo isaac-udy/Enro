@@ -35,11 +35,8 @@ public fun rememberNavigationContainer(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberEnroContainerController(
-        initialBackstack = initialState.mapIndexed { i, it ->
-            val id = rememberSaveable(it) { UUID.randomUUID().toString() }
+        initialBackstack = initialState.map {
             NavigationInstruction.Push(it)
-                .internal
-                .copy(instructionId = id)
         },
         emptyBehavior = emptyBehavior,
         accept = accept
