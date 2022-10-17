@@ -1,6 +1,7 @@
 package dev.enro.core.compose
 
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.fragment.app.FragmentActivity
 import dev.enro.core.*
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogDestination
@@ -53,8 +54,19 @@ public object DefaultComposableExecutor :
                 if (host == null) {
                     val parentContext = args.fromContext.parentContext()
                     if (parentContext == null) {
-                        openComposableAsActivity(args.fromContext, NavigationDirection.Present, instruction)
-                        if(isReplace) {
+                        if (fromContext.activity is FragmentActivity) {
+                            openComposableAsFragment(
+                                args.fromContext,
+                                instruction
+                            )
+                        } else {
+                            openComposableAsActivity(
+                                args.fromContext,
+                                NavigationDirection.Present,
+                                instruction
+                            )
+                        }
+                        if (isReplace) {
                             fromContext.getNavigationHandle().close()
                         }
                     } else {
@@ -92,22 +104,34 @@ public object DefaultComposableExecutor :
     }
 }
 
-private fun <T: NavigationDirection> NavigationInstruction.Open<T>.asFragmentHostInstruction() = NavigationInstruction.Open.OpenInternal(
-    navigationDirection,
-    OpenComposableInFragment(this, isRoot = true)
-)
+private fun <T : NavigationDirection> NavigationInstruction.Open<T>.asFragmentHostInstruction(isRoot: Boolean) =
+    NavigationInstruction.Open.OpenInternal(
+        navigationDirection,
+        OpenComposableInFragment(this, isRoot = isRoot)
+    )
 
 private fun openComposableAsActivity(
     fromContext: NavigationContext<out Any>,
     direction: NavigationDirection,
     instruction: AnyOpenInstruction
 ) {
-    val fragmentInstruction = instruction.asFragmentHostInstruction()
+    val fragmentInstruction = instruction.asFragmentHostInstruction(isRoot = true)
     fromContext.controller.open(
         fromContext,
         NavigationInstruction.Open.OpenInternal(
             direction,
             OpenInstructionInActivity(fragmentInstruction)
         )
+    )
+}
+
+private fun openComposableAsFragment(
+    fromContext: NavigationContext<out Any>,
+    instruction: AnyOpenInstruction
+) {
+    val fragmentInstruction = instruction.asFragmentHostInstruction(isRoot = false)
+    fromContext.controller.open(
+        fromContext,
+        fragmentInstruction
     )
 }
