@@ -116,6 +116,7 @@ public class ComposableNavigationContainer internal constructor(
         val shouldTakeAnimationsFromParentContainer = parentContext is FragmentContext<out Fragment>
                 && parentContext.contextReference is AbstractFragmentHostForComposable
                 && backstack.backstack.size <= 1
+                && backstack.lastInstruction != NavigationInstruction.Close
 
         val contextForAnimation = when (backstack.lastInstruction) {
             is NavigationInstruction.Close -> backstack.exiting?.let { getDestinationOwner(it) }?.destination?.navigationContext
