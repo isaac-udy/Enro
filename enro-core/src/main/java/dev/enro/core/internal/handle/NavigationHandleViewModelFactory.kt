@@ -4,14 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import dev.enro.core.AnyOpenInstruction
 import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.EnroException
-import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.NavigationController
 
 internal class NavigationHandleViewModelFactory(
     private val navigationController: NavigationController,
-    private val instruction: NavigationInstruction.Open
+    private val instruction: AnyOpenInstruction
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return create(modelClass, CreationExtras.Empty)
@@ -34,7 +34,7 @@ internal class NavigationHandleViewModelFactory(
 
 internal fun ViewModelStoreOwner.createNavigationHandleViewModel(
     navigationController: NavigationController,
-    instruction: NavigationInstruction.Open
+    instruction: AnyOpenInstruction
 ): NavigationHandleViewModel {
     return ViewModelLazy(
         viewModelClass = NavigationHandleViewModel::class,

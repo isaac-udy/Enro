@@ -3,7 +3,6 @@ package dev.enro.lint
 import com.android.tools.lint.client.api.UElementHandler
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.JavaContext
-import com.android.tools.lint.detector.api.TextFormat
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiType
 import com.intellij.psi.search.GlobalSearchScope
@@ -30,37 +29,6 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
         )
 
         return object : UElementHandler() {
-
-            override fun visitMethod(node: UMethod) {
-                val isComposable = node.hasAnnotation("androidx.compose.runtime.Composable")
-
-                val isNavigationDestination =
-                    node.hasAnnotation("dev.enro.annotations.NavigationDestination")
-
-                val isExperimentalComposableDestinationsEnabled =
-                    node.hasAnnotation("dev.enro.annotations.ExperimentalComposableDestination")
-
-                if (isComposable && isNavigationDestination && !isExperimentalComposableDestinationsEnabled) {
-                    val annotationLocation =  context.getLocation(element = node.findAnnotation("dev.enro.annotations.NavigationDestination")!!)
-                    context.report(
-                        issue = missingExperimentalComposableDestinationOptIn,
-                        scopeClass = node,
-                        location = annotationLocation,
-                        message = missingExperimentalComposableDestinationOptIn.getExplanation(
-                            TextFormat.TEXT
-                        ),
-                        quickfixData = fix()
-                            .name("Add @NavigationDestination annotation")
-                            .replace()
-                            .range(annotationLocation)
-                            .text("")
-                            .with("@dev.enro.annotations.ExperimentalComposableDestination\n")
-                            .shortenNames()
-                            .build()
-                    )
-                }
-            }
-
             override fun visitCallExpression(node: UCallExpression) {
                 val returnType = node.returnType as? PsiClassType ?: return
                 if (!navigationHandlePropertyType.isAssignableFrom(returnType)) return

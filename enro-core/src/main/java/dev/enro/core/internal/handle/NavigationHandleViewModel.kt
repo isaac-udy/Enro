@@ -1,34 +1,26 @@
 package dev.enro.core.internal.handle
 
 import android.os.Bundle
-import androidx.activity.addCallback
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.fragment.interceptBackPressForAndroidxNavigation
 import dev.enro.core.internal.NoNavigationKey
 
 internal open class NavigationHandleViewModel(
     override val controller: NavigationController,
-    override val instruction: NavigationInstruction.Open
+    override val instruction: AnyOpenInstruction
 ) : ViewModel(), NavigationHandle {
 
     private var pendingInstruction: NavigationInstruction? = null
 
     internal val hasKey get() = instruction.navigationKey !is NoNavigationKey
 
-    override val key: NavigationKey
-        get() {
-            if (instruction.navigationKey is NoNavigationKey) throw IllegalStateException(
-                "The navigation handle for the context ${navigationContext?.contextReference} has no NavigationKey"
-            )
-            return instruction.navigationKey
-        }
+    override val key: NavigationKey get() {
+        return instruction.navigationKey
+    }
     override val id: String get() = instruction.instructionId
     override val additionalData: Bundle get() = instruction.additionalData
 
-    internal var childContainers = listOf<ChildContainer>()
     internal var internalOnCloseRequested: () -> Unit = { close() }
 
     private val lifecycle = LifecycleRegistry(this)
@@ -41,8 +33,8 @@ internal open class NavigationHandleViewModel(
         set(value) {
             field = value
             if (value == null) return
+
             registerLifecycleObservers(value)
-            registerOnBackPressedListener(value)
             executePendingInstruction()
 
             if (lifecycle.currentState == Lifecycle.State.INITIALIZED) {
@@ -62,16 +54,6 @@ internal open class NavigationHandleViewModel(
         }
     }
 
-    private fun registerOnBackPressedListener(context: NavigationContext<out Any>) {
-        if (context is ActivityContext<out FragmentActivity>) {
-            context.activity.onBackPressedDispatcher.addCallback(this) {
-                val leafContext = context.leafContext()
-                if (interceptBackPressForAndroidxNavigation(this, leafContext)) return@addCallback
-                leafContext.getNavigationHandleViewModel().requestClose()
-            }
-        }
-    }
-
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {
         pendingInstruction = navigationInstruction
         executePendingInstruction()
@@ -80,11 +62,10 @@ internal open class NavigationHandleViewModel(
     private fun executePendingInstruction() {
         val context = navigationContext ?: return
         val instruction = pendingInstruction ?: return
-
         pendingInstruction = null
         context.runWhenContextActive {
             when (instruction) {
-                is NavigationInstruction.Open -> {
+                is NavigationInstruction.Open<*> -> {
                     context.controller.open(context, instruction)
                 }
                 NavigationInstruction.RequestClose -> {
@@ -98,7 +79,7 @@ internal open class NavigationHandleViewModel(
     internal fun executeDeeplink() {
         if (instruction.children.isEmpty()) return
         executeInstruction(
-            NavigationInstruction.Forward(
+            NavigationInstruction.DefaultDirection(
                 navigationKey = instruction.children.first(),
                 children = instruction.children.drop(1)
             )
@@ -110,10 +91,11 @@ internal open class NavigationHandleViewModel(
     }
 }
 
+
 private fun Lifecycle.onEvent(on: Lifecycle.Event, block: () -> Unit) {
     addObserver(object : LifecycleEventObserver {
         override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-            if (on == event) {
+            if(on == event) {
                 block()
             }
         }

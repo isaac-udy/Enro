@@ -19,6 +19,8 @@ annotation class GeneratedNavigationBinding(
     val navigationKey: String
 )
 
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.CLASS)
 annotation class GeneratedNavigationModule(
     val bindings: Array<KClass<out Any>>,
 )
@@ -32,4 +34,5 @@ annotation class GeneratedNavigationComponent(
 
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.FUNCTION)
+@Deprecated("This annotation is no longer required by Enro")
 annotation class ExperimentalComposableDestination

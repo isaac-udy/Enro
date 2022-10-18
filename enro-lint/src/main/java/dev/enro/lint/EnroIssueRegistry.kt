@@ -10,7 +10,6 @@ class EnroIssueRegistry : IssueRegistry() {
 
     override val issues: List<Issue> = listOf(
         incorrectlyTypedNavigationHandle,
-        missingNavigationDestinationAnnotation,
-        missingExperimentalComposableDestinationOptIn
+        missingNavigationDestinationAnnotation
     )
 }

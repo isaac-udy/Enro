@@ -1,7 +1,7 @@
 package dev.enro.core.result.internal
 
+import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -25,7 +25,7 @@ internal class LazyResultChannelProperty<Result, Key: NavigationKey.WithResult<R
 
     init {
         val handle = when (owner) {
-            is FragmentActivity -> lazy { owner.getNavigationHandle() }
+            is ComponentActivity -> lazy { owner.getNavigationHandle() }
             is Fragment -> lazy { owner.getNavigationHandle() }
             is NavigationHandle -> lazy { owner as NavigationHandle }
             else -> throw EnroException.UnreachableState()

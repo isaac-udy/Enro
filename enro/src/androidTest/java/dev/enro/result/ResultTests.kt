@@ -1,12 +1,16 @@
+@file:Suppress("DEPRECATION")
 package dev.enro.result
 
+import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
-import androidx.test.platform.app.InstrumentationRegistry
-import dev.enro.*
+import dev.enro.DefaultActivity
+import dev.enro.DefaultActivityKey
 import dev.enro.core.asTyped
 import dev.enro.core.forward
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.result.closeWithResult
+import dev.enro.expectActivity
+import dev.enro.expectContext
 import junit.framework.Assert.*
 import org.junit.Test
 import java.util.*
@@ -156,15 +160,23 @@ class ResultTests {
             .navigation
             .forward(ResultReceiverFragmentKey())
 
+        val activity = expectActivity<FragmentActivity>()
+        println(activity.toString())
+
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
             .open(FragmentResultKey())
 
+        val activity2 = expectActivity<FragmentActivity>()
+        println(activity2.toString())
+
         expectContext<ResultFragment, FragmentResultKey>()
             .navigation
             .closeWithResult(result)
 
+        val activity3 = expectActivity<FragmentActivity>()
+        println(activity3.toString())
         assertEquals(
             result,
             expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
@@ -577,12 +589,13 @@ class ResultTests {
             .navigation
             .forward(ResultFlowKey())
 
-        expectContext<ResultFlowActivity, ResultFlowKey>()
+        val activityFlow = expectContext<ResultFlowActivity, ResultFlowKey>()
         val firstRequest = expectContext<ResultFragment, FragmentResultKey>()
         firstRequest
             .navigation
             .closeWithResult("next")
 
+        activityFlow.context.supportFragmentManager.hashCode()
         val secondRequest = expectContext<ResultFragment, FragmentResultKey>()
         assertNotSame(firstRequest.navigation.id, secondRequest.navigation.id)
     }

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item type="id" name="enro_internal_single_fragment_frame_layout" />
+    <item type="id" name="enro_internal_compose_dialog_fragment_view_id" />
 </resources>

@@ -42,25 +42,46 @@ A NavigationContext represents a reference to a Fragment, Activity or Composable
 A NavigationInstruction represents some action that a particular NavigationHandle should perform. Currently, there are three top level types of NavigationInstruction: Open, Close, and RequestClose.
 
 #### Open
-A NavigationInstruction.Open opens the NavigationDestination associated with a particular NavigationKey.
+
+A NavigationInstruction.Open opens the NavigationDestination associated with a particular
+NavigationKey.
 
 #### Close
-A NavigationInstruction.Close closes the NavigationDestination that is associated with the NavigationHandle the instruction is executed on.
+
+A NavigationInstruction.Close closes the NavigationDestination that is associated with the
+NavigationHandle the instruction is executed on.
 
 #### RequestClose
-A NavigationInstruction.RequestClose requests that the NavigationHandle it is executed on performs a NavigationInstruction.Close action. This is a "softer" version of the close request, and is executed by things such as a user pressing the "back" key. NavigationHandles can be configured to perform a custom action when a RequestClose instruction is executed. For example, this might be used to confirm that unsaved changes will be discarded before the NavigationDestination is actually closed.
 
-### Navigator
-A Navigator is the object that is used to directly represent binding between a NavigationKey type and a NavigationDestination type.
+A NavigationInstruction.RequestClose requests that the NavigationHandle it is executed on performs a
+NavigationInstruction.Close action. This is a "softer" version of the close request, and is executed
+by things such as a user pressing the "back" key. NavigationHandles can be configured to perform a
+custom action when a RequestClose instruction is executed. For example, this might be used to
+confirm that unsaved changes will be discarded before the NavigationDestination is actually closed.
+
+### NavigationBinding
+
+A NavigationBinding is an that is used to directly represent binding between a NavigationKey type
+and a NavigationDestination type.
 
 ### NavigationExecutor
+
 A NavigationExecutor is the object that executes NavigationInstructions.
 
-When a NavigationInstruction.Open is executed, the NavigationController finds the appropriate NavigationExecutor and provides it with the NavigationInstruction.Open that is being executed, the NavigationContext in which the instruction is being executed, and the Navigator that contains the NavigationDestination type. It is then the responsibility of the NavigationExecutor to open that NavigationDestination.
+When a NavigationInstruction.Open is executed, the NavigationController finds the appropriate
+NavigationExecutor and provides it with the NavigationInstruction.Open that is being executed, the
+NavigationContext in which the instruction is being executed, and the NavigationBinding that
+contains the NavigationDestination type. It is then the responsibility of the NavigationExecutor to
+open that NavigationDestination.
 
-When a NavigationInstruction.Close is executed, the NavigationController finds the appropriate NavigationExecutor and provides it with the NavigationContext in which the instruction is being executed. It is then the responsibility of the NavigationExecutor to close that NavigationContext appropriately.
+When a NavigationInstruction.Close is executed, the NavigationController finds the appropriate
+NavigationExecutor and provides it with the NavigationContext in which the instruction is being
+executed. It is then the responsibility of the NavigationExecutor to close that NavigationContext
+appropriately.
 
 ### NavigationController
-The NavigationController is a Singleton object which is bound to the Application's lifecycle. The NavigationController stores all the Navigators and NavigationExecutors for the application.
+
+The NavigationController is a Singleton object which is bound to the Application's lifecycle. The
+NavigationController stores all the NavigationBindings and NavigationExecutors for the application.
 
 

@@ -3,8 +3,6 @@ package dev.enro.example
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -13,17 +11,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.*
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.EmptyBehavior
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberEnroContainerController
-import dev.enro.core.forward
+import dev.enro.core.compose.rememberNavigationContainer
+import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.replace
 import kotlinx.parcelize.Parcelize
 import java.util.*
@@ -41,15 +38,14 @@ class DetailComposeKey(
 
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ListDetailComposeKey::class)
 fun MasterDetailComposeScreen() {
     val listContainerController = rememberEnroContainerController(
-        initialState = listOf(NavigationInstruction.Forward(ListComposeKey())),
+        initialBackstack = listOf(NavigationInstruction.Forward(ListComposeKey())),
         emptyBehavior = EmptyBehavior.CloseParent,
         accept = { it is ListComposeKey }
     )
-    val detailContainerController = rememberEnroContainerController(
+    val detailContainerController = rememberNavigationContainer(
         emptyBehavior = EmptyBehavior.AllowEmpty,
         accept = { it is DetailComposeKey }
     )
@@ -58,24 +54,23 @@ fun MasterDetailComposeScreen() {
     if (isLandscape) {
         Row {
             EnroContainer(
-                controller = listContainerController,
+                container = listContainerController,
                 modifier = Modifier.weight(1f, true),
             )
             EnroContainer(
-                controller = detailContainerController,
+                container = detailContainerController,
                 modifier = Modifier.weight(1f, true)
             )
         }
     } else {
         Box {
-            EnroContainer(controller = listContainerController)
-            EnroContainer(controller = detailContainerController)
+            EnroContainer(container = listContainerController)
+            EnroContainer(container = detailContainerController)
         }
     }
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(ListComposeKey::class)
 fun ListComposeScreen() {
     val items = rememberSaveable {
@@ -97,7 +92,6 @@ fun ListComposeScreen() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(DetailComposeKey::class)
 fun DetailComposeScreen() {
     val navigation = navigationHandle<DetailComposeKey>()

@@ -3,7 +3,7 @@ package dev.enro.example.modularised
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 import dev.enro.annotations.NavigationComponent
-import dev.enro.core.AnimationPair
+import dev.enro.core.NavigationAnimation
 import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.navigationController
 import dev.enro.core.plugins.EnroLogger
@@ -18,7 +18,7 @@ class ExampleApplication : Application(), NavigationApplication {
 
         override<MainActivity, Any> {
             animation {
-                AnimationPair.Resource(android.R.anim.fade_in, R.anim.enro_no_op_animation)
+                NavigationAnimation.Resource(android.R.anim.fade_in, R.anim.enro_no_op_exit_animation)
             }
         }
     }

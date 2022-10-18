@@ -26,7 +26,7 @@ class TestNavigationHandle<T : NavigationKey>(
     override val key: T
         get() = navigationHandle.key as T
 
-    override val instruction: NavigationInstruction.Open
+    override val instruction: NavigationInstruction.Open<*>
         get() = navigationHandle.instruction
 
     internal var internalOnCloseRequested: () -> Unit = { close() }
@@ -66,7 +66,7 @@ fun <T : NavigationKey> createTestNavigationHandle(
         override val id: String = instruction.instructionId
         override val additionalData: Bundle = instruction.additionalData
         override val key: NavigationKey = key
-        override val instruction: NavigationInstruction.Open = instruction
+        override val instruction: NavigationInstruction.Open<*> = instruction
 
         override val controller: NavigationController = EnroTest.getCurrentNavigationController()
 
@@ -88,13 +88,13 @@ fun TestNavigationHandle<*>.expectCloseInstruction() {
     TestCase.assertTrue(instructions.last() is NavigationInstruction.Close)
 }
 
-fun <T : Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): NavigationInstruction.Open {
-    val instruction = instructions.filterIsInstance<NavigationInstruction.Open>().last()
+fun <T : Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): NavigationInstruction.Open<*> {
+    val instruction = instructions.filterIsInstance<NavigationInstruction.Open<*>>().last()
     assertTrue(type.isAssignableFrom(instruction.navigationKey::class.java))
     return instruction
 }
 
-inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(): NavigationInstruction.Open {
+inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(): NavigationInstruction.Open<*> {
     return expectOpenInstruction(T::class.java)
 }
 
@@ -117,7 +117,7 @@ fun TestNavigationHandle<*>.assertNotClosed() {
 }
 
 fun <T : Any> TestNavigationHandle<*>.assertOpened(type: Class<T>, direction: NavigationDirection? = null): T {
-    val instruction = instructions.filterIsInstance<NavigationInstruction.Open>()
+    val instruction = instructions.filterIsInstance<NavigationInstruction.Open<*>>()
         .lastOrNull()
 
     assertNotNull(instruction)
@@ -135,7 +135,7 @@ inline fun <reified T : Any> TestNavigationHandle<*>.assertOpened(direction: Nav
 }
 
 fun <T : Any> TestNavigationHandle<*>.assertAnyOpened(type: Class<T>, direction: NavigationDirection? = null): T {
-    val instruction = instructions.filterIsInstance<NavigationInstruction.Open>()
+    val instruction = instructions.filterIsInstance<NavigationInstruction.Open<*>>()
         .lastOrNull { type.isAssignableFrom(it.navigationKey::class.java) }
 
     assertNotNull(instruction)
@@ -153,7 +153,7 @@ inline fun <reified T : Any> TestNavigationHandle<*>.assertAnyOpened(direction: 
 }
 
 fun TestNavigationHandle<*>.assertNoneOpened() {
-    val instruction = instructions.filterIsInstance<NavigationInstruction.Open>()
+    val instruction = instructions.filterIsInstance<NavigationInstruction.Open<*>>()
         .lastOrNull()
     assertNull(instruction)
 }

@@ -16,7 +16,7 @@ data class SimpleExampleKey(
     val name: String,
     val launchedFrom: String,
     val backstack: List<String> = emptyList()
-) : NavigationKey
+) : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
 
 @NavigationDestination(SimpleExampleKey::class)
 class SimpleExampleFragment() : Fragment() {

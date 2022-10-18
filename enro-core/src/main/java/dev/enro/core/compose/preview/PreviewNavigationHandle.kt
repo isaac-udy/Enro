@@ -6,15 +6,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
-import dev.enro.core.EnroException
-import dev.enro.core.NavigationHandle
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
+import dev.enro.core.*
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.controller.NavigationController
 
 internal class PreviewNavigationHandle(
-    override val instruction: NavigationInstruction.Open
+    override val instruction: AnyOpenInstruction
 ) : NavigationHandle {
     override val id: String = instruction.instructionId
     override val key: NavigationKey = instruction.navigationKey
@@ -38,7 +35,7 @@ internal class PreviewNavigationHandle(
 }
 
 @Composable
-fun <T : NavigationKey> EnroPreview(
+public fun <T : NavigationKey> EnroPreview(
     navigationKey: T,
     content: @Composable () -> Unit
 ) {
@@ -49,7 +46,7 @@ fun <T : NavigationKey> EnroPreview(
         )
     }
     CompositionLocalProvider(
-        LocalNavigationHandle provides PreviewNavigationHandle(NavigationInstruction.Forward(navigationKey))
+        LocalNavigationHandle provides PreviewNavigationHandle(NavigationInstruction.DefaultDirection(navigationKey))
     ) {
         content()
     }

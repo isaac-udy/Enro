@@ -1,8 +1,8 @@
 package dev.enro.viewmodel
 
+import androidx.activity.ComponentActivity
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.*
@@ -10,7 +10,7 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-class ViewModelNavigationHandleProperty<T : NavigationKey> @PublishedApi internal constructor(
+public class ViewModelNavigationHandleProperty<T : NavigationKey> @PublishedApi internal constructor(
     viewModelType: KClass<out ViewModel>,
     type: KClass<T>,
     block: LazyNavigationHandleConfiguration<T>.() -> Unit
@@ -29,13 +29,13 @@ class ViewModelNavigationHandleProperty<T : NavigationKey> @PublishedApi interna
     }
 }
 
-fun <T : NavigationKey> ViewModel.navigationHandle(
+public fun <T : NavigationKey> ViewModel.navigationHandle(
     type: KClass<T>,
     block: LazyNavigationHandleConfiguration<T>.() -> Unit = {}
 ): ViewModelNavigationHandleProperty<T> =
     ViewModelNavigationHandleProperty(this::class, type, block)
 
-inline fun <reified T : NavigationKey> ViewModel.navigationHandle(
+public inline fun <reified T : NavigationKey> ViewModel.navigationHandle(
     noinline block: LazyNavigationHandleConfiguration<T>.() -> Unit = {}
 ): ViewModelNavigationHandleProperty<T> = navigationHandle(T::class, block)
 
@@ -45,7 +45,7 @@ internal fun ViewModel.getNavigationHandle(): NavigationHandle {
 }
 
 @MainThread
-inline fun <reified VM : ViewModel> FragmentActivity.enroViewModels(
+public inline fun <reified VM : ViewModel> ComponentActivity.enroViewModels(
     noinline extrasProducer: (() -> CreationExtras)? = null,
     noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null,
 ): Lazy<VM> {
@@ -67,7 +67,7 @@ inline fun <reified VM : ViewModel> FragmentActivity.enroViewModels(
 }
 
 @MainThread
-inline fun <reified VM : ViewModel> Fragment.enroViewModels(
+public inline fun <reified VM : ViewModel> Fragment.enroViewModels(
     noinline extrasProducer: (() -> CreationExtras)? = null,
     noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null,
 ): Lazy<VM> {

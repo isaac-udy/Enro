@@ -8,7 +8,6 @@ buildscript {
         classpath deps.android.gradle
         classpath deps.kotlin.gradle
         classpath deps.hilt.gradle
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0'
     }
 }
 
@@ -53,39 +52,40 @@ task disableConnectedDeviceAnimations {
     doLast {
         exec {
             commandLine(
-                    "adb", "shell", "\"settings put global window_animation_scale 0.00\""
+                    "adb", "shell", "settings put global window_animation_scale 0.0"
             )
         }
 
         exec {
             commandLine(
-                    "adb", "shell", "\"settings put global transition_animation_scale  0.00\""
+                    "adb", "shell", "settings put global transition_animation_scale 0.0"
             )
         }
         exec {
             commandLine(
-                    "adb", "shell", "\"settings put global animator_duration_scale 0.00\""
+                    "adb", "shell", "settings put global animator_duration_scale 0.0"
             )
         }
     }
 }
 
+
 task enableConnectedDeviceAnimations {
     doLast {
         exec {
             commandLine(
-                    "adb", "shell", "\"settings put global window_animation_scale 1.00\""
+                    "adb", "shell", "settings put global window_animation_scale 1.00"
             )
         }
 
         exec {
             commandLine(
-                    "adb", "shell", "\"settings put global transition_animation_scale  1.00\""
+                    "adb", "shell", "settings put global transition_animation_scale  1.00"
             )
         }
         exec {
             commandLine(
-                    "adb", "shell", "\"settings put global animator_duration_scale 1.00\""
+                    "adb", "shell", "settings put global animator_duration_scale 1.00"
             )
         }
     }

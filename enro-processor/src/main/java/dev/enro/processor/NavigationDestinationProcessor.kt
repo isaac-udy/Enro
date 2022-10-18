@@ -2,7 +2,6 @@ package dev.enro.processor
 
 import com.google.auto.service.AutoService
 import com.squareup.javapoet.*
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.GeneratedNavigationBinding
 import dev.enro.annotations.NavigationDestination
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor
@@ -82,9 +81,18 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
         JavaFile
             .builder(EnroProcessor.GENERATED_PACKAGE, classBuilder)
-            .addStaticImport(ClassNames.activityNavigatorKt, "createActivityNavigator")
-            .addStaticImport(ClassNames.fragmentNavigatorKt, "createFragmentNavigator")
-            .addStaticImport(ClassNames.syntheticNavigatorKt, "createSyntheticNavigator")
+            .addStaticImport(
+                ClassNames.activityNavigationBindingKt,
+                "createActivityNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.fragmentNavigationBindingKt,
+                "createFragmentNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.syntheticNavigationBindingKt,
+                "createSyntheticNavigationBinding"
+            )
             .addStaticImport(ClassNames.jvmClassMappings, "getKotlinClass")
             .build()
             .writeTo(processingEnv.filer)
@@ -134,15 +142,6 @@ class NavigationDestinationProcessor : BaseProcessor() {
         }
 
         val annotation = element.getAnnotation(NavigationDestination::class.java)
-        val enableComposableDestination =
-            element.getAnnotation(ExperimentalComposableDestination::class.java) != null
-
-        if(!enableComposableDestination) {
-            val shortMessage = "Failed to create NavigationDestination for function ${element.getElementName()}. Using @Composable functions as @NavigationDestinations is an experimental feature an must be explicitly enabled."
-            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, shortMessage)
-            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "To enable @Composable @NavigationDestinations annotate the @Composable function @NavigationDestination with the @ExperimentalComposableDestination annotation")
-            return
-        }
         val keyType =
             processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
 
@@ -181,8 +180,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     .addStatement(
                         CodeBlock.of(
                             """
-                                builder.navigator(
-                                    createComposableNavigator(
+                                builder.binding(
+                                    createComposableNavigationBinding(
                                         $1T.class,
                                         $composableWrapper.class
                                     )
@@ -197,10 +196,22 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
         JavaFile
             .builder(EnroProcessor.GENERATED_PACKAGE, classBuilder)
-            .addStaticImport(ClassNames.activityNavigatorKt, "createActivityNavigator")
-            .addStaticImport(ClassNames.fragmentNavigatorKt, "createFragmentNavigator")
-            .addStaticImport(ClassNames.syntheticNavigatorKt, "createSyntheticNavigator")
-            .addStaticImport(ClassNames.composeNavigatorKt, "createComposableNavigator")
+            .addStaticImport(
+                ClassNames.activityNavigationBindingKt,
+                "createActivityNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.fragmentNavigationBindingKt,
+                "createFragmentNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.syntheticNavigationBindingKt,
+                "createSyntheticNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.composeNavigationBindingKt,
+                "createComposableNavigationBinding"
+            )
             .addStaticImport(ClassNames.jvmClassMappings, "getKotlinClass")
             .build()
             .writeTo(processingEnv.filer)
@@ -212,7 +223,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
     ): MethodSpec.Builder {
         val destinationName = destination.simpleName
 
-        val destinationIsActivity = destination.extends(ClassNames.fragmentActivity)
+        val destinationIsActivity = destination.extends(ClassNames.componentActivity)
         val destinationIsFragment = destination.extends(ClassNames.fragment)
         val destinationIsSynthetic = destination.implements(ClassNames.syntheticDestination)
 
@@ -222,8 +233,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
             when {
                 destinationIsActivity -> CodeBlock.of(
                     """
-                    builder.navigator(
-                        createActivityNavigator(
+                    builder.binding(
+                        createActivityNavigationBinding(
                             $1T.class,
                             $2T.class
                         )
@@ -235,8 +246,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
                 destinationIsFragment -> CodeBlock.of(
                     """
-                    builder.navigator(
-                        createFragmentNavigator(
+                    builder.binding(
+                        createFragmentNavigationBinding(
                             $1T.class,
                             $2T.class
                         )
@@ -248,8 +259,8 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
                 destinationIsSynthetic -> CodeBlock.of(
                     """
-                    builder.navigator(
-                        createSyntheticNavigator(
+                    builder.binding(
+                        createSyntheticNavigationBinding(
                             $1T.class,
                             () -> new $2T()
                         )

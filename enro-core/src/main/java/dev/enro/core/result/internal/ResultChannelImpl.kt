@@ -1,6 +1,7 @@
 package dev.enro.core.result.internal
 
 import androidx.annotation.Keep
+import androidx.compose.runtime.DisallowComposableCalls
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import dev.enro.core.*
@@ -13,10 +14,10 @@ private class ResultChannelProperties<T>(
     val onResult: (T) -> Unit,
 )
 
-class ResultChannelImpl<Result, Key: NavigationKey.WithResult<Result>> @PublishedApi internal constructor(
+public class ResultChannelImpl<Result, Key : NavigationKey.WithResult<Result>> @PublishedApi internal constructor(
     navigationHandle: NavigationHandle,
     resultType: Class<Result>,
-    onResult: (Result) -> Unit,
+    onResult: @DisallowComposableCalls (Result) -> Unit,
     additionalResultId: String = "",
 ) : UnmanagedEnroResultChannel<Result, Key> {
 
@@ -81,6 +82,24 @@ class ResultChannelImpl<Result, Key: NavigationKey.WithResult<Result>> @Publishe
         )
     }
 
+    override fun push(key: NavigationKey.SupportsPush.WithResult<Result>) {
+        val properties = arguments ?: return
+        properties.navigationHandle.executeInstruction(
+            NavigationInstruction.Push(key).internal.copy(
+                resultId = id
+            )
+        )
+    }
+
+    override fun present(key: NavigationKey.SupportsPresent.WithResult<Result>) {
+        val properties = arguments ?: return
+        properties.navigationHandle.executeInstruction(
+            NavigationInstruction.Present(key).internal.copy(
+                resultId = id
+            )
+        )
+    }
+
     @Suppress("UNCHECKED_CAST")
     internal fun consumeResult(result: Any) {
         val properties = arguments ?: return
@@ -117,11 +136,11 @@ class ResultChannelImpl<Result, Key: NavigationKey.WithResult<Result>> @Publishe
             return navigationHandle.instruction.internal.resultId
         }
 
-        internal fun getResultId(instruction: NavigationInstruction.Open): ResultChannelId? {
+        internal fun getResultId(instruction: NavigationInstruction.Open<*>): ResultChannelId? {
             return instruction.internal.resultId
         }
 
-        internal fun overrideResultId(instruction: NavigationInstruction.Open, resultId: ResultChannelId): NavigationInstruction.Open {
+        internal fun overrideResultId(instruction: NavigationInstruction.Open<*>, resultId: ResultChannelId): NavigationInstruction.Open<*> {
             return instruction.internal.copy(
                 resultId = resultId
             )
@@ -131,6 +150,6 @@ class ResultChannelImpl<Result, Key: NavigationKey.WithResult<Result>> @Publishe
 
 // Used reflectively by ResultExtensions in enro-test
 @Keep
-private fun getResultId(navigationInstruction: NavigationInstruction.Open): ResultChannelId? {
+private fun getResultId(navigationInstruction: NavigationInstruction.Open<*>): ResultChannelId? {
     return navigationInstruction.internal.resultId
 }

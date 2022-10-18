@@ -1,92 +1,100 @@
 package dev.enro.core
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import dev.enro.core.activity.ActivityNavigator
+import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.activity.DefaultActivityExecutor
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.ComposableNavigator
+import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.DefaultComposableExecutor
 import dev.enro.core.fragment.DefaultFragmentExecutor
-import dev.enro.core.fragment.FragmentNavigator
+import dev.enro.core.fragment.FragmentNavigationBinding
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
-import dev.enro.core.synthetic.SyntheticDestination
-import dev.enro.core.synthetic.SyntheticNavigator
+import dev.enro.core.synthetic.SyntheticNavigationBinding
 import kotlin.reflect.KClass
 
 // This class is used primarily to simplify the lambda signature of NavigationExecutor.open
-class ExecutorArgs<FromContext: Any, OpensContext: Any, KeyType: NavigationKey>(
-    val fromContext: NavigationContext<out FromContext>,
-    val navigator: Navigator<out KeyType, out OpensContext>,
-    val key: KeyType,
-    val instruction: NavigationInstruction.Open
-)
-
-abstract class NavigationExecutor<FromContext: Any, OpensContext: Any, KeyType: NavigationKey>(
-    val fromType: KClass<FromContext>,
-    val opensType: KClass<OpensContext>,
-    val keyType: KClass<KeyType>
+public class ExecutorArgs<FromContext : Any, OpensContext : Any, KeyType : NavigationKey>(
+    public val fromContext: NavigationContext<out FromContext>,
+    public val binding: NavigationBinding<out KeyType, out OpensContext>,
+    public val key: KeyType,
+    instruction: AnyOpenInstruction
 ) {
-    open fun animation(instruction: NavigationInstruction.Open): AnimationPair {
-        return when(instruction.navigationDirection) {
-            NavigationDirection.FORWARD -> DefaultAnimations.forward
-            NavigationDirection.REPLACE -> DefaultAnimations.replace
-            NavigationDirection.REPLACE_ROOT -> DefaultAnimations.replaceRoot
+    public val instruction: AnyOpenInstruction = instruction.internal.copy(
+        previouslyActiveId = fromContext.containerManager.activeContainer?.id
+    )
+}
+
+public abstract class NavigationExecutor<FromContext : Any, OpensContext : Any, KeyType : NavigationKey>(
+    public val fromType: KClass<FromContext>,
+    public val opensType: KClass<OpensContext>,
+    public val keyType: KClass<KeyType>
+) {
+    public open fun animation(instruction: AnyOpenInstruction): NavigationAnimation {
+        return when (instruction.navigationDirection) {
+            NavigationDirection.Push -> DefaultAnimations.push
+            NavigationDirection.Present -> DefaultAnimations.present
+            NavigationDirection.Forward -> DefaultAnimations.forward
+            NavigationDirection.Replace -> DefaultAnimations.replace
+            NavigationDirection.ReplaceRoot -> DefaultAnimations.replaceRoot
         }
     }
 
-    open fun closeAnimation(context: NavigationContext<out OpensContext>): AnimationPair {
+    public open fun closeAnimation(context: NavigationContext<out OpensContext>): NavigationAnimation {
         return DefaultAnimations.close
     }
 
-    open fun preOpened(
+    public open fun preOpened(
         context: NavigationContext<out FromContext>
-    ) {}
+    ) {
+    }
 
-    abstract fun open(
+    public abstract fun open(
         args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>
     )
 
-    open fun postOpened(
+    public open fun postOpened(
         context: NavigationContext<out OpensContext>
-    ) {}
+    ) {
+    }
 
-    open fun preClosed(
+    public open fun preClosed(
         context: NavigationContext<out OpensContext>
-    ) {}
+    ) {
+    }
 
-    abstract fun close(
+    public abstract fun close(
         context: NavigationContext<out OpensContext>
     )
 }
 
-class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: NavigationKey> @PublishedApi internal constructor(
+public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, KeyType : NavigationKey> @PublishedApi internal constructor(
     private val fromType: KClass<FromContext>,
     private val opensType: KClass<OpensContext>,
     private val keyType: KClass<KeyType>
 ) {
 
-    private var animationFunc: ((instruction: NavigationInstruction.Open) -> AnimationPair)? = null
-    private var closeAnimationFunc: ((context: NavigationContext<out OpensContext>) -> AnimationPair)? = null
-    private var preOpenedFunc: (( context: NavigationContext<out FromContext>) -> Unit)? = null
-    private var openedFunc: ((args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) -> Unit)? = null
+    private var animationFunc: ((instruction: AnyOpenInstruction) -> NavigationAnimation)? = null
+    private var closeAnimationFunc: ((context: NavigationContext<out OpensContext>) -> NavigationAnimation)? =
+        null
+    private var preOpenedFunc: ((context: NavigationContext<out FromContext>) -> Unit)? = null
+    private var openedFunc: ((args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) -> Unit)? =
+        null
     private var postOpenedFunc: ((context: NavigationContext<out OpensContext>) -> Unit)? = null
     private var preClosedFunc: ((context: NavigationContext<out OpensContext>) -> Unit)? = null
     private var closedFunc: ((context: NavigationContext<out OpensContext>) -> Unit)? = null
 
     @Suppress("UNCHECKED_CAST")
-    fun defaultOpened(args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) {
-        when(args.navigator) {
-             is ActivityNavigator ->
+    public fun defaultOpened(args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) {
+        when (args.binding) {
+            is ActivityNavigationBinding ->
                 DefaultActivityExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
-            is FragmentNavigator ->
+            is FragmentNavigationBinding ->
                 DefaultFragmentExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
-            is SyntheticNavigator ->
+            is SyntheticNavigationBinding ->
                 DefaultSyntheticExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
-            is ComposableNavigator ->
+            is ComposableNavigationBinding ->
                 DefaultComposableExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
             else -> throw IllegalArgumentException("No default launch executor found for ${opensType.java}")
@@ -94,53 +102,53 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun defaultClosed(context: NavigationContext<out OpensContext>) {
-        when(context.navigator) {
-            is ActivityNavigator ->
+    public fun defaultClosed(context: NavigationContext<out OpensContext>) {
+        when (context.binding) {
+            is ActivityNavigationBinding ->
                 DefaultActivityExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
-            is FragmentNavigator ->
+            is FragmentNavigationBinding ->
                 DefaultFragmentExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
-            is ComposableNavigator ->
+            is ComposableNavigationBinding ->
                 DefaultComposableExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
             else -> throw IllegalArgumentException("No default close executor found for ${opensType.java}")
         }.invoke(context)
     }
 
-    fun animation(block: (instruction: NavigationInstruction.Open) -> AnimationPair) {
-        if(animationFunc != null) throw IllegalStateException("Value is already set!")
+    public fun animation(block: (instruction: AnyOpenInstruction) -> NavigationAnimation) {
+        if (animationFunc != null) throw IllegalStateException("Value is already set!")
         animationFunc = block
     }
 
-    fun closeAnimation(block: ( context: NavigationContext<out OpensContext>) -> AnimationPair) {
-        if(closeAnimationFunc != null) throw IllegalStateException("Value is already set!")
+    public fun closeAnimation(block: (context: NavigationContext<out OpensContext>) -> NavigationAnimation) {
+        if (closeAnimationFunc != null) throw IllegalStateException("Value is already set!")
         closeAnimationFunc = block
     }
 
-    fun preOpened(block: ( context: NavigationContext<out FromContext>) -> Unit) {
-        if(preOpenedFunc != null) throw IllegalStateException("Value is already set!")
+    public fun preOpened(block: (context: NavigationContext<out FromContext>) -> Unit) {
+        if (preOpenedFunc != null) throw IllegalStateException("Value is already set!")
         preOpenedFunc = block
     }
 
-    fun opened(block: (args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) -> Unit) {
-        if(openedFunc != null) throw IllegalStateException("Value is already set!")
+    public fun opened(block: (args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) -> Unit) {
+        if (openedFunc != null) throw IllegalStateException("Value is already set!")
         openedFunc = block
     }
 
-    fun postOpened(block: (context: NavigationContext<out OpensContext>) -> Unit) {
-        if(postOpenedFunc != null) throw IllegalStateException("Value is already set!")
+    public fun postOpened(block: (context: NavigationContext<out OpensContext>) -> Unit) {
+        if (postOpenedFunc != null) throw IllegalStateException("Value is already set!")
         postOpenedFunc = block
     }
 
-    fun preClosed(block: (context: NavigationContext<out OpensContext>) -> Unit) {
-        if(preClosedFunc != null) throw IllegalStateException("Value is already set!")
+    public fun preClosed(block: (context: NavigationContext<out OpensContext>) -> Unit) {
+        if (preClosedFunc != null) throw IllegalStateException("Value is already set!")
         preClosedFunc = block
     }
 
-    fun closed(block: (context: NavigationContext<out OpensContext>) -> Unit) {
-        if(closedFunc != null) throw IllegalStateException("Value is already set!")
+    public fun closed(block: (context: NavigationContext<out OpensContext>) -> Unit) {
+        if (closedFunc != null) throw IllegalStateException("Value is already set!")
         closedFunc = block
     }
 
@@ -149,11 +157,11 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
         opensType,
         keyType
     ) {
-        override fun animation(instruction: NavigationInstruction.Open): AnimationPair {
+        override fun animation(instruction: AnyOpenInstruction): NavigationAnimation {
             return animationFunc?.invoke(instruction) ?: super.animation(instruction)
         }
 
-        override fun closeAnimation(context: NavigationContext<out OpensContext>): AnimationPair {
+        override fun closeAnimation(context: NavigationContext<out OpensContext>): NavigationAnimation {
             return closeAnimationFunc?.invoke(context) ?: super.closeAnimation(context)
         }
 
@@ -179,7 +187,7 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
     }
 }
 
-fun <From : Any, Opens : Any> createOverride(
+public fun <From : Any, Opens : Any> createOverride(
     fromClass: KClass<From>,
     opensClass: KClass<Opens>,
     block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
@@ -188,7 +196,20 @@ fun <From : Any, Opens : Any> createOverride(
         .apply(block)
         .build()
 
-inline fun <reified From : Any, reified Opens : Any> createOverride(
+public inline fun <reified From : Any, reified Opens : Any> createOverride(
     noinline block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
 ): NavigationExecutor<From, Opens, NavigationKey> =
     createOverride(From::class, Opens::class, block)
+
+public inline fun <reified From : Fragment, reified Opens : Fragment> createSharedElementOverride(
+    elements: List<Pair<Int, Int>>
+): NavigationExecutor<From, Opens, NavigationKey> {
+    return createOverride {
+        opened { args ->
+            args.instruction.setSharedElements(
+                elements.map { EnroSharedElement(it.first, it.second) }
+            )
+            defaultOpened(args)
+        }
+    }
+}

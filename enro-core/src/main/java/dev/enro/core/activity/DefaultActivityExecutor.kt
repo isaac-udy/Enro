@@ -1,50 +1,45 @@
 package dev.enro.core.activity
 
 import android.content.Intent
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.ComponentActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityOptionsCompat
 import dev.enro.core.*
 
-object DefaultActivityExecutor : NavigationExecutor<Any, FragmentActivity, NavigationKey>(
+public object DefaultActivityExecutor : NavigationExecutor<Any, ComponentActivity, NavigationKey>(
     fromType = Any::class,
-    opensType = FragmentActivity::class,
+    opensType = ComponentActivity::class,
     keyType = NavigationKey::class
 ) {
-    override fun open(args: ExecutorArgs<out Any, out FragmentActivity, out NavigationKey>) {
+    override fun open(args: ExecutorArgs<out Any, out ComponentActivity, out NavigationKey>) {
         val fromContext = args.fromContext
-        val navigator = args.navigator
         val instruction = args.instruction
-
-        navigator as ActivityNavigator
 
         val intent = createIntent(args)
 
-        if (instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
+        if (instruction.navigationDirection == NavigationDirection.ReplaceRoot) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
 
         val activity = fromContext.activity
-        if (instruction.navigationDirection == NavigationDirection.REPLACE || instruction.navigationDirection == NavigationDirection.REPLACE_ROOT) {
+        if (instruction.navigationDirection == NavigationDirection.Replace) {
             activity.finish()
         }
-        val animations = animationsFor(fromContext, instruction)
+        val animations = animationsFor(fromContext, instruction).asResource(activity.theme)
 
-        activity.startActivity(intent)
-        if (instruction.children.isEmpty()) {
-            activity.overridePendingTransition(animations.enter, animations.exit)
-        } else {
-            activity.overridePendingTransition(0, 0)
-        }
+        val options = ActivityOptionsCompat.makeCustomAnimation(activity, animations.enter, animations.exit)
+        activity.startActivity(intent, options.toBundle())
     }
 
-    override fun close(context: NavigationContext<out FragmentActivity>) {
-        context.activity.supportFinishAfterTransition()
-        context.navigator ?: return
+    override fun close(context: NavigationContext<out ComponentActivity>) {
+        ActivityCompat.finishAfterTransition(context.activity)
+        context.binding ?: return
 
-        val animations = animationsFor(context, NavigationInstruction.Close)
+        val animations = animationsFor(context, NavigationInstruction.Close).asResource(context.activity.theme)
         context.activity.overridePendingTransition(animations.enter, animations.exit)
     }
 
-    fun createIntent(args: ExecutorArgs<out Any, out FragmentActivity, out NavigationKey>) =
-        Intent(args.fromContext.activity, args.navigator.contextType.java)
+    public fun createIntent(args: ExecutorArgs<out Any, out ComponentActivity, out NavigationKey>): Intent =
+        Intent(args.fromContext.activity, args.binding.destinationType.java)
             .addOpenInstruction(args.instruction)
 }

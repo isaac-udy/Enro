@@ -8,7 +8,7 @@ import dev.enro.core.*
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
 @Composable
-inline fun <reified T: NavigationKey> navigationHandle(): TypedNavigationHandle<T> {
+public inline fun <reified T : NavigationKey> navigationHandle(): TypedNavigationHandle<T> {
     val navigationHandle = navigationHandle()
     return remember {
         navigationHandle.asTyped()
@@ -16,7 +16,7 @@ inline fun <reified T: NavigationKey> navigationHandle(): TypedNavigationHandle<
 }
 
 @Composable
-fun navigationHandle(): NavigationHandle {
+public fun navigationHandle(): NavigationHandle {
     val localNavigationHandle = LocalNavigationHandle.current
     val localViewModelStoreOwner = LocalViewModelStoreOwner.current
 
@@ -27,7 +27,7 @@ fun navigationHandle(): NavigationHandle {
 
 @SuppressLint("ComposableNaming")
 @Composable
-fun NavigationHandle.configure(configuration: LazyNavigationHandleConfiguration<NavigationKey>.() -> Unit = {}) {
+public fun NavigationHandle.configure(configuration: LazyNavigationHandleConfiguration<NavigationKey>.() -> Unit = {}) {
     remember {
         LazyNavigationHandleConfiguration(NavigationKey::class)
             .apply(configuration)
@@ -38,7 +38,7 @@ fun NavigationHandle.configure(configuration: LazyNavigationHandleConfiguration<
 
 @SuppressLint("ComposableNaming")
 @Composable
-inline fun <reified T: NavigationKey> TypedNavigationHandle<T>.configure(configuration: LazyNavigationHandleConfiguration<T>.() -> Unit = {}) {
+public inline fun <reified T : NavigationKey> TypedNavigationHandle<T>.configure(configuration: LazyNavigationHandleConfiguration<T>.() -> Unit = {}) {
     remember {
         LazyNavigationHandleConfiguration(T::class)
             .apply(configuration)

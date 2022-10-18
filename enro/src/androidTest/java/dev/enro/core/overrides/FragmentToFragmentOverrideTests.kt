@@ -1,11 +1,13 @@
+@file:Suppress("DEPRECATION")
 package dev.enro.core.overrides
 
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
-import junit.framework.Assert.assertTrue
 import dev.enro.*
 import dev.enro.core.*
 import dev.enro.core.controller.navigationController
+import dev.enro.core.legacy.*
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 

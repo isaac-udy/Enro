@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package dev.enro.core
 
 import android.os.Bundle
@@ -18,12 +20,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.test.core.app.ActivityScenario
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.compose.EmptyBehavior
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberEnroContainerController
+import dev.enro.core.container.EmptyBehavior
 import kotlinx.parcelize.Parcelize
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -106,13 +107,13 @@ class ComposableTestActivity : AppCompatActivity() {
             val controllers = screens.map { key ->
                 val instruction = NavigationInstruction.Forward(key)
                 rememberEnroContainerController(
-                    initialState = listOf(instruction),
+                    initialBackstack = listOf(instruction),
                     accept = { false },
                     emptyBehavior = EmptyBehavior.CloseParent
                 )
             }
             EnroContainer(
-                controller = controllers[selectedIndex.value],
+                container = controllers[selectedIndex.value],
             )
         }
     }
@@ -126,7 +127,6 @@ class EnroStabilityKey(
 class EnroStabilityViewModel : ViewModel()
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(EnroStabilityKey::class)
 fun EnroStabilityScreen() {
     val navigation = navigationHandle<EnroStabilityKey>()

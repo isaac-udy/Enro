@@ -6,7 +6,7 @@ import dev.enro.core.result.internal.ResultChannelId
 import dev.enro.test.EnroTest
 import kotlin.reflect.KClass
 
-fun <T: Any> NavigationInstruction.Open.sendResultForTest(type: Class<T>, result: T) {
+fun <T: Any> NavigationInstruction.Open<*>.sendResultForTest(type: Class<T>, result: T) {
     val navigationController = EnroTest.getCurrentNavigationController()
 
     val resultChannelClass = Class.forName("dev.enro.core.result.internal.ResultChannelImplKt")
@@ -35,7 +35,7 @@ fun <T: Any> NavigationInstruction.Open.sendResultForTest(type: Class<T>, result
     addPendingResult.isAccessible = false
 }
 
-inline fun <reified T: Any> NavigationInstruction.Open.sendResultForTest(result: T) {
+inline fun <reified T: Any> NavigationInstruction.Open<*>.sendResultForTest(result: T) {
     sendResultForTest(T::class.java, result)
 }
 

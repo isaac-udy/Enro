@@ -2,13 +2,22 @@ package dev.enro.example
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.isActive
+import dev.enro.core.container.setActive
+import dev.enro.core.containerManager
+import dev.enro.core.fragment.container.FragmentNavigationContainer
+import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.fragment.container.setVisibilityAnimated
 import dev.enro.core.navigationHandle
 import dev.enro.example.databinding.ActivityMainBinding
-import dev.enro.multistack.multistackController
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -18,42 +27,71 @@ class MainKey : NavigationKey
 @NavigationDestination(MainKey::class)
 class MainActivity : AppCompatActivity() {
 
-    private val navigation by navigationHandle<MainKey> {
-        container(R.id.homeContainer) {
+    private val homeContainer by navigationContainer(
+        containerId = R.id.homeContainer,
+        root = { Home() },
+        accept = {
             it is Home || it is SimpleExampleKey || it is ComposeSimpleExampleKey
+        },
+        emptyBehavior = EmptyBehavior.CloseParent
+    )
+    private val featuresContainer by navigationContainer(
+        containerId = R.id.featuresContainer,
+        root = { Features() },
+        accept = { false },
+        emptyBehavior = EmptyBehavior.Action {
+            findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home
+            true
         }
-    }
+    )
 
-    private val mutlistack by multistackController {
-        container(R.id.homeContainer, Home())
-        container(R.id.featuresContainer, Features())
-        container(R.id.profileContainer, Profile())
-    }
+    private val profileContainer by navigationContainer(
+        containerId = R.id.profileContainer,
+        root = { Profile() },
+        accept = { false },
+        emptyBehavior = EmptyBehavior.Action {
+            findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home
+            true
+        }
+    )
+
+    private val navigation by navigationHandle<MainKey>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.apply {
-            bottomNavigation.setOnNavigationItemSelectedListener {
-                when (it.itemId) {
-                    R.id.home -> mutlistack.openStack(R.id.homeContainer)
-                    R.id.features -> mutlistack.openStack(R.id.featuresContainer)
-                    R.id.profile -> mutlistack.openStack(R.id.profileContainer)
-                    else -> return@setOnNavigationItemSelectedListener false
-                }
-                return@setOnNavigationItemSelectedListener true
-            }
+        binding.bottomNavigation.bindContainers(
+            R.id.home to homeContainer,
+            R.id.features to featuresContainer,
+            R.id.profile to profileContainer,
+        )
 
-            mutlistack.activeContainer.observe(this@MainActivity, Observer { selectedContainer ->
-                bottomNavigation.selectedItemId = when (selectedContainer) {
-                    R.id.homeContainer -> R.id.home
-                    R.id.featuresContainer -> R.id.features
-                    R.id.profileContainer -> R.id.profile
-                    else -> 0
+        if(savedInstanceState == null) {
+            binding.bottomNavigation.selectedItemId = R.id.home
+        }
+    }
+
+    private fun BottomNavigationView.bindContainers(
+        vararg containers: Pair<Int, FragmentNavigationContainer>
+    ) {
+        containerManager.activeContainerFlow
+            .onEach { _ ->
+                val activeContainer = containers.firstOrNull { it.second.isActive }
+                    ?: containers.firstOrNull { it.first == selectedItemId}
+
+                containers.forEach {
+                    it.second.setVisibilityAnimated(it.second == activeContainer?.second)
                 }
-            })
+            }
+            .launchIn(lifecycleScope)
+
+        setOnItemSelectedListener { item ->
+            containers.firstOrNull { it.first == item.itemId }
+                ?.second
+                ?.setActive()
+            return@setOnItemSelectedListener true
         }
     }
 }

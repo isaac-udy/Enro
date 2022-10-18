@@ -11,7 +11,7 @@ import dev.enro.example.databinding.FragmentExampleDialogBinding
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ExampleDialogKey(val number: Int = 1) : NavigationKey
+class ExampleDialogKey(val number: Int = 1) : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
 
 @NavigationDestination(ExampleDialogKey::class)
 class ExampleDialogFragment : DialogFragment() {

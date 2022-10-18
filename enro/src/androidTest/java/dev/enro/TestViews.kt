@@ -27,7 +27,7 @@ import androidx.fragment.app.Fragment
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberEnroContainerController
+import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.getNavigationHandle
 
 abstract class TestActivity : AppCompatActivity() {
@@ -35,7 +35,8 @@ abstract class TestActivity : AppCompatActivity() {
     val layout by lazy {
         val key = try {
             getNavigationHandle().key
-        } catch(t: Throwable) {}
+        } catch (t: Throwable) {
+        }
 
         Log.e("TestActivity", "Opened $key")
 
@@ -102,7 +103,7 @@ abstract class TestFragment : Fragment() {
         val key = try {
             getNavigationHandle().key
         } catch (t: Throwable) {
-            "No Navigation Key"
+        "No Navigation Key"
         }
 
         Log.e("TestFragment", "Opened $key")
@@ -167,7 +168,8 @@ abstract class TestDialogFragment : DialogFragment() {
     ): View? {
         val key = try {
             getNavigationHandle().key
-        } catch(t: Throwable) {}
+        } catch (t: Throwable) {
+        }
 
         Log.e("TestFragment", "Opened $key")
 
@@ -226,19 +228,33 @@ fun TestComposable(
     primaryContainerAccepts: (NavigationKey) -> Boolean = { false },
     secondaryContainerAccepts: (NavigationKey) -> Boolean = { false }
 ) {
-    val primaryContainer = rememberEnroContainerController(
+    val primaryContainer = rememberNavigationContainer(
         accept = primaryContainerAccepts
     )
 
-    val secondaryContainer = rememberEnroContainerController(
-        accept = primaryContainerAccepts
+    val secondaryContainer = rememberNavigationContainer(
+        accept = secondaryContainerAccepts
     )
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
-        Text(text = name, fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
-        Text(text = navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.defaultMinSize(minHeight = 224.dp)
+    ) {
+        Text(
+            text = name,
+            fontSize = 32.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(20.dp)
+        )
+        Text(
+            text = navigationHandle().key.toString(),
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(20.dp)
+        )
         EnroContainer(
-            controller = primaryContainer,
+            container = primaryContainer,
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)
@@ -246,7 +262,7 @@ fun TestComposable(
                 .padding(horizontal = 20.dp)
         )
         EnroContainer(
-            controller = secondaryContainer,
+            container = secondaryContainer,
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)

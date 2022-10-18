@@ -1,8 +1,8 @@
 package dev.enro.core
 
 import android.view.View
+import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 
-class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal constructor(
+public class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal constructor(
     private val lifecycleOwner: LifecycleOwner,
     private val viewModelStoreOwner: ViewModelStoreOwner,
     private val configBuilder: NavigationHandleConfiguration<Key>.() -> Unit = {},
@@ -36,11 +36,13 @@ class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal const
         return navigationHandle
     }
 
-    companion object {
-        internal val pendingProperties = mutableMapOf<Int, WeakReference<NavigationHandleProperty<*>>>()
+    public companion object {
+        internal val pendingProperties =
+            mutableMapOf<Int, WeakReference<NavigationHandleProperty<*>>>()
 
-        fun getPendingConfig(navigationContext: NavigationContext<*>): NavigationHandleConfiguration<*>? {
-            val pending = pendingProperties[navigationContext.contextReference.hashCode()] ?: return null
+        internal fun getPendingConfig(navigationContext: NavigationContext<*>): NavigationHandleConfiguration<*>? {
+            val pending =
+                pendingProperties[navigationContext.contextReference.hashCode()] ?: return null
             val config = pending.get()?.config
             pendingProperties.remove(navigationContext.contextReference.hashCode())
             return config
@@ -48,7 +50,7 @@ class NavigationHandleProperty<Key : NavigationKey> @PublishedApi internal const
     }
 }
 
-inline fun <reified T: NavigationKey> FragmentActivity.navigationHandle(
+public inline fun <reified T : NavigationKey> ComponentActivity.navigationHandle(
     noinline config: NavigationHandleConfiguration<T>.() -> Unit = {}
 ): NavigationHandleProperty<T> = NavigationHandleProperty(
     lifecycleOwner = this,
@@ -57,7 +59,7 @@ inline fun <reified T: NavigationKey> FragmentActivity.navigationHandle(
     keyType = T::class
 )
 
-inline fun <reified T : NavigationKey> Fragment.navigationHandle(
+public inline fun <reified T : NavigationKey> Fragment.navigationHandle(
     noinline config: NavigationHandleConfiguration<T>.() -> Unit = {}
 ): NavigationHandleProperty<T> = NavigationHandleProperty(
     lifecycleOwner = this,
@@ -66,16 +68,19 @@ inline fun <reified T : NavigationKey> Fragment.navigationHandle(
     keyType = T::class
 )
 
-fun NavigationContext<*>.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
+public fun NavigationContext<*>.getNavigationHandle(): NavigationHandle =
+    getNavigationHandleViewModel()
 
-fun FragmentActivity.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
+public fun ComponentActivity.getNavigationHandle(): NavigationHandle =
+    getNavigationHandleViewModel()
 
-fun Fragment.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
+public fun Fragment.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
 
-fun View.getNavigationHandle(): NavigationHandle? = findViewTreeViewModelStoreOwner()?.getNavigationHandleViewModel()
+public fun View.getNavigationHandle(): NavigationHandle? =
+    findViewTreeViewModelStoreOwner()?.getNavigationHandleViewModel()
 
-fun View.requireNavigationHandle(): NavigationHandle {
-    if(!isAttachedToWindow) {
+public fun View.requireNavigationHandle(): NavigationHandle {
+    if (!isAttachedToWindow) {
         throw EnroException.InvalidViewForNavigationHandle("$this is not attached to any Window, which is required to retrieve a NavigationHandle")
     }
     val viewModelStoreOwner = findViewTreeViewModelStoreOwner()

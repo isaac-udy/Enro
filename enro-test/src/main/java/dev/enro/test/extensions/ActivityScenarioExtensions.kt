@@ -1,5 +1,6 @@
 package dev.enro.test.extensions
 
+import androidx.activity.ComponentActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
 import dev.enro.core.NavigationHandle
@@ -7,7 +8,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.getNavigationHandle
 import dev.enro.test.TestNavigationHandle
 
-fun <T : NavigationKey> ActivityScenario<out FragmentActivity>.getTestNavigationHandle(type: Class<T>): TestNavigationHandle<T> {
+fun <T : NavigationKey> ActivityScenario<out ComponentActivity>.getTestNavigationHandle(type: Class<T>): TestNavigationHandle<T> {
     var result: NavigationHandle? = null
     onActivity {
         result = it.getNavigationHandle()
@@ -22,5 +23,5 @@ fun <T : NavigationKey> ActivityScenario<out FragmentActivity>.getTestNavigation
     return TestNavigationHandle(handle)
 }
 
-inline fun <reified T : NavigationKey> ActivityScenario<out FragmentActivity>.getTestNavigationHandle(): TestNavigationHandle<T> =
+inline fun <reified T : NavigationKey> ActivityScenario<out ComponentActivity>.getTestNavigationHandle(): TestNavigationHandle<T> =
     getTestNavigationHandle(T::class.java)

@@ -56,7 +56,6 @@ class ListFragment : Fragment()
 class DetailActivity : AppCompatActivity()
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(MyComposeKey::class)
 fun MyComposableScreen() { }
 ```
@@ -87,7 +86,6 @@ class ListFragment : ListFragment() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(MyComposeKey::class)
 fun MyComposableScreen() {
     val navigation = navigationHandle<MyComposeKey>()
@@ -143,8 +141,11 @@ Enro supports multiple arguments to these instructions.
 
 #### How does Enro support Activities navigating to Fragments? 
 When an Activity executes a navigation instruction that resolves to a Fragment, one of two things will happen: 
-1. The Activity's navigator defines a "container" that accepts the Fragment's type, in which case, the Fragment will be opened into the container view defined by that container.
-2. The Activity's navigation **does not** define a fragment host that acccepts the Fragment's type, in which case, the Fragment will be opened into a new, full screen Activity. 
+1. The Activity defines a "navigationContainer" that accepts the Fragment's type, in which case, the
+   Fragment will be opened into the container view defined by that container.
+2. The Activity **does not** define a navigationContainer that acccepts the Fragment's type, in
+   which case, the Fragment will be opened into a either a floating, full window dialog, or a full
+   screen Activity (depending on the situation).
 
 #### How do I deal with Activity results? 
 Enro supports any NavigationKey/NavigationDestination providing a result. Instead of implementing the NavigationKey interface on the NavigationKey that provides the result, implement NavigationKey.WithResult<T> where T is the type of the result. Once you're ready to navigate to that NavigationKey and consume a result, you'll want to call "registerForNavigationResult" in your Fragment/Activity/ViewModel. This API is very similar to the AndroidX Activity 1.2.0 ActivityResultLauncher.
@@ -188,8 +189,11 @@ There will be an example project that shows how this all works in the future, bu
 1. A NavigationExecutor is typed for a "From", an "Opens", and a NavigationKey type. 
 2. Enro performs navigation on a "NavigationContext", which is basically either a Fragment or a FragmentActivity
 3. A NavigationExecutor defines two methods
-    * `open`, which takes a NavigationContext of the "From" type, a Navigator for the "Opens" type, and a NavigationInstruction (i.e. the From context is attempting to open the Navigator with the input NavigationInstruction)
-    * `close`, which takes a NavigationContext of the "Opens" type (i.e. you're closing what you've already opened)
+   * `open`, which takes a NavigationContext of the "From" type, a NavigationBinding for the "Opens"
+     type, and a NavigationInstruction (i.e. the From context is attempting to open the
+     NavigationBinding with the input NavigationInstruction)
+   * `close`, which takes a NavigationContext of the "Opens" type (i.e. you're closing what you've
+     already opened)
 4. By creating a NavigationExecutor between two specific screens and registering this with the NavigationController, you're able to override the default navigation behaviour (although you're still able to call back to the DefaultActivityExecutor or DefaultFragmentExecutor if you need to)
 5. See the method in NavigationControllerBuilder for `override`
 6. When a NavigationContext decides what NavigationExecutor to execute an instruction on, Enro will look at the NavigationContext originating the NavigationInstruction and then walk up toward's it's root NavigationContext (i.e. a Fragment will check itself, then its parent Fragment, and then that parent Fragment's Activity), checking for an appropriate override along the way. If it finds no override, the default will be used. NavigationContexts that are the children of the current NavigationContext will not be searched, only the parents. 
@@ -270,15 +274,10 @@ Enro provides a custom extension function similar to AndroidX's `by viewModels()
 
 This means that your ViewModel can be put in charge of the flow through your Application, rather than needing to use a `LiveData<NavigationEvent>()` (or similar) in your ViewModel. When we use things like `LiveData<NavigationEvent>()` we are able to test the ViewModel's intent to navigate, but there's still the reliance on the Activity/Fragment implementing the response to the navigation event correctly. In the case of retrieving a result from another screen, this gap grows even wider, and there becomes an invisible contract between the ViewModel and Activity/Fragment: The ViewModel expects that if it sets a particular `NavigationEvent` in the `LiveData`, that the Activity/Fragment will navigate to the correct place, and then once the navigation has been successful and a result has been returned, that the Activity/Fragment will call the correct method on the ViewModel to provide the result. This invisible contract results in extra boilerplate "wiring" code, and a gap for bugs to slip through. Instead, using Enro's ViewModel integration, you allow your ViewModel to be precise and clear about it's intention, and about how to handle a result. 
 
-## Experimental Compose Support
-The most recent version of Enro (1.4.0-beta04) adds experimental support for directly marking `@Composable` functions as Navigation Destinations.
-
-To support a Composable destination, you will need to add both an `@NavigationDestination` annotation, and a `@ExperimentalComposableDestination` annotation. Once the Composable support moves from the "experimental" stage into a stable state, the `@ExperimentalComposableDestination` annotation will be removed.
-
+## Compose Support
 Here is an example of a Composable function being used as a NavigationDestination:
 ```kotlin
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(MyComposeKey::class)
 fun MyComposableScreen() {
     val navigation = navigationHandle<MyComposeKey>()
@@ -299,7 +298,6 @@ Here is an example of creating a Composable that supports nested Composable navi
 
 ```kotlin
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(MyComposeKey::class)
 fun MyNestedComposableScreen() {
     val navigation = navigationHandle<MyComposeKey>()
@@ -321,7 +319,6 @@ fun MyNestedComposableScreen() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(NestedComposeKey::class)
 fun NestedComposableScreen() = Text("Nested Screen!")
 ```
@@ -337,7 +334,6 @@ Here's an example:
 
 ```kotlin
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(DialogComposableKey::class)
 fun DialogDestination.DialogComposableScreen() {
     configureDialog { ... }
@@ -345,7 +341,6 @@ fun DialogDestination.DialogComposableScreen() {
 
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
-@ExperimentalComposableDestination
 @NavigationDestination(BottomSheetComposableKey::class)
 fun BottomSheetDestination.BottomSheetComposableScreen() {
     configureBottomSheet { ... }

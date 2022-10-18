@@ -22,13 +22,12 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.enro.annotations.ExperimentalComposableDestination
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.registerForNavigationResult
-import dev.enro.core.compose.rememberEnroContainerController
+import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.forward
 import dev.enro.core.result.closeWithResult
 import dev.enro.core.result.registerForNavigationResult
@@ -37,25 +36,23 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class Profile : NavigationKey
+class Profile : NavigationKey.SupportsPush
 
 
 @Composable
 fun ProgileFragment() {
-    EnroExampleTheme {
+    Text(text = "Open Nested!")
+    Column {
+        val navigation = navigationHandle()
         Text(text = "Open Nested!")
-        Column {
-            val navigation = navigationHandle()
-            Text(text = "Open Nested!")
-            Button(onClick = { navigation.forward(InitialKey()) }) {
-                Text(text = "Open Initial")
-            }
-            EnroContainer(modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(), controller = rememberEnroContainerController {
-                it is InitialKey
-            })
+        Button(onClick = { navigation.forward(InitialKey()) }) {
+            Text(text = "Open Initial")
         }
+        EnroContainer(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(), container = rememberNavigationContainer {
+            it is InitialKey
+        })
     }
 }
 
@@ -79,7 +76,7 @@ class ProfileFragment : Fragment() {
                         }
                         EnroContainer(modifier = Modifier
                             .fillMaxWidth()
-                            .fillMaxHeight(), controller = rememberEnroContainerController {
+                            .fillMaxHeight(), container = rememberNavigationContainer {
                             it is InitialKey
                         })
                     }
@@ -110,7 +107,6 @@ class InitialScreenViewModel : ViewModel() {
 }
 
 @Composable
-@ExperimentalComposableDestination
 @NavigationDestination(InitialKey::class)
 fun InitialScreen() {
     val viewModel = viewModel<InitialScreenViewModel>()
@@ -126,11 +122,11 @@ fun InitialScreen() {
         EnroContainer(modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .border(1.dp, Color.Green), controller = rememberEnroContainerController() { it is NestedKey })
+            .border(1.dp, Color.Green), container = rememberNavigationContainer() { it is NestedKey })
         EnroContainer(modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .border(1.dp, Color.Red), controller = rememberEnroContainerController() { it is NestedKey2 })
+            .border(1.dp, Color.Red), container = rememberNavigationContainer() { it is NestedKey2 })
     }
 }
 
@@ -139,7 +135,6 @@ class NestedKey : NavigationKey.WithResult<String>
 
 @Composable
 @NavigationDestination(NestedKey::class)
-@ExperimentalComposableDestination
 fun NestedScreen() {
     val navigation = navigationHandle<NestedKey>()
     val state = rememberSaveable { mutableStateOf("None") }
@@ -162,7 +157,6 @@ class NestedKey2 : NavigationKey.WithResult<String>
 
 @Composable
 @NavigationDestination(NestedKey2::class)
-@ExperimentalComposableDestination
 fun NestedScreen2() {
     val navigation = navigationHandle<NestedKey2>()
     Column {

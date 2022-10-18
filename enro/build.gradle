@@ -8,6 +8,9 @@ android {
         textReport true
         textOutput 'stdout'
     }
+    testOptions {
+        animationsDisabled = true
+    }
     packagingOptions {
         resources.excludes.add("META-INF/*")
     }
@@ -16,12 +19,6 @@ android {
 dependencies {
     releaseApi "dev.enro:enro-core:$versionName"
     debugApi project(":enro-core")
-
-    releaseApi "dev.enro:enro-masterdetail:$versionName"
-    debugApi project(":enro-masterdetail")
-
-    releaseApi "dev.enro:enro-multistack:$versionName"
-    debugApi project(":enro-multistack")
 
     releaseApi "dev.enro:enro-annotations:$versionName"
     debugApi project(":enro-annotations")
@@ -40,6 +37,7 @@ dependencies {
 
     androidTestImplementation deps.testing.junit
 
+    androidTestImplementation deps.kotlin.reflect
     androidTestImplementation deps.androidx.core
     androidTestImplementation deps.androidx.appcompat
     androidTestImplementation deps.androidx.fragment
@@ -64,8 +62,6 @@ afterEvaluate {
     tasks.findByName("preReleaseBuild")
             .dependsOn(
                     ":enro-core:publishToMavenLocal",
-                    ":enro-masterdetail:publishToMavenLocal",
-                    ":enro-multistack:publishToMavenLocal",
                     ":enro-annotations:publishToMavenLocal"
             )
 }

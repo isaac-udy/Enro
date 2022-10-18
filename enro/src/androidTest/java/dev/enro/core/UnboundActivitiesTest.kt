@@ -1,15 +1,16 @@
+@file:Suppress("DEPRECATION")
 package dev.enro.core
 
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
-import junit.framework.Assert.*
 import dev.enro.*
+import org.junit.Assert.*
 import org.junit.Test
 
 class UnboundActivitiesTest {
 
     @Test
-    fun whenUnboundActivityIsOpened_thenNavigationKeyIsUnbound() {
+    fun whenUnboundActivityIsOpened_thenNavigationKeyIsNoNavigationKey() {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         scenario.onActivity {
             it.startActivity(Intent(it, UnboundActivity::class.java))
@@ -17,14 +18,7 @@ class UnboundActivitiesTest {
         val unboundActivity = expectActivity<UnboundActivity>()
         val unboundHandle = unboundActivity.getNavigationHandle()
 
-        lateinit var caught: Throwable
-        try {
-            val key = unboundHandle.key
-        }
-        catch (t: Throwable) {
-            caught = t
-        }
-        assertTrue(caught is IllegalStateException)
+        assertEquals("NoNavigationKey", unboundHandle.key::class.java.simpleName)
     }
 
     @Test

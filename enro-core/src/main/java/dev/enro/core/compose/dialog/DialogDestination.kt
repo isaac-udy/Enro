@@ -4,65 +4,80 @@ import android.annotation.SuppressLint
 import android.view.Window
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
-import dev.enro.core.AnimationPair
+import dev.enro.core.NavigationAnimation
 import dev.enro.core.compose.EnroContainer
-import dev.enro.core.compose.EnroContainerController
+import dev.enro.core.compose.container.ComposableNavigationContainer
 
 @Deprecated("Use 'configureWindow' and set the soft input mode on the window directly")
-enum class WindowInputMode(internal val mode: Int) {
+public enum class WindowInputMode(internal val mode: Int) {
     NOTHING(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING),
     PAN(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN),
+
     @Deprecated("See WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE")
     RESIZE(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE),
 }
 
-open class DialogConfiguration {
+public open class DialogConfiguration {
     internal var isDismissed = mutableStateOf(false)
 
-    internal var scrimColor: Color = Color.Transparent
-    internal var animations: AnimationPair = AnimationPair.Resource(
+    internal var animations: NavigationAnimation = NavigationAnimation.Resource(
         enter = 0,
         exit = 0
     )
 
-    internal var softInputMode = WindowInputMode.RESIZE
+    internal var softInputMode: WindowInputMode? = null
     internal var configureWindow = mutableStateOf<(window: Window) -> Unit>({})
 
-    class Builder internal constructor(
+    public class Builder internal constructor(
         private val dialogConfiguration: DialogConfiguration
     ) {
-        fun setScrimColor(color: Color) {
-            dialogConfiguration.scrimColor = color
-        }
-
-        fun setAnimations(animations: AnimationPair) {
+        public fun setAnimations(animations: NavigationAnimation) {
             dialogConfiguration.animations = animations
         }
 
         @Deprecated("Use 'configureWindow' and set the soft input mode on the window directly")
-        fun setWindowInputMode(mode: WindowInputMode) {
+        public fun setWindowInputMode(mode: WindowInputMode) {
             dialogConfiguration.softInputMode = mode
         }
 
-        fun configureWindow(block: (window: Window) -> Unit) {
+        public fun configureWindow(block: (window: Window) -> Unit) {
             dialogConfiguration.configureWindow.value = block
         }
     }
 }
 
-interface DialogDestination {
-    val dialogConfiguration: DialogConfiguration
+@Composable
+internal fun DialogConfiguration.ConfigureWindow() {
+    val windowProvider = rememberDialogWindowProvider()
+    DisposableEffect(
+        windowProvider,
+        configureWindow.value,
+        softInputMode
+    ) {
+        val window = windowProvider?.window ?: return@DisposableEffect onDispose {  }
+
+        softInputMode?.mode?.let {
+            window.setSoftInputMode(it)
+        }
+        configureWindow.value.invoke(window)
+
+        onDispose { }
+    }
 }
 
-val DialogDestination.isDismissed: Boolean
+public interface DialogDestination {
+    public val dialogConfiguration: DialogConfiguration
+}
+
+public val DialogDestination.isDismissed: Boolean
     @Composable get() = dialogConfiguration.isDismissed.value
 
 @SuppressLint("ComposableNaming")
 @Composable
-fun DialogDestination.configureDialog(block: DialogConfiguration.Builder.() -> Unit) {
+public fun DialogDestination.configureDialog(block: DialogConfiguration.Builder.() -> Unit) {
     remember {
         DialogConfiguration.Builder(dialogConfiguration)
             .apply(block)
@@ -71,8 +86,9 @@ fun DialogDestination.configureDialog(block: DialogConfiguration.Builder.() -> U
 
 @Composable
 internal fun EnroDialogContainer(
-    controller: EnroContainerController,
+    controller: ComposableNavigationContainer,
     destination: DialogDestination
 ) {
-    EnroContainer(controller = controller)
+    EnroContainer(container = controller)
+    destination.dialogConfiguration.ConfigureWindow()
 }

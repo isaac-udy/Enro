@@ -3,28 +3,23 @@ package dev.enro.core.controller.interceptor
 import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
-import dev.enro.core.compose.dialog.ComposeDialogFragmentHostKey
-import dev.enro.core.compose.ComposeFragmentHostKey
-import dev.enro.core.compose.dialog.HiltComposeDialogFragmentHostKey
-import dev.enro.core.compose.HiltComposeFragmentHostKey
-import dev.enro.core.fragment.internal.HiltSingleFragmentKey
-import dev.enro.core.fragment.internal.SingleFragmentKey
+import dev.enro.core.hosts.*
 
-class HiltInstructionInterceptor : NavigationInstructionInterceptor {
+internal object HiltInstructionInterceptor : NavigationInstructionInterceptor {
 
-    val generatedComponentManagerClass = kotlin.runCatching {
+    private val generatedComponentManagerClass = kotlin.runCatching {
         GeneratedComponentManager::class.java
     }.getOrNull()
 
-    val generatedComponentManagerHolderClass = kotlin.runCatching {
+    private val generatedComponentManagerHolderClass = kotlin.runCatching {
         GeneratedComponentManagerHolder::class.java
     }.getOrNull()
 
     override fun intercept(
-        instruction: NavigationInstruction.Open,
+        instruction: AnyOpenInstruction,
         parentContext: NavigationContext<*>,
-        navigator: Navigator<out NavigationKey, out Any>
-    ): NavigationInstruction.Open {
+        binding: NavigationBinding<out NavigationKey, out Any>
+    ): AnyOpenInstruction {
 
         val isHiltApplication = if(generatedComponentManagerClass != null) {
             parentContext.activity.application is GeneratedComponentManager<*>
@@ -36,26 +31,34 @@ class HiltInstructionInterceptor : NavigationInstructionInterceptor {
 
         val navigationKey = instruction.navigationKey
 
-        if(navigationKey is SingleFragmentKey && isHiltApplication) {
+        if(navigationKey is OpenInstructionInActivity && isHiltApplication) {
             return instruction.internal.copy(
-                navigationKey = HiltSingleFragmentKey(
+                navigationKey = OpenInstructionInHiltActivity(
                     instruction = navigationKey.instruction
                 )
             )
         }
 
-        if(navigationKey is ComposeFragmentHostKey && isHiltActivity) {
+        if(navigationKey is OpenComposableInFragment && isHiltActivity) {
             return instruction.internal.copy(
-                navigationKey = HiltComposeFragmentHostKey(
+                navigationKey = OpenComposableInHiltFragment(
                     instruction = navigationKey.instruction,
-                    fragmentContainerId = navigationKey.fragmentContainerId
+                    isRoot = navigationKey.isRoot
                 )
             )
         }
 
-        if(navigationKey is ComposeDialogFragmentHostKey && isHiltActivity) {
+        if(navigationKey is OpenComposableDialogInFragment && isHiltActivity) {
             return instruction.internal.copy(
-                navigationKey = HiltComposeDialogFragmentHostKey(
+                navigationKey = OpenComposableDialogInHiltFragment(
+                    instruction = navigationKey.instruction,
+                )
+            )
+        }
+
+        if(navigationKey is OpenPresentableFragmentInFragment && isHiltActivity) {
+            return instruction.internal.copy(
+                navigationKey = OpenPresentableFragmentInHiltFragment(
                     instruction = navigationKey.instruction,
                 )
             )

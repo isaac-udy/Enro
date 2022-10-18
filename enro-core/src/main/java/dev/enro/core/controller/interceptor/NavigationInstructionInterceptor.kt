@@ -1,14 +1,20 @@
 package dev.enro.core.controller.interceptor
 
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.Navigator
+import dev.enro.core.*
 
-interface NavigationInstructionInterceptor {
-    fun intercept(
-        instruction: NavigationInstruction.Open,
+public interface NavigationInstructionInterceptor {
+    public fun intercept(
+        instruction: AnyOpenInstruction,
         parentContext: NavigationContext<*>,
-        navigator: Navigator<out NavigationKey, out Any>
-    ): NavigationInstruction.Open
+        binding: NavigationBinding<out NavigationKey, out Any>
+    ): AnyOpenInstruction? {
+        return instruction
+    }
+
+    public fun intercept(
+        instruction: NavigationInstruction.Close,
+        context: NavigationContext<*>
+    ): NavigationInstruction? {
+        return instruction
+    }
 }

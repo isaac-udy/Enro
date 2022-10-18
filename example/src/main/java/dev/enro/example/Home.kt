@@ -14,7 +14,7 @@ import kotlinx.parcelize.Parcelize
 
 
 @Parcelize
-class Home : NavigationKey
+class Home : NavigationKey.SupportsPush
 
 @NavigationDestination(Home::class)
 class HomeFragment : Fragment() {

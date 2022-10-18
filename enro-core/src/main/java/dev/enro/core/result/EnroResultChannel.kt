@@ -2,8 +2,11 @@ package dev.enro.core.result
 
 import dev.enro.core.NavigationKey
 
-interface EnroResultChannel<Result, Key: NavigationKey.WithResult<Result>> {
-    fun open(key: Key)
+public interface EnroResultChannel<Result, Key : NavigationKey.WithResult<Result>> {
+    @Deprecated("Please use push or present")
+    public fun open(key: Key)
+    public fun push(key: NavigationKey.SupportsPush.WithResult<Result>)
+    public fun present(key: NavigationKey.SupportsPresent.WithResult<Result>)
 }
 
 /**
@@ -36,8 +39,9 @@ interface EnroResultChannel<Result, Key: NavigationKey.WithResult<Result>> {
  * @see managedByView
  * @see managedByViewHolderItem
  */
-interface UnmanagedEnroResultChannel<Result, Key: NavigationKey.WithResult<Result>> : EnroResultChannel<Result, Key> {
-    fun attach()
-    fun detach()
-    fun destroy()
+public interface UnmanagedEnroResultChannel<Result, Key : NavigationKey.WithResult<Result>> :
+    EnroResultChannel<Result, Key> {
+    public fun attach()
+    public fun detach()
+    public fun destroy()
 }

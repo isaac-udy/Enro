@@ -23,13 +23,3 @@ val missingNavigationDestinationAnnotation = Issue.create(
     severity = Severity.ERROR,
     implementation = Implementation(EnroIssueDetector::class.java, Scope.JAVA_FILE_SCOPE)
 )
-
-val missingExperimentalComposableDestinationOptIn = Issue.create(
-    id = "MissingExperimentalComposableDestinationOptIn",
-    briefDescription = "Using @NavigationDestination on @Composable functions is not enabled",
-    explanation = "You must explicitly opt-in to using @NavigationDestination on @Composable functions by using @ExperimentalComposableDestination",
-    category = Category.MESSAGES,
-    priority = 5,
-    severity = Severity.ERROR,
-    implementation = Implementation(EnroIssueDetector::class.java, Scope.JAVA_FILE_SCOPE)
-)

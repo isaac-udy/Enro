@@ -77,8 +77,8 @@ class ActivityTestExtensionsTest {
         val handle = scenario.getTestNavigationHandle<EnroTestTestActivityKey>()
 
         val instruction = handle.instructions.first()
-        instruction as NavigationInstruction.Open
-        TestCase.assertEquals(NavigationDirection.FORWARD, instruction.navigationDirection)
+        instruction as NavigationInstruction.Open<*>
+        TestCase.assertEquals(NavigationDirection.Forward, instruction.navigationDirection)
         TestCase.assertEquals(expectedKey, instruction.navigationKey)
     }
 
@@ -94,7 +94,7 @@ class ActivityTestExtensionsTest {
         val handle = scenario.getTestNavigationHandle<EnroTestTestActivityKey>()
 
         val instruction = handle.expectOpenInstruction<GenericFragmentKey>()
-        TestCase.assertEquals(NavigationDirection.FORWARD, instruction.navigationDirection)
+        TestCase.assertEquals(NavigationDirection.Forward, instruction.navigationDirection)
         TestCase.assertEquals(expectedKey, instruction.navigationKey)
     }
 
@@ -111,7 +111,7 @@ class ActivityTestExtensionsTest {
         val handle = scenario.getTestNavigationHandle<EnroTestTestActivityKey>()
 
         val instruction = handle.instructions.first()
-        instruction as NavigationInstruction.Open
+        instruction as NavigationInstruction.Open<*>
         instruction.sendResultForTest(expectedResult)
 
         scenario.onActivity {
