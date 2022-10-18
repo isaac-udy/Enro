@@ -73,7 +73,7 @@ dependencyResolutionManagement {
             library("testing-androidx-espressoRecyclerView", "androidx.test.espresso:espresso-contrib:3.4.0")
             library("testing-androidx-espressoIntents", "androidx.test.espresso:espresso-intents:3.4.0")
             library("testing-androidx-fragment", "androidx.fragment:fragment-testing:1.5.3")
-            library("testing-androidx-compose", "androidx.compose.ui:ui-test-junit4:1.1.0")
+            library("testing-androidx-compose", "androidx.compose.ui:ui-test-junit4:1.2.1")
 
             library("processing-jsr250", "javax.annotation:jsr250-api:1.0")
             library("processing-incremental", "net.ltgt.gradle.incap:incap:0.3")
