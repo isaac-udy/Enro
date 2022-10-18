@@ -16,11 +16,12 @@ data class DetailKey(
 ) : NavigationKey.WithResult<Boolean>
 
 enum class ListFilterType { ALL, MY_PUBLIC, MY_PRIVATE, ALL_PUBLIC, NOT_MY_PUBLIC }
+
 @Parcelize
 data class ListKey(
     val userId: String,
     val filter: ListFilterType
-) : NavigationKey.WithResult<Boolean>
+) : NavigationKey.SupportsPush.WithResult<Boolean>
 
 @Parcelize
 class LoginKey : NavigationKey

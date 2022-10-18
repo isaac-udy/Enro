@@ -25,7 +25,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 class MultiStackItem(
     vararg val data: String
-) : NavigationKey
+) : NavigationKey.SupportsPush
 
 
 @NavigationDestination(MultiStackKey::class)
