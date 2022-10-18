@@ -19,12 +19,25 @@ jobs:
       with:
         distribution: 'zulu'
         java-version: 11
-          
+
     - name: Run Enro UI Tests
       uses: reactivecircus/android-emulator-runner@v2
+      id: testing
       with:
         api-level: 29
-        script: ./gradlew -Pandroid.testInstrumentationRunnerArguments.class=dev.enro.core.fragment.FragmentDestinationPushToSiblingContainer :enro:connectedCheck
+        script: |
+          adb logcat -c                             # clear logs
+          touch app/emulator.log                    # create log file
+          chmod 777 app/emulator.log                # allow writing to log file
+          adb logcat >> app/emulator.log &          # pipe all logcat messages into log file as a background process
+          ./gradlew -Pandroid.testInstrumentationRunnerArguments.class=dev.enro.core.fragment.FragmentDestinationPushToSiblingContainer :enro:connectedCheck
+
+    - name: Upload Failing Test Report Log
+        if: steps.testing.outcome != 'success'        # upload the generated log on failure of the tests job
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs
+          path: app/emulator.log # path to where the log is
 
     - name: Run Enro UI Tests (Hilt)
       uses: reactivecircus/android-emulator-runner@v2
