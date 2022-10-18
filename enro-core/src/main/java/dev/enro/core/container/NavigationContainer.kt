@@ -59,20 +59,21 @@ public abstract class NavigationContainer(
         if (backstack == backstackFlow.value) return@synchronized
         handler.removeCallbacks(reconcileBackstack)
         handler.removeCallbacks(removeExitingFromBackstack)
+        val processedBackstack = backstack.ensureOpeningTypeIsSet(parentContext)
 
-        requireBackstackIsAccepted(backstack)
-        if (handleEmptyBehaviour(backstack)) return
-        setActiveContainerFrom(backstack)
+        requireBackstackIsAccepted(processedBackstack)
+        if (handleEmptyBehaviour(processedBackstack)) return
+        setActiveContainerFrom(processedBackstack)
 
-        val lastBackstack = mutableBackstack.getAndUpdate { backstack }
+        val lastBackstack = mutableBackstack.getAndUpdate { processedBackstack }
 
         val removed = lastBackstack.backstack
             .filter {
-                !backstack.backstack.contains(it)
+                !processedBackstack.backstack.contains(it)
             }
 
         pendingRemovals.addAll(removed)
-        val reconciledBackstack = reconcileBackstack(pendingRemovals.toList(), backstack)
+        val reconciledBackstack = reconcileBackstack(pendingRemovals.toList(), processedBackstack)
         if (!reconciledBackstack) {
             handler.post(reconcileBackstack)
         } else {
@@ -115,8 +116,7 @@ public abstract class NavigationContainer(
                 ?.getParcelableArrayList<AnyOpenInstruction>(BACKSTACK_KEY)
                 ?.let { createRestoredBackStack(it) }
 
-            val backstack =
-                (restoredBackstack ?: initialBackstack).ensureOpeningTypeIsSet(parentContext)
+            val backstack = (restoredBackstack ?: initialBackstack)
             setBackstack(backstack)
         }
     }
