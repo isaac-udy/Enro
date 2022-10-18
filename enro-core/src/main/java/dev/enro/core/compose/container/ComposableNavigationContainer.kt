@@ -102,6 +102,7 @@ public class ComposableNavigationContainer internal constructor(
             }
             .forEach {
                 destinationOwners.remove(it.instruction.instructionId)
+                    ?.clear()
             }
     }
 
