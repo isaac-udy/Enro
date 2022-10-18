@@ -8,8 +8,12 @@ android {
         textReport true
         textOutput 'stdout'
     }
+    defaultConfig {
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
     testOptions {
         animationsDisabled = true
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
     packagingOptions {
         resources.excludes.add("META-INF/*")
@@ -50,6 +54,7 @@ dependencies {
     androidTestImplementation deps.testing.androidx.espressoRecyclerView
     androidTestImplementation deps.testing.androidx.espressoIntents
     androidTestImplementation deps.testing.androidx.runner
+    androidTestUtil deps.testing.androidx.orchestrator
 
     androidTestImplementation deps.testing.androidx.compose
 
