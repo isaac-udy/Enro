@@ -21,9 +21,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import dev.enro.DefaultActivity
+import dev.enro.clearAllEnroResultChannels
 import dev.enro.core.compose.registerForNavigationResult
 import dev.enro.getActiveEnroResultChannels
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.util.*
@@ -33,6 +35,13 @@ import java.util.concurrent.atomic.AtomicInteger
 class ComposableListResultTests {
     @get:Rule
     val composeContentRule = createAndroidComposeRule<DefaultActivity>()
+
+    @Before
+    fun before() {
+        // TODO: There's something not quite right on CI, these tests pass on local machines, but
+        // something on CI causes previous tests to leave hanging result channels. This needs to be cleaned up.
+        clearAllEnroResultChannels()
+    }
 
     @Test
     fun whenListItemWithResultIsRenderedOnItsOwn_thenResultIsRetrievedSuccessfully() {

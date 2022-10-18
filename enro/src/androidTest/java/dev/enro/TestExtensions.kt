@@ -216,6 +216,18 @@ fun getActiveEnroResultChannels(): List<EnroResultChannel<*, *>> {
     return channels.values.toList()
 }
 
+fun clearAllEnroResultChannels() {
+    val enroResultClass = Class.forName("dev.enro.core.result.EnroResult")
+    val getEnroResult = enroResultClass.getDeclaredMethod("from", NavigationController::class.java)
+    getEnroResult.isAccessible = true
+    val enroResult = getEnroResult.invoke(null, application.navigationController)
+    getEnroResult.isAccessible = false
+
+    requireNotNull(enroResult)
+    val channels = enroResult.getPrivate<MutableMap<Any, EnroResultChannel<*, * >>>("channels")
+    channels.clear()
+}
+
 @Suppress("unused")
 fun <T> Any.callPrivate(methodName: String, vararg args: Any): T {
     val method = this::class.java.declaredMethods.first { it.name.startsWith(methodName) }

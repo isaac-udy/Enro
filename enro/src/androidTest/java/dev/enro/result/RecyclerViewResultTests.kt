@@ -17,6 +17,7 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.*
 import dev.enro.annotations.NavigationDestination
+import dev.enro.clearAllEnroResultChannels
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
@@ -27,11 +28,19 @@ import dev.enro.getActiveEnroResultChannels
 import kotlinx.parcelize.Parcelize
 import org.hamcrest.Matchers
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import java.util.*
 
 
 class RecyclerViewResultTests {
+
+    @Before
+    fun before() {
+        // TODO: There's something not quite right on CI, these tests pass on local machines, but
+        // something on CI causes previous tests to leave hanging result channels. This needs to be cleaned up.
+        clearAllEnroResultChannels()
+    }
 
     @Test
     fun whenListItemWithResultIsRenderedOnItsOwn_thenResultIsRetrievedSuccessfully() {
