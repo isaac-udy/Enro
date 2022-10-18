@@ -33,11 +33,11 @@ jobs:
           ./gradlew -Pandroid.testInstrumentationRunnerArguments.class=dev.enro.core.fragment.FragmentDestinationPushToSiblingContainer :enro:connectedCheck
 
     - name: Upload Failing Test Report Log
-        if: steps.testing.outcome != 'success'        # upload the generated log on failure of the tests job
-        uses: actions/upload-artifact@v2
-        with:
-          name: logs
-          path: app/emulator.log # path to where the log is
+      if: steps.testing.outcome != 'success'        # upload the generated log on failure of the tests job
+      uses: actions/upload-artifact@v2
+      with:
+        name: logs
+        path: app/emulator.log # path to where the log is
 
     - name: Run Enro UI Tests (Hilt)
       uses: reactivecircus/android-emulator-runner@v2
