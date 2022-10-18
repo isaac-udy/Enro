@@ -18,6 +18,9 @@ internal class ComposableDestinationSavedStateRegistryOwner(
 
     init {
         savedStateController.performRestore(savedState)
+        if (owner.parentSavedStateRegistry.getSavedStateProvider(owner.instruction.instructionId) != null) {
+            throw IllegalStateException(owner.instruction.navigationKey.toString())
+        }
         owner.parentSavedStateRegistry.registerSavedStateProvider(owner.instruction.instructionId) {
             val outState = Bundle()
             owner.navigationController.onComposeContextSaved(
