@@ -119,6 +119,25 @@ internal fun NavigationBackstack.ensureOpeningTypeIsSet(
                 parentContext,
                 requireNotNull(parentContext.controller.bindingForKeyType(it.navigationKey::class)),
             )
+        },
+        lastInstruction = lastInstruction.let {
+            if (it !is AnyOpenInstruction) return@let it
+            if (it.internal.openingType != Any::class.java) return@let it
+
+            InstructionOpenedByInterceptor.intercept(
+                it,
+                parentContext,
+                requireNotNull(parentContext.controller.bindingForKeyType(it.navigationKey::class)),
+            )
+        },
+        exiting = exiting?.let {
+            if (it.internal.openingType != Any::class.java) return@let it
+
+            InstructionOpenedByInterceptor.intercept(
+                it,
+                parentContext,
+                requireNotNull(parentContext.controller.bindingForKeyType(it.navigationKey::class)),
+            )
         }
     )
 }
