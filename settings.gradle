@@ -22,7 +22,7 @@ include ':enro-core'
 dependencyResolutionManagement {
     versionCatalogs {
         deps {
-            library("android-gradle", "com.android.tools.build:gradle:7.3.0")
+            library("android-gradle", "com.android.tools.build:gradle:7.3.1")
 
             library("androidx-core", "androidx.core:core-ktx:1.8.0")
             library("androidx-appcompat", "androidx.appcompat:appcompat:1.4.2")
