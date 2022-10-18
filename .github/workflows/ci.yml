@@ -23,13 +23,16 @@ jobs:
     - name: Run Enro UI Tests
       uses: reactivecircus/android-emulator-runner@v2
       id: testing
+      continue-on-error: true
       with:
         api-level: 29
+        force-avd-creation: false
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
         script: |
           adb logcat -c                             # clear logs
-          touch ~/app/emulator.log                    # create log file
-          chmod 777 ~/app/emulator.log                # allow writing to log file
-          adb logcat >> ~/app/emulator.log &          # pipe all logcat messages into log file as a background process
+          touch ~/appemulator.log                    # create log file
+          chmod 777 ~/appemulator.log                # allow writing to log file
+          adb logcat >> ~/appemulator.log &          # pipe all logcat messages into log file as a background process
           ./gradlew -Pandroid.testInstrumentationRunnerArguments.class=dev.enro.core.fragment.FragmentDestinationPushToSiblingContainer :enro:connectedCheck
 
     - name: Upload Failing Test Report Log
@@ -37,7 +40,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: logs
-        path: ~/app/emulator.log # path to where the log is
+        path: ~/appemulator.log # path to where the log is
 
     - name: Run Enro UI Tests (Hilt)
       uses: reactivecircus/android-emulator-runner@v2
