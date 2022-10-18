@@ -24,7 +24,7 @@ jobs:
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 29
-        script: ./gradlew :enro:connectedCheck
+        script: ./gradlew -Pandroid.testInstrumentationRunnerArguments.class=dev.enro.core.fragment.FragmentDestinationPushToSiblingContainer :enro:connectedCheck
 
     - name: Run Enro UI Tests (Hilt)
       uses: reactivecircus/android-emulator-runner@v2
