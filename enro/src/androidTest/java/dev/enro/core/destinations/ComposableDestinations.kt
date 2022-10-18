@@ -57,6 +57,11 @@ object ComposableDestinations {
     ) : NavigationKey.SupportsPush.WithResult<TestResult>,
         TestDestination.IntoSecondaryChildContainer
 
+    @Parcelize
+    data class ManuallyBound(
+        val id: String = UUID.randomUUID().toString()
+    ) : NavigationKey.SupportsPush, TestDestination.IntoPrimaryContainer
+
     class TestViewModel : ViewModel() {
         private val navigation by navigationHandle<NavigationKey>()
         val resultChannel by registerForNavigationResult<TestResult> {
@@ -152,4 +157,11 @@ fun ComposableDestinationPushesToChildAsSecondary() {
     TestComposable(
         name = "ComposableDestination Pushes To Child As Secondary"
     )
+}
+
+// Is manually bound to `ComposeDestinations.ManuallyBound`
+@Composable
+fun ManuallyBoundComposableScreen() {
+    viewModel<ComposableDestinations.TestViewModel>()
+    TestComposable(name = "ManuallyDefinedComposable")
 }

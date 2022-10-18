@@ -7,7 +7,8 @@ import kotlin.reflect.KClass
 
 public class ComposableNavigationBinding<KeyType : NavigationKey, ComposableType : ComposableDestination> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
-    override val destinationType: KClass<ComposableType>
+    override val destinationType: KClass<ComposableType>,
+    internal val constructDestination: () -> ComposableType = { destinationType.java.newInstance() }
 ) : NavigationBinding<KeyType, ComposableType>
 
 public fun <KeyType : NavigationKey, ComposableType : ComposableDestination> createComposableNavigationBinding(
@@ -31,8 +32,9 @@ public inline fun <reified KeyType : NavigationKey> createComposableNavigationBi
     }
     return ComposableNavigationBinding(
         keyType = KeyType::class,
-        destinationType = destination::class
-    ) as NavigationBinding<KeyType, ComposableDestination>
+        destinationType = destination::class as KClass<ComposableDestination>,
+        constructDestination = { destination }
+    )
 }
 
 

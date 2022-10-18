@@ -78,9 +78,8 @@ public class ComposableNavigationContainer internal constructor(
             return destinationOwners.getOrPut(instruction.instructionId) {
                 val controller = parentContext.controller
                 val composeKey = instruction.navigationKey
-                val destination =
-                    controller.bindingForKeyType(composeKey::class)!!.destinationType.java
-                        .newInstance() as ComposableDestination
+                val destination = (controller.bindingForKeyType(composeKey::class) as ComposableNavigationBinding<NavigationKey, ComposableDestination>)
+                        .constructDestination()
 
                 return@getOrPut ComposableDestinationOwner(
                     parentContainer = this,
