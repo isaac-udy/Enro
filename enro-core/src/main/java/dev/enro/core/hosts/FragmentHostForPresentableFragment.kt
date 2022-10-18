@@ -45,6 +45,7 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
     )
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = createFullscreenDialog()
+    private var isDismissed: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,6 +59,11 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        isDismissed = savedInstanceState?.getBoolean(IS_DISMISSED_KEY, false) ?: false
+        if (isDismissed) {
+            super.dismiss()
+            return
+        }
         // DialogFragments don't display child animations for fragment transactions correctly
         // if the fragment transaction occurs immediately when the DialogFragment is created,
         // so to solve this issue, we post the animation to the view, which delays this slightly,
@@ -85,11 +91,17 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(IS_DISMISSED_KEY, isDismissed)
+    }
+
     override fun dismiss() {
         val fragment =
             childFragmentManager.findFragmentById(R.id.enro_internal_single_fragment_frame_layout)
                 ?: return super.dismiss()
 
+        isDismissed = true
         val animations = animationsFor(fragment.navigationContext, NavigationInstruction.Close)
             .asResource(fragment.requireActivity().theme)
         val animationDuration = fragment.requireView().animate(
@@ -104,9 +116,19 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
             .setDuration(16)
             .alpha(0f)
             .withEndAction {
-                super.dismiss()
+                // If the state is not saved, we can dismiss
+                // otherwise isDismissed will have been saved into the saved instance state,
+                // and this will immediately dismiss after onViewCreated is called next
+                if (!isStateSaved) {
+                    super.dismiss()
+                }
             }
             .start()
+    }
+
+    private companion object {
+        private val IS_DISMISSED_KEY =
+            "AbstractFragmentHostForPresentableFragment,IS_DISMISSED_SAVED_STATE"
     }
 }
 

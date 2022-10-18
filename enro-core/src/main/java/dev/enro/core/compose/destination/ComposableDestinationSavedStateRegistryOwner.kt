@@ -1,6 +1,7 @@
 package dev.enro.core.compose.destination
 
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -19,11 +20,14 @@ internal class ComposableDestinationSavedStateRegistryOwner(
     init {
         savedStateController.performRestore(savedState)
         if (owner.parentSavedStateRegistry.getSavedStateProvider(owner.instruction.instructionId) != null) {
-            throw IllegalStateException(
-                owner.parentContainer.backstack.backstack.toString() + "\n\n" + Thread.currentThread().stackTrace.joinToString(
-                    separator = "\n"
-                ) { it.toString() })
+            Log.e(
+                "Enro",
+                "$this found existing savedStateProvider: ${
+                    owner.parentSavedStateRegistry.getSavedStateProvider(owner.instruction.instructionId)
+                } "
+            )
         }
+        owner.parentSavedStateRegistry.unregisterSavedStateProvider(owner.instruction.instructionId)
         owner.parentSavedStateRegistry.registerSavedStateProvider(owner.instruction.instructionId) {
             val outState = Bundle()
             owner.navigationController.onComposeContextSaved(
