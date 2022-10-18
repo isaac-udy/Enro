@@ -19,12 +19,12 @@ internal class ComposableDestinationSavedStateRegistryOwner(
 
     init {
         savedStateController.performRestore(savedState)
-        if (owner.parentSavedStateRegistry.getSavedStateProvider(owner.instruction.instructionId) != null) {
+        val previousProvider =
+            owner.parentSavedStateRegistry.getSavedStateProvider(owner.instruction.instructionId)
+        if (previousProvider != null) {
             Log.e(
                 "Enro",
-                "$this found existing savedStateProvider: ${
-                    owner.parentSavedStateRegistry.getSavedStateProvider(owner.instruction.instructionId)
-                } "
+                "$this found existing savedStateProvider: $previousProvider "
             )
         }
         owner.parentSavedStateRegistry.unregisterSavedStateProvider(owner.instruction.instructionId)

@@ -68,43 +68,48 @@ public class ComposableNavigationContainer internal constructor(
         return true
     }
 
-    internal fun getDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner? {
-        return destinationOwners[instruction.instructionId]
-    }
+    internal fun getDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner? =
+        synchronized(destinationOwners) {
+            return destinationOwners[instruction.instructionId]
+        }
 
-    internal fun requireDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner {
-        return destinationOwners.getOrPut(instruction.instructionId) {
-            val controller = parentContext.controller
-            val composeKey = instruction.navigationKey
-            val destination = controller.bindingForKeyType(composeKey::class)!!.destinationType.java
-                .newInstance() as ComposableDestination
+    internal fun requireDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner =
+        synchronized(destinationOwners) {
+            return destinationOwners.getOrPut(instruction.instructionId) {
+                val controller = parentContext.controller
+                val composeKey = instruction.navigationKey
+                val destination =
+                    controller.bindingForKeyType(composeKey::class)!!.destinationType.java
+                        .newInstance() as ComposableDestination
 
-            return@getOrPut ComposableDestinationOwner(
-                parentContainer = this,
-                instruction = instruction,
-                destination = destination,
+                return@getOrPut ComposableDestinationOwner(
+                    parentContainer = this,
+                    instruction = instruction,
+                    destination = destination,
             ).also { owner ->
                 owner.lifecycle.addObserver(object : LifecycleEventObserver {
                     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                         if (event != Lifecycle.Event.ON_DESTROY) return
-                        destinationOwners.remove(owner.instruction.instructionId)
+                        synchronized(destinationOwners) {
+                            destinationOwners.remove(owner.instruction.instructionId)
+                        }
                     }
                 })
             }
         }.apply { parentContainer = this@ComposableNavigationContainer }
     }
 
-    private fun clearDestinationOwnersFor(removed: List<AnyOpenInstruction>) {
-        removed
-            .filter { backstack.exiting != it }
-            .mapNotNull {
-                destinationOwners[it.instructionId]
-            }
-            .forEach {
-                destinationOwners.remove(it.instruction.instructionId)
-                    ?.clear()
-            }
-    }
+    private fun clearDestinationOwnersFor(removed: List<AnyOpenInstruction>) =
+        synchronized(destinationOwners) {
+            removed
+                .filter { backstack.exiting != it }
+                .mapNotNull {
+                    destinationOwners[it.instructionId]
+                }
+                .forEach {
+                    destinationOwners.remove(it.instruction.instructionId)
+                }
+        }
 
     private fun createDestinationOwnersFor(backstack: NavigationBackstack) {
         backstack.renderable

@@ -85,12 +85,6 @@ internal class ComposableDestinationOwner(
         return viewModelStoreOwner.defaultViewModelCreationExtras
     }
 
-    internal fun clear() {
-        if (lifecycle.currentState.isAtLeast(Lifecycle.State.INITIALIZED)) {
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        }
-    }
-
     @Composable
     internal fun Render(backstackState: NavigationBackstack) {
         val lifecycleState by lifecycleFlow.collectAsState()
