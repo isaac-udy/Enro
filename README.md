@@ -1,21 +1,13 @@
 [![Maven Central](https://img.shields.io/maven-central/v/dev.enro/enro.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22dev.enro%22)
+> **Note**
+>
+> Enro 2.x.x has now merged to the main branch, but is still in an alpha/beta release phase. The Enro 1.x.x branch is still being maintained for bug fixes and can be found [here](https://github.com/isaac-udy/Enro/tree/1.x.x)
 
 # Enro 🗺️
 
 A simple navigation library for Android
 
-*"The novices’ eyes followed the wriggling path up from the well as it swept a great meandering arc
-around the hillside. Its stones were green with moss and beset with weeds. Where the path
-disappeared through the gate they noticed that it joined a second track of bare earth, where the
-grass appeared to have been trampled so often that it ceased to grow. The dusty track ran straight
-from the gate to the well, marred only by a fresh set of sandal-prints that went down, and then up,
-and ended at the feet of the young monk who had fetched their water."
-- [The Garden Path](http://thecodelesscode.com/case/156)*
-
-> **Note**
-> Enro 2.x.x has now merged to the main branch, but is still in an alpha/beta release phase. The
-> Enro 1.x.x branch is still being maintained for bug fixesand can be
-> found [here](https://github.com/isaac-udy/Enro/tree/1.x.x)
+*"The novices’ eyes followed the wriggling path up from the well as it swept a great meandering arc around the hillside. Its stones were green with moss and beset with weeds. Where the path disappeared through the gate they noticed that it joined a second track of bare earth, where the grass appeared to have been trampled so often that it ceased to grow. The dusty track ran straight from the gate to the well, marred only by a fresh set of sandal-prints that went down, and then up, and ended at the feet of the young monk who had fetched their water." - [The Garden Path](http://thecodelesscode.com/case/156)*
 
 ## Features
 
@@ -28,7 +20,6 @@ and ended at the feet of the young monk who had fetched their water."
 - Pass type-safe results between screens across configuration changes and process death
 
 - Create beautiful transitions between specific destinations
-
 
 ## Using Enro
 #### Gradle
@@ -150,35 +141,21 @@ Enro supports three navigation instructions: `push`, `present` and `replaceRoot`
 When an Activity executes a navigation instruction that resolves to a Fragment, one of three things
 will happen:
 
-1. If the instruction is a "push", and the Activity defines a "navigationContainer" that accepts the
-   Fragment's type the Fragment will be opened into the container view defined by that container.
-2. If the instruction is a "present", or the Activity **does not** define a navigationContainer that
-   acccepts the Fragment's type the Fragment will be opened into a either a floating, full window
-   dialog, or a full
-   screen Activity (depending on the situation).
+1. If the instruction is a "push", and the Activity defines a "navigationContainer" that accepts the Fragment's type the Fragment will be opened into the container view defined by that container.
+2. If the instruction is a "present", or the Activity **does not** define a navigationContainer that acccepts the Fragment's type the Fragment will be opened into a either a floating, full window dialog, or a full screen Activity (depending on the situation).
 3. If the instruction is a "replaceRoot" the Fragment will be opened in a full screen Activity
 
 #### How does Enro support Activities and Fragments navigating to @Composables?
 
-When an Activity or Fragment executes a navigation instruction that resolves to a @Composable, one
-of three things will happen:
+When an Activity or Fragment executes a navigation instruction that resolves to a @Composable, one of three things will happen:
 
-1. If the instruction is a "push", and the Activity/Fragment defines a "navigationContainer" that
-   accepts the @Composable's type the @Composable will be opened into the container view defined by
-   that container.
-2. If the instruction is a "present", or the Activity/Fragment **does not** define a
-   navigationContainer that acccepts the @Composable's type the @Composable will be opened into a
-   either a floating, full window dialog, or a full screen Activity (depending on the situation).
+1. If the instruction is a "push", and the Activity/Fragment defines a "navigationContainer" that accepts the @Composable's type the @Composable will be opened into the container view defined by that container.
+2. If the instruction is a "present", or the Activity/Fragment **does not** define a navigationContainer that acccepts the @Composable's type the @Composable will be opened into a either a floating, full window dialog, or a full screen Activity (depending on the situation).
 3. If the instruction is a "replaceRoot" the @Composable will be opened in a full screen Activity
 
 #### How do I deal with passing results between screens?
 
-Enro supports any NavigationKey/NavigationDestination providing a result. Instead of implementing
-the NavigationKey interface on the NavigationKey that provides the result, implement
-NavigationKey.<TYPE>.WithResult<T> where T is the type of the result. Once you're ready to navigate
-to that NavigationKey and consume a result, you'll want to call "registerForNavigationResult" in
-your Fragment/Activity/ViewModel. This API is very similar to the AndroidX Activity 1.2.0
-ActivityResultLauncher.
+Enro supports any NavigationKey/NavigationDestination providing a result. Instead of implementing the NavigationKey interface on the NavigationKey that provides the result, implement NavigationKey.<TYPE>.WithResult<T> where T is the type of the result. Once you're ready to navigate to that NavigationKey and consume a result, you'll want to call "registerForNavigationResult" in your Fragment/Activity/ViewModel. This API is very similar to the AndroidX Activity 1.2.0 ActivityResultLauncher.
 
 Example:
 
@@ -212,8 +189,7 @@ Enro has a built in component for this.  If you want to build something more com
 
 #### How do I handle multiple backstacks on each page of a BottomNavigationView? 
 
-Each `navigationContainer` has it's own backstack. The suggested implementation is to create
-one `navigationContainer` for each
+Each `navigationContainer` has it's own backstack. The suggested implementation is to create one `navigationContainer` for each
 
 #### I'd like to do shared element transitions, or do something special when navigating between certain screens
 Enro allows you to define "NavigationExecutors" as overrides for the default behaviour, which handle these situations. 
@@ -222,11 +198,8 @@ There will be an example project that shows how this all works in the future, bu
 1. A NavigationExecutor is typed for a "From", an "Opens", and a NavigationKey type. 
 2. Enro performs navigation on a "NavigationContext", which is basically either a Fragment or a FragmentActivity
 3. A NavigationExecutor defines two methods
-   * `open`, which takes a NavigationContext of the "From" type, a NavigationBinding for the "Opens"
-     type, and a NavigationInstruction (i.e. the From context is attempting to open the
-     NavigationBinding with the input NavigationInstruction)
-   * `close`, which takes a NavigationContext of the "Opens" type (i.e. you're closing what you've
-     already opened)
+   * `open`, which takes a NavigationContext of the "From" type, a NavigationBinding for the "Opens" type, and a NavigationInstruction (i.e. the From context is attempting to open the NavigationBinding with the input NavigationInstruction)
+   * `close`, which takes a NavigationContext of the "Opens" type (i.e. you're closing what you've already opened)
 4. By creating a NavigationExecutor between two specific screens and registering this with the NavigationController, you're able to override the default navigation behaviour (although you're still able to call back to the DefaultActivityExecutor or DefaultFragmentExecutor if you need to)
 5. See the method in NavigationControllerBuilder for `override`
 6. When a NavigationContext decides what NavigationExecutor to execute an instruction on, Enro will look at the NavigationContext originating the NavigationInstruction and then walk up toward's it's root NavigationContext (i.e. a Fragment will check itself, then its parent Fragment, and then that parent Fragment's Activity), checking for an appropriate override along the way. If it finds no override, the default will be used. NavigationContexts that are the children of the current NavigationContext will not be searched, only the parents. 
@@ -299,23 +272,9 @@ class MainActivity : AppCompatActivity() {
 ## Why would I want to use Enro? 
 #### Support the navigation requirements of large multi-module Applications, while allowing flexibility to define rich transitions between specific destinations
 
-A multi-module application has different requirements to a single-module application. Individual
-modules will define Activities, Fragments or @Composables, and other modules will want to navigate
-to these Activities/Fragments/@Composables. By detatching the NavigationKeys from the destinations
-themselves, this allows NavigationKeys to be defined in a common/shared module which all other
-modules depend on. Any module is then able to navigate to another by using one of the
-NavigationKeys, without knowing about the Activity or Fragment that it is going to.
-FeatureOneActivity and FeatureTwoActivity don't know about each other, but they both know that
-FeatureOneKey and FeatureTwoKey exist. A simple version of this solution can be created in less than
-20 lines of code.
+A multi-module application has different requirements to a single-module application. Individual modules will define Activities, Fragments or @Composables, and other modules will want to navigate to these Activities/Fragments/@Composables. By detatching the NavigationKeys from the destinations themselves, this allows NavigationKeys to be defined in a common/shared module which all other modules depend on. Any module is then able to navigate to another by using one of the NavigationKeys, without knowing about the Activity or Fragment that it is going to. FeatureOneActivity and FeatureTwoActivity don't know about each other, but they both know that FeatureOneKey and FeatureTwoKey exist. A simple version of this solution can be created in less than 20 lines of code.
 
-However, truly beautiful navigation requires knowledge of both the originator and the destination.
-Material design's shared element transitions are an example of this. If FeatureOneActivity and
-FeatureTwoActivity don't know about each other, how can they collaborate on a shared element
-transition? Enro allows transitions between two navigation destinations to be overridden for that
-specific case, meaning that FeatureOneActivity and FeatureTwoActivity might know nothing about each
-other, but the application that uses them will be able to define a navigation override that adds
-shared element transitions between the two.
+However, truly beautiful navigation requires knowledge of both the originator and the destination. Material design's shared element transitions are an example of this. If FeatureOneActivity and FeatureTwoActivity don't know about each other, how can they collaborate on a shared element transition? Enro allows transitions between two navigation destinations to be overridden for that specific case, meaning that FeatureOneActivity and FeatureTwoActivity might know nothing about each other, but the application that uses them will be able to define a navigation override that adds shared element transitions between the two.
 
 #### Allow navigation to be triggered at the ViewModel layer of an Application
 Enro provides a custom extension function similar to AndroidX's `by viewModels()`, called `by enroViewModels()`, which works in the exact same way. However, when you use `by enroViewModels()` to construct a ViewModel, you are able to use a `by navigationHandle<NavigationKey>()` statement within your ViewModel. This `NavigationHandle` works in the exact same way as an Activity or Fragment's `NavigationHandle`, and can be used in the exact same way. 

@@ -5,6 +5,7 @@ import android.os.Looper
 import androidx.annotation.MainThread
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import dev.enro.core.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,6 +42,14 @@ public abstract class NavigationContainer(
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
     public val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
     public val backstack: NavigationBackstack get() = backstackFlow.value
+
+    init {
+        parentContext.lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            if(event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
+            handler.removeCallbacks(reconcileBackstack)
+            handler.removeCallbacks(removeExitingFromBackstack)
+        })
+    }
 
     @MainThread
     public fun setBackstack(backstack: NavigationBackstack): Unit = synchronized(this) {

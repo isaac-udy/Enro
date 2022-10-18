@@ -12,7 +12,7 @@ internal class ComposableDestinationOwnerStorage : ViewModel() {
     override fun onCleared() {
         destinations.values
             .flatMap { it.values }
-            .forEach { it.viewModelStore.clear() }
+            .forEach { it.clear() }
 
         super.onCleared()
     }
