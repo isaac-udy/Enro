@@ -11,7 +11,7 @@ jobs:
     name: Run Tests
     runs-on: macOS-latest
     steps:
-    - name: Checkout
+      - name: Checkout
       uses: actions/checkout@v2
 
     - name: Set up JDK 11
@@ -35,22 +35,26 @@ jobs:
           adb logcat >> ~/appemulator.log &          # pipe all logcat messages into log file as a background process
           ./gradlew :enro:connectedCheck
 
-    - name: Upload Failing Test Report Log
-      if: steps.testing.outcome != 'success'        # upload the generated log on failure of the tests job
-      uses: actions/upload-artifact@v2
-      with:
-        name: logs
-        path: ~/appemulator.log # path to where the log is
+      - name: Upload Failing Test Report Log
+        if: steps.testing.outcome != 'success'        # upload the generated log on failure of the tests job
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs
+          path: ~/appemulator.log # path to where the log is
 
-    - name: Run Enro UI Tests (Hilt)
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        script: ./gradlew :enro:hilt-test:connectedCheck
+      - name: Fail for UI Test
+        if: steps.testing.outcome != 'success'
+        run: exit 1
 
-    - name: Run Enro Unit Tests
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
+      - name: Run Enro UI Tests (Hilt)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: ./gradlew :enro:hilt-test:connectedCheck
+
+      - name: Run Enro Unit Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
         api-level: 29
         script: ./gradlew :enro:testDebugUnitTest
 

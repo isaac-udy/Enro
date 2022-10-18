@@ -46,6 +46,10 @@ jobs:
           name: logs
           path: ~/appemulator.log # path to where the log is
 
+      - name: Fail for UI Test
+        if: steps.testing.outcome != 'success'
+        run: exit 1
+
       - name: Run Enro UI Tests (Hilt)
         uses: reactivecircus/android-emulator-runner@v2
         with:
