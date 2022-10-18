@@ -2,13 +2,14 @@ package dev.enro.core.destinations
 
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.*
 import dev.enro.core.*
-import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.core.result.closeWithResult
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -22,7 +23,9 @@ fun launchComposableRoot(): TestNavigationContext<ComposableDestination, Composa
         .navigation
         .replaceRoot(ComposableDestinations.Root())
 
-    return expectContext()
+    return expectContext<ComposableDestination, ComposableDestinations.Root>().also {
+        waitFor { it.context.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) }
+    }
 }
 
 fun launchFragmentRoot(): TestNavigationContext<FragmentDestinationRoot, FragmentDestinations.Root> {
@@ -32,7 +35,9 @@ fun launchFragmentRoot(): TestNavigationContext<FragmentDestinationRoot, Fragmen
         .navigation
         .replaceRoot(FragmentDestinations.Root())
 
-    return expectContext()
+    return expectContext<FragmentDestinationRoot, FragmentDestinations.Root>().also {
+        waitFor { it.context.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) }
+    }
 }
 
 sealed class ContainerType
