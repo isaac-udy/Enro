@@ -162,6 +162,15 @@ public class ComposableNavigationContainer internal constructor(
     @Composable
     internal fun registerWithContainerManager(): Boolean {
         DisposableEffect(id) {
+            onDispose {
+                destinationOwners.values.forEach { composableDestinationOwner ->
+                    composableDestinationOwner.destroy()
+                }
+                destinationOwners.clear()
+            }
+        }
+
+        DisposableEffect(id) {
             val containerManager = parentContext.containerManager
             containerManager.addContainer(this@ComposableNavigationContainer)
             if (containerManager.activeContainer == null) {
