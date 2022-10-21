@@ -15,8 +15,8 @@ class FragmentDestinationPush {
     @Test
     fun givenFragmentDestination_whenExecutingPush_andTargetIsComposableDestination_andDestinationIsClosed_thenPreviousDestinationIsActive() {
         val root = launchFragmentRoot()
-        val firstKey = ComposableDestinations.PushesToPrimary()
-        val secondKey = ComposableDestinations.PushesToPrimary()
+        val firstKey = ComposableDestinations.PushesToPrimary("firstKey")
+        val secondKey = ComposableDestinations.PushesToPrimary("secondKey")
         root.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer, firstKey)
             .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoSameContainer, secondKey)
             .assertClosesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(firstKey)

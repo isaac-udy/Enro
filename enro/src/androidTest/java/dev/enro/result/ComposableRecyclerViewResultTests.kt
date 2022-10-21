@@ -71,10 +71,11 @@ class ComposableRecyclerViewResultTests {
     fun whenHundredsOfListItemWithResultsAreRendered_andScreenIsScrolled_thenNonVisibleResultChannelsAreCleanedUp() {
         val scenario = composeContentRule.activityRule.scenario
         scenario.onActivity {
-            it.setupItems(5000)
+            it.setupItems(500)
         }
         repeat(200) {
-            scenario.scrollTo(it * 10)
+            scenario.scrollTo(it * 2)
+            Thread.sleep(1)
         }
         var maximumExpectedItems = 0
         scenario.onActivity {

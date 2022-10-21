@@ -131,7 +131,7 @@ class EnroStabilityViewModel : ViewModel()
 fun EnroStabilityScreen() {
     val navigation = navigationHandle<EnroStabilityKey>()
     val viewModelHashCode = viewModel<EnroStabilityViewModel>().hashCode().toString()
-    val viewModelStoreHashCode = LocalViewModelStoreOwner.current.hashCode().toString()
+    val viewModelStoreHashCode = LocalViewModelStoreOwner.current?.viewModelStore.hashCode().toString()
 
     val navigationId = navigation.id
     val keyId = navigation.key.id

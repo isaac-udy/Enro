@@ -13,20 +13,13 @@ import dev.enro.viewmodel.EnroViewModelFactory
 
 internal class ComposableDestinationViewModelStoreOwner(
     private val owner: ComposableDestinationOwner,
-    private val savedState: Bundle
+    private val savedState: Bundle,
+    private val viewModelStore: ViewModelStore,
 ): ViewModelStoreOwner,
     HasDefaultViewModelProviderFactory {
 
-    private val viewModelStore: ViewModelStore = ViewModelStore()
-
     init {
         owner.enableSavedStateHandles()
-        owner.lifecycle.addObserver(object : LifecycleEventObserver {
-            override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if(event != Lifecycle.Event.ON_DESTROY) return
-                viewModelStore.clear()
-            }
-        })
     }
 
     override fun getViewModelStore(): ViewModelStore {

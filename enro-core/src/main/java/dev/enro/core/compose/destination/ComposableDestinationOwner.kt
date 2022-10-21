@@ -24,24 +24,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 internal class ComposableDestinationOwner(
-    parentContainer: NavigationContainer,
+    val parentContainer: NavigationContainer,
     val instruction: AnyOpenInstruction,
-    val destination: ComposableDestination
+    val destination: ComposableDestination,
+    viewModelStore: ViewModelStore,
 ) : ViewModel(),
     LifecycleOwner,
     ViewModelStoreOwner,
     SavedStateRegistryOwner,
     HasDefaultViewModelProviderFactory {
-
-    private val parentContainerState = mutableStateOf(parentContainer)
-    internal var parentContainer: NavigationContainer
-        get() {
-            return parentContainerState.value
-        }
-        set(value) {
-            parentContainerState.value = value
-        }
-
 
     internal val transitionState = MutableTransitionState(false)
 
@@ -53,7 +44,11 @@ internal class ComposableDestinationOwner(
     private val savedStateRegistryOwner = ComposableDestinationSavedStateRegistryOwner(this)
 
     @Suppress("LeakingThis")
-    private val viewModelStoreOwner = ComposableDestinationViewModelStoreOwner(this, savedStateRegistryOwner.savedState)
+    private val viewModelStoreOwner = ComposableDestinationViewModelStoreOwner(
+        owner = this,
+        savedState = savedStateRegistryOwner.savedState,
+        viewModelStore = viewModelStore
+    )
 
     private val lifecycleFlow = createLifecycleFlow()
 
@@ -85,7 +80,7 @@ internal class ComposableDestinationOwner(
         return viewModelStoreOwner.defaultViewModelCreationExtras
     }
 
-    internal fun clear() {
+    internal fun destroy() {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
 

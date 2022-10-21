@@ -22,7 +22,9 @@ public fun rememberNavigationContainer(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
-        initialState = listOf(root),
+        initialState = rememberSaveable {
+            listOf(root)
+        },
         emptyBehavior = emptyBehavior,
         accept = accept
     )
@@ -35,8 +37,10 @@ public fun rememberNavigationContainer(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberEnroContainerController(
-        initialBackstack = initialState.map {
-            NavigationInstruction.Push(it)
+        initialBackstack = rememberSaveable {
+            initialState.map {
+                NavigationInstruction.Push(it)
+            }
         },
         emptyBehavior = emptyBehavior,
         accept = accept
