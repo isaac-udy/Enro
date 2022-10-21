@@ -1,7 +1,6 @@
 package dev.enro.core.compose.destination
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.*
@@ -35,9 +34,6 @@ internal class ComposableDestinationOwner(
     SavedStateRegistryOwner,
     HasDefaultViewModelProviderFactory {
 
-    init {
-        Log.e("SavedState", "creating owner ${instruction.navigationKey} from container ${parentContainer} ${parentContainer.id}", IllegalStateException())
-    }
     internal val transitionState = MutableTransitionState(false)
 
     @SuppressLint("StaticFieldLeak")

@@ -55,8 +55,6 @@ public class ComposableNavigationContainer internal constructor(
         private set
 
     init {
-
-        Log.e("SavedState", "creating composable container $id", IllegalStateException())
         setOrLoadInitialBackstack(initialBackstack)
     }
 
@@ -112,7 +110,7 @@ public class ComposableNavigationContainer internal constructor(
                     destinationOwners[it.instructionId]
                 }
                 .forEach {
-                    Log.e("SavedState", "Removing ${it.instruction.navigationKey}")
+                    it.destroy()
                     destinationOwners.remove(it.instruction.instructionId)
                 }
         }
