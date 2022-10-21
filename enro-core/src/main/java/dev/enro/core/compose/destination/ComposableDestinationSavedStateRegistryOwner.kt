@@ -1,6 +1,7 @@
 package dev.enro.core.compose.destination
 
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -18,6 +19,10 @@ internal class ComposableDestinationSavedStateRegistryOwner(
 
     init {
         savedStateController.performRestore(savedState)
+        Log.e("SavedState", "registering ${owner.instruction.navigationKey}")
+        owner.parentSavedStateRegistry.getSavedStateProvider(owner.instruction.instructionId)?.let {
+            Log.e("SavedState", "already had ${owner.instruction.navigationKey}")
+        }
         owner.parentSavedStateRegistry.registerSavedStateProvider(owner.instruction.instructionId) {
             val outState = Bundle()
             owner.navigationController.onComposeContextSaved(

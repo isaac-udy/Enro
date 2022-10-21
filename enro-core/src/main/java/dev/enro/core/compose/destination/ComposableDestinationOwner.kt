@@ -1,6 +1,7 @@
 package dev.enro.core.compose.destination
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.*
@@ -24,25 +25,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 internal class ComposableDestinationOwner(
-    parentContainer: NavigationContainer,
+    val parentContainer: NavigationContainer,
     val instruction: AnyOpenInstruction,
-    val destination: ComposableDestination
+    val destination: ComposableDestination,
+    viewModelStore: ViewModelStore,
 ) : ViewModel(),
     LifecycleOwner,
     ViewModelStoreOwner,
     SavedStateRegistryOwner,
     HasDefaultViewModelProviderFactory {
 
-    private val parentContainerState = mutableStateOf(parentContainer)
-    internal var parentContainer: NavigationContainer
-        get() {
-            return parentContainerState.value
-        }
-        set(value) {
-            parentContainerState.value = value
-        }
-
-
+    init {
+        Log.e("SavedState", "creating owner ${instruction.navigationKey} from container ${parentContainer} ${parentContainer.id}", IllegalStateException())
+    }
     internal val transitionState = MutableTransitionState(false)
 
     @SuppressLint("StaticFieldLeak")
@@ -53,7 +48,11 @@ internal class ComposableDestinationOwner(
     private val savedStateRegistryOwner = ComposableDestinationSavedStateRegistryOwner(this)
 
     @Suppress("LeakingThis")
-    private val viewModelStoreOwner = ComposableDestinationViewModelStoreOwner(this, savedStateRegistryOwner.savedState)
+    private val viewModelStoreOwner = ComposableDestinationViewModelStoreOwner(
+        owner = this,
+        savedState = savedStateRegistryOwner.savedState,
+        viewModelStore = viewModelStore
+    )
 
     private val lifecycleFlow = createLifecycleFlow()
 
@@ -83,10 +82,6 @@ internal class ComposableDestinationOwner(
 
     override fun getDefaultViewModelCreationExtras(): CreationExtras {
         return viewModelStoreOwner.defaultViewModelCreationExtras
-    }
-
-    internal fun clear() {
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
 
     @Composable
