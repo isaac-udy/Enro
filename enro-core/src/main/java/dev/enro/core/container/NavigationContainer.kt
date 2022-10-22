@@ -6,6 +6,7 @@ import androidx.annotation.MainThread
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -109,8 +110,7 @@ public abstract class NavigationContainer(
             )
         }
 
-        parentContext.runWhenContextActive {
-            if (!backstack.backstack.isEmpty()) return@runWhenContextActive
+        val initialise = {
             val restoredBackstack = savedStateRegistry
                 .consumeRestoredStateForKey(id)
                 ?.getParcelableArrayList<AnyOpenInstruction>(BACKSTACK_KEY)
@@ -119,6 +119,12 @@ public abstract class NavigationContainer(
             val backstack = (restoredBackstack ?: initialBackstack)
             setBackstack(backstack)
         }
+        if(!savedStateRegistry.isRestored) {
+            parentContext.lifecycleOwner.lifecycleScope.launchWhenCreated {
+                initialise()
+            }
+        }
+        else initialise()
     }
 
     private fun requireBackstackIsAccepted(backstack: NavigationBackstack) {

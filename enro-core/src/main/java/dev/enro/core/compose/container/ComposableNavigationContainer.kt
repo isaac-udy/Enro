@@ -1,14 +1,10 @@
 package dev.enro.core.compose.container
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.*
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
@@ -56,6 +52,9 @@ public class ComposableNavigationContainer internal constructor(
 
     init {
         setOrLoadInitialBackstack(initialBackstack)
+        parentContext.lifecycleOwner.lifecycleScope.launchWhenStarted {
+            setVisibilityForBackstack(backstack)
+        }
     }
 
     override fun reconcileBackstack(
@@ -73,9 +72,7 @@ public class ComposableNavigationContainer internal constructor(
     }
 
     internal fun getDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner? =
-        synchronized(destinationOwners) {
-            return destinationOwners[instruction.instructionId]
-        }
+        destinationOwners[instruction.instructionId]
 
     internal fun requireDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner {
         return destinationOwners.getOrPut(instruction.instructionId) {
@@ -94,7 +91,6 @@ public class ComposableNavigationContainer internal constructor(
                 owner.lifecycle.addObserver(object : LifecycleEventObserver {
                     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                         if (event != Lifecycle.Event.ON_DESTROY) return
-                        Log.e("SavedState", "Removing from also ${instruction.navigationKey}")
                         destinationOwners.remove(owner.instruction.instructionId)
                     }
                 })
@@ -103,17 +99,15 @@ public class ComposableNavigationContainer internal constructor(
     }
 
     private fun clearDestinationOwnersFor(removed: List<AnyOpenInstruction>) =
-        synchronized(destinationOwners) {
-            removed
-                .filter { backstack.exiting != it }
-                .mapNotNull {
-                    destinationOwners[it.instructionId]
-                }
-                .forEach {
-                    it.destroy()
-                    destinationOwners.remove(it.instruction.instructionId)
-                }
-        }
+        removed
+            .filter { backstack.exiting != it }
+            .mapNotNull {
+                destinationOwners[it.instructionId]
+            }
+            .forEach {
+                it.destroy()
+                destinationOwners.remove(it.instruction.instructionId)
+            }
 
     private fun createDestinationOwnersFor(backstack: NavigationBackstack) {
         backstack.renderable
@@ -145,12 +139,15 @@ public class ComposableNavigationContainer internal constructor(
     }
 
     private fun setVisibilityForBackstack(backstack: NavigationBackstack) {
+        if(parentContext.lifecycle.currentState == Lifecycle.State.CREATED) return
+
         val isParentBeingRemoved = when {
             parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded -> true
             else -> false
         }
         backstack.renderable.forEach {
-            requireDestinationOwner(it).transitionState.targetState = when (it) {
+            val destinationOwner = requireDestinationOwner(it)
+            destinationOwner.transitionState.targetState = when (it) {
                 backstack.active -> !isParentBeingRemoved
                 else -> false
             }

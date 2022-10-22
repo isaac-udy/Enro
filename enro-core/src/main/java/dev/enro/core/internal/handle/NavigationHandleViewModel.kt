@@ -1,8 +1,12 @@
 package dev.enro.core.internal.handle
 
 import android.os.Bundle
+import android.os.Looper
+import androidx.activity.ComponentActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import dev.enro.core.*
+import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.internal.NoNavigationKey
 
@@ -100,4 +104,37 @@ private fun Lifecycle.onEvent(on: Lifecycle.Event, block: () -> Unit) {
             }
         }
     })
+}
+
+private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
+    val isMainThread = Looper.getMainLooper() == Looper.myLooper()
+    when(this) {
+        is FragmentContext<out Fragment> -> {
+            if(isMainThread && !fragment.isStateSaved && fragment.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                block()
+            } else {
+                fragment.lifecycleScope.launchWhenStarted {
+                    block()
+                }
+            }
+        }
+        is ActivityContext<out ComponentActivity> -> {
+            if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                block()
+            } else {
+                contextReference.lifecycleScope.launchWhenStarted {
+                    block()
+                }
+            }
+        }
+        is ComposeContext<out ComposableDestination> -> {
+            if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                block()
+            } else {
+                contextReference.lifecycleScope.launchWhenStarted {
+                    block()
+                }
+            }
+        }
+    }
 }
