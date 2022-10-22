@@ -5,42 +5,42 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
 
-public fun createEmptyBackStack(): NavigationBackstack = NavigationBackstack(
+public fun createEmptyBackStack(): NavigationBackstackState = NavigationBackstackState(
     lastInstruction = NavigationInstruction.Close,
     backstack = emptyList(),
     exiting = null,
     exitingIndex = -1,
-    updateType = NavigationBackstack.UpdateType.INITIAL_STATE
+    updateType = NavigationBackstackState.UpdateType.INITIAL_STATE
 )
 
-public fun createRootBackStack(rootInstruction: AnyOpenInstruction?): NavigationBackstack =
-    NavigationBackstack(
+public fun createRootBackStack(rootInstruction: AnyOpenInstruction?): NavigationBackstackState =
+    NavigationBackstackState(
         lastInstruction = NavigationInstruction.Close,
         backstack = listOfNotNull(rootInstruction),
         exiting = null,
         exitingIndex = -1,
-        updateType = NavigationBackstack.UpdateType.INITIAL_STATE
+        updateType = NavigationBackstackState.UpdateType.INITIAL_STATE
     )
 
-public fun createRootBackStack(backstack: List<AnyOpenInstruction>): NavigationBackstack =
-    NavigationBackstack(
+public fun createRootBackStack(backstack: List<AnyOpenInstruction>): NavigationBackstackState =
+    NavigationBackstackState(
         lastInstruction = backstack.lastOrNull() ?: NavigationInstruction.Close,
         backstack = backstack,
         exiting = null,
         exitingIndex = -1,
-        updateType = NavigationBackstack.UpdateType.INITIAL_STATE
+        updateType = NavigationBackstackState.UpdateType.INITIAL_STATE
     )
 
-public fun createRestoredBackStack(backstack: List<AnyOpenInstruction>): NavigationBackstack =
-    NavigationBackstack(
+public fun createRestoredBackStack(backstack: List<AnyOpenInstruction>): NavigationBackstackState =
+    NavigationBackstackState(
         backstack = backstack,
         exiting = null,
         exitingIndex = -1,
         lastInstruction = backstack.lastOrNull() ?: NavigationInstruction.Close,
-        updateType = NavigationBackstack.UpdateType.RESTORED_STATE
+        updateType = NavigationBackstackState.UpdateType.RESTORED_STATE
     )
 
-public data class NavigationBackstack(
+public data class NavigationBackstackState(
     val lastInstruction: NavigationInstruction,
     val backstack: List<AnyOpenInstruction>,
     val exiting: AnyOpenInstruction?,
@@ -69,30 +69,30 @@ public data class NavigationBackstack(
     }
 }
 
-internal fun NavigationBackstack.add(
+internal fun NavigationBackstackState.add(
     vararg instructions: AnyOpenInstruction
-): NavigationBackstack {
+): NavigationBackstackState {
     if(instructions.isEmpty()) return this
     return copy(
         backstack = backstack + instructions,
         exiting = active,
         exitingIndex = backstack.lastIndex,
         lastInstruction = instructions.last(),
-        updateType = NavigationBackstack.UpdateType.STANDARD
+        updateType = NavigationBackstackState.UpdateType.STANDARD
     )
 }
 
-internal fun NavigationBackstack.close(): NavigationBackstack {
+internal fun NavigationBackstackState.close(): NavigationBackstackState {
     return copy(
         backstack = backstack.dropLast(1),
         exiting = backstack.lastOrNull(),
         exitingIndex = backstack.lastIndex,
         lastInstruction = NavigationInstruction.Close,
-        updateType = NavigationBackstack.UpdateType.STANDARD
+        updateType = NavigationBackstackState.UpdateType.STANDARD
     )
 }
 
-internal fun NavigationBackstack.close(id: String): NavigationBackstack {
+internal fun NavigationBackstackState.close(id: String): NavigationBackstackState {
     val index = backstack.indexOfLast {
         it.instructionId == id
     }
@@ -103,13 +103,13 @@ internal fun NavigationBackstack.close(id: String): NavigationBackstack {
         exiting = exiting,
         exitingIndex = index,
         lastInstruction = NavigationInstruction.Close,
-        updateType = NavigationBackstack.UpdateType.STANDARD
+        updateType = NavigationBackstackState.UpdateType.STANDARD
     )
 }
 
-internal fun NavigationBackstack.ensureOpeningTypeIsSet(
+internal fun NavigationBackstackState.ensureOpeningTypeIsSet(
     parentContext: NavigationContext<*>
-): NavigationBackstack {
+): NavigationBackstackState {
     return copy(
         backstack = backstack.map {
             if (it.internal.openingType != Any::class.java) return@map it

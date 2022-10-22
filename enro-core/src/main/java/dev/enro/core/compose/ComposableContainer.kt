@@ -70,7 +70,7 @@ public fun rememberEnroContainerController(
             accept = accept,
             emptyBehavior = emptyBehavior,
             saveableStateHolder = saveableStateHolder,
-            initialBackstack = createRootBackStack(initialBackstack)
+            initialBackstackState = createRootBackStack(initialBackstack)
         )
     }
 

@@ -30,7 +30,7 @@ public abstract class NavigationContainer(
         val nextBackstack = backstack.copy(
             exiting = null,
             exitingIndex = -1,
-            updateType = NavigationBackstack.UpdateType.RESTORED_STATE
+            updateType = NavigationBackstackState.UpdateType.RESTORED_STATE
         )
         setBackstack(nextBackstack)
     }
@@ -41,8 +41,8 @@ public abstract class NavigationContainer(
 
     private val pendingRemovals = mutableSetOf<AnyOpenInstruction>()
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
-    public val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
-    public val backstack: NavigationBackstack get() = backstackFlow.value
+    public val backstackFlow: StateFlow<NavigationBackstackState> get() = mutableBackstack
+    public val backstack: NavigationBackstackState get() = backstackFlow.value
 
     init {
         parentContext.lifecycle.addObserver(LifecycleEventObserver { _, event ->
@@ -53,14 +53,14 @@ public abstract class NavigationContainer(
     }
 
     @MainThread
-    public fun setBackstack(backstack: NavigationBackstack): Unit = synchronized(this) {
+    public fun setBackstack(backstackState: NavigationBackstackState): Unit = synchronized(this) {
         if (Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
-        if (backstack == backstackFlow.value) return@synchronized
+        if (backstackState == backstackFlow.value) return@synchronized
         handler.removeCallbacks(reconcileBackstack)
         handler.removeCallbacks(removeExitingFromBackstack)
-        val processedBackstack = backstack.ensureOpeningTypeIsSet(parentContext)
+        val processedBackstack = backstackState.ensureOpeningTypeIsSet(parentContext)
 
         requireBackstackIsAccepted(processedBackstack)
         if (handleEmptyBehaviour(processedBackstack)) return
@@ -86,7 +86,7 @@ public abstract class NavigationContainer(
     // Returns true if the backstack was able to be reconciled successfully
     protected abstract fun reconcileBackstack(
         removed: List<AnyOpenInstruction>,
-        backstack: NavigationBackstack
+        backstackState: NavigationBackstackState
     ): Boolean
 
     public fun accept(
@@ -100,7 +100,7 @@ public abstract class NavigationContainer(
         )
     }
 
-    protected fun setOrLoadInitialBackstack(initialBackstack: NavigationBackstack) {
+    protected fun setOrLoadInitialBackstack(initialBackstackState: NavigationBackstackState) {
         val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
 
         savedStateRegistry.unregisterSavedStateProvider(id)
@@ -116,7 +116,7 @@ public abstract class NavigationContainer(
                 ?.getParcelableArrayList<AnyOpenInstruction>(BACKSTACK_KEY)
                 ?.let { createRestoredBackStack(it) }
 
-            val backstack = (restoredBackstack ?: initialBackstack)
+            val backstack = (restoredBackstack ?: initialBackstackState)
             setBackstack(backstack)
         }
         if(!savedStateRegistry.isRestored) {
@@ -127,8 +127,8 @@ public abstract class NavigationContainer(
         else initialise()
     }
 
-    private fun requireBackstackIsAccepted(backstack: NavigationBackstack) {
-        backstack.backstack
+    private fun requireBackstackIsAccepted(backstackState: NavigationBackstackState) {
+        backstackState.backstack
             .map {
                 it.navigationDirection to acceptsDirection(it.navigationDirection)
             }
@@ -142,8 +142,8 @@ public abstract class NavigationContainer(
             }
     }
 
-    private fun handleEmptyBehaviour(backstack: NavigationBackstack): Boolean {
-        if (backstack.backstack.isEmpty()) {
+    private fun handleEmptyBehaviour(backstackState: NavigationBackstackState): Boolean {
+        if (backstackState.backstack.isEmpty()) {
             when (val emptyBehavior = emptyBehavior) {
                 EmptyBehavior.AllowEmpty -> {
                     /* If allow empty, pass through to default behavior */
@@ -162,19 +162,19 @@ public abstract class NavigationContainer(
         return false
     }
 
-    private fun setActiveContainerFrom(backstack: NavigationBackstack) {
-        if (backstack.isRestoredState || backstack.isInitialState) return
-        val isClosing = backstack.lastInstruction is NavigationInstruction.Close
-        val isEmpty = backstack.backstack.isEmpty()
+    private fun setActiveContainerFrom(backstackState: NavigationBackstackState) {
+        if (backstackState.isRestoredState || backstackState.isInitialState) return
+        val isClosing = backstackState.lastInstruction is NavigationInstruction.Close
+        val isEmpty = backstackState.backstack.isEmpty()
 
         if(!isClosing) {
             parentContext.containerManager.setActiveContainer(this)
             return
         }
 
-        if (backstack.exiting != null) {
+        if (backstackState.exiting != null) {
             parentContext.containerManager.setActiveContainerById(
-                backstack.exiting.internal.previouslyActiveId
+                backstackState.exiting.internal.previouslyActiveId
             )
         }
 

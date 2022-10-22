@@ -10,7 +10,7 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import java.util.concurrent.ConcurrentHashMap
@@ -21,7 +21,7 @@ public class ComposableNavigationContainer internal constructor(
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     internal val saveableStateHolder: SaveableStateHolder,
-    initialBackstack: NavigationBackstack
+    initialBackstackState: NavigationBackstackState
 ) : NavigationContainer(
     id = id,
     parentContext = parentContext,
@@ -51,7 +51,7 @@ public class ComposableNavigationContainer internal constructor(
         private set
 
     init {
-        setOrLoadInitialBackstack(initialBackstack)
+        setOrLoadInitialBackstack(initialBackstackState)
         parentContext.lifecycleOwner.lifecycleScope.launchWhenStarted {
             setVisibilityForBackstack(backstack)
         }
@@ -59,15 +59,15 @@ public class ComposableNavigationContainer internal constructor(
 
     override fun reconcileBackstack(
         removed: List<AnyOpenInstruction>,
-        backstack: NavigationBackstack
+        backstackState: NavigationBackstackState
     ): Boolean {
         if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return false
         if (parentContext.runCatching { activity }.getOrNull() == null) return false
 
         clearDestinationOwnersFor(removed)
-        createDestinationOwnersFor(backstack)
-        setAnimationsForBackstack(backstack)
-        setVisibilityForBackstack(backstack)
+        createDestinationOwnersFor(backstackState)
+        setAnimationsForBackstack(backstackState)
+        setVisibilityForBackstack(backstackState)
         return true
     }
 
@@ -109,46 +109,46 @@ public class ComposableNavigationContainer internal constructor(
                 destinationOwners.remove(it.instruction.instructionId)
             }
 
-    private fun createDestinationOwnersFor(backstack: NavigationBackstack) {
-        backstack.renderable
+    private fun createDestinationOwnersFor(backstackState: NavigationBackstackState) {
+        backstackState.renderable
             .forEach { instruction ->
                 requireDestinationOwner(instruction)
             }
     }
 
-    private fun setAnimationsForBackstack(backstack: NavigationBackstack) {
+    private fun setAnimationsForBackstack(backstackState: NavigationBackstackState) {
         val shouldTakeAnimationsFromParentContainer = parentContext is FragmentContext<out Fragment>
                 && parentContext.contextReference is AbstractFragmentHostForComposable
-                && backstack.backstack.size <= 1
-                && backstack.lastInstruction != NavigationInstruction.Close
+                && backstackState.backstack.size <= 1
+                && backstackState.lastInstruction != NavigationInstruction.Close
 
-        val contextForAnimation = when (backstack.lastInstruction) {
-            is NavigationInstruction.Close -> backstack.exiting?.let { getDestinationOwner(it) }?.destination?.navigationContext
+        val contextForAnimation = when (backstackState.lastInstruction) {
+            is NavigationInstruction.Close -> backstackState.exiting?.let { getDestinationOwner(it) }?.destination?.navigationContext
             else -> activeContext
         } ?: parentContext
 
         currentAnimations = when {
-            backstack.isRestoredState -> DefaultAnimations.none
+            backstackState.isRestoredState -> DefaultAnimations.none
             shouldTakeAnimationsFromParentContainer -> {
                 parentContext as FragmentContext<out Fragment>
                 val parentContainer = parentContext.parentContainer()
                 parentContainer?.currentAnimations ?: DefaultAnimations.none
             }
-            else -> animationsFor(contextForAnimation, backstack.lastInstruction)
+            else -> animationsFor(contextForAnimation, backstackState.lastInstruction)
         }.asComposable()
     }
 
-    private fun setVisibilityForBackstack(backstack: NavigationBackstack) {
+    private fun setVisibilityForBackstack(backstackState: NavigationBackstackState) {
         if(parentContext.lifecycle.currentState == Lifecycle.State.CREATED) return
 
         val isParentBeingRemoved = when {
             parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded -> true
             else -> false
         }
-        backstack.renderable.forEach {
+        backstackState.renderable.forEach {
             val destinationOwner = requireDestinationOwner(it)
             destinationOwner.transitionState.targetState = when (it) {
-                backstack.active -> !isParentBeingRemoved
+                backstackState.active -> !isParentBeingRemoved
                 else -> false
             }
         }

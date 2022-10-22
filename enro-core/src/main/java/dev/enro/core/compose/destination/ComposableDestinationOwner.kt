@@ -17,7 +17,7 @@ import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.activity
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
-import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -85,7 +85,7 @@ internal class ComposableDestinationOwner(
     }
 
     @Composable
-    internal fun Render(backstackState: NavigationBackstack) {
+    internal fun Render(backstackState: NavigationBackstackState) {
         val lifecycleState by lifecycleFlow.collectAsState()
         if (!lifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
 
@@ -113,7 +113,7 @@ internal class ComposableDestinationOwner(
 
     @Composable
     private fun RegisterComposableLifecycleState(
-        backstackState: NavigationBackstack
+        backstackState: NavigationBackstackState
     ) {
         DisposableEffect(transitionState.currentState) {
             val isActive = transitionState.currentState

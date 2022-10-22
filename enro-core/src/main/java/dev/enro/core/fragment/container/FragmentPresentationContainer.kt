@@ -49,11 +49,11 @@ public class FragmentPresentationContainer internal constructor(
 
     override fun reconcileBackstack(
         removed: List<AnyOpenInstruction>,
-        backstack: NavigationBackstack
+        backstackState: NavigationBackstackState
     ): Boolean {
         if (!tryExecutePendingTransitions()) return false
         if (fragmentManager.isStateSaved) return false
-        if (backstack != backstackFlow.value) return false
+        if (backstackState != backstackFlow.value) return false
 
         val toRemove = removed
             .mapNotNull {
@@ -64,7 +64,7 @@ public class FragmentPresentationContainer internal constructor(
                 }
             }
 
-        val toPresent = backstack.backstack
+        val toPresent = backstackState.backstack
             .filter { fragmentManager.findFragmentByTag(it.instructionId) == null }
             .map {
                 val binding =
@@ -78,7 +78,7 @@ public class FragmentPresentationContainer internal constructor(
                 ) to it
             }
 
-        setAnimations(backstack)
+        setAnimations(backstackState)
         fragmentManager.commitNow {
             setReorderingAllowed(true)
 
@@ -91,7 +91,7 @@ public class FragmentPresentationContainer internal constructor(
             }
         }
 
-        backstack.backstack.lastOrNull()
+        backstackState.backstack.lastOrNull()
             ?.let {
                 fragmentManager.findFragmentByTag(it.instructionId)
             }
@@ -104,12 +104,12 @@ public class FragmentPresentationContainer internal constructor(
         return true
     }
 
-    private fun setAnimations(backstack: NavigationBackstack) {
+    private fun setAnimations(backstackState: NavigationBackstackState) {
         val previouslyActiveFragment =
-            backstack.exiting?.let { fragmentManager.findFragmentByTag(it.instructionId) }
+            backstackState.exiting?.let { fragmentManager.findFragmentByTag(it.instructionId) }
         currentAnimations = animationsFor(
             previouslyActiveFragment?.navigationContext ?: parentContext,
-            backstack.lastInstruction
+            backstackState.lastInstruction
         )
     }
 }

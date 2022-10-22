@@ -10,7 +10,7 @@ import androidx.fragment.app.commitNow
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.fragment.FragmentNavigationBinding
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
@@ -22,7 +22,7 @@ public class FragmentNavigationContainer internal constructor(
     parentContext: NavigationContext<*>,
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
-    initialBackstack: NavigationBackstack
+    initialBackstackState: NavigationBackstackState
 ) : NavigationContainer(
     id = containerId.toString(),
     parentContext = parentContext,
@@ -46,32 +46,32 @@ public class FragmentNavigationContainer internal constructor(
         private set
 
     init {
-        setOrLoadInitialBackstack(initialBackstack)
+        setOrLoadInitialBackstack(initialBackstackState)
     }
 
     override fun reconcileBackstack(
         removed: List<AnyOpenInstruction>,
-        backstack: NavigationBackstack
+        backstackState: NavigationBackstackState
     ): Boolean {
         if (!tryExecutePendingTransitions()) return false
         if (fragmentManager.isStateSaved) return false
-        if (backstack != backstackFlow.value) return false
+        if (backstackState != backstackFlow.value) return false
 
         val toRemove = removed.asFragmentAndInstruction()
-        val toDetach = getFragmentsToDetach(backstack)
-        val active = getOrCreateActiveFragment(backstack)
+        val toDetach = getFragmentsToDetach(backstackState)
+        val active = getOrCreateActiveFragment(backstackState)
 
         (toRemove + toDetach + active)
             .filterNotNull()
             .forEach {
-                setZIndexForAnimations(backstack, it)
+                setZIndexForAnimations(backstackState, it)
             }
 
-        setAnimations(backstack)
+        setAnimations(backstackState)
         fragmentManager.commitNow {
             setReorderingAllowed(true)
             applyAnimationsForTransaction(
-                backstack = backstack,
+                backstackState = backstackState,
                 active = active
             )
 
@@ -102,36 +102,36 @@ public class FragmentNavigationContainer internal constructor(
         }
     }
 
-    private fun getFragmentsToDetach(backstack: NavigationBackstack): List<FragmentAndInstruction> {
-        return backstack.backstack
+    private fun getFragmentsToDetach(backstackState: NavigationBackstackState): List<FragmentAndInstruction> {
+        return backstackState.backstack
             .filter { it.navigationDirection !is NavigationDirection.Present }
-            .filter { it != backstack.active }
+            .filter { it != backstackState.active }
             .asFragmentAndInstruction()
     }
 
-    private fun getOrCreateActiveFragment(backstack: NavigationBackstack): FragmentAndInstruction? {
-        backstack.active ?: return null
-        val existingFragment = fragmentManager.findFragmentByTag(backstack.active.instructionId)
+    private fun getOrCreateActiveFragment(backstackState: NavigationBackstackState): FragmentAndInstruction? {
+        backstackState.active ?: return null
+        val existingFragment = fragmentManager.findFragmentByTag(backstackState.active.instructionId)
         if (existingFragment != null) return FragmentAndInstruction(
             fragment = existingFragment,
-            instruction = backstack.active
+            instruction = backstackState.active
         )
 
         val binding =
-            parentContext.controller.bindingForKeyType(backstack.active.navigationKey::class)
+            parentContext.controller.bindingForKeyType(backstackState.active.navigationKey::class)
                 ?: throw EnroException.UnreachableState()
 
         return FragmentAndInstruction(
             fragment = FragmentFactory.createFragment(
                 parentContext,
                 binding,
-                backstack.active
+                backstackState.active
             ),
-            instruction = backstack.active
+            instruction = backstackState.active
         )
     }
 
-    private fun setZIndexForAnimations(backstack: NavigationBackstack, fragmentAndInstruction: FragmentAndInstruction) {
+    private fun setZIndexForAnimations(backstack: NavigationBackstackState, fragmentAndInstruction: FragmentAndInstruction) {
         val activeIndex =
             backstack.renderable.indexOfFirst { it.instructionId == backstack.active?.instructionId }
         val index = backstack.renderable.indexOf(fragmentAndInstruction.instruction)
@@ -143,10 +143,10 @@ public class FragmentNavigationContainer internal constructor(
         }
     }
 
-    private fun setAnimations(backstack: NavigationBackstack) {
+    private fun setAnimations(backstackState: NavigationBackstackState) {
         val shouldTakeAnimationsFromParentContainer = parentContext is FragmentContext<out Fragment>
                 && parentContext.contextReference is AbstractFragmentHostForPresentableFragment
-                && backstack.backstack.size <= 1
+                && backstackState.backstack.size <= 1
 
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
         val previouslyActiveContext = runCatching { previouslyActiveFragment?.navigationContext }.getOrNull()
@@ -154,16 +154,16 @@ public class FragmentNavigationContainer internal constructor(
             shouldTakeAnimationsFromParentContainer -> parentContext.parentContainer()!!.currentAnimations
             else -> animationsFor(
                 previouslyActiveContext ?: parentContext,
-                backstack.lastInstruction
+                backstackState.lastInstruction
             )
         }
     }
 
     private fun FragmentTransaction.applyAnimationsForTransaction(
-        backstack: NavigationBackstack,
+        backstackState: NavigationBackstackState,
         active: FragmentAndInstruction?
     ) {
-        if (backstack.isRestoredState) return
+        if (backstackState.isRestoredState) return
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
         val resourceAnimations = currentAnimations.asResource(parentContext.activity.theme)
 

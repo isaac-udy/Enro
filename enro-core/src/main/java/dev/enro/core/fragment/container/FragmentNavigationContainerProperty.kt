@@ -38,7 +38,7 @@ public fun FragmentActivity.navigationContainer(
             parentContext = navigationContext,
             accept = accept,
             emptyBehavior = emptyBehavior,
-            initialBackstack = createRootBackStack(rootInstruction())
+            initialBackstackState = createRootBackStack(rootInstruction())
         )
     }
 )
@@ -69,7 +69,7 @@ public fun Fragment.navigationContainer(
             parentContext = navigationContext,
             accept = accept,
             emptyBehavior = emptyBehavior,
-            initialBackstack = createRootBackStack(rootInstruction())
+            initialBackstackState = createRootBackStack(rootInstruction())
         )
     }
 )
