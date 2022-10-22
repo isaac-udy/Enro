@@ -53,8 +53,8 @@ internal fun getAnimationResourceState(
     if (transitionState.isIdle) return AnimationResourceState(isActive = false)
     if (animOrAnimator == 0) return state.value
 
-    updateAnimationResourceStateFromAnim(state, animOrAnimator, size)
-    updateAnimationResourceStateFromAnimator(state, animOrAnimator, size)
+    updateAnimationResourceStateFromAnim(transitionState, state, animOrAnimator, size)
+    updateAnimationResourceStateFromAnimator(transitionState, state, animOrAnimator, size)
 
     LaunchedEffect(animOrAnimator) {
         val start = System.currentTimeMillis()
@@ -68,6 +68,7 @@ internal fun getAnimationResourceState(
 
 @Composable
 private fun updateAnimationResourceStateFromAnim(
+    transitionState: MutableTransitionState<Boolean>,
     state: MutableState<AnimationResourceState>,
     animOrAnimator: Int,
     size: IntSize
@@ -78,7 +79,7 @@ private fun updateAnimationResourceStateFromAnim(
     if (!isAnim) return
     if(size.width == 0 && size.height == 0) {
         state.value = AnimationResourceState(
-            alpha = 0f,
+            alpha = if(transitionState.currentState) 1f else 0f,
             isActive = true
         )
         return
@@ -116,6 +117,7 @@ private fun updateAnimationResourceStateFromAnim(
 
 @Composable
 private fun updateAnimationResourceStateFromAnimator(
+    transitionState: MutableTransitionState<Boolean>,
     state: MutableState<AnimationResourceState>,
     animOrAnimator: Int,
     size: IntSize
@@ -127,7 +129,7 @@ private fun updateAnimationResourceStateFromAnimator(
 
     val animator = remember(animOrAnimator, size) {
         state.value = AnimationResourceState(
-            alpha = 0.0f,
+            alpha = if(transitionState.currentState) 1f else 0f,
             isActive = true
         )
         AnimatorInflater.loadAnimator(context, animOrAnimator)
