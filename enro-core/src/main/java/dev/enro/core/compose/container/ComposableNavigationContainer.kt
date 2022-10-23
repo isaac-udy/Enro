@@ -41,6 +41,14 @@ public class ComposableNavigationContainer internal constructor(
                 it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)
             }
 
+    // When we've got a FragmentHostForComposable wrapping this ComposableNavigationContainer,
+    // we want to take the animations provided by the FragmentHostForComposable's NavigationContainer,
+    // and sometimes skip other animation jobs
+    private val shouldTakeAnimationsFromParentContainer: Boolean
+        get() = parentContext.contextReference is AbstractFragmentHostForComposable
+                    && backstack.backstack.size <= 1
+                    && backstack.lastInstruction != NavigationInstruction.Close
+
     override val activeContext: NavigationContext<out ComposableDestination>?
         get() = currentDestination?.destination?.navigationContext
 
@@ -117,11 +125,6 @@ public class ComposableNavigationContainer internal constructor(
     }
 
     private fun setAnimationsForBackstack(backstackState: NavigationBackstackState) {
-        val shouldTakeAnimationsFromParentContainer = parentContext is FragmentContext<out Fragment>
-                && parentContext.contextReference is AbstractFragmentHostForComposable
-                && backstackState.backstack.size <= 1
-                && backstackState.lastInstruction != NavigationInstruction.Close
-
         val contextForAnimation = when (backstackState.lastInstruction) {
             is NavigationInstruction.Close -> backstackState.exiting?.let { getDestinationOwner(it) }?.destination?.navigationContext
             else -> activeContext
@@ -134,12 +137,14 @@ public class ComposableNavigationContainer internal constructor(
                 val parentContainer = parentContext.parentContainer()
                 parentContainer?.currentAnimations ?: DefaultAnimations.none
             }
+            backstackState.isInitialState -> DefaultAnimations.none
             else -> animationsFor(contextForAnimation, backstackState.lastInstruction)
         }.asComposable()
     }
 
     private fun setVisibilityForBackstack(backstackState: NavigationBackstackState) {
-        if(parentContext.lifecycle.currentState == Lifecycle.State.CREATED) return
+        val isParentContextStarted = parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+        if(!isParentContextStarted && shouldTakeAnimationsFromParentContainer) return
 
         val isParentBeingRemoved = when {
             parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded -> true

@@ -151,7 +151,9 @@ public class FragmentNavigationContainer internal constructor(
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
         val previouslyActiveContext = runCatching { previouslyActiveFragment?.navigationContext }.getOrNull()
         currentAnimations = when {
+            backstackState.isRestoredState -> DefaultAnimations.none
             shouldTakeAnimationsFromParentContainer -> parentContext.parentContainer()!!.currentAnimations
+            backstackState.isInitialState -> DefaultAnimations.none
             else -> animationsFor(
                 previouslyActiveContext ?: parentContext,
                 backstackState.lastInstruction
