@@ -18,6 +18,7 @@ include ':enro-test'
 include ':enro-lint'
 include ':enro'
 include ':enro-core'
+include ':enro-conductor'
 
 dependencyResolutionManagement {
     versionCatalogs {

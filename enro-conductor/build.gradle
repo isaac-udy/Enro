@@ -1,0 +1,31 @@
+androidLibrary()
+useCompose()
+apply plugin: 'kotlin-kapt'
+apply plugin: 'dagger.hilt.android.plugin'
+
+publishAndroidModule("dev.enro", "enro-conductor")
+
+android {
+    kotlinOptions {
+        freeCompilerArgs += '-Xexplicit-api=strict'
+    }
+}
+
+dependencies {
+    releaseApi "dev.enro:enro-core:$versionName"
+    debugApi project(":enro-core")
+
+    implementation 'com.bluelinelabs:conductor:3.1.7'
+
+    implementation deps.androidx.core
+    implementation deps.androidx.appcompat
+    implementation deps.androidx.fragment
+    implementation deps.androidx.activity
+    implementation deps.androidx.recyclerview
+    implementation deps.androidx.lifecycle.process
+
+    compileOnly deps.androidx.navigation.fragment
+    compileOnly deps.hilt.android
+    kapt deps.hilt.compiler
+    kapt deps.hilt.androidCompiler
+}
