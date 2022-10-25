@@ -1,16 +1,14 @@
 package dev.enro.core
 
+import android.app.Activity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import dev.enro.core.activity.ActivityNavigator
 import dev.enro.core.activity.DefaultActivityExecutor
-import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigator
 import dev.enro.core.compose.DefaultComposableExecutor
 import dev.enro.core.fragment.DefaultFragmentExecutor
 import dev.enro.core.fragment.FragmentNavigator
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
-import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.core.synthetic.SyntheticNavigator
 import kotlin.reflect.KClass
 
@@ -105,7 +103,15 @@ class NavigationExecutorBuilder<FromContext: Any, OpensContext: Any, KeyType: Na
             is ComposableNavigator ->
                 DefaultComposableExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
-            else -> throw IllegalArgumentException("No default close executor found for ${opensType.java}")
+            // Null means that we must be looking at a NoKeyNavigator, so we still want to pass back to
+            // the default Activity/Fragment executor
+            null -> when(context.contextReference) {
+                is Activity -> DefaultActivityExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+                is Fragment -> DefaultFragmentExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+                else -> throw IllegalArgumentException("No default close executor found for NoKeyNavigator with context ${context.contextReference::class.java.simpleName}")
+            }
+
+            else -> throw IllegalArgumentException("No default close executor found for ${opensType.java} with navigator ${context.navigator?.let { it::class.java.simpleName }}")
         }.invoke(context)
     }
 
