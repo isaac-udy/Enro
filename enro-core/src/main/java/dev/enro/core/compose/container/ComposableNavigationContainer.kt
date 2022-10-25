@@ -1,7 +1,6 @@
 package dev.enro.core.compose.container
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
@@ -57,6 +56,23 @@ public class ComposableNavigationContainer internal constructor(
 
     override var currentAnimations: NavigationAnimation = DefaultAnimations.none
         private set
+
+    // We want "Render" to look like it's a Composable function (it's a Composable lambda), so
+    // we are uppercasing the first letter of the property name, which triggers a PropertyName lint warning
+    @Suppress("PropertyName")
+    public val Render: @Composable () -> Unit = movableContentOf {
+        key(id) {
+            saveableStateHolder.SaveableStateProvider(id) {
+                val backstackState by backstackFlow.collectAsState()
+
+                backstackState.renderable
+                    .mapNotNull { getDestinationOwner(it) }
+                    .forEach {
+                        it.Render(backstackState)
+                    }
+            }
+        }
+    }
 
     init {
         setOrLoadInitialBackstack(initialBackstackState)

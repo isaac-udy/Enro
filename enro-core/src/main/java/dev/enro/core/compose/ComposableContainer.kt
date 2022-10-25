@@ -1,7 +1,8 @@
 package dev.enro.core.compose
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
@@ -79,22 +80,19 @@ public fun rememberEnroContainerController(
 }
 
 @Composable
+@Deprecated(
+    message = "Please use ComposableNavigationContainer.Render() directly, and wrap this inside of a Box() or other layout if you wish to provide modifiers",
+    replaceWith = ReplaceWith(
+        "Box(modifier = modifier) { container.Render() }",
+        "androidx.compose.foundation.layout.Box"
+    )
+)
 public fun EnroContainer(
     modifier: Modifier = Modifier,
     container: ComposableNavigationContainer = rememberNavigationContainer(),
 ) {
-    key(container.id) {
-        container.saveableStateHolder.SaveableStateProvider(container.id) {
-            val backstackState by container.backstackFlow.collectAsState()
-
-            Box(modifier = modifier) {
-                backstackState.renderable
-                    .mapNotNull { container.getDestinationOwner(it) }
-                    .forEach {
-                        it.Render(backstackState)
-                    }
-            }
-        }
+    Box(modifier = modifier) {
+        container.Render()
     }
 }
 
