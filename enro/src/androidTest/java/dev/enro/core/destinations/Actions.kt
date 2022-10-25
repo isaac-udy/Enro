@@ -28,6 +28,16 @@ fun launchComposableRoot(): TestNavigationContext<ComposableDestination, Composa
     }
 }
 
+inline fun <reified NK: NavigationKey.SupportsPresent> launchComposable(navigationKey: NK): TestNavigationContext<ComposableDestination, NK> {
+    ActivityScenario.launch(DefaultActivity::class.java)
+
+    expectContext<DefaultActivity, DefaultActivityKey>()
+        .navigation
+        .replaceRoot(navigationKey)
+
+    return expectContext()
+}
+
 fun launchFragmentRoot(): TestNavigationContext<FragmentDestinationRoot, FragmentDestinations.Root> {
     ActivityScenario.launch(DefaultActivity::class.java)
 
