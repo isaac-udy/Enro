@@ -5,6 +5,7 @@ import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
+import dev.enro.core.ComposeContext
 import dev.enro.core.compose.destination.ComposableDestinationOwner
 
 public abstract class ComposableDestination : LifecycleOwner,
@@ -12,6 +13,7 @@ public abstract class ComposableDestination : LifecycleOwner,
     SavedStateRegistryOwner,
     HasDefaultViewModelProviderFactory {
     internal lateinit var owner: ComposableDestinationOwner
+    internal val context by lazy { ComposeContext(this) }
 
     override val savedStateRegistry: SavedStateRegistry
         get() = owner.savedStateRegistry

@@ -141,14 +141,14 @@ public class NavigationController internal constructor() {
         savedInstanceState: Bundle?
     ): NavigationHandleViewModel {
         return contextController.onContextCreated(
-            ComposeContext(destination),
+            destination.context,
             savedInstanceState
         )
     }
 
     internal fun onComposeContextSaved(destination: ComposableDestination, outState: Bundle) {
         contextController.onContextSaved(
-            ComposeContext(destination),
+            destination.context,
             outState
         )
     }
