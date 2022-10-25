@@ -1,10 +1,15 @@
 @file:Suppress("DEPRECATION")
 package dev.enro.core
 
+import android.app.Application
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
+import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.*
-import org.junit.Assert.*
+import dev.enro.core.controller.navigationController
+import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertNotNull
+import junit.framework.TestCase
 import org.junit.Test
 
 class UnboundActivitiesTest {
@@ -81,5 +86,29 @@ class UnboundActivitiesTest {
 
         val genericActivity = expectFragment<GenericFragment>()
         assertEquals("opened-from-unbound", genericActivity.getNavigationHandle().asTyped<GenericFragmentKey>().key.id)
+    }
+
+
+    @Test
+    fun givenUnboundActivity_andActivityExecutorOverrideForUnboundActivity_whenBackButtonIsPressed_thenActivityIsClosed() {
+        var overrideWasCalled = false
+        val override = createOverride<Any, UnboundActivity> {
+            closed {
+                overrideWasCalled = true
+                defaultClosed(it)
+            }
+        }
+        val navigationController = (InstrumentationRegistry.getInstrumentation().context.applicationContext as Application)
+            .navigationController
+
+        navigationController.addOverride(override)
+        try {
+            val scenario = ActivityScenario.launch(UnboundActivity::class.java)
+            scenario.onActivity { it.onBackPressed() }
+            expectNoActivity()
+        } finally {
+            navigationController.removeOverride(override)
+        }
+        TestCase.assertTrue(overrideWasCalled)
     }
 }

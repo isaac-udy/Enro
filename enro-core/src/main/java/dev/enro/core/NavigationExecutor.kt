@@ -1,5 +1,6 @@
 package dev.enro.core
 
+import android.app.Activity
 import androidx.fragment.app.Fragment
 import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.activity.DefaultActivityExecutor
@@ -112,6 +113,14 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
 
             is ComposableNavigationBinding ->
                 DefaultComposableExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+
+            // Null means that we must be looking at a NoKeyNavigator, so we still want to pass back to
+            // the default Activity/Fragment executor
+            null -> when(context.contextReference) {
+                is Activity -> DefaultActivityExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+                is Fragment -> DefaultFragmentExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+                else -> throw IllegalArgumentException("No default close executor found for NoKeyNavigator with context ${context.contextReference::class.java.simpleName}")
+            }
 
             else -> throw IllegalArgumentException("No default close executor found for ${opensType.java}")
         }.invoke(context)
