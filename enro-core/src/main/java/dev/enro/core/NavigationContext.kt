@@ -2,6 +2,8 @@ package dev.enro.core
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -9,6 +11,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.compose.ComposableDestination
@@ -156,3 +159,15 @@ internal fun NavigationContext<*>.getNavigationHandleViewModel(): NavigationHand
 public val ComponentActivity.containerManager: NavigationContainerManager get() = navigationContext.containerManager
 public val Fragment.containerManager: NavigationContainerManager get() = navigationContext.containerManager
 public val ComposableDestination.containerManager: NavigationContainerManager get() = navigationContext.containerManager
+
+public val containerManager: NavigationContainerManager
+    @Composable
+    get() {
+        val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
+        return remember {
+            viewModelStoreOwner
+                .getNavigationHandleViewModel()
+                .navigationContext!!
+                .containerManager
+        }
+    }
