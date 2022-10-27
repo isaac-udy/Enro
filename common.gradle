@@ -7,11 +7,11 @@ ext.androidLibrary = {
     apply plugin: 'kotlin-parcelize'
 
     android {
-        compileSdkVersion 32
+        compileSdkVersion 33
 
         defaultConfig {
             minSdkVersion 21
-            targetSdkVersion 32
+            targetSdkVersion 33
             versionCode versionProperties.getProperty("versionCode").toInteger()
             versionName versionProperties.getProperty("versionName")
 
@@ -27,13 +27,13 @@ ext.androidLibrary = {
         }
 
         compileOptions {
-            sourceCompatibility JavaVersion.VERSION_11
-            targetCompatibility JavaVersion.VERSION_11
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
         }
 
         kotlinOptions {
-            jvmTarget = JavaVersion.VERSION_11.toString()
-            freeCompilerArgs += "-Xjvm-default=all"
+            jvmTarget = JavaVersion.VERSION_1_8.toString()
+            freeCompilerArgs += "-Xjvm-default=enable"
         }
 
         buildFeatures {

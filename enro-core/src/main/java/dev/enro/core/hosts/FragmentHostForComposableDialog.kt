@@ -5,9 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.AbstractComposeView
+import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,11 +54,17 @@ public abstract class AbstractFragmentHostForComposableDialog : DialogFragment()
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View = ComposeView(requireContext()).apply {
-        id = R.id.enro_internal_compose_dialog_fragment_view_id
-        isVisible = false
+    ): View = object : AbstractComposeView(requireContext()), DialogWindowProvider {
 
-        setContent {
+        override val window: Window = requireDialog().window!!
+
+        init {
+            id = R.id.enro_internal_compose_dialog_fragment_view_id
+            isVisible = false
+        }
+
+        @Composable
+        override fun Content() {
             val instruction = navigationHandle.key.instruction.asPushInstruction()
             val controller = rememberEnroContainerController(
                 initialBackstack = listOf(instruction),

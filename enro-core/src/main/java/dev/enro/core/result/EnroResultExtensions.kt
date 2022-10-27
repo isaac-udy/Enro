@@ -231,7 +231,7 @@ public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<
     }
 
     view.addOnAttachStateChangeListener(object: View.OnAttachStateChangeListener {
-        override fun onViewAttachedToWindow(v: View?) {
+        override fun onViewAttachedToWindow(v: View) {
             activeLifecycle?.removeObserver(lifecycleObserver)
 
             attach()
@@ -241,7 +241,7 @@ public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<
             }
         }
 
-        override fun onViewDetachedFromWindow(v: View?) {
+        override fun onViewDetachedFromWindow(v: View) {
             detach()
         }
     })
@@ -269,11 +269,11 @@ public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<
     }
 
     viewHolder.itemView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-        override fun onViewAttachedToWindow(v: View?) {
+        override fun onViewAttachedToWindow(v: View) {
             attach()
         }
 
-        override fun onViewDetachedFromWindow(v: View?) {
+        override fun onViewDetachedFromWindow(v: View) {
             destroy()
             viewHolder.itemView.removeOnAttachStateChangeListener(this)
         }

@@ -38,7 +38,7 @@ public fun NavigationHandle.configure(configuration: LazyNavigationHandleConfigu
 
 @SuppressLint("ComposableNaming")
 @Composable
-public inline fun <reified T : NavigationKey> TypedNavigationHandle<T>.configure(configuration: LazyNavigationHandleConfiguration<T>.() -> Unit = {}) {
+public inline fun <reified T : NavigationKey> TypedNavigationHandle<T>.configure(crossinline configuration: LazyNavigationHandleConfiguration<T>.() -> Unit = {}) {
     remember {
         LazyNavigationHandleConfiguration(T::class)
             .apply(configuration)

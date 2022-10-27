@@ -6,7 +6,7 @@ apply plugin: 'dagger.hilt.android.plugin'
 useCompose()
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "dev.enro.example"
@@ -45,6 +45,7 @@ dependencies {
     lintChecks(project(":enro-lint"))
 
     implementation deps.compose.material
+    implementation deps.compose.accompanist.systemUiController
 
     implementation deps.hilt.android
     kapt deps.hilt.compiler
