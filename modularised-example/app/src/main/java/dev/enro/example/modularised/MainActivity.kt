@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(android.R.id.content)
             .animate()
             .setListener(object: AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
+                override fun onAnimationEnd(animation: Animator) {
                     navigation.replace(LaunchKey)
                 }
             })
