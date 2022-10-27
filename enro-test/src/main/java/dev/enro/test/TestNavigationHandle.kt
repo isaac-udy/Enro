@@ -6,7 +6,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
-import dev.enro.test.extensions.getTestResultForId
 import junit.framework.TestCase
 import org.junit.Assert.*
 import java.lang.ref.WeakReference
@@ -158,8 +157,14 @@ fun TestNavigationHandle<*>.assertNoneOpened() {
     assertNull(instruction)
 }
 
+internal fun TestNavigationHandle<*>.getResult(): Any? {
+    return instructions.filterIsInstance<NavigationInstruction.Close.WithResult>()
+        .lastOrNull()
+        ?.result
+}
+
 fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(predicate: (T) -> Boolean): T {
-    val result = getTestResultForId(id)
+    val result = getResult()
     assertNotNull(result)
     requireNotNull(result)
     result as T
@@ -168,7 +173,7 @@ fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(predicate: (T) -> Boo
 }
 
 fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(expected: T): T {
-    val result = getTestResultForId(id)
+    val result = getResult()
     assertEquals(expected, result)
     return result as T
 }
@@ -178,6 +183,6 @@ inline fun <reified T: Any> TestNavigationHandle<*>.assertResultDelivered(): T {
 }
 
 fun TestNavigationHandle<*>.assertNoResultDelivered() {
-    val result = getTestResultForId(id)
+    val result = getResult()
     assertNull(result)
 }
