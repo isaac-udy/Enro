@@ -29,7 +29,8 @@ fun <T: Any> NavigationInstruction.Open<*>.sendResultForTest(type: Class<T>, res
     val enroResult = getEnroResult.invoke(null, navigationController)
     getEnroResult.isAccessible = false
 
-    val addPendingResult = enroResultClass.declaredMethods.first { it.name.startsWith("addPendingResult") }
+    val addPendingResult = enroResultClass.declaredMethods
+        .first { it.name.startsWith("addPendingResult") && !it.name.startsWith("addPendingResultFromContext") }
     addPendingResult.isAccessible = true
     addPendingResult.invoke(enroResult, pendingResult)
     addPendingResult.isAccessible = false
@@ -49,10 +50,10 @@ internal fun getTestResultForId(id: String): Any? {
     val enroResult = getEnroResult.invoke(null, navigationController)
     getEnroResult.isAccessible = false
 
-    val addPendingResult = enroResultClass.declaredFields.first { it.name.startsWith("pendingResults") }
-    addPendingResult.isAccessible = true
-    val results = addPendingResult.get(enroResult) as Map<ResultChannelId, Any>
-    addPendingResult.isAccessible = false
+    val pendingResults = enroResultClass.declaredFields.first { it.name.startsWith("pendingResults") }
+    pendingResults.isAccessible = true
+    val results = pendingResults.get(enroResult) as Map<ResultChannelId, Any>
+    pendingResults.isAccessible = false
 
     val resultChannelId = ResultChannelId(ownerId = id, resultId = id)
     val result = results[resultChannelId] ?: return null

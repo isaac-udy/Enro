@@ -96,6 +96,10 @@ public fun NavigationHandle.close() {
     executeInstruction(NavigationInstruction.Close)
 }
 
+public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
+    executeInstruction(NavigationInstruction.Close.WithResult(result))
+}
+
 public fun NavigationHandle.requestClose() {
     executeInstruction(NavigationInstruction.RequestClose)
 }

@@ -1,7 +1,6 @@
 package dev.enro.core.result
 
-import dev.enro.core.EnroException
-import dev.enro.core.NavigationHandle
+import dev.enro.core.*
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.plugins.EnroPlugin
 import dev.enro.core.result.internal.PendingResult
@@ -28,6 +27,28 @@ internal class EnroResult: EnroPlugin() {
             }
     }
 
+    internal fun addPendingResultFromContext(
+        navigationContext: NavigationContext<out Any>,
+        instruction: NavigationInstruction.Close
+    ) {
+        if (instruction !is NavigationInstruction.Close.WithResult) return
+        val openInstruction = navigationContext.arguments.readOpenInstruction() ?: return
+        val resultId = openInstruction.internal.resultId ?: when {
+            navigationContext.controller.isInTest ->  ResultChannelId(
+                ownerId = openInstruction.instructionId,
+                resultId = openInstruction.instructionId
+            )
+            else -> return
+        }
+        addPendingResult(
+            PendingResult(
+                resultChannelId = resultId,
+                resultType = instruction.result::class,
+                result = instruction.result,
+            )
+        )
+    }
+
     internal fun addPendingResult(result: PendingResult) {
         val channel = channels[result.resultChannelId]
         if(channel != null) {
@@ -37,6 +58,7 @@ internal class EnroResult: EnroPlugin() {
             pendingResults[result.resultChannelId] = result
         }
     }
+
 
     private fun consumePendingResult(resultChannelId: ResultChannelId): PendingResult? {
         val result = pendingResults[resultChannelId] ?: return null

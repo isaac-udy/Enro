@@ -15,7 +15,7 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 @PublishedApi
-internal class LazyResultChannelProperty<Result, Key: NavigationKey.WithResult<Result>>(
+internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithResult<Result>>(
     owner: Any,
     resultType: Class<Result>,
     onResult: (Result) -> Unit

@@ -58,7 +58,11 @@ public sealed class NavigationInstruction {
         ) : NavigationInstruction.Open<T>()
     }
 
-    public object Close : NavigationInstruction()
+    public sealed class Close : NavigationInstruction() {
+        public companion object : Close()
+        public class WithResult(public val result: Any): Close()
+    }
+
     public object RequestClose : NavigationInstruction()
 
     public companion object {

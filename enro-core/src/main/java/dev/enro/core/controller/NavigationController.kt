@@ -9,6 +9,7 @@ import dev.enro.core.controller.interceptor.InstructionInterceptorRepository
 import dev.enro.core.controller.lifecycle.NavigationLifecycleController
 import dev.enro.core.controller.repository.*
 import dev.enro.core.internal.handle.NavigationHandleViewModel
+import dev.enro.core.result.EnroResult
 import kotlin.reflect.KClass
 
 public class NavigationController internal constructor() {
@@ -75,18 +76,24 @@ public class NavigationController internal constructor() {
     }
 
     internal fun close(
-        navigationContext: NavigationContext<out Any>
+        navigationContext: NavigationContext<out Any>,
+        instruction: NavigationInstruction.Close,
     ) {
         val processedInstruction = interceptorContainer.intercept(
-            NavigationInstruction.Close, navigationContext
+            instruction, navigationContext
         ) ?: return
 
         if (processedInstruction !is NavigationInstruction.Close) {
             navigationContext.getNavigationHandle().executeInstruction(processedInstruction)
             return
         }
-        val executor: NavigationExecutor<Any, Any, NavigationKey> =
-            executorRepository.executorFor(navigationContext.getNavigationHandle().instruction.internal.openedByType to navigationContext.contextReference::class.java)
+
+        EnroResult.from(this)
+            .addPendingResultFromContext(navigationContext, instruction)
+
+        val executor: NavigationExecutor<Any, Any, NavigationKey> = executorRepository.executorFor(
+            navigationContext.getNavigationHandle().instruction.internal.openedByType to navigationContext.contextReference::class.java
+        )
         executor.preClosed(navigationContext)
         executor.close(navigationContext)
     }

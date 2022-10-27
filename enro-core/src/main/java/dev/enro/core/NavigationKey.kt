@@ -3,14 +3,14 @@ package dev.enro.core
 import android.os.Parcelable
 
 public interface NavigationKey : Parcelable {
-    public interface WithResult<T> : NavigationKey
+    public interface WithResult<T: Any> : NavigationKey
 
     public interface SupportsPush : NavigationKey {
-        public interface WithResult<T> : SupportsPush, NavigationKey.WithResult<T>
+        public interface WithResult<T: Any> : SupportsPush, NavigationKey.WithResult<T>
     }
 
     public interface SupportsPresent : NavigationKey {
-        public interface WithResult<T> : SupportsPresent, NavigationKey.WithResult<T>
+        public interface WithResult<T: Any> : SupportsPresent, NavigationKey.WithResult<T>
     }
 }
 

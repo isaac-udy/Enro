@@ -75,7 +75,7 @@ internal open class NavigationHandleViewModel(
                 NavigationInstruction.RequestClose -> {
                     internalOnCloseRequested()
                 }
-                NavigationInstruction.Close -> context.controller.close(context)
+                is NavigationInstruction.Close -> context.controller.close(context, instruction)
             }
         }
     }

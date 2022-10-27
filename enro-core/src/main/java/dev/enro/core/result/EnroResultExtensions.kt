@@ -12,39 +12,21 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.enro.core.*
 import dev.enro.core.result.internal.LazyResultChannelProperty
 import dev.enro.core.result.internal.PendingResult
-import dev.enro.core.result.internal.ResultChannelId
 import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.viewmodel.getNavigationHandle
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
+import dev.enro.core.closeWithResult as nonDeprecatedCloseWithResult
 
+@Deprecated(
+    message = "Please use closeWithResult from dev.enro.core",
+    level = DeprecationLevel.WARNING,
+    replaceWith =
+        ReplaceWith("closeWithResult(result)", "dev.enro.core.closeWithResult"),
+)
 public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
-    val resultId = ResultChannelImpl.getResultId(this)
-    when {
-        resultId != null -> {
-            EnroResult.from(controller).addPendingResult(
-                PendingResult(
-                    resultChannelId = resultId,
-                    resultType = result::class,
-                    result = result
-                )
-            )
-        }
-        controller.isInTest -> {
-            EnroResult.from(controller).addPendingResult(
-                PendingResult(
-                    resultChannelId = ResultChannelId(
-                        ownerId = id,
-                        resultId = id
-                    ),
-                    resultType = result::class,
-                    result = result
-                )
-            )
-        }
-    }
-    close()
+    nonDeprecatedCloseWithResult(result)
 }
 
 public fun <T : Any> ExecutorArgs<out Any, out Any, out NavigationKey>.sendResult(
@@ -216,7 +198,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Navigatio
  * The result channel will be attached when the ON_START event occurs, detached when the ON_STOP
  * event occurs, and destroyed when ON_DESTROY occurs.
  */
-public fun <T, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByLifecycle(
+public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByLifecycle(
     lifecycle: Lifecycle
 ): EnroResultChannel<T, R> {
     lifecycle.addObserver(LifecycleEventObserver { _, event ->
@@ -234,7 +216,7 @@ public fun <T, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>
  * detached when the view is detached from a Window, and destroyed when the ViewTreeLifecycleOwner
  * lifecycle receives the ON_DESTROY event.
  */
-public fun <T, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByView(view: View): EnroResultChannel<T, R> {
+public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByView(view: View): EnroResultChannel<T, R> {
     var activeLifecycle: Lifecycle? = null
     val lifecycleObserver = LifecycleEventObserver { _, event ->
         if (event == Lifecycle.Event.ON_DESTROY) destroy()
@@ -279,7 +261,7 @@ public fun <T, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>
  * destroyed every time the ViewHolder is re-bound to data through onBindViewHolder, which means the
  * result channel should be created each time the ViewHolder is bound.
  */
-public fun <T, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByViewHolderItem(
+public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByViewHolderItem(
     viewHolder: RecyclerView.ViewHolder
 ): EnroResultChannel<T, R> {
     if (viewHolder.itemView.isAttachedToWindow) {
