@@ -16,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.scopes.ViewModelScoped
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.result.closeWithResult
+import dev.enro.core.closeWithResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.example.core.base.SingleStateViewModel
 import dev.enro.example.core.data.SimpleData

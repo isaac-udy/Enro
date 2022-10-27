@@ -6,9 +6,9 @@ import androidx.test.core.app.ActivityScenario
 import dev.enro.DefaultActivity
 import dev.enro.DefaultActivityKey
 import dev.enro.core.asTyped
+import dev.enro.core.closeWithResult
 import dev.enro.core.forward
 import dev.enro.core.getNavigationHandle
-import dev.enro.core.result.closeWithResult
 import dev.enro.expectActivity
 import dev.enro.expectContext
 import junit.framework.Assert.*

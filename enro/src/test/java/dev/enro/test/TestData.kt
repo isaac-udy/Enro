@@ -3,8 +3,8 @@ package dev.enro.test
 import androidx.lifecycle.ViewModel
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
+import dev.enro.core.closeWithResult
 import dev.enro.core.forward
-import dev.enro.core.result.closeWithResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize

@@ -10,7 +10,6 @@ import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
-import dev.enro.core.result.closeWithResult
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import java.util.*

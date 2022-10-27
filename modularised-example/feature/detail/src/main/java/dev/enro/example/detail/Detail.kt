@@ -9,9 +9,9 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import dev.enro.annotations.NavigationDestination
+import dev.enro.core.closeWithResult
 import dev.enro.core.navigationHandle
 import dev.enro.example.core.navigation.DetailKey
-import dev.enro.core.result.closeWithResult
 
 @SuppressLint("MissingNavigationDestinationAnnotation")
 class DetailActivity : AppCompatActivity() {
