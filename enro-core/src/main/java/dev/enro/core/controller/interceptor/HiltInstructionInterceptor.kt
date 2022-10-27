@@ -17,16 +17,16 @@ internal object HiltInstructionInterceptor : NavigationInstructionInterceptor {
 
     override fun intercept(
         instruction: AnyOpenInstruction,
-        parentContext: NavigationContext<*>,
+        context: NavigationContext<*>,
         binding: NavigationBinding<out NavigationKey, out Any>
     ): AnyOpenInstruction {
 
         val isHiltApplication = if(generatedComponentManagerClass != null) {
-            parentContext.activity.application is GeneratedComponentManager<*>
+            context.activity.application is GeneratedComponentManager<*>
         } else false
 
         val isHiltActivity = if(generatedComponentManagerHolderClass != null) {
-            parentContext.activity is GeneratedComponentManagerHolder
+            context.activity is GeneratedComponentManagerHolder
         } else false
 
         val navigationKey = instruction.navigationKey

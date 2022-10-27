@@ -19,7 +19,7 @@ public abstract class NavigationContainer(
     public val emptyBehavior: EmptyBehavior,
     public val acceptsNavigationKey: (NavigationKey) -> Boolean,
     public val acceptsDirection: (NavigationDirection) -> Boolean,
-    public val acceptsBinding: (NavigationBinding<*, *>) -> Boolean
+    public val acceptsBinding: (NavigationBinding<*, *>) -> Boolean,
 ) {
     private val handler = Handler(Looper.getMainLooper())
     private val reconcileBackstack: Runnable = Runnable {
@@ -34,6 +34,8 @@ public abstract class NavigationContainer(
         )
         setBackstack(nextBackstack)
     }
+
+    internal val interceptor: NavigationContainerInterceptor = NavigationContainerInterceptor()
 
     public abstract val activeContext: NavigationContext<*>?
     public abstract val isVisible: Boolean

@@ -6,12 +6,12 @@ internal object InstructionOpenedByInterceptor : NavigationInstructionIntercepto
 
     override fun intercept(
         instruction: AnyOpenInstruction,
-        parentContext: NavigationContext<*>,
+        context: NavigationContext<*>,
         binding: NavigationBinding<out NavigationKey, out Any>
     ): AnyOpenInstruction {
         return instruction
-            .setOpeningType(parentContext)
-            .setOpenedBy(parentContext)
+            .setOpeningType(context)
+            .setOpenedBy(context)
     }
 
     private fun AnyOpenInstruction.setOpeningType(

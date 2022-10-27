@@ -1,9 +1,10 @@
-package dev.enro.core.controller.interceptor
+package dev.enro.core.container
 
 import dev.enro.core.*
+import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 
-public interface NavigationInstructionInterceptor {
-    public fun intercept(
+internal class NavigationContainerInterceptor : NavigationInstructionInterceptor {
+    override fun intercept(
         instruction: AnyOpenInstruction,
         context: NavigationContext<*>,
         binding: NavigationBinding<out NavigationKey, out Any>
@@ -11,7 +12,7 @@ public interface NavigationInstructionInterceptor {
         return instruction
     }
 
-    public fun intercept(
+    override fun intercept(
         instruction: NavigationInstruction.Close,
         context: NavigationContext<*>
     ): NavigationInstruction? {
