@@ -21,19 +21,31 @@ public fun <KeyType : NavigationKey, ComposableType : ComposableDestination> cre
     )
 }
 
-public inline fun <reified KeyType : NavigationKey> createComposableNavigationBinding(
-    crossinline content: @Composable () -> Unit
+@PublishedApi
+internal fun <KeyType : NavigationKey> createComposableNavigationBinding(
+    keyType: KClass<KeyType>,
+    content: @Composable () -> Unit
 ): NavigationBinding<KeyType, ComposableDestination> {
-    val destination = object : ComposableDestination() {
+    class Destination : ComposableDestination() {
         @Composable
         override fun Render() {
             content()
         }
     }
     return ComposableNavigationBinding(
-        keyType = KeyType::class,
-        destinationType = destination::class as KClass<ComposableDestination>,
-        constructDestination = { destination }
+        keyType = keyType,
+        destinationType = Destination()::class as KClass<ComposableDestination>,
+        constructDestination = { Destination() }
+    )
+}
+
+
+public inline fun <reified KeyType : NavigationKey> createComposableNavigationBinding(
+    noinline content: @Composable () -> Unit
+): NavigationBinding<KeyType, ComposableDestination> {
+    return createComposableNavigationBinding(
+        KeyType::class,
+        content
     )
 }
 
