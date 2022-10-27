@@ -162,6 +162,24 @@ internal inline fun <reified T: Fragment> expectNoFragment(crossinline selector:
     return true
 }
 
+internal inline fun <reified T: NavigationKey> expectNoComposableContext(
+    noinline selector: (TestNavigationContext<ComposableDestination, T>
+) -> Boolean = { true }): Boolean {
+    waitFor {
+        runCatching { expectComposableContext(selector) }.isFailure
+    }
+    return true
+}
+
+internal inline fun <reified T: NavigationKey> expectNoFragmentContext(
+    noinline selector: (TestNavigationContext<Fragment, T>
+    ) -> Boolean = { true }): Boolean {
+    waitFor {
+        runCatching { expectFragmentContext(selector) }.isFailure
+    }
+    return true
+}
+
 fun expectNoActivity() {
     waitOnMain {
         val activities = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.PRE_ON_CREATE).toList() +
@@ -176,7 +194,7 @@ fun expectNoActivity() {
 }
 
 fun waitFor(block: () -> Boolean) {
-    val maximumTime = 7_000
+    val maximumTime = 3_000
     val startTime = System.currentTimeMillis()
 
     while(true) {

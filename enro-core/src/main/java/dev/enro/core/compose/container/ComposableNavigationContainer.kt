@@ -11,6 +11,7 @@ import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import java.util.concurrent.ConcurrentHashMap
 
@@ -19,12 +20,14 @@ public class ComposableNavigationContainer internal constructor(
     parentContext: NavigationContext<*>,
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
+    interceptor: NavigationInterceptorBuilder.() -> Unit,
     internal val saveableStateHolder: SaveableStateHolder,
     initialBackstackState: NavigationBackstackState
 ) : NavigationContainer(
     id = id,
     parentContext = parentContext,
     emptyBehavior = emptyBehavior,
+    interceptor = interceptor,
     acceptsNavigationKey = accept,
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
     acceptsBinding = { it is ComposableNavigationBinding<*, *> }

@@ -15,7 +15,7 @@ internal class InstructionInterceptorRepository {
         parentContext: NavigationContext<*>,
         binding: NavigationBinding<out NavigationKey, out Any>
     ): AnyOpenInstruction? {
-        return interceptors.fold(instruction) { acc, interceptor ->
+        return (interceptors + InstructionOpenedByInterceptor).fold(instruction) { acc, interceptor ->
             val result = interceptor.intercept(acc, parentContext, binding)
 
             when (result) {

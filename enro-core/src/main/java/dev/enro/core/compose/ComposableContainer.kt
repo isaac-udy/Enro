@@ -13,6 +13,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.createRootBackStack
+import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.util.*
 
@@ -20,6 +21,7 @@ import java.util.*
 public fun rememberNavigationContainer(
     root: NavigationKey.SupportsPush,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
@@ -27,6 +29,7 @@ public fun rememberNavigationContainer(
             listOf(root)
         },
         emptyBehavior = emptyBehavior,
+        interceptor = interceptor,
         accept = accept
     )
 }
@@ -35,6 +38,7 @@ public fun rememberNavigationContainer(
 public fun rememberNavigationContainer(
     initialState: List<NavigationKey.SupportsPush> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberEnroContainerController(
@@ -44,6 +48,7 @@ public fun rememberNavigationContainer(
             }
         },
         emptyBehavior = emptyBehavior,
+        interceptor = interceptor,
         accept = accept
     )
 }
@@ -53,6 +58,7 @@ public fun rememberNavigationContainer(
 public fun rememberEnroContainerController(
     initialBackstack: List<AnyOpenInstruction> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
     ignore: Unit = Unit
 ): ComposableNavigationContainer {
@@ -70,6 +76,7 @@ public fun rememberEnroContainerController(
             parentContext = viewModelStoreOwner.getNavigationHandleViewModel().navigationContext!!,
             accept = accept,
             emptyBehavior = emptyBehavior,
+            interceptor = interceptor,
             saveableStateHolder = saveableStateHolder,
             initialBackstackState = createRootBackStack(initialBackstack)
         )

@@ -8,6 +8,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
+import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.getAndUpdate
@@ -17,6 +18,7 @@ public abstract class NavigationContainer(
     public val id: String,
     public val parentContext: NavigationContext<*>,
     public val emptyBehavior: EmptyBehavior,
+    interceptor: NavigationInterceptorBuilder.() -> Unit,
     public val acceptsNavigationKey: (NavigationKey) -> Boolean,
     public val acceptsDirection: (NavigationDirection) -> Boolean,
     public val acceptsBinding: (NavigationBinding<*, *>) -> Boolean,
@@ -35,7 +37,9 @@ public abstract class NavigationContainer(
         setBackstack(nextBackstack)
     }
 
-    internal val interceptor: NavigationContainerInterceptor = NavigationContainerInterceptor()
+    internal val interceptor = NavigationInterceptorBuilder()
+        .apply(interceptor)
+        .build()
 
     public abstract val activeContext: NavigationContext<*>?
     public abstract val isVisible: Boolean

@@ -49,6 +49,18 @@ fun launchFragmentRoot(): TestNavigationContext<FragmentDestinationRoot, Fragmen
     }
 }
 
+inline fun <reified NK: NavigationKey.SupportsPresent> launchFragment(navigationKey: NK): TestNavigationContext<Fragment, NK> {
+    ActivityScenario.launch(DefaultActivity::class.java)
+
+    expectContext<DefaultActivity, DefaultActivityKey>()
+        .navigation
+        .replaceRoot(navigationKey)
+
+    return expectContext<Fragment, NK>().also {
+        waitFor { it.context.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) }
+    }
+}
+
 sealed class ContainerType
 object IntoSameContainer : ContainerType()
 object IntoChildContainer : ContainerType()

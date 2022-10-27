@@ -16,6 +16,7 @@ public class FragmentPresentationContainer internal constructor(
     parentContext = parentContext,
     acceptsNavigationKey = { true },
     emptyBehavior = EmptyBehavior.AllowEmpty,
+    interceptor = {},
     acceptsDirection = { it is NavigationDirection.Present },
     acceptsBinding = { it is FragmentNavigationBinding<*, *> || it is ComposableNavigationBinding<*, *> }
 ) {
