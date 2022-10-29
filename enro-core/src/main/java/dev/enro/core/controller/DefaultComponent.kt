@@ -5,11 +5,8 @@ import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
 import dev.enro.core.controller.interceptor.NavigationContainerDelegateInterceptor
 import dev.enro.core.hosts.hostComponent
 import dev.enro.core.internal.NoKeyNavigationBinding
-import dev.enro.core.result.EnroResult
 
 internal val defaultComponent = createNavigationComponent {
-    plugin(EnroResult())
-
     interceptor(NavigationContainerDelegateInterceptor)
     interceptor(InstructionOpenedByInterceptor)
     interceptor(HiltInstructionInterceptor)

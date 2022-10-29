@@ -6,14 +6,16 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.internal.EnroDependencyScope
+import dev.enro.core.internal.get
 import kotlin.reflect.KClass
 
 public interface NavigationHandle : LifecycleOwner {
     public val id: String
-    public val controller: NavigationController
     public val additionalData: Bundle
     public val key: NavigationKey
     public val instruction: NavigationInstruction.Open<*>
+    public val dependencyScope: EnroDependencyScope
     public fun executeInstruction(navigationInstruction: NavigationInstruction)
 }
 
@@ -22,14 +24,14 @@ public interface TypedNavigationHandle<T : NavigationKey> : NavigationHandle {
 }
 
 @PublishedApi
-internal class TypedNavigationHandleImpl<T : NavigationKey>(
+internal class TypedNavigationHandleWrapperImpl<T : NavigationKey>(
     internal val navigationHandle: NavigationHandle,
     private val type: Class<T>
 ): TypedNavigationHandle<T> {
     override val id: String get() = navigationHandle.id
-    override val controller: NavigationController get() = navigationHandle.controller
     override val additionalData: Bundle get() = navigationHandle.additionalData
     override val instruction: NavigationInstruction.Open<*> = navigationHandle.instruction
+    override val dependencyScope: EnroDependencyScope get() = navigationHandle.dependencyScope
 
     @Suppress("UNCHECKED_CAST")
     override val key: T get() = navigationHandle.key as? T
@@ -48,15 +50,15 @@ public fun <T : NavigationKey> NavigationHandle.asTyped(type: KClass<T>): TypedN
     }
 
     @Suppress("UNCHECKED_CAST")
-    if (this is TypedNavigationHandleImpl<*>) return this as TypedNavigationHandle<T>
-    return TypedNavigationHandleImpl(this, type.java)
+    if (this is TypedNavigationHandleWrapperImpl<*>) return this as TypedNavigationHandle<T>
+    return TypedNavigationHandleWrapperImpl(this, type.java)
 }
 
 public inline fun <reified T : NavigationKey> NavigationHandle.asTyped(): TypedNavigationHandle<T> {
     if (key !is T) {
         throw EnroException.IncorrectlyTypedNavigationHandle("Failed to cast NavigationHandle with key of type ${key::class.java.simpleName} to TypedNavigationHandle<${T::class.java.simpleName}>")
     }
-    return TypedNavigationHandleImpl(this, T::class.java)
+    return TypedNavigationHandleWrapperImpl(this, T::class.java)
 }
 
 public fun NavigationHandle.push(key: NavigationKey.SupportsPush, vararg childKeys: NavigationKey) {
@@ -113,7 +115,7 @@ public val NavigationHandle.isPresented: Boolean
 internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
     val isMainThread = runCatching {
         Looper.getMainLooper() == Looper.myLooper()
-    }.getOrElse { controller.isInTest } // if the controller is in a Jvm only test, the block above may fail to run
+    }.getOrElse { dependencyScope.get<NavigationController>().isInTest } // if the controller is in a Jvm only test, the block above may fail to run
 
     if(isMainThread && lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
         block()

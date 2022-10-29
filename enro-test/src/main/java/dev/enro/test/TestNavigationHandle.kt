@@ -1,3 +1,4 @@
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 package dev.enro.test
 
 import android.annotation.SuppressLint
@@ -5,7 +6,8 @@ import android.os.Bundle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import dev.enro.core.*
-import dev.enro.core.controller.NavigationController
+import dev.enro.core.internal.EnroDependencyScope
+import dev.enro.core.internal.handle.NavigationHandleScope
 import junit.framework.TestCase
 import org.junit.Assert.*
 import java.lang.ref.WeakReference
@@ -16,9 +18,6 @@ class TestNavigationHandle<T : NavigationKey>(
     override val id: String
         get() = navigationHandle.id
 
-    override val controller: NavigationController
-        get() = navigationHandle.controller
-
     override val additionalData: Bundle
         get() = navigationHandle.additionalData
 
@@ -27,6 +26,9 @@ class TestNavigationHandle<T : NavigationKey>(
 
     override val instruction: NavigationInstruction.Open<*>
         get() = navigationHandle.instruction
+
+    override val dependencyScope: EnroDependencyScope
+        get() = navigationHandle.dependencyScope
 
     internal var internalOnCloseRequested: () -> Unit = { close() }
 
@@ -66,8 +68,7 @@ fun <T : NavigationKey> createTestNavigationHandle(
         override val additionalData: Bundle = instruction.additionalData
         override val key: NavigationKey = key
         override val instruction: NavigationInstruction.Open<*> = instruction
-
-        override val controller: NavigationController = EnroTest.getCurrentNavigationController()
+        override val dependencyScope: EnroDependencyScope = NavigationHandleScope(EnroTest.getCurrentNavigationController())
 
         override fun executeInstruction(navigationInstruction: NavigationInstruction) {
             instructions.add(navigationInstruction)

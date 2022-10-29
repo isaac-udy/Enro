@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import dev.enro.core.*
+import dev.enro.core.internal.get
 import dev.enro.core.result.internal.LazyResultChannelProperty
 import dev.enro.core.result.internal.PendingResult
 import dev.enro.core.result.internal.ResultChannelImpl
@@ -32,7 +33,7 @@ public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.clos
 public fun <T : Any> ExecutorArgs<out Any, out Any, out NavigationKey>.sendResult(
     result: T
 ) {
-    val resultId = ResultChannelImpl.getResultId(instruction)
+    val resultId = instruction.internal.resultId
     if (resultId != null) {
         EnroResult.from(fromContext.controller).addPendingResult(
             PendingResult(
@@ -47,7 +48,7 @@ public fun <T : Any> ExecutorArgs<out Any, out Any, out NavigationKey>.sendResul
 public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.sendResult(
     result: T
 ) {
-    val resultId = ResultChannelImpl.getResultId(instruction)
+    val resultId = instruction.internal.resultId
     if (resultId != null) {
         EnroResult.from(navigationContext.controller).addPendingResult(
             PendingResult(
@@ -62,7 +63,7 @@ public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.sendR
 public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwardResult(
     navigationKey: NavigationKey.WithResult<T>
 ) {
-    val resultId = ResultChannelImpl.getResultId(instruction)
+    val resultId = instruction.internal.resultId
 
     // If the incoming instruction does not have a resultId attached, we
     // still want to open the screen we are being forwarded to
@@ -72,8 +73,8 @@ public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwa
         )
     } else {
         navigationContext.getNavigationHandle().executeInstruction(
-            ResultChannelImpl.overrideResultId(
-                NavigationInstruction.DefaultDirection(navigationKey), resultId
+            NavigationInstruction.DefaultDirection(navigationKey).internal.copy(
+                resultId = resultId
             )
         )
     }
@@ -163,6 +164,7 @@ public inline fun <reified T : Any> NavigationHandle.registerForNavigationResult
 ): UnmanagedEnroResultChannel<T, NavigationKey.WithResult<T>> {
     return ResultChannelImpl(
         navigationHandle = this,
+        enroResult = dependencyScope.get(),
         resultType = T::class.java,
         onResult = onResult,
         additionalResultId = id
@@ -187,6 +189,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Navigatio
     return ResultChannelImpl(
         navigationHandle = this,
         resultType = T::class.java,
+        enroResult = dependencyScope.get(),
         onResult = onResult,
         additionalResultId = id
     )

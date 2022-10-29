@@ -1,3 +1,4 @@
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 package dev.enro.test
 
 import android.app.Application
@@ -7,6 +8,7 @@ import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.NavigationComponentBuilder
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.plugins.EnroLogger
+import dev.enro.viewmodel.EnroViewModelNavigationHandleProvider
 
 object EnroTest {
 
@@ -20,7 +22,7 @@ object EnroTest {
             .apply {
                 plugin(EnroLogger())
             }
-            .callPrivate<NavigationController>("build")
+            .build()
             .apply {
                 isInTest = true
             }
@@ -35,15 +37,12 @@ object EnroTest {
             }
             navigationController?.apply { install(application) }
         } else {
-            navigationController?.callPrivate<Unit>("installForJvmTests")
+            navigationController?.installForJvmTests()
         }
     }
 
     fun uninstallNavigationController() {
-        val providerClass =
-            Class.forName("dev.enro.viewmodel.EnroViewModelNavigationHandleProvider")
-        val instance = providerClass.getDeclaredField("INSTANCE").get(null)!!
-        instance.callPrivate<Unit>("clearAllForTest")
+        EnroViewModelNavigationHandleProvider.clearAllForTest()
         navigationController?.apply {
             isInTest = false
         }
@@ -54,7 +53,7 @@ object EnroTest {
         if (isInstrumented()) {
             val application = ApplicationProvider.getApplicationContext<Application>()
             if (application is NavigationApplication) return
-            uninstallNavigationController?.callPrivate<Unit>("uninstall", application)
+            uninstallNavigationController?.uninstall(application)
         }
     }
 
@@ -70,35 +69,3 @@ object EnroTest {
         return false
     }
 }
-
-
-private fun <T> Any.callPrivate(methodName: String, vararg args: Any): T {
-    val method = this::class.java.declaredMethods.filter { it.name.startsWith(methodName) }.first()
-    method.isAccessible = true
-    val result = method.invoke(this, *args)
-    method.isAccessible = false
-    return result as T
-}
-
-
-private var NavigationController.isInTest: Boolean
-    get() {
-        return NavigationController::class.java.getDeclaredField("isInTest")
-            .let {
-                it.isAccessible = true
-                val result = it.get(this) as Boolean
-                it.isAccessible = false
-
-                return@let result
-            }
-    }
-    set(value) {
-        NavigationController::class.java.getDeclaredField("isInTest")
-            .let {
-                it.isAccessible = true
-                val result = it.set(this, value)
-                it.isAccessible = false
-
-                return@let result
-            }
-    }

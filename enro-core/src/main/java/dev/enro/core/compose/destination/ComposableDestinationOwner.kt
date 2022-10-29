@@ -19,6 +19,8 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.controller.repository.ComposeEnvironmentRepository
+import dev.enro.core.internal.get
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,6 +53,8 @@ internal class ComposableDestinationOwner(
     )
 
     private val lifecycleFlow = createLifecycleFlow()
+
+    private val composeRenderingEnvironment = navigationController.dependencyScope.get<ComposeEnvironmentRepository>()
 
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryOwner.savedStateRegistry
@@ -146,7 +150,7 @@ internal class ComposableDestinationOwner(
             LocalNavigationHandle provides remember { getNavigationHandleViewModel() }
         ) {
             saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
-                navigationController.composeEnvironmentRepository.Render {
+                composeRenderingEnvironment.Render {
                     content()
                 }
             }

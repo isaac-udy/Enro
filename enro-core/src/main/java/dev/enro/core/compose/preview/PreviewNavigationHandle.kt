@@ -9,14 +9,15 @@ import androidx.lifecycle.LifecycleRegistry
 import dev.enro.core.*
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.internal.EnroDependencyScope
+import dev.enro.core.internal.handle.NavigationHandleScope
 
 internal class PreviewNavigationHandle(
     override val instruction: AnyOpenInstruction
 ) : NavigationHandle {
     override val id: String = instruction.instructionId
     override val key: NavigationKey = instruction.navigationKey
-
-    override val controller: NavigationController = NavigationController()
+    override val dependencyScope: EnroDependencyScope = NavigationHandleScope(NavigationController())
     override val additionalData: Bundle = Bundle.EMPTY
 
     private val lifecycleRegistry by lazy {

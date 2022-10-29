@@ -7,13 +7,19 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.controller.NavigationController
+import dev.enro.core.controller.usecase.ExecuteCloseInstruction
+import dev.enro.core.controller.usecase.ExecuteOpenInstruction
+import dev.enro.core.internal.EnroDependencyScope
 import dev.enro.core.internal.NoNavigationKey
 
 internal open class NavigationHandleViewModel(
-    override val controller: NavigationController,
-    override val instruction: AnyOpenInstruction
-) : ViewModel(), NavigationHandle {
+    override val instruction: AnyOpenInstruction,
+    override val dependencyScope: EnroDependencyScope,
+    private val executeOpenInstruction: ExecuteOpenInstruction,
+    private val executeCloseInstruction: ExecuteCloseInstruction,
+) : ViewModel(),
+    NavigationHandle,
+    EnroDependencyScope by dependencyScope {
 
     private var pendingInstruction: NavigationInstruction? = null
 
@@ -69,13 +75,9 @@ internal open class NavigationHandleViewModel(
         pendingInstruction = null
         context.runWhenContextActive {
             when (instruction) {
-                is NavigationInstruction.Open<*> -> {
-                    context.controller.open(context, instruction)
-                }
-                NavigationInstruction.RequestClose -> {
-                    internalOnCloseRequested()
-                }
-                is NavigationInstruction.Close -> context.controller.close(context, instruction)
+                is NavigationInstruction.Open<*> -> executeOpenInstruction(context, instruction)
+                NavigationInstruction.RequestClose -> internalOnCloseRequested()
+                is NavigationInstruction.Close -> executeCloseInstruction(context, instruction)
             }
         }
     }

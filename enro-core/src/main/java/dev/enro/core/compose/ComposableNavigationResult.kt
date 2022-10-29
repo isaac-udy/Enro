@@ -6,6 +6,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import dev.enro.core.NavigationKey
+import dev.enro.core.internal.get
 import dev.enro.core.result.EnroResultChannel
 import dev.enro.core.result.internal.ResultChannelImpl
 import java.util.*
@@ -30,6 +31,7 @@ public inline fun <reified T : Any> registerForNavigationResult(
     val resultChannel = remember(onResult) {
         ResultChannelImpl(
             navigationHandle = navigationHandle,
+            enroResult = navigationHandle.dependencyScope.get(),
             resultType = T::class.java,
             onResult = onResult,
             additionalResultId = id

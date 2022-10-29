@@ -6,7 +6,10 @@ import androidx.lifecycle.*
 import dev.enro.core.*
 import dev.enro.core.controller.repository.ExecutorRepository
 import dev.enro.core.controller.repository.PluginRepository
+import dev.enro.core.controller.usecase.GetNavigationExecutor
+import dev.enro.core.controller.usecase.forClosing
 import dev.enro.core.internal.NoNavigationKey
+import dev.enro.core.internal.get
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -94,7 +97,9 @@ internal class NavigationLifecycleController(
             context.lifecycle.addObserver(object : LifecycleEventObserver {
                 override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                     if (event == Lifecycle.Event.ON_START) {
-                        context.controller.executorForClose(context).postOpened(context)
+                        context.controller.dependencyScope.get<GetNavigationExecutor>().forClosing(
+                            context
+                        ).postOpened(context)
                         context.lifecycle.removeObserver(this)
                     }
                 }

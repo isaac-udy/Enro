@@ -41,13 +41,10 @@ internal class ExecutorRepository(
         overrides.remove(navigationExecutor.fromType to navigationExecutor.opensType)
     }
 
-    fun executorFor(types: Pair<Class<out Any>, Class<out Any>>): NavigationExecutor<Any, Any, NavigationKey> {
-        return classHierarchyRepository.getClassHierarchyPairs(types.first, types.second)
-            .asSequence()
-            .mapNotNull {
-                overrides[it.first.kotlin to it.second.kotlin] as? NavigationExecutor<Any, Any, NavigationKey>
-                    ?: executors[it.first.kotlin to it.second.kotlin] as? NavigationExecutor<Any, Any, NavigationKey>
-            }
-            .first()
+    fun getExecutor(
+        types: Pair<Class<out Any>, Class<out Any>>
+    ): NavigationExecutor<Any, Any, NavigationKey>? {
+        return overrides[types.first.kotlin to types.second.kotlin] as? NavigationExecutor<Any, Any, NavigationKey>
+            ?: executors[types.first.kotlin to types.second.kotlin] as? NavigationExecutor<Any, Any, NavigationKey>
     }
 }

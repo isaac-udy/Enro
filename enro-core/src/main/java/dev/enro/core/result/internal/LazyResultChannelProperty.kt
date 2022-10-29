@@ -9,6 +9,7 @@ import dev.enro.core.EnroException
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.core.getNavigationHandle
+import dev.enro.core.internal.get
 import dev.enro.core.result.EnroResultChannel
 import dev.enro.core.result.managedByLifecycle
 import kotlin.properties.ReadOnlyProperty
@@ -39,7 +40,8 @@ internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithRes
                 resultChannel = ResultChannelImpl<Result, Key>(
                     navigationHandle = handle.value,
                     resultType = resultType,
-                    onResult = onResult
+                    onResult = onResult,
+                    enroResult = handle.value.dependencyScope.get(),
                 ).managedByLifecycle(lifecycle)
             }
         })

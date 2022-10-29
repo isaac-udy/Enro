@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.controller.usecase.GetNavigationExecutor
+import dev.enro.core.controller.usecase.forClosing
+import dev.enro.core.controller.usecase.forOpening
 import dev.enro.core.hosts.AbstractActivityHostForAnyInstruction
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
 import dev.enro.core.hosts.AbstractOpenInstructionInActivityKey
+import dev.enro.core.internal.get
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
 
@@ -218,7 +222,7 @@ private fun animationsForOpen(
         else -> navigationInstruction
     }
 
-    val executor = controller.executorForOpen(
+    val executor = controller.dependencyScope.get<GetNavigationExecutor>().forOpening(
         instructionForAnimation
     )
     return executor.animation(navigationInstruction)
@@ -237,6 +241,8 @@ private fun animationsForClose(
         else -> context
     }
 
-    val executor = context.controller.executorForClose(contextForAnimation)
+    val executor = context.controller.dependencyScope.get<GetNavigationExecutor>().forClosing(
+        contextForAnimation
+    )
     return executor.closeAnimation(context)
 }
