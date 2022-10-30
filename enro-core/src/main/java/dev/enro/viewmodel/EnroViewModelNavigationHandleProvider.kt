@@ -22,9 +22,9 @@ internal object EnroViewModelNavigationHandleProvider {
             )
     }
 
-    // Called reflectively by enro-test
+    // Called by enro-test
     @Keep
-    private fun clearAllForTest() {
+    fun clearAllForTest() {
         navigationHandles.clear()
     }
 }

@@ -1,6 +1,12 @@
 androidLibrary()
 publishAndroidModule("dev.enro", "enro-test")
 
+android {
+    kotlinOptions {
+        freeCompilerArgs += "-Xfriend-paths=\"../enro-core/src/main\""
+    }
+}
+
 dependencies {
     releaseApi "dev.enro:enro-core:$versionName"
     debugApi project(":enro-core")

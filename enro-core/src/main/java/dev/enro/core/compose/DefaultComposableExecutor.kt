@@ -9,8 +9,10 @@ import dev.enro.core.container.add
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.close
+import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.hosts.OpenComposableInFragment
 import dev.enro.core.hosts.OpenInstructionInActivity
+import dev.enro.core.internal.get
 
 public object DefaultComposableExecutor :
     NavigationExecutor<Any, ComposableDestination, NavigationKey>(
@@ -116,7 +118,7 @@ private fun openComposableAsActivity(
     instruction: AnyOpenInstruction
 ) {
     val fragmentInstruction = instruction.asFragmentHostInstruction(isRoot = true)
-    fromContext.controller.open(
+    fromContext.controller.dependencyScope.get<ExecuteOpenInstruction>().invoke(
         fromContext,
         NavigationInstruction.Open.OpenInternal(
             direction,
@@ -130,7 +132,7 @@ private fun openComposableAsFragment(
     instruction: AnyOpenInstruction
 ) {
     val fragmentInstruction = instruction.asFragmentHostInstruction(isRoot = false)
-    fromContext.controller.open(
+    fromContext.controller.dependencyScope.get<ExecuteOpenInstruction>().invoke(
         fromContext,
         fragmentInstruction
     )

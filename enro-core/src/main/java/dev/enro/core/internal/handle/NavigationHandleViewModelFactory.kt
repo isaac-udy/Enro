@@ -4,10 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import dev.enro.core.AnyOpenInstruction
 import androidx.lifecycle.viewmodel.CreationExtras
+import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroException
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.internal.get
 
 internal class NavigationHandleViewModelFactory(
     private val navigationController: NavigationController,
@@ -25,9 +26,14 @@ internal class NavigationHandleViewModelFactory(
             ) as T
         }
 
+        val scope = NavigationHandleScope(
+            navigationController
+        )
         return NavigationHandleViewModel(
-            navigationController,
-            instruction
+            instruction = instruction,
+            dependencyScope = scope,
+            executeCloseInstruction = scope.get(),
+            executeOpenInstruction = scope.get(),
         ) as T
     }
 }

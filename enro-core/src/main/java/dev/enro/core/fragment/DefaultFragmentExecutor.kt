@@ -8,7 +8,9 @@ import dev.enro.core.container.add
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.close
+import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.hosts.OpenInstructionInActivity
+import dev.enro.core.internal.get
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -207,7 +209,7 @@ private fun openFragmentAsActivity(
     instruction: AnyOpenInstruction
 ) {
     instruction as NavigationInstruction.Open<NavigationDirection>
-    fromContext.controller.open(
+    fromContext.controller.dependencyScope.get<ExecuteOpenInstruction>().invoke(
         fromContext,
         NavigationInstruction.Open.OpenInternal(
             navigationDirection = instruction.navigationDirection,

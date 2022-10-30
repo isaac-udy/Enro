@@ -6,14 +6,16 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.internal.EnroDependencyScope
+import dev.enro.core.internal.get
 import kotlin.reflect.KClass
 
 public interface NavigationHandle : LifecycleOwner {
     public val id: String
-    public val controller: NavigationController
     public val additionalData: Bundle
     public val key: NavigationKey
     public val instruction: NavigationInstruction.Open<*>
+    public val dependencyScope: EnroDependencyScope
     public fun executeInstruction(navigationInstruction: NavigationInstruction)
 }
 
@@ -27,9 +29,9 @@ internal class TypedNavigationHandleImpl<T : NavigationKey>(
     private val type: Class<T>
 ): TypedNavigationHandle<T> {
     override val id: String get() = navigationHandle.id
-    override val controller: NavigationController get() = navigationHandle.controller
     override val additionalData: Bundle get() = navigationHandle.additionalData
     override val instruction: NavigationInstruction.Open<*> = navigationHandle.instruction
+    override val dependencyScope: EnroDependencyScope get() = navigationHandle.dependencyScope
 
     @Suppress("UNCHECKED_CAST")
     override val key: T get() = navigationHandle.key as? T
@@ -113,7 +115,7 @@ public val NavigationHandle.isPresented: Boolean
 internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
     val isMainThread = runCatching {
         Looper.getMainLooper() == Looper.myLooper()
-    }.getOrElse { controller.isInTest } // if the controller is in a Jvm only test, the block above may fail to run
+    }.getOrElse { dependencyScope.get<NavigationController>().isInTest } // if the controller is in a Jvm only test, the block above may fail to run
 
     if(isMainThread && lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
         block()

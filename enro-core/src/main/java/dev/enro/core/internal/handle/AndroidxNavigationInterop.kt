@@ -1,4 +1,4 @@
-package dev.enro.core.fragment
+package dev.enro.core.internal.handle
 
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment

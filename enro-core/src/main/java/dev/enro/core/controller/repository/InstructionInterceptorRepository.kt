@@ -1,6 +1,8 @@
-package dev.enro.core.controller.interceptor
+package dev.enro.core.controller.repository
 
 import dev.enro.core.*
+import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
+import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 
 internal class InstructionInterceptorRepository {
 
@@ -20,7 +22,7 @@ internal class InstructionInterceptorRepository {
 
             when (result) {
                 is NavigationInstruction.Open<*> -> {
-                    return@fold result as AnyOpenInstruction
+                    return@fold result
                 }
                 else -> return null
             }

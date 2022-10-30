@@ -14,7 +14,8 @@ private class ResultChannelProperties<T>(
     val onResult: (T) -> Unit,
 )
 
-public class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Result>> @PublishedApi internal constructor(
+internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Result>> @PublishedApi internal constructor(
+    private val enroResult: EnroResult,
     navigationHandle: NavigationHandle,
     resultType: Class<Result>,
     onResult: @DisallowComposableCalls (Result) -> Unit,
@@ -114,14 +115,12 @@ public class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Resul
     override fun attach() {
         val properties = arguments ?: return
         if(properties.navigationHandle.lifecycle.currentState == Lifecycle.State.DESTROYED) return
-        EnroResult.from(properties.navigationHandle.controller)
-            .registerChannel(this)
+        enroResult.registerChannel(this)
     }
 
     override fun detach() {
         val properties = arguments ?: return
-        EnroResult.from(properties.navigationHandle.controller)
-            .deregisterChannel(this)
+        enroResult.deregisterChannel(this)
     }
 
     override fun destroy() {
@@ -129,22 +128,6 @@ public class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Resul
         detach()
         properties.navigationHandle.lifecycle.removeObserver(lifecycleObserver)
         arguments = null
-    }
-
-    internal companion object {
-        internal fun getResultId(navigationHandle: NavigationHandle): ResultChannelId? {
-            return navigationHandle.instruction.internal.resultId
-        }
-
-        internal fun getResultId(instruction: NavigationInstruction.Open<*>): ResultChannelId? {
-            return instruction.internal.resultId
-        }
-
-        internal fun overrideResultId(instruction: NavigationInstruction.Open<*>, resultId: ResultChannelId): NavigationInstruction.Open<*> {
-            return instruction.internal.copy(
-                resultId = resultId
-            )
-        }
     }
 }
 

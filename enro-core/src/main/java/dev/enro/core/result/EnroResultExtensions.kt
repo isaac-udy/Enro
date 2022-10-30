@@ -10,9 +10,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import dev.enro.core.*
+import dev.enro.core.controller.factory.resultChannelFactory
 import dev.enro.core.result.internal.LazyResultChannelProperty
 import dev.enro.core.result.internal.PendingResult
-import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.viewmodel.getNavigationHandle
 import kotlin.properties.ReadOnlyProperty
@@ -32,7 +32,7 @@ public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.clos
 public fun <T : Any> ExecutorArgs<out Any, out Any, out NavigationKey>.sendResult(
     result: T
 ) {
-    val resultId = ResultChannelImpl.getResultId(instruction)
+    val resultId = instruction.internal.resultId
     if (resultId != null) {
         EnroResult.from(fromContext.controller).addPendingResult(
             PendingResult(
@@ -47,7 +47,7 @@ public fun <T : Any> ExecutorArgs<out Any, out Any, out NavigationKey>.sendResul
 public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.sendResult(
     result: T
 ) {
-    val resultId = ResultChannelImpl.getResultId(instruction)
+    val resultId = instruction.internal.resultId
     if (resultId != null) {
         EnroResult.from(navigationContext.controller).addPendingResult(
             PendingResult(
@@ -62,7 +62,7 @@ public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.sendR
 public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwardResult(
     navigationKey: NavigationKey.WithResult<T>
 ) {
-    val resultId = ResultChannelImpl.getResultId(instruction)
+    val resultId = instruction.internal.resultId
 
     // If the incoming instruction does not have a resultId attached, we
     // still want to open the screen we are being forwarded to
@@ -72,8 +72,8 @@ public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwa
         )
     } else {
         navigationContext.getNavigationHandle().executeInstruction(
-            ResultChannelImpl.overrideResultId(
-                NavigationInstruction.DefaultDirection(navigationKey), resultId
+            NavigationInstruction.DefaultDirection(navigationKey).internal.copy(
+                resultId = resultId
             )
         )
     }
@@ -86,7 +86,7 @@ public inline fun <reified T : Any> ViewModel.registerForNavigationResult(
 ): ReadOnlyProperty<Any, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = navigationHandle,
-        resultType = T::class.java,
+        resultType = T::class,
         onResult = onResult
     )
 
@@ -95,7 +95,7 @@ public inline fun <reified T : Any> ViewModel.registerForNavigationResult(
 ): ReadOnlyProperty<Any, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = getNavigationHandle(),
-        resultType = T::class.java,
+        resultType = T::class,
         onResult = onResult
     )
 
@@ -105,7 +105,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> ViewModel
 ): ReadOnlyProperty<Any, EnroResultChannel<T, Key>> =
     LazyResultChannelProperty(
         owner = getNavigationHandle(),
-        resultType = T::class.java,
+        resultType = T::class,
         onResult = onResult
     )
 
@@ -114,7 +114,7 @@ public inline fun <reified T : Any> ComponentActivity.registerForNavigationResul
 ): ReadOnlyProperty<ComponentActivity, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = this,
-        resultType = T::class.java,
+        resultType = T::class,
         onResult = onResult
     )
 
@@ -124,7 +124,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> FragmentA
 ): ReadOnlyProperty<Fragment, EnroResultChannel<T, Key>> =
     LazyResultChannelProperty(
         owner = this,
-        resultType = T::class.java,
+        resultType = T::class,
         onResult = onResult
     )
 
@@ -133,7 +133,7 @@ public inline fun <reified T : Any> Fragment.registerForNavigationResult(
 ): ReadOnlyProperty<Fragment, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = this,
-        resultType = T::class.java,
+        resultType = T::class,
         onResult = onResult
     )
 
@@ -143,7 +143,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Fragment.
 ): ReadOnlyProperty<Fragment, EnroResultChannel<T, Key>> =
     LazyResultChannelProperty(
         owner = this,
-        resultType = T::class.java,
+        resultType = T::class,
         onResult = onResult
     )
 
@@ -161,9 +161,8 @@ public inline fun <reified T : Any> NavigationHandle.registerForNavigationResult
     id: String,
     noinline onResult: (T) -> Unit
 ): UnmanagedEnroResultChannel<T, NavigationKey.WithResult<T>> {
-    return ResultChannelImpl(
-        navigationHandle = this,
-        resultType = T::class.java,
+    return resultChannelFactory.createResultChannel(
+        resultType = T::class,
         onResult = onResult,
         additionalResultId = id
     )
@@ -184,9 +183,8 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Navigatio
     key: KClass<Key>,
     noinline onResult: (T) -> Unit
 ): UnmanagedEnroResultChannel<T, Key> {
-    return ResultChannelImpl(
-        navigationHandle = this,
-        resultType = T::class.java,
+    return resultChannelFactory.createResultChannel(
+        resultType = T::class,
         onResult = onResult,
         additionalResultId = id
     )
