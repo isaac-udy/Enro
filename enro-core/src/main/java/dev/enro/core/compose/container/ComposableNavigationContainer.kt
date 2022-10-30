@@ -115,7 +115,9 @@ public class ComposableNavigationContainer internal constructor(
                 instruction = instruction,
                 destination = destination,
                 viewModelStore = viewModelStores.getOrPut(instruction.instructionId) { ViewModelStore()  },
-                contextLifecycleController = parentContext.controller.dependencyScope.get(),
+                onNavigationContextCreated = parentContext.controller.dependencyScope.get(),
+                onNavigationContextSaved = parentContext.controller.dependencyScope.get(),
+                composeEnvironmentRepository = parentContext.controller.dependencyScope.get(),
             ).also { owner ->
                 owner.lifecycle.addObserver(object : LifecycleEventObserver {
                     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {

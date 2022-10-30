@@ -19,9 +19,9 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
-import dev.enro.core.controller.lifecycle.NavigationLifecycleController
 import dev.enro.core.controller.repository.ComposeEnvironmentRepository
-import dev.enro.core.internal.get
+import dev.enro.core.controller.usecase.OnNavigationContextCreated
+import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +30,9 @@ internal class ComposableDestinationOwner(
     val parentContainer: NavigationContainer,
     val instruction: AnyOpenInstruction,
     val destination: ComposableDestination,
-    contextLifecycleController: NavigationLifecycleController,
+    onNavigationContextCreated: OnNavigationContextCreated,
+    onNavigationContextSaved: OnNavigationContextSaved,
+    private val composeEnvironmentRepository: ComposeEnvironmentRepository,
     viewModelStore: ViewModelStore,
 ) : ViewModel(),
     LifecycleOwner,
@@ -45,7 +47,7 @@ internal class ComposableDestinationOwner(
     private val lifecycleRegistry = LifecycleRegistry(this)
 
     @Suppress("LeakingThis")
-    private val savedStateRegistryOwner = ComposableDestinationSavedStateRegistryOwner(this, contextLifecycleController)
+    private val savedStateRegistryOwner = ComposableDestinationSavedStateRegistryOwner(this, onNavigationContextSaved)
 
     @Suppress("LeakingThis")
     private val viewModelStoreOwner = ComposableDestinationViewModelStoreOwner(
@@ -56,14 +58,12 @@ internal class ComposableDestinationOwner(
 
     private val lifecycleFlow = createLifecycleFlow()
 
-    private val composeRenderingEnvironment = navigationController.dependencyScope.get<ComposeEnvironmentRepository>()
-
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryOwner.savedStateRegistry
 
     init {
         destination.owner = this
-        contextLifecycleController.onContextCreated(
+        onNavigationContextCreated(
             destination.context,
             savedStateRegistryOwner.savedState
         )
@@ -152,7 +152,7 @@ internal class ComposableDestinationOwner(
             LocalNavigationHandle provides remember { getNavigationHandleViewModel() }
         ) {
             saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
-                composeRenderingEnvironment.Render {
+                composeEnvironmentRepository.Render {
                     content()
                 }
             }

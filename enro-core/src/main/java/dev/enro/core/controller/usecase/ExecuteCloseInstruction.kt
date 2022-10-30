@@ -1,7 +1,7 @@
 package dev.enro.core.controller.usecase
 
 import dev.enro.core.*
-import dev.enro.core.controller.interceptor.InstructionInterceptorRepository
+import dev.enro.core.controller.repository.InstructionInterceptorRepository
 
 internal interface ExecuteCloseInstruction {
     operator fun invoke(

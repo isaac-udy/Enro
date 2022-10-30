@@ -1,11 +1,7 @@
 package dev.enro.core.controller.usecase
 
 import dev.enro.core.controller.NavigationComponentBuilder
-import dev.enro.core.controller.interceptor.InstructionInterceptorRepository
-import dev.enro.core.controller.repository.ComposeEnvironmentRepository
-import dev.enro.core.controller.repository.ExecutorRepository
-import dev.enro.core.controller.repository.NavigationBindingRepository
-import dev.enro.core.controller.repository.PluginRepository
+import dev.enro.core.controller.repository.*
 
 internal class AddComponentToController(
     private val pluginRepository: PluginRepository,

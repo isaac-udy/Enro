@@ -6,7 +6,6 @@ import dev.enro.core.EnroException
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationExecutor
 import dev.enro.core.NavigationKey
-import dev.enro.core.controller.lifecycle.NavigationLifecycleController
 import dev.enro.core.controller.repository.ExecutorRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.PluginRepository
@@ -26,7 +25,6 @@ public class NavigationController internal constructor() {
     private val pluginRepository: PluginRepository = dependencyScope.get()
     private val navigationBindingRepository: NavigationBindingRepository = dependencyScope.get()
     private val executorRepository: ExecutorRepository = dependencyScope.get()
-    private val contextController: NavigationLifecycleController = dependencyScope.get()
     private val addComponentToController: AddComponentToController = dependencyScope.get()
 
     init {
@@ -60,7 +58,7 @@ public class NavigationController internal constructor() {
 
     public fun install(application: Application) {
         navigationControllerBindings[application] = this
-        contextController.install(application)
+        application.registerActivityLifecycleCallbacks(dependencyScope.get())
         pluginRepository.onAttached(this)
     }
 
@@ -74,7 +72,7 @@ public class NavigationController internal constructor() {
     // This method is called by the test module to install/uninstall Enro from test applications
     internal fun uninstall(application: Application) {
         navigationControllerBindings.remove(application)
-        contextController.uninstall(application)
+        application.unregisterActivityLifecycleCallbacks(dependencyScope.get())
     }
 
     public companion object {

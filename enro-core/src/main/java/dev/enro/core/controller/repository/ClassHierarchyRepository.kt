@@ -35,13 +35,13 @@ internal class ClassHierarchyRepository {
     }
 }
 
-internal fun <A, B, C> cartesianProduct(a: List<A>, b: List<B>, block: (A, B) -> C): List<C> =
+private fun <A, B, C> cartesianProduct(a: List<A>, b: List<B>, block: (A, B) -> C): List<C> =
     cartesianIndexes(a.size, b.size)
         .map {
             block(a[it.first], b[it.second])
         }
 
-internal fun cartesianIndexes(a: Int, b: Int): List<Pair<Int, Int>> = List(a * b) {
+private fun cartesianIndexes(a: Int, b: Int): List<Pair<Int, Int>> = List(a * b) {
     val ai = it / b
     val bi = it % b
     ai to bi

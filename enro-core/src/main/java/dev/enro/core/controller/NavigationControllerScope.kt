@@ -1,7 +1,9 @@
 package dev.enro.core.controller
 
-import dev.enro.core.controller.interceptor.InstructionInterceptorRepository
-import dev.enro.core.controller.lifecycle.NavigationLifecycleController
+import android.app.Application
+import androidx.fragment.app.FragmentManager
+import dev.enro.core.controller.lifecycle.ActivityLifecycleCallbacksForEnro
+import dev.enro.core.controller.lifecycle.FragmentLifecycleCallbacksForEnro
 import dev.enro.core.controller.repository.*
 import dev.enro.core.controller.usecase.*
 import dev.enro.core.internal.EnroDependencyContainer
@@ -27,7 +29,6 @@ internal class NavigationControllerScope(
             register { ExecutorRepository(get()) }
             register { ComposeEnvironmentRepository() }
             register { InstructionInterceptorRepository() }
-            register { NavigationLifecycleController(get()) }
 
             // Usecases
             register { AddComponentToController(get(), get(), get(), get(), get()) }
@@ -35,6 +36,14 @@ internal class NavigationControllerScope(
             register { AddPendingResult(get()) }
             register<ExecuteOpenInstruction> { ExecuteOpenInstructionImpl(get(), get(), get()) }
             register<ExecuteCloseInstruction> { ExecuteCloseInstructionImpl(get(), get(), get()) }
+
+            register { ConfigureNavigationHandleForPlugins(get()) }
+            register { OnNavigationContextCreated(get(), get()) }
+            register { OnNavigationContextSaved() }
+
+            // Other
+            register<Application.ActivityLifecycleCallbacks> { ActivityLifecycleCallbacksForEnro(get(), get(), get()) }
+            register<FragmentManager.FragmentLifecycleCallbacks> { FragmentLifecycleCallbacksForEnro(get(), get()) }
         }
     )
 }
