@@ -102,39 +102,39 @@
         app:layout_constraintTop_toBottomOf="@+id/currentStackTitle" />
 
     <Button
-        android:id="@+id/forwardButton"
+        android:id="@+id/pushButton"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/forwardComposeButton"
-        android:text="Forward"/>
+        app:layout_constraintBottom_toTopOf="@+id/pushComposeButton"
+        android:text="Push"/>
 
     <Button
-        android:id="@+id/forwardComposeButton"
+        android:id="@+id/pushComposeButton"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/replaceButton"
-        android:text="Forward (Compose)"/>
+        app:layout_constraintBottom_toTopOf="@+id/presentButton"
+        android:text="Push (Compose)"/>
 
     <Button
-        android:id="@+id/replaceButton"
+        android:id="@+id/presentButton"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/replaceRootButton"
+        app:layout_constraintBottom_toTopOf="@+id/presentComposeButton"
         app:layout_constraintStart_toStartOf="parent"
-        android:text="Replace"/>
+        android:text="Present"/>
 
     <Button
-        android:id="@+id/replaceRootButton"
+        android:id="@+id/presentComposeButton"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:text="Replace Root"/>
+        android:text="Present (Compose)"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

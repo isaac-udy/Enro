@@ -14,37 +14,31 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.forward
 import dev.enro.core.navigationHandle
-import dev.enro.example.databinding.FragmentFeaturesBinding
+import dev.enro.core.present
 import kotlinx.parcelize.Parcelize
 
 
 @Parcelize
-class Features : NavigationKey.SupportsPush
+object Features : NavigationKey.SupportsPush
 
 @NavigationDestination(Features::class)
 class FeaturesFragment : Fragment() {
-
     private val navigation by navigationHandle<Features>()
     private val adapter = FeatureAdapter {
-        navigation.forward(it.key)
+        navigation.present(it.key)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_features, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        FragmentFeaturesBinding.bind(view).apply {
+    ): View {
+        return RecyclerView(requireContext()).also { recyclerView ->
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
             recyclerView.adapter = adapter
+            adapter.submitList(features)
         }
-        adapter.submitList(features)
     }
 }
 
@@ -52,7 +46,7 @@ class FeaturesFragment : Fragment() {
 data class FeatureDescription(
     val name: String,
     val iconResource: Int = 0,
-    val key: NavigationKey = SimpleMessage(
+    val key: NavigationKey.SupportsPresent = SimpleMessage(
         "Missing",
         "This destination hasn't been implemented yet!"
     )
@@ -102,7 +96,7 @@ val features = listOf(
                 To see how this example is built, look at ComposeSimpleExample.kt in the examples.
             """.trimIndent(),
             positiveActionInstruction = NavigationInstruction.Present(
-                ComposeSimpleExampleKey(
+                SimpleExampleComposeKey(
                     name = "Start",
                     launchedFrom = "Features"
                 )
@@ -138,18 +132,18 @@ val features = listOf(
                 "Deeplink 1 -> Deeplink 2 -> Deeplink 3"
             """.trimIndent(),
             positiveActionInstruction = NavigationInstruction.Forward(
-                navigationKey = SimpleExampleKey(
+                navigationKey = SimpleExampleFragmentKey(
                     name = "Deeplink 1",
                     launchedFrom = "Features",
                     backstack = listOf("Features")
                 ),
                 children = listOf(
-                    SimpleExampleKey(
+                    SimpleExampleFragmentKey(
                         name = "Deeplink 2",
                         launchedFrom = "Deeplink 1",
                         backstack = listOf("Features", "Deeplink 1")
                     ),
-                    SimpleExampleKey(
+                    SimpleExampleFragmentKey(
                         name = "Deeplink 3",
                         launchedFrom = "Deeplink 2",
                         backstack = listOf("Features", "Deeplink 1", "Deeplink 2")

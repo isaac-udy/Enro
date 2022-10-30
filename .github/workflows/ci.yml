@@ -62,9 +62,3 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: ./gradlew :enro:testDebugUnitTest
-
-      - name: Run Modularised Example Tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          script: ./gradlew :modularised-example:app:testDebugUnitTest

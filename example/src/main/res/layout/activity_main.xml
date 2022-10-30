@@ -25,7 +25,7 @@
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation"/>
 
     <FrameLayout
-        android:id="@+id/profileContainer"
+        android:id="@+id/learningContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="#FFFFFFFF"

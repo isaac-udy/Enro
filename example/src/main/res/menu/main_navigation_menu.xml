@@ -12,8 +12,8 @@
         android:title="Features"/>
 
     <item
-        android:id="@+id/profile"
+        android:id="@+id/learning"
         android:enabled="true"
-        android:icon="@drawable/ic_round_person_24"
-        android:title="Profile"/>
+        android:icon="@drawable/ic_round_school_24"
+        android:title="Learning"/>
 </menu>

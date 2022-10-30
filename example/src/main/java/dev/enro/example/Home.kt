@@ -7,14 +7,14 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.forward
 import dev.enro.core.getNavigationHandle
+import dev.enro.core.push
 import dev.enro.example.databinding.FragmentHomeBinding
 import kotlinx.parcelize.Parcelize
 
 
 @Parcelize
-class Home : NavigationKey.SupportsPush
+object Home : NavigationKey.SupportsPush
 
 @NavigationDestination(Home::class)
 class HomeFragment : Fragment() {
@@ -30,8 +30,13 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         FragmentHomeBinding.bind(view).apply {
             launchExample.setOnClickListener {
-                getNavigationHandle()
-                    .forward(SimpleExampleKey("Start", "Home", listOf("Home")))
+                getNavigationHandle().push(
+                    SimpleExampleFragmentKey(
+                        name = "Start",
+                        launchedFrom = "Home",
+                        backstack = listOf("Home")
+                    )
+                )
             }
         }
     }

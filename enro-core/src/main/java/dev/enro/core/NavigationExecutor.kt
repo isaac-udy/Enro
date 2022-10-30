@@ -209,16 +209,3 @@ public inline fun <reified From : Any, reified Opens : Any> createOverride(
     noinline block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
 ): NavigationExecutor<From, Opens, NavigationKey> =
     createOverride(From::class, Opens::class, block)
-
-public inline fun <reified From : Fragment, reified Opens : Fragment> createSharedElementOverride(
-    elements: List<Pair<Int, Int>>
-): NavigationExecutor<From, Opens, NavigationKey> {
-    return createOverride {
-        opened { args ->
-            args.instruction.setSharedElements(
-                elements.map { EnroSharedElement(it.first, it.second) }
-            )
-            defaultOpened(args)
-        }
-    }
-}

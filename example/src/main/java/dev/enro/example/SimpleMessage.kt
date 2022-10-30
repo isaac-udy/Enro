@@ -2,7 +2,10 @@ package dev.enro.example
 
 import android.app.AlertDialog
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.*
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.activity
+import dev.enro.core.getNavigationHandle
 import dev.enro.core.synthetic.SyntheticDestination
 import kotlinx.parcelize.Parcelize
 
@@ -11,7 +14,7 @@ data class SimpleMessage(
     val title: String,
     val message: String,
     val positiveActionInstruction: NavigationInstruction.Open<*>? = null
-) : NavigationKey
+) : NavigationKey.SupportsPresent
 
 @NavigationDestination(SimpleMessage::class)
 class SimpleMessageDestination : SyntheticDestination<SimpleMessage>() {

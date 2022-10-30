@@ -18,7 +18,6 @@
         </activity>
 
         <activity android:name=".MainActivity" />
-        <activity android:name=".PlaygroundActivity" />
     </application>
 
 </manifest>
