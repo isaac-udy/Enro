@@ -25,7 +25,7 @@ public class NavigationHandleProperty<Key : NavigationKey> @PublishedApi interna
 
     private val navigationHandle: TypedNavigationHandle<Key> by lazy {
         val navigationHandle = viewModelStoreOwner.getNavigationHandleViewModel()
-        return@lazy TypedNavigationHandleWrapperImpl(navigationHandle, keyType.java)
+        return@lazy TypedNavigationHandleImpl(navigationHandle, keyType.java)
     }
 
     init {

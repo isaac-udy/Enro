@@ -84,7 +84,7 @@ public class LazyNavigationHandleConfiguration<T : NavigationKey>(
     }
 
     public fun configure(navigationHandle: NavigationHandle) {
-        val handle = if (navigationHandle is TypedNavigationHandleWrapperImpl<*>) {
+        val handle = if (navigationHandle is TypedNavigationHandleImpl<*>) {
             navigationHandle.navigationHandle
         } else navigationHandle
 

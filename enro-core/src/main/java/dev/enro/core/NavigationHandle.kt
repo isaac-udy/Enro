@@ -24,7 +24,7 @@ public interface TypedNavigationHandle<T : NavigationKey> : NavigationHandle {
 }
 
 @PublishedApi
-internal class TypedNavigationHandleWrapperImpl<T : NavigationKey>(
+internal class TypedNavigationHandleImpl<T : NavigationKey>(
     internal val navigationHandle: NavigationHandle,
     private val type: Class<T>
 ): TypedNavigationHandle<T> {
@@ -50,15 +50,15 @@ public fun <T : NavigationKey> NavigationHandle.asTyped(type: KClass<T>): TypedN
     }
 
     @Suppress("UNCHECKED_CAST")
-    if (this is TypedNavigationHandleWrapperImpl<*>) return this as TypedNavigationHandle<T>
-    return TypedNavigationHandleWrapperImpl(this, type.java)
+    if (this is TypedNavigationHandleImpl<*>) return this as TypedNavigationHandle<T>
+    return TypedNavigationHandleImpl(this, type.java)
 }
 
 public inline fun <reified T : NavigationKey> NavigationHandle.asTyped(): TypedNavigationHandle<T> {
     if (key !is T) {
         throw EnroException.IncorrectlyTypedNavigationHandle("Failed to cast NavigationHandle with key of type ${key::class.java.simpleName} to TypedNavigationHandle<${T::class.java.simpleName}>")
     }
-    return TypedNavigationHandleWrapperImpl(this, T::class.java)
+    return TypedNavigationHandleImpl(this, T::class.java)
 }
 
 public fun NavigationHandle.push(key: NavigationKey.SupportsPush, vararg childKeys: NavigationKey) {
