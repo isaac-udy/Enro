@@ -1,5 +1,6 @@
 package dev.enro.core.internal.handle
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Looper
 import androidx.activity.ComponentActivity
@@ -14,28 +15,29 @@ import dev.enro.core.internal.NoNavigationKey
 
 internal open class NavigationHandleViewModel(
     override val instruction: AnyOpenInstruction,
-    override val dependencyScope: EnroDependencyScope,
+    dependencyScope: NavigationHandleScope,
     private val executeOpenInstruction: ExecuteOpenInstruction,
     private val executeCloseInstruction: ExecuteCloseInstruction,
 ) : ViewModel(),
-    NavigationHandle,
-    EnroDependencyScope by dependencyScope {
+    NavigationHandle {
 
     private var pendingInstruction: NavigationInstruction? = null
 
     internal val hasKey get() = instruction.navigationKey !is NoNavigationKey
-
-    override val key: NavigationKey get() {
-        return instruction.navigationKey
-    }
-    override val id: String get() = instruction.instructionId
-    override val additionalData: Bundle get() = instruction.additionalData
+    final override val key: NavigationKey get() = instruction.navigationKey
+    final override val id: String get() = instruction.instructionId
+    final override val additionalData: Bundle get() = instruction.additionalData
 
     internal var internalOnCloseRequested: () -> Unit = { close() }
 
+    @Suppress("LeakingThis")
+    @SuppressLint("StaticFieldLeak")
     private val lifecycle = LifecycleRegistry(this)
 
-    override fun getLifecycle(): Lifecycle {
+    @Suppress("LeakingThis")
+    final override val dependencyScope: EnroDependencyScope = dependencyScope.bind(this)
+
+    final override fun getLifecycle(): Lifecycle {
         return lifecycle
     }
 
@@ -94,6 +96,7 @@ internal open class NavigationHandleViewModel(
 
     override fun onCleared() {
         lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        dependencyScope.container.clear()
     }
 }
 

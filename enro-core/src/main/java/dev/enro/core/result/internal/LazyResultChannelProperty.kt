@@ -8,17 +8,18 @@ import androidx.lifecycle.LifecycleOwner
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
+import dev.enro.core.controller.factory.resultChannelFactory
 import dev.enro.core.getNavigationHandle
-import dev.enro.core.internal.get
 import dev.enro.core.result.EnroResultChannel
 import dev.enro.core.result.managedByLifecycle
 import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 @PublishedApi
 internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithResult<Result>>(
     owner: Any,
-    resultType: Class<Result>,
+    resultType: KClass<Result>,
     onResult: (Result) -> Unit
 ) : ReadOnlyProperty<Any, EnroResultChannel<Result, Key>> {
 
@@ -37,11 +38,9 @@ internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithRes
         lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (event != Lifecycle.Event.ON_CREATE) return;
-                resultChannel = ResultChannelImpl<Result, Key>(
-                    navigationHandle = handle.value,
+                resultChannel = handle.value.resultChannelFactory.createResultChannel<Result, Key>(
                     resultType = resultType,
                     onResult = onResult,
-                    enroResult = handle.value.dependencyScope.get(),
                 ).managedByLifecycle(lifecycle)
             }
         })

@@ -7,9 +7,11 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
+import dev.enro.core.controller.lifecycle.NavigationLifecycleController
 
 internal class ComposableDestinationSavedStateRegistryOwner(
-    private val owner: ComposableDestinationOwner
+    private val owner: ComposableDestinationOwner,
+    navigationLifecycleController: NavigationLifecycleController
 ) : SavedStateRegistryOwner {
 
     private val savedStateController = SavedStateRegistryController.create(this)
@@ -20,8 +22,8 @@ internal class ComposableDestinationSavedStateRegistryOwner(
         savedStateController.performRestore(savedState)
         owner.parentSavedStateRegistry.registerSavedStateProvider(owner.instruction.instructionId) {
             val outState = Bundle()
-            owner.navigationController.onComposeContextSaved(
-                owner.destination,
+            navigationLifecycleController.onContextSaved(
+                owner.destination.context,
                 outState
             )
             savedStateController.performSave(outState)

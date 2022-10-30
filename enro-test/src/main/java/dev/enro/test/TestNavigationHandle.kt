@@ -68,7 +68,9 @@ fun <T : NavigationKey> createTestNavigationHandle(
         override val additionalData: Bundle = instruction.additionalData
         override val key: NavigationKey = key
         override val instruction: NavigationInstruction.Open<*> = instruction
-        override val dependencyScope: EnroDependencyScope = NavigationHandleScope(EnroTest.getCurrentNavigationController())
+        override val dependencyScope: EnroDependencyScope = NavigationHandleScope(
+            EnroTest.getCurrentNavigationController()
+        ).bind(this)
 
         override fun executeInstruction(navigationInstruction: NavigationInstruction) {
             instructions.add(navigationInstruction)

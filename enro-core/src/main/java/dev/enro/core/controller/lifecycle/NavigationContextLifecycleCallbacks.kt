@@ -16,8 +16,8 @@ import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.container.NavigationContainerProperty
 import dev.enro.core.fragment.container.FragmentPresentationContainer
-import dev.enro.core.fragment.interceptBackPressForAndroidxNavigation
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import dev.enro.core.internal.handle.interceptBackPressForAndroidxNavigation
 
 internal class NavigationContextLifecycleCallbacks(
     private val lifecycleController: NavigationLifecycleController
@@ -31,7 +31,7 @@ internal class NavigationContextLifecycleCallbacks(
     }
 
     internal fun uninstall(application: Application) {
-        application.registerActivityLifecycleCallbacks(activityCallbacks)
+        application.unregisterActivityLifecycleCallbacks(activityCallbacks)
     }
 
     inner class ActivityCallbacks : Application.ActivityLifecycleCallbacks {

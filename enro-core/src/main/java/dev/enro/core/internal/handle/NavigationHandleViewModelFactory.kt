@@ -26,7 +26,9 @@ internal class NavigationHandleViewModelFactory(
             ) as T
         }
 
-        val scope = NavigationHandleScope(navigationController)
+        val scope = NavigationHandleScope(
+            navigationController
+        )
         return NavigationHandleViewModel(
             instruction = instruction,
             dependencyScope = scope,

@@ -27,9 +27,10 @@ internal class NavigationControllerScope(
             register { ExecutorRepository(get()) }
             register { ComposeEnvironmentRepository() }
             register { InstructionInterceptorRepository() }
-            register { NavigationLifecycleController(get(), get()) }
+            register { NavigationLifecycleController(get()) }
 
             // Usecases
+            register { AddComponentToController(get(), get(), get(), get(), get()) }
             register { GetNavigationExecutor(get(), get()) }
             register { AddPendingResult(get()) }
             register<ExecuteOpenInstruction> { ExecuteOpenInstructionImpl(get(), get(), get()) }

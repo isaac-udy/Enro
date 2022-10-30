@@ -19,6 +19,7 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.controller.lifecycle.NavigationLifecycleController
 import dev.enro.core.controller.repository.ComposeEnvironmentRepository
 import dev.enro.core.internal.get
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
@@ -29,6 +30,7 @@ internal class ComposableDestinationOwner(
     val parentContainer: NavigationContainer,
     val instruction: AnyOpenInstruction,
     val destination: ComposableDestination,
+    contextLifecycleController: NavigationLifecycleController,
     viewModelStore: ViewModelStore,
 ) : ViewModel(),
     LifecycleOwner,
@@ -43,7 +45,7 @@ internal class ComposableDestinationOwner(
     private val lifecycleRegistry = LifecycleRegistry(this)
 
     @Suppress("LeakingThis")
-    private val savedStateRegistryOwner = ComposableDestinationSavedStateRegistryOwner(this)
+    private val savedStateRegistryOwner = ComposableDestinationSavedStateRegistryOwner(this, contextLifecycleController)
 
     @Suppress("LeakingThis")
     private val viewModelStoreOwner = ComposableDestinationViewModelStoreOwner(
@@ -61,8 +63,8 @@ internal class ComposableDestinationOwner(
 
     init {
         destination.owner = this
-        navigationController.onComposeDestinationAttached(
-            destination,
+        contextLifecycleController.onContextCreated(
+            destination.context,
             savedStateRegistryOwner.savedState
         )
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)

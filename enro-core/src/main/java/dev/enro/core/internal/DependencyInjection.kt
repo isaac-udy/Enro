@@ -18,11 +18,14 @@ internal fun <T: Any> EnroDependencyScope.get(type: KClass<T>): T {
 
 @PublishedApi
 internal interface EnroDependencyRegistration {
-    fun <T : Any> register(type: KClass<T>, block: EnroDependencyScope.() -> T)
+    fun <T : Any> register(type: KClass<T>, createOnStart: Boolean, block: EnroDependencyScope.() -> T)
 }
 
-internal inline fun <reified T: Any> EnroDependencyRegistration.register(noinline block: EnroDependencyScope.() -> T) {
-    register(T::class, block)
+internal inline fun <reified T: Any> EnroDependencyRegistration.register(
+    createOnStart: Boolean = false,
+    noinline block: EnroDependencyScope.() -> T
+) {
+    register(T::class, createOnStart, block)
 }
 
 @PublishedApi
@@ -47,8 +50,17 @@ public class EnroDependencyContainer internal constructor(
 
     init {
         registration.invoke(object : EnroDependencyRegistration {
-            override fun <T : Any> register(type: KClass<T>, block: EnroDependencyScope.() -> T) {
+            override fun <T : Any> register(
+                type: KClass<T>,
+                createOnStart: Boolean,
+                block: EnroDependencyScope.() -> T
+            ) {
                 bindings[type] = Dependency(this@EnroDependencyContainer, block)
+                    .also {
+                        if(createOnStart) {
+                            it.value
+                        }
+                    }
             }
         })
     }
@@ -63,5 +75,9 @@ public class EnroDependencyContainer internal constructor(
     @PublishedApi
     internal inline fun <reified T: Any> get(): T {
         return get(T::class)
+    }
+
+    internal fun clear() {
+        bindings.clear()
     }
 }

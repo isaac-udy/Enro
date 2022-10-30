@@ -14,7 +14,7 @@ private class ResultChannelProperties<T>(
     val onResult: (T) -> Unit,
 )
 
-public class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Result>> @PublishedApi internal constructor(
+internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Result>> @PublishedApi internal constructor(
     private val enroResult: EnroResult,
     navigationHandle: NavigationHandle,
     resultType: Class<Result>,

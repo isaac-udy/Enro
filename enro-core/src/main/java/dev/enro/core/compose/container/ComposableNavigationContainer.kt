@@ -13,6 +13,7 @@ import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
+import dev.enro.core.internal.get
 import java.util.concurrent.ConcurrentHashMap
 
 public class ComposableNavigationContainer internal constructor(
@@ -113,7 +114,8 @@ public class ComposableNavigationContainer internal constructor(
                 parentContainer = this,
                 instruction = instruction,
                 destination = destination,
-                viewModelStore = viewModelStores.getOrPut(instruction.instructionId) { ViewModelStore()  }
+                viewModelStore = viewModelStores.getOrPut(instruction.instructionId) { ViewModelStore()  },
+                contextLifecycleController = parentContext.controller.dependencyScope.get(),
             ).also { owner ->
                 owner.lifecycle.addObserver(object : LifecycleEventObserver {
                     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {

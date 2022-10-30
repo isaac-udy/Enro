@@ -17,7 +17,7 @@ internal class PreviewNavigationHandle(
 ) : NavigationHandle {
     override val id: String = instruction.instructionId
     override val key: NavigationKey = instruction.navigationKey
-    override val dependencyScope: EnroDependencyScope = NavigationHandleScope(NavigationController())
+    override val dependencyScope: EnroDependencyScope = NavigationHandleScope(NavigationController()).bind(this)
     override val additionalData: Bundle = Bundle.EMPTY
 
     private val lifecycleRegistry by lazy {

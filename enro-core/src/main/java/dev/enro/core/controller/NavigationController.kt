@@ -1,18 +1,17 @@
 package dev.enro.core.controller
 
 import android.app.Application
-import android.os.Bundle
 import androidx.annotation.Keep
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationExecutor
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.controller.interceptor.InstructionInterceptorRepository
 import dev.enro.core.controller.lifecycle.NavigationLifecycleController
-import dev.enro.core.controller.repository.*
+import dev.enro.core.controller.repository.ExecutorRepository
+import dev.enro.core.controller.repository.NavigationBindingRepository
+import dev.enro.core.controller.repository.PluginRepository
+import dev.enro.core.controller.usecase.AddComponentToController
 import dev.enro.core.internal.get
-import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.result.EnroResult
 import kotlin.reflect.KClass
 
@@ -25,12 +24,10 @@ public class NavigationController internal constructor() {
 
     private val enroResult: EnroResult = dependencyScope.get()
     private val pluginRepository: PluginRepository = dependencyScope.get()
-    private val classHierarchyRepository: ClassHierarchyRepository = dependencyScope.get()
     private val navigationBindingRepository: NavigationBindingRepository = dependencyScope.get()
     private val executorRepository: ExecutorRepository = dependencyScope.get()
-    private val composeEnvironmentRepository: ComposeEnvironmentRepository = dependencyScope.get()
-    private val interceptorRepository: InstructionInterceptorRepository = dependencyScope.get()
     private val contextController: NavigationLifecycleController = dependencyScope.get()
+    private val addComponentToController: AddComponentToController = dependencyScope.get()
 
     init {
         pluginRepository.addPlugins(listOf(enroResult))
@@ -38,15 +35,7 @@ public class NavigationController internal constructor() {
     }
 
     public fun addComponent(component: NavigationComponentBuilder) {
-        pluginRepository.addPlugins(component.plugins)
-        navigationBindingRepository.addNavigationBindings(component.bindings)
-        executorRepository.addExecutors(component.overrides)
-        interceptorRepository.addInterceptors(component.interceptors)
-
-        component.composeEnvironment.let { environment ->
-            if (environment == null) return@let
-            composeEnvironmentRepository.setComposeEnvironment(environment)
-        }
+        addComponentToController(component)
     }
 
     public fun bindingForDestinationType(
@@ -86,23 +75,6 @@ public class NavigationController internal constructor() {
     internal fun uninstall(application: Application) {
         navigationControllerBindings.remove(application)
         contextController.uninstall(application)
-    }
-
-    internal fun onComposeDestinationAttached(
-        destination: ComposableDestination,
-        savedInstanceState: Bundle?
-    ): NavigationHandleViewModel {
-        return contextController.onContextCreated(
-            destination.context,
-            savedInstanceState
-        )
-    }
-
-    internal fun onComposeContextSaved(destination: ComposableDestination, outState: Bundle) {
-        contextController.onContextSaved(
-            destination.context,
-            outState
-        )
     }
 
     public companion object {
