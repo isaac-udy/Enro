@@ -1,13 +1,54 @@
 [![Maven Central](https://img.shields.io/maven-central/v/dev.enro/enro.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22dev.enro%22)
-> **Note**
->
-> Enro 2.x.x has now merged to the main branch, but is still in an alpha/beta release phase. The Enro 1.x.x branch is still being maintained for bug fixes and can be found [here](https://github.com/isaac-udy/Enro/tree/1.x.x)
 
 # Enro 🗺️
 
-A simple navigation library for Android
+Scalable, type-safe navigation for Android. 
 
-*"The novices’ eyes followed the wriggling path up from the well as it swept a great meandering arc around the hillside. Its stones were green with moss and beset with weeds. Where the path disappeared through the gate they noticed that it joined a second track of bare earth, where the grass appeared to have been trampled so often that it ceased to grow. The dusty track ran straight from the gate to the well, marred only by a fresh set of sandal-prints that went down, and then up, and ended at the feet of the young monk who had fetched their water." - [The Garden Path](http://thecodelesscode.com/case/156)*
+## Introduction
+
+For each screen/destination in your application, define a `NavigationKey` that represents the interface for that destination:  
+```kotlin
+@Parcelize
+data class ShowProfileKey(val userId: UserId): NavigationKey.SupportsPush
+
+@Parcelize
+class RequestConfirmationKey(val message: String): NavigationKey.SupportsPresent.WithResult<ConfirmationResult>
+```
+
+Declare an Activity, Fragment or Composable as being the `NavigationDestination` for a particular `NavigationKey`: 
+```kotlin
+// Using annotation processing: 
+@Composable
+@NavigationDestination(RequestConfirmationKey::class)
+fun RequestConfirmationScreen() { /*...*/ }
+// or
+// @NavigationDestination(RequestConfirmationKey::class)
+// class RequestConfirmationFragment : Fragment() { /*...*/ }
+// or 
+// @NavigationDestination(RequestConfirmationKey::class)
+// class RequestConfirmationActivity : AppCompatActivity() { /*...*/ }
+
+// Using the DSL:
+val navigationController = createNavigationController {
+   composableDestination<RequestConfirmationKey> { RequestConfirmationScreen() }
+   // or 
+   // fragmentDestination<RequestConfirmationKey, RequestConfirmationFragment>()
+   // or
+   // activityDestination<RequestConfirmationKey, RequestConfirmationActivity>()
+}
+```
+
+Perform navigation by accessing a `NavigationHandle` from any Activity, Fragment, Composable or ViewModel:
+```kotlin
+val navigation = getNavigationHandle()
+navigation.push(RequestConfirmationScreen(/*...*/))
+```
+
+
+
+> **Note**
+>
+> Enro 2.x.x has now merged to the main branch, but is still in an alpha/beta release phase. The Enro 1.x.x branch is still being maintained for bug fixes and can be found [here](https://github.com/isaac-udy/Enro/tree/1.x.x)
 
 ## Features
 
@@ -39,7 +80,7 @@ dependencies {
 data class MyListKey(val listType: String) : NavigationKey.SupportsPush
 
 @Parcelize
-data class MyDetailKey(val itemId: String, val isReadOnly) : NavigationKey.SupportsPush
+data class MyDetailKey(val itemId: String, val isReadOnly: Boolean) : NavigationKey.SupportsPush
 
 @Parcelize
 data class MyComposeKey(val name: String) : NavigationKey.SupportsPresent

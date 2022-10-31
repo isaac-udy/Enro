@@ -103,11 +103,20 @@ public class NavigationComponentBuilder {
     }
 }
 
+
+@Deprecated("Use `createNavigationController` instead",
+    ReplaceWith("createNavigationController(strictMode, block)")
+)
+public fun NavigationApplication.navigationController(
+    strictMode: Boolean = false,
+    block: NavigationComponentBuilder.() -> Unit = {}
+): NavigationController = createNavigationController(strictMode, block)
+
 /**
  * Create a NavigationController from the NavigationControllerDefinition/DSL, and immediately attach it
  * to the NavigationApplication from which this function was called.
  */
-public fun NavigationApplication.navigationController(
+public fun NavigationApplication.createNavigationController(
     strictMode: Boolean = false,
     block: NavigationComponentBuilder.() -> Unit = {}
 ): NavigationController {
@@ -120,7 +129,7 @@ public fun NavigationApplication.navigationController(
         .build()
         .apply {
             isStrictMode = strictMode
-            install(this@navigationController)
+            install(this@createNavigationController)
         }
 }
 
