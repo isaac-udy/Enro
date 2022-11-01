@@ -1,5 +1,6 @@
 package dev.enro.core.destinations
 
+import android.os.Parcelable
 import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.Dialog
@@ -61,6 +62,13 @@ object ComposableDestinations {
     data class ManuallyBound(
         val id: String = UUID.randomUUID().toString()
     ) : NavigationKey.SupportsPush, TestDestination.IntoPrimaryContainer
+
+    // This type is not actually used in any tests at present, but just exists to prove
+    // that generic navigation destinations will correctly generate code
+    @Parcelize
+    data class Generic<Type: Parcelable>(
+        val item: Type
+    ) : NavigationKey.SupportsPresent
 
     class TestViewModel : ViewModel() {
         private val navigation by navigationHandle<NavigationKey>()
@@ -165,3 +173,12 @@ fun ManuallyBoundComposableScreen() {
     viewModel<ComposableDestinations.TestViewModel>()
     TestComposable(name = "ManuallyDefinedComposable")
 }
+
+@Composable
+@NavigationDestination(ComposableDestinations.Generic::class)
+fun GenericComposableScreen() {
+    viewModel<ComposableDestinations.TestViewModel>()
+    val navigation = navigationHandle<ComposableDestinations.Generic<*>>()
+    TestComposable(name = "GenericComposable\n${navigation.key.item}")
+}
+

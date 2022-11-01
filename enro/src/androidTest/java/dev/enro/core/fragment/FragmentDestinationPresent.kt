@@ -1,8 +1,13 @@
 package dev.enro.core.fragment
 
+import android.os.Parcelable
+import androidx.fragment.app.Fragment
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.destinations.*
+import junit.framework.TestCase
+import kotlinx.parcelize.Parcelize
 import org.junit.Test
+import java.util.*
 
 class FragmentDestinationPresent {
     @Test
@@ -10,6 +15,20 @@ class FragmentDestinationPresent {
         val root = launchFragmentRoot()
 
         root.assertPresentsTo<ComposableDestination, ComposableDestinations.Presentable>()
+    }
+
+    @Parcelize
+    data class ParcelableForTest(
+        val parcelableId: String
+    ) : Parcelable
+
+    @Test
+    fun givenFragmentDestination_whenExecutingPresent_andTargetIsGenericFragmentDestination_thenCorrectDestinationIsOpened() {
+        val root = launchFragmentRoot()
+        val expectedKey = FragmentDestinations.Generic(ParcelableForTest(UUID.randomUUID().toString()))
+
+        val context = root.assertPresentsTo<Fragment, FragmentDestinations.Generic<ParcelableForTest>>(expectedKey)
+        TestCase.assertEquals(expectedKey, context.navigation.key)
     }
 
     @Test

@@ -1,7 +1,11 @@
 package dev.enro.core.compose
 
+import android.os.Parcelable
 import dev.enro.core.destinations.*
+import junit.framework.TestCase.assertEquals
+import kotlinx.parcelize.Parcelize
 import org.junit.Test
+import java.util.*
 
 class ComposableDestinationPresent {
     @Test
@@ -9,6 +13,20 @@ class ComposableDestinationPresent {
         val root = launchComposableRoot()
 
         root.assertPresentsTo<ComposableDestination, ComposableDestinations.Presentable>()
+    }
+
+    @Parcelize
+    data class ParcelableForTest(
+        val parcelableId: String
+    ) : Parcelable
+
+    @Test
+    fun givenComposableDestination_whenExecutingPresent_andTargetIsGenericComposableDestination_thenCorrectDestinationIsOpened() {
+        val root = launchComposableRoot()
+        val expectedKey = ComposableDestinations.Generic(ParcelableForTest(UUID.randomUUID().toString()))
+
+        val context = root.assertPresentsTo<ComposableDestination, ComposableDestinations.Generic<ParcelableForTest>>(expectedKey)
+        assertEquals(expectedKey, context.navigation.key)
     }
 
     @Test

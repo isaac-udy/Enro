@@ -1,5 +1,6 @@
 package dev.enro.core.destinations
 
+import android.os.Parcelable
 import dev.enro.TestDialogFragment
 import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
@@ -45,6 +46,13 @@ object FragmentDestinations {
     data class PushesToChildAsSecondary(
         val id: String = UUID.randomUUID().toString()
     ) : NavigationKey.SupportsPush.WithResult<TestResult>, TestDestination.IntoSecondaryChildContainer
+
+    // This type is not actually used in any tests at present, but just exists to prove
+    // that generic navigation destinations will correctly generate code
+    @Parcelize
+    data class Generic<Type: Parcelable>(
+        val item: Type
+    ) : NavigationKey.SupportsPresent
 
     abstract class Fragment(
         primaryContainerAccepts: (NavigationKey) -> Boolean,
@@ -109,6 +117,12 @@ class FragmentDestinationPushesToChildAsPrimary : FragmentDestinations.Fragment(
 
 @NavigationDestination(FragmentDestinations.PushesToChildAsSecondary::class)
 class FragmentDestinationPushesToChildAsSecondary : FragmentDestinations.Fragment(
+    primaryContainerAccepts = { false },
+    secondaryContainerAccepts = { false }
+)
+
+@NavigationDestination(FragmentDestinations.Generic::class)
+class FragmentDestinationGeneric : FragmentDestinations.Fragment(
     primaryContainerAccepts = { false },
     secondaryContainerAccepts = { false }
 )
