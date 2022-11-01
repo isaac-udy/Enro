@@ -103,9 +103,9 @@ public class NavigationComponentBuilder {
     }
 }
 
-
-@Deprecated("Use `createNavigationController` instead",
-    ReplaceWith("createNavigationController(strictMode, block)")
+@Deprecated(
+    message = "Please replace with [createNavigationController]",
+    replaceWith = ReplaceWith("createNavigationController(strictMode, block)")
 )
 public fun NavigationApplication.navigationController(
     strictMode: Boolean = false,
@@ -133,11 +133,12 @@ public fun NavigationApplication.createNavigationController(
         }
 }
 
-private val NavigationApplication.generatedComponent get(): NavigationComponentBuilderCommand? =
-    runCatching {
-        Class.forName(this::class.java.name + "Navigation")
-            .newInstance() as NavigationComponentBuilderCommand
-    }.getOrNull()
+private val NavigationApplication.generatedComponent
+    get(): NavigationComponentBuilderCommand? =
+        runCatching {
+            Class.forName(this::class.java.name + "Navigation")
+                .newInstance() as NavigationComponentBuilderCommand
+        }.getOrNull()
 
 /**
  * Create a NavigationControllerBuilder, without attaching it to a NavigationApplication.

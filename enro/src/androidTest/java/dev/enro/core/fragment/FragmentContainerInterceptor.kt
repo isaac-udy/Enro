@@ -9,18 +9,20 @@ import androidx.fragment.app.Fragment
 import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.controller.interceptor.builder.InterceptorBehavior
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.destinations.*
 import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.result.registerForNavigationResult
 import dev.enro.expectFragmentContext
 import dev.enro.expectNoFragmentContext
 import dev.enro.waitFor
+import junit.framework.TestCase
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.util.*
 
 class FragmentContainerInterceptor {
 
@@ -45,7 +47,7 @@ class FragmentContainerInterceptor {
         interceptor = {
             onOpen<FragmentDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.Cancel
+                cancelNavigation()
             }
         }
         val context = launchFragment(FragmentScreenWithContainerInterceptor)
@@ -70,7 +72,7 @@ class FragmentContainerInterceptor {
         interceptor = {
             onOpen<FragmentDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.Continue
+                continueWithNavigation()
             }
         }
         val context = launchFragment(FragmentScreenWithContainerInterceptor)
@@ -95,7 +97,7 @@ class FragmentContainerInterceptor {
         interceptor = {
             onOpen<FragmentDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.ReplaceWith(
+                replaceNavigationWith(
                     NavigationInstruction.Push(FragmentDestinations.PushesToPrimary("REPLACED"))
                 )
             }
@@ -122,7 +124,7 @@ class FragmentContainerInterceptor {
         interceptor = {
             onOpen<FragmentDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.ReplaceWith(
+                replaceNavigationWith(
                     NavigationInstruction.Present(FragmentDestinations.Presentable("REPLACED"))
                 )
             }
@@ -149,7 +151,7 @@ class FragmentContainerInterceptor {
         interceptor = {
             onClosed<FragmentDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.Cancel
+                cancelClose()
             }
         }
 
@@ -166,12 +168,44 @@ class FragmentContainerInterceptor {
     }
 
     @Test
+    fun givenFragmentContainer_whenInterceptorPreventsCloseButDeliversResult_thenInterceptorIsCalled_andChildIsNotClosed_andResultIsDelivered() {
+        var interceptorCalled = false
+        var resultDelivered: Any? = null
+        interceptor = {
+            onResult<FragmentDestinations.PushesToPrimary, TestResult> { _, result ->
+                interceptorCalled = true
+                resultDelivered = result
+                deliverResultAndCancelClose()
+            }
+        }
+
+        val expectedResult = TestResult(UUID.randomUUID().toString())
+        val expectedKey = FragmentDestinations.PushesToPrimary("STAYS_OPEN")
+        val containerContext = launchFragment(FragmentScreenWithContainerInterceptor)
+
+        (containerContext.context as FragmentWithContainerInterceptor)
+            .resultChannel
+            .push(expectedKey)
+
+        expectFragmentContext<FragmentDestinations.PushesToPrimary> { it.navigation.key == expectedKey }
+            .navigation
+            .closeWithResult(expectedResult)
+
+        waitFor {
+            interceptorCalled
+        }
+        expectFragmentContext<FragmentDestinations.PushesToPrimary> { it.navigation.key == expectedKey }
+        TestCase.assertEquals(expectedResult, resultDelivered)
+        TestCase.assertEquals(expectedResult, containerContext.context.lastResult)
+    }
+
+    @Test
     fun givenFragmentContainer_whenInterceptorAllowsClose_thenInterceptorIsCalled_andChildIsClosed() {
         var interceptorCalled = false
         interceptor = {
             onClosed<FragmentDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.Continue
+                continueWithClose()
             }
         }
 
@@ -194,7 +228,7 @@ class FragmentContainerInterceptor {
         interceptor = {
             onClosed<FragmentDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.ReplaceWith(
+                replaceCloseWith(
                     NavigationInstruction.Push(FragmentDestinations.PushesToPrimary("REPLACED"))
                 )
             }
@@ -219,7 +253,7 @@ class FragmentContainerInterceptor {
         interceptor = {
             onClosed<FragmentDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.ReplaceWith(
+                replaceCloseWith(
                     NavigationInstruction.Present(FragmentDestinations.Presentable("REPLACED"))
                 )
             }
@@ -243,7 +277,7 @@ class FragmentContainerInterceptor {
         interceptor = {
             onResult<FragmentDestinations.PushesToPrimary, TestResult> { key, result ->
                 interceptorCalled = true
-                InterceptorBehavior.ReplaceWith(
+                replaceCloseWith(
                     NavigationInstruction.Push(FragmentDestinations.PushesToPrimary("REPLACED_ACTION"))
                 )
             }
@@ -275,6 +309,11 @@ class FragmentWithContainerInterceptor : Fragment() {
         containerId = TestFragment.primaryFragmentContainer,
         interceptor = FragmentContainerInterceptor.interceptor,
     )
+
+    var lastResult: TestResult? = null
+    val resultChannel by registerForNavigationResult<TestResult> {
+        lastResult = it
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

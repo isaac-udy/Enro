@@ -39,7 +39,7 @@ public abstract class NavigationContainer(
 
     internal val interceptor = NavigationInterceptorBuilder()
         .apply(interceptor)
-        .build()
+        .build(parentContext.controller.dependencyScope)
 
     public abstract val activeContext: NavigationContext<*>?
     public abstract val isVisible: Boolean

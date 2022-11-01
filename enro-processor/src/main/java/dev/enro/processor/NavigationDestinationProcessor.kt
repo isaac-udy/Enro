@@ -187,7 +187,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                                     )
                                 )
                             """.trimIndent(),
-                            keyType
+                            ClassName.get(keyType)
                         )
                     )
                     .build()
@@ -240,7 +240,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                         )
                     )
                 """.trimIndent(),
-                    key,
+                    ClassName.get(key as TypeElement),
                     destination
                 )
 
@@ -253,7 +253,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                         )
                     )
                 """.trimIndent(),
-                    key,
+                    ClassName.get(key as TypeElement),
                     destination
                 )
 
@@ -266,7 +266,15 @@ class NavigationDestinationProcessor : BaseProcessor() {
                         )
                     )
                 """.trimIndent(),
-                    key,
+                    ClassName.get((key as TypeElement).apply {
+                        if (typeParameters.isNotEmpty()) {
+                            processingEnv.messager.printMessage(
+                                Diagnostic.Kind.ERROR,
+                                "${key.getElementName()} has generic type parameters, and is bound to a SyntheticDestination. " +
+                                        "Type parameters are not supported for SyntheticDestinations as this time"
+                            )
+                        }
+                    }),
                     destination
                 )
                 else -> {
