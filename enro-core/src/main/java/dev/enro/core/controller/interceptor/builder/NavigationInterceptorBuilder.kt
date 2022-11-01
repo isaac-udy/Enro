@@ -1,56 +1,69 @@
 package dev.enro.core.controller.interceptor.builder
 
 import dev.enro.core.NavigationKey
+import dev.enro.core.controller.NavigationControllerScope
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
+import dev.enro.core.internal.get
 
 public class NavigationInterceptorBuilder {
 
     @PublishedApi
-    internal val interceptors: MutableList<NavigationInstructionInterceptor> = mutableListOf()
+    internal val interceptorBuilders: MutableList<NavigationControllerScope.() -> NavigationInstructionInterceptor> =
+        mutableListOf()
 
-    public inline fun <reified KeyType: NavigationKey> onOpen(
-        crossinline block: (KeyType) -> InterceptorBehavior
+    public inline fun <reified KeyType : NavigationKey> onOpen(
+        crossinline block: OnNavigationKeyOpenedScope.(KeyType) -> InterceptorBehavior.ForOpen
     ) {
-        interceptors += OnNavigationKeyOpenedInterceptor(
-            matcher = {
-                it is KeyType
-            },
-            action = {
-                it as KeyType
-                block(it)
-            },
-        )
+        interceptorBuilders += {
+            OnNavigationKeyOpenedInterceptor(
+                matcher = {
+                    it is KeyType
+                },
+                action = {
+                    it as KeyType
+                    block(it)
+                },
+            )
+        }
     }
 
-    public inline fun <reified KeyType: NavigationKey> onClosed(
-        crossinline block: (KeyType) -> InterceptorBehavior
+    public inline fun <reified KeyType : NavigationKey> onClosed(
+        crossinline block: OnNavigationKeyClosedScope.(KeyType) -> InterceptorBehavior.ForClose
     ) {
-        interceptors += OnNavigationKeyClosedInterceptor(
-            matcher = {
-                it is KeyType
-            },
-            action = {
-                it as KeyType
-                block(it)
-            },
-        )
+        interceptorBuilders += {
+            OnNavigationKeyClosedInterceptor(
+                matcher = {
+                    it is KeyType
+                },
+                action = {
+                    it as KeyType
+                    block(it)
+                },
+            )
+        }
     }
 
-    public inline fun <reified KeyType: NavigationKey.WithResult<T>, reified T: Any> onResult(
-        crossinline block: (key: KeyType, result: T) -> InterceptorBehavior
+    public inline fun <reified KeyType : NavigationKey.WithResult<T>, reified T : Any> onResult(
+        crossinline block: OnNavigationKeyClosedWithResultScope.(key: KeyType, result: T) -> InterceptorBehavior.ForResult
     ) {
-        interceptors += OnNavigationKeyClosedWithResultInterceptor<T>(
-            matcher = {
-                it is KeyType
-            },
-            action = { key, result ->
-                key as KeyType
-                block(key, result)
-            },
-        )
+        interceptorBuilders += {
+            OnNavigationKeyClosedWithResultInterceptor<T>(
+                addPendingResult = get(),
+                matcher = {
+                    it is KeyType
+                },
+                action = { key, result ->
+                    key as KeyType
+                    block(key, result)
+                },
+            )
+        }
     }
 
-    internal fun build(): NavigationInstructionInterceptor {
-        return AggregateNavigationInstructionInterceptor(interceptors.toList())
+    internal fun build(navigationControllerScope: NavigationControllerScope): NavigationInstructionInterceptor {
+        val interceptors = interceptorBuilders.map { builder ->
+            builder.invoke(navigationControllerScope)
+        }
+        return AggregateNavigationInstructionInterceptor(interceptors)
     }
 }

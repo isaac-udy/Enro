@@ -4,19 +4,24 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.controller.interceptor.builder.InterceptorBehavior
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.destinations.*
+import dev.enro.core.result.registerForNavigationResult
 import dev.enro.expectComposableContext
 import dev.enro.expectNoComposableContext
 import dev.enro.waitFor
+import junit.framework.TestCase.assertEquals
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.util.*
 
 class ComposeContainerInterceptor {
 
@@ -41,12 +46,15 @@ class ComposeContainerInterceptor {
         interceptor = {
             onOpen<ComposableDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.Cancel
+                cancelNavigation()
             }
         }
         val context = launchComposable(ComposeScreenWithContainerInterceptor)
         // We're pushing on to the parent container here, so this instruction should go through
-        val primary = context.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer)
+        val primary =
+            context.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
+                IntoChildContainer
+            )
 
         // But once we attempt to execute an instruction on a context that inside of the container with the interceptor,
         // we should hit the interceptor and not open this instruction
@@ -66,12 +74,15 @@ class ComposeContainerInterceptor {
         interceptor = {
             onOpen<ComposableDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.Continue
+                continueWithNavigation()
             }
         }
         val context = launchComposable(ComposeScreenWithContainerInterceptor)
         // We're pushing on to the parent container here, so this instruction should go through
-        val primary = context.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer)
+        val primary =
+            context.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
+                IntoChildContainer
+            )
 
         // But once we attempt to execute an instruction on a context that inside of the container with the interceptor,
         // we should hit the interceptor and not open this instruction
@@ -91,14 +102,17 @@ class ComposeContainerInterceptor {
         interceptor = {
             onOpen<ComposableDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.ReplaceWith(
+                replaceNavigationWith(
                     NavigationInstruction.Push(ComposableDestinations.PushesToPrimary("REPLACED"))
                 )
             }
         }
         val context = launchComposable(ComposeScreenWithContainerInterceptor)
         // We're pushing on to the parent container here, so this instruction should go through
-        val primary = context.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer)
+        val primary =
+            context.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
+                IntoChildContainer
+            )
 
         // But once we attempt to execute an instruction on a context that inside of the container with the interceptor,
         // we should hit the interceptor and not open this instruction
@@ -118,14 +132,17 @@ class ComposeContainerInterceptor {
         interceptor = {
             onOpen<ComposableDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.ReplaceWith(
+                replaceNavigationWith(
                     NavigationInstruction.Present(ComposableDestinations.Presentable("REPLACED"))
                 )
             }
         }
         val context = launchComposable(ComposeScreenWithContainerInterceptor)
         // We're pushing on to the parent container here, so this instruction should go through
-        val primary = context.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer)
+        val primary =
+            context.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
+                IntoChildContainer
+            )
 
         // But once we attempt to execute an instruction on a context that inside of the container with the interceptor,
         // we should hit the interceptor and not open this instruction
@@ -145,13 +162,16 @@ class ComposeContainerInterceptor {
         interceptor = {
             onClosed<ComposableDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.Cancel
+                cancelClose()
             }
         }
 
         val expectedKey = ComposableDestinations.PushesToPrimary("STAYS_OPEN")
         launchComposable(ComposeScreenWithContainerInterceptor)
-            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer, expectedKey)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
+                IntoChildContainer,
+                expectedKey
+            )
             .navigation
             .close()
 
@@ -162,18 +182,52 @@ class ComposeContainerInterceptor {
     }
 
     @Test
+    fun givenComposeContainer_whenInterceptorPreventsCloseButDeliversResult_thenInterceptorIsCalled_andChildIsNotClosed_andResultIsDelivered() {
+        var interceptorCalled = false
+        var resultDelivered: Any? = null
+        interceptor = {
+            onResult<ComposableDestinations.PushesToPrimary, TestResult> { _, result ->
+                interceptorCalled = true
+                resultDelivered = result
+                deliverResultAndCancelClose()
+            }
+        }
+
+        val expectedResult = TestResult(UUID.randomUUID().toString())
+        val expectedKey = ComposableDestinations.PushesToPrimary("STAYS_OPEN")
+        val containerContext = launchComposable(ComposeScreenWithContainerInterceptor)
+        val viewModel =
+            ViewModelProvider(containerContext.navigationContext.viewModelStoreOwner)[ContainerInterceptorViewModel::class.java]
+
+        viewModel.getResult.push(expectedKey)
+        expectComposableContext<ComposableDestinations.PushesToPrimary> { it.navigation.key == expectedKey }
+            .navigation
+            .closeWithResult(expectedResult)
+
+        waitFor {
+            interceptorCalled
+        }
+        expectComposableContext<ComposableDestinations.PushesToPrimary> { it.navigation.key == expectedKey }
+        assertEquals(expectedResult, resultDelivered)
+        assertEquals(expectedResult, viewModel.lastResult)
+    }
+
+    @Test
     fun givenComposeContainer_whenInterceptorAllowsClose_thenInterceptorIsCalled_andChildIsClosed() {
         var interceptorCalled = false
         interceptor = {
             onClosed<ComposableDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.Continue
+                continueWithClose()
             }
         }
 
         val shouldBeClosed = ComposableDestinations.PushesToPrimary("IS_CLOSED")
         launchComposable(ComposeScreenWithContainerInterceptor)
-            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer, shouldBeClosed)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
+                IntoChildContainer,
+                shouldBeClosed
+            )
             .navigation
             .close()
 
@@ -190,7 +244,7 @@ class ComposeContainerInterceptor {
         interceptor = {
             onClosed<ComposableDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.ReplaceWith(
+                replaceCloseWith(
                     NavigationInstruction.Push(ComposableDestinations.PushesToPrimary("REPLACED"))
                 )
             }
@@ -198,7 +252,10 @@ class ComposeContainerInterceptor {
 
         val shouldBeClosed = ComposableDestinations.PushesToPrimary("IS_CLOSED")
         launchComposable(ComposeScreenWithContainerInterceptor)
-            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer, shouldBeClosed)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
+                IntoChildContainer,
+                shouldBeClosed
+            )
             .navigation
             .close()
 
@@ -215,7 +272,7 @@ class ComposeContainerInterceptor {
         interceptor = {
             onClosed<ComposableDestinations.PushesToPrimary> {
                 interceptorCalled = true
-                InterceptorBehavior.ReplaceWith(
+                replaceCloseWith(
                     NavigationInstruction.Present(ComposableDestinations.Presentable("REPLACED"))
                 )
             }
@@ -223,7 +280,10 @@ class ComposeContainerInterceptor {
 
         val shouldBeClosed = ComposableDestinations.PushesToPrimary("IS_CLOSED")
         launchComposable(ComposeScreenWithContainerInterceptor)
-            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer, shouldBeClosed)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
+                IntoChildContainer,
+                shouldBeClosed
+            )
             .navigation
             .close()
 
@@ -239,7 +299,7 @@ class ComposeContainerInterceptor {
         interceptor = {
             onResult<ComposableDestinations.PushesToPrimary, TestResult> { key, result ->
                 interceptorCalled = true
-                InterceptorBehavior.ReplaceWith(
+                replaceCloseWith(
                     NavigationInstruction.Push(ComposableDestinations.PushesToPrimary("REPLACED_ACTION"))
                 )
             }
@@ -247,7 +307,10 @@ class ComposeContainerInterceptor {
 
         val initialKey = ComposableDestinations.PushesToPrimary("INITIAL_KEY")
         launchComposable(ComposeScreenWithContainerInterceptor)
-            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer, initialKey)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
+                IntoChildContainer,
+                initialKey
+            )
             .navigation
             .closeWithResult(TestResult("REPLACED_ACTION"))
 
@@ -263,16 +326,24 @@ class ComposeContainerInterceptor {
 }
 
 @Parcelize
-object ComposeScreenWithContainerInterceptor: NavigationKey.SupportsPresent
+object ComposeScreenWithContainerInterceptor : NavigationKey.SupportsPresent
 
 @Composable
 @NavigationDestination(ComposeScreenWithContainerInterceptor::class)
 fun ContainerInterceptorScreen() {
+    val viewModel = viewModel<ContainerInterceptorViewModel>()
     val navigation = navigationHandle<ComposeScreenWithContainerInterceptor>()
     val container = rememberNavigationContainer(
         interceptor = ComposeContainerInterceptor.interceptor
     )
     Box(modifier = Modifier.fillMaxWidth()) {
         container.Render()
+    }
+}
+
+class ContainerInterceptorViewModel() : ViewModel() {
+    var lastResult: TestResult? = null
+    val getResult by registerForNavigationResult<TestResult> {
+        lastResult = it
     }
 }

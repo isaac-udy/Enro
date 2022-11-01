@@ -11,14 +11,14 @@ import dev.enro.annotations.NavigationComponent
 import dev.enro.core.DefaultAnimations
 import dev.enro.core.NavigationAnimation
 import dev.enro.core.controller.NavigationApplication
-import dev.enro.core.controller.navigationController
+import dev.enro.core.controller.createNavigationController
 import dev.enro.core.createSharedElementOverride
 import dev.enro.core.plugins.EnroLogger
 
 @HiltAndroidApp
 @NavigationComponent
 class ExampleApplication : Application(), NavigationApplication {
-    override val navigationController = navigationController {
+    override val navigationController = createNavigationController {
         plugin(EnroLogger())
 
         override<SplashScreenActivity, Any> {
@@ -45,6 +45,7 @@ class ExampleApplication : Application(), NavigationApplication {
         }
     }
 }
+
 val open =
     NavigationAnimation.Composable(
         forView = DefaultAnimations.ForView.push,
