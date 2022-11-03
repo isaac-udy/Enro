@@ -1,4 +1,5 @@
 
+$code-block-background-color: #333333;
 $code-language-key-word: #CC6633;
 $code-annotation-name: #BBB529;
 $code-normal-text: #A9B7C6;
@@ -9,18 +10,29 @@ $code-function-name: #FFC66D;
 $code-primitive-string: #6A8759;
 
 .language-kotlin {
-    .nd {
-        color: $code-annotation-name;
-    }
     > .highlight {
-        .nd {
-            color: $code-primitive-number;
-        }
-        
         > .highlight {
-            .nd {
-                color: $code-variable-name;
+            .p {
+                color: $code-normal-text;
             }
+            .py {
+                color: $code-normal-text;
+            }
+            .nc {
+                color: $code-normal-text;
+            }
+            .nd {
+                color: $code-annotation-name;
+            }
+            .kd {
+                color: $code-language-key-word;
+            }
+            .k {
+                color: $code-language-key-word;
+            }
+            .nf {
+                color: $code-function-name;
+            } 
         }
     }
 }
