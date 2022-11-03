@@ -8,8 +8,9 @@
 
 Enro is a powerful navigation library based on a simple idea; screens within an application should behave like functions. 
 
-### Gradle quick-start
+### [Read the docs](https://enro.dev)
 
+## Gradle quick-start
 ```gradle
 dependencies {
     implementation("dev.enro:enro:2.0.0-alpha10")
@@ -17,8 +18,6 @@ dependencies {
     testImplementation("dev.enro:enro-test:2.0.0-alpha10")
 }
 ```
-
-### [Read the docs](https://enro.dev)
 
 ## Introduction
 Building a screen using Enro begins with defining a `NavigationKey`. A `NavigationKey` can be thought of like the function signature or interface for a screen. Just like a function signature, a `NavigationKey` represents a contract. By invoking the contract, and providing the requested parameters, an action will occur and you may (or may not) receive a result. 
@@ -109,3 +108,10 @@ val exampleNavigationComponent = createNavigationComponent {
    composableDestination<SelectDate> { SelectDateComposable() }
 }
 ```
+
+## Applications using Enro
+<p align="center">
+    <a href="https://www.splitwise.com/">
+        <img width="100px" src="resources/splitwise-icon.png" />
+    </a>
+</p>
