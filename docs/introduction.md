@@ -12,6 +12,13 @@ Building a screen using Enro begins with defining a `NavigationKey`. A `Navigati
 your code here! <i class="btn">Example</i> 
 <span class="kd">val</span><span> test = </span><span class="s">"This is a string"</span>
 '%}
+{% include code.html content=
+'
+//this make a circle{: .btn }
+your code here! <i class="btn">Example</i> 
+<span class="kd">val</span><span> test = </span><span class="s">"This is a string"</span>
+'%}
+
 
 Here's an example of two `NavigationKey`s that you might find in an Enro application:
 ```kotlin
