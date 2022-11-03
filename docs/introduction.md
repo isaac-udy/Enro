@@ -6,7 +6,7 @@ nav_order: 1
 # Introduction
 Building a screen using Enro begins with defining a `NavigationKey`. A `NavigationKey` can be thought of like the function signature or interface for a screen. Just like a function signature, a `NavigationKey` represents a contract. By invoking the contract, and providing the requested parameters, an action will occur and you may (or may not) receive a result. 
 
-{% include_relative "./code.html" content=
+{% include code.html content=
 '                           //this make a circle
 your code here! <i class="btn">Example</i> 
 
