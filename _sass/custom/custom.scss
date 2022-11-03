@@ -25,6 +25,27 @@ h1, h2, h3, h4, h5, h6 {
     background-color: $color-primary;
 }
 
+.aux-nav-list-item {
+    width: 100%;
+
+    > a {
+        font-size: .8rem;
+        font-weight: 600;
+
+        &::before { 
+            content: '';
+            height: 2rem;
+            background-image: url("../../assets/git-icon.png");
+            width: 2rem;
+            background-size: 2rem;
+            display: block;
+            margin-right: 0.5rem;
+            background-color: $color-primary;
+            background-blend-mode: screen;
+        }
+    }
+}
+
 @media(min-width: $content-width) { 
     .side-bar {
         width: $nav-width;
@@ -57,4 +78,5 @@ h1, h2, h3, h4, h5, h6 {
         display: flex;
         padding-left: $spacing-unit;
     }
+
 }
