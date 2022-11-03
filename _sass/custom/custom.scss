@@ -6,10 +6,23 @@ $color-background: #f4f6f7;
 $color-surface: #ffffff;
 
 @font-face {
-    font-family: "cutiveMono";
+    font-family: "cutive-mono";
     src: url("../../assets/cutive_mono.ttf") format('truetype');
     font-weight: normal;
     font-style: normal;
+}
+
+.a {
+    font-family: "cutive-mono";
+    font-weight: bold;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "cutive-mono";
+}
+
+.btn {
+    font-family: "cutive-mono";
 }
 
 .btn-primary {
