@@ -10,7 +10,7 @@ Enro is a powerful navigation library based on a simple idea; screens within an 
 [Introduction](./docs/introduction.md)
 
 ## Gradle quick-start
-```gradle
+```kotlin
 dependencies {
     implementation("dev.enro:enro:2.0.0-alpha10")
     kapt("dev.enro:enro-processor:2.0.0-alpha10")
