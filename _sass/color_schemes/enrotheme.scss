@@ -58,11 +58,11 @@ $red-100: #f96e65;
 $red-200: #e94c4c;
 $red-300: #dd2e2e;
 
-$body-background-color: $white;
-$sidebar-color: $grey-lt-000;
+$body-background-color: $color-surface;
+$sidebar-color: $color-background;
 $search-background-color: $white;
 $table-background-color: $white;
-$code-background-color: $grey-lt-000;
+$code-background-color: $color-background;
 $feedback-color: darken($sidebar-color, 3%);
 $body-text-color: $color-text;
 $body-heading-color: $color-text;
@@ -70,7 +70,7 @@ $search-result-preview-color: $grey-dk-000;
 $nav-child-link-color: $grey-dk-100;
 $link-color: $color-primary;
 $btn-primary-color: $color-primary;
-$base-button-color: #f7f7f7;
+$base-button-color: $color-background;
 
 // Spacing
 
