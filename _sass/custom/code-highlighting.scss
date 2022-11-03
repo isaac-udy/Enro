@@ -9,7 +9,18 @@ $code-function-name: #FFC66D;
 $code-primitive-string: #6A8759;
 
 .language-kotlin {
-    > .nd {
+    .nd {
         color: $code-annotation-name;
+    }
+    > .highlight {
+        .nd {
+            color: $code-primitive-number;
+        }
+        
+        > .highlight {
+            .nd {
+                color: $code-variable-name;
+            }
+        }
     }
 }
