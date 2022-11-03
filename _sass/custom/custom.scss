@@ -29,4 +29,25 @@ h1, h2, h3, h4, h5, h6 {
     .side-bar {
         width: $nav-width;
     }
+    .main {
+        margin-left: $nav-width;
+        max-width: none;
+    }
+    .main-content-wrap {
+        max-width: $content-width;
+    }
+    .search-input-wrap {
+        max-width: none;
+    }
+    .search-results {
+        max-width: none;
+    }
+    .search-result-title {
+        width: none;
+        padding-right: $spacing-unit;
+    }
+    .search-result-previews {
+        width: none;
+        padding-left: $spacing-unit;
+    }
 }
