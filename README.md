@@ -8,8 +8,7 @@
 
 Enro is a powerful navigation library based on a simple idea; screens within an application should behave like functions. 
 
-<details><summary>### Gradle quick-start</summary>
-<p>
+### Gradle quick-start
 
 ```gradle
 dependencies {
@@ -18,8 +17,8 @@ dependencies {
     testImplementation("dev.enro:enro-test:2.0.0-alpha10")
 }
 ```
-</p>
-</details>
+
+### [Read the docs](https://enro.dev)
 
 ## Introduction
 Building a screen using Enro begins with defining a `NavigationKey`. A `NavigationKey` can be thought of like the function signature or interface for a screen. Just like a function signature, a `NavigationKey` represents a contract. By invoking the contract, and providing the requested parameters, an action will occur and you may (or may not) receive a result. 
