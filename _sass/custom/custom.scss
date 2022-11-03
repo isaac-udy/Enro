@@ -38,18 +38,23 @@ h1, h2, h3, h4, h5, h6 {
     }
     .search-input-wrap {
         max-width: none;
-        width: 100%;
+        width: 100% !important;
     }
     .search-results {
         max-width: none;
         width: 100%;
     }
+    .search-result {
+        display: flex;
+    }
     .search-result-title {
-        width: none;
+        width: auto;
+        display: inline-block;
         padding-right: $spacing-unit;
     }
     .search-result-previews {
-        width: none;
+        width: auto;
+        display: flex;
         padding-left: $spacing-unit;
     }
 }
