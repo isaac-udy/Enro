@@ -20,6 +20,9 @@ $code-comment: #999999;
                 background-color: transparent;
                 border: none;
             }
+            span {
+                color: $code-normal-text;
+            }
 
             .p {
                 color: $code-normal-text;
