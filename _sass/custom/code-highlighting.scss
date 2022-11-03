@@ -10,6 +10,7 @@ $code-function-name: #FFC66D;
 $code-primitive-string: #6A8759;
 
 .language-kotlin {
+    background-color: $code-block-background-color;
     > .highlight {
         > .highlight {
             .p {
@@ -21,6 +22,10 @@ $code-primitive-string: #6A8759;
             .nc {
                 color: $code-normal-text;
             }
+            .n {
+                color: $code-normal-text;
+            } 
+            
             .nd {
                 color: $code-annotation-name;
             }
