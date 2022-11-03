@@ -21,6 +21,10 @@ $code-comment: #999999;
             .p {
                 color: $code-normal-text;
             }
+            .py {
+                color: $code-normal-text;
+            }
+
             .nc {
                 color: $code-normal-text;
             }
@@ -34,11 +38,6 @@ $code-comment: #999999;
             .cm {
                 color: $code-comment;
             }
-
-            .py {
-                color: $code-variable-name;
-            }
-
             .nd {
                 color: $code-annotation-name;
             }
