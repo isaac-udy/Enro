@@ -17,7 +17,7 @@ dependencies {
 ```
 
 ## Applications using Enro
-<p align="center">
+<p>
     <a href="https://www.splitwise.com/">
         <img width="100px" src="./assets/splitwise-icon.png" />
     </a>
