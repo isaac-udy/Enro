@@ -6,11 +6,9 @@
 
 # Enro 🗺️
 
-Scalable, type-safe navigation for Activities, Fragments and Composables. 
+Enro is a powerful navigation library based on a simple idea; screens within an application should behave like functions. 
 
-Navigation is an important part of any Android application, but it can be difficult to manage at scale. Enro is a powerful navigation library based on a simple idea; screens within an application should behave like functions. 
-
-<details><summary>Gradle</summary>
+<details><summary>### Gradle quick-start</summary>
 <p>
 
 ```gradle
@@ -23,19 +21,7 @@ dependencies {
 </p>
 </details>
 
-## Features
-
-- Navigate between Fragments, Activities and Composables seamlessly
-
-- Remove navigation logic from screens implemented as Fragments, Activities or Composables
-
-- Describe navigation destinations through annotations or a simple DSL
-
-- Pass type-safe results between screens across configuration changes and process death
-
-- Create beautiful transitions between specific destinations
-
-## Getting Started
+## Introduction
 Building a screen using Enro begins with defining a `NavigationKey`. A `NavigationKey` can be thought of like the function signature or interface for a screen. Just like a function signature, a `NavigationKey` represents a contract. By invoking the contract, and providing the requested parameters, an action will occur and you may (or may not) receive a result. 
 
 Here's an example of two `NavigationKey`s that you might find in an Enro application:
