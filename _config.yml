@@ -8,4 +8,8 @@ kramdown:
   math_engine: mathjax
   syntax_highlighter: rouge
 remote_theme: just-the-docs/just-the-docs
-color_scheme: enro-theme
+
+color_scheme: enrotheme
+aux_links:
+  "GitHub":
+    - "//github.com/isaac-udy/Enro"
