@@ -35,6 +35,10 @@ $code-comment: #999999;
                 color: $code-normal-text;
             } 
 
+            .s {
+                color: $code-primitive-string;
+            } 
+
             .c1 {
                 color: $code-comment;
             }
