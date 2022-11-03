@@ -14,7 +14,10 @@ your code here! <i class="btn">Example</i>
 '%}
 {% include code.html content=
 '
-//this make a circle{: .btn }
+```kotlin
+//this make a circle
+val inlineInlineExample = "wow!"
+```
 your code here! <i class="btn">Example</i> 
 <span class="kd">val</span><span> test = </span><span class="s">"This is a string"</span>
 '%}
