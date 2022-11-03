@@ -1,12 +1,12 @@
 
 $code-block-background-color: #333333;
-$code-language-key-word: #CC6633;
-$code-annotation-name: #BBB529;
+$code-language-key-word: #cc7832;
+$code-annotation-name: #bbb529;
 $code-normal-text: #A9B7C6;
 $code-parameter-name: #467CDA;
 $code-primitive-number: #6897BB;
 $code-variable-name: #9876AA;
-$code-function-name: #FFC66D;
+$code-function-name: #ffc66d;
 $code-primitive-string: #6A8759;
 $code-comment: #999999;
 
@@ -15,7 +15,7 @@ $code-comment: #999999;
     > .highlight {
         > .highlight {
             code {
-                background-color: none;
+                background-color: transparent;
             }
 
             .p {
