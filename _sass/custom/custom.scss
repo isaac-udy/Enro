@@ -25,6 +25,8 @@ h1, h2, h3, h4, h5, h6 {
     background-color: $color-primary;
 }
 
-.side-bar {
-    width: $nav-width;
+@media(min-width: $content-width) { 
+    .side-bar {
+        width: $nav-width;
+    }
 }
