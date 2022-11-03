@@ -11,7 +11,7 @@ $code-primitive-string: #6A8759;
 $code-comment: #999999;
 
 .language-kotlin {
-    background-color: $code-block-background-color;
+    background-color: $code-block-background-color !important;
     > .highlight {
         > .highlight {
             code {
@@ -27,7 +27,7 @@ $code-comment: #999999;
             .n {
                 color: $code-normal-text;
             } 
-            
+
             .c1 {
                 color: $code-comment;
             }
