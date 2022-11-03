@@ -8,15 +8,17 @@ $code-primitive-number: #6897BB;
 $code-variable-name: #9876AA;
 $code-function-name: #FFC66D;
 $code-primitive-string: #6A8759;
+$code-comment: #999999;
 
 .language-kotlin {
     background-color: $code-block-background-color;
     > .highlight {
         > .highlight {
-            .p {
-                color: $code-normal-text;
+            code {
+                background-color: none;
             }
-            .py {
+
+            .p {
                 color: $code-normal-text;
             }
             .nc {
@@ -26,6 +28,17 @@ $code-primitive-string: #6A8759;
                 color: $code-normal-text;
             } 
             
+            .c1 {
+                color: $code-comment;
+            }
+            .cm {
+                color: $code-comment;
+            }
+
+            .py {
+                color: $code-variable-name;
+            }
+
             .nd {
                 color: $code-annotation-name;
             }
