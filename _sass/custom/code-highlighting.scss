@@ -12,6 +12,8 @@ $code-comment: #999999;
 
 .language-kotlin {
     background-color: $code-block-background-color !important;
+    line-height: normal;
+
     > .highlight {
         > .highlight {
             code {
