@@ -12,11 +12,6 @@ $color-surface: #ffffff;
     font-style: normal;
 }
 
-.a {
-    font-family: "cutive-mono";
-    font-weight: bold;
-}
-
 h1, h2, h3, h4, h5, h6 {
     font-family: "cutive-mono";
 }
@@ -28,4 +23,8 @@ h1, h2, h3, h4, h5, h6 {
 .btn-primary {
     background-image: none;
     background-color: $color-primary;
+}
+
+.side-bar {
+    width: $nav-width;
 }
