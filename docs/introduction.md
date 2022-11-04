@@ -64,6 +64,7 @@ fun ExampleComposable() {
 }
 ```
 
+
 You might have noticed that we've defined our `ExampleFragment` and `ExampleComposable` in the example above before we've even begun to think about how we're going to implement the `ShowUserProfile` and `SelectDate` destinations. That's because implementing a `NavigationDestination` in Enro is the least interesting part of the process. All you need to do to make this application complete is to build an Activity, Fragment or Composable, and mark it as the `NavigationDestination` for a particular `NavigationKey`.
 
 The recommended approach to mark an Activity, Fragment or Composable as a `NavigationDestination` is to use the Enro annotation processor and the `@NavigationDestination` annotation:
@@ -72,17 +73,34 @@ The recommended approach to mark an Activity, Fragment or Composable as a `Navig
 class ProfileFragment : Fragment {
     val navigation by navigationHandle<ShowProfile>() // you can use `navigation.key` will be the ShowUserProfile instance used to open this destination
 }
+```
 
+```kotlin
 @Composable
+```
+{:.code-not-important .code-start}
+```kotlin
 @NavigationDestination(SelectDate::class)
+```
+{:.code-important}
+
+```kotlin
 fun SelectDateComposable() { 
-   val navigation = navigationHandle<SelectDate>() // you can use `navigation.key` will be the SelectDate instance used to open this destination
-    // ...
+   val navigation = navigationHandle<SelectDate>()
+   // ...
    Button(onClick = {
+```
+{:.code-not-important}
+
+```kotlin
        navigation.closeWithResult( /* pass a local date here to return that as a result */ )
+```
+{:.code-important}
+```kotlin
    }) { /* ... */ }
 }
 ```
+{:.code-not-important .code-end}
 
 If you'd prefer to avoid annotation processing, you can use a DSL to define these bindings when creating your application (see [here]() for more information):
 ```kotlin
@@ -92,25 +110,3 @@ val exampleNavigationComponent = createNavigationComponent {
    composableDestination<SelectDate> { SelectDateComposable() }
 }
 ```
-
-
-
-```kotlin
-@Composable
-@NavigationDestination(SelectDate::class)
-fun SelectDateComposable() { 
-   val navigation = navigationHandle<SelectDate>() // you can use `navigation.key` will be the SelectDate instance used to open this destination
-   // ...
-   Button(onClick = {
-```
-{:.code-not-important .code-start}
-
-```kotlin
-       navigation.closeWithResult( /* pass a local date here to return that as a result */ )
-```
-{:.code-important}
-
-```kotlin
-   }) { /* ... */ }
-```
-{:.code-not-important .code-end}
