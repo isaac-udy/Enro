@@ -92,3 +92,20 @@ val exampleNavigationComponent = createNavigationComponent {
    composableDestination<SelectDate> { SelectDateComposable() }
 }
 ```
+
+```kotlin
+@Composable
+@NavigationDestination(SelectDate::class)
+fun SelectDateComposable() { 
+   val navigation = navigationHandle<SelectDate>() // you can use `navigation.key` will be the SelectDate instance used to open this destination
+    // ...
+   Button(onClick = {
+```
+```kotlin
+       navigation.closeWithResult( /* pass a local date here to return that as a result */ )
+```{: example-class }
+```kotlin
+   }) { /* ... */ }
+}mposableDestination<SelectDate> { SelectDateComposable() }
+}
+```
