@@ -103,15 +103,14 @@ fun SelectDateComposable() {
     // ...
    Button(onClick = {
 ```
+{:.code-not-important}
 
-
-{::}
 ```kotlin
        navigation.closeWithResult( /* pass a local date here to return that as a result */ )
 ```
-{:.example}
+{:.code-important}
 
 ```kotlin
    }) { /* ... */ }
 ```
-{:.example}
+{:.code-not-important}
