@@ -93,6 +93,7 @@ val exampleNavigationComponent = createNavigationComponent {
 }
 ```
 
+<div class="code-not-important">
 ```kotlin
 @Composable
 @NavigationDestination(SelectDate::class)
@@ -101,11 +102,13 @@ fun SelectDateComposable() {
     // ...
    Button(onClick = {
 ```
+<div class="code-important">
 ```kotlin
        navigation.closeWithResult( /* pass a local date here to return that as a result */ )
-```{: .example-class }
+```
+</div>
+<div class="code-not-important">
 ```kotlin
    }) { /* ... */ }
-}mposableDestination<SelectDate> { SelectDateComposable() }
-}
 ```
+</div>
