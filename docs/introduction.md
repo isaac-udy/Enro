@@ -100,7 +100,7 @@ val exampleNavigationComponent = createNavigationComponent {
 @NavigationDestination(SelectDate::class)
 fun SelectDateComposable() { 
    val navigation = navigationHandle<SelectDate>() // you can use `navigation.key` will be the SelectDate instance used to open this destination
-    // ...
+   // ...
    Button(onClick = {
 ```
 {:.code-not-important}
