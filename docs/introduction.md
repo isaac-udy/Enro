@@ -102,7 +102,7 @@ fun SelectDateComposable() {
    val navigation = navigationHandle<SelectDate>() // you can use `navigation.key` will be the SelectDate instance used to open this destination
     // ...
    Button(onClick = {
-```{:.example}
+```
 
 
 {::}
@@ -113,4 +113,5 @@ fun SelectDateComposable() {
 
 ```kotlin
    }) { /* ... */ }
-```{:.example}
+```
+{:.example}
