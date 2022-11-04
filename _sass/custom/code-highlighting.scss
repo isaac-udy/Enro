@@ -60,19 +60,19 @@ $code-comment: #999999;
             } 
         }
     }
+}
 
-    .code-important {
-        margin-top: 0;
-        margin-bottom: 0;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-    
-    .code-not-important {
-        opacity: .6;
-        margin-top: 0;
-        margin-bottom: 0;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
+.language-kotlin.code-important {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.language-kotlin.code-not-important {
+    opacity: .6;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
 }
