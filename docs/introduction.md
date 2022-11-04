@@ -105,10 +105,12 @@ fun SelectDateComposable() {
 ```{:.example}
 
 
-{::}```kotlin
+{::}
+```kotlin
        navigation.closeWithResult( /* pass a local date here to return that as a result */ )
-```{:.example}
+```
+{:.example}
 
 ```kotlin
    }) { /* ... */ }
-```
+```{:.example}
