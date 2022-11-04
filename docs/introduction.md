@@ -70,15 +70,27 @@ You might have noticed that we've defined our `ExampleFragment` and `ExampleComp
 The recommended approach to mark an Activity, Fragment or Composable as a `NavigationDestination` is to use the Enro annotation processor and the `@NavigationDestination` annotation:
 ```kotlin
 @NavigationDestination(ShowUserProfile::class)
-class ProfileFragment : Fragment {
-    val navigation by navigationHandle<ShowProfile>() // you can use `navigation.key` will be the ShowUserProfile instance used to open this destination
-}
 ```
+{:.code-important .code-start}
 
 ```kotlin
+class ProfileFragment : Fragment {
+   
+   // providing a type to `by navigationHandle<T>()` gives you access to the NavigationKey 
+   // used to open this destination, and you can use this to read the 
+   // arguments for the destination
+```
+{:.code-not-important }
+   
+```kotlin
+    val navigation by navigationHandle<ShowProfile>() 
+```
+{:.code-important}
+```kotlin
+}
 @Composable
 ```
-{:.code-not-important .code-start}
+{:.code-not-important }
 ```kotlin
 @NavigationDestination(SelectDate::class)
 ```
@@ -86,7 +98,16 @@ class ProfileFragment : Fragment {
 
 ```kotlin
 fun SelectDateComposable() { 
+   // providing a type to `navigationHandle<T>()` gives you access to the NavigationKey 
+   // used to open this destination, and you can use this to read the 
+   // arguments for the destination
+```
+{:.code-not-important}
+```kotlin
    val navigation = navigationHandle<SelectDate>()
+```
+{:.code-important}
+```kotlin
    // ...
    Button(onClick = {
 ```
