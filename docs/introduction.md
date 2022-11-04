@@ -103,7 +103,7 @@ fun SelectDateComposable() {
 ```
 ```kotlin
        navigation.closeWithResult( /* pass a local date here to return that as a result */ )
-```{: example-class }
+```{: .example-class }
 ```kotlin
    }) { /* ... */ }
 }mposableDestination<SelectDate> { SelectDateComposable() }
