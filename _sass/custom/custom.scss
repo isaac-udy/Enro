@@ -62,7 +62,7 @@ h1, h2, h3, h4, h5, h6 {
         min-width: $nav-width-md;
     }
     .main {
-        margin-left: calc(50% - (#{$content-width} / 2));
+        margin-left: $nav-width-md;
         max-width: none;
     }
     .main-content-wrap {
@@ -89,5 +89,18 @@ h1, h2, h3, h4, h5, h6 {
         display: flex;
         padding-left: $spacing-unit;
     }
+}
 
+@media(min-width: ($content-width + $nav-width-md)) { 
+    .main {
+        margin-left: $nav-width;
+        max-width: none;
+    }
+}
+
+@media(min-width: ($content-width + $nav-width)) { 
+    .main {
+        margin-left: calc(50% - (#{$content-width} / 2));
+        max-width: none;
+    }
 }
