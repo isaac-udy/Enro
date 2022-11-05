@@ -77,6 +77,9 @@ $code-comment: #999999;
         .s {
             color: $code-primitive-string;
         } 
+        .na {
+            color: $code-normal-text;
+        } 
         .nt {
             color: $code-function-name;
         } 
