@@ -62,7 +62,7 @@ $code-comment: #999999;
     }
 }
 
-.language-kotlin.code-important {
+.highlighter-rouge.code-important {
     margin-top: 0;
     margin-bottom: 0;
     padding-top: $spacing-unit * 0.2;
@@ -70,7 +70,7 @@ $code-comment: #999999;
     border-radius: 0px;
 }
 
-.language-kotlin.code-not-important {
+.highlighter-rouge.code-not-important {
     margin-top: 0;
     margin-bottom: 0;
     padding-top: 0;
@@ -82,12 +82,12 @@ $code-comment: #999999;
     }
 }
 
-.language-kotlin.code-start {
+.highlighter-rouge.code-start {
     padding-top: $spacing-unit *  0.75;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
 }
-.language-kotlin.code-end {
+.highlighter-rouge.code-end {
     padding-bottom: $spacing-unit *  0.75;
     margin-bottom: $spacing-unit *  0.75;
     border-bottom-left-radius: 4px;
