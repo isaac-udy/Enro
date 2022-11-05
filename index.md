@@ -3,7 +3,9 @@ title: Overview
 has_children: true
 nav_order: 1
 ---
-{: .highlight } This documentation website is currently a work-in-progress
+
+This documentation website is currently a work-in-progress
+{: .highlight } 
 
 # Enro
 
