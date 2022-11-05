@@ -13,7 +13,12 @@ dependencies {
 ```
 
 ## Add Enro to your Application class
-Enro needs to be added to the Application class used by your Application. We'll look at how to do this step-by-step.
+Enro needs to be added to the Application class used by your Application. This is also where you can apply custom configuration to Enro, if your application requires this.
+
+<details markdown="block">
+  <summary>
+    Show step-by-step guide
+  </summary>
 
 **0. An application class without Enro installed**
 ```kotlin
@@ -68,6 +73,7 @@ class ExampleApplication : Application, NavigationApplication {
 If you are using annotation processing (which is optional, but recommended), you are required to annotate your Application class with `@NavigationComponent` so that the annotation processor has a hook to generate and provide configuration. 
 
 If you are not using annotation processing, you won't need to add this annotation. Instead, you'll need to provide your Application's configuration within the `createNavigationController` block. Please see [Configuring Enro](./configuring-enro.md) for more information.
+</details>
 
 ## Add Enro to an Activity
 Once you've added Enro to your Application, it's likely that you'll want to add a Navigation Container to an Activity. This isn't necessary, as navigation using Enro will work even without a Navigation Container, but it is recommended. The exact configuration of the Navigation Container will depend on your needs, and the examples below will deal with a reasonably simple case, so if you need more information on how to configure a Navigation Container, please see the [Navigation Container documentation](./navigation-containers.md).
@@ -76,12 +82,13 @@ Once you've added Enro to your Application, it's likely that you'll want to add 
 
 A Navigation Container is a ViewGroup or Composable that maintains a backstack and displays the active Navigation Destination for that backstack. If you're familiar with Fragments, think of it as the `FrameLayout` that holds the Fragments. If you're more familiar with Compose, think of it as a `Box` that holds some child content (the active destination). For more information, please see the [Navigation Container documentation](./navigation-containers.md).
 
+### Adding a Navigation Container for Fragments and Composables
+If your application has Navigation Destinations that are a mix of Fragments and Composables, your top level Navigation Container should be a View based Navigation Container, as this will accept both Fragment and Composable destinations. 
+
 <details markdown="block">
   <summary>
-    Adding a Navigation Container for Fragments and Composables
+    Show step-by-step guide
   </summary>
-  {: .text-gamma }
-If your application has Navigation Destinations that are a mix of Fragments and Composables, your top level Navigation Container should be a View based Navigation Container, as this will accept both Fragment and Composable destinations. 
 
 **0. An Activity without a Navigation Container**
 ```kotlin
@@ -164,12 +171,13 @@ class MainActivity : AppCompatActivity() {
 </details>
 
 
+### Adding a Navigation Container for Composables only
+If your application only has Composable destinations, you can choose to use a View based Navigation Container (as these support Composable destinations too), but you may want to consider directly using a Composable NavigationContainer.
+
 <details markdown="block">
   <summary>
-    Adding a Navigation Container for Composables only
+    Show step-by-step guide
   </summary>
-  {: .text-gamma }
-If your application only has Composable destinations, you can choose to use a View based Navigation Container (as these support Composable destinations too), but you may want to consider directly using a Composable NavigationContainer.
 
 **0. A Composable Activity without a Navigation Container**
 ```kotlin
