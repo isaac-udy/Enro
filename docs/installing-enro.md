@@ -78,8 +78,9 @@ A Navigation Container is a ViewGroup or Composable that maintains a backstack a
 
 <details markdown="block">
   <summary>
-    ### Adding a Navigation Container for Fragments and Composables
+    Adding a Navigation Container for Fragments and Composables
   </summary>
+  {: .text-gamma }
 If your application has Navigation Destinations that are a mix of Fragments and Composables, your top level Navigation Container should be a View based Navigation Container, as this will accept both Fragment and Composable destinations. 
 
 **0. An Activity without a Navigation Container**
@@ -162,10 +163,12 @@ class MainActivity : AppCompatActivity() {
 {:.code-not-important .code-end}
 </details>
 
+
 <details markdown="block">
   <summary>
-### Adding a Navigation Container for Composables only
+    Adding a Navigation Container for Composables only
   </summary>
+  {: .text-gamma }
 If your application only has Composable destinations, you can choose to use a View based Navigation Container (as these support Composable destinations too), but you may want to consider directly using a Composable NavigationContainer.
 
 **0. A Composable Activity without a Navigation Container**
