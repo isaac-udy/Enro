@@ -56,8 +56,11 @@ h1, h2, h3, h4, h5, h6 {
 @media(min-width: $content-width) { 
     .side-bar {
         width: $nav-width;
+        width: calc(50% - ($content-width / 2);
+        min-width: $nav-width-md;
     }
     .main {
+        margin-left: max(calc(50% - ($content-width / 2)), $nav-width-md);
         margin-left: $nav-width;
         max-width: none;
     }
