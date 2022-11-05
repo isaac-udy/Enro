@@ -73,10 +73,13 @@ If you are not using annotation processing, you won't need to add this annotatio
 Once you've added Enro to your Application, it's likely that you'll want to add a Navigation Container to an Activity. This isn't necessary, as navigation using Enro will work even without a Navigation Container, but it is recommended. The exact configuration of the Navigation Container will depend on your needs, and the examples below will deal with a reasonably simple case, so if you need more information on how to configure a Navigation Container, please see the [Navigation Container documentation](./navigation-containers.md).
 
 **What is a Navigation Container?**
+
 A Navigation Container is a ViewGroup or Composable that maintains a backstack and displays the active Navigation Destination for that backstack. If you're familiar with Fragments, think of it as the `FrameLayout` that holds the Fragments. If you're more familiar with Compose, think of it as a `Box` that holds some child content (the active destination). For more information, please see the [Navigation Container documentation](./navigation-containers.md).
 
-
-### Adding a Navigation Container for Fragments and Composables
+<details markdown="block">
+  <summary>
+    ### Adding a Navigation Container for Fragments and Composables
+  </summary>
 If your application has Navigation Destinations that are a mix of Fragments and Composables, your top level Navigation Container should be a View based Navigation Container, as this will accept both Fragment and Composable destinations. 
 
 **0. An Activity without a Navigation Container**
@@ -132,6 +135,7 @@ class MainActivity : AppCompatActivity() {
 {:.code-not-important .code-end}
 
 **3. Configure the Navigation Container**
+
 The Navigation Container that we've defined above will start off with nothing in it, and it will allow any Navigation Destination to be pushed into it. Below is an example of a configured Navigation Container that will initially show the Navigation Destination for a particular Navigation Key, and will `finish` the Activity if the Navigation Container is ever about to become empty. This isn't always the behavior that you will want for a Navigation Container, but it is a reasonably common way to set up an Activity's root Navigation Container. For more information, please see the [Navigation Container documentation](./navigation-containers.md).
 
 ```kotlin
@@ -156,9 +160,12 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 {:.code-not-important .code-end}
+</details>
 
-
+<details markdown="block">
+  <summary>
 ### Adding a Navigation Container for Composables only
+  </summary>
 If your application only has Composable destinations, you can choose to use a View based Navigation Container (as these support Composable destinations too), but you may want to consider directly using a Composable NavigationContainer.
 
 **0. A Composable Activity without a Navigation Container**
@@ -216,6 +223,7 @@ class MainActivity : AppCompatActivity() {
 ```
 
 **3. Configure the Navigation Container**
+
 The Navigation Container that we've defined above will start off with nothing in it, and it will allow any Navigation Destination to be pushed into it. Below is an example of a configured Navigation Container that will initially show the Navigation Destination for a particular Navigation Key, and will `finish` the Activity if the Navigation Container is ever about to become empty. This isn't always the behavior that you will want for a Navigation Container, but it is a reasonably common way to set up an Activity's root Navigation Container. For more information, please see the [Navigation Container documentation](./navigation-containers.md).
 
 ```kotlin
@@ -242,3 +250,4 @@ class MainActivity : AppCompatActivity() {
     }
 }
 ```
+</details>
