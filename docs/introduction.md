@@ -4,12 +4,12 @@ parent: Overview
 nav_order: 1
 ---
 # Introduction
-This introduction is designed to give a brief overview of how Enro works. It doesn't contain all the information you might need to know to get Enro installed in an application, or provide specific details about each of the topics covered. For this information, please refer to the other documentation: 
-[Installing Enro](./installing-enro.md)
-[Navigation Keys](./navigation-keys.md)
-[Navigation Handles](./navigation-handles.md)
-[Navigation Containers](./navigation-containers.md)
-[Testing](./testing.md)
+This introduction is designed to give a brief overview of how Enro works. It doesn't contain all the information you might need to know to get Enro installed in an application, or provide specific details about each of the topics covered. For this information please refer to the other documentation, such as: 
+* [Installing Enro](./installing-enro.md)
+* [Navigation Keys](./navigation-keys.md)
+* [Navigation Handles](./navigation-handles.md)
+* [Navigation Containers](./navigation-containers.md)
+* [Testing](./testing.md)
 
 ## NavigationKeys
 Building a screen using Enro begins with defining a `NavigationKey`. A `NavigationKey` can be thought of like the function signature or interface for a screen. Just like a function signature, a `NavigationKey` represents a contract. By invoking the contract, and providing the requested parameters, an action will occur and you may (or may not) receive a result. 
@@ -37,7 +37,7 @@ fun selectDate(minDate: LocalDate? = null, maxDate: LocalDate? = null): LocalDat
 ## NavigationHandles
 Once you've defined the `NavigationKey` for a screen, you'll want to use it. In any Activity, Fragment or Composable, you will be able to get access to a `NavigationHandle`, which allows you to perform navigation. The syntax is slightly different for each type of screen.
 
-#### In a Fragment or Activity:
+### In a Fragment or Activity:
 ```kotlin
 class ExampleFragment : Fragment() {
    val selectDate by registerForNavigationResult<LocalDate> { selectedDate: LocalDate -> 
@@ -56,7 +56,7 @@ class ExampleFragment : Fragment() {
 }
 ```
 
-#### In a Composable: 
+### In a Composable: 
 ```kotlin
 @Composable
 fun ExampleComposable() {
@@ -84,7 +84,7 @@ You might have noticed that we've defined our `ExampleFragment` and `ExampleComp
 
 The recommended approach to mark an Activity, Fragment or Composable as a `NavigationDestination` is to use the Enro annotation processor and the `@NavigationDestination` annotation.
 
-#### In a Fragment or Activity:
+### In a Fragment or Activity:
 ```kotlin
 @NavigationDestination(ShowUserProfile::class)
 class ProfileFragment : Fragment {
@@ -95,7 +95,7 @@ class ProfileFragment : Fragment {
 }
 ```
 
-#### In a Composable:
+### In a Composable:
 ```kotlin
 @Composable
 @NavigationDestination(SelectDate::class)
@@ -111,7 +111,7 @@ fun SelectDateComposable() {
 }
 ```
 
-#### Without annotation processing:
+### Without annotation processing:
 If you'd prefer to avoid annotation processing, you can use a DSL to define these bindings when creating your application (see [here]() for more information):
 ```kotlin
 // this needs to be registered with your application
