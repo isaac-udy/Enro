@@ -58,11 +58,11 @@ h1, h2, h3, h4, h5, h6 {
 // $content-width: 800px;
 @media(min-width: $content-width) { 
     .side-bar {
-        width: calc(50% - (800px / 2));
+        width: calc(50% - (#{$content-width} / 2));
         min-width: $nav-width-md;
     }
     .main {
-        margin-left: calc(50% - (800px / 2));
+        margin-left: max(calc(50% - (#{$content-width} / 2)), #{$nav-width-md});
         max-width: none;
     }
     .main-content-wrap {
