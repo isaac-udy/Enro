@@ -209,6 +209,7 @@ class MainActivity : AppCompatActivity() {
     }
 }
 ```
+{:.code-not-important .code-end}
 
 **2. Render the Navigation Container**
 ```kotlin
@@ -232,6 +233,7 @@ class MainActivity : AppCompatActivity() {
     }
 }
 ```
+{:.code-not-important .code-end}
 
 **3. Configure the Navigation Container**
 
@@ -261,4 +263,6 @@ class MainActivity : AppCompatActivity() {
     }
 }
 ```
+{:.code-not-important .code-end}
+
 </details>
