@@ -22,10 +22,10 @@ dependencies {
 }
 ```
 
-## Applications using Enro
+### Applications using Enro
 <p>
     <a href="https://www.splitwise.com/">
-        <img width="100px" src="./assets/splitwise-icon.png" />
+        <img width="50px" src="./assets/splitwise-icon.png" />
     </a>
 </p>
 
