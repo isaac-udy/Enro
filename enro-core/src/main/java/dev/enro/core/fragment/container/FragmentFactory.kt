@@ -70,8 +70,7 @@ internal object FragmentFactory {
             }
             is ComposableNavigationBinding<*, *> -> {
 
-                val isDialog =
-                    DialogDestination::class.java.isAssignableFrom(binding.destinationType.java)
+                val isDialog = DialogDestination::class.java.isAssignableFrom(binding.destinationType.java)
                             || BottomSheetDestination::class.java.isAssignableFrom(binding.destinationType.java)
 
                 val wrappedKey = when {
