@@ -156,7 +156,6 @@ public class ComposableNavigationContainer internal constructor(
         currentAnimations = when {
             backstackState.isRestoredState -> DefaultAnimations.none
             shouldTakeAnimationsFromParentContainer -> {
-                parentContext as FragmentContext<out Fragment>
                 val parentContainer = parentContext.parentContainer()
                 parentContainer?.currentAnimations ?: DefaultAnimations.none
             }
