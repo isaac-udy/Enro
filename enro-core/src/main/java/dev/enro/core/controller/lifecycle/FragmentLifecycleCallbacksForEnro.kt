@@ -8,12 +8,16 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
-import dev.enro.core.*
 import dev.enro.core.container.NavigationContainerProperty
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
+import dev.enro.core.fragment.FragmentContext
 import dev.enro.core.fragment.container.FragmentPresentationContainer
+import dev.enro.core.getNavigationHandle
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import dev.enro.core.leafContext
+import dev.enro.core.navigationContext
+import dev.enro.core.requestClose
 
 internal class FragmentLifecycleCallbacksForEnro(
     private val onNavigationContextCreated: OnNavigationContextCreated,

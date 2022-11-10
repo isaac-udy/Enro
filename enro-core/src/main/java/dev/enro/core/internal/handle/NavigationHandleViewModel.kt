@@ -7,9 +7,12 @@ import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import dev.enro.core.*
+import dev.enro.core.activity.ActivityContext
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.compose.ComposeContext
 import dev.enro.core.controller.usecase.ExecuteCloseInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
+import dev.enro.core.fragment.FragmentContext
 import dev.enro.core.internal.EnroDependencyScope
 import dev.enro.core.internal.NoNavigationKey
 

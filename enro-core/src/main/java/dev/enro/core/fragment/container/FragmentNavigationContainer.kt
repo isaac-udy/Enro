@@ -13,6 +13,7 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.core.fragment.FragmentContext
 import dev.enro.core.fragment.FragmentNavigationBinding
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.core.hosts.AbstractFragmentHostForPresentableFragment

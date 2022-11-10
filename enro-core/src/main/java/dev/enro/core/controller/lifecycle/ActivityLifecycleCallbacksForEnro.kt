@@ -7,12 +7,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.addCallback
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import dev.enro.core.*
+import dev.enro.core.activity.ActivityContext
 import dev.enro.core.container.NavigationContainerProperty
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.fragment.container.FragmentPresentationContainer
+import dev.enro.core.getNavigationHandleViewModel
 import dev.enro.core.internal.handle.interceptBackPressForAndroidxNavigation
+import dev.enro.core.leafContext
+import dev.enro.core.navigationContext
+import dev.enro.core.requestClose
 
 internal class ActivityLifecycleCallbacksForEnro(
     private val onNavigationContextCreated: OnNavigationContextCreated,

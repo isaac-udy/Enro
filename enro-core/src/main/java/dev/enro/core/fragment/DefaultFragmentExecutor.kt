@@ -99,7 +99,7 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
                     return
                 }
 
-                if(fromContext is ActivityContext && isReplace) {
+                if(fromContext.parentContext() == null && isReplace) {
                     openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
                     fromContext.activity.finish()
                     return

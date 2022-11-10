@@ -35,7 +35,7 @@ internal class ProjectArchitecture {
             .that()
             .resideInAPackage("dev.enro.extensions")
             .should()
-            .accessClassesThat()
+            .dependOnClassesThat()
             .resideInAPackage("dev.enro.core..")
 
         rule.check(classes)
@@ -47,7 +47,7 @@ internal class ProjectArchitecture {
             .that()
             .resideInAPackage(SYNTHETIC_PACKAGE)
             .should()
-            .accessClassesThat()
+            .dependOnClassesThat()
             .resideInDestinationPackageExcept(SYNTHETIC_PACKAGE)
 
         rule.check(classes)
@@ -59,7 +59,7 @@ internal class ProjectArchitecture {
             .that()
             .resideInAPackage(COMPOSE_PACKAGE)
             .should()
-            .accessClassesThat()
+            .dependOnClassesThat()
             .resideInDestinationPackageExcept(COMPOSE_PACKAGE)
 
         rule.check(classes)
@@ -71,7 +71,7 @@ internal class ProjectArchitecture {
             .that()
             .resideInAPackage(ACTIVITY_PACKAGE)
             .should()
-            .accessClassesThat()
+            .dependOnClassesThat()
             .resideInDestinationPackageExcept(ACTIVITY_PACKAGE)
 
         rule.check(classes)
@@ -83,7 +83,7 @@ internal class ProjectArchitecture {
             .that()
             .resideInAPackage(FRAGMENT_PACKAGE)
             .should()
-            .accessClassesThat()
+            .dependOnClassesThat()
             .resideInDestinationPackageExcept(FRAGMENT_PACKAGE)
 
         rule.check(classes)
