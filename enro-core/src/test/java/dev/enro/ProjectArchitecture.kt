@@ -4,6 +4,7 @@ import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition
 import com.tngtech.archunit.lang.syntax.elements.ClassesShouldConjunction
 import com.tngtech.archunit.lang.syntax.elements.ClassesThat
+import com.tngtech.archunit.library.Architectures
 import org.junit.Test
 
 private const val API_PACKAGE = "dev.enro.core"
@@ -33,6 +34,14 @@ internal class ProjectArchitecture {
 
     private val classes = ClassFileImporter().importPackages("dev.enro")
 
+    private val architecture = Architectures.layeredArchitecture()
+        .consideringOnlyDependenciesInAnyPackage("dev.enro..")
+        .let {
+            EnroLayer.values().fold(it) { architecture, layer ->
+                architecture.layer(layer)
+            }
+        }
+
     /**
      * This test exists to ensure that new packages are not added to Enro without being included
      * in these architecture rules. This test checks that all classes that are in packages under
@@ -48,20 +57,7 @@ internal class ProjectArchitecture {
             .resideInAnyPackage(
                 "dev.enro.core.test..",
                 "dev.enro",
-
-                API_PACKAGE,
-                ACTIVITY_PACKAGE,
-                COMPOSE_PACKAGE,
-                CONTAINER_PACKAGE,
-                CONTROLLER_PACKAGE,
-                FRAGMENT_PACKAGE,
-                HOST_PACKAGE,
-                INTERNAL_PACKAGE,
-                PLUGINS_PACKAGE,
-                RESULTS_PACKAGE,
-                SYNTHETIC_PACKAGE,
-                EXTENSIONS_PACKAGE,
-                VIEWMODEL_PACKAGE,
+                *EnroPackage.values().map { it.packageName }.toTypedArray()
             )
 
         rule.check(classes)
@@ -74,81 +70,30 @@ internal class ProjectArchitecture {
      */
     @Test
     fun extensionsShouldNotDependOnEnro() {
-        val rule = ArchRuleDefinition.noClasses()
-            .that()
-            .resideInAPackage(EXTENSIONS_PACKAGE)
-            .should()
-            .dependOnClassesThat()
-            .resideInAPackage("dev.enro.core..")
-
-        rule.check(classes)
-    }
-
-    /**
-     * Enro includes several destination implementations, for Activities, Fragments, Composables
-     * and Synthetic destintations. These implementation should be independent of one-another,
-     * and this test checks that this is the case.
-     */
-    @Test
-    fun destinationsShouldNotDependOnOtherDestinations() {
-        destinationPackages.forEach { destinationPackage ->
-            val rule = ArchRuleDefinition.noClasses()
-                .that()
-                .resideInAPackage(destinationPackage)
-                .should()
-                .dependOnClassesThat()
-                .resideInDestinationPackageExcept(destinationPackage)
-
-            rule.check(classes)
-        }
+        architecture
+            .whereLayer(EnroLayer.EXTENSIONS)
+            .mayNotAccessAnyLayer()
+            .check(classes)
     }
 
     @Test
-    fun destinationsShouldNotDependOnHosts() {
-        val rule = ArchRuleDefinition.noClasses()
-            .that()
-            .resideInAnyPackage(*destinationPackages.toTypedArray())
-            .should()
-            .dependOnClassesThat()
-            .resideInAPackage(HOST_PACKAGE)
-
-        rule.check(classes)
+    fun allClassesAreContainerInArchitecture() {
+        architecture
+            .ensureAllClassesAreContainedInArchitectureIgnoring(isTestSource)
+            .check(classes)
     }
 
     @Test
-    fun resultsShouldNotDependOnDestinations() {
-        val rule = ArchRuleDefinition.noClasses()
-            .that()
-            .resideInAPackage(RESULTS_PACKAGE)
-            .should()
-            .dependOnClassesThat()
-            .resideInDestinationPackage()
+    fun destinationLayers() {
+        val allowableDestinationDependencies = arrayOf(
+            EnroLayer.PUBLIC,
+            EnroLayer.CONTROLLER,
+            EnroLayer.DEPENDENCY_INJECTION,
+        )
 
-        rule.check(classes)
-    }
-
-    @Test
-    fun destinationsShouldNotDependOnResults() {
-        val rule = ArchRuleDefinition.noClasses()
-            .that()
-            .resideInDestinationPackage()
-            .should()
-            .dependOnClassesThat()
-            .resideInAPackage(RESULTS_PACKAGE)
-
-        rule.check(classes)
-    }
-
-    @Test
-    fun viewmodelShouldNotDependOnDestinations() {
-        val rule = ArchRuleDefinition.noClasses()
-            .that()
-            .resideInAPackage(VIEWMODEL_PACKAGE)
-            .should()
-            .dependOnClassesThat()
-            .resideInDestinationPackage()
-
-        rule.check(classes)
+        architecture
+            .whereLayers(*EnroLayer.destinationLayers) { mayOnlyAccessLayers(*allowableDestinationDependencies) }
+            .check(classes)
     }
 }
 

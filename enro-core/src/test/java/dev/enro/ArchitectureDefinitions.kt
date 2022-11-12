@@ -1,0 +1,120 @@
+package dev.enro
+
+import com.tngtech.archunit.base.DescribedPredicate
+import com.tngtech.archunit.core.domain.JavaClass
+import com.tngtech.archunit.library.Architectures.LayeredArchitecture
+
+internal enum class EnroPackage(val packageName: String) {
+    API_PACKAGE("dev.enro.core"),
+    ACTIVITY_PACKAGE("dev.enro.core.activity.."),
+    COMPOSE_PACKAGE("dev.enro.core.compose.."),
+    CONTAINER_PACKAGE("dev.enro.core.container.."),
+    CONTROLLER_PACKAGE("dev.enro.core.controller.."),
+    FRAGMENT_PACKAGE("dev.enro.core.fragment.."),
+    HOST_PACKAGE("dev.enro.core.hosts.."),
+    INTERNAL_PACKAGE("dev.enro.core.internal.."),
+    PLUGINS_PACKAGE("dev.enro.core.plugins.."),
+    RESULTS_PACKAGE("dev.enro.core.result.."),
+    SYNTHETIC_PACKAGE("dev.enro.core.synthetic.."),
+    EXTENSIONS_PACKAGE("dev.enro.extensions.."),
+    VIEWMODEL_PACKAGE("dev.enro.viewmodel.."),
+}
+
+internal enum class EnroLayer(
+    private val block: (JavaClass) -> Boolean
+) {
+    PUBLIC({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.API_PACKAGE.packageName).test(it) ||
+                JavaClass.Predicates.resideInAnyPackage(EnroPackage.CONTAINER_PACKAGE.packageName).test(it) ||
+                JavaClass.Predicates.resideInAnyPackage(EnroPackage.RESULTS_PACKAGE.packageName).test(it)
+    }),
+    ACTIVITY({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.ACTIVITY_PACKAGE.packageName).test(it)
+    }),
+    FRAGMENT({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.FRAGMENT_PACKAGE.packageName).test(it)
+    }),
+    COMPOSE({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.COMPOSE_PACKAGE.packageName).test(it)
+    }),
+    SYNTHETIC({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.SYNTHETIC_PACKAGE.packageName).test(it)
+    }),
+    HOSTS({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.HOST_PACKAGE.packageName).test(it)
+    }),
+    RESULTS({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.RESULTS_PACKAGE.packageName).test(it)
+    }),
+    CONTAINER({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.CONTAINER_PACKAGE.packageName).test(it)
+    }),
+    EXTENSIONS({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.EXTENSIONS_PACKAGE.packageName).test(it)
+    }),
+    CONTROLLER({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.CONTROLLER_PACKAGE.packageName).test(it)
+    }),
+    VIEW_MODEL({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.VIEWMODEL_PACKAGE.packageName).test(it)
+    }),
+    INTERNAL({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.INTERNAL_PACKAGE.packageName).test(it)
+    }),
+    DEPENDENCY_INJECTION({
+        it.sourceCodeLocation.sourceFileName == "DependencyInjection.kt"
+    }),
+    PLUGINS({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.PLUGINS_PACKAGE.packageName).test(it)
+    });
+
+    val predicate = describe<JavaClass>("is $name layer") {
+        block(it)
+    }
+
+    companion object {
+        val destinationLayers = arrayOf(
+            ACTIVITY,
+            COMPOSE,
+            FRAGMENT,
+            SYNTHETIC,
+        )
+    }
+}
+
+
+internal fun LayeredArchitecture.layer(enroLayer: EnroLayer): LayeredArchitecture {
+    return layer(enroLayer.name).definedBy(enroLayer.predicate)
+}
+
+internal fun LayeredArchitecture.whereLayer(enroLayer: EnroLayer): LayeredArchitecture.LayerDependencySpecification {
+    return whereLayer(enroLayer.name)
+}
+
+internal fun LayeredArchitecture.whereLayers(vararg layers: EnroLayer, block: LayeredArchitecture.LayerDependencySpecification.() -> LayeredArchitecture): LayeredArchitecture {
+    return layers.fold(this) { architecture, layer ->
+        architecture.whereLayer(layer).run(block)
+    }
+}
+
+internal fun LayeredArchitecture.LayerDependencySpecification.mayOnlyBeAccessedByLayers(vararg layers: EnroLayer): LayeredArchitecture {
+    return mayOnlyBeAccessedByLayers(*(layers.map { it.name }.toTypedArray()))
+}
+internal fun LayeredArchitecture.LayerDependencySpecification.mayOnlyAccessLayers(vararg layers: EnroLayer): LayeredArchitecture {
+    return mayOnlyAccessLayers(*(layers.map { it.name }.toTypedArray()))
+}
+
+internal fun <T> describe(description: String, predicate: (T) -> Boolean): DescribedPredicate<T> =
+    object : DescribedPredicate<T>(description) {
+        override fun test(item: T): Boolean {
+            return predicate(item)
+        }
+    }
+
+internal val isTestSource: DescribedPredicate<JavaClass> = describe("is in test sources") { cls ->
+    val fileName = cls.source.takeIf { it.isPresent }
+        ?.get()
+        ?.uri
+        ?.toString() ?: return@describe false
+    return@describe fileName.contains("UnitTest")
+}
