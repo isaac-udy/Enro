@@ -15,3 +15,10 @@ internal fun AnyOpenInstruction.asPresentInstruction(): OpenPresentInstruction {
         navigationDirection = NavigationDirection.Present
     ) as OpenPresentInstruction
 }
+
+internal fun <T: NavigationDirection> AnyOpenInstruction.asDirection(direction: T): NavigationInstruction.Open<T> {
+    if(navigationDirection == direction) return this as NavigationInstruction.Open<T>
+    return internal.copy(
+        navigationDirection = direction
+    ) as NavigationInstruction.Open<T>
+}

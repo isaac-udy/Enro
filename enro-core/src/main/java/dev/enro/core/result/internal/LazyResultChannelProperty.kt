@@ -8,10 +8,10 @@ import androidx.lifecycle.LifecycleOwner
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
-import dev.enro.core.controller.factory.resultChannelFactory
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.result.EnroResultChannel
 import dev.enro.core.result.managedByLifecycle
+import dev.enro.core.usecase.resultChannelFactory
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty

@@ -2,6 +2,8 @@ package dev.enro.core.controller.repository
 
 import android.app.Activity
 import androidx.fragment.app.Fragment
+import dev.enro.core.ComposableDestination
+import dev.enro.core.SyntheticDestination
 import java.util.concurrent.ConcurrentHashMap
 
 internal class ClassHierarchyRepository {
@@ -10,6 +12,8 @@ internal class ClassHierarchyRepository {
     init {
         classHierarchy[Fragment::class.java] = listOf(Fragment::class.java, Any::class.java)
         classHierarchy[Activity::class.java] = listOf(Activity::class.java, Any::class.java)
+        classHierarchy[ComposableDestination::class.java] = listOf(ComposableDestination::class.java, Any::class.java)
+        classHierarchy[SyntheticDestination::class.java] = listOf(SyntheticDestination::class.java, Any::class.java)
     }
 
     private fun getClassHierarchy(cls: Class<*>): List<Class<*>> {

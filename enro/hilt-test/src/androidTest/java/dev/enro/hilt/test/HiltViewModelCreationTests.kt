@@ -23,8 +23,8 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dev.enro.DefaultActivity
 import dev.enro.TestActivity
 import dev.enro.annotations.NavigationDestination
+import dev.enro.compose.EnroContainer
 import dev.enro.core.*
-import dev.enro.core.compose.EnroContainer
 import dev.enro.expectContext
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle

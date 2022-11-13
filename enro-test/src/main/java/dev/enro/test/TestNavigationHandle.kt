@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import dev.enro.core.*
-import dev.enro.core.internal.EnroDependencyScope
 import dev.enro.core.internal.handle.NavigationHandleScope
 import junit.framework.TestCase
 import org.junit.Assert.*

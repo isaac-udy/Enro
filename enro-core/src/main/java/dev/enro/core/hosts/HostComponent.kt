@@ -1,8 +1,8 @@
 package dev.enro.core.hosts
 
-import dev.enro.core.activity.createActivityNavigationBinding
+import dev.enro.activity.createActivityNavigationBinding
 import dev.enro.core.controller.createNavigationComponent
-import dev.enro.core.fragment.createFragmentNavigationBinding
+import dev.enro.fragment.createFragmentNavigationBinding
 
 internal val hostComponent = createNavigationComponent {
     binding(createActivityNavigationBinding<OpenInstructionInActivity, ActivityHostForAnyInstruction>())

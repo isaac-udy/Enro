@@ -2,7 +2,7 @@ package dev.enro.core.controller.repository
 
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
-import dev.enro.core.synthetic.SyntheticDestination
+import dev.enro.core.SyntheticDestination
 import kotlin.reflect.KClass
 
 internal class NavigationBindingRepository {

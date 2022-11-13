@@ -5,7 +5,7 @@ import androidx.compose.runtime.DisallowComposableCalls
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import dev.enro.core.*
-import dev.enro.core.result.EnroResult
+import dev.enro.core.result.ResultChannelId
 import dev.enro.core.result.UnmanagedEnroResultChannel
 
 private class ResultChannelProperties<T>(

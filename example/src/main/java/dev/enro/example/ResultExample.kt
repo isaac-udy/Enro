@@ -26,11 +26,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import dev.enro.annotations.NavigationDestination
+import dev.enro.compose.dialog.BottomSheetDestination
+import dev.enro.compose.dialog.configureBottomSheet
 import dev.enro.core.NavigationKey
 import dev.enro.core.closeWithResult
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.configureBottomSheet
-import dev.enro.core.compose.navigationHandle
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.example.databinding.FragmentRequestStringBinding

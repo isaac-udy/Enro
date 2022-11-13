@@ -85,3 +85,25 @@ The NavigationController is a Singleton object which is bound to the Application
 NavigationController stores all the NavigationBindings and NavigationExecutors for the application.
 
 
+## Architecture
+dev.enro describes an API for Enro
+
+dev.enro.implementation describes vertically sliced implementations of Enro functionality. 
+Sub-packages should only rely on the public API of Enro, and not on other destinations definitions
+    activity, fragment, compose, synthetic
+
+features:
+    activity
+    fragment
+    composable
+    synthetic
+    viewmodel
+    hosts?
+
+api: 
+    containers
+    plugins
+    interceptors
+    dependency injection
+    results
+    animations

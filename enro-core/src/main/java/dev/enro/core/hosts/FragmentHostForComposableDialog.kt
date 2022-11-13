@@ -14,9 +14,9 @@ import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import dev.enro.compose.dialog.*
+import dev.enro.compose.rememberEnroContainerController
 import dev.enro.core.*
-import dev.enro.core.compose.dialog.*
-import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import dev.enro.extensions.animate

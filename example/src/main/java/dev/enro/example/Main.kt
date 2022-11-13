@@ -11,11 +11,11 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.isActive
 import dev.enro.core.container.setActive
 import dev.enro.core.containerManager
-import dev.enro.core.fragment.container.FragmentNavigationContainer
-import dev.enro.core.fragment.container.navigationContainer
-import dev.enro.core.fragment.container.setVisibilityAnimated
 import dev.enro.core.navigationHandle
 import dev.enro.example.databinding.ActivityMainBinding
+import dev.enro.fragment.container.FragmentNavigationContainer
+import dev.enro.fragment.container.navigationContainer
+import dev.enro.fragment.container.setVisibilityAnimated
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize

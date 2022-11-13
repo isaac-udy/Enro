@@ -21,9 +21,8 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.test.core.app.ActivityScenario
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.compose.EnroContainer
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberEnroContainerController
+import dev.enro.compose.EnroContainer
+import dev.enro.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import kotlinx.parcelize.Parcelize
 import org.junit.Assert.assertEquals

@@ -11,7 +11,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 import dev.enro.core.*
-import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.result.EnroResultChannel
@@ -205,7 +204,7 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
 }
 
 fun getActiveEnroResultChannels(): List<EnroResultChannel<*, *>> {
-    val enroResultClass = Class.forName("dev.enro.core.result.EnroResult")
+    val enroResultClass = Class.forName("dev.enro.core.result.internal.EnroResult")
     val getEnroResult = enroResultClass.getDeclaredMethod("from", NavigationController::class.java)
     getEnroResult.isAccessible = true
     val enroResult = getEnroResult.invoke(null, application.navigationController)
@@ -217,7 +216,7 @@ fun getActiveEnroResultChannels(): List<EnroResultChannel<*, *>> {
 }
 
 fun clearAllEnroResultChannels() {
-    val enroResultClass = Class.forName("dev.enro.core.result.EnroResult")
+    val enroResultClass = Class.forName("dev.enro.core.result.internal.EnroResult")
     val getEnroResult = enroResultClass.getDeclaredMethod("from", NavigationController::class.java)
     getEnroResult.isAccessible = true
     val enroResult = getEnroResult.invoke(null, application.navigationController)
@@ -253,7 +252,7 @@ val application: Application get() =
     InstrumentationRegistry.getInstrumentation().context.applicationContext as Application
 
 val ComponentActivity.navigationContext get() =
-    getNavigationHandle().getPrivate<NavigationContext<*>>("navigationContext")
+    this@navigationContext.getNavigationHandle().getPrivate<NavigationContext<*>>("navigationContext")
 
 val Fragment.navigationContext get() =
-    getNavigationHandle().getPrivate<NavigationContext<*>>("navigationContext")
+    this@navigationContext.getNavigationHandle().getPrivate<NavigationContext<*>>("navigationContext")

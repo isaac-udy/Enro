@@ -17,19 +17,19 @@ internal object ClassNames {
     val unit = ClassName.get("kotlin", "Unit")
     val componentActivity = ClassName.get("androidx.activity", "ComponentActivity")
     val activityNavigationBindingKt =
-        ClassName.get("dev.enro.core.activity", "ActivityNavigationBindingKt")
+        ClassName.get("dev.enro.activity", "ActivityNavigationBindingKt")
 
     val fragment = ClassName.get("androidx.fragment.app", "Fragment")
     val fragmentNavigationBindingKt =
-        ClassName.get("dev.enro.core.fragment", "FragmentNavigationBindingKt")
+        ClassName.get("dev.enro.fragment", "FragmentNavigationBindingKt")
 
-    val syntheticDestination = ClassName.get("dev.enro.core.synthetic", "SyntheticDestination")
+    val syntheticDestination = ClassName.get("dev.enro.core", "SyntheticDestination")
     val syntheticNavigationBindingKt =
-        ClassName.get("dev.enro.core.synthetic", "SyntheticNavigationBindingKt")
+        ClassName.get("dev.enro.synthetic", "SyntheticNavigationBindingKt")
 
-    val composableDestination = ClassName.get("dev.enro.core.compose", "ComposableDestination")
+    val composableDestination = ClassName.get("dev.enro.core", "ComposableDestination")
     val composeNavigationBindingKt =
-        ClassName.get("dev.enro.core.compose", "ComposableNavigationBindingKt")
+        ClassName.get("dev.enro.compose", "ComposableNavigationBindingKt")
 }
 
 internal fun getNameFromKClass(block: () -> KClass<*>) : String {

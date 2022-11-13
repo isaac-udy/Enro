@@ -8,19 +8,16 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import dev.enro.core.compose.animation.EnroAnimatedVisibility
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.controller.usecase.GetNavigationExecutor
-import dev.enro.core.controller.usecase.forClosing
-import dev.enro.core.controller.usecase.forOpening
-import dev.enro.core.hosts.AbstractActivityHostForAnyInstruction
-import dev.enro.core.hosts.AbstractFragmentHostForComposable
-import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
-import dev.enro.core.hosts.AbstractOpenInstructionInActivityKey
-import dev.enro.core.internal.get
+import dev.enro.core.usecase.GetNavigationExecutor
+import dev.enro.core.usecase.forClosing
+import dev.enro.core.usecase.forOpening
+import dev.enro.extensions.AnimatedVisibilityFromResources
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
+import dev.enro.extensions.localActivity
 
 @Deprecated("Please use NavigationAnimation")
 public typealias AnimationPair = NavigationAnimation
@@ -73,9 +70,12 @@ public sealed class NavigationAnimation {
         ) : this(
             forView = forView,
             content = { visible, content ->
-                EnroAnimatedVisibility(
+                val activity = localActivity
+                val animations = remember { forView.asResource(activity.theme) }
+                AnimatedVisibilityFromResources(
                     visibleState = visible,
-                    animations = forView
+                    enterAnimation = animations.enter,
+                    exitAnimation = animations.exit,
                 ) {
                     content()
                 }
@@ -197,13 +197,6 @@ public fun animationsFor(
         return  NavigationAnimation.Resource(0, 0)
     }
 
-    if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractActivityHostForAnyInstruction) {
-        val openActivityKey = context.getNavigationHandleViewModel().key as AbstractOpenInstructionInActivityKey
-        if (navigationInstruction.instructionId == openActivityKey.instruction.instructionId) {
-            return NavigationAnimation.Resource(0, 0)
-        }
-    }
-
     return when (navigationInstruction) {
         is NavigationInstruction.Open<*> -> animationsForOpen(context.controller, navigationInstruction)
         is NavigationInstruction.Close -> animationsForClose(context)
@@ -215,12 +208,13 @@ private fun animationsForOpen(
     controller: NavigationController,
     navigationInstruction: AnyOpenInstruction
 ): NavigationAnimation {
-    val instructionForAnimation =  when (
-        val navigationKey = navigationInstruction.navigationKey
-    ) {
-        is AbstractOpenComposableInFragmentKey -> navigationKey.instruction
-        else -> navigationInstruction
-    }
+    val instructionForAnimation = navigationInstruction
+//        when (
+//        val navigationKey = navigationInstruction.navigationKey
+//    ) {
+//        is AbstractOpenComposableInFragmentKey -> navigationKey.instruction
+//        else -> navigationInstruction
+//    }
 
     val executor = controller.dependencyScope.get<GetNavigationExecutor>().forOpening(
         instructionForAnimation
@@ -232,12 +226,12 @@ private fun animationsForClose(
     context: NavigationContext<*>
 ): NavigationAnimation {
     val contextForAnimation = when (context.contextReference) {
-        is AbstractFragmentHostForComposable -> {
-            context.containerManager
-                .activeContainer
-                ?.activeContext
-                ?: context
-        }
+//        is AbstractFragmentHostForComposable -> {
+//            context.containerManager
+//                .activeContainer
+//                ?.activeContext
+//                ?: context
+//        }
         else -> context
     }
 

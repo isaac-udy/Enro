@@ -2,18 +2,15 @@ package dev.enro.core.controller
 
 import android.app.Application
 import androidx.annotation.Keep
-import dev.enro.core.EnroException
-import dev.enro.core.NavigationBinding
-import dev.enro.core.NavigationExecutor
-import dev.enro.core.NavigationKey
+import dev.enro.core.*
 import dev.enro.core.controller.repository.ExecutorRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.controller.usecase.AddComponentToController
-import dev.enro.core.internal.get
-import dev.enro.core.result.EnroResult
+import dev.enro.core.result.internal.EnroResult
 import kotlin.reflect.KClass
 
+@ArchitectureException("The NavigationController is what pulls together the implementations")
 public class NavigationController internal constructor() {
     internal var isInTest = false
 
@@ -29,7 +26,7 @@ public class NavigationController internal constructor() {
 
     init {
         pluginRepository.addPlugins(listOf(enroResult))
-        addComponent(defaultComponent)
+        addComponent(DefaultComponent.component)
     }
 
     public fun addComponent(component: NavigationComponentBuilder) {

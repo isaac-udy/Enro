@@ -1,5 +1,6 @@
 package dev.enro.core.result.internal
 
+import dev.enro.core.result.ResultChannelId
 import kotlin.reflect.KClass
 
 internal data class PendingResult(

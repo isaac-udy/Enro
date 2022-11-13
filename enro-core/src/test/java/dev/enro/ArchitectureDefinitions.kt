@@ -5,19 +5,29 @@ import com.tngtech.archunit.core.domain.JavaClass
 import com.tngtech.archunit.library.Architectures.LayeredArchitecture
 
 internal enum class EnroPackage(val packageName: String) {
+    // Public packages
     API_PACKAGE("dev.enro.core"),
-    ACTIVITY_PACKAGE("dev.enro.core.activity.."),
-    COMPOSE_PACKAGE("dev.enro.core.compose.."),
-    CONTAINER_PACKAGE("dev.enro.core.container.."),
-    CONTROLLER_PACKAGE("dev.enro.core.controller.."),
-    FRAGMENT_PACKAGE("dev.enro.core.fragment.."),
-    HOST_PACKAGE("dev.enro.core.hosts.."),
-    INTERNAL_PACKAGE("dev.enro.core.internal.."),
     PLUGINS_PACKAGE("dev.enro.core.plugins.."),
-    RESULTS_PACKAGE("dev.enro.core.result.."),
-    SYNTHETIC_PACKAGE("dev.enro.core.synthetic.."),
-    EXTENSIONS_PACKAGE("dev.enro.extensions.."),
+    CONTAINER_PACKAGE("dev.enro.core.container.."),
+    INTERCEPTOR_PACKAGE("dev.enro.core.interceptor.."),
+    USECASE_PACKAGE("dev.enro.core.usecase.."),
+    CONTROLLER_PACKAGE("dev.enro.core.controller"),
+    RESULTS_PACKAGE("dev.enro.core.result"),
+
+    // Feature packages
+    ACTIVITY_PACKAGE("dev.enro.activity.."),
+    COMPOSE_PACKAGE("dev.enro.compose.."),
+    FRAGMENT_PACKAGE("dev.enro.fragment.."),
+    SYNTHETIC_PACKAGE("dev.enro.synthetic.."),
+    HOST_PACKAGE("dev.enro.core.hosts.."),
     VIEWMODEL_PACKAGE("dev.enro.viewmodel.."),
+
+    // Implemetation packages
+    INTERNAL_PACKAGE("dev.enro.core.internal.."),
+    RESULTS_INTERNAL_PACKAGE("dev.enro.core.result.internal.."),
+    CONTROLLER_INTERNAL_PACKAGE("dev.enro.core.controller.*.."),
+
+    EXTENSIONS_PACKAGE("dev.enro.extensions.."),
 }
 
 internal enum class EnroLayer(
@@ -26,7 +36,11 @@ internal enum class EnroLayer(
     PUBLIC({
         JavaClass.Predicates.resideInAnyPackage(EnroPackage.API_PACKAGE.packageName).test(it) ||
                 JavaClass.Predicates.resideInAnyPackage(EnroPackage.CONTAINER_PACKAGE.packageName).test(it) ||
-                JavaClass.Predicates.resideInAnyPackage(EnroPackage.RESULTS_PACKAGE.packageName).test(it)
+                JavaClass.Predicates.resideInAnyPackage(EnroPackage.PLUGINS_PACKAGE.packageName).test(it) ||
+                JavaClass.Predicates.resideInAnyPackage(EnroPackage.INTERCEPTOR_PACKAGE.packageName).test(it) ||
+                JavaClass.Predicates.resideInAnyPackage(EnroPackage.RESULTS_PACKAGE.packageName).test(it)  ||
+                JavaClass.Predicates.resideInAnyPackage(EnroPackage.USECASE_PACKAGE.packageName).test(it)  ||
+                JavaClass.Predicates.resideInAnyPackage(EnroPackage.CONTROLLER_PACKAGE.packageName).test(it)
     }),
     ACTIVITY({
         JavaClass.Predicates.resideInAnyPackage(EnroPackage.ACTIVITY_PACKAGE.packageName).test(it)
@@ -43,29 +57,16 @@ internal enum class EnroLayer(
     HOSTS({
         JavaClass.Predicates.resideInAnyPackage(EnroPackage.HOST_PACKAGE.packageName).test(it)
     }),
-    RESULTS({
-        JavaClass.Predicates.resideInAnyPackage(EnroPackage.RESULTS_PACKAGE.packageName).test(it)
-    }),
-    CONTAINER({
-        JavaClass.Predicates.resideInAnyPackage(EnroPackage.CONTAINER_PACKAGE.packageName).test(it)
+    VIEW_MODEL({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.VIEWMODEL_PACKAGE.packageName).test(it)
     }),
     EXTENSIONS({
         JavaClass.Predicates.resideInAnyPackage(EnroPackage.EXTENSIONS_PACKAGE.packageName).test(it)
     }),
-    CONTROLLER({
-        JavaClass.Predicates.resideInAnyPackage(EnroPackage.CONTROLLER_PACKAGE.packageName).test(it)
-    }),
-    VIEW_MODEL({
-        JavaClass.Predicates.resideInAnyPackage(EnroPackage.VIEWMODEL_PACKAGE.packageName).test(it)
-    }),
-    INTERNAL({
-        JavaClass.Predicates.resideInAnyPackage(EnroPackage.INTERNAL_PACKAGE.packageName).test(it)
-    }),
-    DEPENDENCY_INJECTION({
-        it.sourceCodeLocation.sourceFileName == "DependencyInjection.kt"
-    }),
-    PLUGINS({
-        JavaClass.Predicates.resideInAnyPackage(EnroPackage.PLUGINS_PACKAGE.packageName).test(it)
+    IMPLEMENTATION({
+        JavaClass.Predicates.resideInAnyPackage(EnroPackage.CONTROLLER_INTERNAL_PACKAGE.packageName).test(it) ||
+                JavaClass.Predicates.resideInAnyPackage(EnroPackage.RESULTS_INTERNAL_PACKAGE.packageName).test(it) ||
+                JavaClass.Predicates.resideInAnyPackage(EnroPackage.INTERNAL_PACKAGE.packageName).test(it)
     });
 
     val predicate = describe<JavaClass>("is $name layer") {
@@ -73,11 +74,18 @@ internal enum class EnroLayer(
     }
 
     companion object {
-        val destinationLayers = arrayOf(
+        val featureLayers = arrayOf(
             ACTIVITY,
-            COMPOSE,
             FRAGMENT,
+            HOSTS,
+            COMPOSE,
+            VIEW_MODEL,
             SYNTHETIC,
+        )
+
+        val featureLayerDependencies = arrayOf(
+            PUBLIC,
+            EXTENSIONS,
         )
     }
 }

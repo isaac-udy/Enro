@@ -7,7 +7,6 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.*
 import dev.enro.core.*
-import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import org.junit.Assert.assertEquals
@@ -89,8 +88,8 @@ fun assertPushContainerType(
     InstrumentationRegistry.getInstrumentation().waitForIdleSync()
     InstrumentationRegistry.getInstrumentation().runOnMainSync {
         val parentContext = run {
-            val it = pushFrom.navigationContext.parentContext()!!
-            if (it.contextReference is AbstractFragmentHostForComposable) it.parentContext()!! else it
+            val it = pushFrom.navigationContext.parentContext!!
+            if (it.contextReference is AbstractFragmentHostForComposable) it.parentContext!! else it
         }
 
         fun NavigationContainer.hasActiveContext(navigationContext: NavigationContext<*>): Boolean {

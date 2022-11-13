@@ -3,7 +3,6 @@ package dev.enro.example
 import android.app.AlertDialog
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.synthetic.SyntheticDestination
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

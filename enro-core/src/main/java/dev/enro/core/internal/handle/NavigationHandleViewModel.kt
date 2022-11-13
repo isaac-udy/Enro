@@ -6,15 +6,12 @@ import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
+import dev.enro.compose.ComposeContext
 import dev.enro.core.*
-import dev.enro.core.activity.ActivityContext
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.ComposeContext
-import dev.enro.core.controller.usecase.ExecuteCloseInstruction
-import dev.enro.core.controller.usecase.ExecuteOpenInstruction
-import dev.enro.core.fragment.FragmentContext
-import dev.enro.core.internal.EnroDependencyScope
 import dev.enro.core.internal.NoNavigationKey
+import dev.enro.core.usecase.ExecuteCloseInstruction
+import dev.enro.core.usecase.ExecuteOpenInstruction
+import dev.enro.fragment.FragmentContext
 
 internal open class NavigationHandleViewModel(
     override val instruction: AnyOpenInstruction,
@@ -126,7 +123,7 @@ private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
                 }
             }
         }
-        is ActivityContext<out ComponentActivity> -> {
+        is dev.enro.activity.ActivityContext<out ComponentActivity> -> {
             if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
                 block()
             } else {

@@ -6,11 +6,9 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationContext
+import dev.enro.core.SyntheticDestination
 import dev.enro.core.activity
 import dev.enro.core.navigationHandle
-import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.example.core.navigation.LoginErrorKey
 
 @SuppressLint("MissingNavigationDestinationAnnotation")

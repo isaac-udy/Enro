@@ -1,5 +1,6 @@
 package dev.enro.core.compose
 
+import dev.enro.core.ComposableDestination
 import dev.enro.core.destinations.*
 import org.junit.Test
 

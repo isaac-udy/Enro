@@ -16,13 +16,12 @@ import androidx.compose.ui.unit.sp
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.EnroContainer
-import dev.enro.core.compose.container.ComposableNavigationContainer
-import dev.enro.core.compose.rememberNavigationContainer
+import dev.enro.compose.EnroContainer
+import dev.enro.compose.container.ComposableNavigationContainer
+import dev.enro.compose.rememberNavigationContainer
 import dev.enro.core.container.isActive
 import dev.enro.core.container.setActive
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.fragment.container.navigationContainer
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertFalse
 import kotlinx.parcelize.Parcelize
@@ -625,7 +624,7 @@ class SingleComposableContainerActivity : ComponentActivity() {
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
                 Text(text = "SingleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
-                Text(text = dev.enro.core.compose.navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
+                Text(text = dev.enro.core.navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
                 EnroContainer(
                     container = primaryContainer,
                     modifier = Modifier
@@ -658,7 +657,7 @@ class MultipleComposableContainerActivity : ComponentActivity() {
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
                 Text(text = "MultipleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
-                Text(text = dev.enro.core.compose.navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
+                Text(text = dev.enro.core.navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
                 EnroContainer(
                     container = primaryContainer,
                     modifier = Modifier
@@ -709,7 +708,7 @@ class MultipleComposableContainerActivityWithAccept : ComponentActivity() {
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
                 Text(text = "MultipleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
-                Text(text = dev.enro.core.compose.navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
+                Text(text = dev.enro.core.navigationHandle().key.toString(), fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
                 EnroContainer(
                     container = primaryContainer,
                     modifier = Modifier

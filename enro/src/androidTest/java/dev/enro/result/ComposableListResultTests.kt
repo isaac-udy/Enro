@@ -22,7 +22,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import dev.enro.DefaultActivity
 import dev.enro.clearAllEnroResultChannels
-import dev.enro.core.compose.registerForNavigationResult
+import dev.enro.compose.registerForNavigationResult
 import dev.enro.getActiveEnroResultChannels
 import org.junit.Assert
 import org.junit.Before

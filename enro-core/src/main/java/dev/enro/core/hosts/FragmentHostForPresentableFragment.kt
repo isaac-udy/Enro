@@ -12,10 +12,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
-import dev.enro.core.fragment.container.navigationContainer
-import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.extensions.animate
 import dev.enro.extensions.createFullscreenDialog
+import dev.enro.fragment.container.FragmentNavigationContainer
+import dev.enro.fragment.container.navigationContainer
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractOpenPresentableFragmentInFragmentKey : NavigationKey,
@@ -34,7 +34,8 @@ internal data class OpenPresentableFragmentInHiltFragment(
     override val instruction: OpenPresentInstruction
 ) : AbstractOpenPresentableFragmentInFragmentKey()
 
-public abstract class AbstractFragmentHostForPresentableFragment : DialogFragment() {
+public abstract class AbstractFragmentHostForPresentableFragment : DialogFragment(),
+    FragmentNavigationContainer.ProvidesInitialAnimationsForChildren {
 
     private val navigationHandle by navigationHandle<AbstractOpenPresentableFragmentInFragmentKey>()
     private val container by navigationContainer(
@@ -80,7 +81,7 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
 
             val animations = animationsFor(
                 fragment.navigationContext,
-                fragment.getNavigationHandleViewModel().instruction
+                fragment.getNavigationHandle().instruction
             )
                 .asResource(fragment.requireActivity().theme)
 

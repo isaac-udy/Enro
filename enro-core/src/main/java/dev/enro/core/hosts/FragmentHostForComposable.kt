@@ -7,11 +7,13 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
+import dev.enro.compose.EnroContainer
+import dev.enro.compose.container.ComposableNavigationContainer
+import dev.enro.compose.rememberEnroContainerController
 import dev.enro.core.*
-import dev.enro.core.compose.EnroContainer
-import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
+import dev.enro.fragment.container.FragmentNavigationContainer
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractOpenComposableInFragmentKey :
@@ -20,23 +22,32 @@ internal abstract class AbstractOpenComposableInFragmentKey :
     EnroInternalNavigationKey {
 
     abstract val instruction: AnyOpenInstruction
-    abstract val isRoot: Boolean
 }
 
 @Parcelize
 internal data class OpenComposableInFragment(
     override val instruction: AnyOpenInstruction,
-    override val isRoot: Boolean
 ) : AbstractOpenComposableInFragmentKey()
 
 @Parcelize
 internal data class OpenComposableInHiltFragment(
     override val instruction: AnyOpenInstruction,
-    override val isRoot: Boolean
 ) : AbstractOpenComposableInFragmentKey()
 
-public abstract class AbstractFragmentHostForComposable : Fragment() {
+public abstract class AbstractFragmentHostForComposable : Fragment(),
+    ComposableNavigationContainer.ProvidesInitialAnimationsForChildren,
+    FragmentNavigationContainer.IgnoresEnterAnimation,
+    FragmentNavigationContainer.IgnoresExitAnimation {
     private val navigationHandle by navigationHandle<AbstractOpenComposableInFragmentKey>()
+
+    private val isRoot by lazy {
+        val activity = requireActivity()
+        if (activity !is AbstractActivityHostForAnyInstruction) return@lazy false
+        val hasParent = parentFragment != null
+        if (hasParent) return@lazy false
+        val activityKey = activity.getNavigationHandle().instruction.navigationKey as OpenInstructionInActivity
+        return@lazy activityKey.instruction == navigationHandle.instruction
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,7 +58,7 @@ public abstract class AbstractFragmentHostForComposable : Fragment() {
             setContent {
                 val state = rememberEnroContainerController(
                     initialBackstack = listOf(navigationHandle.key.instruction.asPushInstruction()),
-                    accept = { navigationHandle.key.isRoot },
+                    accept = { isRoot },
                     emptyBehavior = EmptyBehavior.Action {
                         navigationHandle.close()
                         false

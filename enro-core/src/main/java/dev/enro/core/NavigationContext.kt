@@ -11,21 +11,17 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
-import dev.enro.core.activity.ActivityContext
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.ComposeContext
-import dev.enro.core.compose.destination.activity
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.fragment.FragmentContext
-import dev.enro.core.internal.handle.NavigationHandleViewModel
-import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import dev.enro.core.usecase.requireNavigationContext
 
 public abstract class NavigationContext<ContextType : Any> internal constructor(
     public val contextReference: ContextType
 ) {
     public abstract val controller: NavigationController
+    public abstract val parentContext: NavigationContext<*>?
+
     public abstract val lifecycle: Lifecycle
     public abstract val arguments: Bundle
     public abstract val viewModelStoreOwner: ViewModelStoreOwner
@@ -37,15 +33,13 @@ public abstract class NavigationContext<ContextType : Any> internal constructor(
     }
 
     public val containerManager: NavigationContainerManager = NavigationContainerManager()
-
-    public abstract fun parentContext(): NavigationContext<*>?
 }
 
 public val NavigationContext<out Fragment>.fragment: Fragment get() = contextReference
 
 public fun NavigationContext<*>.parentContainer(): NavigationContainer? {
-    val parentContext = parentContext() ?: return null
-    val instructionId = getNavigationHandle().id
+    val parentContext = parentContext ?: return null
+    val instructionId = this.getNavigationHandle().id
     return parentContext.containerManager.containers.firstOrNull {
         it.backstack.backstack.any { it.instructionId == instructionId }
     }
@@ -55,30 +49,30 @@ public val NavigationContext<*>.activity: ComponentActivity
     get() = when (contextReference) {
         is ComponentActivity -> contextReference
         is Fragment -> contextReference.requireActivity()
-        is ComposableDestination -> contextReference.owner.activity
+        is ComposableDestination -> contextReference.activity
         else -> throw EnroException.UnreachableState()
     }
 
 @PublishedApi
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
-internal val <T : ComponentActivity> T.navigationContext: ActivityContext<T>
-    get() = getNavigationHandleViewModel().navigationContext as ActivityContext<T>
+internal val <T : ComponentActivity> T.navigationContext: NavigationContext<T>
+    get() = getNavigationHandle().requireNavigationContext() as NavigationContext<T>
 
 @PublishedApi
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
-internal val <T : Fragment> T.navigationContext: FragmentContext<T>
-    get() = getNavigationHandleViewModel().navigationContext as FragmentContext<T>
+internal val <T : Fragment> T.navigationContext: NavigationContext<T>
+    get() = getNavigationHandle().requireNavigationContext() as NavigationContext<T>
 
 @PublishedApi
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
-internal val <T : ComposableDestination> T.navigationContext: ComposeContext<T>
-    get() = getNavigationHandleViewModel().navigationContext as ComposeContext<T>
+internal val <T : ComposableDestination> T.navigationContext: NavigationContext<T>
+    get() = getNavigationHandle().requireNavigationContext() as NavigationContext<T>
 
 public fun NavigationContext<*>.rootContext(): NavigationContext<*> {
     var parent = this
     while (true) {
         val currentContext = parent
-        parent = parent.parentContext() ?: return currentContext
+        parent = parent.parentContext ?: return currentContext
     }
 }
 
@@ -94,8 +88,9 @@ public fun NavigationContext<*>.leafContext(): NavigationContext<*> {
         ?: this
 }
 
-internal fun NavigationContext<*>.getNavigationHandleViewModel(): NavigationHandleViewModel {
-    return viewModelStoreOwner.getNavigationHandleViewModel()
+@PublishedApi
+internal fun ViewModelStoreOwner.getNavigationContext(): NavigationContext<*> {
+    return getNavigationHandle().requireNavigationContext()
 }
 
 public val ComponentActivity.containerManager: NavigationContainerManager get() = navigationContext.containerManager
@@ -108,8 +103,7 @@ public val containerManager: NavigationContainerManager
         val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
         return remember {
             viewModelStoreOwner
-                .getNavigationHandleViewModel()
-                .navigationContext!!
+                .getNavigationContext()
                 .containerManager
         }
     }

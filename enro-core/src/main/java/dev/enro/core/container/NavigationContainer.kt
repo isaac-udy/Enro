@@ -8,7 +8,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
-import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.core.interceptor.builder.NavigationInterceptorBuilder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.getAndUpdate
@@ -16,12 +16,13 @@ import kotlinx.coroutines.flow.getAndUpdate
 
 public abstract class NavigationContainer(
     public val id: String,
+    public val contextType: Class<out Any>,
     public val parentContext: NavigationContext<*>,
     public val emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     public val acceptsNavigationKey: (NavigationKey) -> Boolean,
     public val acceptsDirection: (NavigationDirection) -> Boolean,
-    public val acceptsBinding: (NavigationBinding<*, *>) -> Boolean,
+    private val navigationHostFactory: NavigationHostFactory,
 ) {
     private val handler = Handler(Looper.getMainLooper())
     private val reconcileBackstack: Runnable = Runnable {
@@ -52,7 +53,7 @@ public abstract class NavigationContainer(
 
     init {
         parentContext.lifecycle.addObserver(LifecycleEventObserver { _, event ->
-            if(event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
+            if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
             handler.removeCallbacks(reconcileBackstack)
             handler.removeCallbacks(removeExitingFromBackstack)
         })
@@ -98,12 +99,12 @@ public abstract class NavigationContainer(
     public fun accept(
         instruction: AnyOpenInstruction
     ): Boolean {
+        val binding = parentContext.controller.bindingForKeyType(instruction.navigationKey::class)
+            ?: throw EnroException.UnreachableState()
+
         return acceptsNavigationKey.invoke(instruction.navigationKey)
                 && acceptsDirection(instruction.navigationDirection)
-                && acceptsBinding(
-            parentContext.controller.bindingForKeyType(instruction.navigationKey::class)
-                ?: throw EnroException.UnreachableState()
-        )
+                && navigationHostFactory.canCreateHostFor(contextType, binding)
     }
 
     protected fun setOrLoadInitialBackstack(initialBackstackState: NavigationBackstackState) {
@@ -125,12 +126,11 @@ public abstract class NavigationContainer(
             val backstack = (restoredBackstack ?: initialBackstackState)
             setBackstack(backstack)
         }
-        if(!savedStateRegistry.isRestored) {
+        if (!savedStateRegistry.isRestored) {
             parentContext.lifecycleOwner.lifecycleScope.launchWhenCreated {
                 initialise()
             }
-        }
-        else initialise()
+        } else initialise()
     }
 
     private fun requireBackstackIsAccepted(backstackState: NavigationBackstackState) {
@@ -173,7 +173,7 @@ public abstract class NavigationContainer(
         val isClosing = backstackState.lastInstruction is NavigationInstruction.Close
         val isEmpty = backstackState.backstack.isEmpty()
 
-        if(!isClosing) {
+        if (!isClosing) {
             parentContext.containerManager.setActiveContainer(this)
             return
         }
@@ -184,7 +184,7 @@ public abstract class NavigationContainer(
             )
         }
 
-        if(isActive && isEmpty) parentContext.containerManager.setActiveContainer(null)
+        if (isActive && isEmpty) parentContext.containerManager.setActiveContainer(null)
     }
 
 

@@ -16,10 +16,10 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.forward
-import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.example.core.navigation.MultiStackKey
 import dev.enro.example.multistack.databinding.MultistackBinding
+import dev.enro.fragment.container.navigationContainer
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

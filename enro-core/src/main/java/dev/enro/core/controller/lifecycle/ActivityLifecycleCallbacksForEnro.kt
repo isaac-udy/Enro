@@ -7,16 +7,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.addCallback
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import dev.enro.core.activity.ActivityContext
 import dev.enro.core.container.NavigationContainerProperty
-import dev.enro.core.controller.usecase.OnNavigationContextCreated
-import dev.enro.core.controller.usecase.OnNavigationContextSaved
-import dev.enro.core.fragment.container.FragmentPresentationContainer
-import dev.enro.core.getNavigationHandleViewModel
+import dev.enro.core.getNavigationHandle
 import dev.enro.core.internal.handle.interceptBackPressForAndroidxNavigation
 import dev.enro.core.leafContext
 import dev.enro.core.navigationContext
 import dev.enro.core.requestClose
+import dev.enro.core.usecase.OnNavigationContextCreated
+import dev.enro.core.usecase.OnNavigationContextSaved
+import dev.enro.fragment.container.FragmentPresentationContainer
 
 internal class ActivityLifecycleCallbacksForEnro(
     private val onNavigationContextCreated: OnNavigationContextCreated,
@@ -29,7 +28,7 @@ internal class ActivityLifecycleCallbacksForEnro(
     ) {
         if (activity !is ComponentActivity) return
 
-        val navigationContext = ActivityContext(activity)
+        val navigationContext = dev.enro.activity.ActivityContext(activity)
 
         if (activity is FragmentActivity) {
             activity.supportFragmentManager.registerFragmentLifecycleCallbacks(
@@ -52,7 +51,7 @@ internal class ActivityLifecycleCallbacksForEnro(
         activity.onBackPressedDispatcher.addCallback(activity) {
             val leafContext = navigationContext.leafContext()
             if (interceptBackPressForAndroidxNavigation(this, leafContext)) return@addCallback
-            leafContext.getNavigationHandleViewModel().requestClose()
+            leafContext.getNavigationHandle().requestClose()
         }
     }
 

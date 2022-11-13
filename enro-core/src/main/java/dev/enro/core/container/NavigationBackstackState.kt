@@ -3,7 +3,7 @@ package dev.enro.core.container
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
-import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
+import dev.enro.core.usecase.ensureContextIsSetFrom
 
 public fun createEmptyBackStack(): NavigationBackstackState = NavigationBackstackState(
     lastInstruction = NavigationInstruction.Close,
@@ -113,31 +113,16 @@ internal fun NavigationBackstackState.ensureOpeningTypeIsSet(
     return copy(
         backstack = backstack.map {
             if (it.internal.openingType != Any::class.java) return@map it
-
-            InstructionOpenedByInterceptor.intercept(
-                it,
-                parentContext,
-                requireNotNull(parentContext.controller.bindingForKeyType(it.navigationKey::class)),
-            )
+            it.ensureContextIsSetFrom(parentContext)
         },
         lastInstruction = lastInstruction.let {
             if (it !is AnyOpenInstruction) return@let it
             if (it.internal.openingType != Any::class.java) return@let it
-
-            InstructionOpenedByInterceptor.intercept(
-                it,
-                parentContext,
-                requireNotNull(parentContext.controller.bindingForKeyType(it.navigationKey::class)),
-            )
+            it.ensureContextIsSetFrom(parentContext)
         },
         exiting = exiting?.let {
             if (it.internal.openingType != Any::class.java) return@let it
-
-            InstructionOpenedByInterceptor.intercept(
-                it,
-                parentContext,
-                requireNotNull(parentContext.controller.bindingForKeyType(it.navigationKey::class)),
-            )
+            it.ensureContextIsSetFrom(parentContext)
         }
     )
 }

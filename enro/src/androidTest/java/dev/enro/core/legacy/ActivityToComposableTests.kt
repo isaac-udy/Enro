@@ -7,8 +7,8 @@ import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
+import dev.enro.core.ComposableDestination
 import dev.enro.core.close
-import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.forward
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

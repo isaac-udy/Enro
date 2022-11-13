@@ -1,8 +1,8 @@
 package dev.enro.core.controller.repository
 
 import dev.enro.core.*
-import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
-import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
+import dev.enro.core.controller.interceptors.NavigationInstructionContextInterceptor
+import dev.enro.core.interceptor.NavigationInstructionInterceptor
 
 internal class InstructionInterceptorRepository {
 
@@ -17,7 +17,7 @@ internal class InstructionInterceptorRepository {
         parentContext: NavigationContext<*>,
         binding: NavigationBinding<out NavigationKey, out Any>
     ): AnyOpenInstruction? {
-        return (interceptors + InstructionOpenedByInterceptor).fold(instruction) { acc, interceptor ->
+        return (interceptors + NavigationInstructionContextInterceptor).fold(instruction) { acc, interceptor ->
             val result = interceptor.intercept(acc, parentContext, binding)
 
             when (result) {

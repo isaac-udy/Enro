@@ -10,7 +10,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.example.core.data.UserRepository
 import dev.enro.example.core.navigation.DashboardKey
 import dev.enro.example.core.navigation.LaunchKey

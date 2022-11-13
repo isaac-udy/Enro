@@ -1,34 +1,12 @@
 package dev.enro
 
+import com.tngtech.archunit.core.domain.JavaClass
+import com.tngtech.archunit.core.domain.properties.HasName
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition
-import com.tngtech.archunit.lang.syntax.elements.ClassesShouldConjunction
-import com.tngtech.archunit.lang.syntax.elements.ClassesThat
 import com.tngtech.archunit.library.Architectures
+import dev.enro.core.ArchitectureException
 import org.junit.Test
-
-private const val API_PACKAGE = "dev.enro.core"
-private const val ACTIVITY_PACKAGE = "dev.enro.core.activity.."
-private const val COMPOSE_PACKAGE = "dev.enro.core.compose.."
-private const val CONTAINER_PACKAGE = "dev.enro.core.container.."
-private const val CONTROLLER_PACKAGE = "dev.enro.core.controller.."
-private const val FRAGMENT_PACKAGE = "dev.enro.core.fragment.."
-private const val HOST_PACKAGE = "dev.enro.core.hosts.."
-private const val INTERNAL_PACKAGE = "dev.enro.core.internal.."
-private const val PLUGINS_PACKAGE = "dev.enro.core.plugins.."
-private const val RESULTS_PACKAGE = "dev.enro.core.result.."
-private const val SYNTHETIC_PACKAGE = "dev.enro.core.synthetic.."
-
-private const val EXTENSIONS_PACKAGE = "dev.enro.extensions.."
-private const val VIEWMODEL_PACKAGE = "dev.enro.viewmodel.."
-
-private val destinationPackages = listOf(
-    ACTIVITY_PACKAGE,
-    COMPOSE_PACKAGE,
-    FRAGMENT_PACKAGE,
-    SYNTHETIC_PACKAGE,
-)
-
 
 internal class ProjectArchitecture {
 
@@ -36,6 +14,19 @@ internal class ProjectArchitecture {
 
     private val architecture = Architectures.layeredArchitecture()
         .consideringOnlyDependenciesInAnyPackage("dev.enro..")
+        .ignoreDependency(
+            describe("is architecture exception") { fromClass ->
+                fun isArchitectureException(cls: JavaClass): Boolean {
+                    return cls.isAnnotatedWith(ArchitectureException::class.java) ||
+                            cls.enclosingClass
+                                .takeIf { enclosing -> enclosing.isPresent }
+                                ?.let { enclosing -> isArchitectureException(enclosing.get()) }
+                            ?: false
+                }
+                return@describe isArchitectureException(fromClass)
+            },
+            describe("any class") { true },
+        )
         .let {
             EnroLayer.values().fold(it) { architecture, layer ->
                 architecture.layer(layer)
@@ -69,7 +60,7 @@ internal class ProjectArchitecture {
      * @see [dev.enro.extensions.getAttributeResourceId] as an example
      */
     @Test
-    fun extensionsShouldNotDependOnEnro() {
+    fun extensionsLayer() {
         architecture
             .whereLayer(EnroLayer.EXTENSIONS)
             .mayNotAccessAnyLayer()
@@ -77,37 +68,88 @@ internal class ProjectArchitecture {
     }
 
     @Test
-    fun allClassesAreContainerInArchitecture() {
+    fun allClassesAreContainedInArchitecture() {
         architecture
             .ensureAllClassesAreContainedInArchitectureIgnoring(isTestSource)
             .check(classes)
     }
 
     @Test
-    fun destinationLayers() {
-        val allowableDestinationDependencies = arrayOf(
-            EnroLayer.PUBLIC,
-            EnroLayer.CONTROLLER,
-            EnroLayer.DEPENDENCY_INJECTION,
+    fun activityLayer() {
+        architecture
+            .whereLayer(EnroLayer.ACTIVITY)
+            .mayOnlyAccessLayers(*EnroLayer.featureLayerDependencies)
+            .check(classes)
+    }
+
+    @Test
+    fun composeLayer() {
+        architecture
+            .whereLayer(EnroLayer.COMPOSE)
+            .mayOnlyAccessLayers(*EnroLayer.featureLayerDependencies)
+            .check(classes)
+    }
+
+    @Test
+    fun fragmentLayer() {
+        architecture
+            .whereLayer(EnroLayer.FRAGMENT)
+            .mayOnlyAccessLayers(*EnroLayer.featureLayerDependencies)
+            .check(classes)
+    }
+
+    @Test
+    fun syntheticLayer() {
+        architecture
+            .whereLayer(EnroLayer.SYNTHETIC)
+            .mayOnlyAccessLayers(*EnroLayer.featureLayerDependencies)
+            .check(classes)
+    }
+
+    @Test
+    fun viewModelLayer() {
+        architecture
+            .whereLayers(EnroLayer.VIEW_MODEL) { mayOnlyAccessLayers(*EnroLayer.featureLayerDependencies) }
+            .check(classes)
+    }
+
+    @Test
+    fun publicLayer() {
+        val allowableDependencies = arrayOf(
+            EnroLayer.EXTENSIONS,
         )
 
         architecture
-            .whereLayers(*EnroLayer.destinationLayers) { mayOnlyAccessLayers(*allowableDestinationDependencies) }
+            .whereLayer(EnroLayer.PUBLIC)
+            .mayOnlyAccessLayers(*allowableDependencies)
+            .ignoreDependency(
+                describe("is public api for results") {
+                    it.name == "dev.enro.core.result.EnroResultExtensionsKt"
+                },
+                describe("is internal results class") {
+                    JavaClass.Predicates.resideInAPackage(EnroPackage.RESULTS_INTERNAL_PACKAGE.packageName).test(it)
+                }
+            )
             .check(classes)
     }
-}
 
-internal fun <C : Any> ClassesThat<C>.resideInDestinationPackage(): C {
-    return resideInAnyPackage(*destinationPackages.toTypedArray())
-}
+    @Test
+    fun hostLayer() {
+        val allowableDependencies = arrayOf(
+            EnroLayer.PUBLIC,
+            EnroLayer.EXTENSIONS,
+            EnroLayer.ACTIVITY,
+            EnroLayer.COMPOSE,
+            EnroLayer.FRAGMENT,
+        )
 
-internal fun ClassesThat<ClassesShouldConjunction>.resideInDestinationPackageExcept(
-    exceptedPackage: String
-): ClassesShouldConjunction {
-    val packages = destinationPackages
-        .filter { !it.startsWith(exceptedPackage) }
-        .toTypedArray()
-
-    require(packages.isNotEmpty())
-    return resideInAnyPackage(*packages)
+        architecture
+            .ignoreDependency(
+                HasName.Predicates.nameStartingWith("dev.enro.core.hosts.HostComponentKt"),
+                HasName.Predicates.nameStartingWith("dev.enro.core.controller.NavigationComponentBuilder"),
+            )
+            .whereLayer(EnroLayer.HOSTS)
+            .mayOnlyAccessLayers(*allowableDependencies)
+            .check(classes)
+    }
 }

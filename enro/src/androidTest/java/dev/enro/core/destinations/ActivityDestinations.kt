@@ -4,9 +4,9 @@ import android.os.Parcelable
 import dev.enro.TestActivity
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.registerForNavigationResult
+import dev.enro.fragment.container.navigationContainer
 import kotlinx.parcelize.Parcelize
 import java.util.*
 

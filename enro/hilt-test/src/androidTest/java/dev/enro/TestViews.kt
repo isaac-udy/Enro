@@ -24,11 +24,11 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.setPadding
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import dev.enro.compose.EnroContainer
+import dev.enro.compose.rememberNavigationContainer
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.EnroContainer
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.getNavigationHandle
+import dev.enro.core.navigationHandle
 
 abstract class TestActivity : AppCompatActivity() {
 

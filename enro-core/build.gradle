@@ -26,4 +26,5 @@ dependencies {
 
     testImplementation deps.testing.junit
     testImplementation deps.testing.archunit
+    testImplementation deps.kotlin.reflect
 }

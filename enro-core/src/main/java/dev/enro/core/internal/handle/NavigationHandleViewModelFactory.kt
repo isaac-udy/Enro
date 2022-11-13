@@ -6,9 +6,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.EnroException
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.internal.get
+import dev.enro.core.get
 
 internal class NavigationHandleViewModelFactory(
     private val navigationController: NavigationController,
@@ -46,33 +45,5 @@ internal fun ViewModelStoreOwner.createNavigationHandleViewModel(
         viewModelClass = NavigationHandleViewModel::class,
         storeProducer = { viewModelStore },
         factoryProducer = { NavigationHandleViewModelFactory(navigationController, instruction) }
-    ).value
-}
-
-internal class ExpectExistingNavigationHandleViewModelFactory(
-    private val viewModelStoreOwner: ViewModelStoreOwner
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        val name = viewModelStoreOwner::class.java.simpleName
-        throw EnroException.NoAttachedNavigationHandle(
-            "Attempted to get the NavigationHandle for $name, but $name not have a NavigationHandle attached."
-        )
-    }
-
-    override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-        val name = viewModelStoreOwner::class.java.simpleName
-        throw EnroException.NoAttachedNavigationHandle(
-            "Attempted to get the NavigationHandle for $name, but $name not have a NavigationHandle attached."
-        )
-    }
-}
-
-internal fun ViewModelStoreOwner.getNavigationHandleViewModel(): NavigationHandleViewModel {
-    return ViewModelLazy(
-        viewModelClass = NavigationHandleViewModel::class,
-        storeProducer = { viewModelStore },
-        factoryProducer = {
-            ExpectExistingNavigationHandleViewModelFactory(this)
-        }
     ).value
 }

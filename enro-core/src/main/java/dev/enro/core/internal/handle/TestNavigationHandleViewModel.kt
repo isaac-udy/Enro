@@ -4,8 +4,8 @@ import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.controller.usecase.ExecuteCloseInstruction
-import dev.enro.core.controller.usecase.ExecuteOpenInstruction
+import dev.enro.core.usecase.ExecuteCloseInstruction
+import dev.enro.core.usecase.ExecuteOpenInstruction
 
 internal class TestNavigationHandleViewModel(
     controller: NavigationController,

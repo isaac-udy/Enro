@@ -7,7 +7,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.fragment.container.navigationContainer
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractOpenInstructionInActivityKey :

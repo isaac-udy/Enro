@@ -18,10 +18,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.compose.EnroContainer
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberEnroContainerController
+import dev.enro.compose.EnroContainer
+import dev.enro.compose.dialog.BottomSheetDestination
+import dev.enro.core.navigationHandle
+import dev.enro.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import kotlinx.parcelize.Parcelize
 import java.util.*

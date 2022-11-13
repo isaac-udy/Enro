@@ -2,14 +2,7 @@ package dev.enro.core
 
 import android.app.Activity
 import androidx.fragment.app.Fragment
-import dev.enro.core.activity.ActivityNavigationBinding
-import dev.enro.core.activity.DefaultActivityExecutor
-import dev.enro.core.compose.ComposableNavigationBinding
-import dev.enro.core.compose.DefaultComposableExecutor
-import dev.enro.core.fragment.DefaultFragmentExecutor
-import dev.enro.core.fragment.FragmentNavigationBinding
-import dev.enro.core.synthetic.DefaultSyntheticExecutor
-import dev.enro.core.synthetic.SyntheticNavigationBinding
+import dev.enro.core.usecase.GetNavigationExecutor
 import kotlin.reflect.KClass
 
 // This class is used primarily to simplify the lambda signature of NavigationExecutor.open
@@ -85,45 +78,23 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
 
     @Suppress("UNCHECKED_CAST")
     public fun defaultOpened(args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) {
-        when (args.binding) {
-            is ActivityNavigationBinding ->
-                DefaultActivityExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
-
-            is FragmentNavigationBinding ->
-                DefaultFragmentExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
-
-            is SyntheticNavigationBinding ->
-                DefaultSyntheticExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
-
-            is ComposableNavigationBinding ->
-                DefaultComposableExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
-
-            else -> throw IllegalArgumentException("No default launch executor found for ${opensType.java}")
-        }.invoke(args)
+        val getExecutor = args.fromContext.controller.dependencyScope.get<GetNavigationExecutor>()
+        val executor = getExecutor(Any::class.java to args.binding.baseDestinationType.java)
+        executor.open(args)
     }
 
     @Suppress("UNCHECKED_CAST")
     public fun defaultClosed(context: NavigationContext<out OpensContext>) {
-        when (context.binding) {
-            is ActivityNavigationBinding ->
-                DefaultActivityExecutor::close as (NavigationContext<out OpensContext>) -> Unit
-
-            is FragmentNavigationBinding ->
-                DefaultFragmentExecutor::close as (NavigationContext<out OpensContext>) -> Unit
-
-            is ComposableNavigationBinding ->
-                DefaultComposableExecutor::close as (NavigationContext<out OpensContext>) -> Unit
-
-            // Null means that we must be looking at a NoKeyNavigator, so we still want to pass back to
-            // the default Activity/Fragment executor
-            null -> when(context.contextReference) {
-                is Activity -> DefaultActivityExecutor::close as (NavigationContext<out OpensContext>) -> Unit
-                is Fragment -> DefaultFragmentExecutor::close as (NavigationContext<out OpensContext>) -> Unit
-                else -> throw IllegalArgumentException("No default close executor found for NoKeyNavigator with context ${context.contextReference::class.java.simpleName}")
-            }
-
-            else -> throw IllegalArgumentException("No default close executor found for ${opensType.java}")
-        }.invoke(context)
+        val baseType = context.binding?.baseDestinationType?: when(context.contextReference) {
+            is Activity -> Activity::class
+            is Fragment -> Fragment::class
+            is ComposableDestination -> ComposableDestination::class
+            is SyntheticDestination<*> -> SyntheticDestination::class
+            else -> throw EnroException.UnreachableState()
+        }
+        val getExecutor = context.controller.dependencyScope.get<GetNavigationExecutor>()
+        val executor = getExecutor(Any::class.java to baseType.java)
+        executor.close(context)
     }
 
     public fun animation(block: (instruction: AnyOpenInstruction) -> NavigationAnimation) {
@@ -209,16 +180,3 @@ public inline fun <reified From : Any, reified Opens : Any> createOverride(
     noinline block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
 ): NavigationExecutor<From, Opens, NavigationKey> =
     createOverride(From::class, Opens::class, block)
-
-public inline fun <reified From : Fragment, reified Opens : Fragment> createSharedElementOverride(
-    elements: List<Pair<Int, Int>>
-): NavigationExecutor<From, Opens, NavigationKey> {
-    return createOverride {
-        opened { args ->
-            args.instruction.setSharedElements(
-                elements.map { EnroSharedElement(it.first, it.second) }
-            )
-            defaultOpened(args)
-        }
-    }
-}

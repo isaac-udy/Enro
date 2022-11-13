@@ -30,9 +30,9 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import dev.enro.annotations.NavigationDestination
+import dev.enro.compose.registerForNavigationResult
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.registerForNavigationResult
 import dev.enro.core.navigationHandle
 import dev.enro.getActiveEnroResultChannels
 import kotlinx.parcelize.Parcelize

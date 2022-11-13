@@ -1,24 +1,18 @@
 package dev.enro.core.controller
 
 import android.app.Application
-import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
-import androidx.fragment.app.Fragment
 import dev.enro.core.*
-import dev.enro.core.activity.createActivityNavigationBinding
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.createComposableNavigationBinding
-import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.repository.ComposeEnvironment
-import dev.enro.core.fragment.createFragmentNavigationBinding
+import dev.enro.core.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.plugins.EnroPlugin
-import dev.enro.core.synthetic.SyntheticDestination
-import dev.enro.core.synthetic.createSyntheticNavigationBinding
 
+// NavigationModuleBuilder?
 public interface NavigationComponentBuilderCommand {
     public fun execute(builder: NavigationComponentBuilder)
 }
 
+// NavigationModule, move all the commands into the Builder as an abstract class?
 public class NavigationComponentBuilder {
     @PublishedApi
     internal val bindings: MutableList<NavigationBinding<*, *>> = mutableListOf()
@@ -37,30 +31,6 @@ public class NavigationComponentBuilder {
 
     public fun binding(binding: NavigationBinding<*, *>) {
         bindings.add(binding)
-    }
-
-    public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComponentActivity> activityDestination() {
-        bindings.add(createActivityNavigationBinding<KeyType, DestinationType>())
-    }
-
-    public inline fun <reified KeyType : NavigationKey, reified DestinationType : Fragment> fragmentDestination() {
-        bindings.add(createFragmentNavigationBinding<KeyType, DestinationType>())
-    }
-
-    public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComposableDestination> composableDestination() {
-        bindings.add(createComposableNavigationBinding<KeyType, DestinationType>())
-    }
-
-    public inline fun <reified KeyType : NavigationKey> composableDestination(noinline content: @Composable () -> Unit) {
-        bindings.add(createComposableNavigationBinding<KeyType>(content))
-    }
-
-    public inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> syntheticDestination() {
-        bindings.add(createSyntheticNavigationBinding<KeyType, DestinationType>())
-    }
-
-    public inline fun <reified KeyType : NavigationKey> syntheticDestination(noinline destination: () -> SyntheticDestination<KeyType>) {
-        bindings.add(createSyntheticNavigationBinding(destination))
     }
 
     public fun override(override: NavigationExecutor<*, *, *>) {

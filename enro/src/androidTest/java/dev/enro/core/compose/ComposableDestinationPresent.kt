@@ -1,6 +1,7 @@
 package dev.enro.core.compose
 
 import android.os.Parcelable
+import dev.enro.core.ComposableDestination
 import dev.enro.core.destinations.*
 import junit.framework.TestCase.assertEquals
 import kotlinx.parcelize.Parcelize

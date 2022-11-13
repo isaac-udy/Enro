@@ -2,7 +2,7 @@
 package dev.enro.test.extensions
 
 import dev.enro.core.NavigationInstruction
-import dev.enro.core.result.EnroResult
+import dev.enro.core.result.internal.EnroResult
 import dev.enro.core.result.internal.PendingResult
 import dev.enro.test.EnroTest
 

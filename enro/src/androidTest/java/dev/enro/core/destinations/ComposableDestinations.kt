@@ -10,10 +10,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.TestComposable
 import dev.enro.annotations.NavigationDestination
+import dev.enro.compose.dialog.DialogDestination
+import dev.enro.core.ComposableDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.navigationHandle
+import dev.enro.core.navigationHandle
 import dev.enro.core.requestClose
 import dev.enro.core.result.EnroResultChannel
 import dev.enro.core.result.registerForNavigationResult

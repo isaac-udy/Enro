@@ -1,6 +1,6 @@
 package dev.enro.core.fragment
 
-import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.ComposableDestination
 import dev.enro.core.destinations.*
 import org.junit.Test
 

@@ -1,13 +1,7 @@
 package dev.enro.core
 
 import androidx.annotation.IdRes
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import dev.enro.core.controller.NavigationController
-import dev.enro.core.fragment.container.navigationContainer
-import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
-import dev.enro.core.internal.get
-import dev.enro.core.internal.handle.NavigationHandleViewModel
+import dev.enro.core.usecase.ConfigureNavigationHandle
 import kotlin.reflect.KClass
 
 internal class ChildContainer(
@@ -15,90 +9,71 @@ internal class ChildContainer(
     private val accept: (NavigationKey) -> Boolean
 ) {
     fun accept(key: NavigationKey): Boolean {
-        if (key is AbstractOpenComposableInFragmentKey && accept.invoke(key.instruction.navigationKey)) return true
         return accept.invoke(key)
     }
 }
 
+internal data class NavigationHandleConfigurationProperties<T : NavigationKey>(
+    val keyType: KClass<T>,
+    val childContainers: List<ChildContainer> = emptyList(),
+    val defaultKey: T? = null,
+    val onCloseRequested: (TypedNavigationHandle<T>.() -> Unit)? = null
+)
+
 // TODO Move this to being a "Builder" and add data class for configuration?
 public class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal constructor(
-    private val keyType: KClass<T>
+    keyType: KClass<T>
 ) {
-    internal var childContainers: List<ChildContainer> = listOf()
-        private set
-
-    internal var defaultKey: T? = null
-        private set
-
-    internal var onCloseRequested: (TypedNavigationHandle<T>.() -> Unit)? = null
-        private set
+    internal var properties = NavigationHandleConfigurationProperties(keyType)
 
     @Deprecated("Please use the `by navigationContainer` extensions in FragmentActivity and Fragment to create containers")
     public fun container(@IdRes containerId: Int, accept: (NavigationKey) -> Boolean = { true }) {
-        childContainers = childContainers + ChildContainer(containerId, accept)
+        properties = properties.copy(
+            childContainers = properties.childContainers + ChildContainer(containerId, accept)
+        )
     }
 
     public fun defaultKey(navigationKey: T) {
-        defaultKey = navigationKey
+        properties = properties.copy(
+            defaultKey = navigationKey
+        )
     }
 
     public fun onCloseRequested(block: TypedNavigationHandle<T>.() -> Unit) {
-        onCloseRequested = block
+        properties = properties.copy(
+            onCloseRequested = block
+        )
     }
 
     // TODO Store these properties ON the navigation handle? Rather than set individual fields?
-    internal fun applyTo(context: NavigationContext<*>, navigationHandleViewModel: NavigationHandleViewModel) {
-        childContainers.forEach {
-            val container = when(context.contextReference) {
-                is FragmentActivity -> {
-                    context.contextReference.navigationContainer(
-                        containerId = it.containerId,
-                        accept = it::accept
-                    )
-                }
-                is Fragment -> {
-                    context.contextReference.navigationContainer(
-                        containerId = it.containerId,
-                        accept = it::accept
-                    )
-                }
-                else -> return@forEach
-            }
-            // trigger container creation
-            container.navigationContainer.hashCode()
-        }
-
-        val onCloseRequested = onCloseRequested ?: return
-        navigationHandleViewModel.internalOnCloseRequested = { onCloseRequested(navigationHandleViewModel.asTyped(keyType)) }
+    internal fun configure(navigationHandle: NavigationHandle) {
+        navigationHandle.dependencyScope.get<ConfigureNavigationHandle>()
+            .invoke(
+                configuration = properties,
+                navigationHandle = navigationHandle
+            )
     }
 }
 
 public class LazyNavigationHandleConfiguration<T : NavigationKey>(
-    private val keyType: KClass<T>
+    keyType: KClass<T>
 ) {
 
-    private var onCloseRequested: (TypedNavigationHandle<T>.() -> Unit)? = null
+    private var properties = NavigationHandleConfigurationProperties(keyType)
 
     public fun onCloseRequested(block: TypedNavigationHandle<T>.() -> Unit) {
-        onCloseRequested = block
+        properties = properties.copy(
+            onCloseRequested = block
+        )
     }
 
-    public fun configure(navigationHandle: NavigationHandle) {
-        val handle = if (navigationHandle is TypedNavigationHandleImpl<*>) {
-            navigationHandle.navigationHandle
-        } else navigationHandle
-
-        val onCloseRequested = onCloseRequested ?: return
-
-        if (handle is NavigationHandleViewModel) {
-            handle.internalOnCloseRequested =
-                { onCloseRequested(navigationHandle.asTyped(keyType)) }
-        } else if (handle.dependencyScope.get<NavigationController>().isInTest) {
-            val field = handle::class.java.declaredFields
-                .firstOrNull { it.name.startsWith("internalOnCloseRequested") }
-                ?: return
-            field.isAccessible = true
-            field.set(handle, { onCloseRequested(navigationHandle.asTyped(keyType)) })
-        }
+    public fun configure(
+        navigationHandle: NavigationHandle,
+    ) {
+        navigationHandle.dependencyScope.get<ConfigureNavigationHandle>()
+            .invoke(
+                configuration = properties,
+                navigationHandle = navigationHandle
+            )
     }
 }

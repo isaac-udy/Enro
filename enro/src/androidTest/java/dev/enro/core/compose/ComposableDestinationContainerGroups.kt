@@ -21,9 +21,10 @@ import androidx.compose.ui.test.performClick
 import androidx.test.espresso.Espresso
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.annotations.NavigationDestination
+import dev.enro.compose.container.rememberNavigationContainerGroup
+import dev.enro.compose.rememberNavigationContainer
 import dev.enro.core.NavigationKey
 import dev.enro.core.activity
-import dev.enro.core.compose.container.rememberNavigationContainerGroup
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.setActive
 import dev.enro.core.destinations.launchComposable

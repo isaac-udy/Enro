@@ -2,6 +2,11 @@ package dev.enro.core.result
 
 import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisallowComposableCalls
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
@@ -10,11 +15,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import dev.enro.core.*
-import dev.enro.core.controller.factory.resultChannelFactory
+import dev.enro.core.result.internal.EnroResult
 import dev.enro.core.result.internal.LazyResultChannelProperty
 import dev.enro.core.result.internal.PendingResult
-import dev.enro.core.synthetic.SyntheticDestination
-import dev.enro.viewmodel.getNavigationHandle
+import dev.enro.core.usecase.resultChannelFactory
+import java.util.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import dev.enro.core.closeWithResult as nonDeprecatedCloseWithResult
@@ -188,6 +193,39 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Navigatio
         onResult = onResult,
         additionalResultId = id
     )
+}
+
+@Composable
+public inline fun <reified T : Any> registerForNavigationResult(
+    // Sometimes, particularly when interoperating between Compose and the legacy View system,
+    // it may be required to provide an id explicitly. This should not be required when using
+    // registerForNavigationResult from an entirely Compose-based screen.
+    // Remember a random UUID that will be used to uniquely identify this result channel
+    // within the composition. This is important to ensure that results are delivered if a Composable
+    // is used multiple times within the same composition (such as within a list).
+    // See ComposableListResultTests
+    id: String = rememberSaveable {
+        UUID.randomUUID().toString()
+    },
+    noinline onResult: @DisallowComposableCalls (T) -> Unit
+): EnroResultChannel<T, NavigationKey.WithResult<T>> {
+    val navigationHandle = navigationHandle()
+
+    val resultChannel = remember(onResult) {
+        navigationHandle.resultChannelFactory.createResultChannel(
+            resultType = T::class,
+            onResult = onResult,
+            additionalResultId = id
+        )
+    }
+
+    DisposableEffect(true) {
+        resultChannel.attach()
+        onDispose {
+            resultChannel.detach()
+        }
+    }
+    return resultChannel
 }
 
 /**

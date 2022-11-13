@@ -6,8 +6,8 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.forward
-import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
+import dev.enro.fragment.container.navigationContainer
 import junit.framework.TestCase.assertEquals
 import kotlinx.parcelize.Parcelize
 import org.junit.Test
