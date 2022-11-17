@@ -13,7 +13,6 @@ import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.fragment.container.navigationContainer
-import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.extensions.animate
 import dev.enro.extensions.createFullscreenDialog
 import kotlinx.parcelize.Parcelize
@@ -80,7 +79,7 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
 
             val animations = animationsFor(
                 fragment.navigationContext,
-                fragment.getNavigationHandleViewModel().instruction
+                fragment.getNavigationHandle().instruction
             )
                 .asResource(fragment.requireActivity().theme)
 

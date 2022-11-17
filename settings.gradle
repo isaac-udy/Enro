@@ -78,6 +78,8 @@ dependencyResolutionManagement {
             library("testing-androidx-fragment", "androidx.fragment:fragment-testing:1.5.3")
             library("testing-androidx-compose", "androidx.compose.ui:ui-test-junit4:1.1.0")
 
+            library("testing-archunit", "com.tngtech.archunit:archunit:1.0.0")
+
             library("processing-jsr250", "javax.annotation:jsr250-api:1.0")
             library("processing-incremental", "net.ltgt.gradle.incap:incap:0.3")
             library("processing-incrementalProcessor", "net.ltgt.gradle.incap:incap-processor:0.3")

@@ -76,6 +76,8 @@ public fun ComponentActivity.getNavigationHandle(): NavigationHandle =
 
 public fun Fragment.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
 
+public fun ViewModelStoreOwner.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
+
 public fun View.getNavigationHandle(): NavigationHandle? =
     findViewTreeViewModelStoreOwner()?.getNavigationHandleViewModel()
 

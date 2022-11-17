@@ -23,4 +23,8 @@ dependencies {
     compileOnly deps.hilt.android
     kapt deps.hilt.compiler
     kapt deps.hilt.androidCompiler
+
+    testImplementation deps.testing.junit
+    testImplementation deps.testing.archunit
+    testImplementation deps.kotlin.reflect
 }
