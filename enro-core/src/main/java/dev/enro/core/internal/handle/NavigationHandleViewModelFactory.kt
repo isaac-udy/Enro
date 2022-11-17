@@ -8,7 +8,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroException
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.internal.get
+import dev.enro.core.controller.get
 
 internal class NavigationHandleViewModelFactory(
     private val navigationController: NavigationController,

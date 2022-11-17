@@ -8,14 +8,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
-import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
-import dev.enro.core.fragment.FragmentNavigationBinding
-import dev.enro.core.hosts.AbstractFragmentHostForComposable
-import dev.enro.core.hosts.AbstractFragmentHostForPresentableFragment
 import dev.enro.extensions.animate
 
 public class FragmentNavigationContainer internal constructor(
@@ -28,11 +24,11 @@ public class FragmentNavigationContainer internal constructor(
 ) : NavigationContainer(
     id = containerId.toString(),
     parentContext = parentContext,
+    contextType = Fragment::class.java,
     acceptsNavigationKey = accept,
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
-    acceptsBinding = { it is FragmentNavigationBinding<*, *> || it is ComposableNavigationBinding<*, *> }
 ) {
     override var isVisible: Boolean
         get() {
@@ -127,7 +123,6 @@ public class FragmentNavigationContainer internal constructor(
         return FragmentAndInstruction(
             fragment = FragmentFactory.createFragment(
                 parentContext,
-                binding,
                 backstackState.active
             ),
             instruction = backstackState.active
@@ -148,7 +143,7 @@ public class FragmentNavigationContainer internal constructor(
 
     private fun setAnimations(backstackState: NavigationBackstackState) {
         val shouldTakeAnimationsFromParentContainer = parentContext is FragmentContext<out Fragment>
-                && parentContext.contextReference is AbstractFragmentHostForPresentableFragment
+                && parentContext.contextReference is NavigationHost
                 && backstackState.backstack.size <= 1
 
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
@@ -173,8 +168,8 @@ public class FragmentNavigationContainer internal constructor(
         val resourceAnimations = currentAnimations.asResource(parentContext.activity.theme)
 
         setCustomAnimations(
-            if (active?.fragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_enter_animation else resourceAnimations.enter,
-            if (previouslyActiveFragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_exit_animation else resourceAnimations.exit
+            if (active?.fragment is NavigationHost) R.anim.enro_no_op_enter_animation else resourceAnimations.enter,
+            if (previouslyActiveFragment is NavigationHost) R.anim.enro_no_op_exit_animation else resourceAnimations.exit
         )
     }
 }

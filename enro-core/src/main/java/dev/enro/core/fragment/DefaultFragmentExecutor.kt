@@ -1,16 +1,13 @@
 package dev.enro.core.fragment
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.fragment.app.*
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
-import dev.enro.core.container.add
-import dev.enro.core.container.asPresentInstruction
-import dev.enro.core.container.asPushInstruction
-import dev.enro.core.container.close
+import dev.enro.core.container.*
+import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
-import dev.enro.core.hosts.OpenInstructionInActivity
-import dev.enro.core.internal.get
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -208,15 +205,13 @@ private fun openFragmentAsActivity(
     navigationDirection: NavigationDirection,
     instruction: AnyOpenInstruction
 ) {
-    instruction as NavigationInstruction.Open<NavigationDirection>
-    fromContext.controller.dependencyScope.get<ExecuteOpenInstruction>().invoke(
+    val open = fromContext.controller.dependencyScope.get<ExecuteOpenInstruction>()
+    val hostFactory = fromContext.controller.dependencyScope.get<NavigationHostFactory>()
+
+    open.invoke(
         fromContext,
-        NavigationInstruction.Open.OpenInternal(
-            navigationDirection = instruction.navigationDirection,
-            navigationKey = OpenInstructionInActivity(instruction.internal.copy(
-                navigationDirection = navigationDirection,
-            )),
-            resultId = instruction.internal.resultId
+        hostFactory.createHostFor<Activity>(
+            instruction.asDirection(navigationDirection)
         ),
     )
 }

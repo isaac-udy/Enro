@@ -19,10 +19,10 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
-import dev.enro.core.controller.repository.ComposeEnvironmentRepository
+import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
-import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import dev.enro.core.getNavigationHandle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -32,7 +32,7 @@ internal class ComposableDestinationOwner(
     val destination: ComposableDestination,
     onNavigationContextCreated: OnNavigationContextCreated,
     onNavigationContextSaved: OnNavigationContextSaved,
-    private val composeEnvironmentRepository: ComposeEnvironmentRepository,
+    private val composeEnvironment: ComposeEnvironment,
     viewModelStore: ViewModelStore,
 ) : ViewModel(),
     LifecycleOwner,
@@ -149,10 +149,10 @@ internal class ComposableDestinationOwner(
             LocalLifecycleOwner provides this@ComposableDestinationOwner,
             LocalViewModelStoreOwner provides this@ComposableDestinationOwner,
             LocalSavedStateRegistryOwner provides this@ComposableDestinationOwner,
-            LocalNavigationHandle provides remember { getNavigationHandleViewModel() }
+            LocalNavigationHandle provides remember { getNavigationHandle() }
         ) {
             saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
-                composeEnvironmentRepository.Render {
+                composeEnvironment {
                     content()
                 }
             }

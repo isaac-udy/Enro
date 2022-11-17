@@ -9,7 +9,9 @@ public class ComposableNavigationBinding<KeyType : NavigationKey, ComposableType
     override val keyType: KClass<KeyType>,
     override val destinationType: KClass<ComposableType>,
     internal val constructDestination: () -> ComposableType = { destinationType.java.newInstance() }
-) : NavigationBinding<KeyType, ComposableType>
+) : NavigationBinding<KeyType, ComposableType> {
+    override val baseType: KClass<in ComposableType> = ComposableDestination::class
+}
 
 public fun <KeyType : NavigationKey, ComposableType : ComposableDestination> createComposableNavigationBinding(
     keyType: Class<KeyType>,

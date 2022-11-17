@@ -8,7 +8,9 @@ import kotlin.reflect.KClass
 public class FragmentNavigationBinding<KeyType : NavigationKey, FragmentType : Fragment> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
     override val destinationType: KClass<FragmentType>,
-) : NavigationBinding<KeyType, FragmentType>
+) : NavigationBinding<KeyType, FragmentType> {
+    override val baseType: KClass<in FragmentType> = Fragment::class
+}
 
 public fun <KeyType : NavigationKey, FragmentType : Fragment> createFragmentNavigationBinding(
     keyType: Class<KeyType>,

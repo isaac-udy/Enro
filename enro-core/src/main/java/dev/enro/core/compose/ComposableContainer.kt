@@ -14,7 +14,7 @@ import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.createRootBackStack
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
-import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import dev.enro.core.navigationContext
 import java.util.*
 
 @Composable
@@ -73,7 +73,7 @@ public fun rememberEnroContainerController(
     val controller = remember {
         ComposableNavigationContainer(
             id = id,
-            parentContext = viewModelStoreOwner.getNavigationHandleViewModel().navigationContext!!,
+            parentContext = viewModelStoreOwner.navigationContext!!,
             accept = accept,
             emptyBehavior = emptyBehavior,
             interceptor = interceptor,

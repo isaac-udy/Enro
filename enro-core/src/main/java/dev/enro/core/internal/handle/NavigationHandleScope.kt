@@ -3,12 +3,8 @@ package dev.enro.core.internal.handle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import dev.enro.core.NavigationHandle
-import dev.enro.core.controller.NavigationController
-import dev.enro.core.controller.factory.ResultChannelFactory
-import dev.enro.core.internal.EnroDependencyContainer
-import dev.enro.core.internal.EnroDependencyScope
-import dev.enro.core.internal.get
-import dev.enro.core.internal.register
+import dev.enro.core.controller.*
+import dev.enro.core.controller.usecase.CreateResultChannel
 
 internal class NavigationHandleScope(
     navigationController: NavigationController,
@@ -20,7 +16,7 @@ internal class NavigationHandleScope(
         parentScope = navigationController.dependencyScope,
         registration = {
             register { requireNotNull(boundNavigationHandle) }
-            register { ResultChannelFactory(get(), get()) }
+            register { CreateResultChannel(get(), get()) }
         }
     )
 

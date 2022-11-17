@@ -2,16 +2,18 @@ package dev.enro.core.container
 
 import dev.enro.core.*
 
-internal fun AnyOpenInstruction.asPushInstruction(): OpenPushInstruction {
-    if(navigationDirection is NavigationDirection.Push) return this as OpenPushInstruction
-    return internal.copy(
-        navigationDirection = NavigationDirection.Push
-    ) as OpenPushInstruction
-}
+@Suppress("UNCHECKED_CAST")
+internal fun AnyOpenInstruction.asPushInstruction(): OpenPushInstruction =
+    asDirection(NavigationDirection.Push)
 
-internal fun AnyOpenInstruction.asPresentInstruction(): OpenPresentInstruction {
-    if(navigationDirection is NavigationDirection.Present) return this as OpenPresentInstruction
+@Suppress("UNCHECKED_CAST")
+internal fun AnyOpenInstruction.asPresentInstruction(): OpenPresentInstruction =
+    asDirection(NavigationDirection.Present)
+
+@Suppress("UNCHECKED_CAST")
+internal fun <T: NavigationDirection> AnyOpenInstruction.asDirection(direction: T): NavigationInstruction.Open<T> {
+    if(navigationDirection == direction) return this as NavigationInstruction.Open<T>
     return internal.copy(
-        navigationDirection = NavigationDirection.Present
-    ) as OpenPresentInstruction
+        navigationDirection = direction
+    ) as NavigationInstruction.Open<T>
 }

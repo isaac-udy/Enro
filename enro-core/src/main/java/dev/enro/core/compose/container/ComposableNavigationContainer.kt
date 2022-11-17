@@ -11,9 +11,8 @@ import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
-import dev.enro.core.hosts.AbstractFragmentHostForComposable
-import dev.enro.core.internal.get
 import java.util.concurrent.ConcurrentHashMap
 
 public class ComposableNavigationContainer internal constructor(
@@ -27,11 +26,11 @@ public class ComposableNavigationContainer internal constructor(
 ) : NavigationContainer(
     id = id,
     parentContext = parentContext,
+    contextType = ComposableDestination::class.java,
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
     acceptsNavigationKey = accept,
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
-    acceptsBinding = { it is ComposableNavigationBinding<*, *> }
 ) {
     private val destinationStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
 
@@ -44,11 +43,11 @@ public class ComposableNavigationContainer internal constructor(
                 it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)
             }
 
-    // When we've got a FragmentHostForComposable wrapping this ComposableNavigationContainer,
-    // we want to take the animations provided by the FragmentHostForComposable's NavigationContainer,
+    // When we've got a NavigationHost wrapping this ComposableNavigationContainer,
+    // we want to take the animations provided by the NavigationHost's NavigationContainer,
     // and sometimes skip other animation jobs
     private val shouldTakeAnimationsFromParentContainer: Boolean
-        get() = parentContext.contextReference is AbstractFragmentHostForComposable
+        get() = parentContext.contextReference is NavigationHost
                     && backstack.backstack.size <= 1
                     && backstack.lastInstruction != NavigationInstruction.Close
 
@@ -117,7 +116,7 @@ public class ComposableNavigationContainer internal constructor(
                 viewModelStore = viewModelStores.getOrPut(instruction.instructionId) { ViewModelStore()  },
                 onNavigationContextCreated = parentContext.controller.dependencyScope.get(),
                 onNavigationContextSaved = parentContext.controller.dependencyScope.get(),
-                composeEnvironmentRepository = parentContext.controller.dependencyScope.get(),
+                composeEnvironment = parentContext.controller.dependencyScope.get(),
             ).also { owner ->
                 owner.lifecycle.addObserver(object : LifecycleEventObserver {
                     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {

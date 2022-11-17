@@ -48,7 +48,7 @@ internal class ActivityLifecycleCallbacksForEnro(
         activity.onBackPressedDispatcher.addCallback(activity) {
             val leafContext = navigationContext.leafContext()
             if (interceptBackPressForAndroidxNavigation(this, leafContext)) return@addCallback
-            leafContext.getNavigationHandleViewModel().requestClose()
+            leafContext.getNavigationHandle().requestClose()
         }
     }
 

@@ -5,20 +5,18 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
-import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.container.*
-import dev.enro.core.fragment.FragmentNavigationBinding
 
 public class FragmentPresentationContainer internal constructor(
     parentContext: NavigationContext<*>,
 ) : NavigationContainer(
     id = "FragmentPresentationContainer",
     parentContext = parentContext,
+    contextType = Fragment::class.java,
     acceptsNavigationKey = { true },
     emptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor = {},
     acceptsDirection = { it is NavigationDirection.Present },
-    acceptsBinding = { it is FragmentNavigationBinding<*, *> || it is ComposableNavigationBinding<*, *> }
 ) {
 
     override var isVisible: Boolean = true
@@ -67,16 +65,11 @@ public class FragmentPresentationContainer internal constructor(
 
         val toPresent = backstackState.backstack
             .filter { fragmentManager.findFragmentByTag(it.instructionId) == null }
-            .map {
-                val binding =
-                    parentContext.controller.bindingForKeyType(it.navigationKey::class)
-                        ?: throw EnroException.UnreachableState()
-
+            .map { instruction ->
                 FragmentFactory.createFragment(
                     parentContext,
-                    binding,
-                    it
-                ) to it
+                    instruction
+                ) to instruction
             }
 
         setAnimations(backstackState)

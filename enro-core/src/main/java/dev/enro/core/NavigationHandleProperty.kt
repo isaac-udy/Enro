@@ -69,7 +69,7 @@ public inline fun <reified T : NavigationKey> Fragment.navigationHandle(
 )
 
 public fun NavigationContext<*>.getNavigationHandle(): NavigationHandle =
-    getNavigationHandleViewModel()
+    viewModelStoreOwner.getNavigationHandle()
 
 public fun ComponentActivity.getNavigationHandle(): NavigationHandle =
     getNavigationHandleViewModel()

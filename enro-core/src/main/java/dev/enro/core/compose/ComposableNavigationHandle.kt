@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.*
-import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
 @Composable
 public inline fun <reified T : NavigationKey> navigationHandle(): TypedNavigationHandle<T> {
@@ -21,7 +20,7 @@ public fun navigationHandle(): NavigationHandle {
     val localViewModelStoreOwner = LocalViewModelStoreOwner.current
 
     return remember {
-        localNavigationHandle ?: localViewModelStoreOwner!!.getNavigationHandleViewModel()
+        localNavigationHandle ?: localViewModelStoreOwner!!.getNavigationHandle()
     }
 }
 

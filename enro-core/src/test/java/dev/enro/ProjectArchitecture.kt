@@ -75,7 +75,7 @@ internal class ProjectArchitecture {
     }
 
     @Test
-    fun composeLayer() = proposedArchitectureRule {
+    fun composeLayer() {
         architecture
             .whereLayer(EnroLayer.COMPOSE)
             .mayOnlyAccessLayers(*EnroLayer.featureLayerDependencies)
@@ -83,7 +83,7 @@ internal class ProjectArchitecture {
     }
 
     @Test
-    fun fragmentLayer() = proposedArchitectureRule {
+    fun fragmentLayer() {
         architecture
             .whereLayer(EnroLayer.FRAGMENT)
             .mayOnlyAccessLayers(*EnroLayer.featureLayerDependencies)

@@ -16,4 +16,5 @@ internal class NoNavigationKey(
 internal class NoKeyNavigationBinding : NavigationBinding<NoNavigationKey, Nothing> {
     override val keyType: KClass<NoNavigationKey> = NoNavigationKey::class
     override val destinationType: KClass<Nothing> = Nothing::class
+    override val baseType: KClass<in Nothing> = Nothing::class
 }

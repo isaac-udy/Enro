@@ -8,7 +8,7 @@ import androidx.lifecycle.LifecycleOwner
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
-import dev.enro.core.controller.factory.resultChannelFactory
+import dev.enro.core.controller.usecase.createResultChannel
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.result.EnroResultChannel
 import dev.enro.core.result.managedByLifecycle
@@ -38,7 +38,7 @@ internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithRes
         lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (event != Lifecycle.Event.ON_CREATE) return;
-                resultChannel = handle.value.resultChannelFactory.createResultChannel<Result, Key>(
+                resultChannel = handle.value.createResultChannel<Result, Key>(
                     resultType = resultType,
                     onResult = onResult,
                 ).managedByLifecycle(lifecycle)

@@ -5,9 +5,9 @@ import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.internal.EnroDependencyScope
-import dev.enro.core.internal.get
+import dev.enro.core.controller.get
 import kotlin.reflect.KClass
 
 public interface NavigationHandle : LifecycleOwner {

@@ -33,7 +33,7 @@ internal class ConfigureNavigationHandleForPlugins(
         // Sometimes the context will be in an invalid state to correctly update, and will throw,
         // in which case, we just ignore the exception
         runCatching {
-            val active = context.rootContext().leafContext().getNavigationHandleViewModel()
+            val active = context.rootContext().leafContext().getNavigationHandle()
             if (!active.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return@runCatching
             activeNavigationHandle = WeakReference(active)
         }

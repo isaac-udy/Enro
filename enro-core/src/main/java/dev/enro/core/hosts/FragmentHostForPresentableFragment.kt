@@ -33,7 +33,7 @@ internal data class OpenPresentableFragmentInHiltFragment(
     override val instruction: OpenPresentInstruction
 ) : AbstractOpenPresentableFragmentInFragmentKey()
 
-public abstract class AbstractFragmentHostForPresentableFragment : DialogFragment() {
+public abstract class AbstractFragmentHostForPresentableFragment : DialogFragment(), NavigationHost {
 
     private val navigationHandle by navigationHandle<AbstractOpenPresentableFragmentInFragmentKey>()
     private val container by navigationContainer(

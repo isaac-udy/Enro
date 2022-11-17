@@ -8,6 +8,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
+import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,13 +17,14 @@ import kotlinx.coroutines.flow.getAndUpdate
 
 public abstract class NavigationContainer(
     public val id: String,
+    public val contextType: Class<out Any>,
     public val parentContext: NavigationContext<*>,
     public val emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     public val acceptsNavigationKey: (NavigationKey) -> Boolean,
     public val acceptsDirection: (NavigationDirection) -> Boolean,
-    public val acceptsBinding: (NavigationBinding<*, *>) -> Boolean,
 ) {
+    private val navigationHostFactory = parentContext.controller.dependencyScope.get<NavigationHostFactory>()
     private val handler = Handler(Looper.getMainLooper())
     private val reconcileBackstack: Runnable = Runnable {
         reconcileBackstack(pendingRemovals.toList(), mutableBackstack.value)
@@ -98,12 +100,12 @@ public abstract class NavigationContainer(
     public fun accept(
         instruction: AnyOpenInstruction
     ): Boolean {
+        val binding = parentContext.controller.bindingForKeyType(instruction.navigationKey::class)
+            ?: throw EnroException.UnreachableState()
+
         return acceptsNavigationKey.invoke(instruction.navigationKey)
                 && acceptsDirection(instruction.navigationDirection)
-                && acceptsBinding(
-            parentContext.controller.bindingForKeyType(instruction.navigationKey::class)
-                ?: throw EnroException.UnreachableState()
-        )
+                && navigationHostFactory.canCreateHostFor(contextType, binding)
     }
 
     protected fun setOrLoadInitialBackstack(initialBackstackState: NavigationBackstackState) {

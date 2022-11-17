@@ -10,7 +10,6 @@ import dev.enro.core.controller.repository.ExecutorRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.controller.usecase.AddComponentToController
-import dev.enro.core.internal.get
 import dev.enro.core.result.EnroResult
 import kotlin.reflect.KClass
 

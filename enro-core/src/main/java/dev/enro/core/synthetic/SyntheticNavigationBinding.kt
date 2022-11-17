@@ -10,6 +10,7 @@ public class SyntheticNavigationBinding<KeyType : NavigationKey> @PublishedApi i
     internal val destination: () -> SyntheticDestination<KeyType>
 ) : NavigationBinding<KeyType, SyntheticDestination<*>> {
     override val destinationType: KClass<SyntheticDestination<*>> = SyntheticDestination::class
+    override val baseType: KClass<in SyntheticDestination<*>> = SyntheticDestination::class
 }
 
 public fun <T : NavigationKey> createSyntheticNavigationBinding(

@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import dev.enro.core.*
-import dev.enro.core.controller.factory.resultChannelFactory
+import dev.enro.core.controller.usecase.createResultChannel
 import dev.enro.core.result.internal.LazyResultChannelProperty
 import dev.enro.core.result.internal.PendingResult
 import dev.enro.core.synthetic.SyntheticDestination
@@ -161,7 +161,7 @@ public inline fun <reified T : Any> NavigationHandle.registerForNavigationResult
     id: String,
     noinline onResult: (T) -> Unit
 ): UnmanagedEnroResultChannel<T, NavigationKey.WithResult<T>> {
-    return resultChannelFactory.createResultChannel(
+    return createResultChannel(
         resultType = T::class,
         onResult = onResult,
         additionalResultId = id
@@ -183,7 +183,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Navigatio
     key: KClass<Key>,
     noinline onResult: (T) -> Unit
 ): UnmanagedEnroResultChannel<T, Key> {
-    return resultChannelFactory.createResultChannel(
+    return createResultChannel(
         resultType = T::class,
         onResult = onResult,
         additionalResultId = id

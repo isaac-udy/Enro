@@ -2,8 +2,8 @@ package dev.enro.core.controller.interceptor.builder
 
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationControllerScope
+import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
-import dev.enro.core.internal.get
 
 public class NavigationInterceptorBuilder {
 

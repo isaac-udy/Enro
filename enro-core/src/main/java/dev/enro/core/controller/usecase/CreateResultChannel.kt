@@ -1,23 +1,23 @@
-package dev.enro.core.controller.factory
+package dev.enro.core.controller.usecase
 
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
-import dev.enro.core.internal.get
+import dev.enro.core.controller.get
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.UnmanagedEnroResultChannel
 import dev.enro.core.result.internal.ResultChannelImpl
 import kotlin.reflect.KClass
 
 @PublishedApi
-internal val NavigationHandle.resultChannelFactory: ResultChannelFactory
+internal val NavigationHandle.createResultChannel: CreateResultChannel
     get() = dependencyScope.get()
 
 @PublishedApi
-internal class ResultChannelFactory(
+internal class CreateResultChannel(
     private val navigationHandle: NavigationHandle,
     private val enroResult: EnroResult,
 ) {
-    fun <Result: Any, Key: NavigationKey.WithResult<Result>> createResultChannel(
+    operator fun <Result: Any, Key: NavigationKey.WithResult<Result>> invoke(
         resultType: KClass<Result>,
         onResult: (Result) -> Unit,
         additionalResultId: String = "",

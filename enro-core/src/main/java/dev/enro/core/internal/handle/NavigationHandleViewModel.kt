@@ -8,9 +8,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.usecase.ExecuteCloseInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
-import dev.enro.core.internal.EnroDependencyScope
 import dev.enro.core.internal.NoNavigationKey
 
 internal open class NavigationHandleViewModel(

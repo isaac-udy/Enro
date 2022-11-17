@@ -22,7 +22,6 @@ import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.fragment.FragmentNavigationBinding
 import dev.enro.core.fragment.container.FragmentPresentationContainer
-import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
 public sealed class NavigationContext<ContextType : Any>(
@@ -116,6 +115,10 @@ internal val <T : Fragment> T.navigationContext: FragmentContext<T>
 internal val <T : ComposableDestination> T.navigationContext: ComposeContext<T>
     get() = getNavigationHandleViewModel().navigationContext as ComposeContext<T>
 
+@AdvancedEnroApi
+internal val ViewModelStoreOwner.navigationContext: NavigationContext<*>?
+    get() = getNavigationHandleViewModel().navigationContext
+
 public fun NavigationContext<*>.rootContext(): NavigationContext<*> {
     var parent = this
     while (true) {
@@ -146,14 +149,6 @@ public fun NavigationContext<*>.leafContext(): NavigationContext<*> {
     return containerManager.activeContainer?.activeContext?.leafContext()
         ?: fragmentManager?.primaryNavigationFragment?.navigationContext?.leafContext()
         ?: this
-}
-
-internal fun NavigationContext<*>.getNavigationHandleViewModel(): NavigationHandleViewModel {
-    return when (this) {
-        is FragmentContext<out Fragment> -> fragment.getNavigationHandle()
-        is ActivityContext<out ComponentActivity> -> activity.getNavigationHandle()
-        is ComposeContext<out ComposableDestination> -> contextReference.owner.getNavigationHandleViewModel()
-    } as NavigationHandleViewModel
 }
 
 public val ComponentActivity.containerManager: NavigationContainerManager get() = navigationContext.containerManager

@@ -8,6 +8,7 @@ publishAndroidModule("dev.enro", "enro-core")
 android {
     kotlinOptions {
         freeCompilerArgs += '-Xexplicit-api=strict'
+        freeCompilerArgs += '-Xopt-in=dev.enro.core.AdvancedEnroApi'
     }
 }
 

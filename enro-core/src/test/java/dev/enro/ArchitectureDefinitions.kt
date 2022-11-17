@@ -10,6 +10,7 @@ internal enum class EnroPackage(val packageName: String) {
     CONTAINER_PACKAGE("dev.enro.core.container.."),
     INTERCEPTOR_PACKAGE("dev.enro.core.controller.interceptor.."),
     CONTROLLER_PACKAGE("dev.enro.core.controller"),
+    USE_CASE_PACKAGE("dev.enro.core.controller.usecase.."),
     RESULTS_PACKAGE("dev.enro.core.result"),
 
     // Feature packages
@@ -37,7 +38,8 @@ internal enum class EnroLayer(
                 JavaClass.Predicates.resideInAnyPackage(EnroPackage.PLUGINS_PACKAGE.packageName).test(it) ||
                 JavaClass.Predicates.resideInAnyPackage(EnroPackage.INTERCEPTOR_PACKAGE.packageName).test(it) ||
                 JavaClass.Predicates.resideInAnyPackage(EnroPackage.RESULTS_PACKAGE.packageName).test(it)  ||
-                JavaClass.Predicates.resideInAnyPackage(EnroPackage.CONTROLLER_PACKAGE.packageName).test(it)
+                JavaClass.Predicates.resideInAnyPackage(EnroPackage.CONTROLLER_PACKAGE.packageName).test(it) ||
+                JavaClass.Predicates.resideInAnyPackage(EnroPackage.USE_CASE_PACKAGE.packageName).test(it)
     }),
     ACTIVITY({
         JavaClass.Predicates.resideInAnyPackage(EnroPackage.ACTIVITY_PACKAGE.packageName).test(it)

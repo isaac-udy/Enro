@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.GetNavigationExecutor
 import dev.enro.core.controller.usecase.forClosing
 import dev.enro.core.controller.usecase.forOpening
@@ -18,7 +19,6 @@ import dev.enro.core.hosts.AbstractActivityHostForAnyInstruction
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
 import dev.enro.core.hosts.AbstractOpenInstructionInActivityKey
-import dev.enro.core.internal.get
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
 
@@ -198,7 +198,7 @@ public fun animationsFor(
     }
 
     if (navigationInstruction is NavigationInstruction.Open<*> && context.contextReference is AbstractActivityHostForAnyInstruction) {
-        val openActivityKey = context.getNavigationHandleViewModel().key as AbstractOpenInstructionInActivityKey
+        val openActivityKey = context.getNavigationHandle().key as AbstractOpenInstructionInActivityKey
         if (navigationInstruction.instructionId == openActivityKey.instruction.instructionId) {
             return NavigationAnimation.Resource(0, 0)
         }

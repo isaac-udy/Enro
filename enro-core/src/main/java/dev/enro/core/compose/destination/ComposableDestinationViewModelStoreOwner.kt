@@ -6,11 +6,13 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.MutableCreationExtras
 import dagger.hilt.android.internal.lifecycle.HiltViewModelFactory
 import dagger.hilt.internal.GeneratedComponentManagerHolder
+import dev.enro.core.ArchitectureException
 import dev.enro.core.addOpenInstruction
 import dev.enro.core.controller.application
-import dev.enro.core.internal.handle.getNavigationHandleViewModel
-import dev.enro.viewmodel.EnroViewModelFactory
+import dev.enro.core.getNavigationHandle
+import dev.enro.viewmodel.withNavigationHandle
 
+@ArchitectureException("The ViewModelStoreOwner here needs to be able to use the viewmodel package to create ViewModelStores that are enro aware")
 internal class ComposableDestinationViewModelStoreOwner(
     private val owner: ComposableDestinationOwner,
     private val savedState: Bundle,
@@ -45,10 +47,7 @@ internal class ComposableDestinationViewModelStoreOwner(
             SavedStateViewModelFactory(activity.application, owner, savedState)
         }
 
-        return EnroViewModelFactory(
-            getNavigationHandleViewModel(),
-            factory
-        )
+        return factory.withNavigationHandle(getNavigationHandle())
     }
 
     override fun getDefaultViewModelCreationExtras(): CreationExtras {

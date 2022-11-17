@@ -43,7 +43,6 @@ internal object HiltInstructionInterceptor : NavigationInstructionInterceptor {
             return instruction.internal.copy(
                 navigationKey = OpenComposableInHiltFragment(
                     instruction = navigationKey.instruction,
-                    isRoot = navigationKey.isRoot
                 )
             )
         }

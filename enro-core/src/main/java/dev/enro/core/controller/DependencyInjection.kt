@@ -1,4 +1,4 @@
-package dev.enro.core.internal
+package dev.enro.core.controller
 
 import kotlin.reflect.KClass
 

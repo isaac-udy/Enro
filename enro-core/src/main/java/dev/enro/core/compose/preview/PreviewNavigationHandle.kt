@@ -8,10 +8,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import dev.enro.core.*
 import dev.enro.core.compose.LocalNavigationHandle
+import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.internal.EnroDependencyScope
 import dev.enro.core.internal.handle.NavigationHandleScope
 
+@ArchitectureException("PreviewNavigationHandle is a utility, and not a core part of Enro's API structure.")
 internal class PreviewNavigationHandle(
     override val instruction: AnyOpenInstruction
 ) : NavigationHandle {
