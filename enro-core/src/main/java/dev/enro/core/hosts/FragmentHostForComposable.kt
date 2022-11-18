@@ -40,7 +40,7 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
         if (activity !is AbstractActivityHostForAnyInstruction) return@lazy false
         val hasParent = parentFragment != null
         if (hasParent) return@lazy false
-        val activityKey = activity.getNavigationHandle().instruction.navigationKey as OpenInstructionInActivity
+        val activityKey = activity.getNavigationHandle().instruction.navigationKey as AbstractOpenInstructionInActivityKey
         return@lazy activityKey.instruction == navigationHandle.instruction
     }
 

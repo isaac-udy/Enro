@@ -33,6 +33,14 @@ internal class ClassHierarchyRepository {
             f to t
         }
     }
+
+    fun isAssignableTo(
+        from: Class<*>,
+        to: Class<*>
+    ) : Boolean {
+        val fromClasses = getClassHierarchy(from)
+        return fromClasses.contains(to)
+    }
 }
 
 private fun <A, B, C> cartesianProduct(a: List<A>, b: List<B>, block: (A, B) -> C): List<C> =

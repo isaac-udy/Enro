@@ -1,20 +1,16 @@
 package dev.enro.core
 
 @AdvancedEnroApi
-public interface NavigationHostFactory {
-    public fun canCreateHostFor(targetContextType: Class<*>, binding: NavigationBinding<*, *>): Boolean
-    public fun createHostFor(targetContextType: Class<*>, instruction: NavigationInstruction.Open<*>): NavigationInstruction.Open<*>
+public interface NavigationHostFactory<HostType: Any> {
+    public val hostType: Class<HostType>
+
+    public fun supports(instruction: NavigationInstruction.Open<*>): Boolean
+    public fun wrap(instruction: NavigationInstruction.Open<*>): NavigationInstruction.Open<*>
+}
+
+internal fun <T: Any> NavigationHostFactory<T>.cannotCreateHost(instruction: NavigationInstruction.Open<*>): Nothing {
+    throw EnroException.CannotCreateHostForType(hostType, instruction.internal.openingType)
 }
 
 @AdvancedEnroApi
-public inline fun <reified T: Any> NavigationHostFactory.canCreateHostFor(binding: NavigationBinding<*, *>): Boolean {
-    return canCreateHostFor(T::class.java, binding)
-}
-
-@AdvancedEnroApi
-public inline fun <reified T: Any> NavigationHostFactory.createHostFor(instruction: NavigationInstruction.Open<*>): NavigationInstruction.Open<*> {
-    return createHostFor(T::class.java, instruction)
-}
-
-@AdvancedEnroApi
-internal interface NavigationHost
+public interface NavigationHost

@@ -6,18 +6,22 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import dev.enro.core.*
 import dev.enro.core.container.*
+import dev.enro.core.controller.get
+import dev.enro.core.controller.usecase.HostInstructionAs
 
 public class FragmentPresentationContainer internal constructor(
     parentContext: NavigationContext<*>,
 ) : NavigationContainer(
     id = "FragmentPresentationContainer",
     parentContext = parentContext,
-    contextType = Fragment::class.java,
+    contextType = DialogFragment::class.java,
     acceptsNavigationKey = { true },
     emptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor = {},
     acceptsDirection = { it is NavigationDirection.Present },
 ) {
+
+    private val hostInstructionAs = parentContext.controller.dependencyScope.get<HostInstructionAs>()
 
     override var isVisible: Boolean = true
 
@@ -68,7 +72,7 @@ public class FragmentPresentationContainer internal constructor(
             .map { instruction ->
                 FragmentFactory.createFragment(
                     parentContext,
-                    instruction
+                    hostInstructionAs<DialogFragment>(instruction)
                 ) to instruction
             }
 

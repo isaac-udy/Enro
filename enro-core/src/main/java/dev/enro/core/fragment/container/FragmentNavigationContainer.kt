@@ -11,7 +11,9 @@ import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.core.controller.usecase.HostInstructionAs
 import dev.enro.extensions.animate
 
 public class FragmentNavigationContainer internal constructor(
@@ -30,6 +32,8 @@ public class FragmentNavigationContainer internal constructor(
     interceptor = interceptor,
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
 ) {
+    private val hostInstructionAs = parentContext.controller.dependencyScope.get<HostInstructionAs>()
+
     override var isVisible: Boolean
         get() {
             return containerView?.isVisible ?: false
@@ -123,7 +127,7 @@ public class FragmentNavigationContainer internal constructor(
         return FragmentAndInstruction(
             fragment = FragmentFactory.createFragment(
                 parentContext,
-                backstackState.active
+                hostInstructionAs<Fragment>(backstackState.active)
             ),
             instruction = backstackState.active
         )

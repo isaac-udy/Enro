@@ -1,5 +1,6 @@
 package dev.enro.core.controller.repository
 
+import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
 import dev.enro.core.synthetic.SyntheticDestination
@@ -39,4 +40,10 @@ internal class NavigationBindingRepository {
     ): NavigationBinding<*, *>? {
         return bindingsByKeyType[keyType]
     }
+}
+
+internal fun NavigationBindingRepository.requireBindingForInstruction(
+    instruction: AnyOpenInstruction
+): NavigationBinding<*, *> {
+    return bindingForKeyType(instruction.navigationKey::class)!!
 }

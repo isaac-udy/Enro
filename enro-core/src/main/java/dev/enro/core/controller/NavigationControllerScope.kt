@@ -2,13 +2,11 @@ package dev.enro.core.controller
 
 import android.app.Application
 import androidx.fragment.app.FragmentManager
-import dev.enro.core.NavigationHostFactory
 import dev.enro.core.controller.lifecycle.ActivityLifecycleCallbacksForEnro
 import dev.enro.core.controller.lifecycle.FragmentLifecycleCallbacksForEnro
 import dev.enro.core.controller.repository.*
 import dev.enro.core.controller.usecase.*
 import dev.enro.core.controller.usecase.ComposeEnvironment
-import dev.enro.core.hosts.NavigationHostFactoryImpl
 import dev.enro.core.result.EnroResult
 
 internal class NavigationControllerScope(
@@ -28,6 +26,7 @@ internal class NavigationControllerScope(
             register { ExecutorRepository(get()) }
             register { ComposeEnvironmentRepository() }
             register { InstructionInterceptorRepository() }
+            register { NavigationHostFactoryRepository(get()) }
 
             // Usecases
             register { AddComponentToController(get(), get(), get(), get(), get()) }
@@ -41,7 +40,8 @@ internal class NavigationControllerScope(
             register { OnNavigationContextSaved() }
             register { ComposeEnvironment(get()) }
 
-            register<NavigationHostFactory> { NavigationHostFactoryImpl(get()) }
+            register { CanInstructionBeHostedAs(get(), get()) }
+            register { HostInstructionAs(get(), get()) }
 
             // Other
             register<Application.ActivityLifecycleCallbacks> { ActivityLifecycleCallbacksForEnro(get(), get(), get()) }

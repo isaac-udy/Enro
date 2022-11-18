@@ -8,6 +8,7 @@ import dev.enro.core.*
 import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
+import dev.enro.core.controller.usecase.HostInstructionAs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -206,11 +207,11 @@ private fun openFragmentAsActivity(
     instruction: AnyOpenInstruction
 ) {
     val open = fromContext.controller.dependencyScope.get<ExecuteOpenInstruction>()
-    val hostFactory = fromContext.controller.dependencyScope.get<NavigationHostFactory>()
+    val hostInstructionAs = fromContext.controller.dependencyScope.get<HostInstructionAs>()
 
     open.invoke(
         fromContext,
-        hostFactory.createHostFor<Activity>(
+        hostInstructionAs<Activity>(
             instruction.asDirection(navigationDirection)
         ),
     )

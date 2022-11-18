@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.getAndUpdate
@@ -24,7 +25,7 @@ public abstract class NavigationContainer(
     public val acceptsNavigationKey: (NavigationKey) -> Boolean,
     public val acceptsDirection: (NavigationDirection) -> Boolean,
 ) {
-    private val navigationHostFactory = parentContext.controller.dependencyScope.get<NavigationHostFactory>()
+    private val canInstructionBeHostedAs = parentContext.controller.dependencyScope.get<CanInstructionBeHostedAs>()
     private val handler = Handler(Looper.getMainLooper())
     private val reconcileBackstack: Runnable = Runnable {
         reconcileBackstack(pendingRemovals.toList(), mutableBackstack.value)
@@ -100,12 +101,9 @@ public abstract class NavigationContainer(
     public fun accept(
         instruction: AnyOpenInstruction
     ): Boolean {
-        val binding = parentContext.controller.bindingForKeyType(instruction.navigationKey::class)
-            ?: throw EnroException.UnreachableState()
-
         return acceptsNavigationKey.invoke(instruction.navigationKey)
                 && acceptsDirection(instruction.navigationDirection)
-                && navigationHostFactory.canCreateHostFor(contextType, binding)
+                && canInstructionBeHostedAs(contextType, instruction)
     }
 
     protected fun setOrLoadInitialBackstack(initialBackstackState: NavigationBackstackState) {

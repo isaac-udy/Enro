@@ -10,6 +10,7 @@ import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
+import dev.enro.core.controller.usecase.HostInstructionAs
 
 public object DefaultComposableExecutor :
     NavigationExecutor<Any, ComposableDestination, NavigationKey>(
@@ -109,11 +110,11 @@ private fun openComposableAsActivity(
     instruction: AnyOpenInstruction
 ) {
     val open = fromContext.controller.dependencyScope.get<ExecuteOpenInstruction>()
-    val hostFactory = fromContext.controller.dependencyScope.get<NavigationHostFactory>()
+    val hostInstructionAs = fromContext.controller.dependencyScope.get<HostInstructionAs>()
 
     open(
         navigationContext = fromContext,
-        instruction = hostFactory.createHostFor<Activity>(instruction.asDirection(direction))
+        instruction = hostInstructionAs<Activity>(instruction.asDirection(direction))
     )
 }
 
@@ -122,10 +123,10 @@ private fun openComposableAsFragment(
     instruction: AnyOpenInstruction
 ) {
     val open = fromContext.controller.dependencyScope.get<ExecuteOpenInstruction>()
-    val hostFactory = fromContext.controller.dependencyScope.get<NavigationHostFactory>()
+    val hostInstructionAs = fromContext.controller.dependencyScope.get<HostInstructionAs>()
 
     open(
         navigationContext = fromContext,
-        instruction = hostFactory.createHostFor<Fragment>(instruction)
+        instruction = hostInstructionAs<Fragment>(instruction)
     )
 }

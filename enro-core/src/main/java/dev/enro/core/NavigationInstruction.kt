@@ -55,7 +55,7 @@ public sealed class NavigationInstruction {
             val openedByType: Class<out Any> = Any::class.java, // the type of context that requested this open instruction was executed
             val openedById: String? = null,
             val resultId: ResultChannelId? = null,
-        ) : NavigationInstruction.Open<T>()
+        ) : Open<T>()
     }
 
     public sealed class Close : NavigationInstruction() {
