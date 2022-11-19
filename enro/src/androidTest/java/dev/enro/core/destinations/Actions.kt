@@ -1,5 +1,6 @@
 package dev.enro.core.destinations
 
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -89,7 +90,6 @@ fun assertPushContainerType(
 ) {
     InstrumentationRegistry.getInstrumentation().waitForIdleSync()
     InstrumentationRegistry.getInstrumentation().runOnMainSync {
-
         fun NavigationContainer.hasActiveContext(navigationContext: NavigationContext<*>): Boolean {
             val isActiveContextComposeHost =
                 activeContext?.contextReference is AbstractFragmentHostForComposable
@@ -100,24 +100,33 @@ fun assertPushContainerType(
             return activeContext == navigationContext || (isActiveContextComposeHost && isActiveContextInChildContainer)
         }
 
-        fun <T : Any> withParentContext(context: NavigationContext<*>, block: (parentContext: NavigationContext<*>) -> T?) : T? {
-            val parentContext = context.parentContext()!!
+        fun <T : Any> withParentContext(parentContext: NavigationContext<*>?, block: (parentContext: NavigationContext<*>) -> T?) : T? {
+            parentContext ?: return null
+
             val result = block(parentContext)
             return when {
                 result != null -> result
-                parentContext.contextReference is NavigationHost -> withParentContext(parentContext, block)
+                parentContext.contextReference is NavigationHost -> withParentContext(parentContext.parentContext(), block)
+                else -> null
+            }
+        }
+
+        fun getParentContainer(fromContext: NavigationContext<*>?, block: (navigationContainer: NavigationContainer) -> Boolean) : NavigationContainer? {
+            if (fromContext == null) return null
+            val parentContainer = fromContext.parentContainer()
+            if (parentContainer?.let(block) == true) return parentContainer
+
+            val parentContext = fromContext.parentContext()
+            return when (parentContext?.contextReference) {
+                is NavigationHost -> getParentContainer(parentContext, block)
                 else -> null
             }
         }
 
         val container = when (containerType) {
-            is IntoSameContainer -> withParentContext(pushFrom.navigationContext) { parentContext ->
-                parentContext.containerManager
-                    .containers
-                    .firstOrNull {
-                        it.hasActiveContext(pushOpened.navigationContext) &&
-                                it.backstackState.backstack.contains(pushFrom.navigation.instruction)
-                    }
+            is IntoSameContainer -> getParentContainer(pushFrom.navigationContext) { parentContainer ->
+                Log.e("LOOKED", "${parentContainer.backstackState.backstack.joinToString { it.navigationKey.toString() }}")
+                parentContainer.hasActiveContext(pushOpened.navigationContext)
             }
             is IntoChildContainer -> pushFrom.navigationContext
                 .containerManager
@@ -125,7 +134,7 @@ fun assertPushContainerType(
                 .firstOrNull {
                     it.hasActiveContext(pushOpened.navigationContext)
                 }
-            is IntoSiblingContainer -> withParentContext(pushFrom.navigationContext) { parentContext ->
+            is IntoSiblingContainer -> withParentContext(pushFrom.navigationContext.parentContext()) { parentContext ->
                 parentContext
                     .containerManager
                     .containers
