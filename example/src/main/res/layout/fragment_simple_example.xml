@@ -1,140 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#FFFFFFFF"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/title"
-        style="@style/Widget.MaterialComponents.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:text="Example Fragment"
-        android:fontFamily="serif-monospace"
-        android:textSize="32sp"
-        android:textStyle="bold"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFFFF"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/content"
-        style="@style/Widget.MaterialComponents.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/example_content"
-        android:layout_marginTop="16dp"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="@+id/title"
-        app:layout_constraintTop_toBottomOf="@+id/title" />
+        <TextView
+            android:id="@+id/title"
+            style="@style/Widget.MaterialComponents.TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Example Fragment"
+            android:fontFamily="serif-monospace"
+            android:textSize="32sp"
+            android:textStyle="bold"/>
 
-    <TextView
-        android:id="@+id/currentDestinationName"
-        style="@style/Widget.MaterialComponents.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Current Destination:"
-        android:layout_marginTop="24dp"
-        android:fontFamily="serif-monospace"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/content"
-        app:layout_constraintTop_toBottomOf="@+id/content" />
+        <TextView
+            android:id="@+id/content"
+            style="@style/Widget.MaterialComponents.TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/example_content"
+            android:layout_marginTop="16dp"
+            android:textSize="16sp"/>
 
-    <TextView
-        android:id="@+id/currentDestination"
-        style="@style/Widget.MaterialComponents.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="(Nothing)"
-        android:layout_marginTop="4dp"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="@+id/currentDestinationName"
-        app:layout_constraintTop_toBottomOf="@+id/currentDestinationName" />
+        <TextView
+            android:id="@+id/currentDestinationName"
+            style="@style/Widget.MaterialComponents.TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Current Destination:"
+            android:layout_marginTop="24dp"
+            android:fontFamily="serif-monospace"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
 
-    <TextView
-        android:id="@+id/launchedFromTitle"
-        style="@style/Widget.MaterialComponents.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Launched From:"
-        android:layout_marginTop="24dp"
-        android:fontFamily="serif-monospace"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/currentDestination"
-        app:layout_constraintTop_toBottomOf="@+id/currentDestination" />
+        <TextView
+            android:id="@+id/currentDestination"
+            style="@style/Widget.MaterialComponents.TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(Nothing)"
+            android:layout_marginTop="4dp"
+            android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/launchedFrom"
-        style="@style/Widget.MaterialComponents.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="(Nothing)"
-        android:layout_marginTop="4dp"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="@+id/launchedFromTitle"
-        app:layout_constraintTop_toBottomOf="@+id/launchedFromTitle" />
+        <TextView
+            android:id="@+id/launchedFromTitle"
+            style="@style/Widget.MaterialComponents.TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Launched From:"
+            android:layout_marginTop="24dp"
+            android:fontFamily="serif-monospace"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/currentStackTitle"
-        style="@style/Widget.MaterialComponents.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Current Stack:"
-        android:layout_marginTop="24dp"
-        android:fontFamily="serif-monospace"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/launchedFrom"
-        app:layout_constraintTop_toBottomOf="@+id/launchedFrom" />
+        <TextView
+            android:id="@+id/launchedFrom"
+            style="@style/Widget.MaterialComponents.TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(Nothing)"
+            android:layout_marginTop="4dp"
+            android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/currentStack"
-        style="@style/Widget.MaterialComponents.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="(Nothing)"
-        android:layout_marginTop="4dp"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="@+id/currentStackTitle"
-        app:layout_constraintTop_toBottomOf="@+id/currentStackTitle" />
+        <TextView
+            android:id="@+id/currentStackTitle"
+            style="@style/Widget.MaterialComponents.TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Current Stack:"
+            android:layout_marginTop="24dp"
+            android:fontFamily="serif-monospace"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
 
-    <Button
-        android:id="@+id/forwardButton"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/forwardComposeButton"
-        android:text="Forward"/>
+        <TextView
+            android:id="@+id/currentStack"
+            style="@style/Widget.MaterialComponents.TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(Nothing)"
+            android:layout_marginTop="4dp"
+            android:textSize="16sp" />
+        <Button
+            android:id="@+id/forwardButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Forward"/>
 
-    <Button
-        android:id="@+id/forwardComposeButton"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/replaceButton"
-        android:text="Forward (Compose)"/>
+        <Button
+            android:id="@+id/forwardComposeButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Forward (Compose)"/>
 
-    <Button
-        android:id="@+id/replaceButton"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/replaceRootButton"
-        app:layout_constraintStart_toStartOf="parent"
-        android:text="Replace"/>
+        <Button
+            android:id="@+id/replaceButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Replace"/>
 
-    <Button
-        android:id="@+id/replaceRootButton"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:text="Replace Root"/>
+        <Button
+            android:id="@+id/replaceRootButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Replace Root"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
+</ScrollView>
