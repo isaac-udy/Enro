@@ -50,6 +50,7 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
         savedInstanceState: Bundle?
     ): View {
         return ComposeView(requireContext()).apply {
+            id = R.id.enro_internal_compose_fragment_view_id
             setContent {
                 val state = rememberEnroContainerController(
                     initialBackstack = listOf(navigationHandle.key.instruction.asPushInstruction()),
