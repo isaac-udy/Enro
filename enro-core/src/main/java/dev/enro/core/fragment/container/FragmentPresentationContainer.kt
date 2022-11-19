@@ -72,7 +72,7 @@ public class FragmentPresentationContainer internal constructor(
             .map { instruction ->
                 FragmentFactory.createFragment(
                     parentContext,
-                    hostInstructionAs<DialogFragment>(instruction)
+                    hostInstructionAs<DialogFragment>(parentContext, instruction)
                 ) to instruction
             }
 

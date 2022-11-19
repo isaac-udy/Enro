@@ -114,7 +114,7 @@ private fun openComposableAsActivity(
 
     open(
         navigationContext = fromContext,
-        instruction = hostInstructionAs<Activity>(instruction.asDirection(direction))
+        instruction = hostInstructionAs<Activity>(fromContext, instruction.asDirection(direction))
     )
 }
 
@@ -127,6 +127,6 @@ private fun openComposableAsFragment(
 
     open(
         navigationContext = fromContext,
-        instruction = hostInstructionAs<Fragment>(instruction)
+        instruction = hostInstructionAs<Fragment>(fromContext, instruction)
     )
 }

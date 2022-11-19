@@ -1,15 +1,42 @@
 package dev.enro.core
 
-@AdvancedEnroApi
-public interface NavigationHostFactory<HostType: Any> {
-    public val hostType: Class<HostType>
+import dev.enro.core.controller.EnroDependencyScope
+import dev.enro.core.controller.NavigationComponentBuilder
+import dev.enro.core.controller.get
+import dev.enro.core.controller.usecase.GetNavigationBinding
 
-    public fun supports(instruction: NavigationInstruction.Open<*>): Boolean
-    public fun wrap(instruction: NavigationInstruction.Open<*>): NavigationInstruction.Open<*>
+@AdvancedEnroApi
+public abstract class NavigationHostFactory<HostType: Any>(
+    public val hostType: Class<HostType>,
+) {
+    internal lateinit var dependencyScope: EnroDependencyScope
+
+    private val getNavigationBinding: GetNavigationBinding by lazy { dependencyScope.get() }
+
+    protected fun getNavigationBinding(instruction: NavigationInstruction.Open<*>): NavigationBinding<*, *>?
+        = getNavigationBinding.invoke(instruction)
+
+    protected fun requireNavigationBinding(instruction: NavigationInstruction.Open<*>): NavigationBinding<*, *>
+            = getNavigationBinding.require(instruction)
+
+    protected fun cannotCreateHost(instruction: NavigationInstruction.Open<*>): Nothing {
+        throw EnroException.CannotCreateHostForType(hostType, instruction.internal.openingType)
+    }
+
+    public abstract fun supports(
+        navigationContext: NavigationContext<*>,
+        instruction: NavigationInstruction.Open<*>
+    ): Boolean
+
+    public abstract fun wrap(
+        navigationContext: NavigationContext<*>,
+        instruction: NavigationInstruction.Open<*>
+    ): NavigationInstruction.Open<*>
 }
 
-internal fun <T: Any> NavigationHostFactory<T>.cannotCreateHost(instruction: NavigationInstruction.Open<*>): Nothing {
-    throw EnroException.CannotCreateHostForType(hostType, instruction.internal.openingType)
+@AdvancedEnroApi
+internal fun NavigationComponentBuilder.navigationHostFactory(navigationHostFactory: NavigationHostFactory<*>) {
+    hostFactories.add(navigationHostFactory)
 }
 
 @AdvancedEnroApi

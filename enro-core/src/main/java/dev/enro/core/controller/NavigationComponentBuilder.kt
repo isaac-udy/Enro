@@ -33,6 +33,9 @@ public class NavigationComponentBuilder {
     internal val interceptors: MutableList<NavigationInstructionInterceptor> = mutableListOf()
 
     @PublishedApi
+    internal val hostFactories: MutableList<NavigationHostFactory<*>> = mutableListOf()
+
+    @PublishedApi
     internal var composeEnvironment: ComposeEnvironment? = null
 
     public fun binding(binding: NavigationBinding<*, *>) {
@@ -90,6 +93,7 @@ public class NavigationComponentBuilder {
         overrides.addAll(builder.overrides)
         plugins.addAll(builder.plugins)
         interceptors.addAll(builder.interceptors)
+        hostFactories.addAll(builder.hostFactories)
 
         if (builder.composeEnvironment != null) {
             composeEnvironment = builder.composeEnvironment

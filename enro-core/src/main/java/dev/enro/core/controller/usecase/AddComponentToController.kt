@@ -9,6 +9,7 @@ internal class AddComponentToController(
     private val executorRepository: ExecutorRepository,
     private val interceptorRepository: InstructionInterceptorRepository,
     private val composeEnvironmentRepository: ComposeEnvironmentRepository,
+    private val navigationHostFactoryRepository: NavigationHostFactoryRepository,
 ) {
 
     operator fun invoke(component: NavigationComponentBuilder) {
@@ -16,6 +17,8 @@ internal class AddComponentToController(
         navigationBindingRepository.addNavigationBindings(component.bindings)
         executorRepository.addExecutors(component.overrides)
         interceptorRepository.addInterceptors(component.interceptors)
+
+        component.hostFactories.forEach { navigationHostFactoryRepository.addFactory(it) }
 
         component.composeEnvironment.let { environment ->
             if (environment == null) return@let

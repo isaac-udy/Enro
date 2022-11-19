@@ -26,10 +26,10 @@ internal class NavigationControllerScope(
             register { ExecutorRepository(get()) }
             register { ComposeEnvironmentRepository() }
             register { InstructionInterceptorRepository() }
-            register { NavigationHostFactoryRepository(get()) }
+            register { NavigationHostFactoryRepository(this) }
 
             // Usecases
-            register { AddComponentToController(get(), get(), get(), get(), get()) }
+            register { AddComponentToController(get(), get(), get(), get(), get(), get()) }
             register { GetNavigationExecutor(get(), get()) }
             register { AddPendingResult(get()) }
             register<ExecuteOpenInstruction> { ExecuteOpenInstructionImpl(get(), get(), get()) }
@@ -42,6 +42,7 @@ internal class NavigationControllerScope(
 
             register { CanInstructionBeHostedAs(get(), get()) }
             register { HostInstructionAs(get(), get()) }
+            register { GetNavigationBinding(get()) }
 
             // Other
             register<Application.ActivityLifecycleCallbacks> { ActivityLifecycleCallbacksForEnro(get(), get(), get()) }

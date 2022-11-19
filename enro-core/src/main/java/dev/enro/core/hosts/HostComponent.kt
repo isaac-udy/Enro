@@ -3,8 +3,13 @@ package dev.enro.core.hosts
 import dev.enro.core.activity.createActivityNavigationBinding
 import dev.enro.core.controller.createNavigationComponent
 import dev.enro.core.fragment.createFragmentNavigationBinding
+import dev.enro.core.navigationHostFactory
 
 internal val hostComponent = createNavigationComponent {
+    navigationHostFactory(ActivityHost())
+    navigationHostFactory(FragmentHost())
+    navigationHostFactory(DialogFragmentHost())
+
     binding(createActivityNavigationBinding<OpenInstructionInActivity, ActivityHostForAnyInstruction>())
     binding(createFragmentNavigationBinding<OpenComposableInFragment, FragmentHostForComposable>())
     binding(createFragmentNavigationBinding<OpenComposableDialogInFragment, FragmentHostForComposableDialog>())

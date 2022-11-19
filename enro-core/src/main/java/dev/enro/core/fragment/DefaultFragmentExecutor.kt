@@ -212,6 +212,7 @@ private fun openFragmentAsActivity(
     open.invoke(
         fromContext,
         hostInstructionAs<Activity>(
+            fromContext,
             instruction.asDirection(navigationDirection)
         ),
     )

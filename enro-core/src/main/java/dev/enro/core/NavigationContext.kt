@@ -13,6 +13,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
+import dagger.hilt.internal.GeneratedComponentManager
+import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.destination.activity
@@ -166,3 +168,27 @@ public val containerManager: NavigationContainerManager
                 .containerManager
         }
     }
+
+
+
+private val generatedComponentManagerHolderClass  by lazy {
+    runCatching {
+        GeneratedComponentManagerHolder::class.java
+    }.getOrNull()
+}
+
+internal val NavigationContext<*>.isHiltContext
+    get() = if (generatedComponentManagerHolderClass != null) {
+        activity is GeneratedComponentManagerHolder
+    } else false
+
+private val generatedComponentManagerClass  by lazy {
+    runCatching {
+        GeneratedComponentManager::class.java
+    }.getOrNull()
+}
+
+internal val NavigationContext<*>.isHiltApplication
+    get() = if (generatedComponentManagerClass != null) {
+        activity.application is GeneratedComponentManager<*>
+    } else false

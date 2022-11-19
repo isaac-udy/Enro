@@ -127,7 +127,7 @@ public class FragmentNavigationContainer internal constructor(
         return FragmentAndInstruction(
             fragment = FragmentFactory.createFragment(
                 parentContext,
-                hostInstructionAs<Fragment>(backstackState.active)
+                hostInstructionAs<Fragment>(parentContext, backstackState.active)
             ),
             instruction = backstackState.active
         )
