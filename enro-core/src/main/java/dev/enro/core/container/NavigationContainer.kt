@@ -31,8 +31,8 @@ public abstract class NavigationContainer(
         reconcileBackstack(pendingRemovals.toList(), mutableBackstack.value)
     }
     private val removeExitingFromBackstack: Runnable = Runnable {
-        if (backstack.exiting == null) return@Runnable
-        val nextBackstack = backstack.copy(
+        if (backstackState.exiting == null) return@Runnable
+        val nextBackstack = backstackState.copy(
             exiting = null,
             exitingIndex = -1,
             updateType = NavigationBackstackState.UpdateType.RESTORED_STATE
@@ -51,7 +51,7 @@ public abstract class NavigationContainer(
     private val pendingRemovals = mutableSetOf<AnyOpenInstruction>()
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
     public val backstackFlow: StateFlow<NavigationBackstackState> get() = mutableBackstack
-    public val backstack: NavigationBackstackState get() = backstackFlow.value
+    public val backstackState: NavigationBackstackState get() = backstackFlow.value
 
     init {
         parentContext.lifecycle.addObserver(LifecycleEventObserver { _, event ->
@@ -116,7 +116,7 @@ public abstract class NavigationContainer(
         savedStateRegistry.unregisterSavedStateProvider(id)
         savedStateRegistry.registerSavedStateProvider(id) {
             bundleOf(
-                BACKSTACK_KEY to ArrayList(backstack.backstack)
+                BACKSTACK_KEY to ArrayList(backstackState.backstack)
             )
         }
 

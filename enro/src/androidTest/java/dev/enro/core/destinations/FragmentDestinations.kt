@@ -23,6 +23,11 @@ object FragmentDestinations {
     ) : NavigationKey.SupportsPresent.WithResult<TestResult>
 
     @Parcelize
+    data class Pushable(
+        val id: String = UUID.randomUUID().toString()
+    ) : NavigationKey.SupportsPush.WithResult<TestResult>
+
+    @Parcelize
     data class PresentableDialog(
         val id: String = UUID.randomUUID().toString()
     ) : NavigationKey.SupportsPresent.WithResult<TestResult>
@@ -87,6 +92,12 @@ class FragmentDestinationRoot : FragmentDestinations.Fragment(
 
 @NavigationDestination(FragmentDestinations.Presentable::class)
 class FragmentDestinationPresentable : FragmentDestinations.Fragment(
+    primaryContainerAccepts = { it is TestDestination.IntoPrimaryContainer },
+    secondaryContainerAccepts = { it is TestDestination.IntoSecondaryContainer }
+)
+
+@NavigationDestination(FragmentDestinations.Pushable::class)
+class FragmentDestinationPushable : FragmentDestinations.Fragment(
     primaryContainerAccepts = { it is TestDestination.IntoPrimaryContainer },
     secondaryContainerAccepts = { it is TestDestination.IntoSecondaryContainer }
 )

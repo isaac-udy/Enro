@@ -89,10 +89,6 @@ fun assertPushContainerType(
 ) {
     InstrumentationRegistry.getInstrumentation().waitForIdleSync()
     InstrumentationRegistry.getInstrumentation().runOnMainSync {
-        val parentContext = run {
-            val it = pushFrom.navigationContext.parentContext()!!
-            if (it.contextReference is NavigationHost) it.parentContext()!! else it
-        }
 
         fun NavigationContainer.hasActiveContext(navigationContext: NavigationContext<*>): Boolean {
             val isActiveContextComposeHost =
@@ -104,16 +100,24 @@ fun assertPushContainerType(
             return activeContext == navigationContext || (isActiveContextComposeHost && isActiveContextInChildContainer)
         }
 
+        fun <T : Any> withParentContext(context: NavigationContext<*>, block: (parentContext: NavigationContext<*>) -> T?) : T? {
+            val parentContext = context.parentContext()!!
+            val result = block(parentContext)
+            return when {
+                result != null -> result
+                parentContext.contextReference is NavigationHost -> withParentContext(parentContext, block)
+                else -> null
+            }
+        }
+
         val container = when (containerType) {
-            is IntoSameContainer -> {
-                val hostedParentContainer = parentContext
-                    .containerManager
+            is IntoSameContainer -> withParentContext(pushFrom.navigationContext) { parentContext ->
+                parentContext.containerManager
                     .containers
                     .firstOrNull {
                         it.hasActiveContext(pushOpened.navigationContext) &&
                                 it.backstackState.backstack.contains(pushFrom.navigation.instruction)
                     }
-                hostedParentContainer
             }
             is IntoChildContainer -> pushFrom.navigationContext
                 .containerManager
@@ -121,14 +125,17 @@ fun assertPushContainerType(
                 .firstOrNull {
                     it.hasActiveContext(pushOpened.navigationContext)
                 }
-            is IntoSiblingContainer -> parentContext
-                .containerManager
-                .containers
-                .firstOrNull {
-                    it.hasActiveContext(pushOpened.navigationContext) &&
-                            !it.backstackState.backstack.contains(pushFrom.navigation.instruction)
-                }
+            is IntoSiblingContainer -> withParentContext(pushFrom.navigationContext) { parentContext ->
+                parentContext
+                    .containerManager
+                    .containers
+                    .firstOrNull {
+                        it.hasActiveContext(pushOpened.navigationContext) &&
+                                !it.backstackState.backstack.contains(pushFrom.navigation.instruction)
+                    }
+            }
         }
+
         assertNotNull(container)
     }
 }

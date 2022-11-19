@@ -28,6 +28,11 @@ object ComposableDestinations {
     ) : NavigationKey.SupportsPresent
 
     @Parcelize
+    data class Pushable(
+        val id: String = UUID.randomUUID().toString()
+    ) : NavigationKey.SupportsPush.WithResult<TestResult>
+
+    @Parcelize
     data class Presentable(
         val id: String = UUID.randomUUID().toString()
     ) : NavigationKey.SupportsPresent.WithResult<TestResult>
@@ -95,6 +100,17 @@ fun ComposableDestinationRoot() {
     viewModel<ComposableDestinations.TestViewModel>()
     TestComposable(
         name = "ComposableDestination Root",
+        primaryContainerAccepts = { it is TestDestination.IntoPrimaryContainer },
+        secondaryContainerAccepts = { it is TestDestination.IntoSecondaryContainer }
+    )
+}
+
+@Composable
+@NavigationDestination(ComposableDestinations.Pushable::class)
+fun ComposableDestinationPushable() {
+    viewModel<ComposableDestinations.TestViewModel>()
+    TestComposable(
+        name = "ComposableDestination Pushable",
         primaryContainerAccepts = { it is TestDestination.IntoPrimaryContainer },
         secondaryContainerAccepts = { it is TestDestination.IntoSecondaryContainer }
     )

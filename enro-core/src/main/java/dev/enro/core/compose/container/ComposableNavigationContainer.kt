@@ -48,8 +48,8 @@ public class ComposableNavigationContainer internal constructor(
     // and sometimes skip other animation jobs
     private val shouldTakeAnimationsFromParentContainer: Boolean
         get() = parentContext.contextReference is NavigationHost
-                    && backstack.backstack.size <= 1
-                    && backstack.lastInstruction != NavigationInstruction.Close
+                    && backstackState.backstack.size <= 1
+                    && backstackState.lastInstruction != NavigationInstruction.Close
 
     override val activeContext: NavigationContext<out ComposableDestination>?
         get() = currentDestination?.destination?.navigationContext
@@ -80,7 +80,7 @@ public class ComposableNavigationContainer internal constructor(
     init {
         setOrLoadInitialBackstack(initialBackstackState)
         parentContext.lifecycleOwner.lifecycleScope.launchWhenStarted {
-            setVisibilityForBackstack(backstack)
+            setVisibilityForBackstack(backstackState)
         }
     }
 
@@ -130,7 +130,7 @@ public class ComposableNavigationContainer internal constructor(
 
     private fun clearDestinationOwnersFor(removed: List<AnyOpenInstruction>) =
         removed
-            .filter { backstack.exiting != it }
+            .filter { backstackState.exiting != it }
             .mapNotNull {
                 destinationOwners[it.instructionId]
             }
@@ -201,7 +201,7 @@ public class ComposableNavigationContainer internal constructor(
             onDispose {
                 containerManager.removeContainer(this@ComposableNavigationContainer)
                 if (containerManager.activeContainer == this@ComposableNavigationContainer) {
-                    val previouslyActive = backstack.active?.internal?.previouslyActiveId?.takeIf { it != id }
+                    val previouslyActive = backstackState.active?.internal?.previouslyActiveId?.takeIf { it != id }
                     containerManager.setActiveContainerById(previouslyActive)
                 }
             }
@@ -211,8 +211,8 @@ public class ComposableNavigationContainer internal constructor(
             val lifecycleObserver = LifecycleEventObserver { _, event ->
                 if (event != Lifecycle.Event.ON_PAUSE) return@LifecycleEventObserver
                 if (parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded) {
-                    setAnimationsForBackstack(backstack)
-                    setVisibilityForBackstack(backstack)
+                    setAnimationsForBackstack(backstackState)
+                    setVisibilityForBackstack(backstackState)
                 }
             }
             parentContext.lifecycle.addObserver(lifecycleObserver)
