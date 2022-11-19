@@ -120,10 +120,6 @@ public class FragmentNavigationContainer internal constructor(
             instruction = backstackState.active
         )
 
-        val binding =
-            parentContext.controller.bindingForKeyType(backstackState.active.navigationKey::class)
-                ?: throw EnroException.UnreachableState()
-
         return FragmentAndInstruction(
             fragment = FragmentFactory.createFragment(
                 parentContext,
