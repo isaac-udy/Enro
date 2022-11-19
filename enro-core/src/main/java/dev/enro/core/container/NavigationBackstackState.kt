@@ -1,5 +1,8 @@
 package dev.enro.core.container
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.Saver
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
@@ -67,12 +70,27 @@ public data class NavigationBackstackState(
         INITIAL_STATE,
         STANDARD;
     }
+
+    public companion object {
+        public val Saver: Saver<NavigationBackstackState, List<AnyOpenInstruction>> = Saver(
+            save = { it.backstack },
+            restore = {
+                createRestoredBackStack(it)
+            }
+        )
+        public val MutableSaver: Saver<MutableState<NavigationBackstackState>, List<AnyOpenInstruction>> = Saver(
+            save = { it.value.backstack },
+            restore = {
+                mutableStateOf(createRestoredBackStack(it))
+            }
+        )
+    }
 }
 
 internal fun NavigationBackstackState.add(
     vararg instructions: AnyOpenInstruction
 ): NavigationBackstackState {
-    if(instructions.isEmpty()) return this
+    if (instructions.isEmpty()) return this
     return copy(
         backstack = backstack + instructions,
         exiting = active,
