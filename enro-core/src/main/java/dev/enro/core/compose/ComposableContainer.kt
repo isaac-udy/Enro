@@ -3,18 +3,17 @@ package dev.enro.core.compose
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
+import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.createRootBackStack
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
-import dev.enro.core.navigationContext
 import java.util.*
 
 @Composable
@@ -25,8 +24,10 @@ public fun rememberNavigationContainer(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
-        initialState = rememberSaveable {
-            listOf(root)
+        initialBackstackState = rememberSaveable(saver = NavigationBackstackState.Saver) {
+            createRootBackStack(
+                NavigationInstruction.Push(root)
+            )
         },
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
@@ -41,11 +42,13 @@ public fun rememberNavigationContainer(
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
-    return rememberEnroContainerController(
-        initialBackstack = rememberSaveable {
-            initialState.map {
-                NavigationInstruction.Push(it)
-            }
+    return rememberNavigationContainer(
+        initialBackstackState = rememberSaveable(saver = NavigationBackstackState.Saver) {
+            createRootBackStack(
+                initialState.map {
+                    NavigationInstruction.Push(it)
+                }
+            )
         },
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
@@ -60,15 +63,26 @@ public fun rememberEnroContainerController(
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
-    ignore: Unit = Unit
+): ComposableNavigationContainer {
+    return rememberNavigationContainer(
+        initialBackstackState = rememberSaveable(saver = NavigationBackstackState.Saver) { createRootBackStack(initialBackstack) },
+        emptyBehavior = emptyBehavior,
+        interceptor = interceptor,
+        accept = accept,
+    )
+}
+
+@Composable
+@AdvancedEnroApi
+public fun rememberNavigationContainer(
+    id: String = rememberSaveable { UUID.randomUUID().toString() },
+    initialBackstackState: NavigationBackstackState,
+    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    interceptor: NavigationInterceptorBuilder.() -> Unit = {},
+    accept: (NavigationKey) -> Boolean = { true },
+    saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder(),
 ): ComposableNavigationContainer {
     val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
-
-    val id = rememberSaveable {
-        UUID.randomUUID().toString()
-    }
-
-    val saveableStateHolder = rememberSaveableStateHolder()
 
     val controller = remember {
         ComposableNavigationContainer(
@@ -77,11 +91,11 @@ public fun rememberEnroContainerController(
             accept = accept,
             emptyBehavior = emptyBehavior,
             interceptor = interceptor,
-            saveableStateHolder = saveableStateHolder,
-            initialBackstackState = createRootBackStack(initialBackstack)
-        )
+            initialBackstackState = initialBackstackState
+        ).apply {
+            this.saveableStateHolder = saveableStateHolder
+        }
     }
-
     controller.registerWithContainerManager()
     return controller
 }

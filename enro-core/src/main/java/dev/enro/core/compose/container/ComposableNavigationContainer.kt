@@ -21,7 +21,6 @@ public class ComposableNavigationContainer internal constructor(
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
-    internal val saveableStateHolder: SaveableStateHolder,
     initialBackstackState: NavigationBackstackState
 ) : NavigationContainer(
     id = id,
@@ -32,6 +31,8 @@ public class ComposableNavigationContainer internal constructor(
     acceptsNavigationKey = accept,
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
 ) {
+    internal lateinit var saveableStateHolder: SaveableStateHolder
+
     private val destinationStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
 
     private val viewModelStores = destinationStorage.viewModelStores.getOrPut(id) { mutableMapOf() }
