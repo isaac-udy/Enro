@@ -81,6 +81,7 @@ inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPush> Tes
     return expectedContext
 }
 
+@OptIn(AdvancedEnroApi::class)
 fun assertPushContainerType(
     pushFrom: TestNavigationContext<out Any, out NavigationKey>,
     pushOpened: TestNavigationContext<out Any, out NavigationKey>,
@@ -90,7 +91,7 @@ fun assertPushContainerType(
     InstrumentationRegistry.getInstrumentation().runOnMainSync {
         val parentContext = run {
             val it = pushFrom.navigationContext.parentContext()!!
-            if (it.contextReference is AbstractFragmentHostForComposable) it.parentContext()!! else it
+            if (it.contextReference is NavigationHost) it.parentContext()!! else it
         }
 
         fun NavigationContainer.hasActiveContext(navigationContext: NavigationContext<*>): Boolean {
@@ -104,12 +105,16 @@ fun assertPushContainerType(
         }
 
         val container = when (containerType) {
-            is IntoSameContainer -> parentContext
-                .containerManager
-                .containers
-                .firstOrNull {
-                    it.backstackFlow.value.backstack.contains(pushFrom.navigation.instruction)
-                }
+            is IntoSameContainer -> {
+                val hostedParentContainer = parentContext
+                    .containerManager
+                    .containers
+                    .firstOrNull {
+                        it.hasActiveContext(pushOpened.navigationContext) &&
+                                it.backstackState.backstack.contains(pushFrom.navigation.instruction)
+                    }
+                hostedParentContainer
+            }
             is IntoChildContainer -> pushFrom.navigationContext
                 .containerManager
                 .containers
@@ -121,7 +126,7 @@ fun assertPushContainerType(
                 .containers
                 .firstOrNull {
                     it.hasActiveContext(pushOpened.navigationContext) &&
-                            !it.backstackFlow.value.backstack.contains(pushFrom.navigation.instruction)
+                            !it.backstackState.backstack.contains(pushFrom.navigation.instruction)
                 }
         }
         assertNotNull(container)
