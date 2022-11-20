@@ -1,6 +1,7 @@
 package dev.enro.core.compose.container
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
@@ -32,6 +33,7 @@ public class ComposableNavigationContainer internal constructor(
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
 ) {
     private val destinationStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
+    private var saveableStateHolder: SaveableStateHolder? = null
 
     private val viewModelStores = destinationStorage.viewModelStores.getOrPut(id) { mutableMapOf() }
     private val destinationOwners = ConcurrentHashMap<String, ComposableDestinationOwner>()
@@ -64,7 +66,7 @@ public class ComposableNavigationContainer internal constructor(
     @Suppress("PropertyName")
     public val Render: @Composable () -> Unit = movableContentOf {
         key(id) {
-            rememberSaveableStateHolder().SaveableStateProvider(id) {
+            saveableStateHolder?.SaveableStateProvider(id) {
                 val backstackState by backstackFlow.collectAsState()
 
                 backstackState.renderable
@@ -186,6 +188,11 @@ public class ComposableNavigationContainer internal constructor(
     internal fun registerWithContainerManager(
         registrationStrategy: ContainerRegistrationStrategy
     ): Boolean {
+        saveableStateHolder = rememberSaveableStateHolder()
+        DisposableEffect(Unit) {
+            onDispose { saveableStateHolder = null }
+        }
+
         DisposableEffect(id, registrationStrategy) {
             val containerManager = parentContext.containerManager
 
