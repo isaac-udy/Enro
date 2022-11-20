@@ -183,24 +183,41 @@ public class ComposableNavigationContainer internal constructor(
     }
 
     @Composable
-    internal fun registerWithContainerManager(): Boolean {
-        DisposableEffect(id) {
-            onDispose {
+    internal fun registerWithContainerManager(
+        registrationStrategy: ContainerRegistrationStrategy
+    ): Boolean {
+        DisposableEffect(id, registrationStrategy) {
+            val containerManager = parentContext.containerManager
+
+            fun dispose() {
+                containerManager.removeContainer(this@ComposableNavigationContainer)
                 destinationOwners.values.forEach { composableDestinationOwner ->
                     composableDestinationOwner.destroy()
                 }
                 destinationOwners.clear()
             }
+
+            val lifecycleEventObserver = LifecycleEventObserver { _, event ->
+                if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
+                dispose()
+            }
+
+            containerManager.addContainer(this@ComposableNavigationContainer)
+            when(registrationStrategy) {
+                ContainerRegistrationStrategy.DisposeWithComposition -> {}
+                ContainerRegistrationStrategy.DisposeWithLifecycle -> parentContext.lifecycle.addObserver(lifecycleEventObserver)
+            }
+            onDispose {
+                when(registrationStrategy) {
+                    ContainerRegistrationStrategy.DisposeWithComposition -> dispose()
+                    ContainerRegistrationStrategy.DisposeWithLifecycle -> parentContext.lifecycle.removeObserver(lifecycleEventObserver)
+                }
+            }
         }
 
         DisposableEffect(id) {
             val containerManager = parentContext.containerManager
-            containerManager.addContainer(this@ComposableNavigationContainer)
-            if (containerManager.activeContainer == null) {
-                containerManager.setActiveContainer(this@ComposableNavigationContainer)
-            }
             onDispose {
-                containerManager.removeContainer(this@ComposableNavigationContainer)
                 if (containerManager.activeContainer == this@ComposableNavigationContainer) {
                     val previouslyActive = backstackState.active?.internal?.previouslyActiveId?.takeIf { it != id }
                     containerManager.setActiveContainerById(previouslyActive)
@@ -209,12 +226,12 @@ public class ComposableNavigationContainer internal constructor(
         }
 
         DisposableEffect(id) {
+            setAnimationsForBackstack(backstackState)
+            setVisibilityForBackstack(backstackState)
             val lifecycleObserver = LifecycleEventObserver { _, event ->
                 if (event != Lifecycle.Event.ON_PAUSE) return@LifecycleEventObserver
-                if (parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded) {
-                    setAnimationsForBackstack(backstackState)
-                    setVisibilityForBackstack(backstackState)
-                }
+                setAnimationsForBackstack(backstackState)
+                setVisibilityForBackstack(backstackState)
             }
             parentContext.lifecycle.addObserver(lifecycleObserver)
             onDispose {
@@ -223,4 +240,10 @@ public class ComposableNavigationContainer internal constructor(
         }
         return true
     }
+}
+
+@AdvancedEnroApi
+public sealed interface ContainerRegistrationStrategy {
+    public object DisposeWithComposition : ContainerRegistrationStrategy
+    public object DisposeWithLifecycle : ContainerRegistrationStrategy
 }

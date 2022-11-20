@@ -8,10 +8,11 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
-import dev.enro.core.compose.EnroContainer
-import dev.enro.core.compose.rememberEnroContainerController
+import dev.enro.core.compose.container.ContainerRegistrationStrategy
+import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
+import dev.enro.core.container.createRootBackStack
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractOpenComposableInFragmentKey :
@@ -41,7 +42,7 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
         val hasParent = parentFragment != null
         if (hasParent) return@lazy false
         val activityKey = activity.getNavigationHandle().instruction.navigationKey as AbstractOpenInstructionInActivityKey
-        return@lazy activityKey.instruction == navigationHandle.instruction
+        return@lazy activityKey.instruction.instructionId == navigationHandle.key.instruction.instructionId
     }
 
     override fun onCreateView(
@@ -52,8 +53,8 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
         return ComposeView(requireContext()).apply {
             id = R.id.enro_internal_compose_fragment_view_id
             setContent {
-                val state = rememberEnroContainerController(
-                    initialBackstack = listOf(navigationHandle.key.instruction.asPushInstruction()),
+                rememberNavigationContainer(
+                    initialBackstackState = createRootBackStack(navigationHandle.key.instruction.asPushInstruction()),
                     accept = { isRoot },
                     emptyBehavior = when {
                         isRoot -> EmptyBehavior.CloseParent
@@ -61,10 +62,9 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
                             navigationHandle.close()
                             false
                         }
-                    }
-                )
-
-                EnroContainer(container = state)
+                    },
+                    registrationStrategy = ContainerRegistrationStrategy.DisposeWithLifecycle,
+                ).Render()
             }
         }
     }
