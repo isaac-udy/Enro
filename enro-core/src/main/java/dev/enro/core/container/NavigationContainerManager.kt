@@ -24,11 +24,14 @@ public class NavigationContainerManager {
         setActiveContainer(containers.firstOrNull { it.id == id })
     }
 
+    internal fun getContainerById(id: String): NavigationContainer? {
+        return containers
+            .firstOrNull { it.id == id }
+    }
+
     internal fun addContainer(container: NavigationContainer) {
-        val existingContainer = containers
-            .firstOrNull { it.id == container.id }
-        if (existingContainer == container) return
-        if(existingContainer != null) {
+        val existingContainer = getContainerById(container.id)
+        if(existingContainer != null && existingContainer !== container) {
             throw EnroException.DuplicateFragmentNavigationContainer("A NavigationContainer with id ${container.id} already exists")
         }
 
