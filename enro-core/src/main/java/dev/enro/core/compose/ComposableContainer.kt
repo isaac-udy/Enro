@@ -25,11 +25,9 @@ public fun rememberNavigationContainer(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
-        initialBackstackState = rememberSaveable(saver = NavigationBackstackState.Saver) {
-            createRootBackStack(
-                NavigationInstruction.Push(root)
-            )
-        },
+        initialBackstackState = createRootBackStack(rememberSaveable {
+            NavigationInstruction.Push(root)
+        }),
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         accept = accept
@@ -44,13 +42,11 @@ public fun rememberNavigationContainer(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
-        initialBackstackState = rememberSaveable(saver = NavigationBackstackState.Saver) {
-            createRootBackStack(
-                initialState.map {
-                    NavigationInstruction.Push(it)
-                }
-            )
-        },
+        initialBackstackState = createRootBackStack(rememberSaveable {
+            initialState.map {
+                NavigationInstruction.Push(it)
+            }
+        }),
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         accept = accept
@@ -66,7 +62,7 @@ public fun rememberEnroContainerController(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
-        initialBackstackState = rememberSaveable(saver = NavigationBackstackState.Saver) { createRootBackStack(initialBackstack) },
+        initialBackstackState = createRootBackStack(initialBackstack),
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         accept = accept,
@@ -88,21 +84,15 @@ public fun rememberNavigationContainer(
 
     val controller = remember {
         val context = viewModelStoreOwner.navigationContext!!
-        val existingContainer = context.containerManager.getContainerById(id) as? ComposableNavigationContainer
-        if (existingContainer != null) {
-           existingContainer.saveableStateHolder = saveableStateHolder
-           return@remember existingContainer
-        }
-        val newContainer = ComposableNavigationContainer(
-            id = id,
-            parentContext = viewModelStoreOwner.navigationContext!!,
-            accept = accept,
-            emptyBehavior = emptyBehavior,
-            interceptor = interceptor,
-            initialBackstackState = initialBackstackState
-        )
-        newContainer.saveableStateHolder = saveableStateHolder
-        return@remember newContainer
+        context.containerManager.getContainerById(id) as? ComposableNavigationContainer
+            ?: ComposableNavigationContainer(
+                id = id,
+                parentContext = viewModelStoreOwner.navigationContext!!,
+                accept = accept,
+                emptyBehavior = emptyBehavior,
+                interceptor = interceptor,
+                initialBackstackState = initialBackstackState
+            )
     }
     controller.registerWithContainerManager(registrationStrategy)
     return controller
