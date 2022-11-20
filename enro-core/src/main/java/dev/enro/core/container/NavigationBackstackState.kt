@@ -1,6 +1,8 @@
 package dev.enro.core.container
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import dev.enro.core.AnyOpenInstruction
@@ -43,6 +45,8 @@ public fun createRestoredBackStack(backstack: List<AnyOpenInstruction>): Navigat
         updateType = NavigationBackstackState.UpdateType.RESTORED_STATE
     )
 
+@Stable
+@Immutable
 public data class NavigationBackstackState(
     val lastInstruction: NavigationInstruction,
     val backstack: List<AnyOpenInstruction>,

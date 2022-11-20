@@ -12,7 +12,6 @@ import dev.enro.core.compose.container.ContainerRegistrationStrategy
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
-import dev.enro.core.container.createRootBackStack
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractOpenComposableInFragmentKey :
@@ -54,7 +53,7 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
             id = R.id.enro_internal_compose_fragment_view_id
             setContent {
                 rememberNavigationContainer(
-                    initialBackstackState = createRootBackStack(navigationHandle.key.instruction.asPushInstruction()),
+                    initialBackstack = listOf(navigationHandle.key.instruction.asPushInstruction()),
                     accept = { isRoot },
                     emptyBehavior = when {
                         isRoot -> EmptyBehavior.CloseParent

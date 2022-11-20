@@ -3,6 +3,8 @@ package dev.enro.core
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.fragment.app.Fragment
 import dev.enro.core.result.internal.ResultChannelId
 import kotlinx.parcelize.Parcelize
@@ -34,6 +36,8 @@ public typealias OpenPushInstruction = NavigationInstruction.Open<NavigationDire
 public typealias OpenPresentInstruction = NavigationInstruction.Open<NavigationDirection.Present>
 
 public sealed class NavigationInstruction {
+    @Stable
+    @Immutable
     public sealed class Open<T : NavigationDirection> : NavigationInstruction(), Parcelable {
         public abstract val navigationDirection: T
         public abstract val navigationKey: NavigationKey
@@ -43,6 +47,8 @@ public sealed class NavigationInstruction {
 
         internal val internal by lazy { this as OpenInternal<NavigationDirection> }
 
+        @Stable
+        @Immutable
         @Parcelize
         internal data class OpenInternal<T : NavigationDirection> constructor(
             override val navigationDirection: T,

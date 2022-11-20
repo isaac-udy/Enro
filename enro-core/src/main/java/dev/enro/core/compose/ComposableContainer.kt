@@ -3,16 +3,14 @@ package dev.enro.core.compose
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.ContainerRegistrationStrategy
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationBackstackState
+import dev.enro.core.container.createRestoredBackStack
 import dev.enro.core.container.createRootBackStack
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import java.util.*
@@ -25,9 +23,9 @@ public fun rememberNavigationContainer(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
-        initialBackstackState = createRootBackStack(rememberSaveable {
-            NavigationInstruction.Push(root)
-        }),
+        initialBackstack = rememberSaveable {
+            listOf(NavigationInstruction.Push(root))
+        },
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         accept = accept
@@ -42,11 +40,11 @@ public fun rememberNavigationContainer(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
-        initialBackstackState = createRootBackStack(rememberSaveable {
+        initialBackstack = rememberSaveable {
             initialState.map {
                 NavigationInstruction.Push(it)
             }
-        }),
+        },
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         accept = accept
@@ -62,7 +60,7 @@ public fun rememberEnroContainerController(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
-        initialBackstackState = createRootBackStack(initialBackstack),
+        initialBackstack = initialBackstack,
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         accept = accept,
@@ -73,26 +71,28 @@ public fun rememberEnroContainerController(
 @AdvancedEnroApi
 public fun rememberNavigationContainer(
     id: String = rememberSaveable { UUID.randomUUID().toString() },
-    initialBackstackState: NavigationBackstackState,
+    initialBackstack: List<AnyOpenInstruction> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
-    saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder(),
     registrationStrategy: ContainerRegistrationStrategy = ContainerRegistrationStrategy.DisposeWithComposition,
 ): ComposableNavigationContainer {
     val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
 
     val controller = remember {
         val context = viewModelStoreOwner.navigationContext!!
-        context.containerManager.getContainerById(id) as? ComposableNavigationContainer
-            ?: ComposableNavigationContainer(
-                id = id,
-                parentContext = viewModelStoreOwner.navigationContext!!,
-                accept = accept,
-                emptyBehavior = emptyBehavior,
-                interceptor = interceptor,
-                initialBackstackState = initialBackstackState
-            )
+        val existingContainer = context.containerManager.getContainerById(id) as? ComposableNavigationContainer
+        existingContainer?.setBackstack(
+            createRestoredBackStack(existingContainer.backstackState.backstack)
+        )
+        existingContainer ?: ComposableNavigationContainer(
+            id = id,
+            parentContext = viewModelStoreOwner.navigationContext!!,
+            accept = accept,
+            emptyBehavior = emptyBehavior,
+            interceptor = interceptor,
+            initialBackstackState = createRootBackStack(initialBackstack)
+        )
     }
     controller.registerWithContainerManager(registrationStrategy)
     return controller

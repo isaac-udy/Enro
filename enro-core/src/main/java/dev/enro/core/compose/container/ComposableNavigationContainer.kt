@@ -92,6 +92,8 @@ public class ComposableNavigationContainer internal constructor(
 
         clearDestinationOwnersFor(removed)
         createDestinationOwnersFor(backstackState)
+
+        if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return false
         setAnimationsForBackstack(backstackState)
         setVisibilityForBackstack(backstackState)
         return true
@@ -165,7 +167,7 @@ public class ComposableNavigationContainer internal constructor(
 
     private fun setVisibilityForBackstack(backstackState: NavigationBackstackState) {
         val isParentContextStarted = parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
-        if(!isParentContextStarted && shouldTakeAnimationsFromParentContainer) return
+        if (!isParentContextStarted && shouldTakeAnimationsFromParentContainer) return
 
         val isParentBeingRemoved = when {
             parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded -> true
