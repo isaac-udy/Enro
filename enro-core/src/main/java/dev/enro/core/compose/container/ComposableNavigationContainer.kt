@@ -116,7 +116,7 @@ public class ComposableNavigationContainer internal constructor(
                 parentContainer = this,
                 instruction = instruction,
                 destination = destination,
-                viewModelStore = viewModelStores.getOrPut(instruction.instructionId) { ViewModelStore()  },
+                viewModelStore = viewModelStores.getOrPut(instruction.instructionId) { ViewModelStore() },
                 onNavigationContextCreated = parentContext.controller.dependencyScope.get(),
                 onNavigationContextSaved = parentContext.controller.dependencyScope.get(),
                 composeEnvironment = parentContext.controller.dependencyScope.get(),
@@ -155,10 +155,17 @@ public class ComposableNavigationContainer internal constructor(
             else -> activeContext
         } ?: parentContext
 
+        val isRestoredFromExitingParent = if(parentContext.contextReference is NavigationHost) {
+            parentContext.parentContainer()?.backstackState?.exiting != null
+        } else false
+
         currentAnimations = when {
-            backstackState.isRestoredState -> DefaultAnimations.none
+            backstackState.isRestoredState -> {
+                if (!isRestoredFromExitingParent) DefaultAnimations.none
+                val parentContainer = parentContext.parentContainer()
+                parentContainer?.currentAnimations ?: DefaultAnimations.none
+            }
             shouldTakeAnimationsFromParentContainer -> {
-                parentContext as FragmentContext<out Fragment>
                 val parentContainer = parentContext.parentContainer()
                 parentContainer?.currentAnimations ?: DefaultAnimations.none
             }
@@ -210,12 +217,12 @@ public class ComposableNavigationContainer internal constructor(
             }
 
             containerManager.addContainer(this@ComposableNavigationContainer)
-            when(registrationStrategy) {
+            when (registrationStrategy) {
                 ContainerRegistrationStrategy.DisposeWithComposition -> {}
                 ContainerRegistrationStrategy.DisposeWithLifecycle -> parentContext.lifecycle.addObserver(lifecycleEventObserver)
             }
             onDispose {
-                when(registrationStrategy) {
+                when (registrationStrategy) {
                     ContainerRegistrationStrategy.DisposeWithComposition -> dispose()
                     ContainerRegistrationStrategy.DisposeWithLifecycle -> parentContext.lifecycle.removeObserver(lifecycleEventObserver)
                 }
@@ -233,17 +240,14 @@ public class ComposableNavigationContainer internal constructor(
         }
 
         DisposableEffect(id) {
-            setAnimationsForBackstack(backstackState)
-            setVisibilityForBackstack(backstackState)
             val lifecycleObserver = LifecycleEventObserver { _, event ->
-                if (event != Lifecycle.Event.ON_PAUSE) return@LifecycleEventObserver
-                setAnimationsForBackstack(backstackState)
-                setVisibilityForBackstack(backstackState)
+                if (event == Lifecycle.Event.ON_RESUME || event == Lifecycle.Event.ON_PAUSE) {
+                    setAnimationsForBackstack(backstackState)
+                    setVisibilityForBackstack(backstackState)
+                }
             }
             parentContext.lifecycle.addObserver(lifecycleObserver)
-            onDispose {
-                parentContext.lifecycle.removeObserver(lifecycleObserver)
-            }
+            onDispose { parentContext.lifecycle.removeObserver(lifecycleObserver) }
         }
         return true
     }

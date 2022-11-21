@@ -62,7 +62,7 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
                             false
                         }
                     },
-                    registrationStrategy = if(isRoot) ContainerRegistrationStrategy.DisposeWithLifecycle else ContainerRegistrationStrategy.DisposeWithComposition,
+                    registrationStrategy = ContainerRegistrationStrategy.DisposeWithLifecycle,
                 ).Render()
             }
         }
