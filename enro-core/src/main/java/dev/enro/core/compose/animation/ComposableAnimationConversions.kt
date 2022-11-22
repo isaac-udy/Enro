@@ -47,7 +47,6 @@ internal data class AnimationResourceState(
 
 @Composable
 internal fun getAnimationResourceState(
-    key: Int,
     transitionState: Transition<Boolean>,
     animOrAnimator: Int,
     size: IntSize
@@ -70,14 +69,12 @@ internal fun getAnimationResourceState(
 
     when {
         isAnim && state.value.isActive -> rememberAnimationResourceStateFromAnim(
-            key,
             transitionState,
             animOrAnimator,
             size,
             state
         )
         isAnimator && state.value.isActive -> rememberAnimationResourceStateFromAnimator(
-            key,
             transitionState,
             animOrAnimator,
             size,
@@ -92,7 +89,6 @@ internal fun getAnimationResourceState(
 
 @Composable
 private fun rememberAnimationResourceStateFromAnim(
-    key: Int,
     transitionState: Transition<Boolean>,
     animOrAnimator: Int,
     size: IntSize,
@@ -138,7 +134,6 @@ private fun rememberAnimationResourceStateFromAnim(
 
 @Composable
 private fun rememberAnimationResourceStateFromAnimator(
-    key: Int,
     transitionState: Transition<Boolean>,
     animOrAnimator: Int,
     size: IntSize,
