@@ -10,12 +10,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.animation.Transformation
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.runtime.*
+import androidx.compose.animation.core.Transition
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
-import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 
@@ -44,48 +46,49 @@ internal data class AnimationResourceState(
 
 @Composable
 internal fun getAnimationResourceState(
-    transitionState: MutableTransitionState<Boolean>,
+    transitionState: Transition<Boolean>,
     animOrAnimator: Int,
     size: IntSize
 ): AnimationResourceState {
-    val state =
-        remember(animOrAnimator) { mutableStateOf(AnimationResourceState(isActive = animOrAnimator != 0)) }
-    if (transitionState.isIdle) return AnimationResourceState(isActive = false)
-    if (animOrAnimator == 0) return state.value
+    val state = remember(animOrAnimator) { mutableStateOf(AnimationResourceState(isActive = true)) }
 
-    updateAnimationResourceStateFromAnim(transitionState, state, animOrAnimator, size)
-    updateAnimationResourceStateFromAnimator(transitionState, state, animOrAnimator, size)
+    val context = LocalContext.current
+    val isAnim = remember(animOrAnimator) {
+        if(animOrAnimator == 0) return@remember false
+        context.resources.getResourceTypeName(animOrAnimator) == "anim"
+    }
+    val isAnimator = remember(animOrAnimator) {
+        if(animOrAnimator == 0) return@remember false
+        context.resources.getResourceTypeName(animOrAnimator) == "animator"
+    }
 
-    LaunchedEffect(animOrAnimator) {
-        val start = System.currentTimeMillis()
-        while (state.value.isActive) {
-            state.value = state.value.copy(playTime = System.currentTimeMillis() - start)
-            delay(8)
-        }
+    state.value = when {
+        !state.value.isActive -> AnimationResourceState(isActive = false, alpha = if(transitionState.targetState) 1.0f else 0.0f)
+        isAnim -> rememberAnimationResourceStateFromAnim(transitionState, animOrAnimator, size)
+        isAnimator -> rememberAnimationResourceStateFromAnimator(transitionState, animOrAnimator, size)
+        else -> AnimationResourceState(isActive = false, alpha = if(transitionState.targetState) 1.0f else 0.0f)
     }
     return state.value
 }
 
 @Composable
-private fun updateAnimationResourceStateFromAnim(
-    transitionState: MutableTransitionState<Boolean>,
-    state: MutableState<AnimationResourceState>,
+private fun rememberAnimationResourceStateFromAnim(
+    transitionState: Transition<Boolean>,
     animOrAnimator: Int,
     size: IntSize
-) {
+): AnimationResourceState {
     val context = LocalContext.current
-    val isAnim =
-        remember(animOrAnimator) { context.resources.getResourceTypeName(animOrAnimator) == "anim" }
-    if (!isAnim) return
-    if(size.width == 0 && size.height == 0) {
-        state.value = AnimationResourceState(
-            alpha = if(transitionState.currentState) 1f else 0f,
-            isActive = true
+    val state = remember(animOrAnimator) {
+        mutableStateOf(
+            AnimationResourceState(
+                alpha = if (transitionState.currentState) 1f else 0f,
+                isActive = true
+            )
         )
-        return
     }
 
-    val anim = remember(animOrAnimator, size) {
+    val startTime = remember(animOrAnimator) { System.currentTimeMillis() }
+    val anim = remember(animOrAnimator) {
         AnimationUtils.loadAnimation(context, animOrAnimator).apply {
             initialize(
                size.width,
@@ -99,8 +102,9 @@ private fun updateAnimationResourceStateFromAnim(
     anim.getTransformation(System.currentTimeMillis(), transformation)
 
     val v = FloatArray(9)
+
     transformation.matrix.getValues(v)
-    state.value = AnimationResourceState(
+    state.value = state.value.copy(
         alpha = transformation.alpha,
         scaleX = v[Matrix.MSCALE_X],
         scaleY = v[Matrix.MSCALE_Y],
@@ -109,32 +113,39 @@ private fun updateAnimationResourceStateFromAnim(
         rotationX = 0.0f,
         rotationY = 0.0f,
         transformOrigin = TransformOrigin(0f, 0f),
-
         isActive = state.value.isActive && state.value.playTime < anim.duration,
-        playTime = state.value.playTime,
+        playTime = System.currentTimeMillis() - startTime
     )
+
+    SideEffect {
+        state.value = state.value.copy(
+            isActive = state.value.isActive && state.value.playTime < anim.duration,
+            playTime = System.currentTimeMillis() - startTime
+        )
+    }
+    return state.value
 }
 
 @Composable
-private fun updateAnimationResourceStateFromAnimator(
-    transitionState: MutableTransitionState<Boolean>,
-    state: MutableState<AnimationResourceState>,
+private fun rememberAnimationResourceStateFromAnimator(
+    transitionState: Transition<Boolean>,
     animOrAnimator: Int,
     size: IntSize
-) {
+): AnimationResourceState {
     val context = LocalContext.current
-    val isAnimator =
-        remember(animOrAnimator) { context.resources.getResourceTypeName(animOrAnimator) == "animator" }
-    if (!isAnimator) return
 
-    val animator = remember(animOrAnimator, size) {
-        state.value = AnimationResourceState(
-            alpha = if(transitionState.currentState) 1f else 0f,
-            isActive = true
+    val state = remember(animOrAnimator) {
+        mutableStateOf(
+            AnimationResourceState(
+                alpha = if (transitionState.currentState) 1f else 0f,
+                isActive = true
+            )
         )
-        AnimatorInflater.loadAnimator(context, animOrAnimator)
     }
-    val animatorView = remember(animOrAnimator, size) {
+
+    val startTime = remember(animOrAnimator) { System.currentTimeMillis() }
+    val animator = remember(animOrAnimator) { AnimatorInflater.loadAnimator(context, animOrAnimator) }
+    val animatorView = remember(animOrAnimator) {
         AnimatorView(context).apply {
             layoutParams = ViewGroup.LayoutParams(size.width, size.height)
             animator.setTarget(this)
@@ -142,7 +153,8 @@ private fun updateAnimationResourceStateFromAnimator(
         }
     }
 
-    state.value = AnimationResourceState(
+
+    state.value = state.value.copy(
         alpha = animatorView.alpha,
         scaleX = animatorView.scaleX,
         scaleY = animatorView.scaleY,
@@ -152,6 +164,13 @@ private fun updateAnimationResourceStateFromAnimator(
         rotationY = animatorView.rotationY,
 
         isActive = state.value.isActive && animator.isRunning,
-        playTime = state.value.playTime
+        playTime = System.currentTimeMillis() - startTime
     )
+    SideEffect {
+        state.value = state.value.copy(
+            isActive = state.value.isActive && animator.isRunning,
+            playTime = System.currentTimeMillis() - startTime
+        )
+    }
+    return state.value
 }

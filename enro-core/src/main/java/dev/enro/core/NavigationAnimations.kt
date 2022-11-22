@@ -6,7 +6,8 @@ import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.Transition
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
@@ -46,10 +47,11 @@ public sealed class NavigationAnimation {
     public class Composable private constructor(
         public val forView: ForView,
         public val content: @androidx.compose.runtime.Composable (
-            visible: MutableTransitionState<Boolean>,
+            visible: Transition<Boolean>,
             content: @androidx.compose.runtime.Composable () -> Unit
         ) -> Unit
     ) : NavigationAnimation() {
+        @OptIn(ExperimentalAnimationApi::class)
         public constructor(
             enter: EnterTransition,
             exit: ExitTransition,
@@ -57,11 +59,11 @@ public sealed class NavigationAnimation {
         ) : this(
             forView = forView,
             content = { visible, content ->
-                AnimatedVisibility(
-                    visibleState = visible,
+                visible.AnimatedVisibility(
+                    visible = { it },
                     enter = enter,
                     exit = exit,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     content()
                 }
@@ -150,16 +152,10 @@ public object DefaultAnimations {
         )
 
         @Deprecated("Use push or present")
-        public val forward: NavigationAnimation.ForView = NavigationAnimation.Attr(
-            enter = android.R.attr.activityOpenEnterAnimation,
-            exit = android.R.attr.activityOpenExitAnimation
-        )
+        public val forward: NavigationAnimation.ForView = push
 
         @Deprecated("Use push or present")
-        public val replace: NavigationAnimation.ForView = NavigationAnimation.Attr(
-            enter = android.R.attr.activityOpenEnterAnimation,
-            exit = android.R.attr.activityOpenExitAnimation
-        )
+        public val replace: NavigationAnimation.ForView = present
 
         public val replaceRoot: NavigationAnimation.ForView = NavigationAnimation.Attr(
             enter = android.R.attr.taskOpenEnterAnimation,

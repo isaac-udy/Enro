@@ -94,10 +94,8 @@ public class ComposableNavigationContainer internal constructor(
 
         clearDestinationOwnersFor(removed)
         createDestinationOwnersFor(backstackState)
-
-        if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return false
-        setAnimationsForBackstack(backstackState)
         setVisibilityForBackstack(backstackState)
+        setAnimationsForBackstack(backstackState)
         return true
     }
 
@@ -171,7 +169,7 @@ public class ComposableNavigationContainer internal constructor(
             }
             backstackState.isInitialState -> DefaultAnimations.none
             else -> animationsFor(contextForAnimation, backstackState.lastInstruction)
-        }.asComposable()
+        }
     }
 
     private fun setVisibilityForBackstack(backstackState: NavigationBackstackState) {
@@ -242,8 +240,8 @@ public class ComposableNavigationContainer internal constructor(
         DisposableEffect(id) {
             val lifecycleObserver = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_RESUME || event == Lifecycle.Event.ON_PAUSE) {
-                    setAnimationsForBackstack(backstackState)
                     setVisibilityForBackstack(backstackState)
+                    setAnimationsForBackstack(backstackState)
                 }
             }
             parentContext.lifecycle.addObserver(lifecycleObserver)

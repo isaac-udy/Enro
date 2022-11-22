@@ -3,6 +3,7 @@ package dev.enro.core.compose.destination
 import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -111,7 +112,8 @@ internal class ComposableDestinationOwner(
         }
 
         val animation = remember(transitionState.targetState) { parentContainer.currentAnimations.asComposable() }
-        animation.content(transitionState) {
+        val transition = updateTransition(transitionState, "ComposableDestination Visibility")
+        animation.content(transition) {
             renderDestination()
             RegisterComposableLifecycleState(backstackState)
         }

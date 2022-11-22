@@ -71,6 +71,12 @@ public class FragmentNavigationContainer internal constructor(
             }
 
         setAnimations(backstackState)
+        if(
+            toRemove.isEmpty()
+            && toDetach.isEmpty()
+            && (fragmentManager.primaryNavigationFragment == active?.fragment || active == null)
+        ) return true
+
         fragmentManager.commitNow {
             setReorderingAllowed(true)
             applyAnimationsForTransaction(
