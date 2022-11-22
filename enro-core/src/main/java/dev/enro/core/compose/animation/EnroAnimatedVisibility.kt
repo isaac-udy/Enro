@@ -1,6 +1,5 @@
 package dev.enro.core.compose.animation
 
-import androidx.compose.animation.core.ExperimentalTransitionApi
 import androidx.compose.animation.core.Transition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -15,7 +14,7 @@ import androidx.compose.ui.unit.IntSize
 import dev.enro.core.NavigationAnimation
 import dev.enro.core.compose.localActivity
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalTransitionApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun EnroAnimatedVisibility(
     visibleState: Transition<Boolean>,
@@ -34,16 +33,16 @@ internal fun EnroAnimatedVisibility(
     if(visibleState.currentState || animationStateValues.isActive) {
         Box(
             modifier = Modifier
-                .graphicsLayer(
-                    alpha = animationStateValues.alpha,
-                    scaleX = animationStateValues.scaleX,
-                    scaleY = animationStateValues.scaleY,
-                    rotationX = animationStateValues.rotationX,
-                    rotationY = animationStateValues.rotationY,
-                    translationX = animationStateValues.translationX,
-                    translationY = animationStateValues.translationY,
+                .graphicsLayer {
+                    alpha = animationStateValues.alpha
+                    scaleX = animationStateValues.scaleX
+                    scaleY = animationStateValues.scaleY
+                    rotationX = animationStateValues.rotationX
+                    rotationY = animationStateValues.rotationY
+                    translationX = animationStateValues.translationX
+                    translationY = animationStateValues.translationY
                     transformOrigin = animationStateValues.transformOrigin
-                )
+                }
                 .pointerInteropFilter { _ ->
                     !visibleState.targetState
                 },
