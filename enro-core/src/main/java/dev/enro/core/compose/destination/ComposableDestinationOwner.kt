@@ -97,11 +97,6 @@ internal class ComposableDestinationOwner(
         if (!lifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
 
         val saveableStateHolder = rememberSaveableStateHolder()
-        if (
-            transitionState.currentState == transitionState.targetState
-            && !transitionState.currentState
-            && instruction != backstackState.active
-        ) return
 
         val renderDestination = remember {
             movableContentOf {

@@ -58,7 +58,7 @@ public class ComposableNavigationContainer internal constructor(
     override val isVisible: Boolean
         get() = true
 
-    override var currentAnimations: NavigationAnimation = DefaultAnimations.none
+    override var currentAnimations: NavigationAnimation by mutableStateOf(DefaultAnimations.none)
         private set
 
     // We want "Render" to look like it's a Composable function (it's a Composable lambda), so
