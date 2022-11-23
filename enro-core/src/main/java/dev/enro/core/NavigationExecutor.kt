@@ -20,7 +20,7 @@ public class ExecutorArgs<FromContext : Any, OpensContext : Any, KeyType : Navig
     instruction: AnyOpenInstruction
 ) {
     public val instruction: AnyOpenInstruction = instruction.internal.copy(
-        previouslyActiveId = fromContext.containerManager.activeContainer?.id
+        previouslyActiveContainer = fromContext.containerManager.activeContainer?.key
     )
 }
 

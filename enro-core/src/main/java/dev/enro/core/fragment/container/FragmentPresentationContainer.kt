@@ -12,7 +12,7 @@ import dev.enro.core.controller.usecase.HostInstructionAs
 public class FragmentPresentationContainer internal constructor(
     parentContext: NavigationContext<*>,
 ) : NavigationContainer(
-    id = "FragmentPresentationContainer",
+    key = presentationContainer,
     parentContext = parentContext,
     contextType = DialogFragment::class.java,
     acceptsNavigationKey = { true },

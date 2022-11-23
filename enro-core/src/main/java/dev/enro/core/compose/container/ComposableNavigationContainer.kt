@@ -17,14 +17,14 @@ import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import java.util.concurrent.ConcurrentHashMap
 
 public class ComposableNavigationContainer internal constructor(
-    id: String,
+    key: NavigationContainerKey,
     parentContext: NavigationContext<*>,
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     initialBackstackState: NavigationBackstackState
 ) : NavigationContainer(
-    id = id,
+    key = key,
     parentContext = parentContext,
     contextType = ComposableDestination::class.java,
     emptyBehavior = emptyBehavior,
@@ -35,7 +35,7 @@ public class ComposableNavigationContainer internal constructor(
     private val destinationStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
     private var saveableStateHolder: SaveableStateHolder? = null
 
-    private val viewModelStores = destinationStorage.viewModelStores.getOrPut(id) { mutableMapOf() }
+    private val viewModelStores = destinationStorage.viewModelStores.getOrPut(key) { mutableMapOf() }
     private val destinationOwners = ConcurrentHashMap<String, ComposableDestinationOwner>()
     private val currentDestination
         get() = backstackFlow.value.backstack
@@ -65,8 +65,8 @@ public class ComposableNavigationContainer internal constructor(
     // we are uppercasing the first letter of the property name, which triggers a PropertyName lint warning
     @Suppress("PropertyName")
     public val Render: @Composable () -> Unit = movableContentOf {
-        key(id) {
-            saveableStateHolder?.SaveableStateProvider(id) {
+        key(key.name) {
+            saveableStateHolder?.SaveableStateProvider(key.name) {
                 val backstackState by backstackFlow.collectAsState()
 
                 backstackState.renderable
@@ -198,7 +198,7 @@ public class ComposableNavigationContainer internal constructor(
             onDispose { saveableStateHolder = null }
         }
 
-        DisposableEffect(id, registrationStrategy) {
+        DisposableEffect(key, registrationStrategy) {
             val containerManager = parentContext.containerManager
 
             fun dispose() {
@@ -227,17 +227,17 @@ public class ComposableNavigationContainer internal constructor(
             }
         }
 
-        DisposableEffect(id) {
+        DisposableEffect(key) {
             val containerManager = parentContext.containerManager
             onDispose {
                 if (containerManager.activeContainer == this@ComposableNavigationContainer) {
-                    val previouslyActive = backstackState.active?.internal?.previouslyActiveId?.takeIf { it != id }
-                    containerManager.setActiveContainerById(previouslyActive)
+                    val previouslyActiveContainer = backstackState.active?.internal?.previouslyActiveContainer?.takeIf { it != key }
+                    containerManager.setActiveContainerByKey(previouslyActiveContainer)
                 }
             }
         }
 
-        DisposableEffect(id) {
+        DisposableEffect(key) {
             val lifecycleObserver = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_RESUME || event == Lifecycle.Event.ON_PAUSE) {
                     setVisibilityForBackstack(backstackState)

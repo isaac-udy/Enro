@@ -30,7 +30,7 @@ internal fun EnroAnimatedVisibility(
     }
 
     val animationStateValues = getAnimationResourceState(visibleState, if(visibleState.targetState) resourceAnimations.enter else  resourceAnimations.exit, size)
-    if(visibleState.currentState || animationStateValues.isActive) {
+    if(visibleState.currentState || visibleState.targetState || animationStateValues.isActive) {
         Box(
             modifier = Modifier
                 .graphicsLayer {

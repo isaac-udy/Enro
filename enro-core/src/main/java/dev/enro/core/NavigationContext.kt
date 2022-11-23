@@ -88,7 +88,7 @@ public fun NavigationContext<*>.parentContainer(): NavigationContainer? {
         is ActivityContext -> null
         is FragmentContext<out Fragment> -> when (contextReference) {
             is DialogFragment -> parentContext()?.containerManager?.containers?.firstOrNull { it is FragmentPresentationContainer }
-            else -> parentContext()?.containerManager?.containers?.firstOrNull { it.id == fragment.id.toString() }
+            else -> parentContext()?.containerManager?.containers?.firstOrNull { it.key == NavigationContainerKey.FromId(fragment.id) }
         }
         is ComposeContext<out ComposableDestination> -> contextReference.owner.parentContainer
     }

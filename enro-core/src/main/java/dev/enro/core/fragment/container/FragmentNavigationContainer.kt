@@ -18,13 +18,14 @@ import dev.enro.extensions.animate
 
 public class FragmentNavigationContainer internal constructor(
     @IdRes public val containerId: Int,
+    key: NavigationContainerKey = NavigationContainerKey.FromId(containerId),
     parentContext: NavigationContext<*>,
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     initialBackstackState: NavigationBackstackState
 ) : NavigationContainer(
-    id = containerId.toString(),
+    key = key,
     parentContext = parentContext,
     contextType = Fragment::class.java,
     acceptsNavigationKey = accept,

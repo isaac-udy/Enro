@@ -15,9 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.getAndUpdate
 
-
 public abstract class NavigationContainer(
-    public val id: String,
+    public val key: NavigationContainerKey,
     public val contextType: Class<out Any>,
     public val parentContext: NavigationContext<*>,
     public val emptyBehavior: EmptyBehavior,
@@ -113,8 +112,8 @@ public abstract class NavigationContainer(
     protected fun setOrLoadInitialBackstack(initialBackstackState: NavigationBackstackState) {
         val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
 
-        savedStateRegistry.unregisterSavedStateProvider(id)
-        savedStateRegistry.registerSavedStateProvider(id) {
+        savedStateRegistry.unregisterSavedStateProvider(key.name)
+        savedStateRegistry.registerSavedStateProvider(key.name) {
             bundleOf(
                 BACKSTACK_KEY to ArrayList(backstackState.backstack)
             )
@@ -122,7 +121,7 @@ public abstract class NavigationContainer(
 
         val initialise = {
             val restoredBackstack = savedStateRegistry
-                .consumeRestoredStateForKey(id)
+                .consumeRestoredStateForKey(key.name)
                 ?.getParcelableArrayList<AnyOpenInstruction>(BACKSTACK_KEY)
                 ?.let { createRestoredBackStack(it) }
 
@@ -182,8 +181,8 @@ public abstract class NavigationContainer(
         }
 
         if (backstackState.exiting != null) {
-            parentContext.containerManager.setActiveContainerById(
-                backstackState.exiting.internal.previouslyActiveId
+            parentContext.containerManager.setActiveContainerByKey(
+                backstackState.exiting.internal.previouslyActiveContainer
             )
         }
 
@@ -193,6 +192,8 @@ public abstract class NavigationContainer(
 
     public companion object {
         private const val BACKSTACK_KEY = "NavigationContainer.BACKSTACK_KEY"
+
+        public val presentationContainer: NavigationContainerKey = NavigationContainerKey.FromName("NavigationContainer.presentationContainer")
     }
 }
 

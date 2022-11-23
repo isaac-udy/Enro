@@ -56,7 +56,7 @@ public sealed class NavigationInstruction {
             override val children: List<NavigationKey> = emptyList(),
             override val additionalData: Bundle = Bundle(),
             override val instructionId: String = UUID.randomUUID().toString(),
-            val previouslyActiveId: String? = null,
+            val previouslyActiveContainer: NavigationContainerKey? = null,
             val openingType: Class<out Any> = Any::class.java,
             val openedByType: Class<out Any> = Any::class.java, // the type of context that requested this open instruction was executed
             val openedById: String? = null,
