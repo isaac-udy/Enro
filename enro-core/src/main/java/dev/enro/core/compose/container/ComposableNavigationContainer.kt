@@ -1,5 +1,6 @@
 package dev.enro.core.compose.container
 
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -9,6 +10,8 @@ import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
+import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
@@ -30,7 +33,7 @@ public class ComposableNavigationContainer internal constructor(
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
     acceptsNavigationKey = accept,
-    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
+    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward || it is NavigationDirection.Present },
 ) {
     private val destinationStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
     private var saveableStateHolder: SaveableStateHolder? = null
@@ -92,6 +95,7 @@ public class ComposableNavigationContainer internal constructor(
         if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return false
         if (parentContext.runCatching { activity }.getOrNull() == null) return false
 
+        dismissDialogs(removed)
         clearDestinationOwnersFor(removed)
         createDestinationOwnersFor(backstackState)
         setVisibilityForBackstack(backstackState)
@@ -127,6 +131,21 @@ public class ComposableNavigationContainer internal constructor(
                 })
             }
         }
+    }
+
+    @OptIn(ExperimentalMaterialApi::class)
+    private fun dismissDialogs(removed: List<AnyOpenInstruction>) {
+        removed
+            .mapNotNull {
+                destinationOwners[it.instructionId]
+            }
+            .map { it.destination }
+            .forEach {
+                when(it) {
+                    is DialogDestination -> it.dialogConfiguration.isDismissed.value = true
+                    is BottomSheetDestination -> it.bottomSheetConfiguration.isDismissed.value = true
+                }
+            }
     }
 
     private fun clearDestinationOwnersFor(removed: List<AnyOpenInstruction>) =
@@ -180,10 +199,13 @@ public class ComposableNavigationContainer internal constructor(
             parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded -> true
             else -> false
         }
+        val presented = backstackState.renderable.takeLastWhile { it.navigationDirection is NavigationDirection.Present }.toSet()
+        val activePush = backstackState.backstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }
         backstackState.renderable.forEach {
             val destinationOwner = requireDestinationOwner(it)
-            destinationOwner.transitionState.targetState = when (it) {
-                backstackState.active -> !isParentBeingRemoved
+            destinationOwner.transitionState.targetState = when {
+                presented.contains(it) -> !isParentBeingRemoved
+                it == activePush -> !isParentBeingRemoved
                 else -> false
             }
         }

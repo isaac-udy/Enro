@@ -2,8 +2,11 @@ package dev.enro.core.compose.destination
 
 import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -14,16 +17,18 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
-import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.activity
+import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
+import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.DialogDestination
+import dev.enro.core.compose.dialog.EnroBottomSheetContainer
+import dev.enro.core.compose.dialog.EnroDialogContainer
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
-import dev.enro.core.getNavigationHandle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -91,6 +96,7 @@ internal class ComposableDestinationOwner(
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     internal fun Render(backstackState: NavigationBackstackState) {
         val lifecycleState by lifecycleFlow.collectAsState()
@@ -101,12 +107,28 @@ internal class ComposableDestinationOwner(
         val renderDestination = remember {
             movableContentOf {
                 ProvideRenderingEnvironment(saveableStateHolder) {
-                    destination.Render()
+                    when(destination) {
+                        is DialogDestination -> EnroDialogContainer(destination, destination)
+                        is BottomSheetDestination -> EnroBottomSheetContainer(destination, destination)
+                        else -> destination.Render()
+                    }
                 }
             }
         }
 
-        val animation = remember(transitionState.targetState) { parentContainer.currentAnimations.asComposable() }
+        val animation = remember(transitionState.targetState) {
+            when(destination) {
+                is DialogDestination,
+                is BottomSheetDestination -> {
+                    NavigationAnimation.Composable(
+                        forView = DefaultAnimations.ForView.none,
+                        enter = EnterTransition.None,
+                        exit = ExitTransition.None,
+                    )
+                }
+                else -> parentContainer.currentAnimations.asComposable()
+            }
+        }
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
         animation.content(transition) {
             renderDestination()

@@ -2,6 +2,7 @@ package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
 import android.view.Window
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
@@ -11,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.core.DefaultAnimations
+import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.getNavigationHandle
@@ -102,6 +104,68 @@ internal fun EnroBottomSheetContainer(
     LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
         if (destination.bottomSheetConfiguration.isDismissed.value) {
             state.hide()
+        }
+        else {
+            state.show()
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+internal fun EnroBottomSheetContainer(
+    composableDestination: ComposableDestination,
+    destination: BottomSheetDestination
+) {
+    val state = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        confirmStateChange = remember(Unit) {
+            fun(it: ModalBottomSheetValue): Boolean {
+                val isHidden = it == ModalBottomSheetValue.Hidden
+                val isHalfExpandedAndSkipped = it == ModalBottomSheetValue.HalfExpanded
+                        && destination.bottomSheetConfiguration.skipHalfExpanded
+                val isDismissed = destination.bottomSheetConfiguration.isDismissed.value
+
+                if (!isDismissed && (isHidden || isHalfExpandedAndSkipped)) {
+                    composableDestination.context.getNavigationHandle().requestClose()
+                    return destination.bottomSheetConfiguration.isDismissed.value
+                }
+                return true
+            }
+        }
+    )
+    destination.bottomSheetConfiguration.bottomSheetState = state
+    ModalBottomSheetLayout(
+        sheetState = state,
+        sheetContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = .5.dp)
+            ) {
+                composableDestination.Render()
+            }
+            destination.bottomSheetConfiguration.ConfigureWindow()
+        },
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = .5.dp)
+            ) {}
+        }
+    )
+
+    LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
+        if (destination.bottomSheetConfiguration.isDismissed.value) {
+            state.hide()
+            val container = composableDestination.owner.parentContainer
+            if (container.backstackState.exiting == composableDestination.owner.instruction) {
+                container.setBackstack(backstackState = container.backstackState.copy(
+                    exiting = null,
+                    exitingIndex = -1,
+                ))
+            }
         }
         else {
             state.show()
