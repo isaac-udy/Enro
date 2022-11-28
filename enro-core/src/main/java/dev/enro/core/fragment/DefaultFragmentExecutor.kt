@@ -119,12 +119,6 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
     }
 
     override fun close(context: NavigationContext<out Fragment>) {
-        val fragment = context.fragment
-        if(fragment is DialogFragment && fragment.showsDialog) {
-            fragment.dismiss()
-            return
-        }
-
         val parentContext = context.parentContext()
         val container = parentContext
             ?.containerManager

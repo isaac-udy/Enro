@@ -38,17 +38,18 @@ internal class ActivityLifecycleCallbacksForEnro(
             NavigationContainerProperty(
                 lifecycleOwner = activity,
                 navigationContainerProducer = {
-                    val active = activity.containerManager.activeContainer
-                    val container = FragmentNavigationContainer(
+                    FragmentNavigationContainer(
                         containerId = android.R.id.content,
                         parentContext = activity.navigationContext,
                         accept = { false },
                         emptyBehavior = EmptyBehavior.AllowEmpty,
                         interceptor = {},
                         initialBackstackState = createRootBackStack(emptyList()),
-                    )
-                    activity.containerManager.setActiveContainer(active)
-                    container
+                    ).also {
+                        if (activity.containerManager.activeContainer != it) return@also
+                        if (savedInstanceState != null) return@also
+                        activity.containerManager.setActiveContainer(null)
+                    }
                 }
             )
         }

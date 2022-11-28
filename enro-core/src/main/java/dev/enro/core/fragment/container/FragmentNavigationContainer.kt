@@ -4,14 +4,13 @@ import android.app.Activity
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
-import androidx.fragment.app.commitNow
+import androidx.fragment.app.*
+import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.close
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
@@ -55,6 +54,15 @@ public class FragmentNavigationContainer internal constructor(
         private set
 
     init {
+        fragmentManager.registerFragmentLifecycleCallbacks(object : FragmentLifecycleCallbacks() {
+            override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
+                if (f !is DialogFragment) return
+                val instructionId = f.tag ?: return
+                if (fm.isDestroyed || fm.isStateSaved) return
+                if (!f.isRemoving) return
+                setBackstack(backstackState.close(instructionId))
+            }
+        }, false)
         setOrLoadInitialBackstack(initialBackstackState)
     }
 
@@ -92,7 +100,12 @@ public class FragmentNavigationContainer internal constructor(
                 active = activePushed
             )
 
-            toRemove.forEach { remove(it.fragment) }
+            toRemove.forEach {
+                when {
+                    it.fragment is DialogFragment && it.fragment.showsDialog -> it.fragment.dismiss()
+                    else -> remove(it.fragment)
+                }
+            }
             toDetach.forEach {
                 detach(it.fragment)
             }
