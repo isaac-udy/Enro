@@ -111,6 +111,7 @@ abstract class TestFragment : Fragment() {
         layout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
+            setBackgroundColor(0xFFFFFFFF.toInt())
 
             addView(TextView(requireContext()).apply {
                 text = this@TestFragment::class.java.simpleName
