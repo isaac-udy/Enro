@@ -5,21 +5,25 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationContainerKey
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 
 public class NavigationContainerManager {
-    private var restoredActiveContainer: NavigationContainerKey? = null
-
     private val _containers: MutableSet<NavigationContainer> = mutableSetOf()
     public val containers: Set<NavigationContainer> = _containers
 
-    private val activeContainerState: MutableState<NavigationContainer?> = mutableStateOf(null)
-    public val activeContainer: NavigationContainer? get() = activeContainerState.value
+    private val activeContainerState: MutableState<NavigationContainerKey?> = mutableStateOf(null)
+    public val activeContainer: NavigationContainer? get() = activeContainerState.value?.let { activeKey ->
+        containers.firstOrNull { it.key == activeKey }
+    }
 
-    private val mutableActiveContainerFlow = MutableStateFlow<NavigationContainer?>(null)
-    public val activeContainerFlow: StateFlow<NavigationContainer?> = mutableActiveContainerFlow
-    
+    private val mutableActiveContainerFlow = MutableStateFlow<NavigationContainerKey?>(null)
+    public val activeContainerFlow: Flow<NavigationContainer?> = mutableActiveContainerFlow
+        .map { activeKey ->
+            containers.firstOrNull { it.key == activeKey }
+        }
+
     internal fun setActiveContainerByKey(key: NavigationContainerKey?) {
         setActiveContainer(containers.firstOrNull { it.key == key })
     }
@@ -36,8 +40,7 @@ public class NavigationContainerManager {
         }
 
         _containers.add(container)
-        restore(container)
-        if(activeContainer == null) {
+        if(activeContainerState.value == null) {
             setActiveContainer(container)
         }
     }
@@ -52,14 +55,9 @@ public class NavigationContainerManager {
 
     internal fun restore(savedInstanceState: Bundle?) {
         if(savedInstanceState == null) return
-        restoredActiveContainer = savedInstanceState.getParcelable(ACTIVE_CONTAINER_KEY)
-    }
-
-    internal fun restore(container: NavigationContainer) {
-        if(restoredActiveContainer == container.key) {
-            setActiveContainer(container)
-            restoredActiveContainer = null
-        }
+        val activeKey = savedInstanceState.getParcelable<NavigationContainerKey>(ACTIVE_CONTAINER_KEY)
+        activeContainerState.value = activeKey
+        mutableActiveContainerFlow.value = activeKey
     }
 
     public fun setActiveContainer(containerController: NavigationContainer?) {
@@ -70,8 +68,8 @@ public class NavigationContainerManager {
         }
         val selectedContainer = containers.firstOrNull { it.key == containerController.key }
             ?: throw IllegalStateException("NavigationContainer with id ${containerController.key} is not registered with this NavigationContainerManager")
-        activeContainerState.value = selectedContainer
-        mutableActiveContainerFlow.value = selectedContainer
+        activeContainerState.value = selectedContainer.key
+        mutableActiveContainerFlow.value = selectedContainer.key
     }
 
     public companion object {
