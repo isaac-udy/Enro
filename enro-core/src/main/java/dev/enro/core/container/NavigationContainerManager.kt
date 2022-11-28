@@ -5,7 +5,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationContainerKey
-import dev.enro.core.NavigationDirection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -38,7 +37,7 @@ public class NavigationContainerManager {
 
         _containers.add(container)
         restore(container)
-        if(activeContainer == null && !container.acceptsDirection(NavigationDirection.Present)) {
+        if(activeContainer == null) {
             setActiveContainer(container)
         }
     }
