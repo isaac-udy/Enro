@@ -56,7 +56,7 @@ dependencyResolutionManagement {
             library("compose-materialIconsExtended", "androidx.compose.material:material-icons-extended:1.2.1")
 
             library("kotlin-gradle", "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10")
-            library("kotlin-stdLib", "org.jetbrains.kotlin:kotlin-stdlib:1.7.10")
+            library("kotlin-stdLib", "org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
             library("kotlin-reflect", "org.jetbrains.kotlin:kotlin-reflect:1.7.10")
 
             library("hilt-gradle", "com.google.dagger:hilt-android-gradle-plugin:2.43")
