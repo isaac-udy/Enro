@@ -191,6 +191,7 @@ public class ComposableNavigationContainer internal constructor(
         }
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     private fun setVisibilityForBackstack(backstackState: NavigationBackstackState) {
         val isParentContextStarted = parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
         if (!isParentContextStarted && shouldTakeAnimationsFromParentContainer) return
@@ -204,7 +205,11 @@ public class ComposableNavigationContainer internal constructor(
         backstackState.renderable.forEach {
             val destinationOwner = requireDestinationOwner(it)
             destinationOwner.transitionState.targetState = when {
-                presented.contains(it) -> !isParentBeingRemoved
+                presented.contains(it) -> !isParentBeingRemoved && !(
+                        it == backstackState.exiting
+                                && destinationOwner.destination !is BottomSheetDestination
+                                && destinationOwner.destination !is DialogDestination
+                        )
                 it == activePush -> !isParentBeingRemoved
                 else -> false
             }

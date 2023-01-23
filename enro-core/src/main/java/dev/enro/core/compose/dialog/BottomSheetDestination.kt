@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.core.DefaultAnimations
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.requestClose
@@ -90,12 +89,13 @@ internal fun EnroBottomSheetContainer(
     ModalBottomSheetLayout(
         sheetState = state,
         sheetContent = {
-            EnroContainer(
-                container = controller,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 0.5.dp)
-            )
+            ) {
+                controller.Render()
+            }
             destination.bottomSheetConfiguration.ConfigureWindow()
         },
         content = {}

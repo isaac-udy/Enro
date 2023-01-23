@@ -193,7 +193,7 @@ fun ComposeSimpleExample() {
                             launchedFrom = navigation.key.name,
                             backstack = navigation.key.backstack + navigation.key.name
                         )
-                        navigation.forward(ExampleComposableBottomSheetKey(NavigationInstruction.Forward(next)))
+                        navigation.present(ExampleComposableBottomSheetKey(NavigationInstruction.Present(next)))
 
                     }) {
                     Text("Bottom Sheet")
@@ -204,7 +204,7 @@ fun ComposeSimpleExample() {
 }
 
 @Parcelize
-class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open<*>) : NavigationKey
+class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open<*>) : NavigationKey.SupportsPresent
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

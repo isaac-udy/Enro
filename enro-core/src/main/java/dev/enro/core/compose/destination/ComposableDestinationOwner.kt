@@ -32,6 +32,7 @@ import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+@Stable
 internal class ComposableDestinationOwner(
     val parentContainer: NavigationContainer,
     val instruction: AnyOpenInstruction,
@@ -104,10 +105,10 @@ internal class ComposableDestinationOwner(
 
         val saveableStateHolder = rememberSaveableStateHolder()
 
-        val renderDestination = remember {
+        val renderDestination = remember(instruction.instructionId) {
             movableContentOf {
                 ProvideRenderingEnvironment(saveableStateHolder) {
-                    when(destination) {
+                    when (destination) {
                         is DialogDestination -> EnroDialogContainer(destination, destination)
                         is BottomSheetDestination -> EnroBottomSheetContainer(destination, destination)
                         else -> destination.Render()
@@ -116,8 +117,14 @@ internal class ComposableDestinationOwner(
             }
         }
 
+//        if (
+//            transitionState.currentState == transitionState.targetState
+//            && !transitionState.currentState
+//            && instruction != backstackState.active
+//        ) return
+
         val animation = remember(transitionState.targetState) {
-            when(destination) {
+            when (destination) {
                 is DialogDestination,
                 is BottomSheetDestination -> {
                     NavigationAnimation.Composable(
@@ -152,8 +159,8 @@ internal class ComposableDestinationOwner(
                 val isDestroyed = !backstackState.backstack.contains(instruction)
                 when {
                     isDestroyed -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-                    isActive ->  lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-                    else ->  lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+                    isActive -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+                    else -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
                 }
             }
         }
