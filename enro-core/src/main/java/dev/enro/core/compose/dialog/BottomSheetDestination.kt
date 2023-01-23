@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.core.DefaultAnimations
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.requestClose
 
@@ -59,55 +58,6 @@ public fun BottomSheetDestination.configureBottomSheet(block: BottomSheetConfigu
     remember {
         BottomSheetConfiguration.Builder(bottomSheetConfiguration)
             .apply(block)
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-internal fun EnroBottomSheetContainer(
-    controller: ComposableNavigationContainer,
-    destination: BottomSheetDestination
-) {
-    val state = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        confirmStateChange = remember(Unit) {
-            fun(it: ModalBottomSheetValue): Boolean {
-                val isHidden = it == ModalBottomSheetValue.Hidden
-                val isHalfExpandedAndSkipped = it == ModalBottomSheetValue.HalfExpanded
-                        && destination.bottomSheetConfiguration.skipHalfExpanded
-                val isDismissed = destination.bottomSheetConfiguration.isDismissed.value
-
-                if (!isDismissed && (isHidden || isHalfExpandedAndSkipped)) {
-                    controller.activeContext?.getNavigationHandle()?.requestClose()
-                    return destination.bottomSheetConfiguration.isDismissed.value
-                }
-                return true
-            }
-        }
-    )
-    destination.bottomSheetConfiguration.bottomSheetState = state
-    ModalBottomSheetLayout(
-        sheetState = state,
-        sheetContent = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .defaultMinSize(minHeight = 0.5.dp)
-            ) {
-                controller.Render()
-            }
-            destination.bottomSheetConfiguration.ConfigureWindow()
-        },
-        content = {}
-    )
-
-    LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
-        if (destination.bottomSheetConfiguration.isDismissed.value) {
-            state.hide()
-        }
-        else {
-            state.show()
-        }
     }
 }
 

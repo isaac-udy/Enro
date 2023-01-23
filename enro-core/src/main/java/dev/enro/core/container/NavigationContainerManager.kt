@@ -7,6 +7,7 @@ import dev.enro.core.EnroException
 import dev.enro.core.NavigationContainerKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 public class NavigationContainerManager {
@@ -23,6 +24,7 @@ public class NavigationContainerManager {
         .map { activeKey ->
             containers.firstOrNull { it.key == activeKey }
         }
+        .distinctUntilChanged()
 
     internal fun setActiveContainerByKey(key: NavigationContainerKey?) {
         setActiveContainer(containers.firstOrNull { it.key == key })

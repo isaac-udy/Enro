@@ -117,12 +117,6 @@ internal class ComposableDestinationOwner(
             }
         }
 
-//        if (
-//            transitionState.currentState == transitionState.targetState
-//            && !transitionState.currentState
-//            && instruction != backstackState.active
-//        ) return
-
         val animation = remember(transitionState.targetState) {
             when (destination) {
                 is DialogDestination,

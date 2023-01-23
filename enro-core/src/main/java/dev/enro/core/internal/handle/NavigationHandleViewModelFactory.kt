@@ -34,6 +34,7 @@ internal class NavigationHandleViewModelFactory(
             dependencyScope = scope,
             executeCloseInstruction = scope.get(),
             executeOpenInstruction = scope.get(),
+            executeContainerOperationInstruction = scope.get(),
         ) as T
     }
 }

@@ -110,11 +110,26 @@ public fun NavigationContext<*>.requireRootContainer(): NavigationContainer {
 }
 
 public fun NavigationContext<*>.findContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer? {
-    var parentContainer = parentContainer()
-    while(parentContainer != null && parentContainer.key != navigationContainerKey) {
-        parentContainer = parentContainer()
+    val seen = mutableSetOf<NavigationContext<*>>()
+
+    fun findFrom(context: NavigationContext<*>): NavigationContainer? {
+        if (seen.contains(context)) return null
+        seen.add(context)
+
+        val activeContainer = context.parentContainer()
+        if (activeContainer != null) {
+            if (activeContainer.key == navigationContainerKey) return activeContainer
+        }
+        context.containerManager.containers.forEach { container ->
+            val childContext = container.activeContext ?: return@forEach
+            val found = findFrom(childContext)
+            if (found != null) return found
+        }
+        val parentContext = context.parentContext() ?: return null
+        return findFrom(parentContext)
     }
-    return parentContainer
+
+    return findFrom(this)
 }
 
 public fun NavigationContext<*>.requireContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer {

@@ -84,6 +84,8 @@ class MainActivity : AppCompatActivity() {
                 containers.forEach {
                     it.second.setVisibilityAnimated(it.second == activeContainer?.second)
                 }
+
+                selectedItemId = activeContainer?.first ?: return@onEach
             }
             .launchIn(lifecycleScope)
 

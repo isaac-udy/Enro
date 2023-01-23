@@ -6,6 +6,7 @@ import android.os.Parcelable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.fragment.app.Fragment
+import dev.enro.core.container.NavigationContainer
 import dev.enro.core.result.internal.ResultChannelId
 import kotlinx.parcelize.Parcelize
 import java.util.*
@@ -63,6 +64,11 @@ public sealed class NavigationInstruction {
             val resultId: ResultChannelId? = null,
         ) : Open<T>()
     }
+
+    public class ContainerOperation(
+        public val containerKey: NavigationContainerKey,
+        internal val operation: (container: NavigationContainer) -> Unit
+    ) : NavigationInstruction()
 
     public sealed class Close : NavigationInstruction() {
         public companion object : Close()
