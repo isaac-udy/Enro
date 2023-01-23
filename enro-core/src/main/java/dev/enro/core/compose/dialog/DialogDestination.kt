@@ -3,13 +3,19 @@ package dev.enro.core.compose.dialog
 import android.annotation.SuppressLint
 import android.view.Window
 import android.view.WindowManager
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import dev.enro.core.NavigationAnimation
-import dev.enro.core.compose.EnroContainer
+import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.container.ComposableNavigationContainer
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.requestClose
 
 @Deprecated("Use 'configureWindow' and set the soft input mode on the window directly")
 public enum class WindowInputMode(internal val mode: Int) {
@@ -89,6 +95,24 @@ internal fun EnroDialogContainer(
     controller: ComposableNavigationContainer,
     destination: DialogDestination
 ) {
-    EnroContainer(container = controller)
+    Box { controller.Render() }
+    destination.dialogConfiguration.ConfigureWindow()
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+internal fun EnroDialogContainer(
+    controller: ComposableDestination,
+    destination: DialogDestination
+) {
+    if (destination.isDismissed) return
+    Dialog(
+        onDismissRequest = { controller.context.getNavigationHandle().requestClose() },
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false
+        )
+    ) {
+        controller.Render()
+    }
     destination.dialogConfiguration.ConfigureWindow()
 }

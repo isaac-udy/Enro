@@ -34,6 +34,7 @@ internal class NavigationControllerScope(
             register { AddPendingResult(get()) }
             register<ExecuteOpenInstruction> { ExecuteOpenInstructionImpl(get(), get(), get()) }
             register<ExecuteCloseInstruction> { ExecuteCloseInstructionImpl(get(), get(), get()) }
+            register<ExecuteContainerOperationInstruction> { ExecuteContainerOperationInstructionImpl() }
 
             register { ConfigureNavigationHandleForPlugins(get()) }
             register { OnNavigationContextCreated(get(), get()) }

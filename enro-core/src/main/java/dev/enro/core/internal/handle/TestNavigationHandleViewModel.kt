@@ -5,6 +5,7 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.usecase.ExecuteCloseInstruction
+import dev.enro.core.controller.usecase.ExecuteContainerOperationInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 
 internal class TestNavigationHandleViewModel(
@@ -23,6 +24,12 @@ internal class TestNavigationHandleViewModel(
         override fun invoke(
             navigationContext: NavigationContext<out Any>,
             instruction: NavigationInstruction.Close
+        ) {}
+    },
+    executeContainerOperationInstruction = object : ExecuteContainerOperationInstruction {
+        override fun invoke(
+            navigationContext: NavigationContext<out Any>,
+            instruction: NavigationInstruction.ContainerOperation
         ) {}
     },
 ) {

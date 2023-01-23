@@ -2,6 +2,7 @@ package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
 import android.view.Window
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
@@ -11,8 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.core.DefaultAnimations
-import dev.enro.core.compose.EnroContainer
-import dev.enro.core.compose.container.ComposableNavigationContainer
+import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.requestClose
 
@@ -64,7 +64,7 @@ public fun BottomSheetDestination.configureBottomSheet(block: BottomSheetConfigu
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun EnroBottomSheetContainer(
-    controller: ComposableNavigationContainer,
+    composableDestination: ComposableDestination,
     destination: BottomSheetDestination
 ) {
     val state = rememberModalBottomSheetState(
@@ -77,7 +77,7 @@ internal fun EnroBottomSheetContainer(
                 val isDismissed = destination.bottomSheetConfiguration.isDismissed.value
 
                 if (!isDismissed && (isHidden || isHalfExpandedAndSkipped)) {
-                    controller.activeContext?.getNavigationHandle()?.requestClose()
+                    composableDestination.context.getNavigationHandle().requestClose()
                     return destination.bottomSheetConfiguration.isDismissed.value
                 }
                 return true
@@ -88,20 +88,34 @@ internal fun EnroBottomSheetContainer(
     ModalBottomSheetLayout(
         sheetState = state,
         sheetContent = {
-            EnroContainer(
-                container = controller,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .defaultMinSize(minHeight = 0.5.dp)
-            )
+                    .defaultMinSize(minHeight = .5.dp)
+            ) {
+                composableDestination.Render()
+            }
             destination.bottomSheetConfiguration.ConfigureWindow()
         },
-        content = {}
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = .5.dp)
+            ) {}
+        }
     )
 
     LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
         if (destination.bottomSheetConfiguration.isDismissed.value) {
             state.hide()
+            val container = composableDestination.owner.parentContainer
+            if (container.backstackState.exiting == composableDestination.owner.instruction) {
+                container.setBackstack(backstackState = container.backstackState.copy(
+                    exiting = null,
+                    exitingIndex = -1,
+                ))
+            }
         }
         else {
             state.show()

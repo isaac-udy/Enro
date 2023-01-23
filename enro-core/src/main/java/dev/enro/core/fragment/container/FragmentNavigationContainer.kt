@@ -4,13 +4,13 @@ import android.app.Activity
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
-import androidx.fragment.app.commitNow
+import androidx.fragment.app.*
+import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.close
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
@@ -18,19 +18,20 @@ import dev.enro.extensions.animate
 
 public class FragmentNavigationContainer internal constructor(
     @IdRes public val containerId: Int,
+    key: NavigationContainerKey = NavigationContainerKey.FromId(containerId),
     parentContext: NavigationContext<*>,
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     initialBackstackState: NavigationBackstackState
 ) : NavigationContainer(
-    id = containerId.toString(),
+    key = key,
     parentContext = parentContext,
     contextType = Fragment::class.java,
     acceptsNavigationKey = accept,
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
-    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
+    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward || it is NavigationDirection.Present },
 ) {
     private val hostInstructionAs = parentContext.controller.dependencyScope.get<HostInstructionAs>()
 
@@ -43,12 +44,25 @@ public class FragmentNavigationContainer internal constructor(
         }
 
     override val activeContext: NavigationContext<out Fragment>?
-        get() = fragmentManager.findFragmentById(containerId)?.navigationContext
+        get() {
+            val fragment =  backstackState.active?.let { fragmentManager.findFragmentByTag(it.instructionId) }
+                ?: fragmentManager.findFragmentById(containerId)
+            return fragment?.navigationContext
+        }
 
     override var currentAnimations: NavigationAnimation = DefaultAnimations.none
         private set
 
     init {
+        fragmentManager.registerFragmentLifecycleCallbacks(object : FragmentLifecycleCallbacks() {
+            override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
+                if (f !is DialogFragment) return
+                val instructionId = f.tag ?: return
+                if (fm.isDestroyed || fm.isStateSaved) return
+                if (!f.isRemoving) return
+                setBackstack(backstackState.close(instructionId))
+            }
+        }, false)
         setOrLoadInitialBackstack(initialBackstackState)
     }
 
@@ -62,36 +76,73 @@ public class FragmentNavigationContainer internal constructor(
 
         val toRemove = removed.asFragmentAndInstruction()
         val toDetach = getFragmentsToDetach(backstackState)
-        val active = getOrCreateActiveFragment(backstackState)
+        val toPresent = getFragmentsToPresent(backstackState)
+        val activePushed = getActivePushedFragment(backstackState)
 
-        (toRemove + toDetach + active)
+        (toRemove + toDetach + activePushed)
             .filterNotNull()
             .forEach {
                 setZIndexForAnimations(backstackState, it)
             }
 
         setAnimations(backstackState)
+        if(
+            toRemove.isEmpty()
+            && toDetach.isEmpty()
+            && toPresent.isEmpty()
+            && (fragmentManager.primaryNavigationFragment == activePushed?.fragment || activePushed == null)
+        ) return true
+
         fragmentManager.commitNow {
             setReorderingAllowed(true)
             applyAnimationsForTransaction(
                 backstackState = backstackState,
-                active = active
+                active = activePushed
             )
 
-            toRemove.forEach { remove(it.fragment) }
-            toDetach.forEach { detach(it.fragment) }
-            if (active == null) return@commitNow
-
-            when {
-                active.fragment.id != 0 -> attach(active.fragment)
-                else -> add(
-                    containerId,
-                    active.fragment,
-                    active.instruction.instructionId
-                )
+            toRemove.forEach {
+                when {
+                    it.fragment is DialogFragment && it.fragment.showsDialog -> it.fragment.dismiss()
+                    else -> remove(it.fragment)
+                }
             }
-            setPrimaryNavigationFragment(active.fragment)
+            toDetach.forEach {
+                detach(it.fragment)
+            }
+            toPresent.forEach {
+                if(!it.fragment.isAdded) {
+                    if(it.fragment.isDetached) {
+                        attach(it.fragment)
+                    } else {
+                        add(it.fragment, it.instruction.instructionId)
+                    }
+                }
+
+            }
+            if (activePushed != null) {
+                when {
+                    activePushed.fragment.id != 0 -> attach(activePushed.fragment)
+                    else -> add(
+                        containerId,
+                        activePushed.fragment,
+                        activePushed.instruction.instructionId
+                    )
+                }
+            }
+            val activeFragmentAndInstruction = toPresent.lastOrNull() ?: activePushed ?: return@commitNow
+            val activeFragment = activeFragmentAndInstruction.fragment
+            setPrimaryNavigationFragment(activeFragment)
         }
+
+        backstackState.backstack.lastOrNull()
+            ?.let {
+                fragmentManager.findFragmentByTag(it.instructionId)
+            }
+            ?.let { primaryFragment ->
+                fragmentManager.commitNow {
+                    setPrimaryNavigationFragment(primaryFragment)
+                }
+            }
         return true
     }
 
@@ -107,25 +158,40 @@ public class FragmentNavigationContainer internal constructor(
 
     private fun getFragmentsToDetach(backstackState: NavigationBackstackState): List<FragmentAndInstruction> {
         return backstackState.backstack
-            .filter { it.navigationDirection !is NavigationDirection.Present }
-            .filter { it != backstackState.active }
+            .dropLastWhile { it.navigationDirection is NavigationDirection.Present }
+            .dropLast(1)
             .asFragmentAndInstruction()
     }
 
-    private fun getOrCreateActiveFragment(backstackState: NavigationBackstackState): FragmentAndInstruction? {
-        backstackState.active ?: return null
-        val existingFragment = fragmentManager.findFragmentByTag(backstackState.active.instructionId)
+    private fun getFragmentsToPresent(backstackState: NavigationBackstackState) : List<FragmentAndInstruction> {
+        return backstackState.backstack
+            .takeLastWhile {
+                it.navigationDirection is NavigationDirection.Present
+            }
+            .map { getOrCreateFragment(DialogFragment::class.java, it)  }
+    }
+
+    private fun getActivePushedFragment(backstackState: NavigationBackstackState) : FragmentAndInstruction? {
+        val activePushedFragment = backstackState.backstack
+            .lastOrNull {
+                it.navigationDirection is NavigationDirection.Push
+            } ?: return null
+        return getOrCreateFragment(Fragment::class.java, activePushedFragment)
+    }
+
+    private fun getOrCreateFragment(type: Class<out Fragment>, instruction: AnyOpenInstruction): FragmentAndInstruction {
+        val existingFragment = fragmentManager.findFragmentByTag(instruction.instructionId)
         if (existingFragment != null) return FragmentAndInstruction(
             fragment = existingFragment,
-            instruction = backstackState.active
+            instruction = instruction
         )
 
         return FragmentAndInstruction(
             fragment = FragmentFactory.createFragment(
                 parentContext,
-                hostInstructionAs<Fragment>(parentContext, backstackState.active)
+                hostInstructionAs(type, parentContext, instruction)
             ),
-            instruction = backstackState.active
+            instruction = instruction
         )
     }
 

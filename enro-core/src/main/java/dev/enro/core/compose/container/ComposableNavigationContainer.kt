@@ -1,5 +1,6 @@
 package dev.enro.core.compose.container
 
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -9,6 +10,8 @@ import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
+import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
@@ -17,25 +20,25 @@ import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import java.util.concurrent.ConcurrentHashMap
 
 public class ComposableNavigationContainer internal constructor(
-    id: String,
+    key: NavigationContainerKey,
     parentContext: NavigationContext<*>,
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     initialBackstackState: NavigationBackstackState
 ) : NavigationContainer(
-    id = id,
+    key = key,
     parentContext = parentContext,
     contextType = ComposableDestination::class.java,
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
     acceptsNavigationKey = accept,
-    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward },
+    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward || it is NavigationDirection.Present },
 ) {
     private val destinationStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
     private var saveableStateHolder: SaveableStateHolder? = null
 
-    private val viewModelStores = destinationStorage.viewModelStores.getOrPut(id) { mutableMapOf() }
+    private val viewModelStores = destinationStorage.viewModelStores.getOrPut(key) { mutableMapOf() }
     private val destinationOwners = ConcurrentHashMap<String, ComposableDestinationOwner>()
     private val currentDestination
         get() = backstackFlow.value.backstack
@@ -58,15 +61,15 @@ public class ComposableNavigationContainer internal constructor(
     override val isVisible: Boolean
         get() = true
 
-    override var currentAnimations: NavigationAnimation = DefaultAnimations.none
+    override var currentAnimations: NavigationAnimation by mutableStateOf(DefaultAnimations.none)
         private set
 
     // We want "Render" to look like it's a Composable function (it's a Composable lambda), so
     // we are uppercasing the first letter of the property name, which triggers a PropertyName lint warning
     @Suppress("PropertyName")
     public val Render: @Composable () -> Unit = movableContentOf {
-        key(id) {
-            saveableStateHolder?.SaveableStateProvider(id) {
+        key(key.name) {
+            saveableStateHolder?.SaveableStateProvider(key.name) {
                 val backstackState by backstackFlow.collectAsState()
 
                 backstackState.renderable
@@ -92,12 +95,11 @@ public class ComposableNavigationContainer internal constructor(
         if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return false
         if (parentContext.runCatching { activity }.getOrNull() == null) return false
 
+        dismissDialogs(removed)
         clearDestinationOwnersFor(removed)
         createDestinationOwnersFor(backstackState)
-
-        if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return false
-        setAnimationsForBackstack(backstackState)
         setVisibilityForBackstack(backstackState)
+        setAnimationsForBackstack(backstackState)
         return true
     }
 
@@ -129,6 +131,21 @@ public class ComposableNavigationContainer internal constructor(
                 })
             }
         }
+    }
+
+    @OptIn(ExperimentalMaterialApi::class)
+    private fun dismissDialogs(removed: List<AnyOpenInstruction>) {
+        removed
+            .mapNotNull {
+                destinationOwners[it.instructionId]
+            }
+            .map { it.destination }
+            .forEach {
+                when(it) {
+                    is DialogDestination -> it.dialogConfiguration.isDismissed.value = true
+                    is BottomSheetDestination -> it.bottomSheetConfiguration.isDismissed.value = true
+                }
+            }
     }
 
     private fun clearDestinationOwnersFor(removed: List<AnyOpenInstruction>) =
@@ -171,9 +188,10 @@ public class ComposableNavigationContainer internal constructor(
             }
             backstackState.isInitialState -> DefaultAnimations.none
             else -> animationsFor(contextForAnimation, backstackState.lastInstruction)
-        }.asComposable()
+        }
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     private fun setVisibilityForBackstack(backstackState: NavigationBackstackState) {
         val isParentContextStarted = parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
         if (!isParentContextStarted && shouldTakeAnimationsFromParentContainer) return
@@ -182,10 +200,17 @@ public class ComposableNavigationContainer internal constructor(
             parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded -> true
             else -> false
         }
+        val presented = backstackState.renderable.takeLastWhile { it.navigationDirection is NavigationDirection.Present }.toSet()
+        val activePush = backstackState.backstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }
         backstackState.renderable.forEach {
             val destinationOwner = requireDestinationOwner(it)
-            destinationOwner.transitionState.targetState = when (it) {
-                backstackState.active -> !isParentBeingRemoved
+            destinationOwner.transitionState.targetState = when {
+                presented.contains(it) -> !isParentBeingRemoved && !(
+                        it == backstackState.exiting
+                                && destinationOwner.destination !is BottomSheetDestination
+                                && destinationOwner.destination !is DialogDestination
+                        )
+                it == activePush -> !isParentBeingRemoved
                 else -> false
             }
         }
@@ -200,7 +225,7 @@ public class ComposableNavigationContainer internal constructor(
             onDispose { saveableStateHolder = null }
         }
 
-        DisposableEffect(id, registrationStrategy) {
+        DisposableEffect(key, registrationStrategy) {
             val containerManager = parentContext.containerManager
 
             fun dispose() {
@@ -229,21 +254,21 @@ public class ComposableNavigationContainer internal constructor(
             }
         }
 
-        DisposableEffect(id) {
+        DisposableEffect(key) {
             val containerManager = parentContext.containerManager
             onDispose {
                 if (containerManager.activeContainer == this@ComposableNavigationContainer) {
-                    val previouslyActive = backstackState.active?.internal?.previouslyActiveId?.takeIf { it != id }
-                    containerManager.setActiveContainerById(previouslyActive)
+                    val previouslyActiveContainer = backstackState.active?.internal?.previouslyActiveContainer?.takeIf { it != key }
+                    containerManager.setActiveContainerByKey(previouslyActiveContainer)
                 }
             }
         }
 
-        DisposableEffect(id) {
+        DisposableEffect(key) {
             val lifecycleObserver = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_RESUME || event == Lifecycle.Event.ON_PAUSE) {
-                    setAnimationsForBackstack(backstackState)
                     setVisibilityForBackstack(backstackState)
+                    setAnimationsForBackstack(backstackState)
                 }
             }
             parentContext.lifecycle.addObserver(lifecycleObserver)

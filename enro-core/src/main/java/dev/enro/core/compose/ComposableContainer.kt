@@ -13,7 +13,6 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.createRestoredBackStack
 import dev.enro.core.container.createRootBackStack
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
-import java.util.*
 
 @Composable
 public fun rememberNavigationContainer(
@@ -70,23 +69,22 @@ public fun rememberEnroContainerController(
 @Composable
 @AdvancedEnroApi
 public fun rememberNavigationContainer(
-    id: String = rememberSaveable { UUID.randomUUID().toString() },
+    key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
     initialBackstack: List<AnyOpenInstruction> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
-    registrationStrategy: ContainerRegistrationStrategy = ContainerRegistrationStrategy.DisposeWithComposition,
 ): ComposableNavigationContainer {
     val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
 
     val controller = remember {
         val context = viewModelStoreOwner.navigationContext!!
-        val existingContainer = context.containerManager.getContainerById(id) as? ComposableNavigationContainer
+        val existingContainer = context.containerManager.getContainer(key) as? ComposableNavigationContainer
         existingContainer?.setBackstack(
             createRestoredBackStack(existingContainer.backstackState.backstack)
         )
         existingContainer ?: ComposableNavigationContainer(
-            id = id,
+            key = key,
             parentContext = viewModelStoreOwner.navigationContext!!,
             accept = accept,
             emptyBehavior = emptyBehavior,
@@ -94,7 +92,13 @@ public fun rememberNavigationContainer(
             initialBackstackState = createRootBackStack(initialBackstack)
         )
     }
-    controller.registerWithContainerManager(registrationStrategy)
+    controller.registerWithContainerManager(
+        when(key) {
+            is NavigationContainerKey.Dynamic -> ContainerRegistrationStrategy.DisposeWithComposition
+            is NavigationContainerKey.FromId -> ContainerRegistrationStrategy.DisposeWithLifecycle
+            is NavigationContainerKey.FromName -> ContainerRegistrationStrategy.DisposeWithLifecycle
+        }
+    )
     return controller
 }
 

@@ -1,6 +1,5 @@
 package dev.enro.core.destinations
 
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -125,7 +124,6 @@ fun assertPushContainerType(
 
         val container = when (containerType) {
             is IntoSameContainer -> getParentContainer(pushFrom.navigationContext) { parentContainer ->
-                Log.e("LOOKED", "${parentContainer.backstackState.backstack.joinToString { it.navigationKey.toString() }}")
                 parentContainer.hasActiveContext(pushOpened.navigationContext)
             }
             is IntoChildContainer -> pushFrom.navigationContext

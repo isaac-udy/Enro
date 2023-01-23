@@ -9,10 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import dev.enro.core.*
-import dev.enro.core.container.NavigationContainerProperty
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
-import dev.enro.core.fragment.container.FragmentPresentationContainer
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
 internal class FragmentLifecycleCallbacksForEnro(
@@ -27,14 +25,6 @@ internal class FragmentLifecycleCallbacksForEnro(
         // TODO throw exception if fragment is opened into an Enro registered NavigationContainer without
         // being opened through Enro
         onNavigationContextCreated(FragmentContext(fragment), savedInstanceState)
-        NavigationContainerProperty(
-            lifecycleOwner = fragment,
-            navigationContainerProducer = {
-                FragmentPresentationContainer(
-                    parentContext = fragment.navigationContext,
-                )
-            }
-        )
     }
 
     override fun onFragmentSaveInstanceState(

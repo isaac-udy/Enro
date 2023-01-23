@@ -4,10 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
+import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 
 internal class ComposableViewModelStoreStorage : ViewModel() {
-    val viewModelStores = mutableMapOf<String, MutableMap<String, ViewModelStore>>()
+    val viewModelStores = mutableMapOf<NavigationContainerKey, MutableMap<String, ViewModelStore>>()
 
     override fun onCleared() {
         viewModelStores.values

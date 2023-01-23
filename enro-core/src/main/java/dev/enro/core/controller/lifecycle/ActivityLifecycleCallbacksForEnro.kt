@@ -8,10 +8,12 @@ import androidx.activity.addCallback
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import dev.enro.core.*
+import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
+import dev.enro.core.container.createRootBackStack
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
-import dev.enro.core.fragment.container.FragmentPresentationContainer
+import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.internal.handle.interceptBackPressForAndroidxNavigation
 
 internal class ActivityLifecycleCallbacksForEnro(
@@ -36,9 +38,18 @@ internal class ActivityLifecycleCallbacksForEnro(
             NavigationContainerProperty(
                 lifecycleOwner = activity,
                 navigationContainerProducer = {
-                    FragmentPresentationContainer(
+                    FragmentNavigationContainer(
+                        containerId = android.R.id.content,
                         parentContext = activity.navigationContext,
-                    )
+                        accept = { false },
+                        emptyBehavior = EmptyBehavior.AllowEmpty,
+                        interceptor = {},
+                        initialBackstackState = createRootBackStack(emptyList()),
+                    ).also {
+                        if (activity.containerManager.activeContainer != it) return@also
+                        if (savedInstanceState != null) return@also
+                        activity.containerManager.setActiveContainer(null)
+                    }
                 }
             )
         }

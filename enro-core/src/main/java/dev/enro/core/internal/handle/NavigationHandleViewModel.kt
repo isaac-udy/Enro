@@ -10,6 +10,7 @@ import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.usecase.ExecuteCloseInstruction
+import dev.enro.core.controller.usecase.ExecuteContainerOperationInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.internal.NoNavigationKey
 
@@ -18,6 +19,7 @@ internal open class NavigationHandleViewModel(
     dependencyScope: NavigationHandleScope,
     private val executeOpenInstruction: ExecuteOpenInstruction,
     private val executeCloseInstruction: ExecuteCloseInstruction,
+    private val executeContainerOperationInstruction: ExecuteContainerOperationInstruction,
 ) : ViewModel(),
     NavigationHandle {
 
@@ -80,6 +82,7 @@ internal open class NavigationHandleViewModel(
                 is NavigationInstruction.Open<*> -> executeOpenInstruction(context, instruction)
                 NavigationInstruction.RequestClose -> internalOnCloseRequested()
                 is NavigationInstruction.Close -> executeCloseInstruction(context, instruction)
+                is NavigationInstruction.ContainerOperation -> executeContainerOperationInstruction(context, instruction)
             }
         }
     }

@@ -18,7 +18,7 @@
     android:shareInterpolator="false"
     android:zAdjustment="top">
     <alpha
-        android:fromAlpha="0"
+        android:fromAlpha="0.999"
         android:toAlpha="1.0"
         android:fillEnabled="true"
         android:fillBefore="true"

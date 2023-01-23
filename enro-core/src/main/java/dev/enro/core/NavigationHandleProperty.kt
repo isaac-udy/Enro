@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
+import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import java.lang.ref.WeakReference
 import kotlin.collections.set
@@ -88,4 +89,21 @@ public fun View.requireNavigationHandle(): NavigationHandle {
     val viewModelStoreOwner = findViewTreeViewModelStoreOwner()
         ?: throw EnroException.InvalidViewForNavigationHandle("Could not find ViewTreeViewModelStoreOwner for $this, which is required to retrieve a NavigationHandle")
     return viewModelStoreOwner.getNavigationHandleViewModel()
+}
+
+internal fun NavigationHandle.getNavigationContext(): NavigationContext<*>? {
+    val navigationHandle = this
+    val unwrapped = when(navigationHandle) {
+        is TypedNavigationHandleImpl<*> -> navigationHandle.navigationHandle
+        else -> navigationHandle
+    }
+
+    return when(unwrapped) {
+        is NavigationHandleViewModel -> unwrapped.navigationContext
+        else -> null
+    }
+}
+
+internal fun NavigationHandle.requireNavigationContext(): NavigationContext<*> {
+    return requireNotNull(getNavigationContext())
 }

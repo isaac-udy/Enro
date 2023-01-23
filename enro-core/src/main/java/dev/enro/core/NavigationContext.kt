@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.core.os.bundleOf
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
@@ -15,28 +14,27 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
-import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.destination.activity
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
-import dev.enro.core.fragment.FragmentNavigationBinding
-import dev.enro.core.fragment.container.FragmentPresentationContainer
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
 public sealed class NavigationContext<ContextType : Any>(
     public val contextReference: ContextType
 ) {
     public abstract val controller: NavigationController
+    public abstract val parentContext: NavigationContext<*>?
+
     public abstract val lifecycle: Lifecycle
     public abstract val arguments: Bundle
     public abstract val viewModelStoreOwner: ViewModelStoreOwner
     public abstract val savedStateRegistryOwner: SavedStateRegistryOwner
     public abstract val lifecycleOwner: LifecycleOwner
 
-    internal open val binding: NavigationBinding<*, ContextType>? by lazy {
+    internal val binding: NavigationBinding<*, ContextType>? by lazy {
         controller.bindingForDestinationType(contextReference::class) as? NavigationBinding<*, ContextType>
     }
 
@@ -48,7 +46,7 @@ internal class ActivityContext<ContextType : ComponentActivity>(
 ) : NavigationContext<ContextType>(contextReference) {
     override val controller get() = contextReference.application.navigationController
     override val lifecycle get() = contextReference.lifecycle
-    override val binding get() = super.binding as? ActivityNavigationBinding<*, ContextType>
+    override val parentContext: NavigationContext<*>? = null
     override val arguments: Bundle by lazy { contextReference.intent.extras ?: Bundle() }
 
     override val viewModelStoreOwner: ViewModelStoreOwner get() = contextReference
@@ -61,18 +59,26 @@ internal class FragmentContext<ContextType : Fragment>(
 ) : NavigationContext<ContextType>(contextReference) {
     override val controller get() = contextReference.requireActivity().application.navigationController
     override val lifecycle get() = contextReference.lifecycle
-    override val binding get() = super.binding as? FragmentNavigationBinding<*, ContextType>
     override val arguments: Bundle by lazy { contextReference.arguments ?: Bundle() }
 
     override val viewModelStoreOwner: ViewModelStoreOwner get() = contextReference
     override val savedStateRegistryOwner: SavedStateRegistryOwner get() = contextReference
     override val lifecycleOwner: LifecycleOwner get() = contextReference
+
+    override val parentContext: NavigationContext<*>
+        get() {
+            return when (val parentFragment = fragment.parentFragment) {
+                null -> fragment.requireActivity().navigationContext
+                else -> parentFragment.navigationContext
+            }
+        }
 }
 
 internal class ComposeContext<ContextType : ComposableDestination>(
     contextReference: ContextType
 ) : NavigationContext<ContextType>(contextReference) {
     override val controller: NavigationController get() = contextReference.owner.activity.application.navigationController
+    override val parentContext: NavigationContext<*> get() = contextReference.owner.parentContainer.parentContext
     override val lifecycle: Lifecycle get() = contextReference.owner.lifecycle
     override val arguments: Bundle by lazy { bundleOf(OPEN_ARG to contextReference.owner.instruction) }
 
@@ -84,15 +90,52 @@ internal class ComposeContext<ContextType : ComposableDestination>(
 public val NavigationContext<out Fragment>.fragment: Fragment get() = contextReference
 
 public fun NavigationContext<*>.parentContainer(): NavigationContainer? {
-    return when (this) {
-        is ActivityContext -> null
-        is FragmentContext<out Fragment> -> when (contextReference) {
-            is DialogFragment -> parentContext()?.containerManager?.containers?.firstOrNull { it is FragmentPresentationContainer }
-            else -> parentContext()?.containerManager?.containers?.firstOrNull { it.id == fragment.id.toString() }
-        }
-        is ComposeContext<out ComposableDestination> -> contextReference.owner.parentContainer
+    val parentContext = parentContext ?: return null
+    val instructionId = this.getNavigationHandle().id
+    return parentContext.containerManager.containers.firstOrNull { container ->
+        container.backstackState.backstack.any { it.instructionId == instructionId }
     }
 }
+
+public fun NavigationContext<*>.findRootContainer(): NavigationContainer? {
+    var parentContainer = parentContainer()
+    while(parentContainer != null) {
+        parentContainer = parentContainer() ?: return parentContainer
+    }
+    return null
+}
+
+public fun NavigationContext<*>.requireRootContainer(): NavigationContainer {
+    return requireNotNull(findRootContainer())
+}
+
+public fun NavigationContext<*>.findContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer? {
+    val seen = mutableSetOf<NavigationContext<*>>()
+
+    fun findFrom(context: NavigationContext<*>): NavigationContainer? {
+        if (seen.contains(context)) return null
+        seen.add(context)
+
+        val activeContainer = context.parentContainer()
+        if (activeContainer != null) {
+            if (activeContainer.key == navigationContainerKey) return activeContainer
+        }
+        context.containerManager.containers.forEach { container ->
+            val childContext = container.activeContext ?: return@forEach
+            val found = findFrom(childContext)
+            if (found != null) return found
+        }
+        val parentContext = context.parentContext() ?: return null
+        return findFrom(parentContext)
+    }
+
+    return findFrom(this)
+}
+
+public fun NavigationContext<*>.requireContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer {
+    return requireNotNull(findContainer(navigationContainerKey))
+}
+
 
 public val NavigationContext<*>.activity: ComponentActivity
     get() = when (contextReference) {

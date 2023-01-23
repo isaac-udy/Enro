@@ -13,11 +13,11 @@ public data class NavigationContainerGroup(
 @Composable
 public fun rememberNavigationContainerGroup(vararg containers: ComposableNavigationContainer): NavigationContainerGroup {
     val activeInGroup = rememberSaveable {
-        mutableStateOf(containers.first().id)
+        mutableStateOf(containers.first().key)
     }
     val activeContainer = containerManager.activeContainer
     DisposableEffect(activeContainer) {
-        val activeId = containers.firstOrNull { it.id == activeContainer?.id }?.id
+        val activeId = containers.firstOrNull { it.key == activeContainer?.key }?.key
         if(activeId != null && activeInGroup.value != activeId) {
             activeInGroup.value = activeId
         }
@@ -27,7 +27,7 @@ public fun rememberNavigationContainerGroup(vararg containers: ComposableNavigat
     return remember(activeInGroup.value) {
         NavigationContainerGroup(
             containers = containers.toList(),
-            activeContainer = containers.first { it.id == activeInGroup.value }
+            activeContainer = containers.first { it.key == activeInGroup.value }
         )
     }
 }

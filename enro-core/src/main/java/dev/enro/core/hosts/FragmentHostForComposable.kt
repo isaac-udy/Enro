@@ -8,7 +8,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
-import dev.enro.core.compose.container.ContainerRegistrationStrategy
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
@@ -53,6 +52,7 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
             id = R.id.enro_internal_compose_fragment_view_id
             setContent {
                 rememberNavigationContainer(
+                    key = NavigationContainerKey.FromName("FragmentHostForCompose"),
                     initialBackstack = listOf(navigationHandle.key.instruction.asPushInstruction()),
                     accept = { isRoot },
                     emptyBehavior = when {
@@ -62,7 +62,6 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
                             false
                         }
                     },
-                    registrationStrategy = ContainerRegistrationStrategy.DisposeWithLifecycle,
                 ).Render()
             }
         }

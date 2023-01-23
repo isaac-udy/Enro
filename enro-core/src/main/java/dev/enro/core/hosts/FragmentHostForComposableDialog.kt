@@ -15,7 +15,9 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
-import dev.enro.core.compose.dialog.*
+import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.DialogConfiguration
+import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
@@ -75,11 +77,11 @@ public abstract class AbstractFragmentHostForComposableDialog : DialogFragment()
             val destination = controller.requireDestinationOwner(instruction).destination
             dialogConfiguration = when (destination) {
                 is BottomSheetDestination -> {
-                    EnroBottomSheetContainer(controller, destination)
+                    controller.Render()
                     destination.bottomSheetConfiguration
                 }
                 is DialogDestination -> {
-                    EnroDialogContainer(controller, destination)
+                    controller.Render()
                     destination.dialogConfiguration
                 }
                 else -> throw EnroException.DestinationIsNotDialogDestination("The @Composable destination for ${navigationHandle.key::class.java.simpleName} must be a DialogDestination or a BottomSheetDestination")
