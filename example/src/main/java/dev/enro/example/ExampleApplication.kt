@@ -12,7 +12,6 @@ import dev.enro.core.DefaultAnimations
 import dev.enro.core.NavigationAnimation
 import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.createNavigationController
-import dev.enro.core.createSharedElementOverride
 import dev.enro.core.plugins.EnroLogger
 
 @HiltAndroidApp
@@ -26,11 +25,6 @@ class ExampleApplication : Application(), NavigationApplication {
                 DefaultAnimations.present
             }
         }
-        override(
-            createSharedElementOverride<RequestExampleFragment, RequestStringFragment>(
-                listOf(R.id.requestStringButton to R.id.sendResultButton)
-            )
-        )
 
         override<ComposeSimpleExampleDestination, ComposeSimpleExampleDestination> {
             animation {
