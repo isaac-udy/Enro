@@ -65,10 +65,15 @@ public sealed class NavigationInstruction {
         ) : Open<T>()
     }
 
-    public class ContainerOperation(
-        public val containerKey: NavigationContainerKey,
+    public class ContainerOperation internal constructor(
+        internal val target: Target,
         internal val operation: (container: NavigationContainer) -> Unit
-    ) : NavigationInstruction()
+    ) : NavigationInstruction() {
+        internal sealed class Target {
+            object ParentContainer : Target()
+            class TargetContainer(val key: NavigationContainerKey) : Target()
+        }
+    }
 
     public sealed class Close : NavigationInstruction() {
         public companion object : Close()
@@ -154,6 +159,21 @@ public sealed class NavigationInstruction {
             navigationDirection = NavigationDirection.ReplaceRoot,
             navigationKey = navigationKey,
             children = children
+        )
+
+        public fun OnContainer(
+            key: NavigationContainerKey,
+            block: (NavigationContainer) -> Unit
+        ): NavigationInstruction.ContainerOperation = NavigationInstruction.ContainerOperation(
+            target = ContainerOperation.Target.TargetContainer(key),
+            operation = block,
+        )
+
+        public fun OnContainer(
+            block: (NavigationContainer) -> Unit
+        ): NavigationInstruction.ContainerOperation = NavigationInstruction.ContainerOperation(
+            target = ContainerOperation.Target.ParentContainer,
+            operation = block,
         )
     }
 }

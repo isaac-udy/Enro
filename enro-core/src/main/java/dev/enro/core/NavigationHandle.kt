@@ -5,6 +5,7 @@ import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
@@ -96,6 +97,19 @@ public fun NavigationHandle.replaceRoot(key: NavigationKey, vararg childKeys: Na
 
 public fun NavigationHandle.close() {
     executeInstruction(NavigationInstruction.Close)
+}
+
+public fun NavigationHandle.onContainer(
+    key: NavigationContainerKey,
+    block: (NavigationContainer) -> Unit
+) {
+    executeInstruction(NavigationInstruction.OnContainer(key, block))
+}
+
+public fun NavigationHandle.onContainer(
+    block: (NavigationContainer) -> Unit
+) {
+    executeInstruction(NavigationInstruction.OnContainer(block))
 }
 
 public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
