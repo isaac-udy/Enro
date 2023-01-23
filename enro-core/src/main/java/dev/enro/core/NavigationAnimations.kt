@@ -203,7 +203,8 @@ public fun animationsFor(
     return when (navigationInstruction) {
         is NavigationInstruction.Open<*> -> animationsForOpen(context.controller, navigationInstruction)
         is NavigationInstruction.Close -> animationsForClose(context)
-        is NavigationInstruction.RequestClose -> animationsForClose(context)
+        is NavigationInstruction.RequestClose -> DefaultAnimations.none
+        is NavigationInstruction.ContainerOperation -> DefaultAnimations.none
     }
 }
 
