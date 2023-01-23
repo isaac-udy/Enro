@@ -172,9 +172,9 @@ public class ComposableNavigationContainer internal constructor(
             else -> activeContext
         } ?: parentContext
 
-        val isRestoredFromExitingParent = when {
-            parentContext is FragmentContext<*> && parentContext.contextReference.isDetached -> return
-            parentContext.contextReference is NavigationHost -> parentContext.parentContainer()?.backstackState?.exiting != null
+        runCatching { parentContext.parentContext }.onFailure { return }
+        val isRestoredFromExitingParent = when (parentContext.contextReference) {
+            is NavigationHost -> parentContext.parentContainer()?.backstackState?.exiting != null
             else -> false
         }
 
