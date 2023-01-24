@@ -26,7 +26,7 @@ class ExampleApplication : Application(), NavigationApplication {
             }
         }
 
-        override<ComposeSimpleExampleDestination, ComposeSimpleExampleDestination> {
+        override<ExampleComposableDestination, ExampleComposableDestination> {
             animation {
                 open
             }
