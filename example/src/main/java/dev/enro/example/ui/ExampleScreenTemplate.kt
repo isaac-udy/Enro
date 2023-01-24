@@ -11,18 +11,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import dev.enro.core.NavigationHandle
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.onContainer
 import dev.enro.example.R
 import dev.enro.example.data.toSentenceId
-import kotlinx.coroutines.delay
 
 @Composable
 fun ExampleScreenTemplate(
     title: String,
     modifier: Modifier = Modifier,
-    buttons: List<Pair<String, NavigationHandle.() -> Unit>> = emptyList()
+    buttons: List<Pair<String, () -> Unit>> = emptyList()
 ) {
     val scrollState = rememberScrollState()
     val navigation = navigationHandle()
@@ -30,19 +28,16 @@ fun ExampleScreenTemplate(
     var backstackItems by remember { mutableStateOf(listOf<String>()) }
 
     LaunchedEffect(Unit) {
-        while (true) {
-            navigation.onContainer { container ->
-                container.backstackState
-                    .let {
-                        if (navigation.instruction != it.active) return@let
-                        backstackItems = container.backstackFlow.value.backstack
-                            .map { instruction ->
-                                instruction.instructionId.toSentenceId()
-                            }
-                            .reversed()
-                    }
-            }
-            delay(500)
+        navigation.onContainer { container ->
+            container.backstackState
+                .let {
+                    if (navigation.instruction != it.active) return@let
+                    backstackItems = container.backstackFlow.value.backstack
+                        .map { instruction ->
+                            instruction.instructionId.toSentenceId()
+                        }
+                        .reversed()
+                }
         }
     }
 
@@ -109,7 +104,7 @@ fun ExampleScreenTemplate(
                     OutlinedButton(
                         modifier = Modifier.padding(top = 6.dp, bottom = 6.dp),
                         onClick = {
-                            button.second(navigation)
+                            button.second()
                         }) {
                         Text(button.first)
                     }
