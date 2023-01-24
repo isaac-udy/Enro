@@ -102,7 +102,7 @@ val features = listOf(
                 To see how this example is built, look at ComposeSimpleExample.kt in the examples.
             """.trimIndent(),
             positiveActionInstruction = NavigationInstruction.Present(
-                ComposeSimpleExampleKey(
+                ExampleComposableKey(
                     name = "Start",
                     launchedFrom = "Features"
                 )
@@ -138,18 +138,18 @@ val features = listOf(
                 "Deeplink 1 -> Deeplink 2 -> Deeplink 3"
             """.trimIndent(),
             positiveActionInstruction = NavigationInstruction.Forward(
-                navigationKey = SimpleExampleKey(
+                navigationKey = ExampleFragmentKey(
                     name = "Deeplink 1",
                     launchedFrom = "Features",
                     backstack = listOf("Features")
                 ),
                 children = listOf(
-                    SimpleExampleKey(
+                    ExampleFragmentKey(
                         name = "Deeplink 2",
                         launchedFrom = "Deeplink 1",
                         backstack = listOf("Features", "Deeplink 1")
                     ),
-                    SimpleExampleKey(
+                    ExampleFragmentKey(
                         name = "Deeplink 3",
                         launchedFrom = "Deeplink 2",
                         backstack = listOf("Features", "Deeplink 1", "Deeplink 2")

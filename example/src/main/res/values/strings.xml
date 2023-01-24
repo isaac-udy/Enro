@@ -15,8 +15,6 @@
     </string>
     <string name="example_content">
         This is an example destination. Try playing around with the different navigation options below.\n
-        \n
-        You can go \'forward\' to another destination, \'replace\' the current destination with another destination, or \'replace root\' and replace the entire stack with another destination!\n
     </string>
     <string name="result_example_content">
         This is an example of using a ResultKey and registerForNavigationResult to get a result from a navigation destination.\n

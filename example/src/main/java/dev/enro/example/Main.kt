@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         containerId = R.id.homeContainer,
         root = { Home() },
         accept = {
-            it is Home || it is SimpleExampleKey || it is ComposeSimpleExampleKey
+            it is Home || it is ExampleFragmentKey || it is ExampleComposableKey
         },
         emptyBehavior = EmptyBehavior.CloseParent
     )

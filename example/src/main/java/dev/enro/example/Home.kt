@@ -31,7 +31,7 @@ class HomeFragment : Fragment() {
         FragmentHomeBinding.bind(view).apply {
             launchExample.setOnClickListener {
                 getNavigationHandle()
-                    .forward(SimpleExampleKey("Start", "Home", listOf("Home")))
+                    .forward(ExampleFragmentKey("Start", "Home", listOf("Home")))
             }
         }
     }

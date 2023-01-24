@@ -1,9 +1,12 @@
 package dev.enro.core.compose
 
 import androidx.fragment.app.Fragment
+import dev.enro.core.AdvancedEnroApi
+import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.destinations.*
-import dev.enro.core.parentContainer
+import dev.enro.core.directParentContainer
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ComposableDestinationPush {
@@ -40,10 +43,12 @@ class ComposableDestinationPush {
             .assertClosesWithResultTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(firstKey)
     }
 
+    @OptIn(AdvancedEnroApi::class)
     @Test
     fun givenComposableRootDestination_whenPushingComposables_thenComposablesArePushedIntoComposableContainerNotAsFragments() {
         val root = launchComposableRoot()
-        val composableContainer = root.navigationContext.parentContainer()
+        val composableContainer = root.navigationContext.directParentContainer()
+        assertTrue(composableContainer is ComposableNavigationContainer)
         /**
          * When a composables is launched into the root of an activity, the first composable container should accept all navigation keys,
          * and allow additional composable pushes within that container, rather than wrapping each composable in a Fragment Host.
@@ -53,11 +58,11 @@ class ComposableDestinationPush {
          * to be opened into the same container while hosted in some other context type.
          */
         root.assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer)
-            .also { assertEquals(composableContainer, it.navigationContext.parentContainer()) }
+            .also { assertEquals(composableContainer, it.navigationContext.directParentContainer()) }
             .assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer)
-            .also { assertEquals(composableContainer, it.navigationContext.parentContainer()) }
+            .also { assertEquals(composableContainer, it.navigationContext.directParentContainer()) }
             .assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer)
-            .also { assertEquals(composableContainer, it.navigationContext.parentContainer()) }
+            .also { assertEquals(composableContainer, it.navigationContext.directParentContainer()) }
     }
 
     @Test

@@ -48,7 +48,7 @@ class PlaygroundActivity : FragmentActivity() {
                 }
 
                 Button(onClick = {
-                    getNavigationHandle().present(SimpleExampleKey(
+                    getNavigationHandle().present(ExampleFragmentKey(
                         name = "YUS",
                                 launchedFrom = "playground"
                     ))
