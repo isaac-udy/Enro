@@ -24,7 +24,7 @@ public fun NavigationContainer.setBackstack(
         },
         backstack = updatedBackstack,
         exiting = initialState.active,
-        exitingIndex = exitingIndex,
+        exitingIndex = exitingIndex.takeIf { it > 0 } ?: initialState.backstack.lastIndex,
         updateType = NavigationBackstackState.UpdateType.STANDARD,
     )
     setBackstack(updatedState)
