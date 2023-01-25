@@ -222,13 +222,24 @@ public val containerManager: NavigationContainerManager
         val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
         return remember {
             viewModelStoreOwner
-                .getNavigationHandleViewModel()
                 .navigationContext!!
                 .containerManager
         }
     }
 
+public val Fragment.parentContainer: NavigationContainer? get() = navigationContext.parentContainer()
+public val ComposableDestination.parentContainer: NavigationContainer? get() = navigationContext.parentContainer()
 
+public val parentContainer: NavigationContainer?
+    @Composable
+    get() {
+        val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
+        return remember {
+            viewModelStoreOwner
+                .navigationContext!!
+                .parentContainer()
+        }
+    }
 
 private val generatedComponentManagerHolderClass  by lazy {
     runCatching {
