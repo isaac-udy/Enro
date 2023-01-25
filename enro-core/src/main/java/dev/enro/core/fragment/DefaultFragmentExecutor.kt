@@ -84,6 +84,10 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
                             fromContext.getNavigationHandle().close()
                         }
                     }
+                    else if(fromContext is ActivityContext && isReplace) {
+                        openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
+                        fromContext.activity.finish()
+                    }
                     else {
                         open(
                             ExecutorArgs(
@@ -94,12 +98,6 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
                             )
                         )
                     }
-                    return
-                }
-
-                if(fromContext is ActivityContext && isReplace) {
-                    openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
-                    fromContext.activity.finish()
                     return
                 }
 
