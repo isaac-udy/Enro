@@ -12,11 +12,7 @@ import dev.enro.example.ui.ExampleScreenTemplate
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class ExampleFragmentKey(
-    val name: String,
-    val launchedFrom: String,
-    val backstack: List<String> = emptyList()
-) : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
+class ExampleFragmentKey : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
 
 @NavigationDestination(ExampleFragmentKey::class)
 class ExampleFragment : Fragment() {
@@ -35,36 +31,20 @@ class ExampleFragment : Fragment() {
                         title = "Fragment",
                         buttons = listOf(
                             "Forward" to {
-                                val next = ExampleFragmentKey(
-                                    name = navigation.key.getNextDestinationName(),
-                                    launchedFrom = navigation.key.name,
-                                    backstack = navigation.key.backstack + navigation.key.name
-                                )
+                                val next = ExampleFragmentKey()
                                 navigation.forward(next)
                             },
                             "Forward (Compose)" to {
-                                val next = ExampleComposableKey(
-                                    name = navigation.key.getNextDestinationName(),
-                                    launchedFrom = navigation.key.name,
-                                    backstack = navigation.key.backstack + navigation.key.name
-                                )
+                                val next = ExampleComposableKey()
                                 navigation.forward(next)
                             },
                             "Replace" to {
-                                val next = ExampleFragmentKey(
-                                    name = navigation.key.getNextDestinationName(),
-                                    launchedFrom = navigation.key.name,
-                                    backstack = navigation.key.backstack
-                                )
+                                val next = ExampleFragmentKey()
                                 navigation.replace(next)
                             },
 
                             "Replace Root" to {
-                                val next = ExampleFragmentKey(
-                                    name = navigation.key.getNextDestinationName(),
-                                    launchedFrom = navigation.key.name,
-                                    backstack = emptyList()
-                                )
+                                val next = ExampleFragmentKey()
                                 navigation.replaceRoot(next)
                             },
                         )
@@ -73,9 +53,4 @@ class ExampleFragment : Fragment() {
             }
         }
     }
-}
-
-private fun ExampleFragmentKey.getNextDestinationName(): String {
-    if (name.length != 1) return "A"
-    return (name[0] + 1).toString()
 }

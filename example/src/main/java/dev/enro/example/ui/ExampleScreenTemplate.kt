@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.onContainer
+import dev.enro.core.parentContainer
 import dev.enro.example.R
 import dev.enro.example.data.toSentenceId
 
@@ -24,21 +24,19 @@ fun ExampleScreenTemplate(
 ) {
     val scrollState = rememberScrollState()
     val navigation = navigationHandle()
+    val backstackState by parentContainer?.backstackFlow?.collectAsState() ?: mutableStateOf(null)
 
     var backstackItems by remember { mutableStateOf(listOf<String>()) }
 
-    LaunchedEffect(Unit) {
-        navigation.onContainer { container ->
-            container.backstackState
-                .let {
-                    if (navigation.instruction != it.active) return@let
-                    backstackItems = container.backstackFlow.value.backstack
-                        .map { instruction ->
-                            instruction.instructionId.toSentenceId()
-                        }
-                        .reversed()
-                }
-        }
+    DisposableEffect(backstackState) {
+        val backstackState = backstackState ?: return@DisposableEffect onDispose {  }
+        backstackItems = backstackState.backstack
+            .takeWhile { it != navigation.instruction }
+            .map { instruction ->
+                instruction.instructionId.toSentenceId()
+            }
+            .reversed()
+        onDispose {  }
     }
 
     Surface(

@@ -48,10 +48,7 @@ class PlaygroundActivity : FragmentActivity() {
                 }
 
                 Button(onClick = {
-                    getNavigationHandle().present(ExampleFragmentKey(
-                        name = "YUS",
-                                launchedFrom = "playground"
-                    ))
+                    getNavigationHandle().present(ExampleFragmentKey())
                 }) {
                     Text(text = "Forward Compose")
                 }

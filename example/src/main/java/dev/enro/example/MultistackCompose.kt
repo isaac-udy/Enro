@@ -28,12 +28,12 @@ fun MultistackComposeScreen() {
 
 //    val composableManager = localComposableManager
     val redController = rememberEnroContainerController(
-        initialBackstack = listOf(NavigationInstruction.Forward(ExampleComposableKey("Red", "Mutlistack"))),
+        initialBackstack = listOf(NavigationInstruction.Forward(ExampleComposableKey())),
         emptyBehavior = EmptyBehavior.CloseParent
     )
 
     val greenController = rememberEnroContainerController(
-        initialBackstack = listOf(NavigationInstruction.Forward(ExampleComposableKey("Green", "Mutlistack"))),
+        initialBackstack = listOf(NavigationInstruction.Forward(ExampleComposableKey())),
         emptyBehavior = EmptyBehavior.Action {
 //            composableManager.setActiveContainer(redController)
             true
@@ -41,7 +41,7 @@ fun MultistackComposeScreen() {
     )
 
     val blueController = rememberEnroContainerController(
-        initialBackstack = listOf(NavigationInstruction.Forward(ExampleComposableKey("Blue", "Mutlistack"))),
+        initialBackstack = listOf(NavigationInstruction.Forward(ExampleComposableKey())),
         emptyBehavior = EmptyBehavior.Action {
 //            composableManager.setActiveContainer(redController)
             true

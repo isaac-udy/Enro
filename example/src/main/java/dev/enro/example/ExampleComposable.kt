@@ -1,18 +1,18 @@
 package dev.enro.example
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberEnroContainerController
-import dev.enro.core.container.EmptyBehavior
 import dev.enro.example.ui.ExampleScreenTemplate
 import kotlinx.parcelize.Parcelize
 import java.util.*
@@ -29,11 +29,7 @@ class ThingThing @Inject constructor() {
 }
 
 @Parcelize
-data class ExampleComposableKey(
-    val name: String,
-    val launchedFrom: String,
-    val backstack: List<String> = emptyList()
-) : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
+class ExampleComposableKey : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
 
 @HiltViewModel
 class ComposeSimpleExampleViewModel @Inject constructor(
@@ -53,73 +49,72 @@ class ComposeSimpleExampleViewModel @Inject constructor(
 @Composable
 @NavigationDestination(ExampleComposableKey::class)
 fun ExampleComposable() {
-    val navigation = navigationHandle<ExampleComposableKey>()
+    val navigation = navigationHandle<NavigationKey>()
     val viewModel = viewModel<ComposeSimpleExampleViewModel>()
     ExampleScreenTemplate(
         title = "Composable",
         buttons = listOf(
             "Forward" to {
-                val next = ExampleComposableKey(
-                    name = navigation.key.getNextDestinationName(),
-                    launchedFrom = navigation.key.name,
-                    backstack = navigation.key.backstack + navigation.key.name
-                )
+                val next = ExampleComposableKey()
                 navigation.forward(next)
             },
             "Forward (Fragment)" to {
-                val next = ExampleFragmentKey(
-                    name = navigation.key.getNextDestinationName(),
-                    launchedFrom = navigation.key.name,
-                    backstack = navigation.key.backstack + navigation.key.name
-                )
+                val next = ExampleFragmentKey()
                 navigation.forward(next)
             },
             "Replace" to {
-                val next = ExampleComposableKey(
-                    name = navigation.key.getNextDestinationName(),
-                    launchedFrom = navigation.key.name,
-                    backstack = navigation.key.backstack
-                )
+                val next = ExampleComposableKey()
                 navigation.replace(next)
             },
             "Replace Root" to {
-                val next = ExampleComposableKey(
-                    name = navigation.key.getNextDestinationName(),
-                    launchedFrom = navigation.key.name,
-                    backstack = emptyList()
-                )
+                val next = ExampleComposableKey()
                 navigation.replaceRoot(next)
             },
             "Bottom Sheet" to {
-                val next = ExampleComposableKey(
-                    name = navigation.key.getNextDestinationName(),
-                    launchedFrom = navigation.key.name,
-                    backstack = navigation.key.backstack + navigation.key.name
-                )
-                navigation.present(ExampleComposableBottomSheetKey(NavigationInstruction.Present(next)))
+                val next = ExampleComposableKey()
+                navigation.present(ExampleComposableBottomSheetKey())
             },
         )
     )
 }
 
 @Parcelize
-class ExampleComposableBottomSheetKey(val innerKey: NavigationInstruction.Open<*>) : NavigationKey.SupportsPresent
+class ExampleComposableBottomSheetKey : NavigationKey.SupportsPresent
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 @NavigationDestination(ExampleComposableBottomSheetKey::class)
 fun BottomSheetDestination.ExampleDialogComposable() {
-    val navigationHandle = navigationHandle<ExampleComposableBottomSheetKey>()
-    EnroContainer(
-        container = rememberEnroContainerController(
-            initialBackstack = listOf(navigationHandle.key.innerKey),
-            accept = { false },
-            emptyBehavior = EmptyBehavior.CloseParent
+    val navigation = navigationHandle<NavigationKey>()
+
+    ExampleScreenTemplate(
+        title = "Composable",
+        modifier = Modifier.padding(
+            top = 16.dp,
+            start = 16.dp,
+            end = 16.dp
+        ),
+        buttons = listOf(
+            "Forward" to {
+                val next = ExampleComposableKey()
+                navigation.forward(next)
+            },
+            "Forward (Fragment)" to {
+                val next = ExampleFragmentKey()
+                navigation.forward(next)
+            },
+            "Replace" to {
+                val next = ExampleComposableKey()
+                navigation.replace(next)
+            },
+            "Replace Root" to {
+                val next = ExampleComposableKey()
+                navigation.replaceRoot(next)
+            },
+            "Bottom Sheet" to {
+                val next = ExampleComposableKey()
+                navigation.present(ExampleComposableBottomSheetKey())
+            },
         )
     )
-}
-
-private fun ExampleComposableKey.getNextDestinationName(): String {
-    if (name.length != 1) return "A"
-    return (name[0] + 1).toString()
 }
