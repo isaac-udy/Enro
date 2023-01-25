@@ -86,13 +86,13 @@ public object DefaultComposableExecutor :
                     fromContext.controller,
                     args
                 )
-                host.setBackstack(
-                    host.backstackFlow.value
+                host.setBackstack { backstack ->
+                    backstack
                         .let {
-                            if (isReplace) it.close() else it
+                            if (isReplace) it.dropLast(1) else it
                         }
-                        .add(instruction)
-                )
+                        .plus(instruction)
+                }
             }
             else -> throw IllegalStateException()
         }
