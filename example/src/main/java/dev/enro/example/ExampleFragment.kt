@@ -47,6 +47,10 @@ class ExampleFragment : Fragment() {
                                 val next = ExampleFragmentKey()
                                 navigation.replaceRoot(next)
                             },
+                            "Dialog" to {
+                                val next = ExampleFragmentKey()
+                                navigation.present(ExampleDialogKey())
+                            },
                         )
                     )
                 }

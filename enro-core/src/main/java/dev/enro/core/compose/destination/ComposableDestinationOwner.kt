@@ -24,13 +24,10 @@ import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.dialog.EnroBottomSheetContainer
 import dev.enro.core.compose.dialog.EnroDialogContainer
-import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 @Stable
 internal class ComposableDestinationOwner(
@@ -62,8 +59,6 @@ internal class ComposableDestinationOwner(
         savedState = savedStateRegistryOwner.savedState,
         viewModelStore = viewModelStore
     )
-
-    private val lifecycleFlow = createLifecycleFlow()
 
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryOwner.savedStateRegistry
@@ -99,34 +94,37 @@ internal class ComposableDestinationOwner(
 
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
-    internal fun Render(backstackState: NavigationBackstackState) {
-        val lifecycleState by lifecycleFlow.collectAsState()
+    internal fun Render(backstackState: List<AnyOpenInstruction>) {
+        val lifecycleState = rememberLifecycleState()
+        val parentLifecycleState = parentContainer.parentContext.lifecycleOwner.rememberLifecycleState()
+        if (!parentLifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
         if (!lifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
 
         val saveableStateHolder = rememberSaveableStateHolder()
 
-        /**
-         * This if statement does some important work, and unfortunately any proof work that it does is not able to be captured
-         * by an automated test at this stage; all attempts to recreate the error that occurs in the absence of this statement have
-         * failed to fail.
-         *
-         * To manually recreate the failure that occurs without this statement:
-         * Create a Composable destination ("CD") which can be presented and pushed
-         * Create a *Composable* transition between destinations of CD and CD
-         * ReplaceRoot with CD
-         * Push several other CD's (CD1, CD2, CD3, etc)
-         * Push a fragment destination (FD)
-         * Navigate back from FD to the top CD
-         * Navigating back from CD(n) to CD(n-1) should cause a crash due to movableContent IndexOutOfBounds errors occuring within
-         * the Compose internals
-         */
-        if (
-            transitionState.currentState == transitionState.targetState
-            && !transitionState.targetState
-            && instruction != backstackState.active
-            && instruction.navigationDirection == NavigationDirection.Push
-        ) return
+//        /**
+//         * This if statement does some important work, and unfortunately any proof work that it does is not able to be captured
+//         * by an automated test at this stage; all attempts to recreate the error that occurs in the absence of this statement have
+//         * failed to fail.
+//         *
+//         * To manually recreate the failure that occurs without this statement:
+//         * Create a Composable destination ("CD") which can be presented and pushed
+//         * Create a *Composable* transition between destinations of CD and CD
+//         * ReplaceRoot with CD
+//         * Push several other CD's (CD1, CD2, CD3, etc)
+//         * Push a fragment destination (FD)
+//         * Navigate back from FD to the top CD
+//         * Navigating back from CD(n) to CD(n-1) should cause a crash due to movableContent IndexOutOfBounds errors occuring within
+//         * the Compose internals
+//         */
+//        if (
+//            transitionState.currentState == transitionState.targetState
+//            && !transitionState.targetState
+//            && instruction != backstackState.active
+//            && instruction.navigationDirection == NavigationDirection.Push
+//        ) return
 
+        RegisterComposableLifecycleState(backstackState)
         val renderDestination = remember(instruction.instructionId) {
             movableContentOf {
                 ProvideRenderingEnvironment(saveableStateHolder) {
@@ -155,30 +153,23 @@ internal class ComposableDestinationOwner(
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
         animation.content(transition) {
             renderDestination()
-            RegisterComposableLifecycleState(backstackState)
         }
     }
 
     @Composable
     private fun RegisterComposableLifecycleState(
-        backstackState: NavigationBackstackState
+        backstackState: List<AnyOpenInstruction>
     ) {
-        DisposableEffect(transitionState.currentState) {
-            val isActive = transitionState.currentState
-            val isStarted = lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED)
+        DisposableEffect(backstackState) {
+            val isActive = backstackState.lastOrNull() == instruction
+            val isStopped = backstackState.contains(instruction)
             when {
                 isActive -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-                isStarted -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+                isStopped -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+                else -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
             }
 
-            onDispose {
-                val isDestroyed = !backstackState.backstack.contains(instruction)
-                when {
-                    isDestroyed -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-                    isActive -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-                    else -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-                }
-            }
+            onDispose { }
         }
     }
 
@@ -206,12 +197,20 @@ internal val ComposableDestinationOwner.navigationController get() = parentConta
 internal val ComposableDestinationOwner.parentSavedStateRegistry get() = parentContainer.parentContext.savedStateRegistryOwner.savedStateRegistry
 internal val ComposableDestinationOwner.activity: ComponentActivity get() = parentContainer.parentContext.activity
 
-private fun LifecycleOwner.createLifecycleFlow(): StateFlow<Lifecycle.State> {
-    val lifecycleFlow = MutableStateFlow(Lifecycle.State.INITIALIZED)
-    lifecycle.addObserver(object : LifecycleEventObserver {
-        override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-            lifecycleFlow.value = source.lifecycle.currentState
+@Composable
+internal fun LifecycleOwner.rememberLifecycleState() : Lifecycle.State {
+    val activeState = remember(this) { mutableStateOf(lifecycle.currentState) }
+
+    DisposableEffect(this) {
+        val observer = LifecycleEventObserver { source, event ->
+            activeState.value = event.targetState
         }
-    })
-    return lifecycleFlow
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+    return lifecycle.currentState
+//    return remember(activeState.value, lifecycle.currentState) {
+//        Log.e("Lifecycle", "$this ${lifecycle.currentState} ${activeState.value.coerceAtMost(lifecycle.currentState)}")
+//        activeState.value.coerceAtMost(lifecycle.currentState)
+//    }
 }

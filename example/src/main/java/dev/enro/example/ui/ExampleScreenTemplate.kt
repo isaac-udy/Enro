@@ -27,6 +27,7 @@ fun ExampleScreenTemplate(
     val backstackState by parentContainer?.backstackFlow?.collectAsState() ?: mutableStateOf(null)
 
     var backstackItems by remember { mutableStateOf(listOf<String>()) }
+    navigation.instruction.additionalData.putString("example", navigation.id.toSentenceId())
 
     DisposableEffect(backstackState) {
         val backstackState = backstackState ?: return@DisposableEffect onDispose {  }

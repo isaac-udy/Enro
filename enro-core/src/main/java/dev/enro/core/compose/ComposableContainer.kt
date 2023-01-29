@@ -78,7 +78,13 @@ public fun rememberNavigationContainer(
     val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
 
     val controller = remember {
-        val context = viewModelStoreOwner.navigationContext!!
+        val context = runCatching {
+            viewModelStoreOwner.navigationContext!!
+        }
+//            .onFailure {
+//            throw RuntimeException("$viewModelStoreOwner ${(viewModelStoreOwner as LifecycleOwner).lifecycle.currentState }")
+//        }
+            .getOrThrow()
         val existingContainer = context.containerManager.getContainer(key) as? ComposableNavigationContainer
         existingContainer?.setBackstack(
             createRestoredBackStack(existingContainer.backstackState.backstack)

@@ -66,46 +66,34 @@ public class FragmentNavigationContainer internal constructor(
         setOrLoadInitialBackstack(initialBackstackState)
     }
 
-    override fun reconcileBackstack(
-        removed: List<AnyOpenInstruction>,
-        backstackState: NavigationBackstackState
-    ): Boolean {
-        if (!tryExecutePendingTransitions()) return false
-        if (fragmentManager.isStateSaved) return false
-        if (backstackState != backstackFlow.value) return false
+    override fun renderBackstack(
+        previousBackstack: List<AnyOpenInstruction>,
+        backstack: List<AnyOpenInstruction>
+    ) {
+        if (!tryExecutePendingTransitions()) return
+        if (fragmentManager.isStateSaved) return
+        if (backstackState != backstackFlow.value) return
 
-        val toRemove = removed.asFragmentAndInstruction()
-        val toDetach = getFragmentsToDetach(backstackState)
-        val toPresent = getFragmentsToPresent(backstackState)
-        val activePushed = getActivePushedFragment(backstackState)
-
-        (toRemove + toDetach + activePushed)
+        val activePushed = getActivePushedFragment(backstack)
+        val toPresent = getFragmentsToPresent(backstack)
+        val toDetach = getFragmentsToDetach(backstack)
+        (toDetach + activePushed)
             .filterNotNull()
             .forEach {
                 setZIndexForAnimations(backstackState, it)
             }
 
-        setAnimations(backstackState)
-        if(
-            toRemove.isEmpty()
-            && toDetach.isEmpty()
-            && toPresent.isEmpty()
-            && (fragmentManager.primaryNavigationFragment == activePushed?.fragment || activePushed == null)
-        ) return true
+        setAnimations(
+            previousBackstack,
+            backstack
+        )
 
         fragmentManager.commitNow {
             setReorderingAllowed(true)
             applyAnimationsForTransaction(
-                backstackState = backstackState,
                 active = activePushed
             )
 
-            toRemove.forEach {
-                when {
-                    it.fragment is DialogFragment && it.fragment.showsDialog -> it.fragment.dismiss()
-                    else -> remove(it.fragment)
-                }
-            }
             toDetach.forEach {
                 detach(it.fragment)
             }
@@ -143,7 +131,6 @@ public class FragmentNavigationContainer internal constructor(
                     setPrimaryNavigationFragment(primaryFragment)
                 }
             }
-        return true
     }
 
     private fun List<AnyOpenInstruction>.asFragmentAndInstruction(): List<FragmentAndInstruction> {
@@ -156,23 +143,23 @@ public class FragmentNavigationContainer internal constructor(
         }
     }
 
-    private fun getFragmentsToDetach(backstackState: NavigationBackstackState): List<FragmentAndInstruction> {
-        return backstackState.backstack
+    private fun getFragmentsToDetach(backstackState: List<AnyOpenInstruction>): List<FragmentAndInstruction> {
+        return backstackState
             .dropLastWhile { it.navigationDirection is NavigationDirection.Present }
             .dropLast(1)
             .asFragmentAndInstruction()
     }
 
-    private fun getFragmentsToPresent(backstackState: NavigationBackstackState) : List<FragmentAndInstruction> {
-        return backstackState.backstack
+    private fun getFragmentsToPresent(backstackState: List<AnyOpenInstruction>) : List<FragmentAndInstruction> {
+        return backstackState
             .takeLastWhile {
                 it.navigationDirection is NavigationDirection.Present
             }
             .map { getOrCreateFragment(DialogFragment::class.java, it)  }
     }
 
-    private fun getActivePushedFragment(backstackState: NavigationBackstackState) : FragmentAndInstruction? {
-        val activePushedFragment = backstackState.backstack
+    private fun getActivePushedFragment(backstackState: List<AnyOpenInstruction>) : FragmentAndInstruction? {
+        val activePushedFragment = backstackState
             .lastOrNull {
                 it.navigationDirection is NavigationDirection.Push
             } ?: return null
@@ -207,29 +194,26 @@ public class FragmentNavigationContainer internal constructor(
         }
     }
 
-    private fun setAnimations(backstackState: NavigationBackstackState) {
-        val shouldTakeAnimationsFromParentContainer = parentContext is FragmentContext<out Fragment>
-                && parentContext.contextReference is NavigationHost
-                && backstackState.backstack.size <= 1
+    private fun setAnimations(
+        previousBackstack: List<AnyOpenInstruction>,
+        backstackState: List<AnyOpenInstruction>
+    ) {
+        if(backstackState.isEmpty()) return
 
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
         val previouslyActiveContext = runCatching { previouslyActiveFragment?.navigationContext }.getOrNull()
         currentAnimations = when {
-            backstackState.isRestoredState -> DefaultAnimations.none
-            shouldTakeAnimationsFromParentContainer -> parentContext.parentContainer()!!.currentAnimations
-            backstackState.isInitialState -> DefaultAnimations.none
+            previousBackstack.isEmpty() -> DefaultAnimations.none
             else -> animationsFor(
                 previouslyActiveContext ?: parentContext,
-                backstackState.lastInstruction
+                backstackState.last()
             )
         }
     }
 
     private fun FragmentTransaction.applyAnimationsForTransaction(
-        backstackState: NavigationBackstackState,
         active: FragmentAndInstruction?
     ) {
-        if (backstackState.isRestoredState) return
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
         val resourceAnimations = currentAnimations.asResource(parentContext.activity.theme)
 

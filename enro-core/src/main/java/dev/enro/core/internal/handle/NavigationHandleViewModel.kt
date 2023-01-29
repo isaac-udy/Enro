@@ -63,9 +63,6 @@ internal open class NavigationHandleViewModel(
                 lifecycle.handleLifecycleEvent(event)
             }
         })
-        context.lifecycle.onEvent(Lifecycle.Event.ON_DESTROY) {
-            if (context == navigationContext) navigationContext = null
-        }
     }
 
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {
@@ -76,6 +73,7 @@ internal open class NavigationHandleViewModel(
     private fun executePendingInstruction() {
         val context = navigationContext ?: return
         val instruction = pendingInstruction ?: return
+        if (!context.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return
         pendingInstruction = null
         context.runWhenContextActive {
             when (instruction) {
@@ -100,6 +98,7 @@ internal open class NavigationHandleViewModel(
     override fun onCleared() {
         lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         dependencyScope.container.clear()
+        navigationContext = null
     }
 }
 

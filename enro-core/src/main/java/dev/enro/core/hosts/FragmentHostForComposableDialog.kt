@@ -15,9 +15,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
-import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogConfiguration
-import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
@@ -68,24 +66,24 @@ public abstract class AbstractFragmentHostForComposableDialog : DialogFragment()
         @Composable
         override fun Content() {
             val instruction = navigationHandle.key.instruction.asPushInstruction()
-            val controller = rememberEnroContainerController(
+            val container = rememberEnroContainerController(
                 initialBackstack = listOf(instruction),
                 accept = { false },
                 emptyBehavior = EmptyBehavior.CloseParent
             )
 
-            val destination = controller.requireDestinationOwner(instruction).destination
-            dialogConfiguration = when (destination) {
-                is BottomSheetDestination -> {
-                    controller.Render()
-                    destination.bottomSheetConfiguration
-                }
-                is DialogDestination -> {
-                    controller.Render()
-                    destination.dialogConfiguration
-                }
-                else -> throw EnroException.DestinationIsNotDialogDestination("The @Composable destination for ${navigationHandle.key::class.java.simpleName} must be a DialogDestination or a BottomSheetDestination")
-            }
+//            val destination = container.requireDestinationOwner(instruction).destination
+//            dialogConfiguration = when (destination) {
+//                is BottomSheetDestination -> {
+//                    container.Render()
+//                    destination.bottomSheetConfiguration
+//                }
+//                is DialogDestination -> {
+//                    container.Render()
+//                    destination.dialogConfiguration
+//                }
+//                else -> throw EnroException.DestinationIsNotDialogDestination("The @Composable destination for ${navigationHandle.key::class.java.simpleName} must be a DialogDestination or a BottomSheetDestination")
+//            }
 
             DisposableEffect(true) {
                 enter()

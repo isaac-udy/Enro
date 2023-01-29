@@ -1,11 +1,9 @@
 package dev.enro.core.container
 
-import android.os.Handler
 import android.os.Looper
 import androidx.annotation.MainThread
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
 import dev.enro.core.controller.get
@@ -25,19 +23,6 @@ public abstract class NavigationContainer(
     public val acceptsDirection: (NavigationDirection) -> Boolean,
 ) {
     private val canInstructionBeHostedAs = parentContext.controller.dependencyScope.get<CanInstructionBeHostedAs>()
-    private val handler = Handler(Looper.getMainLooper())
-    private val reconcileBackstack: Runnable = Runnable {
-        reconcileBackstack(pendingRemovals.toList(), mutableBackstack.value)
-    }
-    private val removeExitingFromBackstack: Runnable = Runnable {
-        if (backstackState.exiting == null) return@Runnable
-        val nextBackstack = backstackState.copy(
-            exiting = null,
-            exitingIndex = -1,
-            updateType = NavigationBackstackState.UpdateType.RESTORED_STATE
-        )
-        setBackstack(nextBackstack)
-    }
 
     internal val interceptor = NavigationInterceptorBuilder()
         .apply(interceptor)
@@ -47,18 +32,9 @@ public abstract class NavigationContainer(
     public abstract val isVisible: Boolean
     internal abstract val currentAnimations: NavigationAnimation
 
-    private val pendingRemovals = mutableSetOf<AnyOpenInstruction>()
     private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
     public val backstackFlow: StateFlow<NavigationBackstackState> get() = mutableBackstack
     public val backstackState: NavigationBackstackState get() = backstackFlow.value
-
-    init {
-        parentContext.lifecycle.addObserver(LifecycleEventObserver { _, event ->
-            if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
-            handler.removeCallbacks(reconcileBackstack)
-            handler.removeCallbacks(removeExitingFromBackstack)
-        })
-    }
 
     @MainThread
     public fun setBackstack(backstackState: NavigationBackstackState): Unit = synchronized(this) {
@@ -66,8 +42,6 @@ public abstract class NavigationContainer(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
         if (backstackState == backstackFlow.value) return@synchronized
-        handler.removeCallbacks(reconcileBackstack)
-        handler.removeCallbacks(removeExitingFromBackstack)
         val processedBackstack = backstackState.ensureOpeningTypeIsSet(parentContext)
 
         requireBackstackIsAccepted(processedBackstack)
@@ -75,27 +49,14 @@ public abstract class NavigationContainer(
         setActiveContainerFrom(processedBackstack)
 
         val lastBackstack = mutableBackstack.getAndUpdate { processedBackstack }
-
-        val removed = lastBackstack.backstack
-            .filter {
-                !processedBackstack.backstack.contains(it)
-            }
-
-        pendingRemovals.addAll(removed)
-        val reconciledBackstack = reconcileBackstack(pendingRemovals.toList(), processedBackstack)
-        if (!reconciledBackstack) {
-            handler.post(reconcileBackstack)
-        } else {
-            pendingRemovals.clear()
-            handler.postDelayed(removeExitingFromBackstack, 2000)
-        }
+        renderBackstack(lastBackstack.backstack, processedBackstack.backstack)
     }
 
     // Returns true if the backstack was able to be reconciled successfully
-    protected abstract fun reconcileBackstack(
-        removed: List<AnyOpenInstruction>,
-        backstackState: NavigationBackstackState
-    ): Boolean
+    protected abstract fun renderBackstack(
+        previousBackstack: List<AnyOpenInstruction>,
+        backstack: List<AnyOpenInstruction>,
+    )
 
     public fun accept(
         instruction: AnyOpenInstruction
