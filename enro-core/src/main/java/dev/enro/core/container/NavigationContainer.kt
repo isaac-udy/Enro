@@ -9,9 +9,12 @@ import dev.enro.core.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.isActive
 
 public abstract class NavigationContainer(
     public val key: NavigationContainerKey,
@@ -36,12 +39,15 @@ public abstract class NavigationContainer(
     public val backstackFlow: StateFlow<NavigationBackstackState> get() = mutableBackstack
     public val backstackState: NavigationBackstackState get() = backstackFlow.value
 
+    private var renderJob: Job? = null
+
     @MainThread
     public fun setBackstack(backstackState: NavigationBackstackState): Unit = synchronized(this) {
         if (Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
         if (backstackState == backstackFlow.value) return@synchronized
+        renderJob?.cancel()
         val processedBackstack = backstackState.ensureOpeningTypeIsSet(parentContext)
             .processBackstackForDeprecatedInstructionTypes()
 
@@ -50,14 +56,19 @@ public abstract class NavigationContainer(
         setActiveContainerFrom(processedBackstack)
 
         val lastBackstack = mutableBackstack.getAndUpdate { processedBackstack }
-        renderBackstack(lastBackstack.backstack, processedBackstack.backstack)
+        if (renderBackstack(lastBackstack.backstack, processedBackstack.backstack)) return@synchronized
+        renderJob = parentContext.lifecycleOwner.lifecycleScope.launchWhenCreated {
+            while(!renderBackstack(lastBackstack.backstack, processedBackstack.backstack) && isActive) {
+                delay(16)
+            }
+        }
     }
 
     // Returns true if the backstack was able to be reconciled successfully
     protected abstract fun renderBackstack(
         previousBackstack: List<AnyOpenInstruction>,
         backstack: List<AnyOpenInstruction>,
-    )
+    ) : Boolean
 
     public fun accept(
         instruction: AnyOpenInstruction

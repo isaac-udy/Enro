@@ -1,8 +1,6 @@
 package dev.enro.core.fragment.container
 
 import android.app.Activity
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.os.bundleOf
@@ -91,23 +89,13 @@ public class FragmentNavigationContainer internal constructor(
         setOrLoadInitialBackstack(initialBackstackState)
     }
 
-    private val handler by lazy { Handler(Looper.getMainLooper()) }
-
     override fun renderBackstack(
         previousBackstack: List<AnyOpenInstruction>,
         backstack: List<AnyOpenInstruction>
-    ) {
-        kotlin.runCatching { handler.removeCallbacksAndMessages(null) }
+    ) : Boolean {
+        if (!tryExecutePendingTransitions()) return false
+        if (fragmentManager.isStateSaved) return false
 
-        if (backstackState != backstackFlow.value) return
-        if (!tryExecutePendingTransitions()) {
-            handler.postDelayed({ renderBackstack(previousBackstack, backstack) }, 1)
-            return
-        }
-        if (fragmentManager.isStateSaved){
-            handler.postDelayed({ renderBackstack(previousBackstack, backstack) }, 1)
-            return
-        }
         val activePushed = getActivePushedFragment(backstack)
         val toPresent = getFragmentsToPresent(backstack)
         val toDetach = getFragmentsToDetach(backstack)
@@ -169,6 +157,7 @@ public class FragmentNavigationContainer internal constructor(
                     setPrimaryNavigationFragment(primaryFragment)
                 }
             }
+        return true
     }
 
     private fun List<AnyOpenInstruction>.asFragmentAndInstruction(): List<FragmentAndInstruction> {

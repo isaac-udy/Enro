@@ -76,9 +76,9 @@ public class ComposableNavigationContainer internal constructor(
     override fun renderBackstack(
         previousBackstack: List<AnyOpenInstruction>,
         backstack: List<AnyOpenInstruction>
-    ) {
-        if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return
-        if (parentContext.runCatching { activity }.getOrNull() == null) return
+    ): Boolean {
+        if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return false
+        if (parentContext.runCatching { activity }.getOrNull() == null) return false
 
         val activeDestinations = destinationOwners
             .filter {
@@ -108,6 +108,7 @@ public class ComposableNavigationContainer internal constructor(
             .mapNotNull { instruction ->
                 activeDestinations[instruction]
             }
+        return true
     }
 
     private fun createDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner {
