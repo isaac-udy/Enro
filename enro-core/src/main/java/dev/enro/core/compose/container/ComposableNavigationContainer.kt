@@ -10,10 +10,7 @@ import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationBackstack
-import dev.enro.core.container.NavigationContainer
-import dev.enro.core.container.merge
+import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import kotlin.collections.set
@@ -51,8 +48,7 @@ public class ComposableNavigationContainer internal constructor(
 
     override val isVisible: Boolean
         get() = true
-    override val currentAnimations: NavigationAnimation
-        get() = NavigationAnimation.Resource(0, 0)
+    override var currentAnimations: NavigationAnimation = DefaultAnimations.none
 
     // We want "Render" to look like it's a Composable function (it's a Composable lambda), so
     // we are uppercasing the first letter of the property name, which triggers a PropertyName lint warning
@@ -73,9 +69,8 @@ public class ComposableNavigationContainer internal constructor(
         setOrLoadInitialBackstack(initialBackstack)
     }
 
-    override fun renderBackstack(
-        previousBackstack: List<AnyOpenInstruction>,
-        backstack: List<AnyOpenInstruction>
+    override fun onBackstackUpdated(
+        transition: NavigationBackstackTransition
     ): Boolean {
         if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return false
         if (parentContext.runCatching { activity }.getOrNull() == null) return false
@@ -101,13 +96,19 @@ public class ComposableNavigationContainer internal constructor(
         backstack.lastOrNull { it.navigationDirection == NavigationDirection.Push }
             ?.let { visible.add(it) }
 
-        destinationOwners = merge(previousBackstack, backstack)
+        destinationOwners.forEach {
+            if(activeDestinations[it.instruction] == null) {
+                it.transitionState.targetState = false
+            }
+        }
+        destinationOwners = merge(transition.previousBackstack, transition.activeBackstack)
             .onEach {
                 activeDestinations[it]?.transitionState?.targetState = visible.contains(it)
             }
             .mapNotNull { instruction ->
                 activeDestinations[instruction]
             }
+        setAnimationsForBackstack(transition)
         return true
     }
 
@@ -127,6 +128,33 @@ public class ComposableNavigationContainer internal constructor(
             onNavigationContextSaved = parentContext.controller.dependencyScope.get(),
             composeEnvironment = parentContext.controller.dependencyScope.get(),
         )
+    }
+
+    private fun setAnimationsForBackstack(transition: NavigationBackstackTransition) {
+        val contextForAnimation = when (transition.lastInstruction) {
+            is NavigationInstruction.Close -> destinationOwners.lastOrNull { it.instruction == transition.exitingInstruction }?.destination?.navigationContext
+            else -> activeContext
+        } ?: parentContext
+
+        runCatching { parentContext.parentContext }.onFailure { return }
+//        val isRestoredFromExitingParent = when (parentContext.contextReference) {
+//            is NavigationHost -> parentContext.parentContainer()?.backstack?.exiting != null
+//            else -> false
+//        }
+
+        currentAnimations = when {
+//            backstackState.isRestoredState -> {
+//                if (!isRestoredFromExitingParent) DefaultAnimations.none
+//                val parentContainer = parentContext.parentContainer()
+//                parentContainer?.currentAnimations ?: DefaultAnimations.none
+//            }
+//            shouldTakeAnimationsFromParentContainer -> {
+//                val parentContainer = parentContext.parentContainer()
+//                parentContainer?.currentAnimations ?: DefaultAnimations.none
+//            }
+//            backstackState.isInitialState -> DefaultAnimations.none
+            else -> animationsFor(contextForAnimation, transition.lastInstruction)
+        }
     }
 
     @Composable

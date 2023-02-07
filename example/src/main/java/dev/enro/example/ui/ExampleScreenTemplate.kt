@@ -24,14 +24,14 @@ fun ExampleScreenTemplate(
 ) {
     val scrollState = rememberScrollState()
     val navigation = navigationHandle()
-    val backstackState by parentContainer?.backstackFlow?.collectAsState() ?: mutableStateOf(null)
+    val backstack by parentContainer?.backstackFlow?.collectAsState() ?: mutableStateOf(null)
 
     var backstackItems by remember { mutableStateOf(listOf<String>()) }
     navigation.instruction.additionalData.putString("example", navigation.id.toSentenceId())
 
-    DisposableEffect(backstackState) {
-        val backstackState = backstackState ?: return@DisposableEffect onDispose {  }
-        backstackItems = backstackState.backstack
+    DisposableEffect(backstack) {
+        backstackItems = backstack
+            .orEmpty()
             .takeWhile { it != navigation.instruction }
             .map { instruction ->
                 instruction.instructionId.toSentenceId()

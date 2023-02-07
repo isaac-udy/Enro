@@ -9,10 +9,7 @@ import androidx.fragment.app.*
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationBackstack
-import dev.enro.core.container.NavigationContainer
-import dev.enro.core.container.close
+import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
@@ -89,9 +86,8 @@ public class FragmentNavigationContainer internal constructor(
         setOrLoadInitialBackstack(initialBackstack)
     }
 
-    override fun renderBackstack(
-        previousBackstack: List<AnyOpenInstruction>,
-        backstack: List<AnyOpenInstruction>
+    override fun onBackstackUpdated(
+        transition: NavigationBackstackTransition
     ) : Boolean {
         if (!tryExecutePendingTransitions()) return false
         if (fragmentManager.isStateSaved) return false
@@ -106,10 +102,7 @@ public class FragmentNavigationContainer internal constructor(
                 setZIndexForAnimations(backstack, it)
             }
 
-        setAnimations(
-            previousBackstack,
-            backstack
-        )
+        setAnimations(transition)
 
         fragmentManager.commitNow {
             setReorderingAllowed(true)
@@ -230,18 +223,17 @@ public class FragmentNavigationContainer internal constructor(
     }
 
     private fun setAnimations(
-        previousBackstack: List<AnyOpenInstruction>,
-        backstackState: List<AnyOpenInstruction>
+        transition: NavigationBackstackTransition
     ) {
-        if(backstackState.isEmpty()) return
+        if(transition.activeBackstack.isEmpty()) return
 
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
         val previouslyActiveContext = runCatching { previouslyActiveFragment?.navigationContext }.getOrNull()
         currentAnimations = when {
-            previousBackstack.isEmpty() -> DefaultAnimations.none
+            transition.previousBackstack.isEmpty() -> DefaultAnimations.none
             else -> animationsFor(
                 previouslyActiveContext ?: parentContext,
-                backstackState.last()
+                transition.lastInstruction
             )
         }
     }

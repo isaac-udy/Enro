@@ -54,20 +54,20 @@ public abstract class NavigationContainer(
         requireBackstackIsAccepted(processedBackstack)
         if (handleEmptyBehaviour(processedBackstack)) return
         val lastBackstack = mutableBackstack.getAndUpdate { processedBackstack }
-        setActiveContainerFrom(NavigationBackstackTransition(lastBackstack.toBackstack() to processedBackstack.toBackstack()))
+        val transition = NavigationBackstackTransition(lastBackstack to processedBackstack)
+        setActiveContainerFrom(transition)
 
-        if (renderBackstack(lastBackstack, processedBackstack)) return@synchronized
+        if (onBackstackUpdated(transition)) return@synchronized
         renderJob = parentContext.lifecycleOwner.lifecycleScope.launchWhenCreated {
-            while(!renderBackstack(lastBackstack, processedBackstack) && isActive) {
+            while(!onBackstackUpdated(transition) && isActive) {
                 delay(16)
             }
         }
     }
 
-    // Returns true if the backstack was able to be reconciled successfully
-    protected abstract fun renderBackstack(
-        previousBackstack: List<AnyOpenInstruction>,
-        backstack: List<AnyOpenInstruction>,
+    // Returns true if the backstack was able to be updated successfully
+    protected abstract fun onBackstackUpdated(
+        transition: NavigationBackstackTransition
     ) : Boolean
 
     public fun accept(

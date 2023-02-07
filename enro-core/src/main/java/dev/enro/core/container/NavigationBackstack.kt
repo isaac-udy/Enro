@@ -35,11 +35,11 @@ internal fun NavigationBackstack.ensureOpeningTypeIsSet(
     }.toBackstack()
 }
 
-internal fun NavigationBackstack.close(): NavigationBackstack {
+public fun NavigationBackstack.close(): NavigationBackstack {
     return dropLast(1).toBackstack()
 }
 
-internal fun NavigationBackstack.close(id: String): NavigationBackstack {
+public fun NavigationBackstack.close(id: String): NavigationBackstack {
     val index = indexOfLast {
         it.instructionId == id
     }
