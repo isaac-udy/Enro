@@ -6,32 +6,17 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
-import dev.enro.core.compose.destination.rememberLifecycleState
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.merge
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
-import kotlin.collections.List
-import kotlin.collections.associateBy
-import kotlin.collections.emptyList
-import kotlin.collections.filter
-import kotlin.collections.forEach
-import kotlin.collections.getOrPut
-import kotlin.collections.lastOrNull
-import kotlin.collections.mapNotNull
-import kotlin.collections.mutableMapOf
-import kotlin.collections.mutableSetOf
-import kotlin.collections.onEach
 import kotlin.collections.set
-import kotlin.collections.takeLastWhile
-import kotlin.collections.toMutableMap
 
 public class ComposableNavigationContainer internal constructor(
     key: NavigationContainerKey,
@@ -67,7 +52,7 @@ public class ComposableNavigationContainer internal constructor(
     override val isVisible: Boolean
         get() = true
     override val currentAnimations: NavigationAnimation
-        get() = DefaultAnimations.push
+        get() = NavigationAnimation.Resource(0, 0)
 
     // We want "Render" to look like it's a Composable function (it's a Composable lambda), so
     // we are uppercasing the first letter of the property name, which triggers a PropertyName lint warning
@@ -75,11 +60,7 @@ public class ComposableNavigationContainer internal constructor(
     public val Render: @Composable () -> Unit = movableContentOf {
         key(key.name) {
             saveableStateHolder?.SaveableStateProvider(key.name) {
-                if (LocalViewModelStoreOwner.current?.navigationContext == null) return@SaveableStateProvider
                 val instructions by backstackFlow.collectAsState()
-                val lifecycleState = parentContext.lifecycleOwner.rememberLifecycleState()
-                if (!parentContext.lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return@SaveableStateProvider
-                if (!lifecycleState.isAtLeast(Lifecycle.State.CREATED)) return@SaveableStateProvider
                 destinationOwners
                     .forEach {
                         it.Render(instructions.backstack)

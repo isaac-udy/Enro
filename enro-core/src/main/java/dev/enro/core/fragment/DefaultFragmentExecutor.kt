@@ -101,6 +101,11 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
                     return
                 }
 
+                if(fromContext is ActivityContext && isReplace) {
+                    openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
+                    fromContext.activity.finish()
+                }
+
                 EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
                 host.setBackstack(
                     host.backstackFlow.value

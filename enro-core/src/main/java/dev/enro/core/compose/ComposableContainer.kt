@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.ContainerRegistrationStrategy
+import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.createRestoredBackStack
 import dev.enro.core.container.createRootBackStack
@@ -78,20 +79,19 @@ public fun rememberNavigationContainer(
     val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
 
     val controller = remember {
-        val context = runCatching {
-            viewModelStoreOwner.navigationContext!!
+        // TODO would be nice if we didn't need to do this?
+        val context = when(viewModelStoreOwner) {
+            is ComposableDestinationOwner -> viewModelStoreOwner.destination.context
+            else -> viewModelStoreOwner.navigationContext!!
         }
-//            .onFailure {
-//            throw RuntimeException("$viewModelStoreOwner ${(viewModelStoreOwner as LifecycleOwner).lifecycle.currentState }")
-//        }
-            .getOrThrow()
+
         val existingContainer = context.containerManager.getContainer(key) as? ComposableNavigationContainer
         existingContainer?.setBackstack(
             createRestoredBackStack(existingContainer.backstackState.backstack)
         )
         existingContainer ?: ComposableNavigationContainer(
             key = key,
-            parentContext = viewModelStoreOwner.navigationContext!!,
+            parentContext = context,
             accept = accept,
             emptyBehavior = emptyBehavior,
             interceptor = interceptor,

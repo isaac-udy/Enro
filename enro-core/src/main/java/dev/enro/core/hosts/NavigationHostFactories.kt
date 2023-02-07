@@ -7,8 +7,6 @@ import androidx.fragment.app.Fragment
 import dev.enro.core.*
 import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.compose.ComposableNavigationBinding
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.fragment.FragmentNavigationBinding
 
@@ -65,20 +63,9 @@ internal class DialogFragmentHost : NavigationHostFactory<DialogFragment>(Dialog
                 navigationContext.isHiltContext -> OpenPresentableFragmentInHiltFragment(instruction.asPresentInstruction())
                 else -> OpenPresentableFragmentInFragment(instruction.asPresentInstruction())
             }
-            is ComposableNavigationBinding -> {
-                val isComposableDialog =
-                    DialogDestination::class.java.isAssignableFrom(binding.destinationType.java)
-                            || BottomSheetDestination::class.java.isAssignableFrom(binding.destinationType.java)
-                when {
-                    isComposableDialog -> when {
-                        navigationContext.isHiltContext -> OpenComposableDialogInHiltFragment(instruction.asPresentInstruction())
-                        else -> OpenComposableDialogInFragment(instruction.asPresentInstruction())
-                    }
-                    else -> when {
-                        navigationContext.isHiltContext -> OpenPresentableFragmentInHiltFragment(instruction.asPresentInstruction())
-                        else -> OpenPresentableFragmentInFragment(instruction.asPresentInstruction())
-                    }
-                }
+            is ComposableNavigationBinding ->  when {
+                navigationContext.isHiltContext -> OpenPresentableFragmentInHiltFragment(instruction.asPresentInstruction())
+                else -> OpenPresentableFragmentInFragment(instruction.asPresentInstruction())
             }
             else -> cannotCreateHost(instruction)
         }

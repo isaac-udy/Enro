@@ -1,11 +1,15 @@
 package dev.enro.core.fragment.container
 
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import androidx.annotation.IdRes
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.*
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
+import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackState
@@ -53,6 +57,8 @@ public class FragmentNavigationContainer internal constructor(
     override var currentAnimations: NavigationAnimation = DefaultAnimations.none
         private set
 
+    private val ownedFragments = mutableSetOf<String>()
+
     init {
         fragmentManager.registerFragmentLifecycleCallbacks(object : FragmentLifecycleCallbacks() {
             override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
@@ -63,20 +69,49 @@ public class FragmentNavigationContainer internal constructor(
                 setBackstack(backstackState.close(instructionId))
             }
         }, false)
+
+        val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
+        savedStateRegistry.unregisterSavedStateProvider(key.name + ".ownedFragments")
+        savedStateRegistry.registerSavedStateProvider(key.name + ".ownedFragments") {
+            bundleOf("${key.name}.ownedFragments" to ArrayList(ownedFragments))
+        }
+
+        val initialise = {
+            savedStateRegistry
+                .consumeRestoredStateForKey(key.name + ".ownedFragments")
+                ?.getStringArrayList("${key.name}.ownedFragments")
+                ?.let { ownedFragments.addAll(it) }
+
+        }
+        if (!savedStateRegistry.isRestored) {
+            parentContext.lifecycleOwner.lifecycleScope.launchWhenCreated {
+                initialise()
+            }
+        } else initialise()
         setOrLoadInitialBackstack(initialBackstackState)
     }
+
+    private val handler by lazy { Handler(Looper.getMainLooper()) }
 
     override fun renderBackstack(
         previousBackstack: List<AnyOpenInstruction>,
         backstack: List<AnyOpenInstruction>
     ) {
-        if (!tryExecutePendingTransitions()) return
-        if (fragmentManager.isStateSaved) return
-        if (backstackState != backstackFlow.value) return
+        kotlin.runCatching { handler.removeCallbacksAndMessages(null) }
 
+        if (backstackState != backstackFlow.value) return
+        if (!tryExecutePendingTransitions()) {
+            handler.postDelayed({ renderBackstack(previousBackstack, backstack) }, 1)
+            return
+        }
+        if (fragmentManager.isStateSaved){
+            handler.postDelayed({ renderBackstack(previousBackstack, backstack) }, 1)
+            return
+        }
         val activePushed = getActivePushedFragment(backstack)
         val toPresent = getFragmentsToPresent(backstack)
         val toDetach = getFragmentsToDetach(backstack)
+        val toRemove = getFragmentsToRemove(backstack)
         (toDetach + activePushed)
             .filterNotNull()
             .forEach {
@@ -93,7 +128,10 @@ public class FragmentNavigationContainer internal constructor(
             applyAnimationsForTransaction(
                 active = activePushed
             )
-
+            toRemove.forEach {
+                remove(it)
+                ownedFragments.remove(it.tag)
+            }
             toDetach.forEach {
                 detach(it.fragment)
             }
@@ -148,6 +186,13 @@ public class FragmentNavigationContainer internal constructor(
             .dropLastWhile { it.navigationDirection is NavigationDirection.Present }
             .dropLast(1)
             .asFragmentAndInstruction()
+    }
+
+    private fun getFragmentsToRemove(backstackState: List<AnyOpenInstruction>): List<Fragment> {
+        val activeIds = backstackState.map { it.instructionId }.toSet()
+        ownedFragments.addAll(activeIds)
+        return ownedFragments.filter { !activeIds.contains(it) }
+            .mapNotNull { fragmentManager.findFragmentByTag(it) }
     }
 
     private fun getFragmentsToPresent(backstackState: List<AnyOpenInstruction>) : List<FragmentAndInstruction> {

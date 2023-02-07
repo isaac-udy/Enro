@@ -15,7 +15,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
-import dev.enro.core.compose.dialog.DialogConfiguration
 import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
@@ -45,7 +44,7 @@ internal data class OpenComposableDialogInHiltFragment(
 public abstract class AbstractFragmentHostForComposableDialog : DialogFragment() {
     private val navigationHandle by navigationHandle<AbstractOpenComposableDialogInFragmentKey>()
 
-    private lateinit var dialogConfiguration: DialogConfiguration
+//    private lateinit var dialogConfiguration: DialogConfiguration
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = createFullscreenDialog()
 
@@ -71,6 +70,7 @@ public abstract class AbstractFragmentHostForComposableDialog : DialogFragment()
                 accept = { false },
                 emptyBehavior = EmptyBehavior.CloseParent
             )
+            container.Render()
 
 //            val destination = container.requireDestinationOwner(instruction).destination
 //            dialogConfiguration = when (destination) {
@@ -99,7 +99,7 @@ public abstract class AbstractFragmentHostForComposableDialog : DialogFragment()
         view.isVisible = true
         view.clearAnimation()
         view.animate(
-            dialogConfiguration.animations.asResource(activity.theme).enter,
+            DefaultAnimations.none.asResource(activity.theme).enter,//dialogConfiguration.animations.asResource(activity.theme).enter,
         )
     }
 
@@ -108,13 +108,13 @@ public abstract class AbstractFragmentHostForComposableDialog : DialogFragment()
             super.dismiss()
             return
         }
-        if (dialogConfiguration.isDismissed.value) return
-        dialogConfiguration.isDismissed.value = true
+//        if (dialogConfiguration.isDismissed.value) return
+//        dialogConfiguration.isDismissed.value = true
 
         view.isVisible = true
         view.clearAnimation()
         view.animate(
-            dialogConfiguration.animations.asResource(requireActivity().theme).exit,
+            DefaultAnimations.none.asResource(requireActivity().theme).exit,
             onAnimationEnd = {
                 super.dismiss()
             }

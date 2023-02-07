@@ -43,6 +43,7 @@ public abstract class NavigationContainer(
         )
         if (backstackState == backstackFlow.value) return@synchronized
         val processedBackstack = backstackState.ensureOpeningTypeIsSet(parentContext)
+            .processBackstackForDeprecatedInstructionTypes()
 
         requireBackstackIsAccepted(processedBackstack)
         if (handleEmptyBehaviour(processedBackstack)) return
@@ -148,6 +149,18 @@ public abstract class NavigationContainer(
         }
 
         if (isActive && isEmpty) parentContext.containerManager.setActiveContainer(null)
+    }
+
+    private fun NavigationBackstackState.processBackstackForDeprecatedInstructionTypes(): NavigationBackstackState {
+        return copy(
+            backstack = backstack.mapIndexed { i, it ->
+                when {
+                    it.navigationDirection !is NavigationDirection.Forward -> it
+                    i == 0 || acceptsNavigationKey(it.navigationKey) -> it.asPushInstruction()
+                    else -> it.asPresentInstruction()
+                }
+            }
+        )
     }
 
 

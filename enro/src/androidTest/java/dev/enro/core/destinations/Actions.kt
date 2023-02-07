@@ -70,9 +70,12 @@ inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPush> Tes
     containerType: ContainerType,
     expected: Key = Key::class.createFromDefaultConstructor(),
 ): TestNavigationContext<Context, Key> {
+    // TODO these waitFors aren't ideal, would like to remove if possible.
+    waitFor { navigationContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) }
     navigation.push(expected)
     val expectedContext = expectContext<Context, Key> { it.navigation.key == expected }
     assertEquals(expected, expectedContext.navigation.key)
+    waitFor { expectedContext.navigationContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) }
     assertPushContainerType(
         pushFrom = this,
         pushOpened = expectedContext,

@@ -57,11 +57,13 @@ internal open class NavigationHandleViewModel(
         }
 
     private fun registerLifecycleObservers(context: NavigationContext<out Any>) {
-        context.lifecycle.addObserver(object : LifecycleEventObserver {
-            override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                if (event == Lifecycle.Event.ON_DESTROY || event == Lifecycle.Event.ON_CREATE) return
-                lifecycle.handleLifecycleEvent(event)
-            }
+        context.lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_DESTROY || event == Lifecycle.Event.ON_CREATE) return@LifecycleEventObserver
+            lifecycle.handleLifecycleEvent(event)
+        })
+        context.lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
+            navigationContext = null
         })
     }
 
@@ -73,7 +75,6 @@ internal open class NavigationHandleViewModel(
     private fun executePendingInstruction() {
         val context = navigationContext ?: return
         val instruction = pendingInstruction ?: return
-        if (!context.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return
         pendingInstruction = null
         context.runWhenContextActive {
             when (instruction) {

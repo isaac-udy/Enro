@@ -96,8 +96,6 @@ internal class ComposableDestinationOwner(
     @Composable
     internal fun Render(backstackState: List<AnyOpenInstruction>) {
         val lifecycleState = rememberLifecycleState()
-        val parentLifecycleState = parentContainer.parentContext.lifecycleOwner.rememberLifecycleState()
-        if (!parentLifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
         if (!lifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
 
         val saveableStateHolder = rememberSaveableStateHolder()
@@ -120,7 +118,7 @@ internal class ComposableDestinationOwner(
 //        if (
 //            transitionState.currentState == transitionState.targetState
 //            && !transitionState.targetState
-//            && instruction != backstackState.active
+//            && instruction != backstackState.lastOrNull { it.navigationDirection is NavigationDirection.Push }
 //            && instruction.navigationDirection == NavigationDirection.Push
 //        ) return
 
@@ -199,18 +197,14 @@ internal val ComposableDestinationOwner.activity: ComponentActivity get() = pare
 
 @Composable
 internal fun LifecycleOwner.rememberLifecycleState() : Lifecycle.State {
-    val activeState = remember(this) { mutableStateOf(lifecycle.currentState) }
+    val activeState = remember(this, lifecycle.currentState) { mutableStateOf(lifecycle.currentState) }
 
-    DisposableEffect(this) {
-        val observer = LifecycleEventObserver { source, event ->
+    DisposableEffect(this, activeState) {
+        val observer = LifecycleEventObserver { _, event ->
             activeState.value = event.targetState
         }
         lifecycle.addObserver(observer)
         onDispose { lifecycle.removeObserver(observer) }
     }
-    return lifecycle.currentState
-//    return remember(activeState.value, lifecycle.currentState) {
-//        Log.e("Lifecycle", "$this ${lifecycle.currentState} ${activeState.value.coerceAtMost(lifecycle.currentState)}")
-//        activeState.value.coerceAtMost(lifecycle.currentState)
-//    }
+    return activeState.value
 }
