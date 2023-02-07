@@ -35,14 +35,15 @@ public abstract class NavigationContainer(
     public abstract val isVisible: Boolean
     internal abstract val currentAnimations: NavigationAnimation
 
-    private val mutableBackstack = MutableStateFlow(createEmptyBackStack())
-    public val backstackFlow: StateFlow<NavigationBackstackState> get() = mutableBackstack
-    public val backstackState: NavigationBackstackState get() = backstackFlow.value
+    private val mutableBackstack: MutableStateFlow<List<AnyOpenInstruction>> = MutableStateFlow(emptyList())
+    public val backstackFlow: StateFlow<List<AnyOpenInstruction>> get() = mutableBackstack
+    public val backstack: List<AnyOpenInstruction> get() = backstackFlow.value
 
+    private var isInitialBackstack = true
     private var renderJob: Job? = null
 
     @MainThread
-    public fun setBackstack(backstackState: NavigationBackstackState): Unit = synchronized(this) {
+    public fun setBackstack(backstackState: List<AnyOpenInstruction>): Unit = synchronized(this) {
         if (Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
@@ -53,12 +54,12 @@ public abstract class NavigationContainer(
 
         requireBackstackIsAccepted(processedBackstack)
         if (handleEmptyBehaviour(processedBackstack)) return
-        setActiveContainerFrom(processedBackstack)
-
         val lastBackstack = mutableBackstack.getAndUpdate { processedBackstack }
-        if (renderBackstack(lastBackstack.backstack, processedBackstack.backstack)) return@synchronized
+        setActiveContainerFrom(NavigationBackstackTransition(lastBackstack.asBackstack() to processedBackstack.asBackstack()))
+
+        if (renderBackstack(lastBackstack, processedBackstack)) return@synchronized
         renderJob = parentContext.lifecycleOwner.lifecycleScope.launchWhenCreated {
-            while(!renderBackstack(lastBackstack.backstack, processedBackstack.backstack) && isActive) {
+            while(!renderBackstack(lastBackstack, processedBackstack) && isActive) {
                 delay(16)
             }
         }
@@ -82,13 +83,13 @@ public abstract class NavigationContainer(
         )
     }
 
-    protected fun setOrLoadInitialBackstack(initialBackstackState: NavigationBackstackState) {
+    protected fun setOrLoadInitialBackstack(initialBackstack: List<AnyOpenInstruction>) {
         val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
 
         savedStateRegistry.unregisterSavedStateProvider(key.name)
         savedStateRegistry.registerSavedStateProvider(key.name) {
             bundleOf(
-                BACKSTACK_KEY to ArrayList(backstackState.backstack)
+                BACKSTACK_KEY to ArrayList(backstack)
             )
         }
 
@@ -96,9 +97,8 @@ public abstract class NavigationContainer(
             val restoredBackstack = savedStateRegistry
                 .consumeRestoredStateForKey(key.name)
                 ?.getParcelableArrayList<AnyOpenInstruction>(BACKSTACK_KEY)
-                ?.let { createRestoredBackStack(it) }
 
-            val backstack = (restoredBackstack ?: initialBackstackState)
+            val backstack = (restoredBackstack ?: initialBackstack)
             setBackstack(backstack)
         }
         if (!savedStateRegistry.isRestored) {
@@ -108,8 +108,8 @@ public abstract class NavigationContainer(
         } else initialise()
     }
 
-    private fun requireBackstackIsAccepted(backstackState: NavigationBackstackState) {
-        backstackState.backstack
+    private fun requireBackstackIsAccepted(backstack: List<AnyOpenInstruction>) {
+        backstack
             .map {
                 it.navigationDirection to acceptsDirection(it.navigationDirection)
             }
@@ -123,8 +123,8 @@ public abstract class NavigationContainer(
             }
     }
 
-    private fun handleEmptyBehaviour(backstackState: NavigationBackstackState): Boolean {
-        if (backstackState.backstack.isEmpty()) {
+    private fun handleEmptyBehaviour(backstack: List<AnyOpenInstruction>): Boolean {
+        if (backstack.isEmpty()) {
             when (val emptyBehavior = emptyBehavior) {
                 EmptyBehavior.AllowEmpty -> {
                     /* If allow empty, pass through to default behavior */
@@ -143,35 +143,36 @@ public abstract class NavigationContainer(
         return false
     }
 
-    private fun setActiveContainerFrom(backstackState: NavigationBackstackState) {
-        if (backstackState.isRestoredState || backstackState.isInitialState) return
-        val isClosing = backstackState.lastInstruction is NavigationInstruction.Close
-        val isEmpty = backstackState.backstack.isEmpty()
+    private fun setActiveContainerFrom(backstackTransition: NavigationBackstackTransition) {
+        // TODO
+        if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
+        if (!parentContext.containerManager.containers.contains(this)) return
+
+        val isClosing = backstackTransition.lastInstruction is NavigationInstruction.Close
+        val isEmpty = backstackTransition.activeBackstack.isEmpty()
 
         if (!isClosing) {
             parentContext.containerManager.setActiveContainer(this)
             return
         }
 
-        if (backstackState.exiting != null) {
+        if (backstackTransition.exitingInstruction != null) {
             parentContext.containerManager.setActiveContainerByKey(
-                backstackState.exiting.internal.previouslyActiveContainer
+                backstackTransition.exitingInstruction.internal.previouslyActiveContainer
             )
         }
 
         if (isActive && isEmpty) parentContext.containerManager.setActiveContainer(null)
     }
 
-    private fun NavigationBackstackState.processBackstackForDeprecatedInstructionTypes(): NavigationBackstackState {
-        return copy(
-            backstack = backstack.mapIndexed { i, it ->
-                when {
-                    it.navigationDirection !is NavigationDirection.Forward -> it
-                    i == 0 || acceptsNavigationKey(it.navigationKey) -> it.asPushInstruction()
-                    else -> it.asPresentInstruction()
-                }
+    private fun List<AnyOpenInstruction>.processBackstackForDeprecatedInstructionTypes(): List<AnyOpenInstruction> {
+        return mapIndexed { i, it ->
+            when {
+                it.navigationDirection !is NavigationDirection.Forward -> it
+                i == 0 || acceptsNavigationKey(it.navigationKey) -> it.asPushInstruction()
+                else -> it.asPresentInstruction()
             }
-        )
+        }
     }
 
 

@@ -141,7 +141,7 @@ fun assertPushContainerType(
                     .containers
                     .firstOrNull {
                         it.hasActiveContext(pushOpened.navigationContext) &&
-                                !it.backstackState.backstack.contains(pushFrom.navigation.instruction)
+                                !it.backstack.contains(pushFrom.navigation.instruction)
                     }
             }
         }

@@ -8,7 +8,6 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
-import dev.enro.core.container.createRootBackStack
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.navigationContext
 
@@ -43,7 +42,7 @@ public fun FragmentActivity.navigationContainer(
             accept = accept,
             emptyBehavior = emptyBehavior,
             interceptor = interceptor,
-            initialBackstackState = createRootBackStack(rootInstruction())
+            initialBackstack = listOfNotNull(rootInstruction())
         )
     }
 )
@@ -78,7 +77,7 @@ public fun Fragment.navigationContainer(
             accept = accept,
             emptyBehavior = emptyBehavior,
             interceptor = interceptor,
-            initialBackstackState = createRootBackStack(rootInstruction())
+            initialBackstack = listOfNotNull(rootInstruction())
         )
     }
 )

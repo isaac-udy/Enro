@@ -112,7 +112,7 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
                         .let {
                             if(isReplace) it.close() else it
                         }
-                        .add(
+                        .plus(
                             instruction
                         )
                 )
@@ -127,7 +127,7 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
             ?.containerManager
             ?.containers
             ?.firstOrNull {
-                it.backstackFlow.value.backstack.any { it.instructionId == context.getNavigationHandle().id }
+                it.backstack.any { it.instructionId == context.getNavigationHandle().id }
             }
 
         if(container == null) {

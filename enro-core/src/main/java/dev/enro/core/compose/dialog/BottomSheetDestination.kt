@@ -109,13 +109,6 @@ internal fun EnroBottomSheetContainer(
     LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
         if (destination.bottomSheetConfiguration.isDismissed.value) {
             state.hide()
-            val container = composableDestination.owner.parentContainer
-            if (container.backstackState.exiting == composableDestination.owner.instruction) {
-                container.setBackstack(backstackState = container.backstackState.copy(
-                    exiting = null,
-                    exitingIndex = -1,
-                ))
-            }
         }
         else {
             state.show()

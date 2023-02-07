@@ -10,7 +10,6 @@ import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.close
 import dev.enro.core.controller.get
@@ -25,7 +24,7 @@ public class FragmentNavigationContainer internal constructor(
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
-    initialBackstackState: NavigationBackstackState
+    initialBackstack: List<AnyOpenInstruction>
 ) : NavigationContainer(
     key = key,
     parentContext = parentContext,
@@ -47,7 +46,7 @@ public class FragmentNavigationContainer internal constructor(
 
     override val activeContext: NavigationContext<out Fragment>?
         get() {
-            val fragment =  backstackState.active?.let { fragmentManager.findFragmentByTag(it.instructionId) }
+            val fragment =  backstack.lastOrNull()?.let { fragmentManager.findFragmentByTag(it.instructionId) }
                 ?: fragmentManager.findFragmentById(containerId)
             return fragment?.navigationContext
         }
@@ -64,7 +63,7 @@ public class FragmentNavigationContainer internal constructor(
                 val instructionId = f.tag ?: return
                 if (fm.isDestroyed || fm.isStateSaved) return
                 if (!f.isRemoving) return
-                setBackstack(backstackState.close(instructionId))
+                setBackstack(backstack.close(instructionId))
             }
         }, false)
 
@@ -86,7 +85,7 @@ public class FragmentNavigationContainer internal constructor(
                 initialise()
             }
         } else initialise()
-        setOrLoadInitialBackstack(initialBackstackState)
+        setOrLoadInitialBackstack(initialBackstack)
     }
 
     override fun renderBackstack(
@@ -103,7 +102,7 @@ public class FragmentNavigationContainer internal constructor(
         (toDetach + activePushed)
             .filterNotNull()
             .forEach {
-                setZIndexForAnimations(backstackState, it)
+                setZIndexForAnimations(backstack, it)
             }
 
         setAnimations(
@@ -148,7 +147,7 @@ public class FragmentNavigationContainer internal constructor(
             setPrimaryNavigationFragment(activeFragment)
         }
 
-        backstackState.backstack.lastOrNull()
+        backstack.lastOrNull()
             ?.let {
                 fragmentManager.findFragmentByTag(it.instructionId)
             }
@@ -216,10 +215,11 @@ public class FragmentNavigationContainer internal constructor(
         )
     }
 
-    private fun setZIndexForAnimations(backstack: NavigationBackstackState, fragmentAndInstruction: FragmentAndInstruction) {
+    // TODO this doesn't work, it needs to know about the exiting element
+    private fun setZIndexForAnimations(backstack: List<AnyOpenInstruction>, fragmentAndInstruction: FragmentAndInstruction) {
         val activeIndex =
-            backstack.renderable.indexOfFirst { it.instructionId == backstack.active?.instructionId }
-        val index = backstack.renderable.indexOf(fragmentAndInstruction.instruction)
+            backstack.indexOfFirst { it.instructionId == backstack.lastOrNull()?.instructionId }
+        val index = backstack.indexOf(fragmentAndInstruction.instruction)
 
         fragmentAndInstruction.fragment.view?.z = when {
             index == activeIndex -> 0f

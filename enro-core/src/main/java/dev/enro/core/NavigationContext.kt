@@ -95,7 +95,7 @@ public fun NavigationContext<*>.parentContainer(): NavigationContainer? {
     val instructionId = getNavigationHandle().id
     fun getParentContainerFrom(context: NavigationContext<*>): NavigationContainer? {
         val parentContainer = context.containerManager.containers.firstOrNull { container ->
-            container.backstackState.backstack.any { it.instructionId == instructionId }
+            container.backstack.any { it.instructionId == instructionId }
         }
         val parentParent = runCatching { context.parentContext }.getOrNull() ?: return parentContainer
         return getParentContainerFrom(parentParent) ?: return parentContainer
@@ -109,7 +109,7 @@ public fun NavigationContext<*>.directParentContainer(): NavigationContainer? {
     val parentContext = parentContext ?: return null
     val instructionId = getNavigationHandle().id
     return parentContext.containerManager.containers.firstOrNull { container ->
-        container.backstackState.backstack.any { it.instructionId == instructionId }
+        container.backstack.any { it.instructionId == instructionId }
     }
 }
 

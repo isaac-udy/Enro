@@ -10,7 +10,6 @@ import androidx.fragment.app.FragmentManager
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
-import dev.enro.core.container.createRootBackStack
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.fragment.container.FragmentNavigationContainer
@@ -44,7 +43,7 @@ internal class ActivityLifecycleCallbacksForEnro(
                         accept = { false },
                         emptyBehavior = EmptyBehavior.AllowEmpty,
                         interceptor = {},
-                        initialBackstackState = createRootBackStack(emptyList()),
+                        initialBackstack = emptyList(),
                     ).also {
                         if (activity.containerManager.activeContainer != it) return@also
                         if (savedInstanceState != null) return@also

@@ -11,7 +11,6 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationBackstackState
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.merge
 import dev.enro.core.controller.get
@@ -24,7 +23,7 @@ public class ComposableNavigationContainer internal constructor(
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
-    initialBackstackState: NavigationBackstackState
+    initialBackstack: List<AnyOpenInstruction>
 ) : NavigationContainer(
     key = key,
     parentContext = parentContext,
@@ -60,17 +59,17 @@ public class ComposableNavigationContainer internal constructor(
     public val Render: @Composable () -> Unit = movableContentOf {
         key(key.name) {
             saveableStateHolder?.SaveableStateProvider(key.name) {
-                val instructions by backstackFlow.collectAsState()
+                val backstack by backstackFlow.collectAsState()
                 destinationOwners
                     .forEach {
-                        it.Render(instructions.backstack)
+                        it.Render(backstack)
                     }
             }
         }
     }
 
     init {
-        setOrLoadInitialBackstack(initialBackstackState)
+        setOrLoadInitialBackstack(initialBackstack)
     }
 
     override fun renderBackstack(
@@ -170,7 +169,7 @@ public class ComposableNavigationContainer internal constructor(
             val containerManager = parentContext.containerManager
             onDispose {
                 if (containerManager.activeContainer == this@ComposableNavigationContainer) {
-                    val previouslyActiveContainer = backstackState.active?.internal?.previouslyActiveContainer?.takeIf { it != key }
+                    val previouslyActiveContainer = backstack.lastOrNull()?.internal?.previouslyActiveContainer?.takeIf { it != key }
                     containerManager.setActiveContainerByKey(previouslyActiveContainer)
                 }
             }

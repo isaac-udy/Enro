@@ -11,8 +11,6 @@ import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.ContainerRegistrationStrategy
 import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.createRestoredBackStack
-import dev.enro.core.container.createRootBackStack
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 
 @Composable
@@ -86,16 +84,13 @@ public fun rememberNavigationContainer(
         }
 
         val existingContainer = context.containerManager.getContainer(key) as? ComposableNavigationContainer
-        existingContainer?.setBackstack(
-            createRestoredBackStack(existingContainer.backstackState.backstack)
-        )
         existingContainer ?: ComposableNavigationContainer(
             key = key,
             parentContext = context,
             accept = accept,
             emptyBehavior = emptyBehavior,
             interceptor = interceptor,
-            initialBackstackState = createRootBackStack(initialBackstack)
+            initialBackstack = initialBackstack
         )
     }
     controller.registerWithContainerManager(
