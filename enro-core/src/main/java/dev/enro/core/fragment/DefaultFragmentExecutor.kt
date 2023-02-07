@@ -115,6 +115,7 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
                         .plus(
                             instruction
                         )
+                        .toBackstack()
                 )
             }
             else -> throw IllegalStateException()

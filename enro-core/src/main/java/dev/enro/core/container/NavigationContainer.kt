@@ -35,27 +35,26 @@ public abstract class NavigationContainer(
     public abstract val isVisible: Boolean
     internal abstract val currentAnimations: NavigationAnimation
 
-    private val mutableBackstack: MutableStateFlow<List<AnyOpenInstruction>> = MutableStateFlow(emptyList())
-    public val backstackFlow: StateFlow<List<AnyOpenInstruction>> get() = mutableBackstack
-    public val backstack: List<AnyOpenInstruction> get() = backstackFlow.value
+    private val mutableBackstack: MutableStateFlow<NavigationBackstack> = MutableStateFlow(emptyBackstack())
+    public val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
+    public val backstack: NavigationBackstack get() = backstackFlow.value
 
-    private var isInitialBackstack = true
     private var renderJob: Job? = null
 
     @MainThread
-    public fun setBackstack(backstackState: List<AnyOpenInstruction>): Unit = synchronized(this) {
+    public fun setBackstack(backstack: NavigationBackstack): Unit = synchronized(this) {
         if (Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
-        if (backstackState == backstackFlow.value) return@synchronized
+        if (backstack == backstackFlow.value) return@synchronized
         renderJob?.cancel()
-        val processedBackstack = backstackState.ensureOpeningTypeIsSet(parentContext)
+        val processedBackstack = backstack.ensureOpeningTypeIsSet(parentContext)
             .processBackstackForDeprecatedInstructionTypes()
 
         requireBackstackIsAccepted(processedBackstack)
         if (handleEmptyBehaviour(processedBackstack)) return
         val lastBackstack = mutableBackstack.getAndUpdate { processedBackstack }
-        setActiveContainerFrom(NavigationBackstackTransition(lastBackstack.asBackstack() to processedBackstack.asBackstack()))
+        setActiveContainerFrom(NavigationBackstackTransition(lastBackstack.toBackstack() to processedBackstack.toBackstack()))
 
         if (renderBackstack(lastBackstack, processedBackstack)) return@synchronized
         renderJob = parentContext.lifecycleOwner.lifecycleScope.launchWhenCreated {
@@ -83,7 +82,7 @@ public abstract class NavigationContainer(
         )
     }
 
-    protected fun setOrLoadInitialBackstack(initialBackstack: List<AnyOpenInstruction>) {
+    protected fun setOrLoadInitialBackstack(initialBackstack: NavigationBackstack) {
         val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
 
         savedStateRegistry.unregisterSavedStateProvider(key.name)
@@ -97,6 +96,7 @@ public abstract class NavigationContainer(
             val restoredBackstack = savedStateRegistry
                 .consumeRestoredStateForKey(key.name)
                 ?.getParcelableArrayList<AnyOpenInstruction>(BACKSTACK_KEY)
+                ?.toBackstack()
 
             val backstack = (restoredBackstack ?: initialBackstack)
             setBackstack(backstack)
@@ -165,14 +165,14 @@ public abstract class NavigationContainer(
         if (isActive && isEmpty) parentContext.containerManager.setActiveContainer(null)
     }
 
-    private fun List<AnyOpenInstruction>.processBackstackForDeprecatedInstructionTypes(): List<AnyOpenInstruction> {
+    private fun NavigationBackstack.processBackstackForDeprecatedInstructionTypes(): NavigationBackstack {
         return mapIndexed { i, it ->
             when {
                 it.navigationDirection !is NavigationDirection.Forward -> it
                 i == 0 || acceptsNavigationKey(it.navigationKey) -> it.asPushInstruction()
                 else -> it.asPresentInstruction()
             }
-        }
+        }.toBackstack()
     }
 
 

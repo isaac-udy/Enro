@@ -92,6 +92,7 @@ public object DefaultComposableExecutor :
                             if (isReplace) it.dropLast(1) else it
                         }
                         .plus(instruction)
+                        .toBackstack()
                 }
             }
             else -> throw IllegalStateException()
@@ -102,7 +103,7 @@ public object DefaultComposableExecutor :
         val container = context.contextReference.owner.parentContainer
         val closingInstructionId = context.contextReference.owner.instruction.instructionId
         container.setBackstack {
-            it.filter { it.instructionId != closingInstructionId }
+            it.close(closingInstructionId)
         }
     }
 }

@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.close
 import dev.enro.core.controller.get
@@ -24,7 +25,7 @@ public class FragmentNavigationContainer internal constructor(
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
-    initialBackstack: List<AnyOpenInstruction>
+    initialBackstack: NavigationBackstack
 ) : NavigationContainer(
     key = key,
     parentContext = parentContext,

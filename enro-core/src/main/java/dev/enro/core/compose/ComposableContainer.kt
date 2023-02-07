@@ -10,7 +10,7 @@ import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.ContainerRegistrationStrategy
 import dev.enro.core.compose.destination.ComposableDestinationOwner
-import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.*
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 
 @Composable
@@ -22,7 +22,7 @@ public fun rememberNavigationContainer(
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
         initialBackstack = rememberSaveable {
-            listOf(NavigationInstruction.Push(root))
+            backstackOf(NavigationInstruction.Push(root))
         },
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
@@ -41,7 +41,7 @@ public fun rememberNavigationContainer(
         initialBackstack = rememberSaveable {
             initialState.map {
                 NavigationInstruction.Push(it)
-            }
+            }.toBackstack()
         },
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
@@ -58,7 +58,7 @@ public fun rememberEnroContainerController(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
-        initialBackstack = initialBackstack,
+        initialBackstack = initialBackstack.toBackstack(),
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         accept = accept,
@@ -69,7 +69,7 @@ public fun rememberEnroContainerController(
 @AdvancedEnroApi
 public fun rememberNavigationContainer(
     key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
-    initialBackstack: List<AnyOpenInstruction> = emptyList(),
+    initialBackstack: NavigationBackstack = emptyBackstack(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },

@@ -11,6 +11,7 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.merge
 import dev.enro.core.controller.get
@@ -23,7 +24,7 @@ public class ComposableNavigationContainer internal constructor(
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
-    initialBackstack: List<AnyOpenInstruction>
+    initialBackstack: NavigationBackstack
 ) : NavigationContainer(
     key = key,
     parentContext = parentContext,

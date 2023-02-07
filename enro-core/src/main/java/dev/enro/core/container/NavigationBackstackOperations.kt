@@ -5,7 +5,7 @@ import dev.enro.core.AnyOpenInstruction
 
 @AdvancedEnroApi
 public fun NavigationContainer.setBackstack(
-    block: (List<AnyOpenInstruction>) -> List<AnyOpenInstruction>
+    block: (NavigationBackstack) -> NavigationBackstack
 ) {
     setBackstack(block(backstack))
 }
@@ -36,15 +36,4 @@ internal fun merge(
     return results.entries
         .sortedBy { it.key }
         .flatMap { it.value }
-}
-
-@AdvancedEnroApi
-public fun isClosing(
-    oldBackstack: List<AnyOpenInstruction>,
-    newBackstack: List<AnyOpenInstruction>,
-): Boolean {
-    if (oldBackstack == newBackstack) return false
-    val previousActive = oldBackstack.lastOrNull() ?: return false
-    val newActive = newBackstack.lastOrNull() ?: return true
-    return !newBackstack.contains(previousActive) && oldBackstack.contains(newActive)
 }
