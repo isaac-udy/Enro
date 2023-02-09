@@ -162,12 +162,18 @@ internal class ComposableDestinationOwner(
             val isActive = backstackState.lastOrNull() == instruction
             val isStopped = backstackState.contains(instruction)
             when {
-                isActive -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-                isStopped -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-                else -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                isActive -> lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+                isStopped -> lifecycleRegistry.currentState = Lifecycle.State.STARTED
+                else -> lifecycleRegistry.currentState = Lifecycle.State.CREATED
             }
 
-            onDispose { }
+            onDispose {
+                when {
+                    isActive -> lifecycleRegistry.currentState = Lifecycle.State.STARTED
+                    isStopped -> lifecycleRegistry.currentState = Lifecycle.State.CREATED
+                    else -> lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+                }
+            }
         }
     }
 

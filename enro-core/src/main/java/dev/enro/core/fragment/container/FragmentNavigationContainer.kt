@@ -225,15 +225,20 @@ public class FragmentNavigationContainer internal constructor(
     private fun setAnimations(
         transition: NavigationBackstackTransition
     ) {
-        if(transition.activeBackstack.isEmpty()) return
+        val shouldTakeAnimationsFromParentContainer = parentContext is FragmentContext<out Fragment>
+                && parentContext.contextReference is NavigationHost
+                && transition.activeBackstack.size <= 1
 
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
         val previouslyActiveContext = runCatching { previouslyActiveFragment?.navigationContext }.getOrNull()
+
+        val lastInstruction = lastInstruction
         currentAnimations = when {
-            transition.previousBackstack.isEmpty() -> DefaultAnimations.none
+            shouldTakeAnimationsFromParentContainer -> parentContext.parentContainer()!!.currentAnimations
+            lastInstruction == null -> DefaultAnimations.none
             else -> animationsFor(
                 previouslyActiveContext ?: parentContext,
-                transition.lastInstruction
+                lastInstruction
             )
         }
     }

@@ -27,7 +27,7 @@ internal data class OpenInstructionInHiltActivity(
     override val instruction: AnyOpenInstruction
 ) : AbstractOpenInstructionInActivityKey()
 
-internal abstract class AbstractActivityHostForAnyInstruction : AppCompatActivity() {
+internal abstract class AbstractActivityHostForAnyInstruction : AppCompatActivity(), NavigationHost {
 
     private val container by navigationContainer(
         containerId = R.id.enro_internal_single_fragment_frame_layout,

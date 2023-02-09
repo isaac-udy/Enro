@@ -1,6 +1,7 @@
 package dev.enro.core.container
 
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.MainThread
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
@@ -39,6 +40,9 @@ public abstract class NavigationContainer(
     public val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
     public val backstack: NavigationBackstack get() = backstackFlow.value
 
+    public var lastInstruction: NavigationInstruction? = null
+        private set
+
     private var renderJob: Job? = null
 
     @MainThread
@@ -55,6 +59,7 @@ public abstract class NavigationContainer(
         if (handleEmptyBehaviour(processedBackstack)) return
         val lastBackstack = mutableBackstack.getAndUpdate { processedBackstack }
         val transition = NavigationBackstackTransition(lastBackstack to processedBackstack)
+        lastInstruction = transition.lastInstruction
         setActiveContainerFrom(transition)
 
         if (onBackstackUpdated(transition)) return@synchronized
@@ -62,6 +67,7 @@ public abstract class NavigationContainer(
             while(!onBackstackUpdated(transition) && isActive) {
                 delay(16)
             }
+            Log.e("Animations", "${this::class.java.simpleName} with ${transition.activeBackstack.active?.navigationKey?.let { it::class.java.simpleName }} has ${currentAnimations.asComposable().name}")
         }
     }
 

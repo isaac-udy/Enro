@@ -92,7 +92,10 @@ public val NavigationContext<out Fragment>.fragment: Fragment get() = contextRef
 public fun NavigationContext<*>.parentContainer(): NavigationContainer? {
     val parentContext = parentContext ?: return null
 
-    val instructionId = getNavigationHandle().id
+    val instructionId = when (contextReference) {
+        is NavigationHost -> parentContext.containerManager.activeContainer?.backstack?.active?.instructionId ?: return null
+        else -> getNavigationHandle().id
+    }
     fun getParentContainerFrom(context: NavigationContext<*>): NavigationContainer? {
         val parentContainer = context.containerManager.containers.firstOrNull { container ->
             container.backstack.any { it.instructionId == instructionId }
