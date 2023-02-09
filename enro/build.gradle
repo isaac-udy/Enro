@@ -4,6 +4,7 @@ apply plugin: "kotlin-kapt"
 publishAndroidModule("dev.enro", "enro")
 
 android {
+    testNamespace "dev.enro.test"
     lintOptions {
         textReport true
         textOutput 'stdout'
