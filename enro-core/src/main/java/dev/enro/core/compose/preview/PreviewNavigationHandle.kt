@@ -27,13 +27,11 @@ internal class PreviewNavigationHandle(
             handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
         }
     }
+    override val lifecycle: Lifecycle
+        get() = lifecycleRegistry
 
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {
 
-    }
-
-    override fun getLifecycle(): Lifecycle {
-        return lifecycleRegistry
     }
 }
 

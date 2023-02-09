@@ -41,14 +41,25 @@ internal class ComposableDestinationContextReference(
     private val savedState: Bundle? =
         parentSavedStateRegistry.consumeRestoredStateForKey(instruction.instructionId)
     private val savedStateController = SavedStateRegistryController.create(this)
-    private val viewModelStore: ViewModelStore = ViewModelStore()
 
+    override val viewModelStore: ViewModelStore = ViewModelStore()
 
     @SuppressLint("StaticFieldLeak")
     private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
+    override val lifecycle: Lifecycle get() = lifecycleRegistry
 
     private var defaultViewModelFactory: Pair<Int, ViewModelProvider.Factory> =
         0 to ViewModelProvider.NewInstanceFactory()
+
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory
+        get() = defaultViewModelFactory.second
+
+    override val defaultViewModelCreationExtras: CreationExtras
+        get() = MutableCreationExtras().apply {
+            set(ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY, navigationController.application)
+            set(SAVED_STATE_REGISTRY_OWNER_KEY, this@ComposableDestinationContextReference)
+            set(VIEW_MODEL_STORE_OWNER_KEY, this@ComposableDestinationContextReference)
+        }
 
     init {
         destination.contextReference = this
@@ -85,27 +96,6 @@ internal class ComposableDestinationContextReference(
         })
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
     }
-
-    override fun getLifecycle(): Lifecycle {
-        return lifecycleRegistry
-    }
-
-    override fun getViewModelStore(): ViewModelStore {
-        return viewModelStore
-    }
-
-    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
-        return defaultViewModelFactory.second
-    }
-
-    override fun getDefaultViewModelCreationExtras(): CreationExtras {
-        return MutableCreationExtras().apply {
-            set(ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY, navigationController.application)
-            set(SAVED_STATE_REGISTRY_OWNER_KEY, this@ComposableDestinationContextReference)
-            set(VIEW_MODEL_STORE_OWNER_KEY, this@ComposableDestinationContextReference)
-        }
-    }
-
 
     override val savedStateRegistry: SavedStateRegistry get() =
         savedStateController.savedStateRegistry
@@ -225,21 +215,17 @@ abstract class ComposableDestination: LifecycleOwner,
     override val savedStateRegistry: SavedStateRegistry
         get() = contextReference.savedStateRegistry
 
-    override fun getLifecycle(): Lifecycle {
-        return contextReference.lifecycle
-    }
+    override val lifecycle: Lifecycle
+        get() = contextReference.lifecycle
 
-    override fun getViewModelStore(): ViewModelStore {
-        return contextReference.viewModelStore
-    }
+    override val viewModelStore: ViewModelStore
+        get() = contextReference.viewModelStore
 
-    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
-        return contextReference.defaultViewModelProviderFactory
-    }
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory
+        get() = contextReference.defaultViewModelProviderFactory
 
-    override fun getDefaultViewModelCreationExtras(): CreationExtras {
-        return contextReference.defaultViewModelCreationExtras
-    }
+    override val defaultViewModelCreationExtras: CreationExtras
+        get() = contextReference.defaultViewModelCreationExtras
 
     @Composable
     abstract fun Render()

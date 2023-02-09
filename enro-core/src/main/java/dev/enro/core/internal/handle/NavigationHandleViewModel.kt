@@ -1,5 +1,6 @@
 package dev.enro.core.internal.handle
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.addCallback
 import androidx.fragment.app.FragmentActivity
@@ -31,11 +32,11 @@ internal open class NavigationHandleViewModel(
     internal var childContainers = listOf<ChildContainer>()
     internal var internalOnCloseRequested: () -> Unit = { close() }
 
-    private val lifecycle = LifecycleRegistry(this)
+    @SuppressLint("StaticFieldLeak")
+    private val lifecycleRegistry = LifecycleRegistry(this)
 
-    override fun getLifecycle(): Lifecycle {
-        return lifecycle
-    }
+    override val lifecycle: Lifecycle
+        get() = lifecycleRegistry
 
     internal var navigationContext: NavigationContext<*>? = null
         set(value) {
@@ -46,7 +47,7 @@ internal open class NavigationHandleViewModel(
             executePendingInstruction()
 
             if (lifecycle.currentState == Lifecycle.State.INITIALIZED) {
-                lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+                lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
             }
         }
 
@@ -54,7 +55,7 @@ internal open class NavigationHandleViewModel(
         context.lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (event == Lifecycle.Event.ON_DESTROY || event == Lifecycle.Event.ON_CREATE) return
-                lifecycle.handleLifecycleEvent(event)
+                lifecycleRegistry.handleLifecycleEvent(event)
             }
         })
         context.lifecycle.onEvent(Lifecycle.Event.ON_DESTROY) {
@@ -106,7 +107,7 @@ internal open class NavigationHandleViewModel(
     }
 
     override fun onCleared() {
-        lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     }
 }
 
