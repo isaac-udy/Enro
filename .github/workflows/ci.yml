@@ -24,41 +24,41 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: AVD cache
-          uses: actions/cache@v3
-          id: avd-cache
-          with:
-            path: |
-              ~/.android/avd/*
-              ~/.android/adb*
-            key: avd-30
+        uses: actions/cache@v3
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-30
 
       - name: Create AVD and generate snapshot for caching
-          if: steps.avd-cache.outputs.cache-hit != 'true'
-          uses: reactivecircus/android-emulator-runner@v2
-          with:
-            api-level: 30
-            arch: x86_64
-            force-avd-creation: false
-            emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-            disable-animations: false
-            script: echo "Generated AVD snapshot for caching"
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching"
 
       - name: Run Enro Tests
-          uses: reactivecircus/android-emulator-runner@v2
-          id: testing
-          continue-on-error: true
-          with:
-            api-level: 30
-            arch: x86_64
-            force-avd-creation: false
-            emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-            disable-animations: true
-            script: |
-              adb logcat -c                             # clear logs
-              touch ~/appemulator.log                    # create log file
-              chmod 777 ~/appemulator.log                # allow writing to log file
-              adb logcat >> ~/appemulator.log &          # pipe all logcat messages into log file as a background process
-              ./gradlew :enro:connectedCheck :enro:testDebugUnitTest :enro:hilt-test:connectedCheck :modularised-example:app:testDebugUnitTest
+        uses: reactivecircus/android-emulator-runner@v2
+        id: testing
+        continue-on-error: true
+        with:
+          api-level: 30
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            adb logcat -c                             # clear logs
+            touch ~/appemulator.log                    # create log file
+            chmod 777 ~/appemulator.log                # allow writing to log file
+            adb logcat >> ~/appemulator.log &          # pipe all logcat messages into log file as a background process
+            ./gradlew :enro:connectedCheck :enro:testDebugUnitTest :enro:hilt-test:connectedCheck :modularised-example:app:testDebugUnitTest
 
       - name: Upload Failing Test Report Log
         if: steps.testing.outcome != 'success'        # upload the generated log on failure of the tests job
