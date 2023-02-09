@@ -212,15 +212,8 @@ private fun animationsForOpen(
     controller: NavigationController,
     navigationInstruction: AnyOpenInstruction
 ): NavigationAnimation {
-    val instructionForAnimation =  when (
-        val navigationKey = navigationInstruction.navigationKey
-    ) {
-        is AbstractOpenComposableInFragmentKey -> navigationKey.instruction
-        else -> navigationInstruction
-    }
-
     val executor = controller.dependencyScope.get<GetNavigationExecutor>().forOpening(
-        instructionForAnimation
+        navigationInstruction
     )
     return executor.animation(navigationInstruction)
 }
@@ -238,8 +231,8 @@ private fun animationsForClose(
         else -> context
     }
 
-    val executor = context.controller.dependencyScope.get<GetNavigationExecutor>().forClosing(
+    val executor = contextForAnimation.controller.dependencyScope.get<GetNavigationExecutor>().forClosing(
         contextForAnimation
     )
-    return executor.closeAnimation(context)
+    return executor.closeAnimation(contextForAnimation)
 }
