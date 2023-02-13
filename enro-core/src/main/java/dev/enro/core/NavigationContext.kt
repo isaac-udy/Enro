@@ -177,7 +177,7 @@ internal val <T : Fragment> T.navigationContext: FragmentContext<T>
 @PublishedApi
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 internal val <T : ComposableDestination> T.navigationContext: ComposeContext<T>
-    get() = getNavigationHandleViewModel().navigationContext as ComposeContext<T>
+    get() = context as ComposeContext<T>
 
 @AdvancedEnroApi
 internal val ViewModelStoreOwner.navigationContext: NavigationContext<*>?

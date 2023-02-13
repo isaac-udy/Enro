@@ -44,7 +44,7 @@ public class ComposableNavigationContainer internal constructor(
     private val currentDestination
         get() = destinationOwners
             .lastOrNull {
-                it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)
+                it.instruction == backstack.active
             }
 
     override val activeContext: NavigationContext<out ComposableDestination>?
@@ -82,6 +82,7 @@ public class ComposableNavigationContainer internal constructor(
         setOrLoadInitialBackstack(initialBackstack)
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     override fun onBackstackUpdated(
         transition: NavigationBackstackTransition
     ): Boolean {
@@ -94,6 +95,16 @@ public class ComposableNavigationContainer internal constructor(
             }
             .associateBy { it.instruction }
             .toMutableMap()
+
+        transition.previousBackstack
+            .minus(transition.activeBackstack)
+            .mapNotNull { activeDestinations[it]?.destination }
+            .forEach {
+                when(it) {
+                    is DialogDestination -> it.dialogConfiguration.isDismissed.value = true
+                    is BottomSheetDestination -> it.bottomSheetConfiguration.isDismissed.value = true
+                }
+            }
 
         backstack.forEach { instruction ->
             if(activeDestinations[instruction] == null) {
@@ -118,8 +129,8 @@ public class ComposableNavigationContainer internal constructor(
             .mapNotNull { instruction ->
                 activeDestinations[instruction]
             }
-        setVisibilityForBackstack()
         setAnimationsForBackstack(transition)
+        setVisibilityForBackstack(transition)
         return true
     }
 
@@ -169,7 +180,7 @@ public class ComposableNavigationContainer internal constructor(
     }
 
     @OptIn(ExperimentalMaterialApi::class)
-    private fun setVisibilityForBackstack() {
+    private fun setVisibilityForBackstack(transition: NavigationBackstackTransition) {
         val isParentContextStarted = parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
         if (!isParentContextStarted && shouldTakeAnimationsFromParentContainer) return
 
@@ -177,15 +188,14 @@ public class ComposableNavigationContainer internal constructor(
             parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded -> true
             else -> false
         }
-        val presented = destinationOwners.takeLastWhile { it.instruction.navigationDirection is NavigationDirection.Present }.toSet()
-        val activePush = backstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }
+        val presented = transition.activeBackstack.takeLastWhile { it.navigationDirection is NavigationDirection.Present }.toSet()
+        val activePush = transition.activeBackstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }
         destinationOwners.forEach { destinationOwner ->
             val instruction = destinationOwner.instruction
             destinationOwner.transitionState.targetState = when {
-                presented.contains(destinationOwner) -> !isParentBeingRemoved && !(
-                        destinationOwner.destination !is BottomSheetDestination &&
-                        destinationOwner.destination !is DialogDestination
-                )
+                destinationOwner.destination is BottomSheetDestination -> true
+                destinationOwner.destination is DialogDestination -> true
+                presented.contains(destinationOwner.instruction) -> !isParentBeingRemoved
                 instruction == activePush -> !isParentBeingRemoved
                 else -> false
             }
@@ -243,7 +253,7 @@ public class ComposableNavigationContainer internal constructor(
         DisposableEffect(key) {
             val lifecycleObserver = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_RESUME || event == Lifecycle.Event.ON_PAUSE) {
-                    setVisibilityForBackstack()
+                    setVisibilityForBackstack(NavigationBackstackTransition(backstack to backstack))
                     setAnimationsForBackstack(NavigationBackstackTransition(backstack to backstack))
                 }
             }

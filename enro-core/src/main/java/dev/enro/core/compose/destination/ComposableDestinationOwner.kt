@@ -122,7 +122,6 @@ internal class ComposableDestinationOwner(
 //            && instruction.navigationDirection == NavigationDirection.Push
 //        ) return
 
-        RegisterComposableLifecycleState(backstackState)
         val renderDestination = remember(instruction.instructionId) {
             movableContentOf {
                 ProvideRenderingEnvironment(saveableStateHolder) {
@@ -151,26 +150,28 @@ internal class ComposableDestinationOwner(
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
         animation.content(transition) {
             renderDestination()
+            RegisterComposableLifecycleState(backstackState, transition.currentState)
         }
     }
 
     @Composable
     private fun RegisterComposableLifecycleState(
-        backstackState: List<AnyOpenInstruction>
+        backstackState: List<AnyOpenInstruction>,
+        isVisible: Boolean,
     ) {
-        DisposableEffect(backstackState) {
+        DisposableEffect(backstackState, isVisible) {
             val isActive = backstackState.lastOrNull() == instruction
-            val isStopped = backstackState.contains(instruction)
+            val isInBackstack = backstackState.contains(instruction)
             when {
                 isActive -> lifecycleRegistry.currentState = Lifecycle.State.RESUMED
-                isStopped -> lifecycleRegistry.currentState = Lifecycle.State.STARTED
-                else -> lifecycleRegistry.currentState = Lifecycle.State.CREATED
+                isInBackstack -> lifecycleRegistry.currentState = Lifecycle.State.STARTED
+                else -> {}
             }
 
             onDispose {
                 when {
-                    isActive -> lifecycleRegistry.currentState = Lifecycle.State.STARTED
-                    isStopped -> lifecycleRegistry.currentState = Lifecycle.State.CREATED
+                    isActive -> {}
+                    isInBackstack -> lifecycleRegistry.currentState = Lifecycle.State.CREATED
                     else -> lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
                 }
             }

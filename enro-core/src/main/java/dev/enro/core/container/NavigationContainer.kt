@@ -1,7 +1,6 @@
 package dev.enro.core.container
 
 import android.os.Looper
-import android.util.Log
 import androidx.annotation.MainThread
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
@@ -67,7 +66,6 @@ public abstract class NavigationContainer(
             while(!onBackstackUpdated(transition) && isActive) {
                 delay(16)
             }
-            Log.e("Animations", "${this::class.java.simpleName} with ${transition.activeBackstack.active?.navigationKey?.let { it::class.java.simpleName }} has ${currentAnimations.asComposable().name}")
         }
     }
 
