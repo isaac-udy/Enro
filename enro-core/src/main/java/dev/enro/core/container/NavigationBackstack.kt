@@ -3,6 +3,8 @@ package dev.enro.core.container
 import android.os.Parcelable
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
 import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
 import kotlinx.parcelize.Parcelize
 
@@ -46,4 +48,12 @@ public fun NavigationBackstack.close(id: String): NavigationBackstack {
     if (index < 0) return this
     val exiting = get(index)
     return minus(exiting).toBackstack()
+}
+
+public fun NavigationBackstack.push(key: NavigationKey.SupportsPush): NavigationBackstack {
+    return this.plus(NavigationInstruction.Push(key)).toBackstack()
+}
+
+public fun NavigationBackstack.present(key: NavigationKey.SupportsPresent): NavigationBackstack {
+    return this.plus(NavigationInstruction.Present(key)).toBackstack()
 }

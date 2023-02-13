@@ -179,7 +179,6 @@ internal val <T : Fragment> T.navigationContext: FragmentContext<T>
 internal val <T : ComposableDestination> T.navigationContext: ComposeContext<T>
     get() = context as ComposeContext<T>
 
-@AdvancedEnroApi
 internal val ViewModelStoreOwner.navigationContext: NavigationContext<*>?
     get() = getNavigationHandleViewModel().navigationContext
 

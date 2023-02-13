@@ -1,16 +1,13 @@
 package dev.enro.core.container
 
-import dev.enro.core.AdvancedEnroApi
 import dev.enro.core.AnyOpenInstruction
 
-@AdvancedEnroApi
 public fun NavigationContainer.setBackstack(
-    block: (NavigationBackstack) -> NavigationBackstack
+    block: (NavigationBackstack) -> List<AnyOpenInstruction>
 ) {
-    setBackstack(block(backstack))
+    setBackstack(block(backstack).toBackstack())
 }
 
-@AdvancedEnroApi
 internal fun merge(
     oldBackstack: List<AnyOpenInstruction>,
     newBackstack: List<AnyOpenInstruction>,
