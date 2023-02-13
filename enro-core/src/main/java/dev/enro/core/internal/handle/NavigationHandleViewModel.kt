@@ -34,13 +34,13 @@ internal open class NavigationHandleViewModel(
 
     @Suppress("LeakingThis")
     @SuppressLint("StaticFieldLeak")
-    private val lifecycle = LifecycleRegistry(this)
+    private val lifecycleRegistry = LifecycleRegistry(this)
 
     @Suppress("LeakingThis")
     final override val dependencyScope: EnroDependencyScope = dependencyScope.bind(this)
 
-    final override fun getLifecycle(): Lifecycle {
-        return lifecycle
+    final override val lifecycle: Lifecycle get() {
+        return lifecycleRegistry
     }
 
     internal var navigationContext: NavigationContext<*>? = null
@@ -51,15 +51,15 @@ internal open class NavigationHandleViewModel(
             registerLifecycleObservers(value)
             executePendingInstruction()
 
-            if (lifecycle.currentState == Lifecycle.State.INITIALIZED) {
-                lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+            if (lifecycleRegistry.currentState == Lifecycle.State.INITIALIZED) {
+                lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
             }
         }
 
     private fun registerLifecycleObservers(context: NavigationContext<out Any>) {
         context.lifecycle.addObserver(LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_DESTROY || event == Lifecycle.Event.ON_CREATE) return@LifecycleEventObserver
-            lifecycle.handleLifecycleEvent(event)
+            lifecycleRegistry.handleLifecycleEvent(event)
         })
         context.lifecycle.addObserver(LifecycleEventObserver { _, event ->
             if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
@@ -97,7 +97,7 @@ internal open class NavigationHandleViewModel(
     }
 
     override fun onCleared() {
-        lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         dependencyScope.container.clear()
         navigationContext = null
     }

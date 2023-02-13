@@ -38,7 +38,7 @@ internal class TypedNavigationHandleImpl<T : NavigationKey>(
     override val key: T get() = navigationHandle.key as? T
         ?: throw EnroException.IncorrectlyTypedNavigationHandle("TypedNavigationHandle failed to cast key of type ${navigationHandle.key::class.java.simpleName} to ${type.simpleName}")
 
-    override fun getLifecycle(): Lifecycle = navigationHandle.lifecycle
+    override val lifecycle: Lifecycle get() = navigationHandle.lifecycle
 
     override fun executeInstruction(navigationInstruction: NavigationInstruction) = navigationHandle.executeInstruction(navigationInstruction)
 }

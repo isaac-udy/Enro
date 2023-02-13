@@ -31,7 +31,7 @@ internal class PreviewNavigationHandle(
 
     }
 
-    override fun getLifecycle(): Lifecycle {
+    override val lifecycle: Lifecycle get() {
         return lifecycleRegistry
     }
 }

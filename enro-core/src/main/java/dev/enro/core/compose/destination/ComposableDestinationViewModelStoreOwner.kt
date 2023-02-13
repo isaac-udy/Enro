@@ -16,7 +16,7 @@ import dev.enro.viewmodel.withNavigationHandle
 internal class ComposableDestinationViewModelStoreOwner(
     private val owner: ComposableDestinationOwner,
     private val savedState: Bundle,
-    private val viewModelStore: ViewModelStore,
+    override val viewModelStore: ViewModelStore,
 ): ViewModelStoreOwner,
     HasDefaultViewModelProviderFactory {
 
@@ -24,11 +24,7 @@ internal class ComposableDestinationViewModelStoreOwner(
         owner.enableSavedStateHandles()
     }
 
-    override fun getViewModelStore(): ViewModelStore {
-        return viewModelStore
-    }
-
-    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory get() {
         val activity = owner.activity
         val arguments =  Bundle().addOpenInstruction(owner.instruction)
 
@@ -50,7 +46,7 @@ internal class ComposableDestinationViewModelStoreOwner(
         return factory.withNavigationHandle(getNavigationHandle())
     }
 
-    override fun getDefaultViewModelCreationExtras(): CreationExtras {
+    override val defaultViewModelCreationExtras: CreationExtras get() {
         return MutableCreationExtras().apply {
             set(ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY, owner.navigationController.application)
             set(SAVED_STATE_REGISTRY_OWNER_KEY, owner)

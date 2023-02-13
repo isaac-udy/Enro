@@ -32,7 +32,7 @@ class TestNavigationHandle<T : NavigationKey>(
 
     internal var internalOnCloseRequested: () -> Unit = { close() }
 
-    override fun getLifecycle(): Lifecycle {
+    override val lifecycle: Lifecycle get() {
         return navigationHandle.lifecycle
     }
 
@@ -60,7 +60,7 @@ fun <T : NavigationKey> createTestNavigationHandle(
         private val instructions = mutableListOf<NavigationInstruction>()
 
         @SuppressLint("VisibleForTests")
-        private val lifecycle = LifecycleRegistry.createUnsafe(this).apply {
+        override val lifecycle: LifecycleRegistry = LifecycleRegistry.createUnsafe(this).apply {
             currentState = Lifecycle.State.RESUMED
         }
 
@@ -77,10 +77,6 @@ fun <T : NavigationKey> createTestNavigationHandle(
             if(navigationInstruction is NavigationInstruction.RequestClose) {
                 navigationHandle.get()?.internalOnCloseRequested?.invoke()
             }
-        }
-
-        override fun getLifecycle(): Lifecycle {
-            return lifecycle
         }
     }))
     return navigationHandle.get()!!

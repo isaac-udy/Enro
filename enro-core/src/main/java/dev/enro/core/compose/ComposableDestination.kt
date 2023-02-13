@@ -18,19 +18,19 @@ public abstract class ComposableDestination : LifecycleOwner,
     override val savedStateRegistry: SavedStateRegistry
         get() = owner.savedStateRegistry
 
-    override fun getLifecycle(): Lifecycle {
+    override val lifecycle: Lifecycle get() {
         return owner.lifecycle
     }
 
-    override fun getViewModelStore(): ViewModelStore {
+    override val viewModelStore: ViewModelStore get() {
         return owner.viewModelStore
     }
 
-    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory get() {
         return owner.defaultViewModelProviderFactory
     }
 
-    override fun getDefaultViewModelCreationExtras(): CreationExtras {
+    override val defaultViewModelCreationExtras: CreationExtras get() {
         return owner.defaultViewModelCreationExtras
     }
 

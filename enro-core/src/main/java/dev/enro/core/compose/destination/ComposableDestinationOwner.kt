@@ -72,19 +72,19 @@ internal class ComposableDestinationOwner(
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
     }
 
-    override fun getLifecycle(): Lifecycle {
+    override val lifecycle: Lifecycle get() {
         return lifecycleRegistry
     }
 
-    override fun getViewModelStore(): ViewModelStore {
+    override val viewModelStore: ViewModelStore get() {
         return viewModelStoreOwner.viewModelStore
     }
 
-    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory get() {
         return viewModelStoreOwner.defaultViewModelProviderFactory
     }
 
-    override fun getDefaultViewModelCreationExtras(): CreationExtras {
+    override val defaultViewModelCreationExtras: CreationExtras get() {
         return viewModelStoreOwner.defaultViewModelCreationExtras
     }
 

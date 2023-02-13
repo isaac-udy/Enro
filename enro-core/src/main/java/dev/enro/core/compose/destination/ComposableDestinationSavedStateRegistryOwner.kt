@@ -41,7 +41,7 @@ internal class ComposableDestinationSavedStateRegistryOwner(
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateController.savedStateRegistry
 
-    override fun getLifecycle(): Lifecycle {
+    override val lifecycle: Lifecycle get() {
         return owner.lifecycle
     }
 }

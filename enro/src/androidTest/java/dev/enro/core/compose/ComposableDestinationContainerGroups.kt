@@ -173,6 +173,7 @@ internal fun ContainerGroupsRootScreen() {
         secondTab,
         thirdTab
     )
+
     Scaffold(
         bottomBar = {
             BottomNavigation {

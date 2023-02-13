@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId "dev.enro.example.modularised"
         minSdkVersion 21
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
