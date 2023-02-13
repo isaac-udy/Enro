@@ -76,7 +76,7 @@ public class FragmentNavigationContainer internal constructor(
                 .consumeRestoredStateForKey(key.name + ".ownedFragments")
                 ?.getStringArrayList("${key.name}.ownedFragments")
                 ?.let { ownedFragments.addAll(it) }
-
+            onBackstackUpdated(NavigationBackstackTransition(backstack to backstack))
         }
         if (!savedStateRegistry.isRestored) {
             parentContext.lifecycleOwner.lifecycleScope.launchWhenCreated {
