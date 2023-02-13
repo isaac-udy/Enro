@@ -52,7 +52,9 @@ public class ComposableNavigationContainer internal constructor(
 
     override val isVisible: Boolean
         get() = true
-    override var currentAnimations: NavigationAnimation = DefaultAnimations.none
+
+    override var currentAnimations: NavigationAnimation by mutableStateOf(DefaultAnimations.none)
+        private set
 
 
     // When we've got a NavigationHost wrapping this ComposableNavigationContainer,

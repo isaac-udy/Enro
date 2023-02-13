@@ -47,14 +47,6 @@ internal object HiltInstructionInterceptor : NavigationInstructionInterceptor {
             )
         }
 
-        if(navigationKey is OpenComposableDialogInFragment && isHiltActivity) {
-            return instruction.internal.copy(
-                navigationKey = OpenComposableDialogInHiltFragment(
-                    instruction = navigationKey.instruction,
-                )
-            )
-        }
-
         if(navigationKey is OpenPresentableFragmentInFragment && isHiltActivity) {
             return instruction.internal.copy(
                 navigationKey = OpenPresentableFragmentInHiltFragment(

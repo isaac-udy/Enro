@@ -12,7 +12,6 @@ internal val hostComponent = createNavigationComponent {
 
     binding(createActivityNavigationBinding<OpenInstructionInActivity, ActivityHostForAnyInstruction>())
     binding(createFragmentNavigationBinding<OpenComposableInFragment, FragmentHostForComposable>())
-    binding(createFragmentNavigationBinding<OpenComposableDialogInFragment, FragmentHostForComposableDialog>())
     binding(createFragmentNavigationBinding<OpenPresentableFragmentInFragment, FragmentHostForPresentableFragment>())
 
     // These Hilt based navigation bindings will fail to be created if Hilt is not on the class path,
@@ -23,10 +22,6 @@ internal val hostComponent = createNavigationComponent {
 
     runCatching {
         binding(createFragmentNavigationBinding<OpenComposableInHiltFragment, HiltFragmentHostForComposable>())
-    }
-
-    runCatching {
-        binding(createFragmentNavigationBinding<OpenComposableDialogInHiltFragment, HiltFragmentHostForComposableDialog>())
     }
 
     runCatching {
