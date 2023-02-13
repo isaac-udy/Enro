@@ -65,6 +65,8 @@ public class FragmentNavigationContainer internal constructor(
             }
         }, false)
 
+        setOrLoadInitialBackstack(initialBackstack)
+
         val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
         savedStateRegistry.unregisterSavedStateProvider(key.name + ".ownedFragments")
         savedStateRegistry.registerSavedStateProvider(key.name + ".ownedFragments") {
@@ -83,7 +85,6 @@ public class FragmentNavigationContainer internal constructor(
                 initialise()
             }
         } else initialise()
-        setOrLoadInitialBackstack(initialBackstack)
     }
 
     override fun onBackstackUpdated(
