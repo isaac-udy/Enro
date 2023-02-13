@@ -81,8 +81,8 @@ dependencyResolutionManagement {
             library("testing-archunit", "com.tngtech.archunit:archunit:1.0.0")
 
             library("processing-jsr250", "javax.annotation:jsr250-api:1.0")
-            library("processing-incremental", "net.ltgt.gradle.incap:incap:0.3")
-            library("processing-incrementalProcessor", "net.ltgt.gradle.incap:incap-processor:0.3")
+            library("processing-incremental", "net.ltgt.gradle.incap:incap:1.0.0")
+            library("processing-incrementalProcessor", "net.ltgt.gradle.incap:incap-processor:1.0.0")
             library("processing-autoService", "com.google.auto.service:auto-service:1.0.1")
             library("processing-javaPoet", "com.squareup:javapoet:1.13.0")
 
