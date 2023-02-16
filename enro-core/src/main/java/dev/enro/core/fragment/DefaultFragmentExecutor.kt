@@ -40,6 +40,12 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
             return
         }
 
+        if(fromContext is ActivityContext && isReplace) {
+            openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
+            fromContext.activity.finish()
+            return
+        }
+
         when (instruction.navigationDirection) {
             NavigationDirection.ReplaceRoot -> {
                 openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
@@ -47,9 +53,10 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
             NavigationDirection.Present,
             NavigationDirection.Push -> {
                 val containerManager = args.fromContext.containerManager
+
                 val host = containerManager.activeContainer?.takeIf {
                     it.isVisible && it.accept(instruction)
-                } ?: args.fromContext.containerManager.containers
+                } ?: containerManager.containers
                         .filter { it.isVisible }
                         .firstOrNull { it.accept(instruction) }
 
@@ -83,12 +90,7 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
                         if(isReplace) {
                             fromContext.getNavigationHandle().close()
                         }
-                    }
-                    else if(fromContext is ActivityContext && isReplace) {
-                        openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
-                        fromContext.activity.finish()
-                    }
-                    else {
+                    } else {
                         open(
                             ExecutorArgs(
                                 fromContext = parentContext,
@@ -101,22 +103,12 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
                     return
                 }
 
-                if(fromContext is ActivityContext && isReplace) {
-                    openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
-                    fromContext.activity.finish()
-                }
-
                 EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
-                host.setBackstack(
-                    host.backstackFlow.value
-                        .let {
-                            if(isReplace) it.close() else it
-                        }
-                        .plus(
-                            instruction
-                        )
-                        .toBackstack()
-                )
+                host.setBackstack { backstack ->
+                    backstack
+                        .let { if (isReplace) it.pop() else it }
+                        .plus(instruction)
+                }
             }
             else -> throw IllegalStateException()
         }

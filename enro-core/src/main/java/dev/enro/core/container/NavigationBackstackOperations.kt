@@ -1,6 +1,8 @@
 package dev.enro.core.container
 
 import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
 
 public fun NavigationContainer.setBackstack(
     block: (NavigationBackstack) -> List<AnyOpenInstruction>
@@ -8,29 +10,31 @@ public fun NavigationContainer.setBackstack(
     setBackstack(block(backstack).toBackstack())
 }
 
-internal fun merge(
-    oldBackstack: List<AnyOpenInstruction>,
-    newBackstack: List<AnyOpenInstruction>,
-): List<AnyOpenInstruction> {
-    val results = mutableMapOf<Int, MutableList<AnyOpenInstruction>>()
-    val indexes = mutableMapOf<AnyOpenInstruction, Int>()
-    newBackstack.forEachIndexed { index, it ->
-        results[index] = mutableListOf(it)
-        indexes[it] = index
-    }
-    results[-1] = mutableListOf()
+public fun NavigationBackstack.close(matching: (NavigationKey) -> Boolean): NavigationBackstack {
+    val instruction = lastOrNull {
+        matching(it.navigationKey)
+    } ?: return this
 
-    var oldIndex = -1
-    oldBackstack.forEach { oldItem ->
-        oldIndex = maxOf(indexes[oldItem] ?: -1, oldIndex)
-        results[oldIndex].let {
-            if(it == null) return@let
-            if(it.firstOrNull() == oldItem) return@let
-            it.add(oldItem)
-        }
-    }
+    return close(instruction.instructionId)
+}
 
-    return results.entries
-        .sortedBy { it.key }
-        .flatMap { it.value }
+public fun NavigationBackstack.close(id: String): NavigationBackstack {
+    val index = indexOfLast {
+        it.instructionId == id
+    }
+    if (index < 0) return this
+    val exiting = get(index)
+    return minus(exiting).toBackstack()
+}
+
+public fun NavigationBackstack.pop(): NavigationBackstack {
+    return dropLast(1).toBackstack()
+}
+
+public fun NavigationBackstack.push(key: NavigationKey.SupportsPush): NavigationBackstack {
+    return plus(NavigationInstruction.Push(key)).toBackstack()
+}
+
+public fun NavigationBackstack.present(key: NavigationKey.SupportsPresent): NavigationBackstack {
+    return plus(NavigationInstruction.Present(key)).toBackstack()
 }

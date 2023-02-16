@@ -3,7 +3,6 @@ package dev.enro.core.compose
 import android.app.Activity
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import dev.enro.core.*
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogDestination
@@ -36,13 +35,18 @@ public object DefaultComposableExecutor :
             else -> args.instruction
         }
 
+        if(fromContext is ActivityContext && isReplace) {
+            openComposableAsActivity(fromContext, NavigationDirection.Present, instruction)
+            fromContext.activity.finish()
+            return
+        }
+
         when (instruction.navigationDirection) {
             NavigationDirection.ReplaceRoot -> {
                 openComposableAsActivity(args.fromContext, NavigationDirection.ReplaceRoot, instruction)
             }
             NavigationDirection.Present,
-            NavigationDirection.Push  -> {
-
+            NavigationDirection.Push -> {
                 val containerManager = args.fromContext.containerManager
 
                 val host = containerManager.activeContainer?.takeIf {
@@ -52,21 +56,33 @@ public object DefaultComposableExecutor :
                         .firstOrNull { it.accept(instruction) }
 
                 if (host == null) {
-                    val parentContext = args.fromContext.parentContext()
-                    if (parentContext == null) {
-                        if (fromContext.activity is FragmentActivity) {
-                            openComposableAsFragment(
-                                args.fromContext,
-                                instruction
-                            )
-                        } else {
+                    val parentContext = fromContext.parentContext()
+                    if(parentContext == null) {
+                        EnroException.MissingContainerForPushInstruction.logForStrictMode(
+                            fromContext.controller,
+                            args
+                        )
+
+                        if(instruction.navigationDirection == NavigationDirection.Present) {
                             openComposableAsActivity(
-                                args.fromContext,
+                                fromContext,
                                 NavigationDirection.Present,
                                 instruction
                             )
                         }
-                        if (isReplace) {
+                        else {
+                            open(
+                                ExecutorArgs(
+                                    fromContext = fromContext,
+                                    binding = args.binding,
+                                    key = args.key,
+                                    instruction = args.instruction.internal.copy(
+                                        navigationDirection = NavigationDirection.Present
+                                    )
+                                )
+                            )
+                        }
+                        if(isReplace) {
                             fromContext.getNavigationHandle().close()
                         }
                     } else {
@@ -82,17 +98,11 @@ public object DefaultComposableExecutor :
                     return
                 }
 
-                EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(
-                    fromContext.controller,
-                    args
-                )
+                EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
                 host.setBackstack { backstack ->
                     backstack
-                        .let {
-                            if (isReplace) it.dropLast(1) else it
-                        }
+                        .let { if (isReplace) it.pop() else it }
                         .plus(instruction)
-                        .toBackstack()
                 }
             }
             else -> throw IllegalStateException()
