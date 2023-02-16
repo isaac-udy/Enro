@@ -58,7 +58,7 @@ jobs:
             touch ~/appemulator.log                    # create log file
             chmod 777 ~/appemulator.log                # allow writing to log file
             adb logcat >> ~/appemulator.log &          # pipe all logcat messages into log file as a background process
-            ./gradlew :enro:connectedCheck :enro:testDebugUnitTest :enro:hilt-test:connectedCheck :modularised-example:app:testDebugUnitTest
+            ./gradlew :enro:connectedCheck :enro:testDebugUnitTest :enro:hilt-test:connectedCheck
 
       - name: Upload Failing Test Report Log
         if: steps.testing.outcome != 'success'        # upload the generated log on failure of the tests job

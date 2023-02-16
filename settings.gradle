@@ -2,16 +2,6 @@ enableFeaturePreview("VERSION_CATALOGS")
 
 rootProject.name = "Enro"
 include ':example'
-include ':modularised-example:feature:dashboard'
-include ':modularised-example:feature:detail'
-include ':modularised-example:feature:list'
-include ':modularised-example:feature:login'
-include ':modularised-example:feature:masterdetail'
-include ':modularised-example:feature:multistack'
-include ':modularised-example:feature:search'
-include ':modularised-example:feature:user'
-include ':modularised-example:app'
-include ':modularised-example:core'
 include ':enro-processor'
 include ':enro-annotations'
 include ':enro-test'

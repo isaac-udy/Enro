@@ -80,8 +80,6 @@ val features = listOf(
                 Enro was built with multi-module support as a key consideration. 
 
                 To support navigation between Fragments and Activities that don't know about each other, simply define your NavigationKeys in a shared module. Enro's annotation processor takes care of the rest!
-                
-                For an example of this, look in the 'modularised-example' module in the Enro repository. 
             """.trimIndent()
         )
     ),
