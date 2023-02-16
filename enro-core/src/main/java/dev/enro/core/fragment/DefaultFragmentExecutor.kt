@@ -33,12 +33,6 @@ public object DefaultFragmentExecutor : NavigationExecutor<Any, Fragment, Naviga
             }
             else -> args.instruction
         }
-        val fragmentActivity = fromContext.activity
-        if (fragmentActivity !is FragmentActivity) {
-            EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
-            openFragmentAsActivity(fromContext, instruction.navigationDirection, instruction)
-            return
-        }
 
         if(fromContext is ActivityContext && isReplace) {
             openFragmentAsActivity(fromContext, NavigationDirection.Present, instruction)
