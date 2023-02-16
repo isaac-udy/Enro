@@ -11,33 +11,71 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.parentContainer
+import dev.enro.example.*
 import dev.enro.example.R
-import dev.enro.example.data.toSentenceId
+import dev.enro.example.data.sentenceId
+import dev.enro.viewmodel.navigationHandle
+import dev.enro.viewmodel.withNavigationHandle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+
+
+class ExampleScreenViewModel : ViewModel() {
+
+    private val mutableTicks: MutableStateFlow<Int> = MutableStateFlow(0)
+    val ticks: StateFlow<Int> = mutableTicks
+
+    private val navigation by navigationHandle<NavigationKey> { }
+
+    init {
+        viewModelScope.launch {
+            while (isActive) {
+                if (navigation.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                    mutableTicks.value = mutableTicks.value + 1
+                }
+                delay(1000)
+            }
+        }
+    }
+
+}
 
 @Composable
 fun ExampleScreenTemplate(
     title: String,
     modifier: Modifier = Modifier,
-    buttons: List<Pair<String, () -> Unit>> = emptyList()
+    buttons: List<Pair<String, AnyOpenInstruction>> = defaultNavigationButtons(),
+    overflow: List<Pair<String, AnyOpenInstruction>> = defaultNavigationOverflow(),
 ) {
     val scrollState = rememberScrollState()
+    val viewModel = viewModel<ExampleScreenViewModel>(factory = ViewModelProvider.NewInstanceFactory().withNavigationHandle())
     val navigation = navigationHandle()
     val backstack by parentContainer?.backstackFlow?.collectAsState() ?: mutableStateOf(null)
-
     var backstackItems by remember { mutableStateOf(listOf<String>()) }
-    navigation.instruction.additionalData.putString("example", navigation.id.toSentenceId())
+    navigation.instruction.additionalData.putString("example", navigation.sentenceId)
 
     DisposableEffect(backstack) {
         backstackItems = backstack
             .orEmpty()
             .takeWhile { it != navigation.instruction }
             .map { instruction ->
-                instruction.instructionId.toSentenceId()
+                instruction.sentenceId
             }
             .reversed()
-        onDispose {  }
+        onDispose { }
     }
 
     Surface(
@@ -49,13 +87,20 @@ fun ExampleScreenTemplate(
                 .verticalScroll(scrollState)
                 .padding(start = 16.dp, end = 16.dp, bottom = 8.dp, top = 8.dp)
         ) {
-            Column(
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.h4,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.h4,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+
+                    val ticks by viewModel.ticks.collectAsState()
+                    Text(text = ticks.toString())
+                }
                 Text(
                     text = stringResource(R.string.example_content),
                     modifier = Modifier.padding(top = 16.dp)
@@ -66,7 +111,7 @@ fun ExampleScreenTemplate(
                     style = MaterialTheme.typography.h6
                 )
                 Text(
-                    text = navigation.instruction.instructionId.toSentenceId(),
+                    text = navigation.sentenceId,
                     modifier = Modifier.padding(top = 4.dp)
                 )
 
@@ -103,12 +148,33 @@ fun ExampleScreenTemplate(
                     OutlinedButton(
                         modifier = Modifier.padding(top = 6.dp, bottom = 6.dp),
                         onClick = {
-                            button.second()
+                            navigation.executeInstruction(button.second)
                         }) {
                         Text(button.first)
                     }
+                }
+
+                val selectNavigationInstructionState = rememberSelectNavigationInstructionState()
+                OutlinedButton(
+                    modifier = Modifier.padding(top = 6.dp, bottom = 6.dp),
+                    onClick = {
+                        selectNavigationInstructionState.show(overflow)
+                    }) {
+                    Text("Other")
                 }
             }
         }
     }
 }
+
+private fun defaultNavigationButtons(): List<Pair<String, AnyOpenInstruction>> = listOf(
+    "Push (Compose)" to NavigationInstruction.Push(ExampleComposableKey()),
+    "Push (Fragment)" to NavigationInstruction.Push(ExampleFragmentKey()),
+)
+
+private fun defaultNavigationOverflow(): List<Pair<String, AnyOpenInstruction>> = listOf(
+    "Present Bottom Sheet (Composable)" to NavigationInstruction.Present(ExampleComposableBottomSheetKey()),
+    "Present Dialog (Fragment)" to NavigationInstruction.Present(ExampleFragmentDialogKey()),
+    "Replace Root (Composable)" to NavigationInstruction.ReplaceRoot(ExampleComposableKey()),
+    "Replace Root (Fragment)" to NavigationInstruction.ReplaceRoot(ExampleFragmentKey()),
+)

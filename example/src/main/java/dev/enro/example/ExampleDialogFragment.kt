@@ -11,12 +11,12 @@ import dev.enro.example.databinding.FragmentExampleDialogBinding
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ExampleDialogKey(val number: Int = 1) : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
+class ExampleFragmentDialogKey(val number: Int = 1) : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
 
-@NavigationDestination(ExampleDialogKey::class)
+@NavigationDestination(ExampleFragmentDialogKey::class)
 class ExampleDialogFragment : DialogFragment() {
 
-    private val navigation by navigationHandle<ExampleDialogKey>()
+    private val navigation by navigationHandle<ExampleFragmentDialogKey>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,7 +31,7 @@ class ExampleDialogFragment : DialogFragment() {
             exampleDialogNumber.text = navigation.key.number.toString()
 
             exampleDialogForward.setOnClickListener {
-                navigation.forward(ExampleDialogKey(navigation.key.number + 1))
+                navigation.forward(ExampleFragmentDialogKey(navigation.key.number + 1))
             }
 
             exampleDialogReplace.setOnClickListener {

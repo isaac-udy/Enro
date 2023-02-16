@@ -16,9 +16,6 @@ class ExampleFragmentKey : NavigationKey.SupportsPresent, NavigationKey.Supports
 
 @NavigationDestination(ExampleFragmentKey::class)
 class ExampleFragment : Fragment() {
-
-    private val navigation by navigationHandle<ExampleFragmentKey>()
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -27,32 +24,7 @@ class ExampleFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 EnroExampleTheme {
-                    ExampleScreenTemplate(
-                        title = "Fragment",
-                        buttons = listOf(
-                            "Forward" to {
-                                val next = ExampleFragmentKey()
-                                navigation.forward(next)
-                            },
-                            "Forward (Compose)" to {
-                                val next = ExampleComposableKey()
-                                navigation.forward(next)
-                            },
-                            "Replace" to {
-                                val next = ExampleFragmentKey()
-                                navigation.replace(next)
-                            },
-
-                            "Replace Root" to {
-                                val next = ExampleFragmentKey()
-                                navigation.replaceRoot(next)
-                            },
-                            "Dialog" to {
-                                val next = ExampleFragmentKey()
-                                navigation.present(ExampleDialogKey())
-                            },
-                        )
-                    )
+                    ExampleScreenTemplate("Fragment")
                 }
             }
         }

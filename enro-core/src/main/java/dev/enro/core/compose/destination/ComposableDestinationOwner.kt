@@ -136,14 +136,17 @@ internal class ComposableDestinationOwner(
     private fun RegisterComposableLifecycleState(
         backstackState: List<AnyOpenInstruction>,
     ) {
-        DisposableEffect(backstackState) {
+        val parentLifecycle = parentContainer.parentContext.lifecycleOwner.rememberLifecycleState()
+        DisposableEffect(backstackState, parentLifecycle) {
             val isActive = backstackState.lastOrNull() == instruction
             val isInBackstack = backstackState.contains(instruction)
-            when {
-                isActive -> lifecycleRegistry.currentState = Lifecycle.State.RESUMED
-                isInBackstack -> lifecycleRegistry.currentState = Lifecycle.State.STARTED
-                else -> {}
+            val targetLifecycle = when {
+                isActive -> Lifecycle.State.RESUMED
+                isInBackstack -> Lifecycle.State.STARTED
+                else -> lifecycle.currentState
             }
+
+            lifecycleRegistry.currentState = minOf(parentLifecycle, targetLifecycle)
 
             onDispose {
                 when {

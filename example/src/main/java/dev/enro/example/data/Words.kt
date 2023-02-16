@@ -1,9 +1,13 @@
 package dev.enro.example.data
 
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationHandle
 import kotlin.math.absoluteValue
 
-fun String.toSentenceId(): String {
-    val hashCode = hashCode()
+val NavigationHandle.sentenceId: String get() = instruction.sentenceId
+
+val AnyOpenInstruction.sentenceId: String get() {
+    val hashCode = instructionId.hashCode()
     val adverb = Words.adverbs[hashCode.absoluteValue % Words.adverbs.size]
     val adjective = Words.adjectives[(hashCode.absoluteValue * 3).absoluteValue % Words.adjectives.size]
     val noun = Words.nouns[(hashCode.absoluteValue * 5).absoluteValue % Words.nouns.size]

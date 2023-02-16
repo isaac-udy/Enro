@@ -26,14 +26,14 @@ class ExampleApplication : Application(), NavigationApplication {
             }
         }
 
-        override<ExampleComposableDestination, ExampleComposableDestination> {
-            animation {
-                open
-            }
-            closeAnimation {
-                close
-            }
-        }
+//        override<ExampleComposableScreenDestination, ExampleComposableDestination> {
+//            animation {
+//                open
+//            }
+//            closeAnimation {
+//                close
+//            }
+//        }
         composeEnvironment { content ->
             EnroExampleTheme(content)
         }
