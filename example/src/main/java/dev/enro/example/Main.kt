@@ -1,7 +1,8 @@
 package dev.enro.example
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,7 +26,7 @@ class MainKey : NavigationKey.SupportsPresent
 
 @AndroidEntryPoint
 @NavigationDestination(MainKey::class)
-class MainActivity : AppCompatActivity() {
+class MainActivity : FragmentActivity() {
 
     private val homeContainer by navigationContainer(
         containerId = R.id.homeContainer,
@@ -58,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     private val navigation by navigationHandle<MainKey>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

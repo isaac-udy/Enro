@@ -53,6 +53,7 @@ dependencies {
 
     implementation deps.kotlin.stdLib
     implementation deps.androidx.core
+    implementation deps.androidx.splashscreen
     implementation deps.androidx.appcompat
     implementation deps.androidx.lifecycle
     implementation deps.androidx.constraintlayout

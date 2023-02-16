@@ -2,7 +2,7 @@ package dev.enro.core.hosts
 
 import android.os.Bundle
 import android.widget.FrameLayout
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
@@ -27,7 +27,7 @@ internal data class OpenInstructionInHiltActivity(
     override val instruction: AnyOpenInstruction
 ) : AbstractOpenInstructionInActivityKey()
 
-internal abstract class AbstractActivityHostForAnyInstruction : AppCompatActivity(), NavigationHost {
+internal abstract class AbstractActivityHostForAnyInstruction : FragmentActivity(), NavigationHost {
 
     private val container by navigationContainer(
         containerId = R.id.enro_internal_single_fragment_frame_layout,

@@ -19,6 +19,7 @@ dependencyResolutionManagement {
             library("androidx-constraintlayout", "androidx.constraintlayout:constraintlayout:2.1.4")
             library("androidx-fragment", "androidx.fragment:fragment-ktx:1.5.5")
             library("androidx-recyclerview", "androidx.recyclerview:recyclerview:1.2.1")
+            library("androidx-splashscreen", "androidx.core:core-splashscreen:1.0.0")
 
             // Used for interoperability testing in the main Enro test suite
             library("androidx-navigation-fragment", "androidx.navigation:navigation-fragment-ktx:2.5.2")
