@@ -6,8 +6,7 @@ import dev.enro.core.NavigationExecutor
 import dev.enro.core.NavigationKey
 import dev.enro.core.activity.DefaultActivityExecutor
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.DefaultComposableExecutor
-import dev.enro.core.fragment.DefaultFragmentExecutor
+import dev.enro.core.container.DefaultContainerExecutor
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
 import dev.enro.core.synthetic.SyntheticDestination
 import kotlin.reflect.KClass
@@ -22,8 +21,8 @@ internal class ExecutorRepository(
 
     init {
         executors[Any::class to Activity::class] = DefaultActivityExecutor
-        executors[Any::class to Fragment::class] = DefaultFragmentExecutor
-        executors[Any::class to ComposableDestination::class] = DefaultComposableExecutor
+        executors[Any::class to Fragment::class] = DefaultContainerExecutor
+        executors[Any::class to ComposableDestination::class] = DefaultContainerExecutor
         executors[Any::class to SyntheticDestination::class] = DefaultSyntheticExecutor
     }
 

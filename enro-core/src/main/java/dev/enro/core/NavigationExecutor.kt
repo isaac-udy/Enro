@@ -5,8 +5,7 @@ import androidx.fragment.app.Fragment
 import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.activity.DefaultActivityExecutor
 import dev.enro.core.compose.ComposableNavigationBinding
-import dev.enro.core.compose.DefaultComposableExecutor
-import dev.enro.core.fragment.DefaultFragmentExecutor
+import dev.enro.core.container.DefaultContainerExecutor
 import dev.enro.core.fragment.FragmentNavigationBinding
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
 import dev.enro.core.synthetic.SyntheticNavigationBinding
@@ -90,13 +89,13 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
                 DefaultActivityExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
             is FragmentNavigationBinding ->
-                DefaultFragmentExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
+                DefaultContainerExecutor::open
+
+            is ComposableNavigationBinding ->
+                DefaultContainerExecutor::open
 
             is SyntheticNavigationBinding ->
                 DefaultSyntheticExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
-
-            is ComposableNavigationBinding ->
-                DefaultComposableExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
             else -> throw IllegalArgumentException("No default launch executor found for ${opensType.java}")
         }.invoke(args)
@@ -108,17 +107,15 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
             is ActivityNavigationBinding ->
                 DefaultActivityExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
-            is FragmentNavigationBinding ->
-                DefaultFragmentExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+            is FragmentNavigationBinding -> DefaultContainerExecutor::close
 
-            is ComposableNavigationBinding ->
-                DefaultComposableExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+            is ComposableNavigationBinding -> DefaultContainerExecutor::close
 
             // Null means that we must be looking at a NoKeyNavigator, so we still want to pass back to
             // the default Activity/Fragment executor
             null -> when(context.contextReference) {
                 is Activity -> DefaultActivityExecutor::close as (NavigationContext<out OpensContext>) -> Unit
-                is Fragment -> DefaultFragmentExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+                is Fragment -> DefaultContainerExecutor::close
                 else -> throw IllegalArgumentException("No default close executor found for NoKeyNavigator with context ${context.contextReference::class.java.simpleName}")
             }
 
