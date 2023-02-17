@@ -1,7 +1,8 @@
 name: CI
 on:
   push:
-    branches: [main, activity-container-test]
+    branches:
+      - main
   pull_request:
     branches:
       - main
