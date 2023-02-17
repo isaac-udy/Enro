@@ -38,50 +38,49 @@ internal class ActivityNavigationContainer internal constructor(
     private val rootInstruction: AnyOpenInstruction
         get() = activeContext.getNavigationHandle().instruction
 
+    init {
+        setBackstack(backstackOf(rootInstruction))
+    }
+
     override fun onBackstackUpdated(transition: NavigationBackstackTransition): Boolean {
-        if (transition.activeBackstack.singleOrNull() == rootInstruction) return true
+        if (transition.activeBackstack.singleOrNull()?.instructionId == rootInstruction.instructionId) return true
         setBackstack(backstackOf(rootInstruction))
 
-        val instructionToOpen = transition.activeBackstack
-            .filter { it != rootInstruction }
-            .also {
-                require(it.size <= 1)
-            }
-            .firstOrNull()
-
-        if (instructionToOpen != null) {
-            val instructionToOpenHosted = activeContext.controller.dependencyScope.get<HostInstructionAs>().invoke<Activity>(
-                activeContext,
-                instructionToOpen
-            )
-            val binding = requireNotNull(
-                activeContext.controller.dependencyScope.get<GetNavigationBinding>()
-                    .invoke(instructionToOpenHosted)
-            )
-
-            val intent = Intent(activeContext.activity, binding.destinationType.java)
-                .addOpenInstruction(instructionToOpenHosted)
-
-            if (instructionToOpen.navigationDirection == NavigationDirection.ReplaceRoot) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            }
-
-            val activity = activeContext.activity
-            if (instructionToOpenHosted.navigationDirection == NavigationDirection.Replace) {
-                activity.finish()
-            }
-            val animations = animationsFor(activeContext, instructionToOpenHosted).asResource(activity.theme)
-
-            val options = ActivityOptionsCompat.makeCustomAnimation(activity, animations.enter, animations.exit)
-            activity.startActivity(intent, options.toBundle())
-        }
-
-        val activeInstructionIsPresent = transition.activeBackstack.contains(rootInstruction)
+        val activeInstructionIsPresent = transition.activeBackstack.any { it.instructionId == rootInstruction.instructionId }
         if (!activeInstructionIsPresent) {
             ActivityCompat.finishAfterTransition(activeContext.activity)
             val animations = animationsFor(activeContext, NavigationInstruction.Close).asResource(activeContext.activity.theme)
             activeContext.activity.overridePendingTransition(animations.enter, animations.exit)
         }
+
+        val instructionToOpen = transition.activeBackstack
+            .filter { it.instructionId != rootInstruction.instructionId }
+            .also {
+                require(it.size <= 2) { transition.activeBackstack.joinToString { it.navigationKey.toString() } }
+            }
+            .firstOrNull() ?: return true
+
+        val instructionToOpenHosted = activeContext.controller.dependencyScope.get<HostInstructionAs>().invoke<Activity>(
+            activeContext,
+            instructionToOpen
+        )
+        val binding = requireNotNull(
+            activeContext.controller.dependencyScope.get<GetNavigationBinding>()
+                .invoke(instructionToOpenHosted)
+        )
+
+        val intent = Intent(activeContext.activity, binding.destinationType.java)
+            .addOpenInstruction(instructionToOpenHosted)
+
+        if (instructionToOpen.navigationDirection == NavigationDirection.ReplaceRoot) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        }
+
+        val activity = activeContext.activity
+        val animations = animationsFor(activeContext, instructionToOpenHosted).asResource(activity.theme)
+
+        val options = ActivityOptionsCompat.makeCustomAnimation(activity, animations.enter, animations.exit)
+        activity.startActivity(intent, options.toBundle())
 
         return true
     }

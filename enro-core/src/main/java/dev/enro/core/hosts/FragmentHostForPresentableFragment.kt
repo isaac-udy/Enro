@@ -7,9 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
 import android.widget.FrameLayout
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
+import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.fragment.container.navigationContainer
@@ -95,17 +98,32 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
         outState.putBoolean(IS_DISMISSED_KEY, isDismissed)
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     override fun dismiss() {
         val fragment =
             childFragmentManager.findFragmentById(R.id.enro_internal_single_fragment_frame_layout)
                 ?: return super.dismiss()
 
         isDismissed = true
+
         val animations = animationsFor(fragment.navigationContext, NavigationInstruction.Close)
             .asResource(fragment.requireActivity().theme)
         val animationDuration = fragment.requireView().animate(
             animOrAnimator = if (fragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_exit_animation else animations.exit
         )
+        if(fragment is NavigationHost) {
+            when(
+                val activeContextReference = fragment
+                    .containerManager
+                    .activeContainer
+                    ?.activeContext
+                    ?.contextReference
+            ) {
+                is DialogDestination -> activeContextReference.dialogConfiguration.isDismissed.value = true
+                is BottomSheetDestination -> activeContextReference.bottomSheetConfiguration.isDismissed.value = true
+                else -> {}
+            }
+        }
 
         val delay = maxOf(0, animationDuration - 16)
         requireView()
@@ -127,7 +145,7 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
 
     private companion object {
         private val IS_DISMISSED_KEY =
-            "AbstractFragmentHostForPresentableFragment,IS_DISMISSED_SAVED_STATE"
+            "AbstractFragmentHostForPresentableFragment.IS_DISMISSED_SAVED_STATE"
     }
 }
 

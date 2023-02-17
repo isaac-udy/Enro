@@ -79,7 +79,7 @@ public interface DialogDestination {
 }
 
 public val DialogDestination.isDismissed: Boolean
-    @Composable get() = dialogConfiguration.isDismissed.value
+    get() = dialogConfiguration.isDismissed.value
 
 @SuppressLint("ComposableNaming")
 @Composable

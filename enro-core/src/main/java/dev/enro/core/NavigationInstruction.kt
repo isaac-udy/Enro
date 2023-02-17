@@ -48,6 +48,14 @@ public sealed class NavigationInstruction {
 
         internal val internal by lazy { this as OpenInternal<NavigationDirection> }
 
+        @Suppress("UNCHECKED_CAST")
+        public fun copy(
+            instructionId: String = this.instructionId
+        ) : Open<T> = internal.copy(
+            navigationDirection = navigationDirection,
+            instructionId = instructionId
+        ) as Open<T>
+
         @Stable
         @Immutable
         @Parcelize
@@ -72,10 +80,7 @@ public sealed class NavigationInstruction {
                 if (navigationDirection != other.navigationDirection) return false
                 if (navigationKey != other.navigationKey) return false
                 if (children != other.children) return false
-                if (additionalData != other.additionalData) return false
                 if (instructionId != other.instructionId) return false
-                if (previouslyActiveContainer != other.previouslyActiveContainer) return false
-                if (openedById != other.openedById) return false
                 if (resultId != other.resultId) return false
 
                 return true
@@ -85,10 +90,7 @@ public sealed class NavigationInstruction {
                 var result = navigationDirection.hashCode()
                 result = 31 * result + navigationKey.hashCode()
                 result = 31 * result + children.hashCode()
-                result = 31 * result + additionalData.hashCode()
                 result = 31 * result + instructionId.hashCode()
-                result = 31 * result + (previouslyActiveContainer?.hashCode() ?: 0)
-                result = 31 * result + (openedById?.hashCode() ?: 0)
                 result = 31 * result + (resultId?.hashCode() ?: 0)
                 return result
             }

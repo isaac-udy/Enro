@@ -48,6 +48,10 @@ public interface BottomSheetDestination {
     public val bottomSheetConfiguration: BottomSheetConfiguration
 }
 
+@OptIn(ExperimentalMaterialApi::class)
+public val BottomSheetDestination.isDismissed: Boolean
+    get() = bottomSheetConfiguration.isDismissed.value
+
 @ExperimentalMaterialApi
 public val BottomSheetDestination.bottomSheetState: ModalBottomSheetState get() = bottomSheetConfiguration.bottomSheetState
 

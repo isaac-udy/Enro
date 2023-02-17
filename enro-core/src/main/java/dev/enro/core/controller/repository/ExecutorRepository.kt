@@ -4,7 +4,6 @@ import android.app.Activity
 import androidx.fragment.app.Fragment
 import dev.enro.core.NavigationExecutor
 import dev.enro.core.NavigationKey
-import dev.enro.core.activity.DefaultActivityExecutor
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.DefaultContainerExecutor
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
@@ -20,7 +19,7 @@ internal class ExecutorRepository(
         mutableMapOf<Pair<KClass<out Any>, KClass<out Any>>, NavigationExecutor<*, *, *>>()
 
     init {
-        executors[Any::class to Activity::class] = DefaultActivityExecutor
+        executors[Any::class to Activity::class] = DefaultContainerExecutor
         executors[Any::class to Fragment::class] = DefaultContainerExecutor
         executors[Any::class to ComposableDestination::class] = DefaultContainerExecutor
         executors[Any::class to SyntheticDestination::class] = DefaultSyntheticExecutor

@@ -1,6 +1,7 @@
 package dev.enro.core.container
 
 import android.app.Activity
+import androidx.activity.ComponentActivity
 import dev.enro.core.*
 import dev.enro.core.activity.ActivityNavigationContainer
 import dev.enro.core.compatability.earlyExitForFragments
@@ -36,7 +37,10 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
                     .filter { it.isVisible }
                     .firstOrNull { it.accept(instruction) }
                     .let {
-                        val useActivityContainer = it == null && fromContext.parentContext() == null
+                        val useActivityContainer = it == null &&
+                                fromContext.parentContext() == null &&
+                                instruction.navigationDirection != NavigationDirection.Push
+
                         when {
                             useActivityContainer -> ActivityNavigationContainer(fromContext.activity.navigationContext)
                             else -> it
@@ -99,12 +103,17 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
     override fun close(context: NavigationContext<out Any>) {
         if (handleCloseWithNoContainer(context)) return
 
-        val container = context.parentContainer() ?: return
-        container.setBackstack(
-            container.backstackFlow.value.close(
+        val container = context.parentContainer()
+            ?: (context.contextReference as? ComponentActivity)?.let {
+                ActivityNavigationContainer(context as NavigationContext<ComponentActivity>)
+            }
+            ?: return
+
+        container.setBackstack {
+            it.close(
                 context.getNavigationHandle().id
             )
-        )
+        }
     }
 }
 

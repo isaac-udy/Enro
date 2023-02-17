@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.compose.navigationHandle
+import java.util.*
 
 class SelectNavigationInstructionState {
     var instructions: List<Pair<String, NavigationInstruction>> by mutableStateOf(emptyList())
@@ -61,7 +62,11 @@ fun rememberSelectNavigationInstructionState(): SelectNavigationInstructionState
                             modifier = Modifier
                                 .clickable {
                                     state.dismiss()
-                                    navigation.executeInstruction(it.second)
+                                    val instruction = when(it.second) {
+                                        is NavigationInstruction.Open<*> -> (it.second as NavigationInstruction.Open<*>).copy(UUID.randomUUID().toString())
+                                        else -> it.second
+                                    }
+                                    navigation.executeInstruction(instruction)
                                 }
                                 .fillMaxWidth()
                                 .padding(16.dp)

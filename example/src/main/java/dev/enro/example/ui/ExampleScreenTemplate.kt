@@ -70,7 +70,7 @@ fun ExampleScreenTemplate(
     DisposableEffect(backstack) {
         backstackItems = backstack
             .orEmpty()
-            .takeWhile { it != navigation.instruction }
+            .takeWhile { it.instructionId != navigation.id }
             .map { instruction ->
                 instruction.sentenceId
             }
@@ -79,7 +79,7 @@ fun ExampleScreenTemplate(
     }
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
     ) {
         Column(
             modifier = Modifier
