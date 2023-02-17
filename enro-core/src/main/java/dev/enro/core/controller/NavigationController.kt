@@ -15,6 +15,7 @@ import kotlin.reflect.KClass
 
 public class NavigationController internal constructor() {
     internal var isInTest = false
+    internal var isAnimationsDisabled = false
 
     internal var isStrictMode: Boolean = false
 

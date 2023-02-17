@@ -6,6 +6,8 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+
 jobs:
   run-ui-tests:
     name: Run Tests

@@ -18,7 +18,6 @@ import dev.enro.core.controller.usecase.forClosing
 import dev.enro.core.controller.usecase.forOpening
 import dev.enro.core.hosts.AbstractActivityHostForAnyInstruction
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
-import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
 import dev.enro.core.hosts.AbstractOpenInstructionInActivityKey
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
@@ -185,7 +184,7 @@ public fun animationsFor(
         )
     }.getOrDefault(1.0f)
 
-    if (animationScale < 0.01f) {
+    if (animationScale < 0.01f || context.controller.isAnimationsDisabled) {
         return NavigationAnimation.Resource(0, 0)
     }
 
