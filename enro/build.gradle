@@ -21,12 +21,11 @@ android {
 }
 
 emulatorwtf {
-    println("Length: ${project.properties.ewApiToken.toString().length()}")
-    println("Start: ${project.properties.ewApiToken.toString().take(4)}")
-    println("End: ${project.properties.ewApiToken.toString().takeRight(4)}")
+    println("Length: ${System.getenv().get("EW_API_TOKEN").length()}")
+    println("Start: ${System.getenv().get("EW_API_TOKEN").take(4)}")
+    println("End: ${System.getenv().get("EW_API_TOKEN").takeRight(4)}")
 
-    throw IllegalStateException()
-    token = project.properties.ewApiToken
+    token = System.getenv().get("EW_API_TOKEN")
 
     // devices to test on, Defaults to [[model: 'Pixel2', version: 27]]
     devices = [

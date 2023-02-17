@@ -23,4 +23,6 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Run tests
-        run: ./gradlew :enro:testDebugWithEmulatorWtf :enro:testDebugUnitTest -PewApiToken=${{ secrets.EW_API_TOKEN }}
+        env:
+          EW_API_TOKEN: ${{ secrets.EW_API_TOKEN }}
+        run: ./gradlew :enro:testDebugWithEmulatorWtf :enro:testDebugUnitTest
