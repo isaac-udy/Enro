@@ -14,7 +14,6 @@ import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.dialog.isDismissed
 import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
@@ -95,10 +94,6 @@ public class ComposableNavigationContainer internal constructor(
         val activeDestinations = destinationOwners
             .filter {
                 it.lifecycle.currentState != Lifecycle.State.DESTROYED
-            }
-            .filter {
-                !(it.destination is DialogDestination && it.destination.isDismissed)
-                        && !(it.destination is BottomSheetDestination && it.destination.isDismissed)
             }
             .associateBy { it.instruction }
             .toMutableMap()

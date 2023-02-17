@@ -12,6 +12,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dev.enro.core.NavigationAnimation
+import dev.enro.core.close
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.getNavigationHandle
@@ -102,17 +103,23 @@ internal fun EnroDialogContainer(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun EnroDialogContainer(
-    controller: ComposableDestination,
+    composableDestination: ComposableDestination,
     destination: DialogDestination
 ) {
     if (destination.isDismissed) return
     Dialog(
-        onDismissRequest = { controller.context.getNavigationHandle().requestClose() },
+        onDismissRequest = { composableDestination.context.getNavigationHandle().requestClose() },
         properties = DialogProperties(
             usePlatformDefaultWidth = false
         )
     ) {
-        controller.Render()
+        composableDestination.Render()
+
+        DisposableEffect(Unit) {
+            onDispose {
+                composableDestination.getNavigationHandle().close()
+            }
+        }
     }
     destination.dialogConfiguration.ConfigureWindow()
 }
