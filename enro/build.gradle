@@ -21,10 +21,6 @@ android {
 }
 
 emulatorwtf {
-    println("Length: ${System.getenv().get("EW_API_TOKEN").length()}")
-    println("Start: ${System.getenv().get("EW_API_TOKEN").take(4)}")
-    println("End: ${System.getenv().get("EW_API_TOKEN").takeRight(4)}")
-
     token = System.getenv().get("EW_API_TOKEN")
 
     // devices to test on, Defaults to [[model: 'Pixel2', version: 27]]
