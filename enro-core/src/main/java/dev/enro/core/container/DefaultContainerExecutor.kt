@@ -2,6 +2,7 @@ package dev.enro.core.container
 
 import android.app.Activity
 import dev.enro.core.*
+import dev.enro.core.activity.ActivityNavigationContainer
 import dev.enro.core.compatability.earlyExitForFragments
 import dev.enro.core.compatability.earlyExitForReplace
 import dev.enro.core.compatability.getInstructionForCompatibility
@@ -24,9 +25,7 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
         val instruction = args.getInstructionForCompatibility()
 
         when (instruction.navigationDirection) {
-            NavigationDirection.ReplaceRoot -> {
-                openInstructionAsActivity(fromContext, instruction.navigationDirection, instruction)
-            }
+            NavigationDirection.ReplaceRoot,
             NavigationDirection.Present,
             NavigationDirection.Push -> {
                 val containerManager = args.fromContext.containerManager
@@ -36,6 +35,13 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
                 } ?: containerManager.containers
                     .filter { it.isVisible }
                     .firstOrNull { it.accept(instruction) }
+                    .let {
+                        val useActivityContainer = it == null && fromContext.parentContext() == null
+                        when {
+                            useActivityContainer -> ActivityNavigationContainer(fromContext.activity.navigationContext)
+                            else -> it
+                        }
+                    }
 
                 if (host == null) {
                     val parentContext = fromContext.parentContext()

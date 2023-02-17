@@ -62,7 +62,37 @@ public sealed class NavigationInstruction {
             val openedByType: Class<out Any> = Any::class.java, // the type of context that requested this open instruction was executed
             val openedById: String? = null,
             val resultId: ResultChannelId? = null,
-        ) : Open<T>()
+        ) : Open<T>() {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+
+                other as OpenInternal<*>
+
+                if (navigationDirection != other.navigationDirection) return false
+                if (navigationKey != other.navigationKey) return false
+                if (children != other.children) return false
+                if (additionalData != other.additionalData) return false
+                if (instructionId != other.instructionId) return false
+                if (previouslyActiveContainer != other.previouslyActiveContainer) return false
+                if (openedById != other.openedById) return false
+                if (resultId != other.resultId) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                var result = navigationDirection.hashCode()
+                result = 31 * result + navigationKey.hashCode()
+                result = 31 * result + children.hashCode()
+                result = 31 * result + additionalData.hashCode()
+                result = 31 * result + instructionId.hashCode()
+                result = 31 * result + (previouslyActiveContainer?.hashCode() ?: 0)
+                result = 31 * result + (openedById?.hashCode() ?: 0)
+                result = 31 * result + (resultId?.hashCode() ?: 0)
+                return result
+            }
+        }
     }
 
     public class ContainerOperation internal constructor(
