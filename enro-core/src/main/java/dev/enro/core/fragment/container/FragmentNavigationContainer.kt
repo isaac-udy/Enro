@@ -97,6 +97,10 @@ public class FragmentNavigationContainer internal constructor(
         val toPresent = getFragmentsToPresent(backstack)
         val toDetach = getFragmentsToDetach(backstack)
         val toRemove = getFragmentsToRemove(backstack)
+            .filter {
+                if (it is DialogFragment) it.dismiss()
+                return@filter it !is DialogFragment
+            }
         (toDetach + activePushed)
             .filterNotNull()
             .forEach {
@@ -235,7 +239,7 @@ public class FragmentNavigationContainer internal constructor(
 
         val lastInstruction = lastInstruction
         currentAnimations = when {
-            shouldTakeAnimationsFromParentContainer -> parentContext.parentContainer()!!.currentAnimations
+            shouldTakeAnimationsFromParentContainer -> parentContext.parentContainer()?.currentAnimations ?: DefaultAnimations.none
             lastInstruction == null -> DefaultAnimations.none
             else -> animationsFor(
                 previouslyActiveContext ?: parentContext,

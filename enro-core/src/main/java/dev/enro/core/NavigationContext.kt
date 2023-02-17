@@ -238,8 +238,8 @@ public val parentContainer: NavigationContainer?
         val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
         return remember {
             viewModelStoreOwner
-                .navigationContext!!
-                .parentContainer()
+                .navigationContext
+                ?.parentContainer()
         }
     }
 

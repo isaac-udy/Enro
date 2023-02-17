@@ -7,6 +7,7 @@ import dev.enro.core.controller.createNavigationController
 import dev.enro.core.destinations.ComposableDestinations
 import dev.enro.core.destinations.ManuallyBoundComposableScreen
 import dev.enro.core.plugins.EnroLogger
+import dev.enro.test.EnroTest
 
 @NavigationComponent
 open class TestApplication : Application(), NavigationApplication {
@@ -15,6 +16,6 @@ open class TestApplication : Application(), NavigationApplication {
         plugin(TestPlugin)
 
         composableDestination<ComposableDestinations.ManuallyBound> { ManuallyBoundComposableScreen() }
-    }
+    }.also { EnroTest.disableAnimations(it) }
 }
 

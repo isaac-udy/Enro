@@ -6,10 +6,12 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+
 jobs:
   run-ui-tests:
     name: Run Tests
-    runs-on: macOS-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -23,50 +25,7 @@ jobs:
       - name: Setup gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: AVD cache
-        uses: actions/cache@v3
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-30
-
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 30
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: echo "Generated AVD snapshot for caching"
-
-      - name: Run Enro Tests
-        uses: reactivecircus/android-emulator-runner@v2
-        id: testing
-        continue-on-error: true
-        with:
-          api-level: 30
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: |
-            adb logcat -c                             # clear logs
-            touch ~/appemulator.log                    # create log file
-            chmod 777 ~/appemulator.log                # allow writing to log file
-            adb logcat >> ~/appemulator.log &          # pipe all logcat messages into log file as a background process
-            ./gradlew :enro:connectedCheck :enro:testDebugUnitTest :enro:hilt-test:connectedCheck
-
-      - name: Upload Failing Test Report Log
-        if: steps.testing.outcome != 'success'        # upload the generated log on failure of the tests job
-        uses: actions/upload-artifact@v2
-        with:
-          name: logs
-          path: ~/appemulator.log # path to where the log is
-
-      - name: Fail for Test
-        if: steps.testing.outcome != 'success'
-        run: exit 1
+      - name: Run tests
+        env:
+          EW_API_TOKEN: ${{ secrets.EW_API_TOKEN }}
+        run: ./gradlew :enro:testDebugWithEmulatorWtf :enro:testDebugUnitTest

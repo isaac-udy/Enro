@@ -199,7 +199,7 @@ fun waitFor(block: () -> Boolean) {
 
     while(true) {
         if(block()) return
-        Thread.sleep(33)
+        Thread.sleep(16)
         if(System.currentTimeMillis() - startTime > maximumTime) throw IllegalStateException("Took too long waiting")
     }
 }
@@ -207,7 +207,7 @@ fun waitFor(block: () -> Boolean) {
 fun <T: Any> waitOnMain(block: () -> T?): T {
     if(isDebugging) { Thread.sleep(2000) }
 
-    val maximumTime = 7_000
+    val maximumTime = 3_000
     val startTime = System.currentTimeMillis()
     var currentResponse: T? = null
 
@@ -218,7 +218,7 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
             currentResponse = block()
         }
         currentResponse?.let { return it }
-        Thread.sleep(33)
+        Thread.sleep(16)
     }
 }
 

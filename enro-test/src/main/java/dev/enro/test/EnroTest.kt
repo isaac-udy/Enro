@@ -61,6 +61,14 @@ object EnroTest {
         return navigationController!!
     }
 
+    fun disableAnimations(controller: NavigationController) {
+        controller.isAnimationsDisabled = true
+    }
+
+    fun enableAnimations(controller: NavigationController) {
+        controller.isAnimationsDisabled = false
+    }
+
     private fun isInstrumented(): Boolean {
         runCatching {
             InstrumentationRegistry.getInstrumentation()

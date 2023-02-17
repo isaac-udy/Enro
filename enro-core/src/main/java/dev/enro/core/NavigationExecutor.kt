@@ -3,7 +3,6 @@ package dev.enro.core
 import android.app.Activity
 import androidx.fragment.app.Fragment
 import dev.enro.core.activity.ActivityNavigationBinding
-import dev.enro.core.activity.DefaultActivityExecutor
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.container.DefaultContainerExecutor
 import dev.enro.core.fragment.FragmentNavigationBinding
@@ -86,7 +85,7 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
     public fun defaultOpened(args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) {
         when (args.binding) {
             is ActivityNavigationBinding ->
-                DefaultActivityExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
+                DefaultContainerExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
 
             is FragmentNavigationBinding ->
                 DefaultContainerExecutor::open
@@ -105,7 +104,7 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
     public fun defaultClosed(context: NavigationContext<out OpensContext>) {
         when (context.binding) {
             is ActivityNavigationBinding ->
-                DefaultActivityExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+                DefaultContainerExecutor::close as (NavigationContext<out OpensContext>) -> Unit
 
             is FragmentNavigationBinding -> DefaultContainerExecutor::close
 
@@ -114,7 +113,7 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
             // Null means that we must be looking at a NoKeyNavigator, so we still want to pass back to
             // the default Activity/Fragment executor
             null -> when(context.contextReference) {
-                is Activity -> DefaultActivityExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+                is Activity -> DefaultContainerExecutor::close as (NavigationContext<out OpensContext>) -> Unit
                 is Fragment -> DefaultContainerExecutor::close
                 else -> throw IllegalArgumentException("No default close executor found for NoKeyNavigator with context ${context.contextReference::class.java.simpleName}")
             }

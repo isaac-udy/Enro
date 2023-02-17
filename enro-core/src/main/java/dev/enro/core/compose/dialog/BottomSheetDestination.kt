@@ -11,10 +11,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.enro.core.DefaultAnimations
+import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.getNavigationHandle
-import dev.enro.core.requestClose
 
 @ExperimentalMaterialApi
 public class BottomSheetConfiguration : DialogConfiguration() {
@@ -47,6 +45,10 @@ public class BottomSheetConfiguration : DialogConfiguration() {
 public interface BottomSheetDestination {
     public val bottomSheetConfiguration: BottomSheetConfiguration
 }
+
+@OptIn(ExperimentalMaterialApi::class)
+public val BottomSheetDestination.isDismissed: Boolean
+    get() = bottomSheetConfiguration.isDismissed.value
 
 @ExperimentalMaterialApi
 public val BottomSheetDestination.bottomSheetState: ModalBottomSheetState get() = bottomSheetConfiguration.bottomSheetState
@@ -109,6 +111,7 @@ internal fun EnroBottomSheetContainer(
     LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
         if (destination.bottomSheetConfiguration.isDismissed.value) {
             state.hide()
+            composableDestination.getNavigationHandle().close()
         }
         else {
             state.show()
