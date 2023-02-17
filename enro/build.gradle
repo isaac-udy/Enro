@@ -1,6 +1,7 @@
 androidLibrary()
 useCompose()
 apply plugin: "kotlin-kapt"
+apply plugin: "wtf.emulator.gradle"
 publishAndroidModule("dev.enro", "enro")
 
 android {
@@ -17,6 +18,19 @@ android {
     packagingOptions {
         resources.excludes.add("META-INF/*")
     }
+}
+
+emulatorwtf {
+    token = properties.ewApiToken
+
+    // devices to test on, Defaults to [[model: 'Pixel2', version: 27]]
+    devices = [
+            [model: 'NexusLowRes', version: 30, atd: true],
+            [model: 'Pixel2', version: 27],
+            [model: 'Pixel2', version: 23],
+    ]
+
+    numShards = 3
 }
 
 dependencies {
