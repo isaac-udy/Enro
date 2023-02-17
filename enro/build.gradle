@@ -21,7 +21,7 @@ android {
 }
 
 emulatorwtf {
-    token = properties.ewApiToken
+    token = project.properties.ewApiToken
 
     // devices to test on, Defaults to [[model: 'Pixel2', version: 27]]
     devices = [
