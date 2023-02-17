@@ -21,7 +21,11 @@ android {
 }
 
 emulatorwtf {
-    token = System.getenv().get("EW_API_TOKEN")
+    if(project.hasProperty("ewApiToken")) {
+        token = project.getProperties().get("ewApiToken").toString()
+    } else {
+        token = System.getenv().get("EW_API_TOKEN")
+    }
 
     // devices to test on, Defaults to [[model: 'Pixel2', version: 27]]
     devices = [
