@@ -141,7 +141,7 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
         }
 
         val delay = maxOf(0, animationDuration - 16)
-        requireView()
+        (view ?: return)
             .animate()
             .setInterpolator(AccelerateInterpolator())
             .setStartDelay(delay)
