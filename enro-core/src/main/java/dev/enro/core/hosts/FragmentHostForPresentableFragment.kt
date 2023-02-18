@@ -9,12 +9,15 @@ import android.view.animation.AccelerateInterpolator
 import android.widget.FrameLayout
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
+import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
+import dev.enro.core.container.setBackstack
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.extensions.animate
 import dev.enro.extensions.createFullscreenDialog
@@ -74,22 +77,32 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
             view.alpha = 1f
             return
         }
-        view.post {
-            view.alpha = 1f
-            val fragment =
-                childFragmentManager.findFragmentById(R.id.enro_internal_single_fragment_frame_layout)
+
+        fun animateEntry() {
+            if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
+            if (viewLifecycleOwner.lifecycle.currentState == Lifecycle.State.DESTROYED) return
+
+            val childFragmentManager = runCatching { childFragmentManager }.getOrNull()
+            if (childFragmentManager == null) {
+                view.post { animateEntry() }
+                return
+            }
+            val fragment = childFragmentManager.findFragmentById(R.id.enro_internal_single_fragment_frame_layout)
             requireNotNull(fragment)
 
             val animations = animationsFor(
                 fragment.navigationContext,
                 fragment.getNavigationHandle().instruction
-            )
-                .asResource(fragment.requireActivity().theme)
+            ).asResource(fragment.requireActivity().theme)
+            view.alpha = 1f
 
-            if (fragment is AbstractFragmentHostForComposable) return@post
+            if (fragment is AbstractFragmentHostForComposable) return
             fragment.requireView().animate(
                 animOrAnimator = animations.enter
             )
+        }
+        view.post {
+            animateEntry()
         }
     }
 
@@ -112,15 +125,17 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
             animOrAnimator = if (fragment is AbstractFragmentHostForComposable) R.anim.enro_no_op_exit_animation else animations.exit
         )
         if(fragment is NavigationHost) {
-            when(
-                val activeContextReference = fragment
-                    .containerManager
-                    .activeContainer
+            val activeContainer = fragment
+                .containerManager
+                .activeContainer
+            when (
+                val activeContextReference = activeContainer
                     ?.activeContext
                     ?.contextReference
             ) {
                 is DialogDestination -> activeContextReference.dialogConfiguration.isDismissed.value = true
                 is BottomSheetDestination -> activeContextReference.bottomSheetConfiguration.isDismissed.value = true
+                is ComposableDestination -> activeContainer.setBackstack { emptyList() }
                 else -> {}
             }
         }

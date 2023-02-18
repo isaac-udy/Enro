@@ -173,6 +173,8 @@ private fun defaultNavigationButtons(): List<Pair<String, AnyOpenInstruction>> =
 )
 
 private fun defaultNavigationOverflow(): List<Pair<String, AnyOpenInstruction>> = listOf(
+    "Present (Compose)" to NavigationInstruction.Present(ExampleComposableKey()),
+    "Present (Fragment)" to NavigationInstruction.Present(ExampleFragmentKey()),
     "Present Bottom Sheet (Composable)" to NavigationInstruction.Present(ExampleComposableBottomSheetKey()),
     "Present Dialog (Fragment)" to NavigationInstruction.Present(ExampleFragmentDialogKey()),
     "Replace Root (Composable)" to NavigationInstruction.ReplaceRoot(ExampleComposableKey()),
