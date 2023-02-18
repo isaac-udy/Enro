@@ -18,69 +18,21 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
         val fromContext = args.fromContext
         val instruction = Compatibility.DefaultContainerExecutor.getInstructionForCompatibility(args)
 
-        when (instruction.navigationDirection) {
-            NavigationDirection.ReplaceRoot,
-            NavigationDirection.Present,
-            NavigationDirection.Push -> {
-                val containerManager = args.fromContext.containerManager
+        val container = findContainerFor(fromContext, instruction)
+        if (
+            Compatibility.DefaultContainerExecutor.earlyExitForMissingContainerPush(
+                fromContext = fromContext,
+                instruction = instruction,
+                container = container,
+                findContainerFor = ::findContainerFor,
+            )
+        ) return
 
-                val host = containerManager.activeContainer?.takeIf {
-                    it.isVisible && it.accept(instruction)
-                } ?: containerManager.containers
-                    .filter { it.isVisible }
-                    .firstOrNull { it.accept(instruction) }
-                    .let {
-                        val useActivityContainer = it == null &&
-                                fromContext.parentContext() == null &&
-                                instruction.navigationDirection != NavigationDirection.Push
-
-                        when {
-                            useActivityContainer -> ActivityNavigationContainer(fromContext.activity.navigationContext)
-                            else -> it
-                        }
-                    }
-
-                if (host == null) {
-                    val parentContext = fromContext.parentContext()
-                    if (parentContext == null) {
-                        EnroException.MissingContainerForPushInstruction.logForStrictMode(
-                            fromContext.controller,
-                            args
-                        )
-                        open(
-                            ExecutorArgs(
-                                fromContext = fromContext,
-                                binding = args.binding,
-                                key = args.key,
-                                instruction = args.instruction.internal.copy(
-                                    navigationDirection = NavigationDirection.Present
-                                )
-                            )
-                        )
-                        if (isReplace) {
-                            fromContext.getNavigationHandle().close()
-                        }
-                    } else {
-                        open(
-                            ExecutorArgs(
-                                fromContext = parentContext,
-                                binding = args.binding,
-                                key = args.key,
-                                instruction = args.instruction
-                            )
-                        )
-                    }
-                    return
-                }
-
-                EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, args)
-                host.setBackstack { backstack ->
-                    backstack
-                        .let { if (isReplace) it.pop() else it }
-                        .plus(instruction)
-                }
-            }
-            else -> throw IllegalStateException()
+        requireNotNull(container)
+        container.setBackstack { backstack ->
+            backstack
+                .let { if (isReplace) it.pop() else it }
+                .plus(instruction)
         }
     }
 
@@ -98,5 +50,34 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
                 context.getNavigationHandle().id
             )
         }
+    }
+
+    private fun findContainerFor(
+        fromContext: NavigationContext<*>?,
+        instruction: AnyOpenInstruction,
+    ): NavigationContainer? {
+        if (fromContext == null) return null
+        if (instruction.navigationDirection == NavigationDirection.ReplaceRoot) {
+            return ActivityNavigationContainer(fromContext.activity.navigationContext)
+        }
+        val containerManager = fromContext.containerManager
+
+        val container = containerManager.activeContainer?.takeIf {
+            it.isVisible && it.accept(instruction)
+        } ?: containerManager.containers
+            .filter { it.isVisible }
+            .firstOrNull { it.accept(instruction) }
+            .let {
+                val useActivityContainer = it == null &&
+                        fromContext.parentContext() == null &&
+                        instruction.navigationDirection != NavigationDirection.Push
+
+                when {
+                    useActivityContainer -> ActivityNavigationContainer(fromContext.activity.navigationContext)
+                    else -> it
+                }
+            }
+
+        return container ?: findContainerFor(fromContext.parentContext, instruction)
     }
 }

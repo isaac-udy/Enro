@@ -80,10 +80,10 @@ public abstract class EnroException(
         internal companion object {
             fun logForStrictMode(
                 navigationController: NavigationController,
-                args: ExecutorArgs<*, *, *>
+                navigationKey: NavigationKey
             ) {
                 val message =
-                    "Attempted to Push to ${args.key::class.java.simpleName}, but could not find a valid container."
+                    "Attempted to Push to ${navigationKey::class.java.simpleName}, but could not find a valid container."
                 if (navigationController.isStrictMode) {
                     throw MissingContainerForPushInstruction(message)
                 } else {

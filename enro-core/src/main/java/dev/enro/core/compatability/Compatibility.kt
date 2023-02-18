@@ -1,6 +1,9 @@
 package dev.enro.core.compatability
 
 import android.app.Activity
+import android.os.Build
+import android.os.Bundle
+import android.os.Parcelable
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -9,9 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.container.asDirection
-import dev.enro.core.container.asPresentInstruction
-import dev.enro.core.container.asPushInstruction
+import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.HostInstructionAs
@@ -21,6 +22,8 @@ import kotlinx.coroutines.launch
 internal object Compatibility {
 
     object DefaultContainerExecutor {
+        private const val ORIGINAL_NAVIGATION_DIRECTION = "Compatibility.DefaultContainerExecutor.ORIGINAL_NAVIGATION_DIRECTION"
+
         fun earlyExitForFragments(args: ExecutorArgs<*, *, *>): Boolean {
             return args.fromContext is FragmentContext && !args.fromContext.fragment.isAdded
         }
@@ -37,15 +40,53 @@ internal object Compatibility {
         }
 
         internal fun getInstructionForCompatibility(args: ExecutorArgs<*, *, *>): NavigationInstruction.Open<*> {
+            EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(args.fromContext.controller, args)
             val isDialog = isDialog(args)
             return when (args.instruction.navigationDirection) {
                 is NavigationDirection.Replace,
-                is NavigationDirection.Forward -> when {
-                    isDialog -> args.instruction.asPresentInstruction()
-                    else -> args.instruction.asPushInstruction()
+                is NavigationDirection.Forward -> {
+                    when {
+                        isDialog -> args.instruction.asPresentInstruction()
+                        else -> args.instruction.asPushInstruction()
+                    }.apply {
+                        additionalData.putParcelable(ORIGINAL_NAVIGATION_DIRECTION, args.instruction.navigationDirection)
+                    }
                 }
                 else -> args.instruction
             }
+        }
+
+        internal fun earlyExitForMissingContainerPush(
+            fromContext: NavigationContext<*>,
+            instruction: AnyOpenInstruction,
+            container: NavigationContainer?,
+            findContainerFor: (NavigationContext<*>, AnyOpenInstruction) -> NavigationContainer?,
+        ): Boolean {
+            if (instruction.navigationDirection != NavigationDirection.Push) return false
+            if (container != null) return false
+
+            EnroException.MissingContainerForPushInstruction.logForStrictMode(
+                fromContext.controller,
+                instruction.navigationKey,
+            )
+            val presentInstruction = instruction.asPresentInstruction()
+            val presentContainer =
+                findContainerFor(
+                    fromContext.rootContext(),
+                    presentInstruction
+                )
+
+            val originalDirection = instruction.additionalData
+                .getParcelableCompat<NavigationDirection>(ORIGINAL_NAVIGATION_DIRECTION)
+            val isReplace = originalDirection == NavigationDirection.Replace
+
+            requireNotNull(presentContainer)
+            presentContainer.setBackstack { backstack ->
+                backstack
+                    .let { if (isReplace) it.pop() else it }
+                    .plus(presentInstruction)
+            }
+            return true
         }
 
         internal fun earlyExitForNoContainer(context: NavigationContext<*>) : Boolean {
@@ -121,4 +162,9 @@ private fun isDialog(args: ExecutorArgs<*, *, *>): Boolean {
             DialogDestination::class.java.isAssignableFrom(args.binding.destinationType.java)
             || BottomSheetDestination::class.java.isAssignableFrom(args.binding.destinationType.java)
 
+}
+
+private inline fun <reified T : Parcelable> Bundle.getParcelableCompat(key: String): T? = when {
+    Build.VERSION.SDK_INT >= 33 -> getParcelable(key, T::class.java)
+    else -> @Suppress("DEPRECATION") getParcelable(key) as? T
 }
