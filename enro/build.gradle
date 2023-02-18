@@ -34,7 +34,7 @@ emulatorwtf {
             [model: 'Pixel2', version: 23],
     ]
 
-    numShards = 3
+    numShards = 2
 }
 
 dependencies {

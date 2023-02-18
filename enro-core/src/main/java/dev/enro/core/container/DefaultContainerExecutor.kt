@@ -1,16 +1,9 @@
 package dev.enro.core.container
 
-import android.app.Activity
 import androidx.activity.ComponentActivity
 import dev.enro.core.*
 import dev.enro.core.activity.ActivityNavigationContainer
-import dev.enro.core.compatability.earlyExitForFragments
-import dev.enro.core.compatability.earlyExitForReplace
-import dev.enro.core.compatability.getInstructionForCompatibility
-import dev.enro.core.compatability.handleCloseWithNoContainer
-import dev.enro.core.controller.get
-import dev.enro.core.controller.usecase.ExecuteOpenInstruction
-import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.core.compatability.Compatibility
 
 internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, NavigationKey>(
     fromType = Any::class,
@@ -18,12 +11,12 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
     keyType = NavigationKey::class
 ) {
     override fun open(args: ExecutorArgs<out Any, out Any, out NavigationKey>) {
-        if (args.earlyExitForFragments()) return
-        if (args.earlyExitForReplace()) return
+        if (Compatibility.DefaultContainerExecutor.earlyExitForFragments(args)) return
+        if (Compatibility.DefaultContainerExecutor.earlyExitForReplace(args)) return
 
         val isReplace = args.instruction.navigationDirection == NavigationDirection.Replace
         val fromContext = args.fromContext
-        val instruction = args.getInstructionForCompatibility()
+        val instruction = Compatibility.DefaultContainerExecutor.getInstructionForCompatibility(args)
 
         when (instruction.navigationDirection) {
             NavigationDirection.ReplaceRoot,
@@ -54,25 +47,16 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
                             fromContext.controller,
                             args
                         )
-
-                        if (instruction.navigationDirection == NavigationDirection.Present) {
-                            openInstructionAsActivity(
-                                fromContext,
-                                NavigationDirection.Present,
-                                instruction
-                            )
-                        } else {
-                            open(
-                                ExecutorArgs(
-                                    fromContext = fromContext,
-                                    binding = args.binding,
-                                    key = args.key,
-                                    instruction = args.instruction.internal.copy(
-                                        navigationDirection = NavigationDirection.Present
-                                    )
+                        open(
+                            ExecutorArgs(
+                                fromContext = fromContext,
+                                binding = args.binding,
+                                key = args.key,
+                                instruction = args.instruction.internal.copy(
+                                    navigationDirection = NavigationDirection.Present
                                 )
                             )
-                        }
+                        )
                         if (isReplace) {
                             fromContext.getNavigationHandle().close()
                         }
@@ -101,7 +85,7 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
     }
 
     override fun close(context: NavigationContext<out Any>) {
-        if (handleCloseWithNoContainer(context)) return
+        if (Compatibility.DefaultContainerExecutor.earlyExitForNoContainer(context)) return
 
         val container = context.parentContainer()
             ?: (context.contextReference as? ComponentActivity)?.let {
@@ -115,21 +99,4 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
             )
         }
     }
-}
-
-private fun openInstructionAsActivity(
-    fromContext: NavigationContext<out Any>,
-    navigationDirection: NavigationDirection,
-    instruction: AnyOpenInstruction
-) {
-    val open = fromContext.controller.dependencyScope.get<ExecuteOpenInstruction>()
-    val hostInstructionAs = fromContext.controller.dependencyScope.get<HostInstructionAs>()
-
-    open.invoke(
-        fromContext,
-        hostInstructionAs<Activity>(
-            fromContext,
-            instruction.asDirection(navigationDirection)
-        ),
-    )
 }
