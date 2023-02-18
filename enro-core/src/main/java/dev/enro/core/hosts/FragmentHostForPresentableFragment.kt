@@ -80,7 +80,9 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
 
         fun animateEntry() {
             if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
-            if (viewLifecycleOwner.lifecycle.currentState == Lifecycle.State.DESTROYED) return
+            val viewLifecycleState = runCatching { viewLifecycleOwner.lifecycle.currentState }
+                .getOrNull() ?: Lifecycle.State.INITIALIZED
+            if (viewLifecycleState == Lifecycle.State.DESTROYED) return
 
             val childFragmentManager = runCatching { childFragmentManager }.getOrNull()
             if (childFragmentManager == null) {
