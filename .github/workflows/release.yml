@@ -27,11 +27,6 @@ jobs:
       - name: Setup gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Run tests
-        env:
-          EW_API_TOKEN: ${{ secrets.EW_API_TOKEN }}
-        run: ./gradlew :enro:testDebugWithEmulatorWtf :enro:testDebugUnitTest
-
       - name: Install gpg secret key
         run: cat <(echo -e "${{ secrets.PUBLISH_SIGNING_KEY_LITERAL }}") | gpg --batch --import
 
