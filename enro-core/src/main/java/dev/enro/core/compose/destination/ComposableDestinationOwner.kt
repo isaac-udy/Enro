@@ -108,8 +108,10 @@ internal class ComposableDestinationOwner(
 
         val renderDestination = remember(instruction.instructionId) {
             movableContentOf {
-                saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
-                    destination.Render()
+                ProvideCompositionLocals {
+                    saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
+                        destination.Render()
+                    }
                 }
             }
         }
@@ -129,19 +131,16 @@ internal class ComposableDestinationOwner(
             }
         }
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
-        key(instruction.instructionId) {
-            ProvideCompositionLocals {
-                if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
-                    && !transition.targetState
-                    && destination is DialogDestination
-                ) {
-                    return@ProvideCompositionLocals
-                }
-                ProvideRenderingWindow {
-                    animation.content(transition) {
-                        renderDestination()
-                        RegisterComposableLifecycleState(backstackState)
-                    }
+        ReusableContent(instruction.instructionId) {
+            if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
+                && !transition.targetState
+                && destination is DialogDestination
+            ) return@ReusableContent
+
+            ProvideRenderingWindow {
+                animation.content(transition) {
+                    renderDestination()
+                    RegisterComposableLifecycleState(backstackState)
                 }
             }
         }
