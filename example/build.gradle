@@ -51,6 +51,8 @@ dependencies {
     kapt deps.hilt.compiler
     kapt deps.hilt.androidCompiler
 
+    implementation deps.leakcanary
+
     implementation deps.kotlin.stdLib
     implementation deps.androidx.core
     implementation deps.androidx.splashscreen

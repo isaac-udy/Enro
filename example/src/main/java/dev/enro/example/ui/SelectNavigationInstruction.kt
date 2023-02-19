@@ -1,5 +1,6 @@
 package dev.enro.example.ui
 
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,9 +11,12 @@ import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.compose.navigationHandle
 import java.util.*
@@ -48,10 +52,21 @@ fun rememberSelectNavigationInstructionState(): SelectNavigationInstructionState
 
     val navigation = navigationHandle()
     if (state.isVisible) {
-        Dialog(
-            onDismissRequest = { state.dismiss() }
+        val expandedState = remember { MutableTransitionState(false) }
+        expandedState.targetState = true
+
+        Popup(
+            alignment = Alignment.Center,
+            onDismissRequest = { state.dismiss() },
+            properties = PopupProperties(
+                focusable = true
+            ),
         ) {
-            Card {
+            Card(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .shadow(16.dp)
+            ) {
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
@@ -63,7 +78,8 @@ fun rememberSelectNavigationInstructionState(): SelectNavigationInstructionState
                             Text(
                                 text = it.first,
                                 style = MaterialTheme.typography.subtitle2,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
                                     .padding(
                                         start = 16.dp,
                                         end = 16.dp,
