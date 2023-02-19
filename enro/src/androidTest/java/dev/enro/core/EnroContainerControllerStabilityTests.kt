@@ -26,6 +26,7 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.container.EmptyBehavior
 import kotlinx.parcelize.Parcelize
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Rule
@@ -34,6 +35,9 @@ import java.util.*
 
 class EnroContainerControllerStabilityTests {
 
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
+    
     @get:Rule
     val composeContentRule = createComposeRule()
 

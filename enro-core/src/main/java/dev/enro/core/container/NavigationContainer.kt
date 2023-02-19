@@ -68,6 +68,7 @@ public abstract class NavigationContainer(
 
         if (onBackstackUpdated(transition)) return@synchronized
         renderJob = parentContext.lifecycleOwner.lifecycleScope.launch {
+            parentContext.lifecycle.withCreated {}
             while (!onBackstackUpdated(transition) && isActive) {
                 delay(16)
             }

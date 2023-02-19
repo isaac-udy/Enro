@@ -8,10 +8,15 @@ import dev.enro.*
 import dev.enro.core.*
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
 class ActivityToActivityTests {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun givenDefaultActivityOpenedWithoutNavigationKeySet_thenDefaultKeyIsUsed() {

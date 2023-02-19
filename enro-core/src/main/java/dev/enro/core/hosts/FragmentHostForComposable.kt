@@ -49,6 +49,7 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        val isRoot = isRoot
         return ComposeView(requireContext()).apply {
             id = R.id.enro_internal_compose_fragment_view_id
             setContent {

@@ -18,12 +18,17 @@ import dev.enro.waitFor
 import junit.framework.TestCase.assertEquals
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
 class ComposeContainerInterceptor {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Before
     fun before() {

@@ -4,10 +4,15 @@ import android.os.Parcelable
 import dev.enro.core.destinations.*
 import junit.framework.TestCase.assertEquals
 import kotlinx.parcelize.Parcelize
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
 class ComposableDestinationPresent {
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
+
     @Test
     fun givenComposableDestination_whenExecutingPresent_andTargetIsComposableDestination_thenCorrectDestinationIsOpened() {
         val root = launchComposableRoot()

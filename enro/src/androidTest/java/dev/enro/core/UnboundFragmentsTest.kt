@@ -4,10 +4,15 @@ package dev.enro.core
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.*
+import org.junit.Rule
 import org.junit.Test
 
 class  UnboundFragmentsTest {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun whenUnboundFragmentIsOpened_thenNavigationKeyIsNoNavigationKey() {

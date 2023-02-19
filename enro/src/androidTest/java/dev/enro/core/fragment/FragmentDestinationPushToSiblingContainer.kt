@@ -3,9 +3,14 @@ package dev.enro.core.fragment
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.setActive
 import dev.enro.core.destinations.*
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 
 class FragmentDestinationPushToSiblingContainer {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun givenFragmentDestination_whenExecutingPushToSiblingContainer_andTargetIsComposableDestination_thenCorrectDestinationIsOpened() {

@@ -10,10 +10,15 @@ import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import junit.framework.TestCase.assertEquals
 import kotlinx.parcelize.Parcelize
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
 class PluginTests {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun whenActivityIsStarted_thenActivityIsActive() {

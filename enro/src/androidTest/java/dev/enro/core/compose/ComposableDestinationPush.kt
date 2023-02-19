@@ -7,11 +7,17 @@ import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.destinations.*
 import dev.enro.core.directParentContainer
 import dev.enro.expectContext
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 
 class ComposableDestinationPush {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
+
     @Test
     fun givenComposableDestination_whenExecutingPush_andTargetIsComposableDestination_thenCorrectDestinationIsOpened() {
         val root = launchComposableRoot()

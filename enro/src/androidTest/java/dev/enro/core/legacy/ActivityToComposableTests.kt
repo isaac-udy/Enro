@@ -1,7 +1,6 @@
 @file:Suppress("DEPRECATION")
 package dev.enro.core.legacy
 
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.ViewModelProvider
@@ -10,16 +9,17 @@ import dev.enro.*
 import dev.enro.core.close
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.forward
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
-private fun expectActivityHostForAnyInstruction(): FragmentActivity {
-    return expectActivity { it::class.java.simpleName == "ActivityHostForAnyInstruction" }
-}
-
 class ActivityToComposableTests {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun whenActivityOpensComposable_andActivityDoesNotHaveComposeContainer_thenComposableIsLaunchedAsComposableFragmentHost() {

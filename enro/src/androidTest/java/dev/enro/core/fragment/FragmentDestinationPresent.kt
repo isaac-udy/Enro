@@ -6,10 +6,15 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.destinations.*
 import junit.framework.TestCase
 import kotlinx.parcelize.Parcelize
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
 class FragmentDestinationPresent {
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
+
     @Test
     fun givenFragmentDestination_whenExecutingPresent_andTargetIsComposableDestination_thenCorrectDestinationIsOpened() {
         val root = launchFragmentRoot()

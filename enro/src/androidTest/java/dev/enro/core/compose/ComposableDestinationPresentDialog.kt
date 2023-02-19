@@ -1,9 +1,14 @@
 package dev.enro.core.compose
 
 import dev.enro.core.destinations.*
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 
 class ComposableDestinationPresentDialog {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun givenComposableDestination_whenExecutingPresent_andTargetIsDialog_andTargetIsComposableDestination_thenCorrectDestinationIsOpened() {

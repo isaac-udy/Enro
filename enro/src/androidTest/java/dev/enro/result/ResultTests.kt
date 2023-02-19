@@ -12,10 +12,16 @@ import dev.enro.core.getNavigationHandle
 import dev.enro.expectActivity
 import dev.enro.expectContext
 import junit.framework.Assert.*
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
 class ResultTests {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
+
     @Test
     fun whenActivityRequestsResult_andResultProviderIsStandaloneFragment_thenResultIsReceived() {
         val scenario = ActivityScenario.launch(ResultReceiverActivity::class.java)

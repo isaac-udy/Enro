@@ -10,12 +10,17 @@ import dev.enro.core.close
 import dev.enro.core.forward
 import dev.enro.core.getNavigationHandle
 import junit.framework.TestCase
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
 class FragmentToFragmentTests {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun whenFragmentOpensFragment_andFragmentIsInAHost_thenFragmentIsLaunchedIntoHost() {

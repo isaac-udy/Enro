@@ -4,10 +4,15 @@ import dev.enro.core.destinations.ComposableDestinations
 import dev.enro.core.destinations.IntoChildContainer
 import dev.enro.core.destinations.assertPushesTo
 import dev.enro.core.destinations.launchComposableRoot
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertNotEquals
+import org.junit.Rule
 import org.junit.Test
 
 class ManuallyBoundComposableTest {
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
+
     @Test
     fun givenManuallyDefinedComposable_whenComposableIsAsRootOfNavigation_thenCorrectComposableIsDisplayed() {
         val root = launchComposableRoot()

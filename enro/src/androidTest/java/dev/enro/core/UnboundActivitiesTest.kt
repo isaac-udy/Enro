@@ -10,9 +10,14 @@ import dev.enro.core.controller.navigationController
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertNotNull
 import junit.framework.TestCase
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 
 class UnboundActivitiesTest {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun whenUnboundActivityIsOpened_thenNavigationKeyIsNoNavigationKey() {

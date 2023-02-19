@@ -10,10 +10,15 @@ import dev.enro.core.legacy.ActivityChildFragment
 import dev.enro.core.legacy.ActivityChildFragmentKey
 import dev.enro.core.legacy.ActivityWithFragments
 import dev.enro.core.legacy.ActivityWithFragmentsKey
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 
 class ActivityToFragmentOverrideTests() {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun givenActivityToFragmentOverride_andActivityDoesNotSupportFragment_whenInitialActivityOpenedWithDefaultKey_whenFragmentIsLaunched_whenActivityDoes_thenOverrideIsCalled() {

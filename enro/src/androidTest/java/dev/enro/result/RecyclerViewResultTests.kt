@@ -26,14 +26,19 @@ import dev.enro.core.result.managedByViewHolderItem
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.getActiveEnroResultChannels
 import kotlinx.parcelize.Parcelize
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.hamcrest.Matchers
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
 
 class RecyclerViewResultTests {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Before
     fun before() {

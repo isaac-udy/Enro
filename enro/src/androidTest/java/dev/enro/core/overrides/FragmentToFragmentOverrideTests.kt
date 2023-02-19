@@ -7,13 +7,18 @@ import dev.enro.*
 import dev.enro.core.*
 import dev.enro.core.controller.navigationController
 import dev.enro.core.legacy.*
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 
 class FragmentToFragmentOverrideTests() {
 
     lateinit var initialScenario: ActivityScenario<ActivityWithFragments>
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Before
     fun before() {

@@ -1,14 +1,22 @@
 package dev.enro.core.legacy
 
 import androidx.test.core.app.ActivityScenario
-import dev.enro.*
+import dev.enro.GenericComposableKey
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.forward
 import dev.enro.core.getNavigationHandle
+import dev.enro.expectContext
+import dev.enro.expectFragment
+import dev.enro.getNavigationHandle
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
 class FragmentToComposableTests {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun whenFragmentOpensComposable_andFragmentDoesNotHaveComposeContainer_thenComposableIsLaunchedAsComposableFragmentHost() {

@@ -36,6 +36,7 @@ import dev.enro.core.compose.registerForNavigationResult
 import dev.enro.core.navigationHandle
 import dev.enro.getActiveEnroResultChannels
 import kotlinx.parcelize.Parcelize
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -45,6 +46,9 @@ import java.util.*
 class ComposableRecyclerViewResultTests {
     @get:Rule
     val composeContentRule = createAndroidComposeRule<ComposeRecyclerViewResultActivity>()
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun whenListItemWithResultIsRenderedOnItsOwn_thenResultIsRetrievedSuccessfully() {

@@ -93,8 +93,6 @@ abstract class TestActivity : AppCompatActivity() {
 
 abstract class TestFragment : Fragment() {
 
-    lateinit var layout: LinearLayout
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -108,7 +106,7 @@ abstract class TestFragment : Fragment() {
 
         Log.e("TestFragment", "Opened $key")
 
-        layout = LinearLayout(requireContext()).apply {
+        return LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             setBackgroundColor(0xFFFFFFFF.toInt())
@@ -146,8 +144,6 @@ abstract class TestFragment : Fragment() {
                 setBackgroundColor(0x220000FF)
             })
         }
-
-        return layout
     }
 
     companion object {
@@ -159,8 +155,6 @@ abstract class TestFragment : Fragment() {
 }
 
 abstract class TestDialogFragment : DialogFragment() {
-
-    lateinit var layout: LinearLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -174,7 +168,7 @@ abstract class TestDialogFragment : DialogFragment() {
 
         Log.e("TestFragment", "Opened $key")
 
-        layout = LinearLayout(requireContext()).apply {
+        return LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
 
@@ -211,8 +205,6 @@ abstract class TestDialogFragment : DialogFragment() {
                 setBackgroundColor(0x220000FF)
             })
         }
-
-        return layout
     }
 
     companion object {

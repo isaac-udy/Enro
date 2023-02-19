@@ -16,9 +16,14 @@ import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.TestFragment
 import dev.enro.expectFragment
 import dev.enro.expectNoActivity
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 
 class AndroidxNavigationInteropTest {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun givenMultipleAndroidxNavigationFragments_whenBackButtonIsPressed_thenAndroidxNavigationReceivesBackButtonPress() {

@@ -6,9 +6,14 @@ import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.core.*
 import dev.enro.core.controller.navigationController
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 
 class ActivityToActivityOverrideTests() {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun givenActivityToActivityOverride_whenInitialActivityOpenedWithDefaultKey_whenActivityIsLaunched_thenOverrideIsCalled() {

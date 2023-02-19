@@ -11,9 +11,14 @@ import dev.enro.core.getNavigationHandle
 import dev.enro.core.push
 import dev.enro.expectActivity
 import junit.framework.TestCase.assertEquals
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 
 class EnroPluginActiveTests {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun givenMultipleFragmentContainers_whenAFragmentContainerIsMadeActive_thenTheActiveNavigationHandleInThatContainerIsMarkedActive() {

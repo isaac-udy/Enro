@@ -1,6 +1,7 @@
 package dev.enro
 
 import androidx.compose.runtime.Composable
+import androidx.fragment.app.FragmentActivity
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
@@ -42,3 +43,5 @@ fun GenericComposableDestination() = TestComposable(name = "GenericComposableDes
 class UnboundActivity : TestActivity()
 
 class UnboundFragment : TestFragment()
+
+class EmptyActivity : FragmentActivity()

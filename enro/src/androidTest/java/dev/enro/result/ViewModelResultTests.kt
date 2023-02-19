@@ -14,9 +14,14 @@ import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 
 class ViewModelResultTests {
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
+
     @Test
     fun givenOrchestratedResultFlowManagedByViewModels_whenOrchestratedResultFlowExecutes_thenResultsAreReceivedCorrectly() {
         ActivityScenario.launch(DefaultActivity::class.java)

@@ -30,10 +30,14 @@ import dev.enro.core.destinations.launchComposable
 import dev.enro.expectComposableContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.parcelize.Parcelize
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
 
 class ComposableDestinationContainerGroups {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @get:Rule
     val composeContentRule = createComposeRule()
@@ -125,6 +129,7 @@ class ComposableDestinationContainerGroups {
         composeContentRule.onNodeWithText("First Tab Screen").assertDoesNotExist()
         composeContentRule.onNodeWithText("Second Tab Screen").assertExists()
         composeContentRule.onNodeWithText("Third Tab Screen").assertDoesNotExist()
+
     }
 
     object Destinations {

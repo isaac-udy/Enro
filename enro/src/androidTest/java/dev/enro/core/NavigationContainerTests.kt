@@ -26,9 +26,14 @@ import dev.enro.core.fragment.container.navigationContainer
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertFalse
 import kotlinx.parcelize.Parcelize
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 
 class NavigationContainerTests {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun whenActivityHasFragmentContainersThatAcceptTheSameKey_thenContainerThatIsActiveReceivesNavigationEvents() {

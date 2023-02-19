@@ -1,5 +1,6 @@
 package dev.enro.result
 
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.animateScrollBy
@@ -20,10 +21,10 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
-import dev.enro.DefaultActivity
 import dev.enro.clearAllEnroResultChannels
 import dev.enro.core.compose.registerForNavigationResult
 import dev.enro.getActiveEnroResultChannels
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -34,7 +35,10 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class ComposableListResultTests {
     @get:Rule
-    val composeContentRule = createAndroidComposeRule<DefaultActivity>()
+    val composeContentRule = createAndroidComposeRule<ComponentActivity>()
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Before
     fun before() {

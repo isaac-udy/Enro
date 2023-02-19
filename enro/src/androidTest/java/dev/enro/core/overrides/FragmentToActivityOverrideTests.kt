@@ -11,12 +11,17 @@ import dev.enro.core.legacy.ActivityChildFragmentKey
 import dev.enro.core.legacy.ActivityWithFragments
 import dev.enro.core.legacy.ActivityWithFragmentsKey
 import junit.framework.Assert.assertTrue
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 
 class FragmentToActivityOverrideTests() {
 
     lateinit var initialScenario: ActivityScenario<ActivityWithFragments>
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Before
     fun before() {

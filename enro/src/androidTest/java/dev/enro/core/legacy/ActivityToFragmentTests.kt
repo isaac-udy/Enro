@@ -12,10 +12,15 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import junit.framework.TestCase.*
 import kotlinx.parcelize.Parcelize
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
 class ActivityToFragmentTests {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun whenActivityIsNotAFragmentActivity_thenFragmentNavigationOpensSingleFragmentActivity() {

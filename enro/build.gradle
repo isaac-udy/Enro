@@ -76,6 +76,9 @@ dependencies {
 
     androidTestImplementation deps.androidx.navigation.fragment
     androidTestImplementation deps.androidx.navigation.ui
+
+    androidTestImplementation deps.leakcanary
+    androidTestImplementation deps.testing.leakcanary.instrumentation
 }
 
 afterEvaluate {

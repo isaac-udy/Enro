@@ -10,11 +10,15 @@ import dev.enro.result.FragmentResultKey
 import dev.enro.test.extensions.getTestNavigationHandle
 import dev.enro.test.extensions.sendResultForTest
 import junit.framework.TestCase
+import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
 import java.util.*
 
 class FragmentTestExtensionsTest {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @get:Rule
     val enroRule = EnroTestRule()

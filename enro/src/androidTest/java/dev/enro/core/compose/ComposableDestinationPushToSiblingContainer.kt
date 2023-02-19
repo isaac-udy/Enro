@@ -2,9 +2,14 @@ package dev.enro.core.compose
 
 import dev.enro.core.container.setActive
 import dev.enro.core.destinations.*
+import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Rule
 import org.junit.Test
 
 class ComposableDestinationPushToSiblingContainer {
+
+    @get:Rule
+    val rule = DetectLeaksAfterTestSuccess()
 
     @Test
     fun givenComposableDestination_whenExecutingPushToSiblingContainer_andTargetIsComposableDestination_thenCorrectDestinationIsOpened() {
