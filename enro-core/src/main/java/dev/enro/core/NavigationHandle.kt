@@ -122,12 +122,6 @@ public fun NavigationHandle.requestClose() {
     executeInstruction(NavigationInstruction.RequestClose)
 }
 
-public val NavigationHandle.isPushed: Boolean
-    get() = instruction.navigationDirection == NavigationDirection.Push
-
-public val NavigationHandle.isPresented: Boolean
-    get() = instruction.navigationDirection == NavigationDirection.Present || instruction.navigationDirection == NavigationDirection.ReplaceRoot
-
 internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
     val isMainThread = runCatching {
         Looper.getMainLooper() == Looper.myLooper()
