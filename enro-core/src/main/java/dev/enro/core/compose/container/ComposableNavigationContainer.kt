@@ -200,8 +200,6 @@ public class ComposableNavigationContainer internal constructor(
         destinationOwners.forEach { destinationOwner ->
             val instruction = destinationOwner.instruction
             destinationOwner.transitionState.targetState = when {
-                destinationOwner.destination is BottomSheetDestination -> true
-                destinationOwner.destination is DialogDestination -> true
                 presented.contains(destinationOwner.instruction) -> !isParentBeingRemoved
                 instruction == activePush -> !isParentBeingRemoved
                 else -> false

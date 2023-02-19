@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
@@ -126,8 +127,8 @@ internal class ComposableDestinationOwner(
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
         key(instruction.instructionId) {
             ProvideCompositionLocals(saveableStateHolder) {
-                ProvideRenderingWindow {
-                    animation.content(transition) {
+                animation.content(transition) {
+                    ProvideRenderingWindow(transition, animation) {
                         renderDestination()
                         RegisterComposableLifecycleState(backstackState)
                     }
@@ -167,7 +168,11 @@ internal class ComposableDestinationOwner(
 
     @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
     @Composable
-    private fun ProvideRenderingWindow(content: @Composable () -> Unit) {
+    private fun ProvideRenderingWindow(
+        transition: Transition<Boolean>,
+        animation: NavigationAnimation.Composable,
+        content: @Composable () -> Unit
+    ) {
         when {
             destination is DialogDestination -> EnroDialogContainer(
                 navigationHandle = destination.getNavigationHandle(),
@@ -193,7 +198,9 @@ internal class ComposableDestinationOwner(
                             clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
                             setWindowAnimations(0)
                         }
-                    content()
+                    animation.content(transition) {
+                        content()
+                    }
                 }
             }
             else -> content()
