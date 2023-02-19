@@ -124,11 +124,13 @@ internal class ComposableDestinationOwner(
             }
         }
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
-        ProvideCompositionLocals(saveableStateHolder) {
-            ProvideRenderingWindow {
-                animation.content(transition) {
-                    renderDestination()
-                    RegisterComposableLifecycleState(backstackState)
+        key(instruction.instructionId) {
+            ProvideCompositionLocals(saveableStateHolder) {
+                ProvideRenderingWindow {
+                    animation.content(transition) {
+                        renderDestination()
+                        RegisterComposableLifecycleState(backstackState)
+                    }
                 }
             }
         }
