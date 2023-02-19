@@ -107,9 +107,7 @@ internal class ComposableDestinationOwner(
 
         val renderDestination = remember(instruction.instructionId) {
             movableContentOf {
-                ProvideCompositionLocals(saveableStateHolder) {
-                    destination.Render()
-                }
+                destination.Render()
             }
         }
         val animation = remember(transitionState.targetState) {
@@ -126,10 +124,12 @@ internal class ComposableDestinationOwner(
             }
         }
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
-        ProvideRenderingWindow {
-            animation.content(transition) {
-                renderDestination()
-                RegisterComposableLifecycleState(backstackState)
+        ProvideCompositionLocals(saveableStateHolder) {
+            ProvideRenderingWindow {
+                animation.content(transition) {
+                    renderDestination()
+                    RegisterComposableLifecycleState(backstackState)
+                }
             }
         }
     }
