@@ -137,6 +137,21 @@ internal object Compatibility {
             return true
         }
     }
+
+    object NavigationContainer {
+        fun processBackstackForDeprecatedInstructionTypes(
+            backstack: NavigationBackstack,
+            acceptsNavigationKey: (NavigationKey) -> Boolean,
+        ): NavigationBackstack {
+            return backstack.mapIndexed { i, it ->
+                when {
+                    it.navigationDirection !is NavigationDirection.Forward -> it
+                    i == 0 || acceptsNavigationKey(it.navigationKey) -> it.asPushInstruction()
+                    else -> it.asPresentInstruction()
+                }
+            }.toBackstack()
+        }
+    }
 }
 
 private fun openInstructionAsActivity(

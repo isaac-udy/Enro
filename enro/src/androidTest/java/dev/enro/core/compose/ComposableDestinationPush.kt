@@ -1,10 +1,12 @@
 package dev.enro.core.compose
 
 import androidx.fragment.app.Fragment
+import androidx.test.espresso.Espresso
 import dev.enro.core.AdvancedEnroApi
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.destinations.*
 import dev.enro.core.directParentContainer
+import dev.enro.expectContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -72,18 +74,63 @@ class ComposableDestinationPush {
         val firstComposable = ComposableDestinations.Pushable()
         val secondComposable = ComposableDestinations.Pushable()
         val thirdComposable = ComposableDestinations.Pushable()
+        val fourthComposable = ComposableDestinations.Pushable()
+        val fifthComposable = ComposableDestinations.Pushable()
         val firstFragment = FragmentDestinations.Pushable()
         val secondFragment = FragmentDestinations.Pushable()
 
         root.assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer, firstComposable)
             .assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer, secondComposable)
             .assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer, thirdComposable)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer, fourthComposable)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer, fifthComposable)
             .assertPushesTo<Fragment, FragmentDestinations.Pushable>(IntoSameContainer, firstFragment)
             .assertPushesTo<Fragment, FragmentDestinations.Pushable>(IntoSameContainer, secondFragment)
 
             .assertClosesTo<Fragment, FragmentDestinations.Pushable>(firstFragment)
+            .assertClosesTo<ComposableDestination, ComposableDestinations.Pushable>(fifthComposable)
+            .assertClosesTo<ComposableDestination, ComposableDestinations.Pushable>(fourthComposable)
             .assertClosesTo<ComposableDestination, ComposableDestinations.Pushable>(thirdComposable)
             .assertClosesTo<ComposableDestination, ComposableDestinations.Pushable>(secondComposable)
             .assertClosesTo<ComposableDestination, ComposableDestinations.Pushable>(firstComposable)
+    }
+
+    @Test
+    fun givenComposableRootDestination_whenPushingComposablesAndFragments_thenClosingFragmentsWithBackButtonMaintainsComposableState() {
+        val root = launchComposableRoot()
+
+        val firstComposable = ComposableDestinations.Pushable()
+        val secondComposable = ComposableDestinations.Pushable()
+        val thirdComposable = ComposableDestinations.Pushable()
+        val fourthComposable = ComposableDestinations.Pushable()
+        val fifthComposable = ComposableDestinations.Pushable()
+        val firstFragment = FragmentDestinations.Pushable()
+        val secondFragment = FragmentDestinations.Pushable()
+
+        root.assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer, firstComposable)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer, secondComposable)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer, thirdComposable)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer, fourthComposable)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.Pushable>(IntoSameContainer, fifthComposable)
+            .assertPushesTo<Fragment, FragmentDestinations.Pushable>(IntoSameContainer, firstFragment)
+            .assertPushesTo<Fragment, FragmentDestinations.Pushable>(IntoSameContainer, secondFragment)
+
+        Espresso.pressBack()
+        expectContext<Fragment, FragmentDestinations.Pushable> { it.navigation.key == firstFragment}
+
+        Espresso.pressBack()
+        expectContext<ComposableDestination, ComposableDestinations.Pushable> { it.navigation.key == fifthComposable}
+
+        Espresso.pressBack()
+        expectContext<ComposableDestination, ComposableDestinations.Pushable> { it.navigation.key == fourthComposable}
+
+        Espresso.pressBack()
+        expectContext<ComposableDestination, ComposableDestinations.Pushable> { it.navigation.key == thirdComposable}
+
+        Espresso.pressBack()
+        expectContext<ComposableDestination, ComposableDestinations.Pushable> { it.navigation.key == secondComposable}
+
+        Espresso.pressBack()
+        expectContext<ComposableDestination, ComposableDestinations.Pushable> { it.navigation.key == firstComposable}
     }
 }

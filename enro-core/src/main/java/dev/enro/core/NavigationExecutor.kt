@@ -15,12 +15,8 @@ public class ExecutorArgs<FromContext : Any, OpensContext : Any, KeyType : Navig
     public val fromContext: NavigationContext<out FromContext>,
     public val binding: NavigationBinding<out KeyType, out OpensContext>,
     public val key: KeyType,
-    instruction: AnyOpenInstruction
-) {
-    public val instruction: AnyOpenInstruction = instruction.internal.copy(
-        previouslyActiveContainer = fromContext.containerManager.activeContainer?.key
-    )
-}
+    public val instruction: AnyOpenInstruction
+)
 
 public abstract class NavigationExecutor<FromContext : Any, OpensContext : Any, KeyType : NavigationKey>(
     public val fromType: KClass<FromContext>,

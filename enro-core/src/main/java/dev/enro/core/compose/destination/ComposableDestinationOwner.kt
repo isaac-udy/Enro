@@ -111,7 +111,6 @@ internal class ComposableDestinationOwner(
                 }
             }
         }
-
         val animation = remember(transitionState.targetState) {
             when (destination) {
                 is DialogDestination,

@@ -6,6 +6,7 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
+import dev.enro.core.compatability.Compatibility
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
@@ -51,8 +52,10 @@ public abstract class NavigationContainer(
         )
         if (backstack == backstackFlow.value) return@synchronized
         renderJob?.cancel()
-        val processedBackstack = backstack.ensureOpeningTypeIsSet(parentContext)
-            .processBackstackForDeprecatedInstructionTypes()
+        val processedBackstack = Compatibility.NavigationContainer
+            .processBackstackForDeprecatedInstructionTypes(backstack, acceptsNavigationKey)
+            .ensureOpeningTypeIsSet(parentContext)
+            .processBackstackForPreviouslyActiveContainer()
 
         requireBackstackIsAccepted(processedBackstack)
         if (handleEmptyBehaviour(processedBackstack)) return
@@ -169,13 +172,12 @@ public abstract class NavigationContainer(
         if (isActive && isEmpty) parentContext.containerManager.setActiveContainer(null)
     }
 
-    private fun NavigationBackstack.processBackstackForDeprecatedInstructionTypes(): NavigationBackstack {
-        return mapIndexed { i, it ->
-            when {
-                it.navigationDirection !is NavigationDirection.Forward -> it
-                i == 0 || acceptsNavigationKey(it.navigationKey) -> it.asPushInstruction()
-                else -> it.asPresentInstruction()
-            }
+    private fun NavigationBackstack.processBackstackForPreviouslyActiveContainer(): NavigationBackstack {
+        return map {
+            if (it.internal.previouslyActiveContainer != null) return@map it
+            it.internal.copy(
+                previouslyActiveContainer = parentContext.containerManager.activeContainer?.key
+            )
         }.toBackstack()
     }
 
