@@ -92,7 +92,6 @@ internal fun EnroDialogContainer(
     destination: DialogDestination,
     content: @Composable () -> Unit
 ) {
-    if (destination.isDismissed) return
     Dialog(
         onDismissRequest = { navigationHandle.requestClose() },
         properties = DialogProperties(

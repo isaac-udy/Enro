@@ -5,7 +5,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
@@ -110,7 +109,6 @@ internal class ComposableDestinationOwner(
         if (!lifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
 
         val saveableStateHolder = rememberSaveableStateHolder()
-
         val renderDestination = remember(instruction.instructionId) {
             movableContentOf {
                 ProvideCompositionLocals {
@@ -120,28 +118,52 @@ internal class ComposableDestinationOwner(
                 }
             }
         }
+
+        /**
+         * This if statement does some important work, and unfortunately any proof work that it does is not able to be captured
+         * by an automated test at this stage; all attempts to recreate the error that occurs in the absence of this statement have
+         * failed to fail.
+         *
+         * To manually recreate the failure that occurs without this statement:
+         * Create a Composable destination ("CD") which can be presented and pushed
+         * Create a *Composable* transition between destinations of CD and CD
+         * ReplaceRoot with CD
+         * Push several other CD's (CD1, CD2, CD3, etc)
+         * Push a fragment destination (FD)
+         * Navigate back from FD to the top CD
+         * Navigating back from CD(n) to CD(n-1) should cause a crash due to movableContent IndexOutOfBounds errors occuring within
+         * the Compose internals
+         */
+        if (
+            instruction != backstackState.lastOrNull()
+            && !transitionState.currentState
+            && !transitionState.targetState
+            && instruction.navigationDirection == NavigationDirection.Push
+        ) return
+
+        if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
+            && !transitionState.currentState
+            && !transitionState.targetState
+            && destination is DialogDestination
+        ) return
+
         val animation = remember(transitionState.targetState) {
             when (destination) {
                 is DialogDestination -> NavigationAnimation.Composable(
                         forView = DefaultAnimations.ForView.none,
                         enter = EnterTransition.None,
-                        exit = ExitTransition.None,
+                        exit = fadeOut(tween(75, 150)),
                 )
                 is BottomSheetDestination -> NavigationAnimation.Composable(
                     forView = DefaultAnimations.ForView.none,
                     enter = EnterTransition.None,
-                    exit = fadeOut(tween(150, 350)),
+                    exit =  fadeOut(tween(75, 150)),
                 )
                 else -> parentContainer.currentAnimations.asComposable()
             }
         }
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
         ReusableContent(instruction.instructionId) {
-            if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
-                && !transition.targetState
-                && destination is DialogDestination
-            ) return@ReusableContent
-
             ProvideRenderingWindow {
                 animation.content(transition) {
                     renderDestination()
