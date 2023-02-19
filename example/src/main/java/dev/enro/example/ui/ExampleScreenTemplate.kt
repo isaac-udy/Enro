@@ -50,7 +50,6 @@ class ExampleScreenViewModel : ViewModel() {
             }
         }
     }
-
 }
 
 @Composable
@@ -58,7 +57,7 @@ fun ExampleScreenTemplate(
     title: String,
     modifier: Modifier = Modifier,
     buttons: List<Pair<String, AnyOpenInstruction>> = defaultNavigationButtons(),
-    overflow: List<Pair<String, AnyOpenInstruction>> = defaultNavigationOverflow(),
+    overflow: List<Pair<String, AnyOpenInstruction?>> = defaultNavigationOverflow(),
 ) {
     val scrollState = rememberScrollState()
     val viewModel = viewModel<ExampleScreenViewModel>(factory = ViewModelProvider.NewInstanceFactory().withNavigationHandle())
@@ -172,11 +171,13 @@ private fun defaultNavigationButtons(): List<Pair<String, AnyOpenInstruction>> =
     "Push (Fragment)" to NavigationInstruction.Push(ExampleFragmentKey()),
 )
 
-private fun defaultNavigationOverflow(): List<Pair<String, AnyOpenInstruction>> = listOf(
+private fun defaultNavigationOverflow(): List<Pair<String, AnyOpenInstruction?>> = listOf(
+    "Composable" to null,
     "Present (Compose)" to NavigationInstruction.Present(ExampleComposableKey()),
-    "Present (Fragment)" to NavigationInstruction.Present(ExampleFragmentKey()),
     "Present Bottom Sheet (Composable)" to NavigationInstruction.Present(ExampleComposableBottomSheetKey()),
-    "Present Dialog (Fragment)" to NavigationInstruction.Present(ExampleFragmentDialogKey()),
     "Replace Root (Composable)" to NavigationInstruction.ReplaceRoot(ExampleComposableKey()),
+    "Fragment" to null,
+    "Present (Fragment)" to NavigationInstruction.Present(ExampleFragmentKey()),
+    "Present Dialog (Fragment)" to NavigationInstruction.Present(ExampleFragmentDialogKey()),
     "Replace Root (Fragment)" to NavigationInstruction.ReplaceRoot(ExampleFragmentKey()),
 )
