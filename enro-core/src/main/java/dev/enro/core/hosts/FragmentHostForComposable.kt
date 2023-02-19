@@ -50,17 +50,19 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
         savedInstanceState: Bundle?
     ): View {
         val isRoot = isRoot
+        val initialBackstack = navigationHandle.key.instruction.asPushInstruction()
         return ComposeView(requireContext()).apply {
             id = R.id.enro_internal_compose_fragment_view_id
             setContent {
+                val navigation = dev.enro.core.compose.navigationHandle()
                 rememberNavigationContainer(
                     key = NavigationContainerKey.FromName("FragmentHostForCompose"),
-                    initialBackstack = backstackOf(navigationHandle.key.instruction.asPushInstruction()),
+                    initialBackstack = backstackOf(initialBackstack),
                     accept = { isRoot },
                     emptyBehavior = when {
                         isRoot -> EmptyBehavior.CloseParent
                         else -> EmptyBehavior.Action {
-                            navigationHandle.close()
+                            navigation.close()
                             false
                         }
                     },

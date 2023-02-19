@@ -1,16 +1,19 @@
 package dev.enro.core.fragment
 
+import androidx.compose.ui.test.junit4.createComposeRule
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.destinations.*
 import leakcanary.DetectLeaksAfterTestSuccess
-import leakcanary.SkipLeakDetection
 import org.junit.Rule
 import org.junit.Test
 
 class FragmentDestinationPresentDialog {
 
-    @get:Rule
+    @get:Rule(order = 1)
     val rule = DetectLeaksAfterTestSuccess()
+
+    @get:Rule(order = 2)
+    val composeContentRule = createComposeRule()
 
     @Test
     fun givenFragmentDestination_whenExecutingPresent_andTargetIsDialog_andTargetIsComposableDestination_thenCorrectDestinationIsOpened() {
@@ -19,7 +22,6 @@ class FragmentDestinationPresentDialog {
     }
 
     @Test
-    @SkipLeakDetection("This reports a leak, but it appears to be a false positive and can't be reproduced")
     fun givenFragmentDestination_whenExecutingPresent_andTargetIsDialog_andTargetIsComposableDestination_andDestinationIsClosed_thenPreviousDestinationIsActive() {
         val root = launchFragmentRoot()
         root.assertPresentsTo<ComposableDestination, ComposableDestinations.PresentableDialog>()
@@ -27,7 +29,6 @@ class FragmentDestinationPresentDialog {
     }
 
     @Test
-    @SkipLeakDetection("This reports a leak, but it appears to be a false positive and can't be reproduced")
     fun givenFragmentDestination_whenExecutingPresent_andTargetIsDialog_andTargetIsComposableDestination_andDestinationDeliversResult_thenResultIsDelivered() {
         val root = launchFragmentRoot()
         root.assertPresentsForResultTo<ComposableDestination, ComposableDestinations.PresentableDialog>()

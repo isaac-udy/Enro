@@ -100,12 +100,6 @@ internal fun EnroDialogContainer(
         )
     ) {
         content()
-
-        DisposableEffect(Unit) {
-            onDispose {
-                navigationHandle.close()
-            }
-        }
     }
     destination.dialogConfiguration.ConfigureWindow()
 }
