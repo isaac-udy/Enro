@@ -6,8 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.fadeOut
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
@@ -113,22 +114,27 @@ internal class ComposableDestinationOwner(
         }
         val animation = remember(transitionState.targetState) {
             when (destination) {
-                is DialogDestination,
-                is BottomSheetDestination -> {
-                    NavigationAnimation.Composable(
+                is DialogDestination -> NavigationAnimation.Composable(
                         forView = DefaultAnimations.ForView.none,
                         enter = EnterTransition.None,
                         exit = ExitTransition.None,
-                    )
-                }
+                )
+                is BottomSheetDestination -> NavigationAnimation.Composable(
+                    forView = DefaultAnimations.ForView.none,
+                    enter = EnterTransition.None,
+                    exit = fadeOut(tween(150, 350)),
+                )
                 else -> parentContainer.currentAnimations.asComposable()
             }
         }
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
         key(instruction.instructionId) {
             ProvideCompositionLocals(saveableStateHolder) {
-                animation.content(transition) {
-                    ProvideRenderingWindow(transition, animation) {
+                if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED) && !transition.targetState) {
+                    return@ProvideCompositionLocals
+                }
+                ProvideRenderingWindow {
+                    animation.content(transition) {
                         renderDestination()
                         RegisterComposableLifecycleState(backstackState)
                     }
@@ -169,8 +175,6 @@ internal class ComposableDestinationOwner(
     @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
     @Composable
     private fun ProvideRenderingWindow(
-        transition: Transition<Boolean>,
-        animation: NavigationAnimation.Composable,
         content: @Composable () -> Unit
     ) {
         when {
@@ -198,9 +202,7 @@ internal class ComposableDestinationOwner(
                             clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
                             setWindowAnimations(0)
                         }
-                    animation.content(transition) {
-                        content()
-                    }
+                    content()
                 }
             }
             else -> content()
