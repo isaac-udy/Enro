@@ -12,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.core.*
-import dev.enro.core.compose.ComposableDestination
 
 @ExperimentalMaterialApi
 public class BottomSheetConfiguration : DialogConfiguration() {
@@ -66,8 +65,9 @@ public fun BottomSheetDestination.configureBottomSheet(block: BottomSheetConfigu
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 internal fun EnroBottomSheetContainer(
-    composableDestination: ComposableDestination,
-    destination: BottomSheetDestination
+    navigationHandle: NavigationHandle,
+    destination: BottomSheetDestination,
+    content: @Composable () -> Unit
 ) {
     val state = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -79,7 +79,7 @@ internal fun EnroBottomSheetContainer(
                 val isDismissed = destination.bottomSheetConfiguration.isDismissed.value
 
                 if (!isDismissed && (isHidden || isHalfExpandedAndSkipped)) {
-                    composableDestination.context.getNavigationHandle().requestClose()
+                    navigationHandle.requestClose()
                     return destination.bottomSheetConfiguration.isDismissed.value
                 }
                 return true
@@ -95,7 +95,7 @@ internal fun EnroBottomSheetContainer(
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = .5.dp)
             ) {
-                composableDestination.Render()
+                content()
             }
             destination.bottomSheetConfiguration.ConfigureWindow()
         },
@@ -111,7 +111,7 @@ internal fun EnroBottomSheetContainer(
     LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
         if (destination.bottomSheetConfiguration.isDismissed.value) {
             state.hide()
-            composableDestination.getNavigationHandle().close()
+            navigationHandle.close()
         }
         else {
             state.show()

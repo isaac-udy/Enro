@@ -1,6 +1,7 @@
 package dev.enro.core.compose.destination
 
 import android.annotation.SuppressLint
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -10,8 +11,11 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -20,10 +24,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.dialog.EnroBottomSheetContainer
-import dev.enro.core.compose.dialog.EnroDialogContainer
+import dev.enro.core.compose.dialog.*
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
@@ -31,7 +32,7 @@ import dev.enro.core.controller.usecase.OnNavigationContextSaved
 
 @Stable
 internal class ComposableDestinationOwner(
-    val parentContainer: NavigationContainer,
+    parentContainer: NavigationContainer,
     val instruction: AnyOpenInstruction,
     val destination: ComposableDestination,
     onNavigationContextCreated: OnNavigationContextCreated,
@@ -45,6 +46,8 @@ internal class ComposableDestinationOwner(
     HasDefaultViewModelProviderFactory {
 
     internal val transitionState = MutableTransitionState(false)
+    internal var _parentContainer: NavigationContainer? = parentContainer
+    internal val parentContainer get() = _parentContainer!!
 
     @SuppressLint("StaticFieldLeak")
     @Suppress("LeakingThis")
@@ -90,11 +93,13 @@ internal class ComposableDestinationOwner(
 
     internal fun destroy() {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        _parentContainer = null
     }
 
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     internal fun Render(backstackState: List<AnyOpenInstruction>) {
+        if (_parentContainer == null) return
         val lifecycleState = rememberLifecycleState()
         if (!lifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
 
@@ -102,12 +107,8 @@ internal class ComposableDestinationOwner(
 
         val renderDestination = remember(instruction.instructionId) {
             movableContentOf {
-                ProvideRenderingEnvironment(saveableStateHolder) {
-                    when (destination) {
-                        is DialogDestination -> EnroDialogContainer(destination, destination)
-                        is BottomSheetDestination -> EnroBottomSheetContainer(destination, destination)
-                        else -> destination.Render()
-                    }
+                ProvideCompositionLocals(saveableStateHolder) {
+                    destination.Render()
                 }
             }
         }
@@ -125,9 +126,11 @@ internal class ComposableDestinationOwner(
             }
         }
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
-        animation.content(transition) {
-            renderDestination()
-            RegisterComposableLifecycleState(backstackState)
+        ProvideRenderingWindow {
+            animation.content(transition) {
+                renderDestination()
+                RegisterComposableLifecycleState(backstackState)
+            }
         }
     }
 
@@ -151,14 +154,52 @@ internal class ComposableDestinationOwner(
                 when {
                     isActive -> {}
                     isInBackstack -> lifecycleRegistry.currentState = Lifecycle.State.CREATED
-                    else -> lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+                    else -> {
+                        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+                        _parentContainer = null
+                    }
                 }
             }
         }
     }
 
+    @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
     @Composable
-    private fun ProvideRenderingEnvironment(
+    private fun ProvideRenderingWindow(content: @Composable () -> Unit) {
+        when {
+            destination is DialogDestination -> EnroDialogContainer(
+                navigationHandle = destination.getNavigationHandle(),
+                destination = destination,
+                content = content
+            )
+            destination is BottomSheetDestination -> EnroBottomSheetContainer(
+                navigationHandle = destination.getNavigationHandle(),
+                destination = destination,
+                content = content
+            )
+            instruction.navigationDirection is NavigationDirection.Present -> {
+                Dialog(
+                    onDismissRequest = { getNavigationHandle().requestClose() },
+                    properties = DialogProperties(
+                        dismissOnClickOutside = false,
+                        usePlatformDefaultWidth = false,
+                    )
+                ) {
+                    requireNotNull(rememberDialogWindowProvider())
+                        .window
+                        .apply {
+                            clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                            setWindowAnimations(0)
+                        }
+                    content()
+                }
+            }
+            else -> content()
+        }
+    }
+
+    @Composable
+    private fun ProvideCompositionLocals(
         saveableStateHolder: SaveableStateHolder,
         content: @Composable () -> Unit,
     ) {
