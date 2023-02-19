@@ -55,7 +55,7 @@ class ExampleScreenViewModel : ViewModel() {
 @Composable
 fun ExampleScreenTemplate(
     title: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.fillMaxSize(),
     buttons: List<Pair<String, AnyOpenInstruction>> = defaultNavigationButtons(),
     overflow: List<Pair<String, AnyOpenInstruction?>> = defaultNavigationOverflow(),
 ) {
@@ -82,7 +82,6 @@ fun ExampleScreenTemplate(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .verticalScroll(scrollState)
                 .padding(start = 16.dp, end = 16.dp, bottom = 8.dp, top = 8.dp)
         ) {
@@ -172,12 +171,13 @@ private fun defaultNavigationButtons(): List<Pair<String, AnyOpenInstruction>> =
 )
 
 private fun defaultNavigationOverflow(): List<Pair<String, AnyOpenInstruction?>> = listOf(
-    "Composable" to null,
+    "Compose" to null,
     "Present (Compose)" to NavigationInstruction.Present(ExampleComposableKey()),
-    "Present Bottom Sheet (Composable)" to NavigationInstruction.Present(ExampleComposableBottomSheetKey()),
-    "Replace Root (Composable)" to NavigationInstruction.ReplaceRoot(ExampleComposableKey()),
+    "Present Dialog (Compose)" to NavigationInstruction.Present(ExampleDialogComposableKey()),
+    "Present Bottom Sheet (Compose)" to NavigationInstruction.Present(ExampleComposableBottomSheetKey()),
+    "Replace Root (Compose)" to NavigationInstruction.ReplaceRoot(ExampleComposableKey()),
     "Fragment" to null,
     "Present (Fragment)" to NavigationInstruction.Present(ExampleFragmentKey()),
-    "Present Dialog (Fragment)" to NavigationInstruction.Present(ExampleFragmentDialogKey()),
+    "Present Dialog (Fragment)" to NavigationInstruction.Present(ExampleDialogFragmentKey()),
     "Replace Root (Fragment)" to NavigationInstruction.ReplaceRoot(ExampleFragmentKey()),
 )

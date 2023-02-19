@@ -4,42 +4,32 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.DialogFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.example.databinding.FragmentExampleDialogBinding
+import dev.enro.example.ui.ExampleScreenTemplate
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ExampleFragmentDialogKey(val number: Int = 1) : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
+class ExampleDialogFragmentKey : NavigationKey.SupportsPresent
 
-@NavigationDestination(ExampleFragmentDialogKey::class)
+@NavigationDestination(ExampleDialogFragmentKey::class)
 class ExampleDialogFragment : DialogFragment() {
 
-    private val navigation by navigationHandle<ExampleFragmentDialogKey>()
+    private val navigation by navigationHandle<ExampleDialogFragmentKey>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_example_dialog, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        FragmentExampleDialogBinding.bind(view).apply {
-            exampleDialogNumber.text = navigation.key.number.toString()
-
-            exampleDialogForward.setOnClickListener {
-                navigation.forward(ExampleFragmentDialogKey(navigation.key.number + 1))
-            }
-
-            exampleDialogReplace.setOnClickListener {
-                navigation.replace(ResultExampleKey())
-            }
-
-            exampleDialogClose.setOnClickListener {
-                navigation.close()
+    ): View {
+        return ComposeView(requireContext()).apply {
+            setContent {
+                EnroExampleTheme {
+                    ExampleScreenTemplate("Dialog Fragment", modifier = Modifier)
+                }
             }
         }
     }
