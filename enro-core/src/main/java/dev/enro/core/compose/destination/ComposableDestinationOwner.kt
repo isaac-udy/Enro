@@ -11,7 +11,6 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeOut
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -109,7 +108,9 @@ internal class ComposableDestinationOwner(
 
         val renderDestination = remember(instruction.instructionId) {
             movableContentOf {
-                destination.Render()
+                saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
+                    destination.Render()
+                }
             }
         }
         val animation = remember(transitionState.targetState) {
@@ -129,7 +130,7 @@ internal class ComposableDestinationOwner(
         }
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
         key(instruction.instructionId) {
-            ProvideCompositionLocals(saveableStateHolder) {
+            ProvideCompositionLocals {
                 if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
                     && !transition.targetState
                     && destination is DialogDestination
@@ -214,7 +215,6 @@ internal class ComposableDestinationOwner(
 
     @Composable
     private fun ProvideCompositionLocals(
-        saveableStateHolder: SaveableStateHolder,
         content: @Composable () -> Unit,
     ) {
         CompositionLocalProvider(
@@ -223,10 +223,8 @@ internal class ComposableDestinationOwner(
             LocalSavedStateRegistryOwner provides this@ComposableDestinationOwner,
             LocalNavigationHandle provides remember { getNavigationHandle() }
         ) {
-            saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
-                composeEnvironment {
-                    content()
-                }
+            composeEnvironment {
+                content()
             }
         }
     }

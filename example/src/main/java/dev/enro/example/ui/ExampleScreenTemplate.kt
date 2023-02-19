@@ -8,6 +8,7 @@ import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.*
 
 
 class ExampleScreenViewModel : ViewModel() {
@@ -66,6 +68,9 @@ fun ExampleScreenTemplate(
     var backstackItems by remember { mutableStateOf(listOf<String>()) }
     navigation.instruction.additionalData.putString("example", navigation.sentenceId)
 
+    val ticks by viewModel.ticks.collectAsState()
+    val savedState = rememberSaveable { UUID.randomUUID().toString() }
+
     DisposableEffect(backstack) {
         backstackItems = backstack
             .orEmpty()
@@ -86,19 +91,14 @@ fun ExampleScreenTemplate(
                 .padding(start = 16.dp, end = 16.dp, bottom = 8.dp, top = 8.dp)
         ) {
             Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.h4,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.h4,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
 
-                    val ticks by viewModel.ticks.collectAsState()
-                    Text(text = ticks.toString())
-                }
+                Text(text = "${savedState.take(8)}@$ticks")
+
                 Text(
                     text = stringResource(R.string.example_content),
                     modifier = Modifier.padding(top = 16.dp)
