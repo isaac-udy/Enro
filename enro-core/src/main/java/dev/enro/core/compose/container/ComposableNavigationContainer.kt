@@ -197,11 +197,14 @@ public class ComposableNavigationContainer internal constructor(
         }
         val presented = transition.activeBackstack.takeLastWhile { it.navigationDirection is NavigationDirection.Present }.toSet()
         val activePush = transition.activeBackstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }
+        val activePresented = presented.lastOrNull()
         destinationOwners.forEach { destinationOwner ->
             val instruction = destinationOwner.instruction
-            destinationOwner.transitionState.targetState = when {
-                presented.contains(destinationOwner.instruction) -> !isParentBeingRemoved
-                instruction == activePush -> !isParentBeingRemoved
+            val isPushedDialogOrBottomSheet = ((destinationOwner.destination is DialogDestination || destinationOwner.destination is BottomSheetDestination) && activePresented != null)
+
+            destinationOwner.transitionState.targetState = when (instruction) {
+                activePresented -> !isParentBeingRemoved
+                activePush -> !isParentBeingRemoved && !isPushedDialogOrBottomSheet
                 else -> false
             }
         }

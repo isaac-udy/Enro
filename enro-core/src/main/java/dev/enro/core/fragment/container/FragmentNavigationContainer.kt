@@ -173,9 +173,15 @@ public class FragmentNavigationContainer internal constructor(
     }
 
     private fun getFragmentsToDetach(backstackState: List<AnyOpenInstruction>): List<FragmentAndInstruction> {
+        val pushed = backstackState.indexOfLast { it.navigationDirection == NavigationDirection.Push }
+
+        val presented = backstackState.indexOfLast { it.navigationDirection == NavigationDirection.Present }
+            .takeIf { it > pushed } ?: -1
+
         return backstackState
-            .dropLastWhile { it.navigationDirection is NavigationDirection.Present }
-            .dropLast(1)
+            .filterIndexed { i, _ ->
+                i != pushed && i != presented
+            }
             .asFragmentAndInstruction()
     }
 
@@ -192,6 +198,7 @@ public class FragmentNavigationContainer internal constructor(
                 it.navigationDirection is NavigationDirection.Present
             }
             .map { getOrCreateFragment(DialogFragment::class.java, it)  }
+            .takeLast(1)
     }
 
     private fun getActivePushedFragment(backstackState: List<AnyOpenInstruction>) : FragmentAndInstruction? {
