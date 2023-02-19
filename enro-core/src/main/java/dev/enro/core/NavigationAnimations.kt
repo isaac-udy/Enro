@@ -111,6 +111,7 @@ public object DefaultAnimations {
     public val present: NavigationAnimation = DefaultAnimations.ForView.present
     public val replaceRoot: NavigationAnimation = DefaultAnimations.ForView.replaceRoot
     public val close: NavigationAnimation = DefaultAnimations.ForView.close
+    public val closePresent: NavigationAnimation = DefaultAnimations.ForView.closePresent
     public val none: NavigationAnimation = DefaultAnimations.ForView.none
 
     @Deprecated("Use push or present")
@@ -149,6 +150,8 @@ public object DefaultAnimations {
                 }
             }
         )
+
+        public val closePresent: NavigationAnimation.ForView = present
 
         @Deprecated("Use push or present")
         public val forward: NavigationAnimation.ForView = push

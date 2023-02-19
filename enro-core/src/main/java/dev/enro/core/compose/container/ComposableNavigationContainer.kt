@@ -160,7 +160,7 @@ public class ComposableNavigationContainer internal constructor(
     }
 
     private fun setAnimationsForBackstack(transition: NavigationBackstackTransition) {
-        val contextForAnimation = when (lastInstruction) {
+        val contextForAnimation = when (transition.lastInstruction) {
             is NavigationInstruction.Close -> destinationOwners.lastOrNull { it.instruction == transition.exitingInstruction }?.destination?.navigationContext
             else -> activeContext
         } ?: parentContext

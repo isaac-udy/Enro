@@ -34,7 +34,10 @@ public abstract class NavigationExecutor<FromContext : Any, OpensContext : Any, 
     }
 
     public open fun closeAnimation(context: NavigationContext<out OpensContext>): NavigationAnimation {
-        return DefaultAnimations.close
+        return when (context.getNavigationHandle().instruction.navigationDirection) {
+            is NavigationDirection.Present -> DefaultAnimations.closePresent
+            else -> DefaultAnimations.close
+        }
     }
 
     public open fun preOpened(
