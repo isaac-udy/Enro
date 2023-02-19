@@ -130,7 +130,10 @@ internal class ComposableDestinationOwner(
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
         key(instruction.instructionId) {
             ProvideCompositionLocals(saveableStateHolder) {
-                if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED) && !transition.targetState) {
+                if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
+                    && !transition.targetState
+                    && destination is DialogDestination
+                ) {
                     return@ProvideCompositionLocals
                 }
                 ProvideRenderingWindow {
