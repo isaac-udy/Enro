@@ -91,15 +91,6 @@ public fun DialogDestination.configureDialog(block: DialogConfiguration.Builder.
     }
 }
 
-@Composable
-internal fun EnroDialogContainer(
-    controller: ComposableNavigationContainer,
-    destination: DialogDestination
-) {
-    Box { controller.Render() }
-    destination.dialogConfiguration.ConfigureWindow()
-}
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun EnroDialogContainer(
