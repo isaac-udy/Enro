@@ -13,6 +13,7 @@ import dev.enro.core.controller.usecase.ExecuteCloseInstruction
 import dev.enro.core.controller.usecase.ExecuteContainerOperationInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.internal.NoNavigationKey
+import kotlinx.coroutines.launch
 
 internal open class NavigationHandleViewModel(
     override val instruction: AnyOpenInstruction,
@@ -103,17 +104,6 @@ internal open class NavigationHandleViewModel(
     }
 }
 
-
-private fun Lifecycle.onEvent(on: Lifecycle.Event, block: () -> Unit) {
-    addObserver(object : LifecycleEventObserver {
-        override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-            if(on == event) {
-                block()
-            }
-        }
-    })
-}
-
 private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
     val isMainThread = Looper.getMainLooper() == Looper.myLooper()
     when(this) {
@@ -121,8 +111,8 @@ private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
             if(isMainThread && !fragment.isStateSaved && fragment.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 block()
             } else {
-                fragment.lifecycleScope.launchWhenStarted {
-                    block()
+                fragment.lifecycleScope.launch {
+                    fragment.lifecycle.withStarted(block)
                 }
             }
         }
@@ -130,8 +120,8 @@ private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
             if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
                 block()
             } else {
-                contextReference.lifecycleScope.launchWhenStarted {
-                    block()
+                contextReference.lifecycleScope.launch {
+                    contextReference.lifecycle.withStarted(block)
                 }
             }
         }
@@ -139,8 +129,8 @@ private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
             if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 block()
             } else {
-                contextReference.lifecycleScope.launchWhenStarted {
-                    block()
+                contextReference.lifecycleScope.launch {
+                    contextReference.lifecycle.withStarted(block)
                 }
             }
         }

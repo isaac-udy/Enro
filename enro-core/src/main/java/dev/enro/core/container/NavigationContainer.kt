@@ -5,6 +5,7 @@ import androidx.annotation.MainThread
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withCreated
 import dev.enro.core.*
 import dev.enro.core.compatability.Compatibility
 import dev.enro.core.controller.get
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 public abstract class NavigationContainer(
     public val key: NavigationContainerKey,
@@ -65,8 +67,8 @@ public abstract class NavigationContainer(
         setActiveContainerFrom(transition)
 
         if (onBackstackUpdated(transition)) return@synchronized
-        renderJob = parentContext.lifecycleOwner.lifecycleScope.launchWhenCreated {
-            while(!onBackstackUpdated(transition) && isActive) {
+        renderJob = parentContext.lifecycleOwner.lifecycleScope.launch {
+            while (!onBackstackUpdated(transition) && isActive) {
                 delay(16)
             }
         }
@@ -109,8 +111,10 @@ public abstract class NavigationContainer(
             setBackstack(backstack)
         }
         if (!savedStateRegistry.isRestored) {
-            parentContext.lifecycleOwner.lifecycleScope.launchWhenCreated {
-                initialise()
+            parentContext.lifecycleOwner.lifecycleScope.launch {
+                parentContext.lifecycle.withCreated {
+                    initialise()
+                }
             }
         } else initialise()
     }

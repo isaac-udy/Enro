@@ -8,12 +8,14 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.*
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withCreated
 import dev.enro.core.*
 import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
 import dev.enro.extensions.animate
+import kotlinx.coroutines.launch
 
 public class FragmentNavigationContainer internal constructor(
     @IdRes public val containerId: Int,
@@ -81,8 +83,10 @@ public class FragmentNavigationContainer internal constructor(
             onBackstackUpdated(NavigationBackstackTransition(backstack to backstack))
         }
         if (!savedStateRegistry.isRestored) {
-            parentContext.lifecycleOwner.lifecycleScope.launchWhenCreated {
-                initialise()
+            parentContext.lifecycleOwner.lifecycleScope.launch {
+                parentContext.lifecycle.withCreated {
+                    initialise()
+                }
             }
         } else initialise()
     }

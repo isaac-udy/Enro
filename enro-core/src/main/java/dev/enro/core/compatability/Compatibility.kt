@@ -18,6 +18,7 @@ import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.HostInstructionAs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import dev.enro.core.container.NavigationContainer as RealNavigationContainer
 
 internal object Compatibility {
 
@@ -59,8 +60,8 @@ internal object Compatibility {
         internal fun earlyExitForMissingContainerPush(
             fromContext: NavigationContext<*>,
             instruction: AnyOpenInstruction,
-            container: NavigationContainer?,
-            findContainerFor: (NavigationContext<*>, AnyOpenInstruction) -> NavigationContainer?,
+            container: RealNavigationContainer?,
+            findContainerFor: (NavigationContext<*>, AnyOpenInstruction) -> RealNavigationContainer?,
         ): Boolean {
             if (instruction.navigationDirection != NavigationDirection.Push) return false
             if (container != null) return false

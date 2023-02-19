@@ -5,10 +5,12 @@ import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withCreated
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
+import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
 public interface NavigationHandle : LifecycleOwner {
@@ -134,8 +136,10 @@ internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
     if(isMainThread && lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
         block()
     } else {
-        lifecycleScope.launchWhenCreated {
-            block()
+        lifecycleScope.launch {
+            lifecycle.withCreated {
+                block()
+            }
         }
     }
 }
