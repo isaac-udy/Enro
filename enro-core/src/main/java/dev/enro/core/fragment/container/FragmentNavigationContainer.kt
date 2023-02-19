@@ -63,6 +63,7 @@ public class FragmentNavigationContainer internal constructor(
                 val instructionId = f.tag ?: return
                 if (fm.isDestroyed || fm.isStateSaved) return
                 if (!f.isRemoving) return
+                ownedFragments.remove(f.tag)
                 setBackstack(backstack.close(instructionId))
             }
         }, false)
@@ -101,10 +102,9 @@ public class FragmentNavigationContainer internal constructor(
         val toPresent = getFragmentsToPresent(backstack)
         val toDetach = getFragmentsToDetach(backstack)
         val toRemove = getFragmentsToRemove(backstack)
-            .filter {
-                if (it is DialogFragment) it.dismiss()
-                return@filter it !is DialogFragment
-            }
+        val toRemoveDialogs = toRemove.filterIsInstance<DialogFragment>()
+        val toRemoveDirect = toRemove.filter { it !is DialogFragment }
+
         (toDetach + activePushed)
             .filterNotNull()
             .forEach {
@@ -112,15 +112,19 @@ public class FragmentNavigationContainer internal constructor(
             }
 
         setAnimations(transition)
-
         fragmentManager.commitNow {
-            setReorderingAllowed(true)
             applyAnimationsForTransaction(
                 active = activePushed
             )
-            toRemove.forEach {
+            toRemoveDirect.forEach {
                 remove(it)
                 ownedFragments.remove(it.tag)
+            }
+            runOnCommit {
+                toRemoveDialogs.forEach {
+                    it.dismiss()
+                    ownedFragments.remove(it.tag)
+                }
             }
             toDetach.forEach {
                 detach(it.fragment)

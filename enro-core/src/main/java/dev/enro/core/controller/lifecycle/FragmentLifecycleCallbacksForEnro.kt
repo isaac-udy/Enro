@@ -3,6 +3,8 @@ package dev.enro.core.controller.lifecycle
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
+import androidx.activity.ComponentDialog
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -42,7 +44,17 @@ internal class FragmentLifecycleCallbacksForEnro(
         outState: Bundle?
     ) {
         if (fragment is DialogFragment && fragment.showsDialog) {
-            ViewCompat.addOnUnhandledKeyEventListener(view, DialogFragmentBackPressedListener)
+            val dialog = fragment.requireDialog()
+            if (dialog is ComponentDialog) {
+                dialog.onBackPressedDispatcher.addCallback(fragment.viewLifecycleOwner, object : OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        fragment.getNavigationHandle().requestClose()
+                    }
+                })
+            }
+            else {
+                ViewCompat.addOnUnhandledKeyEventListener(view, DialogFragmentBackPressedListener)
+            }
         }
     }
 }
