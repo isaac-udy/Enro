@@ -99,7 +99,7 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
             view.alpha = 1f
 
             if (fragment is AbstractFragmentHostForComposable) return
-            fragment.requireView().animate(
+            view.animate(
                 animOrAnimator = animations.enter
             )
         }
