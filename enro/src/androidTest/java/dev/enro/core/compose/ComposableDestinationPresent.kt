@@ -1,7 +1,15 @@
 package dev.enro.core.compose
 
 import android.os.Parcelable
+import androidx.lifecycle.Lifecycle
+import androidx.test.espresso.Espresso
+import dev.enro.core.*
+import dev.enro.core.container.present
+import dev.enro.core.container.push
 import dev.enro.core.destinations.*
+import dev.enro.expectComposableContext
+import dev.enro.setBackstackOnMain
+import dev.enro.waitFor
 import junit.framework.TestCase.assertEquals
 import kotlinx.parcelize.Parcelize
 import leakcanary.DetectLeaksAfterTestSuccess
@@ -18,6 +26,60 @@ class ComposableDestinationPresent {
         val root = launchComposableRoot()
 
         root.assertPresentsTo<ComposableDestination, ComposableDestinations.Presentable>()
+    }
+
+    @Test
+    fun givenComposableDestination_whenExecutingPresent_andPresent_andPush_thenCorrectDestinationIsOpened_andBackButtonWorksCorrectly() {
+        val root = launchComposableRoot()
+
+        val presented = ComposableDestinations.Presentable()
+        root.assertPresentsTo<ComposableDestination, ComposableDestinations.Presentable>(presented)
+            .assertPresentsTo<ComposableDestination, ComposableDestinations.Presentable>(presented)
+            .navigation
+            .push(ComposableDestinations.Pushable())
+
+        expectComposableContext<ComposableDestinations.Pushable>()
+        Espresso.pressBack()
+        expectComposableContext<ComposableDestinations.Presentable> { it.navigation.key == presented }
+
+        root.navigation.push(ComposableDestinations.Pushable())
+        expectComposableContext<ComposableDestinations.Pushable>().navigation.close()
+        expectComposableContext<ComposableDestinations.Presentable>()
+    }
+
+    @OptIn(AdvancedEnroApi::class)
+    @Test
+    fun givenComposableDestination_whenManuallyPresentingAndPushingBackstack_thenBacstackIsUpdatedCorrectly() {
+        val root = launchComposableRoot()
+
+        val rootContainer = root.navigationContext.directParentContainer()!!
+        rootContainer.setBackstackOnMain {
+            it.present(ComposableDestinations.Presentable("1"))
+                .present(ComposableDestinations.Presentable("2"))
+        }
+
+        expectComposableContext<ComposableDestinations.Presentable> { it.navigation.key.id == "2" }
+        rootContainer.setBackstackOnMain {
+            it.push(ComposableDestinations.Pushable("3"))
+        }
+        expectComposableContext<ComposableDestinations.Pushable> { it.navigation.key.id == "3" }
+            .let {
+                waitFor { it.navigation.lifecycle.currentState == Lifecycle.State.RESUMED }
+            }
+        Espresso.pressBack()
+        expectComposableContext<ComposableDestinations.Presentable> { it.navigation.key.id == "2" }
+        rootContainer.setBackstackOnMain {
+            it.push(ComposableDestinations.Pushable("4"))
+        }
+        expectComposableContext<ComposableDestinations.Pushable> { it.navigation.key.id == "4" }
+            .navigation
+            .close()
+
+        expectComposableContext<ComposableDestinations.Presentable> { it.navigation.key.id == "2" }
+        Espresso.pressBack()
+        expectComposableContext<ComposableDestinations.Presentable> { it.navigation.key.id == "1" }
+        Espresso.pressBack()
+        expectComposableContext<ComposableDestinations.Root>()
     }
 
     @Parcelize

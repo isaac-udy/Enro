@@ -5,6 +5,7 @@ import androidx.annotation.MainThread
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withCreated
 import dev.enro.core.*
 import dev.enro.core.compatability.Compatibility
@@ -47,6 +48,15 @@ public abstract class NavigationContainer(
 
     private var renderJob: Job? = null
 
+    init {
+        parentContext.lifecycleOwner.lifecycleScope.launch {
+            parentContext.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                if (lastInstruction == null) return@repeatOnLifecycle
+                performBackstackUpdate(NavigationBackstackTransition(backstack to backstack))
+            }
+        }
+    }
+
     @MainThread
     public fun setBackstack(backstack: NavigationBackstack): Unit = synchronized(this) {
         if (Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
@@ -65,8 +75,11 @@ public abstract class NavigationContainer(
         val transition = NavigationBackstackTransition(lastBackstack to processedBackstack)
         lastInstruction = transition.lastInstruction
         setActiveContainerFrom(transition)
+        performBackstackUpdate(transition)
+    }
 
-        if (onBackstackUpdated(transition)) return@synchronized
+    private fun performBackstackUpdate(transition: NavigationBackstackTransition) {
+        if (onBackstackUpdated(transition)) return
         renderJob = parentContext.lifecycleOwner.lifecycleScope.launch {
             parentContext.lifecycle.withCreated {}
             while (!onBackstackUpdated(transition) && isActive) {

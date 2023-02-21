@@ -144,7 +144,6 @@ internal class ComposableDestinationOwner(
         if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
             && !transitionState.currentState
             && !transitionState.targetState
-            && destination is DialogDestination
         ) return
 
         val animation = remember(transitionState.targetState) {

@@ -12,6 +12,9 @@ import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
+import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.setBackstack
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.result.EnroResultChannel
@@ -29,6 +32,12 @@ inline fun <reified T: NavigationKey> ActivityScenario<out ComponentActivity>.ge
     handle.key as? T
         ?: throw IllegalStateException("Handle was of incorrect type. Expected ${T::class.java.name} but was ${handle.key::class.java.name}")
     return handle.asTyped()
+}
+
+fun NavigationContainer.setBackstackOnMain(
+    block: (NavigationBackstack) -> List<AnyOpenInstruction>
+) = InstrumentationRegistry.getInstrumentation().runOnMainSync {
+    setBackstack(block)
 }
 
 class TestNavigationContext<Context: Any, KeyType: NavigationKey>(

@@ -82,11 +82,6 @@ public class ComposableNavigationContainer internal constructor(
 
     init {
         setOrLoadInitialBackstack(initialBackstack)
-        parentContext.lifecycle.addObserver(LifecycleEventObserver { _, event ->
-            if(event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
-            destinationOwners.onEach { it.destroy() }
-            destinationOwners = emptyList()
-        })
     }
 
     @OptIn(ExperimentalMaterialApi::class)
@@ -223,7 +218,6 @@ public class ComposableNavigationContainer internal constructor(
             val containerManager = parentContext.containerManager
 
             fun dispose() {
-                containerManager.removeContainer(this@ComposableNavigationContainer)
                 destinationOwners.forEach { composableDestinationOwner ->
                     composableDestinationOwner.destroy()
                 }
