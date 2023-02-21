@@ -51,7 +51,8 @@ class ComposableDestinationPresent {
 
     @OptIn(AdvancedEnroApi::class)
     @Test
-    @Ignore("This test appears to be somewhat flaky due to the window randomly losing focus in a way that can't be reproduced on an actual device")    fun givenComposableDestination_whenManuallyPresentingAndPushingBackstack_thenBacstackIsUpdatedCorrectly() {
+    @Ignore("This test appears to be somewhat flaky due to the window randomly losing focus in a way that can't be reproduced on an actual device")
+    fun givenComposableDestination_whenManuallyPresentingAndPushingBackstack_thenBacstackIsUpdatedCorrectly() {
         val root = launchComposableRoot()
 
         val rootContainer = root.navigationContext.directParentContainer()!!
