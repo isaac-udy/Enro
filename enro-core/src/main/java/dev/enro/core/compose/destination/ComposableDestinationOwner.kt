@@ -119,28 +119,6 @@ internal class ComposableDestinationOwner(
             }
         }
 
-        /**
-         * This if statement does some important work, and unfortunately any proof work that it does is not able to be captured
-         * by an automated test at this stage; all attempts to recreate the error that occurs in the absence of this statement have
-         * failed to fail.
-         *
-         * To manually recreate the failure that occurs without this statement:
-         * Create a Composable destination ("CD") which can be presented and pushed
-         * Create a *Composable* transition between destinations of CD and CD
-         * ReplaceRoot with CD
-         * Push several other CD's (CD1, CD2, CD3, etc)
-         * Push a fragment destination (FD)
-         * Navigate back from FD to the top CD
-         * Navigating back from CD(n) to CD(n-1) should cause a crash due to movableContent IndexOutOfBounds errors occuring within
-         * the Compose internals
-         */
-        if (
-            instruction != backstackState.lastOrNull()
-            && !transitionState.currentState
-            && !transitionState.targetState
-            && instruction.navigationDirection == NavigationDirection.Push
-        ) return
-
         if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
             && !transitionState.currentState
             && !transitionState.targetState
