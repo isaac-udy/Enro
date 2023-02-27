@@ -44,6 +44,7 @@ internal class NavigationControllerScope(
             register { CanInstructionBeHostedAs(get(), get()) }
             register { HostInstructionAs(get(), get()) }
             register { GetNavigationBinding(get()) }
+            register { GetNavigationAnimations(get()) }
 
             // Other
             register<Application.ActivityLifecycleCallbacks> { ActivityLifecycleCallbacksForEnro(get(), get(), get()) }

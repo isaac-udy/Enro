@@ -31,6 +31,8 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.compose.dialog.*
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.getAnimationsForEntering
+import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
@@ -127,16 +129,19 @@ internal class ComposableDestinationOwner(
         val animation = remember(transitionState.targetState) {
             when (destination) {
                 is DialogDestination -> NavigationAnimation.Composable(
-                        forView = DefaultAnimations.ForView.none,
+                        forView = NavigationAnimation.Resource(0),
                         enter = EnterTransition.None,
                         exit = fadeOut(tween(75, 150)),
                 )
                 is BottomSheetDestination -> NavigationAnimation.Composable(
-                    forView = DefaultAnimations.ForView.none,
+                    forView = NavigationAnimation.Resource(0),
                     enter = EnterTransition.None,
                     exit =  fadeOut(tween(75, 150)),
                 )
-                else -> parentContainer.currentAnimations.asComposable()
+                else -> when(transitionState.targetState) {
+                    true -> parentContainer.getAnimationsForEntering(instruction).asComposable()
+                    else -> parentContainer.getAnimationsForExiting(instruction).asComposable()
+                }
             }
         }
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")

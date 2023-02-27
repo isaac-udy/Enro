@@ -1,6 +1,7 @@
 package dev.enro.core.fragment.container
 
 import android.app.Activity
+import android.util.Log
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.os.bundleOf
@@ -50,9 +51,6 @@ public class FragmentNavigationContainer internal constructor(
                 ?: fragmentManager.findFragmentById(containerId)
             return fragment?.navigationContext
         }
-
-    override var currentAnimations: NavigationAnimation = DefaultAnimations.none
-        private set
 
     private val ownedFragments = mutableSetOf<String>()
 
@@ -111,7 +109,6 @@ public class FragmentNavigationContainer internal constructor(
                 setZIndexForAnimations(backstack, it)
             }
 
-        setAnimations(transition)
         fragmentManager.commitNow {
             applyAnimationsForTransaction(
                 active = activePushed
@@ -242,36 +239,44 @@ public class FragmentNavigationContainer internal constructor(
         }
     }
 
-    private fun setAnimations(
-        transition: NavigationBackstackTransition
-    ) {
-        val shouldTakeAnimationsFromParentContainer = parentContext is FragmentContext<out Fragment>
-                && parentContext.contextReference is NavigationHost
-                && transition.activeBackstack.size <= 1
-
-        val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
-        val previouslyActiveContext = runCatching { previouslyActiveFragment?.navigationContext }.getOrNull()
-
-        val lastInstruction = lastInstruction
-        currentAnimations = when {
-            shouldTakeAnimationsFromParentContainer -> parentContext.parentContainer()?.currentAnimations ?: DefaultAnimations.none
-            lastInstruction == null -> DefaultAnimations.none
-            else -> animationsFor(
-                previouslyActiveContext ?: parentContext,
-                lastInstruction
-            )
-        }
-    }
-
     private fun FragmentTransaction.applyAnimationsForTransaction(
         active: FragmentAndInstruction?
     ) {
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
-        val resourceAnimations = currentAnimations.asResource(parentContext.activity.theme)
+        val entering = (active?.let { getAnimationsForEntering(it.instruction) } ?: DefaultAnimations.none.entering).asResource(parentContext.activity.theme)
+        val exiting = (currentTransition?.exitingInstruction?.let { getAnimationsForExiting(it) } ?: DefaultAnimations.none.exiting).asResource(parentContext.activity.theme)
+
+        val noOpEntering = when {
+            exiting.isAnimator(parentContext.activity) -> R.animator.animator_example_no
+            else -> R.anim.enro_no_op_enter_animation
+        }
+
+        // When a FragmentTransaction uses custom animations that are of the same anim/animator type,
+        // the anim is disregarded, and the Fragment that would receive the anim does not receive any
+        // animation. So, what we're doing here is falling back to a default anim or animator resource
+        // for the exit animation, in the case that the enter/exit anim/animator types do not match.
+        val exitingId = when {
+            previouslyActiveFragment is NavigationHost -> when {
+                entering.isAnimator(parentContext.activity) -> R.animator.animator_no_op_exit
+                else -> R.anim.enro_no_op_exit_animation
+            }
+            exiting.id == 0 -> 0
+            entering.isAnimator(parentContext.activity)
+                    && !exiting.isAnimator(parentContext.activity) -> {
+                Log.e("Enro", "Fragment enter animation was 'animator' and exit was 'anim', falling back to default animator for exit animations")
+                R.animator.animator_enro_fallback_exit
+            }
+            entering.isAnim(parentContext.activity)
+                    && !exiting.isAnim(parentContext.activity) -> {
+                Log.e("Enro", "Fragment enter animation was 'anim' and exit was 'animator', falling back to default anim for exit animations")
+                R.anim.enro_fallback_exit
+            }
+            else -> exiting.id
+        }
 
         setCustomAnimations(
-            if (active?.fragment is NavigationHost) R.anim.enro_no_op_enter_animation else resourceAnimations.enter,
-            if (previouslyActiveFragment is NavigationHost) R.anim.enro_no_op_exit_animation else resourceAnimations.exit
+            if (active?.fragment is NavigationHost) noOpEntering else entering.id,
+            exitingId
         )
     }
 }
@@ -292,17 +297,16 @@ public val FragmentNavigationContainer.containerView: View?
 
 public fun FragmentNavigationContainer.setVisibilityAnimated(
     isVisible: Boolean,
-    animations: NavigationAnimation = DefaultAnimations.present
+    animations: NavigationAnimationTransition = DefaultAnimations.present
 ) {
     val view = containerView ?: return
     if (!view.isVisible && !isVisible) return
     if (view.isVisible && isVisible) return
 
-    val resourceAnimations = animations.asResource(view.context.theme)
     view.animate(
         animOrAnimator = when (isVisible) {
-            true -> resourceAnimations.enter
-            false -> resourceAnimations.exit
+            true -> animations.entering.asResource(view.context.theme).id
+            false -> animations.exiting.asResource(view.context.theme).id
         },
         onAnimationStart = {
             view.translationZ = if (isVisible) 0f else -1f

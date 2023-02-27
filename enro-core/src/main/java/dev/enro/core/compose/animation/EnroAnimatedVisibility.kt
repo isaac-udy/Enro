@@ -1,6 +1,6 @@
 package dev.enro.core.compose.animation
 
-import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.runtime.Composable
@@ -29,7 +29,7 @@ internal fun EnroAnimatedVisibility(
         IntSize(maxWidth.roundToPx(), maxHeight.roundToPx())
     }
 
-    val animationStateValues = getAnimationResourceState(visibleState, if(visibleState.targetState) resourceAnimations.enter else  resourceAnimations.exit, size)
+    val animationStateValues = getAnimationResourceState(visibleState, resourceAnimations.id, size)
     if(visibleState.currentState || visibleState.targetState || animationStateValues.isActive) {
         Box(
             modifier = Modifier

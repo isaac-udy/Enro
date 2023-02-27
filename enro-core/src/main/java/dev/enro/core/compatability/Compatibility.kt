@@ -1,9 +1,6 @@
 package dev.enro.core.compatability
 
 import android.app.Activity
-import android.os.Build
-import android.os.Bundle
-import android.os.Parcelable
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -16,6 +13,7 @@ import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.extensions.getParcelableCompat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import dev.enro.core.container.NavigationContainer as RealNavigationContainer
@@ -23,7 +21,7 @@ import dev.enro.core.container.NavigationContainer as RealNavigationContainer
 internal object Compatibility {
 
     object DefaultContainerExecutor {
-        private const val ORIGINAL_NAVIGATION_DIRECTION = "Compatibility.DefaultContainerExecutor.ORIGINAL_NAVIGATION_DIRECTION"
+        private const val COMPATIBILITY_NAVIGATION_DIRECTION = "Compatibility.DefaultContainerExecutor.COMPATIBILITY_NAVIGATION_DIRECTION"
 
         fun earlyExitForFragments(args: ExecutorArgs<*, *, *>): Boolean {
             return args.fromContext is FragmentContext && !args.fromContext.fragment.isAdded
@@ -50,7 +48,7 @@ internal object Compatibility {
                         isDialog -> args.instruction.asPresentInstruction()
                         else -> args.instruction.asPushInstruction()
                     }.apply {
-                        additionalData.putParcelable(ORIGINAL_NAVIGATION_DIRECTION, args.instruction.navigationDirection)
+                        additionalData.putParcelable(COMPATIBILITY_NAVIGATION_DIRECTION, args.instruction.navigationDirection)
                     }
                 }
                 else -> args.instruction
@@ -78,7 +76,7 @@ internal object Compatibility {
                 )
 
             val originalDirection = instruction.additionalData
-                .getParcelableCompat<NavigationDirection>(ORIGINAL_NAVIGATION_DIRECTION)
+                .getParcelableCompat<NavigationDirection>(COMPATIBILITY_NAVIGATION_DIRECTION)
             val isReplace = originalDirection == NavigationDirection.Replace
 
             requireNotNull(presentContainer)
@@ -178,9 +176,4 @@ private fun isDialog(args: ExecutorArgs<*, *, *>): Boolean {
             DialogDestination::class.java.isAssignableFrom(args.binding.destinationType.java)
             || BottomSheetDestination::class.java.isAssignableFrom(args.binding.destinationType.java)
 
-}
-
-private inline fun <reified T : Parcelable> Bundle.getParcelableCompat(key: String): T? = when {
-    Build.VERSION.SDK_INT >= 33 -> getParcelable(key, T::class.java)
-    else -> @Suppress("DEPRECATION") getParcelable(key) as? T
 }

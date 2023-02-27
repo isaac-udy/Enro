@@ -3,6 +3,7 @@ package dev.enro.core.compose.animation
 import android.animation.AnimatorInflater
 import android.content.Context
 import android.graphics.Matrix
+import android.os.Build
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -11,6 +12,8 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.animation.Transformation
 import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.platform.LocalContext
@@ -96,17 +99,29 @@ private fun rememberAnimationResourceStateFromAnim(
 ) {
     val context = LocalContext.current
 
-    LaunchedEffect(animOrAnimator, transitionState.targetState) {
+    val anim = remember(animOrAnimator, transitionState.targetState) {
+        AnimationUtils.loadAnimation(context, animOrAnimator).apply {
+            initialize(
+                size.width,
+                size.height,
+                size.width,
+                size.height
+            )
+        }
+    }
+
+    // Add an animation on the TransitionState to ensure that the transition is still marked
+    // as active while the anim's animation completes
+    transitionState.animateFloat(
+        transitionSpec = { tween(anim.duration.toInt()) },
+        label = "Anim@$animOrAnimator"
+    ) {
+        if(it) 1.0f else 0.0f
+    }
+
+    LaunchedEffect(anim) {
         withContext(Dispatchers.IO) {
             val startTime = System.currentTimeMillis()
-            val anim = AnimationUtils.loadAnimation(context, animOrAnimator).apply {
-                initialize(
-                    size.width,
-                    size.height,
-                    size.width,
-                    size.height
-                )
-            }
             val transformation = Transformation()
             val v = FloatArray(9)
 
@@ -141,9 +156,27 @@ private fun rememberAnimationResourceStateFromAnimator(
 ) {
     val context = LocalContext.current
 
-    LaunchedEffect(animOrAnimator, transitionState.targetState) {
+    val animator = remember(animOrAnimator, transitionState.targetState) {
+        AnimatorInflater.loadAnimator(context, animOrAnimator)
+    }
+
+    // Add an animation on the TransitionState to ensure that the transition is still marked
+    // as active while the animator's animation completes
+    transitionState.animateFloat(
+        transitionSpec = {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                tween(animator.totalDuration.toInt())
+            } else {
+                tween(1000)
+            }
+        },
+        label = "Animator@$animOrAnimator"
+    ) {
+        if(it) 1.0f else 0.0f
+    }
+
+    LaunchedEffect(animator) {
         val startTime = System.currentTimeMillis()
-        val animator = AnimatorInflater.loadAnimator(context, animOrAnimator)
         val animatorView = AnimatorView(context).apply {
             layoutParams = ViewGroup.LayoutParams(size.width, size.height)
             animator.setTarget(this)

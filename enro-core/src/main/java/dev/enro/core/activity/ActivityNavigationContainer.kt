@@ -32,9 +32,6 @@ internal class ActivityNavigationContainer internal constructor(
     override val isVisible: Boolean
         get() = parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
 
-    override val currentAnimations: NavigationAnimation
-        get() = animationsFor(parentContext, parentContext.getNavigationHandle().instruction)
-
     private val rootInstruction: AnyOpenInstruction
         get() = activeContext.getNavigationHandle().instruction
 
@@ -49,8 +46,14 @@ internal class ActivityNavigationContainer internal constructor(
         val activeInstructionIsPresent = transition.activeBackstack.any { it.instructionId == rootInstruction.instructionId }
         if (!activeInstructionIsPresent) {
             ActivityCompat.finishAfterTransition(activeContext.activity)
-            val animations = animationsFor(activeContext, NavigationInstruction.Close).asResource(activeContext.activity.theme)
-            activeContext.activity.overridePendingTransition(animations.enter, animations.exit)
+            val animations = getNavigationAnimations.closing(
+                exiting = rootInstruction,
+                entering = transition.activeBackstack.active,
+            )
+            activeContext.activity.overridePendingTransition(
+                animations.entering.asResource(activeContext.activity.theme).id,
+                animations.exiting.asResource(activeContext.activity.theme).id
+            )
         }
 
         val instructionToOpen = transition.activeBackstack
@@ -77,9 +80,17 @@ internal class ActivityNavigationContainer internal constructor(
         }
 
         val activity = activeContext.activity
-        val animations = animationsFor(activeContext, instructionToOpenHosted).asResource(activity.theme)
 
-        val options = ActivityOptionsCompat.makeCustomAnimation(activity, animations.enter, animations.exit)
+        val animations = getNavigationAnimations.opening(
+            exiting = rootInstruction,
+            entering = instructionToOpenHosted
+        )
+
+        val options = ActivityOptionsCompat.makeCustomAnimation(
+            activity,
+            animations.entering.asResource(activeContext.activity.theme).id,
+            animations.exiting.asResource(activeContext.activity.theme).id
+        )
         activity.startActivity(intent, options.toBundle())
 
         return true

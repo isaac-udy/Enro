@@ -12,6 +12,7 @@ import dev.enro.core.compatability.Compatibility
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
+import dev.enro.core.controller.usecase.GetNavigationAnimations
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +30,7 @@ public abstract class NavigationContainer(
     public val acceptsNavigationKey: (NavigationKey) -> Boolean,
     public val acceptsDirection: (NavigationDirection) -> Boolean,
 ) {
+    internal val getNavigationAnimations = parentContext.controller.dependencyScope.get<GetNavigationAnimations>()
     private val canInstructionBeHostedAs = parentContext.controller.dependencyScope.get<CanInstructionBeHostedAs>()
 
     internal val interceptor = NavigationInterceptorBuilder()
@@ -37,13 +39,15 @@ public abstract class NavigationContainer(
 
     public abstract val activeContext: NavigationContext<*>?
     public abstract val isVisible: Boolean
-    internal abstract val currentAnimations: NavigationAnimation
 
     private val mutableBackstack: MutableStateFlow<NavigationBackstack> = MutableStateFlow(emptyBackstack())
     public val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
     public val backstack: NavigationBackstack get() = backstackFlow.value
 
-    public var lastInstruction: NavigationInstruction? = null
+    public var lastTransition: NavigationBackstackTransition? = null
+        private set
+
+    public var currentTransition: NavigationBackstackTransition? = null
         private set
 
     private var renderJob: Job? = null
@@ -51,7 +55,7 @@ public abstract class NavigationContainer(
     init {
         parentContext.lifecycleOwner.lifecycleScope.launch {
             parentContext.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                if (lastInstruction == null) return@repeatOnLifecycle
+                if (currentTransition == null) return@repeatOnLifecycle
                 performBackstackUpdate(NavigationBackstackTransition(backstack to backstack))
             }
         }
@@ -73,18 +77,22 @@ public abstract class NavigationContainer(
         if (handleEmptyBehaviour(processedBackstack)) return
         val lastBackstack = mutableBackstack.getAndUpdate { processedBackstack }
         val transition = NavigationBackstackTransition(lastBackstack to processedBackstack)
-        lastInstruction = transition.lastInstruction
         setActiveContainerFrom(transition)
         performBackstackUpdate(transition)
     }
 
     private fun performBackstackUpdate(transition: NavigationBackstackTransition) {
-        if (onBackstackUpdated(transition)) return
+        currentTransition = transition
+        if (onBackstackUpdated(transition)) {
+            lastTransition = transition
+            return
+        }
         renderJob = parentContext.lifecycleOwner.lifecycleScope.launch {
             parentContext.lifecycle.withCreated {}
             while (!onBackstackUpdated(transition) && isActive) {
                 delay(16)
             }
+            lastTransition = transition
         }
     }
 
@@ -212,4 +220,52 @@ public val NavigationContainer.isActive: Boolean
 
 public fun NavigationContainer.setActive() {
     parentContext.containerManager.setActiveContainer(this)
+}
+
+private fun NavigationContainer.getTransitionForInstruction(instruction: AnyOpenInstruction): NavigationBackstackTransition? {
+    val isHosted = parentContext.contextReference is NavigationHost
+    if (!isHosted) return currentTransition
+
+    val isRootInstruction = backstack.size <= 1
+    if (!isRootInstruction) return currentTransition
+
+    val parentContainer = parentContext.parentContainer() ?: return currentTransition
+    val isLastInstruction = parentContainer.currentTransition?.lastInstruction == instruction
+    val isExitingInstruction = parentContainer.currentTransition?.exitingInstruction == instruction
+    val isEnteringInstruction = parentContainer.currentTransition?.activeBackstack?.active == instruction
+
+    if (isLastInstruction ||
+        isExitingInstruction ||
+        isEnteringInstruction
+    ) return parentContainer.currentTransition
+
+    return currentTransition
+}
+
+public fun NavigationContainer.getAnimationsForEntering(instruction: AnyOpenInstruction): NavigationAnimation {
+    val animations = parentContext.controller.dependencyScope.get<GetNavigationAnimations>()
+    val currentTransition = getTransitionForInstruction(instruction)
+        ?: return animations.opening(null, instruction).entering
+
+    val exitingInstruction = currentTransition.exitingInstruction
+        ?: return animations.opening(null, instruction).entering
+
+    if(currentTransition.lastInstruction is NavigationInstruction.Close) {
+        return animations.closing(exitingInstruction, instruction).entering
+    }
+    return animations.opening(exitingInstruction, instruction).entering
+}
+
+public fun NavigationContainer.getAnimationsForExiting(instruction: AnyOpenInstruction): NavigationAnimation {
+    val animations = parentContext.controller.dependencyScope.get<GetNavigationAnimations>()
+    val currentTransition = getTransitionForInstruction(instruction)
+        ?: return animations.closing(instruction, null).exiting
+
+    val activeInstruction = currentTransition.activeBackstack.active
+        ?: return animations.closing(instruction, null).exiting
+
+    if(currentTransition.lastInstruction is NavigationInstruction.Close) {
+        return animations.closing(instruction, activeInstruction).exiting
+    }
+    return animations.opening(instruction, activeInstruction).exiting
 }

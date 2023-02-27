@@ -53,17 +53,13 @@ public class ComposableNavigationContainer internal constructor(
     override val isVisible: Boolean
         get() = true
 
-    override var currentAnimations: NavigationAnimation by mutableStateOf(DefaultAnimations.none)
-        private set
-
-
     // When we've got a NavigationHost wrapping this ComposableNavigationContainer,
     // we want to take the animations provided by the NavigationHost's NavigationContainer,
     // and sometimes skip other animation jobs
     private val shouldTakeAnimationsFromParentContainer: Boolean
         get() = parentContext.contextReference is NavigationHost
                 && backstack.size <= 1
-                && lastInstruction != NavigationInstruction.Close
+                && currentTransition?.lastInstruction != NavigationInstruction.Close
 
     // We want "Render" to look like it's a Composable function (it's a Composable lambda), so
     // we are uppercasing the first letter of the property name, which triggers a PropertyName lint warning
@@ -131,7 +127,6 @@ public class ComposableNavigationContainer internal constructor(
             .mapNotNull { instruction ->
                 activeDestinations[instruction]
             }
-        setAnimationsForBackstack(transition)
         setVisibilityForBackstack(transition)
         return true
     }
@@ -152,33 +147,6 @@ public class ComposableNavigationContainer internal constructor(
             onNavigationContextSaved = parentContext.controller.dependencyScope.get(),
             composeEnvironment = parentContext.controller.dependencyScope.get(),
         )
-    }
-
-    private fun setAnimationsForBackstack(transition: NavigationBackstackTransition) {
-        val contextForAnimation = when (transition.lastInstruction) {
-            is NavigationInstruction.Close -> destinationOwners.lastOrNull { it.instruction == transition.exitingInstruction }?.destination?.navigationContext
-            else -> activeContext
-        } ?: parentContext
-
-        runCatching { parentContext.parentContext }.onFailure { return }
-        val isRestoredFromExitingParent = when (parentContext.contextReference) {
-            is NavigationHost -> parentContext.parentContainer()?.lastInstruction != null
-            else -> false
-        }
-
-        val lastInstruction = lastInstruction
-        currentAnimations = when {
-            shouldTakeAnimationsFromParentContainer -> {
-                val parentContainer = parentContext.parentContainer()
-                parentContainer?.currentAnimations ?: DefaultAnimations.none
-            }
-            lastInstruction == null -> {
-                if (!isRestoredFromExitingParent) DefaultAnimations.none
-                val parentContainer = parentContext.parentContainer()
-                parentContainer?.currentAnimations ?: DefaultAnimations.none
-            }
-            else -> animationsFor(contextForAnimation, lastInstruction)
-        }
     }
 
     @OptIn(ExperimentalMaterialApi::class)
@@ -256,7 +224,6 @@ public class ComposableNavigationContainer internal constructor(
             val lifecycleObserver = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_RESUME || event == Lifecycle.Event.ON_PAUSE) {
                     setVisibilityForBackstack(NavigationBackstackTransition(backstack to backstack))
-                    setAnimationsForBackstack(NavigationBackstackTransition(backstack to backstack))
                 }
             }
             parentContext.lifecycle.addObserver(lifecycleObserver)

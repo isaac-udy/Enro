@@ -24,10 +24,7 @@ public enum class WindowInputMode(internal val mode: Int) {
 public open class DialogConfiguration {
     internal var isDismissed = mutableStateOf(false)
 
-    internal var animations: NavigationAnimation = NavigationAnimation.Resource(
-        enter = 0,
-        exit = 0
-    )
+    internal var animations: NavigationAnimationTransition = DefaultAnimations.noOp
 
     internal var softInputMode: WindowInputMode? = null
     internal var configureWindow = mutableStateOf<(window: Window) -> Unit>({})
@@ -35,7 +32,7 @@ public open class DialogConfiguration {
     public class Builder internal constructor(
         private val dialogConfiguration: DialogConfiguration
     ) {
-        public fun setAnimations(animations: NavigationAnimation) {
+        public fun setAnimations(animations: NavigationAnimationTransition) {
             dialogConfiguration.animations = animations
         }
 
