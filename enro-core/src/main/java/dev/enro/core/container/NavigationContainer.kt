@@ -226,10 +226,27 @@ private fun NavigationContainer.getTransitionForInstruction(instruction: AnyOpen
     val isHosted = parentContext.contextReference is NavigationHost
     if (!isHosted) return currentTransition
 
+    val parentContainer = parentContext.parentContainer() ?: return currentTransition
+    val parentRoot = parentContainer.currentTransition?.activeBackstack?.get(0)
+    val parentActive = parentContainer.currentTransition?.activeBackstack?.active
+    val thisRoot = currentTransition?.activeBackstack?.get(0)
+    if (parentRoot == thisRoot && parentRoot == parentActive) {
+        val mergedPreviousBackstack = merge(
+            currentTransition?.previousBackstack.orEmpty(),
+            parentContainer.currentTransition?.previousBackstack.orEmpty()
+        ).toBackstack()
+
+        val mergedActiveBackstack = merge(
+            currentTransition?.activeBackstack.orEmpty(),
+            parentContainer.currentTransition?.activeBackstack.orEmpty()
+        ).toBackstack()
+
+        return NavigationBackstackTransition(mergedPreviousBackstack to mergedActiveBackstack)
+    }
+
     val isRootInstruction = backstack.size <= 1
     if (!isRootInstruction) return currentTransition
 
-    val parentContainer = parentContext.parentContainer() ?: return currentTransition
     val isLastInstruction = parentContainer.currentTransition?.lastInstruction == instruction
     val isExitingInstruction = parentContainer.currentTransition?.exitingInstruction == instruction
     val isEnteringInstruction = parentContainer.currentTransition?.activeBackstack?.active == instruction

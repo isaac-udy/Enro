@@ -26,12 +26,12 @@ class ExampleApplication : Application(), NavigationApplication {
             }
         }
 
-//        override<ExampleComposableScreenDestination, ExampleComposableDestination> {
+//        override<ExampleComposableScreenDestination, ExampleComposableScreenDestination> {
 //            animation {
-//                open
+//                NavigationAnimationTransition(open, open)
 //            }
 //            closeAnimation {
-//                close
+//                NavigationAnimationTransition(close, close)
 //            }
 //        }
         composeEnvironment { content ->
@@ -42,13 +42,13 @@ class ExampleApplication : Application(), NavigationApplication {
 
 val open =
     NavigationAnimation.Composable(
-        forView = DefaultAnimations.ForView.push,
+        forView = DefaultAnimations.ForView.pushEnter,
         enter = fadeIn(tween(700, delayMillis = 700)),
         exit = fadeOut(tween(700)),
     )
 
 val close = NavigationAnimation.Composable(
-    forView = DefaultAnimations.ForView.close,
+    forView = DefaultAnimations.ForView.pushExit,
     enter = slideIn(tween(700, delayMillis = 500)) { IntOffset(0, 300) },
     exit = fadeOut(tween(500)),
 )

@@ -53,7 +53,7 @@ internal class ComposableDestinationOwner(
     HasDefaultViewModelProviderFactory {
 
     internal val transitionState = MutableTransitionState(false)
-    internal var _parentContainer: NavigationContainer? = parentContainer
+    private var _parentContainer: NavigationContainer? = parentContainer
     internal val parentContainer get() = _parentContainer!!
 
     @SuppressLint("StaticFieldLeak")
@@ -175,10 +175,7 @@ internal class ComposableDestinationOwner(
                 when {
                     isActive -> {}
                     isInBackstack -> lifecycleRegistry.currentState = Lifecycle.State.CREATED
-                    else -> {
-                        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
-                        _parentContainer = null
-                    }
+                    else -> destroy()
                 }
             }
         }
