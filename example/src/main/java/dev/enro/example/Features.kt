@@ -12,10 +12,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.forward
-import dev.enro.core.navigationHandle
+import dev.enro.core.*
+import dev.enro.core.container.present
+import dev.enro.core.container.push
+import dev.enro.core.container.setBackstack
 import dev.enro.example.databinding.FragmentFeaturesBinding
 import kotlinx.parcelize.Parcelize
 
@@ -125,20 +125,20 @@ val features = listOf(
         key = SimpleMessage(
             title = "Deeplinking",
             message = """
-                When you execute a navigation instruction, you can provide more than one navigation key as "child keys", or using one of the 'forward'/'replace'/'replaceRoot' extensions, provide a variable number of navigation keys. 
-                
-                Doing this will cause those keys to be opened in order, as an easy way to perform deeplinking. 
-                
-                Click the 'Launch' button to open a deeplink with the following stack:
-                "Deeplink 1 -> Deeplink 2 -> Deeplink 3"
+                Instead of executing a regular push or present instruction, you can instead perform an "OnContainer" instruction, which allows you to directly set the backstack of a particular container. 
+                                
+                Click the 'Launch' button to open a deeplink with the following stack into this tab's navigation container:
+                "Fragment -> Composable -> DialogFragment -> Composable"
             """.trimIndent(),
-            positiveActionInstruction = NavigationInstruction.Forward(
-                navigationKey = ExampleFragmentKey(),
-                children = listOf(
-                    ExampleFragmentKey(),
-                    ExampleFragmentKey()
-                )
-            )
+            positiveActionInstruction = NavigationInstruction.OnContainer(NavigationContainerKey.FromId(R.id.featuresContainer)) {
+                setBackstack {
+                    it
+                        .push(ExampleFragmentKey())
+                        .push(ExampleComposableKey())
+                        .present(ExampleDialogFragmentKey())
+                        .push(ExampleComposableKey())
+                }
+            }
         )
     ),
     FeatureDescription(
@@ -163,7 +163,7 @@ val features = listOf(
         key = SimpleMessage(
             title = "Multistack navigation",
             message = """
-                The Activity that you're in at the moment is using a MultistackController to keep multiple backstacks active - one for each of the tabs in the BottomNavigationView. 
+                The Activity that you're in at the moment is using multiple navigation containers to keep multiple backstacks active - one for each of the tabs in the BottomNavigationView. 
                 
                 Each tab maintains it's own backstack, and when you press the back button, you'll go backwards only on the current tab. If you're at the 'base' level of a tab and you press the back button, you'll go back to the 'Home' tab. 
                 
@@ -172,17 +172,16 @@ val features = listOf(
         )
     ),
     FeatureDescription(
-        name = "Master/Detail navigation",
+        name = "List/Detail navigation",
         iconResource = R.drawable.ic_round_vertical_split_24,
         key = SimpleMessage(
-            title = "Master/Detail navigation",
+            title = "List/Detail navigation",
             message = """
-                Enro supports Master/Detail navigation through a component called the MasterDetailController. 
-                
                 Click 'Launch' to show an example of how this works. 
                 
-                To see how this example is built, look at MasterDetail.kt in the examples.
-            """.trimIndent()
+                To see how this example is built, look at ListDetailCompose.kt in the examples.
+            """.trimIndent(),
+            positiveActionInstruction = NavigationInstruction.Push(ListDetailComposeKey())
         )
     )
 )

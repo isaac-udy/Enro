@@ -22,6 +22,10 @@ public sealed class NavigationContainerKey : Parcelable  {
         return name.hashCode()
     }
 
+    override fun toString(): String {
+        return "NavigationContainerKey($name)"
+    }
+
     @Parcelize
     public class Dynamic private constructor(
         override val name: String

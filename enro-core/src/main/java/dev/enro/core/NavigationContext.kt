@@ -140,6 +140,7 @@ public fun NavigationContext<*>.findContainer(navigationContainerKey: Navigation
             if (activeContainer.key == navigationContainerKey) return activeContainer
         }
         context.containerManager.containers.forEach { container ->
+            if (container.key == navigationContainerKey) return container
             val childContext = container.activeContext ?: return@forEach
             val found = findFrom(childContext)
             if (found != null) return found

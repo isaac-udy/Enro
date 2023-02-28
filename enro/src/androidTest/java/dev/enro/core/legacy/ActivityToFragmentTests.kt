@@ -54,24 +54,6 @@ class ActivityToFragmentTests {
     }
 
     @Test
-    fun whenActivityOpensFragmentWithChildrenStack_andActivityDoesNotHaveFragmentHost_thenFragmentAndChildrenAreLaunchedAsSingleFragmentActivity() {
-        val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
-
-        val target = GenericFragmentKey(UUID.randomUUID().toString())
-        handle.forward(
-            GenericFragmentKey("1"),
-            GenericFragmentKey("2"),
-            target
-        )
-
-        val fragment = expectFragment<GenericFragment> { it.getNavigationHandle().key == target }
-        val fragmentHandle = fragment.getNavigationHandle().asTyped<GenericFragmentKey>()
-        assertEquals(target.id, fragmentHandle.key.id)
-    }
-
-
-    @Test
     fun whenActivityOpensFragment_andActivityHasFragmentHostForFragment_thenFragmentIsLaunchedIntoHost() {
         val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
         val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()

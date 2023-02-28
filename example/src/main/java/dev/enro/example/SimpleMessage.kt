@@ -5,12 +5,13 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.synthetic.SyntheticDestination
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 
 @Parcelize
 data class SimpleMessage(
     val title: String,
     val message: String,
-    val positiveActionInstruction: NavigationInstruction.Open<*>? = null
+    val positiveActionInstruction: @RawValue NavigationInstruction? = null
 ) : NavigationKey
 
 @NavigationDestination(SimpleMessage::class)

@@ -56,7 +56,6 @@ internal class OnNavigationContextCreated(
         configureNavigationHandleForPlugins(context, handle)
 
         if (savedInstanceState == null) {
-            handle.runWhenHandleActive { handle.executeDeeplink() }
             context.lifecycle.addObserver(object : LifecycleEventObserver {
                 override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                     if (event == Lifecycle.Event.ON_START) {

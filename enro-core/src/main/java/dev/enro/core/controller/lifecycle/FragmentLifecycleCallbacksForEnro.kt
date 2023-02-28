@@ -48,7 +48,7 @@ internal class FragmentLifecycleCallbacksForEnro(
             if (dialog is ComponentDialog) {
                 dialog.onBackPressedDispatcher.addCallback(fragment.viewLifecycleOwner, object : OnBackPressedCallback(true) {
                     override fun handleOnBackPressed() {
-                        fragment.getNavigationHandle().requestClose()
+                        fragment.navigationContext.leafContext().getNavigationHandle().requestClose()
                     }
                 })
             }

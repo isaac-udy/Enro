@@ -87,16 +87,6 @@ internal open class NavigationHandleViewModel(
         }
     }
 
-    internal fun executeDeeplink() {
-        if (instruction.children.isEmpty()) return
-        executeInstruction(
-            NavigationInstruction.DefaultDirection(
-                navigationKey = instruction.children.first(),
-                children = instruction.children.drop(1)
-            )
-        )
-    }
-
     override fun onCleared() {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         dependencyScope.container.clear()

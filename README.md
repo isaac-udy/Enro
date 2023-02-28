@@ -184,7 +184,7 @@ class MyActivity : AppCompatActivity() {
 }
 ```
 
-#### How do I do Master/Detail navigation 
+#### How do I do List/Detail navigation 
 Enro has a built in component for this.  If you want to build something more complex than what the built-in component provides, you'll be able to use the built-in component as a reference/starting point, as it is built purely on Enro's public API
 
 #### How do I handle multiple backstacks on each page of a BottomNavigationView? 
@@ -208,7 +208,7 @@ Example:
 ```kotlin
 // This override will place the "DetailFragment" into the container R.id.detail, 
 // and when it's closed, will set whatever Fragment is in the R.id.master container as the primary navigation fragment
-override<MasterDetailActivity, DetailFragment>(
+override<ListDetailActivity, DetailFragment>(
     launch = {
         val fragment =  DetailFragment().addOpenInstruction(it.instruction)
         it.fromContext.childFragmentManager.beginTransaction()

@@ -109,34 +109,34 @@ abstract class TestFragment : Fragment() {
             gravity = Gravity.CENTER
             setBackgroundColor(0xFFFFFFFF.toInt())
 
-            addView(TextView(requireContext()).apply {
+            addView(TextView(context).apply {
                 text = this@TestFragment::class.java.simpleName
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 32.0f)
                 textAlignment = TextView.TEXT_ALIGNMENT_CENTER
                 gravity = Gravity.CENTER
             })
 
-            addView(TextView(requireContext()).apply {
+            addView(TextView(context).apply {
                 text = key.toString()
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 14.0f)
                 textAlignment = TextView.TEXT_ALIGNMENT_CENTER
                 gravity = Gravity.CENTER
             })
 
-            addView(TextView(requireContext()).apply {
+            addView(TextView(context).apply {
                 id = debugText
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 14.0f)
                 textAlignment = TextView.TEXT_ALIGNMENT_CENTER
                 gravity = Gravity.CENTER
             })
 
-            addView(FrameLayout(requireContext()).apply {
+            addView(FrameLayout(context).apply {
                 id = primaryFragmentContainer
                 setPadding(50)
                 setBackgroundColor(0x22FF0000)
             })
 
-            addView(FrameLayout(requireContext()).apply {
+            addView(FrameLayout(context).apply {
                 id = secondaryFragmentContainer
                 setPadding(50)
                 setBackgroundColor(0x220000FF)
@@ -230,7 +230,7 @@ fun TestComposable(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.defaultMinSize(minHeight = 224.dp)
+        modifier = Modifier.defaultMinSize(minHeight = 224.dp, minWidth = 112.dp)
     ) {
         Text(
             text = name,

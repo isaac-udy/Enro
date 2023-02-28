@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -14,58 +15,64 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.compose.EnroContainer
+import dev.enro.core.*
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberEnroContainerController
 import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.replace
+import dev.enro.core.container.*
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
 @Parcelize
-class ListDetailComposeKey : NavigationKey
+class ListDetailComposeKey : NavigationKey.SupportsPush
 
 @Parcelize
-class ListComposeKey : NavigationKey
+class ListComposeKey : NavigationKey.SupportsPush
 
 @Parcelize
 class DetailComposeKey(
     val id: String
-) : NavigationKey
+) : NavigationKey.SupportsPush
 
+val listContainerKey = NavigationContainerKey.FromName("listContainerKey")
+val detailContainerKey = NavigationContainerKey.FromName("detailContainerKey")
 
 @Composable
 @NavigationDestination(ListDetailComposeKey::class)
-fun MasterDetailComposeScreen() {
-    val listContainerController = rememberEnroContainerController(
-        initialBackstack = listOf(NavigationInstruction.Forward(ListComposeKey())),
+fun ListDetailComposeScreen() {
+    val listContainerController = rememberNavigationContainer(
+        root = ListComposeKey(),
+        key = listContainerKey,
         emptyBehavior = EmptyBehavior.CloseParent,
         accept = { it is ListComposeKey }
     )
     val detailContainerController = rememberNavigationContainer(
+        key = detailContainerKey,
         emptyBehavior = EmptyBehavior.AllowEmpty,
         accept = { it is DetailComposeKey }
     )
     
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     if (isLandscape) {
-        Row {
-            EnroContainer(
-                container = listContainerController,
-                modifier = Modifier.weight(1f, true),
-            )
-            EnroContainer(
-                container = detailContainerController,
+        Row(
+            modifier = Modifier.background(MaterialTheme.colors.background)
+        ) {
+            Box(
                 modifier = Modifier.weight(1f, true)
-            )
+            ) {
+                listContainerController.Render()
+            }
+            Box(
+                modifier = Modifier.weight(1f, true)
+            ) {
+                detailContainerController.Render()
+            }
         }
     } else {
-        Box {
-            EnroContainer(container = listContainerController)
-            EnroContainer(container = detailContainerController)
+        Box(
+            modifier = Modifier.background(MaterialTheme.colors.background)
+        ) {
+            listContainerController.Render()
+            detailContainerController.Render()
         }
     }
 }
@@ -77,13 +84,23 @@ fun ListComposeScreen() {
         List(100) { UUID.randomUUID().toString() }
     }
     val navigation = navigationHandle()
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        items.forEach {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.background)
+            .verticalScroll(rememberScrollState())
+    ) {
+        items.forEach { item ->
             Text(
-                text = it,
+                text = item,
                 modifier = Modifier
                     .clickable {
-                        navigation.replace(DetailComposeKey(it))
+                        navigation.onContainer(detailContainerKey) {
+                            setBackstack {
+                                emptyBackstack()
+                                    .push(DetailComposeKey(item))
+                            }
+                        }
                     }
                     .padding(16.dp)
             )

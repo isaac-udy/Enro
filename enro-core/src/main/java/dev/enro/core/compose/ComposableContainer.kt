@@ -15,12 +15,14 @@ import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 
 @Composable
 public fun rememberNavigationContainer(
+    key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
     root: NavigationKey.SupportsPush,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
+        key = key,
         initialBackstack = rememberSaveable {
             backstackOf(NavigationInstruction.Push(root))
         },
@@ -32,12 +34,14 @@ public fun rememberNavigationContainer(
 
 @Composable
 public fun rememberNavigationContainer(
+    key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
     initialState: List<NavigationKey.SupportsPush> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
+        key = key,
         initialBackstack = rememberSaveable {
             initialState.map {
                 NavigationInstruction.Push(it)
@@ -69,7 +73,7 @@ public fun rememberEnroContainerController(
 @AdvancedEnroApi
 public fun rememberNavigationContainer(
     key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
-    initialBackstack: NavigationBackstack = emptyBackstack(),
+    initialBackstack: NavigationBackstack,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
@@ -113,7 +117,9 @@ public fun rememberNavigationContainer(
 )
 public fun EnroContainer(
     modifier: Modifier = Modifier,
-    container: ComposableNavigationContainer = rememberNavigationContainer(),
+    container: ComposableNavigationContainer = rememberNavigationContainer(
+        initialBackstack = emptyBackstack()
+    ),
 ) {
     Box(modifier = modifier) {
         container.Render()

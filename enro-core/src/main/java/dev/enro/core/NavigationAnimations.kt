@@ -104,7 +104,7 @@ public sealed class NavigationAnimation {
 
             @androidx.compose.runtime.Composable
             override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
-                if (!visible.currentState) return
+                if (!visible.currentState && !visible.targetState) return
                 content()
             }
         }

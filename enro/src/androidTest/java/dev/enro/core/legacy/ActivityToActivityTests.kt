@@ -58,29 +58,6 @@ class ActivityToActivityTests {
     }
 
     @Test
-    fun givenActivityOpenedWithChildren_thenFinalOpenedActivityIsLastChild() {
-        val id = UUID.randomUUID().toString()
-
-        val scenario = ActivityScenario.launch(DefaultActivity::class.java)
-        val handle = scenario.getNavigationHandle<DefaultActivityKey>()
-        handle.executeInstruction(
-            NavigationInstruction.Forward(
-                GenericActivityKey(UUID.randomUUID().toString()),
-                listOf(
-                    GenericActivityKey(UUID.randomUUID().toString()),
-                    GenericActivityKey(UUID.randomUUID().toString()),
-                    GenericActivityKey(UUID.randomUUID().toString()),
-                    GenericActivityKey(id)
-                )
-            )
-        )
-
-        expectActivity<GenericActivity> {
-            it.getNavigationHandle().asTyped<GenericActivityKey>().key.id == id
-        }
-    }
-
-    @Test
     fun givenDefaultActivity_whenSpecificActivityIsOpened_andThenSpecificActivityIsClosed_thenDefaultActivityIsOpen() {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()

@@ -39,7 +39,9 @@ class MainActivity : FragmentActivity() {
     private val featuresContainer by navigationContainer(
         containerId = R.id.featuresContainer,
         root = { Features() },
-        accept = { false },
+        accept = {
+            it is Features || it is ListDetailComposeKey
+        },
         emptyBehavior = EmptyBehavior.Action {
             findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home
             true

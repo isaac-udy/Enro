@@ -64,37 +64,35 @@ public inline fun <reified T : NavigationKey> NavigationHandle.asTyped(): TypedN
     return TypedNavigationHandleImpl(this, T::class.java)
 }
 
-public fun NavigationHandle.push(key: NavigationKey.SupportsPush, vararg childKeys: NavigationKey) {
-    executeInstruction(NavigationInstruction.Push(key, childKeys.toList()))
+public fun NavigationHandle.push(key: NavigationKey.SupportsPush) {
+    executeInstruction(NavigationInstruction.Push(key))
 }
 
 public fun NavigationHandle.present(
     key: NavigationKey.SupportsPresent,
-    vararg childKeys: NavigationKey
 ) {
-    executeInstruction(NavigationInstruction.Present(key, childKeys.toList()))
+    executeInstruction(NavigationInstruction.Present(key))
 }
 
 public fun NavigationHandle.replaceRoot(
     key: NavigationKey.SupportsPresent,
-    vararg childKeys: NavigationKey
 ) {
-    executeInstruction(NavigationInstruction.ReplaceRoot(key, childKeys.toList()))
+    executeInstruction(NavigationInstruction.ReplaceRoot(key))
 }
 
 @Deprecated("You should use push or present")
-public fun NavigationHandle.forward(key: NavigationKey, vararg childKeys: NavigationKey) {
-    executeInstruction(NavigationInstruction.Forward(key, childKeys.toList()))
+public fun NavigationHandle.forward(key: NavigationKey) {
+    executeInstruction(NavigationInstruction.Forward(key))
 }
 
 @Deprecated("You should use a close instruction followed by a push or present")
-public fun NavigationHandle.replace(key: NavigationKey, vararg childKeys: NavigationKey) {
-    executeInstruction(NavigationInstruction.Replace(key, childKeys.toList()))
+public fun NavigationHandle.replace(key: NavigationKey) {
+    executeInstruction(NavigationInstruction.Replace(key))
 }
 
 @Deprecated("You should only use replaceRoot with a NavigationKey.SupportsPresent")
 public fun NavigationHandle.replaceRoot(key: NavigationKey, vararg childKeys: NavigationKey) {
-    executeInstruction(NavigationInstruction.ReplaceRoot(key, childKeys.toList()))
+    executeInstruction(NavigationInstruction.ReplaceRoot(key))
 }
 
 public fun NavigationHandle.close() {
@@ -103,13 +101,13 @@ public fun NavigationHandle.close() {
 
 public fun NavigationHandle.onContainer(
     key: NavigationContainerKey,
-    block: (NavigationContainer) -> Unit
+    block: NavigationContainer.() -> Unit
 ) {
     executeInstruction(NavigationInstruction.OnContainer(key, block))
 }
 
 public fun NavigationHandle.onContainer(
-    block: (NavigationContainer) -> Unit
+    block: NavigationContainer.() -> Unit
 ) {
     executeInstruction(NavigationInstruction.OnContainer(block))
 }

@@ -42,7 +42,6 @@ public sealed class NavigationInstruction {
     public sealed class Open<T : NavigationDirection> : NavigationInstruction(), Parcelable {
         public abstract val navigationDirection: T
         public abstract val navigationKey: NavigationKey
-        public abstract val children: List<NavigationKey>
         public abstract val additionalData: Bundle
         public abstract val instructionId: String
 
@@ -62,7 +61,6 @@ public sealed class NavigationInstruction {
         internal data class OpenInternal<T : NavigationDirection> constructor(
             override val navigationDirection: T,
             override val navigationKey: NavigationKey,
-            override val children: List<NavigationKey> = emptyList(),
             override val additionalData: Bundle = Bundle(),
             override val instructionId: String = UUID.randomUUID().toString(),
             val previouslyActiveContainer: NavigationContainerKey? = null,
@@ -79,7 +77,6 @@ public sealed class NavigationInstruction {
 
                 if (navigationDirection != other.navigationDirection) return false
                 if (navigationKey != other.navigationKey) return false
-                if (children != other.children) return false
                 if (instructionId != other.instructionId) return false
                 if (resultId != other.resultId) return false
 
@@ -89,7 +86,6 @@ public sealed class NavigationInstruction {
             override fun hashCode(): Int {
                 var result = navigationDirection.hashCode()
                 result = 31 * result + navigationKey.hashCode()
-                result = 31 * result + children.hashCode()
                 result = 31 * result + instructionId.hashCode()
                 result = 31 * result + (resultId?.hashCode() ?: 0)
                 return result
@@ -117,7 +113,6 @@ public sealed class NavigationInstruction {
     public companion object {
         internal fun DefaultDirection(
             navigationKey: NavigationKey,
-            children: List<NavigationKey> = emptyList()
         ): AnyOpenInstruction {
             return Open.OpenInternal(
                 navigationDirection = when (navigationKey) {
@@ -126,7 +121,6 @@ public sealed class NavigationInstruction {
                     else -> NavigationDirection.Forward
                 },
                 navigationKey = navigationKey,
-                children = children
             )
         }
 
@@ -134,75 +128,63 @@ public sealed class NavigationInstruction {
         @Deprecated("Please use Push or Present")
         public fun Forward(
             navigationKey: NavigationKey,
-            children: List<NavigationKey> = emptyList()
         ): Open<NavigationDirection.Forward> = Open.OpenInternal(
             navigationDirection = NavigationDirection.Forward,
             navigationKey = navigationKey,
-            children = children
         )
 
         @Suppress("FunctionName")
         @Deprecated("Please use Push or Present")
         public fun Replace(
             navigationKey: NavigationKey,
-            children: List<NavigationKey> = emptyList()
         ): Open<NavigationDirection.Replace> = Open.OpenInternal(
             navigationDirection = NavigationDirection.Replace,
             navigationKey = navigationKey,
-            children = children
         )
 
         @Suppress("FunctionName")
         public fun Push(
             navigationKey: NavigationKey.SupportsPush,
-            children: List<NavigationKey> = emptyList()
         ): Open<NavigationDirection.Push> = Open.OpenInternal(
             navigationDirection = NavigationDirection.Push,
             navigationKey = navigationKey,
-            children = children
         )
 
         @Suppress("FunctionName")
         public fun Present(
             navigationKey: NavigationKey.SupportsPresent,
-            children: List<NavigationKey> = emptyList()
         ): Open<NavigationDirection.Present> = Open.OpenInternal(
             navigationDirection = NavigationDirection.Present,
             navigationKey = navigationKey,
-            children = children
         )
 
         @Suppress("FunctionName")
         public fun ReplaceRoot(
             navigationKey: NavigationKey.SupportsPresent,
-            children: List<NavigationKey> = emptyList()
         ): Open<NavigationDirection.ReplaceRoot> = Open.OpenInternal(
             navigationDirection = NavigationDirection.ReplaceRoot,
             navigationKey = navigationKey,
-            children = children
         )
 
         @Suppress("FunctionName")
         @Deprecated("You should only use ReplaceRoot with a NavigationKey that extends SupportsPresent")
         public fun ReplaceRoot(
             navigationKey: NavigationKey,
-            children: List<NavigationKey> = emptyList()
         ): Open<NavigationDirection.ReplaceRoot> = Open.OpenInternal(
             navigationDirection = NavigationDirection.ReplaceRoot,
             navigationKey = navigationKey,
-            children = children
         )
 
         public fun OnContainer(
             key: NavigationContainerKey,
-            block: (NavigationContainer) -> Unit
+            block: NavigationContainer.() -> Unit
         ): NavigationInstruction.ContainerOperation = NavigationInstruction.ContainerOperation(
             target = ContainerOperation.Target.TargetContainer(key),
             operation = block,
         )
 
         public fun OnContainer(
-            block: (NavigationContainer) -> Unit
+            block: NavigationContainer.() -> Unit
         ): NavigationInstruction.ContainerOperation = NavigationInstruction.ContainerOperation(
             target = ContainerOperation.Target.ParentContainer,
             operation = block,
