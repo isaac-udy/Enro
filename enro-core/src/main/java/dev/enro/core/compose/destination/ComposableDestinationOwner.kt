@@ -37,7 +37,6 @@ import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 
-@Stable
 internal class ComposableDestinationOwner(
     parentContainer: NavigationContainer,
     val instruction: AnyOpenInstruction,
@@ -106,7 +105,7 @@ internal class ComposableDestinationOwner(
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     internal fun Render(backstackState: List<AnyOpenInstruction>) {
-        if (_parentContainer == null) return
+        val parentContainer = _parentContainer ?: return
         val lifecycleState = rememberLifecycleState()
         if (!lifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
 
@@ -126,7 +125,7 @@ internal class ComposableDestinationOwner(
             && !transitionState.targetState
         ) return
 
-        val animation = remember(transitionState.targetState) {
+        val animation = remember(instruction.instructionId, transitionState.targetState, parentContainer) {
             when (destination) {
                 is DialogDestination -> NavigationAnimation.Composable(
                         forView = NavigationAnimation.Resource(0),
@@ -147,9 +146,9 @@ internal class ComposableDestinationOwner(
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
         ReusableContent(instruction.instructionId) {
             ProvideRenderingWindow {
-                animation.content(transition) {
+                animation.Animate(transition) {
                     renderDestination()
-                    RegisterComposableLifecycleState(backstackState)
+                    RegisterComposableLifecycleState(backstackState, parentContainer)
                 }
             }
         }
@@ -158,6 +157,7 @@ internal class ComposableDestinationOwner(
     @Composable
     private fun RegisterComposableLifecycleState(
         backstackState: List<AnyOpenInstruction>,
+        parentContainer: NavigationContainer,
     ) {
         val parentLifecycle = parentContainer.parentContext.lifecycleOwner.rememberLifecycleState()
         DisposableEffect(backstackState, parentLifecycle) {

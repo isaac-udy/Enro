@@ -13,6 +13,7 @@ import dev.enro.expectActivity
 import dev.enro.expectContext
 import junit.framework.Assert.*
 import leakcanary.DetectLeaksAfterTestSuccess
+import org.junit.Assert.assertNotEquals
 import org.junit.Rule
 import org.junit.Test
 import java.util.*
@@ -595,15 +596,16 @@ class ResultTests {
             .navigation
             .forward(ResultFlowKey())
 
-        val activityFlow = expectContext<ResultFlowActivity, ResultFlowKey>()
+        expectContext<ResultFlowActivity, ResultFlowKey>()
         val firstRequest = expectContext<ResultFragment, FragmentResultKey>()
         firstRequest
             .navigation
             .closeWithResult("next")
 
-        activityFlow.context.supportFragmentManager.hashCode()
-        val secondRequest = expectContext<ResultFragment, FragmentResultKey>()
-        assertNotSame(firstRequest.navigation.id, secondRequest.navigation.id)
+        val secondRequest = expectContext<ResultFragment, FragmentResultKey> {
+            it.navigation.id != firstRequest.navigation.id
+        }
+        assertNotEquals(firstRequest.navigation.id, secondRequest.navigation.id)
     }
 
     @Test

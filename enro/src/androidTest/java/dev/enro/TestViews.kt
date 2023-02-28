@@ -31,8 +31,9 @@ import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.getNavigationHandle
 
 abstract class TestActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-    val layout by lazy {
         val key = try {
             getNavigationHandle().key
         } catch (t: Throwable) {
@@ -40,48 +41,45 @@ abstract class TestActivity : AppCompatActivity() {
 
         Log.e("TestActivity", "Opened $key")
 
-        LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-
-            addView(TextView(this@TestActivity).apply {
-                text = this@TestActivity::class.java.simpleName
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 32.0f)
-                textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+        setContentView(
+            LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
-            })
 
-            addView(TextView(this@TestActivity).apply {
-                text = key.toString()
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14.0f)
-                textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-                gravity = Gravity.CENTER
-            })
+                addView(TextView(this@TestActivity).apply {
+                    text = this@TestActivity::class.java.simpleName
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 32.0f)
+                    textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                    gravity = Gravity.CENTER
+                })
 
-            addView(TextView(this@TestActivity).apply {
-                id = debugText
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14.0f)
-                textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-                gravity = Gravity.CENTER
-            })
+                addView(TextView(this@TestActivity).apply {
+                    text = key.toString()
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 14.0f)
+                    textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                    gravity = Gravity.CENTER
+                })
 
-            addView(FrameLayout(this@TestActivity).apply {
-                id = primaryFragmentContainer
-                setBackgroundColor(0x22FF0000)
-                setPadding(50)
-            })
+                addView(TextView(this@TestActivity).apply {
+                    id = debugText
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 14.0f)
+                    textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                    gravity = Gravity.CENTER
+                })
 
-            addView(FrameLayout(this@TestActivity).apply {
-                id = secondaryFragmentContainer
-                setBackgroundColor(0x220000FF)
-                setPadding(50)
-            })
-        }
-    }
+                addView(FrameLayout(this@TestActivity).apply {
+                    id = primaryFragmentContainer
+                    setBackgroundColor(0x22FF0000)
+                    setPadding(50)
+                })
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(layout)
+                addView(FrameLayout(this@TestActivity).apply {
+                    id = secondaryFragmentContainer
+                    setBackgroundColor(0x220000FF)
+                    setPadding(50)
+                })
+            }
+        )
     }
 
     companion object {
@@ -106,7 +104,7 @@ abstract class TestFragment : Fragment() {
 
         Log.e("TestFragment", "Opened $key")
 
-        return LinearLayout(requireContext()).apply {
+        return LinearLayout(requireContext().applicationContext).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             setBackgroundColor(0xFFFFFFFF.toInt())

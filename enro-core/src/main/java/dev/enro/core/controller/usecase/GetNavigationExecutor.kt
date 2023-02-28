@@ -1,6 +1,7 @@
 package dev.enro.core.controller.usecase
 
 import dev.enro.core.*
+import dev.enro.core.container.DefaultContainerExecutor
 import dev.enro.core.controller.repository.ClassHierarchyRepository
 import dev.enro.core.controller.repository.ExecutorRepository
 
@@ -14,7 +15,7 @@ internal class GetNavigationExecutor(
             .mapNotNull {
                 executorRepository.getExecutor(it.first to it.second)
             }
-            .first()
+            .firstOrNull() ?: DefaultContainerExecutor
     }
 }
 

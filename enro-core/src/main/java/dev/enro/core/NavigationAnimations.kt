@@ -9,6 +9,7 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Transition
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
 import dev.enro.extensions.getAttributeResourceId
@@ -20,7 +21,7 @@ public typealias AnimationPair = NavigationAnimation
 public sealed class NavigationAnimation {
     public sealed class ForView : NavigationAnimation()
 
-    public class Resource(
+    public data class Resource(
         public val id: Int
     ) : ForView() {
         public fun isAnim(context: Context): Boolean = runCatching {
@@ -32,29 +33,44 @@ public sealed class NavigationAnimation {
         }.getOrDefault(false)
     }
 
-    public class Attr(
+    public data class Attr(
         public val attr: Int,
     ) : ForView()
 
-    public class Theme(
+    public data class Theme(
         public val id: (Resources.Theme) -> Int,
     ) : ForView()
 
-    public class Composable private constructor(
-        public val forView: ForView,
-        public val content: @androidx.compose.runtime.Composable (
+    public sealed class Composable : NavigationAnimation() {
+        internal abstract val forView: ForView
+
+        @androidx.compose.runtime.Composable
+        public abstract fun Animate(
             visible: Transition<Boolean>,
             content: @androidx.compose.runtime.Composable () -> Unit
-        ) -> Unit
-    ) : NavigationAnimation() {
-        @OptIn(ExperimentalAnimationApi::class)
-        public constructor(
-            enter: EnterTransition = EnterTransition.None,
-            exit: ExitTransition = ExitTransition.None,
-            forView: ForView
-        ) : this(
-            forView = forView,
-            content = { visible, content ->
+        )
+
+        public companion object {
+            public operator fun invoke(
+                enter: EnterTransition,
+                exit: ExitTransition,
+                forView: ForView = DefaultAnimations.ForView.noneEnter,
+            ): Composable = EnterExit(enter, exit, forView)
+
+            public operator fun invoke(
+                forView: ForView,
+            ): Composable = FromView(forView)
+        }
+
+        @Immutable
+        internal data class EnterExit(
+            val enter: EnterTransition = EnterTransition.None,
+            val exit: ExitTransition = ExitTransition.None,
+            override val forView: ForView = DefaultAnimations.ForView.noneEnter,
+        ): Composable() {
+            @OptIn(ExperimentalAnimationApi::class)
+            @androidx.compose.runtime.Composable
+            override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
                 visible.AnimatedVisibility(
                     visible = { it },
                     enter = enter,
@@ -64,13 +80,14 @@ public sealed class NavigationAnimation {
                     content()
                 }
             }
-        )
+        }
 
-        public constructor(
-            forView: ForView
-        ) : this(
-            forView = forView,
-            content = { visible, content ->
+        @Immutable
+        internal data class FromView(
+            override val forView: ForView
+        ): Composable() {
+            @androidx.compose.runtime.Composable
+            override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
                 EnroAnimatedVisibility(
                     visibleState = visible,
                     animations = forView
@@ -78,7 +95,7 @@ public sealed class NavigationAnimation {
                     content()
                 }
             }
-        )
+        }
     }
 
     public fun asResource(theme: Resources.Theme): Resource = when (this) {

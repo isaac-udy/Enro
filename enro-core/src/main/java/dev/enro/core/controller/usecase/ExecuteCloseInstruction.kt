@@ -29,12 +29,11 @@ internal class ExecuteCloseInstructionImpl(
             return
         }
 
-        addPendingResult(navigationContext, instruction)
-
         val executor: NavigationExecutor<Any, Any, NavigationKey> = getNavigationExecutor(
             navigationContext.getNavigationHandle().instruction.internal.openedByType to navigationContext.contextReference::class.java
         )
         executor.preClosed(navigationContext)
         executor.close(navigationContext)
+        addPendingResult(navigationContext, instruction)
     }
 }

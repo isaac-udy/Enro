@@ -227,9 +227,9 @@ private fun NavigationContainer.getTransitionForInstruction(instruction: AnyOpen
     if (!isHosted) return currentTransition
 
     val parentContainer = parentContext.parentContainer() ?: return currentTransition
-    val parentRoot = parentContainer.currentTransition?.activeBackstack?.get(0)
+    val parentRoot = parentContainer.currentTransition?.activeBackstack?.getOrNull(0)
     val parentActive = parentContainer.currentTransition?.activeBackstack?.active
-    val thisRoot = currentTransition?.activeBackstack?.get(0)
+    val thisRoot = currentTransition?.activeBackstack?.getOrNull(0)
     if (parentRoot == thisRoot && parentRoot == parentActive) {
         val mergedPreviousBackstack = merge(
             currentTransition?.previousBackstack.orEmpty(),
