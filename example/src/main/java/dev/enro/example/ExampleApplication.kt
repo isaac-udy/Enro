@@ -20,11 +20,11 @@ class ExampleApplication : Application(), NavigationApplication {
     override val navigationController = createNavigationController {
         plugin(EnroLogger())
 
-        override<SplashScreenActivity, Any> {
-            animation {
-                DefaultAnimations.present
-            }
-        }
+//        override<SplashScreenActivity, Any> {
+//            animation {
+//                DefaultAnimations.present
+//            }
+//        }
 
 //        override<ExampleComposableScreenDestination, ExampleComposableScreenDestination> {
 //            animation {

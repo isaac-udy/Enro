@@ -5,7 +5,6 @@ import androidx.fragment.app.Fragment
 import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.container.DefaultContainerExecutor
-import dev.enro.core.container.originalNavigationDirection
 import dev.enro.core.fragment.FragmentNavigationBinding
 import dev.enro.core.synthetic.DefaultSyntheticExecutor
 import dev.enro.core.synthetic.SyntheticNavigationBinding
@@ -24,26 +23,6 @@ public abstract class NavigationExecutor<FromContext : Any, OpensContext : Any, 
     public val opensType: KClass<OpensContext>,
     public val keyType: KClass<KeyType>
 ) {
-    public open fun animation(instruction: AnyOpenInstruction): NavigationAnimationTransition {
-        return when (instruction.originalNavigationDirection()) {
-            NavigationDirection.Push -> DefaultAnimations.push
-            NavigationDirection.Present -> DefaultAnimations.present
-            NavigationDirection.Forward -> DefaultAnimations.push
-            NavigationDirection.Replace -> DefaultAnimations.present
-            NavigationDirection.ReplaceRoot -> DefaultAnimations.replaceRoot
-        }
-    }
-
-    public open fun closeAnimation(instruction: AnyOpenInstruction): NavigationAnimationTransition {
-        return when (instruction.originalNavigationDirection()) {
-            NavigationDirection.Push -> DefaultAnimations.pushClose
-            NavigationDirection.Present -> DefaultAnimations.presentClose
-            NavigationDirection.Forward -> DefaultAnimations.pushClose
-            NavigationDirection.Replace -> DefaultAnimations.presentClose
-            NavigationDirection.ReplaceRoot -> DefaultAnimations.replaceRoot
-        }
-    }
-
     public open fun preOpened(
         context: NavigationContext<out FromContext>
     ) {
@@ -74,9 +53,6 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
     private val keyType: KClass<KeyType>
 ) {
 
-    private var animationFunc: ((instruction: AnyOpenInstruction) -> NavigationAnimationTransition)? = null
-    private var closeAnimationFunc: ((instruction: AnyOpenInstruction) -> NavigationAnimationTransition)? =
-        null
     private var preOpenedFunc: ((context: NavigationContext<out FromContext>) -> Unit)? = null
     private var openedFunc: ((args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) -> Unit)? =
         null
@@ -125,16 +101,6 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
         }.invoke(context)
     }
 
-    public fun animation(block: (instruction: AnyOpenInstruction) -> NavigationAnimationTransition) {
-        if (animationFunc != null) throw IllegalStateException("Value is already set!")
-        animationFunc = block
-    }
-
-    public fun closeAnimation(block: (instruction: AnyOpenInstruction) -> NavigationAnimationTransition) {
-        if (closeAnimationFunc != null) throw IllegalStateException("Value is already set!")
-        closeAnimationFunc = block
-    }
-
     public fun preOpened(block: (context: NavigationContext<out FromContext>) -> Unit) {
         if (preOpenedFunc != null) throw IllegalStateException("Value is already set!")
         preOpenedFunc = block
@@ -165,14 +131,6 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
         opensType,
         keyType
     ) {
-        override fun animation(instruction: AnyOpenInstruction): NavigationAnimationTransition {
-            return animationFunc?.invoke(instruction) ?: super.animation(instruction)
-        }
-
-        override fun closeAnimation(instruction: AnyOpenInstruction): NavigationAnimationTransition {
-            return closeAnimationFunc?.invoke(instruction) ?: super.closeAnimation(instruction)
-        }
-
         override fun preOpened(context: NavigationContext<out FromContext>) {
             preOpenedFunc?.invoke(context)
         }

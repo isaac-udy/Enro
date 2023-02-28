@@ -19,7 +19,7 @@ class ExampleDialogComposableKey : NavigationKey.SupportsPresent
 fun DialogDestination.ExampleDialogComposable() {
     val navigation = navigationHandle()
 
-    // Note: Dialogs do not save their instance state correctly when passed from
+    // Note: Dialogs do not save their instance state correctly when the saved state exists only in the dialog
     Dialog(onDismissRequest = { navigation.close() }) {
         ExampleScreenTemplate(title = "Dialog Composable", modifier = Modifier)
     }

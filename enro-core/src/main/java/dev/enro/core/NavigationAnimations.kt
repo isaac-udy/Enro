@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import dev.enro.core.compose.animation.EnroAnimatedVisibility
+import dev.enro.core.container.originalNavigationDirection
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
 
@@ -96,6 +97,17 @@ public sealed class NavigationAnimation {
                 }
             }
         }
+
+        @Immutable
+        internal object NoAnimation : Composable() {
+            override val forView: ForView = Resource(0)
+
+            @androidx.compose.runtime.Composable
+            override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
+                if (!visible.currentState) return
+                content()
+            }
+        }
     }
 
     public fun asResource(theme: Resources.Theme): Resource = when (this) {
@@ -123,39 +135,9 @@ public data class NavigationAnimationTransition(
 )
 
 public object DefaultAnimations {
-    public val push: NavigationAnimationTransition = NavigationAnimationTransition(
-        entering = ForView.pushEnter,
-        exiting = ForView.pushExit,
-    )
-
-    public val pushClose: NavigationAnimationTransition = NavigationAnimationTransition(
-        entering = ForView.pushCloseEnter,
-        exiting = ForView.pushCloseExit,
-    )
-
-    public val present: NavigationAnimationTransition = NavigationAnimationTransition(
-        entering = ForView.presentEnter,
-        exiting = ForView.presentExit,
-    )
-
-    public val presentClose: NavigationAnimationTransition = NavigationAnimationTransition(
-        entering = ForView.presentCloseEnter,
-        exiting = ForView.presentCloseExit,
-    )
-
-    public val replaceRoot: NavigationAnimationTransition = NavigationAnimationTransition(
-        entering = ForView.replaceRootEnter,
-        exiting = ForView.replaceRootExit,
-    )
-
     public val none: NavigationAnimationTransition = NavigationAnimationTransition(
         entering = ForView.noneEnter,
         exiting = ForView.noneExit,
-    )
-
-    public val noneClose: NavigationAnimationTransition = NavigationAnimationTransition(
-        entering = ForView.noneCloseEnter,
-        exiting = ForView.noneCloseExit,
     )
 
     public val noOp: NavigationAnimationTransition = NavigationAnimationTransition(
@@ -170,6 +152,53 @@ public object DefaultAnimations {
             exit = ExitTransition.None,
         )
     )
+
+    public fun opening(exiting: AnyOpenInstruction?, entering: AnyOpenInstruction): NavigationAnimationTransition {
+        if(entering.originalNavigationDirection() == NavigationDirection.ReplaceRoot) {
+            return NavigationAnimationTransition(
+                entering = ForView.replaceRootEnter,
+                exiting = ForView.replaceRootExit
+            )
+        }
+
+        val enteringAnimation = when (entering.originalNavigationDirection()) {
+            NavigationDirection.Push, NavigationDirection.Forward -> ForView.pushEnter
+            else -> ForView.presentEnter
+        }
+
+        val exitingAnimation = when (exiting?.originalNavigationDirection()) {
+            null -> ForView.noneExit
+            NavigationDirection.Push, NavigationDirection.Forward -> ForView.pushExit
+            else -> ForView.presentExit
+        }
+
+        return NavigationAnimationTransition(
+            entering = enteringAnimation,
+            exiting = exitingAnimation
+        )
+    }
+
+    public fun closing(exiting: AnyOpenInstruction, entering: AnyOpenInstruction?): NavigationAnimationTransition {
+        val enteringAnimation = when(entering?.originalNavigationDirection()) {
+            null -> ForView.noneCloseExit
+            NavigationDirection.ReplaceRoot -> when(exiting.originalNavigationDirection()) {
+                NavigationDirection.Present -> ForView.presentCloseEnter
+                else -> ForView.pushCloseEnter
+            }
+            NavigationDirection.Push, NavigationDirection.Forward -> ForView.pushCloseEnter
+            else -> ForView.presentCloseEnter
+        }
+
+        val exitingAnimation = when (exiting.originalNavigationDirection()) {
+            NavigationDirection.Push, NavigationDirection.Forward -> ForView.pushCloseExit
+            else -> ForView.presentCloseExit
+        }
+
+        return NavigationAnimationTransition(
+            entering = enteringAnimation,
+            exiting = exitingAnimation
+        )
+    }
 
     public object ForView {
         public val pushEnter: NavigationAnimation.ForView = NavigationAnimation.Attr(

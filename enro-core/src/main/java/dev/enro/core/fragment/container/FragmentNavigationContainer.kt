@@ -297,7 +297,10 @@ public val FragmentNavigationContainer.containerView: View?
 
 public fun FragmentNavigationContainer.setVisibilityAnimated(
     isVisible: Boolean,
-    animations: NavigationAnimationTransition = DefaultAnimations.present
+    animations: NavigationAnimationTransition = NavigationAnimationTransition(
+        entering = DefaultAnimations.ForView.presentEnter,
+        exiting = DefaultAnimations.ForView.presentCloseExit,
+    )
 ) {
     val view = containerView ?: return
     if (!view.isVisible && !isVisible) return

@@ -120,20 +120,10 @@ internal class ComposableDestinationOwner(
             }
         }
 
-        if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
-            && !transitionState.currentState
-            && !transitionState.targetState
-        ) return
-
         val animation = remember(instruction.instructionId, transitionState.targetState, parentContainer) {
             when (destination) {
-                is DialogDestination -> NavigationAnimation.Composable(
-                        forView = NavigationAnimation.Resource(0),
-                        enter = EnterTransition.None,
-                        exit = fadeOut(tween(75, 150)),
-                )
+                is DialogDestination -> NavigationAnimation.Composable.NoAnimation
                 is BottomSheetDestination -> NavigationAnimation.Composable(
-                    forView = NavigationAnimation.Resource(0),
                     enter = EnterTransition.None,
                     exit =  fadeOut(tween(75, 150)),
                 )
@@ -144,6 +134,12 @@ internal class ComposableDestinationOwner(
             }
         }
         val transition = updateTransition(transitionState, "ComposableDestination Visibility")
+
+        if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
+            && !transition.currentState
+            && !transition.targetState
+        ) return
+
         ReusableContent(instruction.instructionId) {
             ProvideRenderingWindow {
                 animation.Animate(transition) {

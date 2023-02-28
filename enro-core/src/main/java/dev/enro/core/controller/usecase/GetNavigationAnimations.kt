@@ -6,7 +6,6 @@ import dev.enro.core.DefaultAnimations
 import dev.enro.core.NavigationAnimationTransition
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
-import dev.enro.core.controller.get
 
 internal class GetNavigationAnimations(
     private val controller: NavigationController,
@@ -15,17 +14,13 @@ internal class GetNavigationAnimations(
     fun opening(exiting: AnyOpenInstruction?, entering: AnyOpenInstruction): NavigationAnimationTransition {
         if (earlyExitForNoAnimation()) return DefaultAnimations.noOp
 
-        return controller.dependencyScope.get<GetNavigationExecutor>()
-            .forOpening(entering)
-            .animation(entering)
+        return DefaultAnimations.opening(exiting, entering)
     }
 
     fun closing(exiting: AnyOpenInstruction, entering: AnyOpenInstruction?): NavigationAnimationTransition {
         if (earlyExitForNoAnimation()) return DefaultAnimations.noOp
 
-        return controller.dependencyScope.get<GetNavigationExecutor>()
-            .invoke((entering?.internal?.openingType ?: Any::class.java) to exiting.internal.openingType)
-            .closeAnimation(exiting)
+        return DefaultAnimations.closing(exiting, entering)
     }
 
     private fun earlyExitForNoAnimation() : Boolean {
