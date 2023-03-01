@@ -97,6 +97,14 @@ public class FragmentNavigationContainer internal constructor(
         if (fragmentManager.isStateSaved) return false
 
         val activePushed = getActivePushedFragment(backstack)
+        if (activePushed != null
+            && !activePushed.fragment.isAdded
+            && activePushed.fragment.view != null
+        ) {
+            activePushed.fragment.view?.clearAnimation()
+            return false
+        }
+
         val toPresent = getFragmentsToPresent(backstack)
         val toDetach = getFragmentsToDetach(backstack)
         val toRemove = getFragmentsToRemove(backstack)
