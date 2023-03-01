@@ -2,6 +2,7 @@ package dev.enro.core.synthetic
 
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
+import dev.enro.core.controller.NavigationComponentBuilder
 import kotlin.reflect.KClass
 
 
@@ -35,3 +36,12 @@ public inline fun <reified KeyType : NavigationKey, reified DestinationType : Sy
         keyType = KeyType::class,
         destination = { DestinationType::class.java.newInstance() }
     )
+
+
+public inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> NavigationComponentBuilder.syntheticDestination() {
+    binding(createSyntheticNavigationBinding<KeyType, DestinationType>())
+}
+
+public inline fun <reified KeyType : NavigationKey> NavigationComponentBuilder.syntheticDestination(noinline destination: () -> SyntheticDestination<KeyType>) {
+    binding(createSyntheticNavigationBinding(destination))
+}

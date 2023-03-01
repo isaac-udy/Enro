@@ -3,6 +3,7 @@ package dev.enro.core.compose
 import androidx.compose.runtime.Composable
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
+import dev.enro.core.controller.NavigationComponentBuilder
 import kotlin.reflect.KClass
 
 public class ComposableNavigationBinding<KeyType : NavigationKey, ComposableType : ComposableDestination> @PublishedApi internal constructor(
@@ -73,4 +74,13 @@ public inline fun <reified KeyType : NavigationKey, reified ComposableType : Com
         KeyType::class.java,
         ComposableType::class.java
     )
+}
+
+
+public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComposableDestination> NavigationComponentBuilder.composableDestination() {
+    binding(createComposableNavigationBinding<KeyType, DestinationType>())
+}
+
+public inline fun <reified KeyType : NavigationKey> NavigationComponentBuilder.composableDestination(noinline content: @Composable () -> Unit) {
+    binding(createComposableNavigationBinding<KeyType>(content))
 }

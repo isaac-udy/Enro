@@ -54,7 +54,13 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val classBuilder = TypeSpec.classBuilder(bindingName)
             .addOriginatingElement(element)
             .addModifiers(Modifier.PUBLIC)
-            .addSuperinterface(ClassNames.navigationComponentBuilderCommand)
+            .addSuperinterface(
+                ParameterizedTypeName.get(
+                    ClassNames.kotlinFunctionOne,
+                    ClassNames.navigationComponentBuilder,
+                    ClassName.get(Unit::class.java)
+                )
+            )
             .addAnnotation(
                 AnnotationSpec.builder(GeneratedNavigationBinding::class.java)
                     .addMember(
@@ -66,12 +72,13 @@ class NavigationDestinationProcessor : BaseProcessor() {
             )
             .addGeneratedAnnotation()
             .addMethod(
-                MethodSpec.methodBuilder("execute")
+                MethodSpec.methodBuilder("invoke")
                     .addAnnotation(Override::class.java)
                     .addModifiers(Modifier.PUBLIC)
+                    .returns(Unit::class.java)
                     .addParameter(
                         ParameterSpec
-                            .builder(ClassNames.navigationComponentBuilder, "builder")
+                            .builder(ClassNames.navigationComponentBuilder, "navigationComponentBuilder")
                             .build()
                     )
                     .addNavigationDestination(element, keyType)
@@ -154,7 +161,13 @@ class NavigationDestinationProcessor : BaseProcessor() {
         val classBuilder = TypeSpec.classBuilder(bindingName)
             .addOriginatingElement(element)
             .addModifiers(Modifier.PUBLIC)
-            .addSuperinterface(ClassNames.navigationComponentBuilderCommand)
+            .addSuperinterface(
+                ParameterizedTypeName.get(
+                    ClassNames.kotlinFunctionOne,
+                    ClassNames.navigationComponentBuilder,
+                    ClassName.get(Unit::class.java)
+                )
+            )
             .addAnnotation(
                 AnnotationSpec.builder(GeneratedNavigationBinding::class.java)
                     .addMember(
@@ -169,18 +182,19 @@ class NavigationDestinationProcessor : BaseProcessor() {
             )
             .addGeneratedAnnotation()
             .addMethod(
-                MethodSpec.methodBuilder("execute")
+                MethodSpec.methodBuilder("invoke")
                     .addAnnotation(Override::class.java)
                     .addModifiers(Modifier.PUBLIC)
+                    .returns(Unit::class.java)
                     .addParameter(
                         ParameterSpec
-                            .builder(ClassNames.navigationComponentBuilder, "builder")
+                            .builder(ClassNames.navigationComponentBuilder, "navigationComponentBuilder")
                             .build()
                     )
                     .addStatement(
                         CodeBlock.of(
                             """
-                                builder.binding(
+                                navigationComponentBuilder.binding(
                                     createComposableNavigationBinding(
                                         $1T.class,
                                         $composableWrapper.class
@@ -190,6 +204,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                             ClassName.get(keyType)
                         )
                     )
+                    .addStatement(CodeBlock.of("return kotlin.Unit.INSTANCE"))
                     .build()
             )
             .build()
@@ -233,7 +248,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
             when {
                 destinationIsActivity -> CodeBlock.of(
                     """
-                    builder.binding(
+                    navigationComponentBuilder.binding(
                         createActivityNavigationBinding(
                             $1T.class,
                             $2T.class
@@ -246,7 +261,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
                 destinationIsFragment -> CodeBlock.of(
                     """
-                    builder.binding(
+                    navigationComponentBuilder.binding(
                         createFragmentNavigationBinding(
                             $1T.class,
                             $2T.class
@@ -259,7 +274,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
                 destinationIsSynthetic -> CodeBlock.of(
                     """
-                    builder.binding(
+                    navigationComponentBuilder.binding(
                         createSyntheticNavigationBinding(
                             $1T.class,
                             () -> new $2T()
@@ -285,7 +300,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                 }
             }
         )
-
+        addStatement(CodeBlock.of("return kotlin.Unit.INSTANCE"))
         return this
     }
 

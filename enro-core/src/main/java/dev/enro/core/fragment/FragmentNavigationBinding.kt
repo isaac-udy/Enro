@@ -3,6 +3,7 @@ package dev.enro.core.fragment
 import androidx.fragment.app.Fragment
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
+import dev.enro.core.controller.NavigationComponentBuilder
 import kotlin.reflect.KClass
 
 public class FragmentNavigationBinding<KeyType : NavigationKey, FragmentType : Fragment> @PublishedApi internal constructor(
@@ -25,3 +26,9 @@ public inline fun <reified KeyType : NavigationKey, reified FragmentType : Fragm
         keyType = KeyType::class.java,
         fragmentType = FragmentType::class.java,
     )
+
+
+public inline fun <reified KeyType : NavigationKey, reified DestinationType : Fragment> NavigationComponentBuilder.fragmentDestination() {
+    binding(createFragmentNavigationBinding<KeyType, DestinationType>())
+}
+

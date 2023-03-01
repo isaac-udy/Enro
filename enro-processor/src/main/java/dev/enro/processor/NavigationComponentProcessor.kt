@@ -110,20 +110,28 @@ class NavigationComponentProcessor : BaseProcessor() {
                     .build()
             )
             .addModifiers(Modifier.PUBLIC)
-            .addSuperinterface(ClassNames.navigationComponentBuilderCommand)
+            .addSuperinterface(
+                ParameterizedTypeName.get(
+                    ClassNames.kotlinFunctionOne,
+                    ClassNames.navigationComponentBuilder,
+                    ClassName.get(Unit::class.java)
+                )
+            )
             .addMethod(
-                MethodSpec.methodBuilder("execute")
+                MethodSpec.methodBuilder("invoke")
                     .addAnnotation(Override::class.java)
                     .addModifiers(Modifier.PUBLIC)
+                    .returns(Unit::class.java)
                     .addParameter(
                         ParameterSpec
-                            .builder(ClassNames.navigationComponentBuilder, "builder")
+                            .builder(ClassNames.navigationComponentBuilder, "navigationComponentBuilder")
                             .build()
                     )
                     .apply {
                         destinations.forEach {
-                            addStatement(CodeBlock.of("new $1T().execute(builder)", it.generatedBinding))
+                            addStatement(CodeBlock.of("new $1T().invoke(navigationComponentBuilder)", it.generatedBinding))
                         }
+                        addStatement(CodeBlock.of("return kotlin.Unit.INSTANCE"))
                     }
                     .build()
             )
