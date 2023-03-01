@@ -166,7 +166,7 @@ public object DefaultAnimations {
             else -> ForView.presentEnter
         }
 
-        val exitingAnimation = when (exiting?.originalNavigationDirection()) {
+        val exitingAnimation = when (exiting?.navigationDirection) {
             null -> ForView.noneExit
             NavigationDirection.Push, NavigationDirection.Forward -> ForView.pushExit
             else -> ForView.presentExit
@@ -179,7 +179,7 @@ public object DefaultAnimations {
     }
 
     public fun closing(exiting: AnyOpenInstruction, entering: AnyOpenInstruction?): NavigationAnimationTransition {
-        val enteringAnimation = when(entering?.originalNavigationDirection()) {
+        val enteringAnimation = when(entering?.navigationDirection) {
             null -> ForView.noneCloseExit
             NavigationDirection.ReplaceRoot -> when(exiting.originalNavigationDirection()) {
                 NavigationDirection.Present -> ForView.presentCloseEnter
@@ -252,9 +252,9 @@ public object DefaultAnimations {
                         android.R.attr.dialogTheme,
                         android.R.attr.windowAnimationStyle,
                         android.R.attr.windowEnterAnimation
-                    ) ?: theme.getAttributeResourceId(android.R.attr.activityCloseEnterAnimation)
+                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
                 } else {
-                    theme.getAttributeResourceId(android.R.attr.activityCloseEnterAnimation)
+                    theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
                 }
             }
         )
@@ -266,9 +266,9 @@ public object DefaultAnimations {
                         android.R.attr.dialogTheme,
                         android.R.attr.windowAnimationStyle,
                         android.R.attr.windowExitAnimation
-                    ) ?: theme.getAttributeResourceId(android.R.attr.activityCloseExitAnimation)
+                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
                 } else {
-                    theme.getAttributeResourceId(android.R.attr.activityCloseExitAnimation)
+                    theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
                 }
             }
         )
