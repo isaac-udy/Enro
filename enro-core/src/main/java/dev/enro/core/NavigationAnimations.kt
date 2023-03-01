@@ -10,9 +10,11 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Transition
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import dev.enro.core.compose.animation.EnroAnimatedVisibility
+import androidx.compose.ui.platform.LocalContext
 import dev.enro.core.container.originalNavigationDirection
+import dev.enro.extensions.ResourceAnimatedVisibility
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
 
@@ -26,10 +28,12 @@ public sealed class NavigationAnimation {
         public val id: Int
     ) : ForView() {
         public fun isAnim(context: Context): Boolean = runCatching {
+            if (id == 0) return@runCatching false
             context.resources.getResourceTypeName(id) == "anim"
         }.getOrDefault(false)
 
         public fun isAnimator(context: Context): Boolean = runCatching {
+            if (id == 0) return@runCatching false
             context.resources.getResourceTypeName(id) == "animator"
         }.getOrDefault(false)
     }
@@ -68,7 +72,7 @@ public sealed class NavigationAnimation {
             val enter: EnterTransition = EnterTransition.None,
             val exit: ExitTransition = ExitTransition.None,
             override val forView: ForView = DefaultAnimations.ForView.noneEnter,
-        ): Composable() {
+        ) : Composable() {
             @OptIn(ExperimentalAnimationApi::class)
             @androidx.compose.runtime.Composable
             override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
@@ -86,12 +90,16 @@ public sealed class NavigationAnimation {
         @Immutable
         internal data class FromView(
             override val forView: ForView
-        ): Composable() {
+        ) : Composable() {
             @androidx.compose.runtime.Composable
             override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
-                EnroAnimatedVisibility(
-                    visibleState = visible,
-                    animations = forView
+                val context = LocalContext.current
+                val resourceAnimation = remember(forView) { forView.asResource(context.theme) }
+                visible.ResourceAnimatedVisibility(
+                    visible = { it },
+                    enter = resourceAnimation.id,
+                    exit = resourceAnimation.id,
+                    modifier = Modifier.fillMaxSize(),
                 ) {
                     content()
                 }
@@ -154,7 +162,7 @@ public object DefaultAnimations {
     )
 
     public fun opening(exiting: AnyOpenInstruction?, entering: AnyOpenInstruction): NavigationAnimationTransition {
-        if(entering.originalNavigationDirection() == NavigationDirection.ReplaceRoot) {
+        if (entering.originalNavigationDirection() == NavigationDirection.ReplaceRoot) {
             return NavigationAnimationTransition(
                 entering = ForView.replaceRootEnter,
                 exiting = ForView.replaceRootExit
@@ -179,9 +187,9 @@ public object DefaultAnimations {
     }
 
     public fun closing(exiting: AnyOpenInstruction, entering: AnyOpenInstruction?): NavigationAnimationTransition {
-        val enteringAnimation = when(entering?.navigationDirection) {
+        val enteringAnimation = when (entering?.navigationDirection) {
             null -> ForView.noneCloseExit
-            NavigationDirection.ReplaceRoot -> when(exiting.originalNavigationDirection()) {
+            NavigationDirection.ReplaceRoot -> when (exiting.originalNavigationDirection()) {
                 NavigationDirection.Present -> ForView.presentCloseEnter
                 else -> ForView.pushCloseEnter
             }
@@ -233,16 +241,16 @@ public object DefaultAnimations {
 
         public val presentExit: NavigationAnimation.ForView = NavigationAnimation.Theme(
             id = { theme ->
-                    if (Build.VERSION.SDK_INT >= 33) {
-                        theme.getNestedAttributeResourceId(
-                            android.R.attr.dialogTheme,
-                            android.R.attr.windowAnimationStyle,
-                            android.R.attr.windowExitAnimation
-                        ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
-                    } else {
-                        theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
-                    }
+                if (Build.VERSION.SDK_INT >= 33) {
+                    theme.getNestedAttributeResourceId(
+                        android.R.attr.dialogTheme,
+                        android.R.attr.windowAnimationStyle,
+                        android.R.attr.windowExitAnimation
+                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+                } else {
+                    theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
                 }
+            }
         )
 
         public val presentCloseEnter: NavigationAnimation.ForView = NavigationAnimation.Theme(
