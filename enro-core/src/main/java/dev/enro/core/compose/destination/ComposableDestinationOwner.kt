@@ -36,6 +36,7 @@ import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
+import dev.enro.extensions.rememberLifecycleState
 
 internal class ComposableDestinationOwner(
     parentContainer: NavigationContainer,
@@ -241,17 +242,3 @@ internal class ComposableDestinationOwner(
 internal val ComposableDestinationOwner.navigationController get() = parentContainer.parentContext.controller
 internal val ComposableDestinationOwner.parentSavedStateRegistry get() = parentContainer.parentContext.savedStateRegistryOwner.savedStateRegistry
 internal val ComposableDestinationOwner.activity: ComponentActivity get() = parentContainer.parentContext.activity
-
-@Composable
-internal fun LifecycleOwner.rememberLifecycleState() : Lifecycle.State {
-    val activeState = remember(this, lifecycle.currentState) { mutableStateOf(lifecycle.currentState) }
-
-    DisposableEffect(this, activeState) {
-        val observer = LifecycleEventObserver { _, event ->
-            activeState.value = event.targetState
-        }
-        lifecycle.addObserver(observer)
-        onDispose { lifecycle.removeObserver(observer) }
-    }
-    return activeState.value
-}
