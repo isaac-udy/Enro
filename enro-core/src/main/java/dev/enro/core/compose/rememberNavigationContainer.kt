@@ -54,22 +54,6 @@ public fun rememberNavigationContainer(
 }
 
 @Composable
-@Deprecated("Use the rememberEnroContainerController that takes a List<NavigationKey> instead of a List<NavigationInstruction.Open>")
-public fun rememberEnroContainerController(
-    initialBackstack: List<AnyOpenInstruction> = emptyList(),
-    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
-    interceptor: NavigationInterceptorBuilder.() -> Unit = {},
-    accept: (NavigationKey) -> Boolean = { true },
-): ComposableNavigationContainer {
-    return rememberNavigationContainer(
-        initialBackstack = initialBackstack.toBackstack(),
-        emptyBehavior = emptyBehavior,
-        interceptor = interceptor,
-        accept = accept,
-    )
-}
-
-@Composable
 @AdvancedEnroApi
 public fun rememberNavigationContainer(
     key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
@@ -105,6 +89,22 @@ public fun rememberNavigationContainer(
         }
     )
     return controller
+}
+
+@Composable
+@Deprecated("Use the rememberEnroContainerController that takes a List<NavigationKey> instead of a List<NavigationInstruction.Open>")
+public fun rememberEnroContainerController(
+    initialBackstack: List<AnyOpenInstruction> = emptyList(),
+    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    interceptor: NavigationInterceptorBuilder.() -> Unit = {},
+    accept: (NavigationKey) -> Boolean = { true },
+): ComposableNavigationContainer {
+    return rememberNavigationContainer(
+        initialBackstack = initialBackstack.toBackstack(),
+        emptyBehavior = emptyBehavior,
+        interceptor = interceptor,
+        accept = accept,
+    )
 }
 
 @Composable
