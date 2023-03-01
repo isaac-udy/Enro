@@ -78,6 +78,11 @@ public class ComposableNavigationContainer internal constructor(
 
     init {
         setOrLoadInitialBackstack(initialBackstack)
+        val lifecycleEventObserver = LifecycleEventObserver { _, event ->
+            if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
+            destroy()
+        }
+        parentContext.lifecycle.addObserver(lifecycleEventObserver)
     }
 
     @OptIn(ExperimentalMaterialApi::class)
@@ -173,6 +178,13 @@ public class ComposableNavigationContainer internal constructor(
         }
     }
 
+    private fun destroy() {
+        destinationOwners.forEach { composableDestinationOwner ->
+            composableDestinationOwner.destroy()
+        }
+        destinationOwners = emptyList()
+    }
+
     @Composable
     internal fun registerWithContainerManager(
         registrationStrategy: ContainerRegistrationStrategy
@@ -184,28 +196,11 @@ public class ComposableNavigationContainer internal constructor(
 
         DisposableEffect(key, registrationStrategy) {
             val containerManager = parentContext.containerManager
-
-            fun dispose() {
-                destinationOwners.forEach { composableDestinationOwner ->
-                    composableDestinationOwner.destroy()
-                }
-                destinationOwners = emptyList()
-            }
-
-            val lifecycleEventObserver = LifecycleEventObserver { _, event ->
-                if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
-                dispose()
-            }
-
             containerManager.addContainer(this@ComposableNavigationContainer)
-            when (registrationStrategy) {
-                ContainerRegistrationStrategy.DisposeWithComposition -> {}
-                ContainerRegistrationStrategy.DisposeWithLifecycle -> parentContext.lifecycle.addObserver(lifecycleEventObserver)
-            }
             onDispose {
                 when (registrationStrategy) {
-                    ContainerRegistrationStrategy.DisposeWithComposition -> dispose()
-                    ContainerRegistrationStrategy.DisposeWithLifecycle -> parentContext.lifecycle.removeObserver(lifecycleEventObserver)
+                    ContainerRegistrationStrategy.DisposeWithComposition -> destroy()
+                    ContainerRegistrationStrategy.DisposeWithLifecycle -> {} // handled by init
                 }
             }
         }
