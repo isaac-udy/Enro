@@ -5,11 +5,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.ContainerRegistrationStrategy
-import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.container.*
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 
@@ -62,15 +60,10 @@ public fun rememberNavigationContainer(
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
-    val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
+    val localNavigationHandle = navigationHandle()
 
-    val controller = remember {
-        // TODO would be nice if we didn't need to do this?
-        val context = when(viewModelStoreOwner) {
-            is ComposableDestinationOwner -> viewModelStoreOwner.destination.context
-            else -> viewModelStoreOwner.navigationContext!!
-        }
-
+    val navigationContainer = remember {
+        val context = localNavigationHandle.requireNavigationContext()
         val existingContainer = context.containerManager.getContainer(key) as? ComposableNavigationContainer
         existingContainer ?: ComposableNavigationContainer(
             key = key,
@@ -81,14 +74,14 @@ public fun rememberNavigationContainer(
             initialBackstack = initialBackstack
         )
     }
-    controller.registerWithContainerManager(
+    navigationContainer.registerWithContainerManager(
         when(key) {
             is NavigationContainerKey.Dynamic -> ContainerRegistrationStrategy.DisposeWithComposition
             is NavigationContainerKey.FromId -> ContainerRegistrationStrategy.DisposeWithLifecycle
             is NavigationContainerKey.FromName -> ContainerRegistrationStrategy.DisposeWithLifecycle
         }
     )
-    return controller
+    return navigationContainer
 }
 
 @Composable
