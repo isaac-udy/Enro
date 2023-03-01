@@ -113,7 +113,7 @@ class NavigationComponentProcessor : BaseProcessor() {
             .addSuperinterface(
                 ParameterizedTypeName.get(
                     ClassNames.kotlinFunctionOne,
-                    ClassNames.navigationComponentBuilder,
+                    ClassNames.navigationModuleScope,
                     ClassName.get(Unit::class.java)
                 )
             )
@@ -124,12 +124,12 @@ class NavigationComponentProcessor : BaseProcessor() {
                     .returns(Unit::class.java)
                     .addParameter(
                         ParameterSpec
-                            .builder(ClassNames.navigationComponentBuilder, "navigationComponentBuilder")
+                            .builder(ClassNames.navigationModuleScope, "navigationModuleScope")
                             .build()
                     )
                     .apply {
                         destinations.forEach {
-                            addStatement(CodeBlock.of("new $1T().invoke(navigationComponentBuilder)", it.generatedBinding))
+                            addStatement(CodeBlock.of("new $1T().invoke(navigationModuleScope)", it.generatedBinding))
                         }
                         addStatement(CodeBlock.of("return kotlin.Unit.INSTANCE"))
                     }

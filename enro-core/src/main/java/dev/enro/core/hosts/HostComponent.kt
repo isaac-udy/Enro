@@ -1,11 +1,10 @@
 package dev.enro.core.hosts
 
 import dev.enro.core.activity.createActivityNavigationBinding
-import dev.enro.core.controller.createNavigationComponent
+import dev.enro.core.controller.createNavigationModule
 import dev.enro.core.fragment.createFragmentNavigationBinding
-import dev.enro.core.navigationHostFactory
 
-internal val hostComponent = createNavigationComponent {
+internal val hostNavigationModule = createNavigationModule {
     navigationHostFactory(ActivityHost())
     navigationHostFactory(FragmentHost())
     navigationHostFactory(DialogFragmentHost())

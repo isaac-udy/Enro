@@ -8,13 +8,13 @@ import androidx.activity.addCallback
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import dev.enro.core.*
+import dev.enro.core.compatability.interceptBackPressForAndroidxNavigation
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
 import dev.enro.core.container.emptyBackstack
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.fragment.container.FragmentNavigationContainer
-import dev.enro.core.internal.handle.interceptBackPressForAndroidxNavigation
 
 internal class ActivityLifecycleCallbacksForEnro(
     private val onNavigationContextCreated: OnNavigationContextCreated,

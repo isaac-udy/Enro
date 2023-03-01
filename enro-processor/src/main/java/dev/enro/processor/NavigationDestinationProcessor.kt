@@ -57,7 +57,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
             .addSuperinterface(
                 ParameterizedTypeName.get(
                     ClassNames.kotlinFunctionOne,
-                    ClassNames.navigationComponentBuilder,
+                    ClassNames.navigationModuleScope,
                     ClassName.get(Unit::class.java)
                 )
             )
@@ -78,7 +78,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     .returns(Unit::class.java)
                     .addParameter(
                         ParameterSpec
-                            .builder(ClassNames.navigationComponentBuilder, "navigationComponentBuilder")
+                            .builder(ClassNames.navigationModuleScope, "navigationModuleScope")
                             .build()
                     )
                     .addNavigationDestination(element, keyType)
@@ -164,7 +164,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
             .addSuperinterface(
                 ParameterizedTypeName.get(
                     ClassNames.kotlinFunctionOne,
-                    ClassNames.navigationComponentBuilder,
+                    ClassNames.navigationModuleScope,
                     ClassName.get(Unit::class.java)
                 )
             )
@@ -188,13 +188,13 @@ class NavigationDestinationProcessor : BaseProcessor() {
                     .returns(Unit::class.java)
                     .addParameter(
                         ParameterSpec
-                            .builder(ClassNames.navigationComponentBuilder, "navigationComponentBuilder")
+                            .builder(ClassNames.navigationModuleScope, "navigationModuleScope")
                             .build()
                     )
                     .addStatement(
                         CodeBlock.of(
                             """
-                                navigationComponentBuilder.binding(
+                                navigationModuleScope.binding(
                                     createComposableNavigationBinding(
                                         $1T.class,
                                         $composableWrapper.class
@@ -248,7 +248,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
             when {
                 destinationIsActivity -> CodeBlock.of(
                     """
-                    navigationComponentBuilder.binding(
+                    navigationModuleScope.binding(
                         createActivityNavigationBinding(
                             $1T.class,
                             $2T.class
@@ -261,7 +261,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
                 destinationIsFragment -> CodeBlock.of(
                     """
-                    navigationComponentBuilder.binding(
+                    navigationModuleScope.binding(
                         createFragmentNavigationBinding(
                             $1T.class,
                             $2T.class
@@ -274,7 +274,7 @@ class NavigationDestinationProcessor : BaseProcessor() {
 
                 destinationIsSynthetic -> CodeBlock.of(
                     """
-                    navigationComponentBuilder.binding(
+                    navigationModuleScope.binding(
                         createSyntheticNavigationBinding(
                             $1T.class,
                             () -> new $2T()

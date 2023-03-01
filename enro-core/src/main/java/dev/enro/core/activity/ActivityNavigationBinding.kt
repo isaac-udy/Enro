@@ -4,7 +4,7 @@ import android.app.Activity
 import androidx.activity.ComponentActivity
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
-import dev.enro.core.controller.NavigationComponentBuilder
+import dev.enro.core.controller.NavigationModuleScope
 import kotlin.reflect.KClass
 
 public class ActivityNavigationBinding<KeyType : NavigationKey, ActivityType : ComponentActivity> @PublishedApi internal constructor(
@@ -28,6 +28,6 @@ public inline fun <reified KeyType : NavigationKey, reified ActivityType : Compo
         activityType = ActivityType::class.java,
     )
 
-public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComponentActivity> NavigationComponentBuilder.activityDestination() {
+public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComponentActivity> NavigationModuleScope.activityDestination() {
     binding(createActivityNavigationBinding<KeyType, DestinationType>())
 }

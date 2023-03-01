@@ -9,7 +9,7 @@ public object DefaultSyntheticExecutor :
         keyType = NavigationKey::class
     ) {
     override fun open(args: ExecutorArgs<out Any, out SyntheticDestination<*>, out NavigationKey>) {
-        args.binding as SyntheticNavigationBinding<NavigationKey>
+        args.binding as SyntheticNavigationBinding<out NavigationKey>
 
         val destination = args.binding.destination.invoke()
         destination.bind(

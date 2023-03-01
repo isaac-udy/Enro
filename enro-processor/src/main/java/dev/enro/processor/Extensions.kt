@@ -12,7 +12,7 @@ internal object EnroProcessor {
 internal object ClassNames {
     val kotlinFunctionOne = ClassName.get("kotlin.jvm.functions", "Function1")
 
-    val navigationComponentBuilder = ClassName.get("dev.enro.core.controller", "NavigationComponentBuilder")
+    val navigationModuleScope = ClassName.get("dev.enro.core.controller", "NavigationModuleScope")
     val jvmClassMappings = ClassName.get("kotlin.jvm", "JvmClassMappingKt")
 
     val unit = ClassName.get("kotlin", "Unit")

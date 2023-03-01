@@ -29,7 +29,7 @@ internal class NavigationControllerScope(
             register { NavigationHostFactoryRepository(this) }
 
             // Usecases
-            register { AddComponentToController(get(), get(), get(), get(), get(), get()) }
+            register { AddModuleToController(get(), get(), get(), get(), get(), get()) }
             register { GetNavigationExecutor(get(), get()) }
             register { AddPendingResult(get()) }
             register<ExecuteOpenInstruction> { ExecuteOpenInstructionImpl(get(), get(), get()) }

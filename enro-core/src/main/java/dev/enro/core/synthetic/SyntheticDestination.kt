@@ -23,6 +23,7 @@ public abstract class SyntheticDestination<T : NavigationKey> {
         instruction: AnyOpenInstruction
     ) {
         this._navigationContext = navigationContext
+        @Suppress("UNCHECKED_CAST")
         this.key = instruction.navigationKey as T
         this.instruction = instruction
 

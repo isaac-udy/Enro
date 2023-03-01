@@ -9,7 +9,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.controller.repository.ExecutorRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.PluginRepository
-import dev.enro.core.controller.usecase.AddComponentToController
+import dev.enro.core.controller.usecase.AddModuleToController
 import dev.enro.core.result.EnroResult
 import kotlin.reflect.KClass
 
@@ -25,15 +25,15 @@ public class NavigationController internal constructor() {
     private val pluginRepository: PluginRepository = dependencyScope.get()
     private val navigationBindingRepository: NavigationBindingRepository = dependencyScope.get()
     private val executorRepository: ExecutorRepository = dependencyScope.get()
-    private val addComponentToController: AddComponentToController = dependencyScope.get()
+    private val addModuleToController: AddModuleToController = dependencyScope.get()
 
     init {
         pluginRepository.addPlugins(listOf(enroResult))
-        addComponent(defaultComponent)
+        addModule(defaultNavigationModule)
     }
 
-    public fun addComponent(component: NavigationComponentBuilder) {
-        addComponentToController(component)
+    public fun addModule(component: NavigationModule) {
+        addModuleToController(component)
     }
 
     public fun bindingForDestinationType(

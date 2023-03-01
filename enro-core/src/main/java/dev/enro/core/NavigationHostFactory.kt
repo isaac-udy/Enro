@@ -1,7 +1,6 @@
 package dev.enro.core
 
 import dev.enro.core.controller.EnroDependencyScope
-import dev.enro.core.controller.NavigationComponentBuilder
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.GetNavigationBinding
 
@@ -32,11 +31,6 @@ public abstract class NavigationHostFactory<HostType: Any>(
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>
     ): NavigationInstruction.Open<*>
-}
-
-@AdvancedEnroApi
-internal fun NavigationComponentBuilder.navigationHostFactory(navigationHostFactory: NavigationHostFactory<*>) {
-    hostFactories.add(navigationHostFactory)
 }
 
 @AdvancedEnroApi
