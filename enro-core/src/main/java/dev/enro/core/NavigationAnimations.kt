@@ -189,7 +189,7 @@ public object DefaultAnimations {
             else -> ForView.presentCloseEnter
         }
 
-        val exitingAnimation = when (exiting.originalNavigationDirection()) {
+        val exitingAnimation = when (exiting.navigationDirection) {
             NavigationDirection.Push, NavigationDirection.Forward -> ForView.pushCloseExit
             else -> ForView.presentCloseExit
         }
