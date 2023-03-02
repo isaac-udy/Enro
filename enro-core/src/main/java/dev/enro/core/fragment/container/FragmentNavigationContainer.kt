@@ -1,6 +1,7 @@
 package dev.enro.core.fragment.container
 
 import android.app.Activity
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.annotation.IdRes
@@ -54,22 +55,27 @@ public class FragmentNavigationContainer internal constructor(
 
     private val ownedFragments = mutableSetOf<String>()
 
-    public fun save(): List<Pair<AnyOpenInstruction, Fragment.SavedState>> {
-        return backstack
-            .asFragmentAndInstruction()
-            .map {
-                it.instruction to fragmentManager.saveFragmentInstanceState(it.fragment)
-            }
-            .mapNotNull {
-                if(it.second == null) return@mapNotNull null
+    public fun save(): Bundle {
+        return bundleOf(
+            "backstack" to ArrayList(backstack),
+            *backstack
+                .asFragmentAndInstruction()
+                .map {
+                    it.instruction to fragmentManager.saveFragmentInstanceState(it.fragment)
+                }
+                .mapNotNull {
+                    if(it.second == null) return@mapNotNull null
 
-                it.first to it.second!!
-            }
+                    it.first.instructionId to it.second!!
+                }
+                .toTypedArray()
+        )
     }
 
-    private var restoreStates: List<Pair<AnyOpenInstruction, Fragment.SavedState>> = emptyList()
-    public fun restore(states: List<Pair<AnyOpenInstruction, Fragment.SavedState>>) {
+    private var restoreStates: Bundle = bundleOf()
+    public fun restore(states: Bundle) {
         restoreStates = states
+        setBackstack(states.getParcelableArrayList<AnyOpenInstruction>("backstack").orEmpty().toBackstack())
     }
 
     init {
@@ -248,10 +254,8 @@ public class FragmentNavigationContainer internal constructor(
                 parentContext,
                 hostInstructionAs(type, parentContext, instruction)
             ).also {
-               restoreStates.firstOrNull {
-                   it.first.instructionId == instruction.instructionId
-               }?.let { (instruction, ss) ->
-                   it.setInitialSavedState(ss)
+               restoreStates.getParcelable<Fragment.SavedState>(instruction.instructionId)?.let { savedState ->
+                   it.setInitialSavedState(savedState)
                }
             },
             instruction = instruction

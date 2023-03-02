@@ -3,8 +3,7 @@ package dev.enro.core.compose.container
 import android.os.Bundle
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
-import androidx.compose.runtime.saveable.SaveableStateRegistry
+import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -27,7 +26,8 @@ public class ComposableNavigationContainer internal constructor(
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
-    initialBackstack: NavigationBackstack
+    initialBackstack: NavigationBackstack,
+    internal var saveableStateHolder: SaveableStateHolder,
 ) : NavigationContainer(
     key = key,
     parentContext = parentContext,
@@ -39,8 +39,6 @@ public class ComposableNavigationContainer internal constructor(
 ) {
     private val viewModelStoreStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
     private val viewModelStores = viewModelStoreStorage.viewModelStores.getOrPut(key) { mutableMapOf() }
-
-    private var saveableStateRegistry: SaveableStateRegistry? by mutableStateOf(null)
 
     private var destinationOwners by mutableStateOf<List<ComposableDestinationOwner>>(emptyList())
     private val currentDestination
@@ -63,45 +61,36 @@ public class ComposableNavigationContainer internal constructor(
                 && backstack.size <= 1
                 && currentTransition?.lastInstruction != NavigationInstruction.Close
 
-    public fun save() : Map<String, List<Any?>> {
-        return saveableStateRegistry?.performSave().orEmpty()
-            .toMutableMap() + destinationOwners.map {
-            val bundle = bundleOf()
-            it.savedStateRegistry.performSave(bundle)
-            "createDestinationOwner@${it.instruction.instructionId}" to listOf(bundle)
-        }.toMap() + ("example" to backstack)
-    }
-
-    public fun restore(state: Map<String, List<Any?>>?) {
-        destinationOwners.forEach {
-            it.destroy()
-        }
-        destinationOwners = emptyList()
-
-        val backstack = state?.get("example") as? NavigationBackstack
-        saveableStateRegistry = SaveableStateRegistry(
-            canBeSaved = { true },
-            restoredValues = state
-        )
-
-        setBackstack(backstack ?: return)
-    }
-
     // We want "Render" to look like it's a Composable function (it's a Composable lambda), so
     // we are uppercasing the first letter of the property name, which triggers a PropertyName lint warning
     @Suppress("PropertyName")
     public val Render: @Composable () -> Unit = movableContentOf {
         key(key.name) {
             val backstack by backstackFlow.collectAsState()
-            CompositionLocalProvider(
-                LocalSaveableStateRegistry provides saveableStateRegistry
-            ) {
-                destinationOwners
-                    .forEach {
-                        it.Render(backstack)
-                    }
-            }
+            destinationOwners
+                .forEach {
+                    it.Render(backstack, saveableStateHolder)
+                }
         }
+    }
+
+    public fun save(): Bundle {
+        val bundle = bundleOf()
+        bundle.putParcelableArrayList("backstack", ArrayList(backstack))
+        destinationOwners.forEach {
+            val (saved, savable) = it.save()
+            bundle.putBundle(it.instruction.instructionId+"@saved", saved)
+            bundle.putBundle(it.instruction.instructionId+"@savable", savable)
+        }
+        return bundle
+    }
+
+    private var restoredState: Bundle? = null
+    @Suppress("DEPRECATION")
+    public fun restore(bundle: Bundle) {
+        val backstack = bundle.getParcelableArrayList<NavigationInstruction.Open<*>>("backstack")
+        restoredState = bundle
+        setBackstack(backstack.orEmpty().toBackstack())
     }
 
     init {
@@ -170,7 +159,6 @@ public class ComposableNavigationContainer internal constructor(
             (controller.bindingForKeyType(composeKey::class) as ComposableNavigationBinding<NavigationKey, ComposableDestination>)
                 .constructDestination()
 
-        val savedInstanceState = saveableStateRegistry?.consumeRestored("createDestinationOwner@${instruction.instructionId}") as? Bundle
         return ComposableDestinationOwner(
             parentContainer = this,
             instruction = instruction,
@@ -179,7 +167,8 @@ public class ComposableNavigationContainer internal constructor(
             onNavigationContextCreated = parentContext.controller.dependencyScope.get(),
             onNavigationContextSaved = parentContext.controller.dependencyScope.get(),
             composeEnvironment = parentContext.controller.dependencyScope.get(),
-            savedInstanceState = savedInstanceState,
+            savedInstanceState = restoredState?.getBundle(instruction.instructionId+"@saved"),
+            saveableRegistryState = restoredState?.getBundle(instruction.instructionId+"@savable"),
         )
     }
 
@@ -218,18 +207,6 @@ public class ComposableNavigationContainer internal constructor(
     internal fun registerWithContainerManager(
         registrationStrategy: ContainerRegistrationStrategy
     ): Boolean {
-        val localSaveableStateRegistry = LocalSaveableStateRegistry.current ?: return false
-        val savedStateEntry = remember(key, localSaveableStateRegistry) {
-            val restoredState = localSaveableStateRegistry.consumeRestored(key.name) as Map<String, List<Any?>>?
-            restore(restoredState)
-            localSaveableStateRegistry.registerProvider(key.name) {
-                save()
-            }
-        }
-        DisposableEffect(savedStateEntry) {
-            onDispose { savedStateEntry.unregister() }
-        }
-
         DisposableEffect(key, registrationStrategy) {
             val containerManager = parentContext.containerManager
             containerManager.addContainer(this@ComposableNavigationContainer)

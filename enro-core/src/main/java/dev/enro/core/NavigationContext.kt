@@ -1,5 +1,6 @@
 package dev.enro.core
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
@@ -106,6 +107,7 @@ public fun NavigationContext<*>.parentContainer(): NavigationContainer? {
 
     return getParentContainerFrom(parentContext)
 }
+public fun NavigationContainer.parentContainer(): NavigationContainer? = parentContext.parentContainer()
 
 @AdvancedEnroApi
 public fun NavigationContext<*>.directParentContainer(): NavigationContainer? {
@@ -117,16 +119,22 @@ public fun NavigationContext<*>.directParentContainer(): NavigationContainer? {
 }
 
 public fun NavigationContext<*>.findRootContainer(): NavigationContainer? {
+    if (contextReference is Activity) return containerManager.activeContainer
+
     var parentContainer = parentContainer()
     while(parentContainer != null) {
-        parentContainer = parentContainer() ?: return parentContainer
+        val nextParent = parentContainer()
+        if (nextParent == parentContainer) return parentContainer
+        parentContainer = nextParent ?: return parentContainer
     }
     return null
 }
+public fun NavigationContainer.findRootContainer(): NavigationContainer? = parentContext.findRootContainer()
 
 public fun NavigationContext<*>.requireRootContainer(): NavigationContainer {
     return requireNotNull(findRootContainer())
 }
+public fun NavigationContainer.requireRootContainer(): NavigationContainer = parentContext.requireRootContainer()
 
 public fun NavigationContext<*>.findContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer? {
     val seen = mutableSetOf<NavigationContext<*>>()
@@ -151,10 +159,12 @@ public fun NavigationContext<*>.findContainer(navigationContainerKey: Navigation
 
     return findFrom(this)
 }
+public fun NavigationContainer.findContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer? = parentContext.findContainer(navigationContainerKey)
 
 public fun NavigationContext<*>.requireContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer {
     return requireNotNull(findContainer(navigationContainerKey))
 }
+public fun NavigationContainer.requireContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer = parentContext.requireContainer(navigationContainerKey)
 
 
 public val NavigationContext<*>.activity: ComponentActivity

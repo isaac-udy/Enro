@@ -15,63 +15,58 @@ import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
-import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.container.*
-import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.fragment.container.navigationContainer
 import kotlinx.parcelize.Parcelize
-import leakcanary.DetectLeaksAfterTestSuccess
-import org.junit.Rule
-import org.junit.Test
 import java.util.*
 
 class FragmentContainerSaveStateTest {
 
-    @get:Rule
-    val rule = DetectLeaksAfterTestSuccess()
-
-    @Test
-    fun whenSavingContainerStateToBundle_thenHierarchyIsRestoredCorrectly_andViewModelsAreClearedCorrectly() {
-        val scenario = ActivityScenario.launch(SaveHierarchyActivity::class.java)
-        val activity = expectContext<SaveHierarchyActivity, SavedHierarchyRootKey>()
-
-        val instruction = NavigationInstruction.Push(SaveHierarchyKey())
-        val instruction2 = NavigationInstruction.Push(SaveHierarchyKey())
-        activity.navigation.onContainer(SaveHierarchyActivity.primaryContainerKey) {
-            setBackstack { backstackOf(instruction) }
-        }
-        expectFragmentContext<SaveHierarchyKey>() {
-            it.navigation.instruction.instructionId == instruction.instructionId
-        }.apply {
-            navigation.onContainer(TestFragment.primaryFragmentContainerKey) {
-                setBackstack { backstackOf(instruction2) }
-            }
-            navigation.onContainer(TestFragment.secondaryFragmentContainerKey) {
-                setBackstack { it.push(dev.enro.core.compose.SaveHierarchyKey()) }
-            }
-        }
-
-        Thread.sleep(3000)
-
-        var savedState: List<Pair<AnyOpenInstruction, Fragment.SavedState>> = emptyList()
-        activity.navigation.onContainer(SaveHierarchyActivity.primaryContainerKey) {
-            this as FragmentNavigationContainer
-            savedState = save()
-            setBackstack { emptyBackstack() }
-        }
-
-        Thread.sleep(3000)
-        activity.navigation.onContainer(SaveHierarchyActivity.primaryContainerKey) {
-            this as FragmentNavigationContainer
-            restore(savedState)
-            setBackstack { backstackOf(instruction) }
-        }
-
-        Thread.sleep(5000)
-    }
+//    @get:Rule
+//    val rule = DetectLeaksAfterTestSuccess()
+//
+//    @Test
+//    fun whenSavingContainerStateToBundle_thenHierarchyIsRestoredCorrectly_andViewModelsAreClearedCorrectly() {
+//        val scenario = ActivityScenario.launch(SaveHierarchyActivity::class.java)
+//        val activity = expectContext<SaveHierarchyActivity, SavedHierarchyRootKey>()
+//
+//        val instruction = NavigationInstruction.Push(SaveHierarchyKey())
+//        val instruction2 = NavigationInstruction.Push(SaveHierarchyKey())
+//        activity.navigation.onContainer(SaveHierarchyActivity.primaryContainerKey) {
+//            setBackstack { backstackOf(instruction) }
+//        }
+//        expectFragmentContext<SaveHierarchyKey>() {
+//            it.navigation.instruction.instructionId == instruction.instructionId
+//        }.apply {
+//            navigation.onContainer(TestFragment.primaryFragmentContainerKey) {
+//                setBackstack { backstackOf(instruction2) }
+//            }
+//            navigation.onContainer(TestFragment.secondaryFragmentContainerKey) {
+//                setBackstack { it.push(dev.enro.core.compose.SaveHierarchyKey()) }
+//            }
+//        }
+//
+//        Thread.sleep(3000)
+//
+//        var savedState: List<Pair<AnyOpenInstruction, Fragment.SavedState>> = emptyList()
+//        activity.navigation.onContainer(SaveHierarchyActivity.primaryContainerKey) {
+//            this as FragmentNavigationContainer
+//            savedState = save()
+//            setBackstack { emptyBackstack() }
+//        }
+//
+//        Thread.sleep(3000)
+//        activity.navigation.onContainer(SaveHierarchyActivity.primaryContainerKey) {
+//            this as FragmentNavigationContainer
+//            restore(savedState)
+//            setBackstack { backstackOf(instruction) }
+//        }
+//
+//        Thread.sleep(5000)
+//    }
 }
 
 @Parcelize

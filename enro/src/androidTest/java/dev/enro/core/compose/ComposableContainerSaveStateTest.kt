@@ -1,5 +1,6 @@
 package dev.enro.core.compose
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.setContent
@@ -12,6 +13,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.core.os.bundleOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -52,7 +54,7 @@ class ComposableContainerSaveStateTest {
             }
 
         Thread.sleep(4000)
-        var savedState: Map<String, List<Any?>>? = emptyMap()
+        var savedState: Bundle = bundleOf()
 
         activity.navigation.onContainer(SaveHierarchyActivity.primaryContainer) {
             this as ComposableNavigationContainer
@@ -118,6 +120,7 @@ class SavedStateHierarchyViewModel(
     }
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 @NavigationDestination(SaveHierarchyKey::class)
 fun SaveHierarchyScreen() {

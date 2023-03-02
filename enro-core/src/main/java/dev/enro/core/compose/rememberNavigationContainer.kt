@@ -1,9 +1,9 @@
 package dev.enro.core.compose
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
@@ -61,6 +61,7 @@ public fun rememberNavigationContainer(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     val localNavigationHandle = navigationHandle()
+    val saveableStateHolder = rememberSaveableStateHolder()
 
     val navigationContainer = remember {
         val context = localNavigationHandle.requireNavigationContext()
@@ -71,9 +72,11 @@ public fun rememberNavigationContainer(
             accept = accept,
             emptyBehavior = emptyBehavior,
             interceptor = interceptor,
-            initialBackstack = initialBackstack
+            initialBackstack = initialBackstack,
+            saveableStateHolder = saveableStateHolder
         )
-    }
+    }.also { it.saveableStateHolder = saveableStateHolder }
+
     navigationContainer.registerWithContainerManager(
         when(key) {
             is NavigationContainerKey.Dynamic -> ContainerRegistrationStrategy.DisposeWithComposition

@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.os.bundleOf
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -48,6 +49,7 @@ internal class ComposableDestinationOwner(
     private val composeEnvironment: ComposeEnvironment,
     viewModelStore: ViewModelStore,
     private val savedInstanceState: Bundle?,
+    private val saveableRegistryState: Bundle?
 ) : ViewModel(),
     LifecycleOwner,
     ViewModelStoreOwner,
@@ -84,9 +86,14 @@ internal class ComposableDestinationOwner(
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
     }
 
-    override val lifecycle: Lifecycle get() {
-        return lifecycleRegistry
+    internal fun save(): Pair<Bundle, Bundle> {
+        return bundleOf().also { savedStateRegistry.performSave(it) } to bundleOf()
     }
+
+    override val lifecycle: Lifecycle
+        get() {
+            return lifecycleRegistry
+        }
 
     override val viewModelStore: ViewModelStore get() {
         return viewModelStoreOwner.viewModelStore
@@ -113,12 +120,14 @@ internal class ComposableDestinationOwner(
 
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
-    internal fun Render(backstackState: List<AnyOpenInstruction>) {
+    internal fun Render(
+        backstackState: List<AnyOpenInstruction>,
+        saveableStateHolder: SaveableStateHolder
+    ) {
         val parentContainer = _parentContainer ?: return
         val lifecycleState = rememberLifecycleState()
         if (!lifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
 
-        val saveableStateHolder = rememberSaveableStateHolder()
         val renderDestination = remember(instruction.instructionId) {
             movableContentOf {
                 ProvideCompositionLocals {
@@ -134,9 +143,9 @@ internal class ComposableDestinationOwner(
                 is DialogDestination -> NavigationAnimation.Composable.NoAnimation
                 is BottomSheetDestination -> NavigationAnimation.Composable(
                     enter = EnterTransition.None,
-                    exit =  fadeOut(tween(75, 150)),
+                    exit = fadeOut(tween(75, 150)),
                 )
-                else -> when(transitionState.targetState) {
+                else -> when (transitionState.targetState) {
                     true -> parentContainer.getAnimationsForEntering(instruction).asComposable()
                     else -> parentContainer.getAnimationsForExiting(instruction).asComposable()
                 }
