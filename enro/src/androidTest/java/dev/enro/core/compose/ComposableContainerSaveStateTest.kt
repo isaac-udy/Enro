@@ -64,21 +64,8 @@ class ComposableContainerSaveStateTest {
         activity.navigation.onContainer(SaveHierarchyActivity.primaryContainer) {
             this as ComposableNavigationContainer
             restore(savedState)
-            setBackstack { backstackOf(instructionOne) }
         }
 
-        Thread.sleep(1000)
-        expectComposableContext<SaveHierarchyKey>()
-            .navigation.onContainer(instructionOneKey.childContainerKey) {
-                Log.e("COMPOSABLE", "Container state ${backstack}")
-            }
-//        Log.e("ASDASD", "$savedState" )
-//
-//        activity.navigation.onContainer(SaveHierarchyActivity.primaryContainer) {
-//            this as ComposableNavigationContainer
-//            this.restore(savedState)
-//            setBackstack {  backstackOf(instruction) }
-//        }
         Thread.sleep(8000)
     }
 }
@@ -117,10 +104,18 @@ data class SaveHierarchyKey(
 }
 
 class SavedStateHierarchyViewModel(
-    savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    init {
+        Log.e("SSHRVM", "${savedStateHandle.keys()}")
+    }
     val id: String = UUID.randomUUID().toString()
     val saveStateHandleId = savedStateHandle.getStateFlow("savedStateId", UUID.randomUUID().toString())
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.e("SSHRVM", "${savedStateHandle.keys()}")
+    }
 }
 
 @Composable

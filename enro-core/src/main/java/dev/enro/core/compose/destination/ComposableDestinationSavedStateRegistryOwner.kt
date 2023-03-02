@@ -12,11 +12,12 @@ import dev.enro.core.controller.usecase.OnNavigationContextSaved
 internal class ComposableDestinationSavedStateRegistryOwner(
     private val owner: ComposableDestinationOwner,
     onNavigationContextSaved: OnNavigationContextSaved,
+    savedInstanceState: Bundle?
 ) : SavedStateRegistryOwner {
 
     private val savedStateController = SavedStateRegistryController.create(this)
     internal val savedState: Bundle =
-        owner.parentSavedStateRegistry.consumeRestoredStateForKey(owner.instruction.instructionId) ?: Bundle()
+        savedInstanceState ?: owner.parentSavedStateRegistry.consumeRestoredStateForKey(owner.instruction.instructionId) ?: Bundle()
 
     init {
         savedStateController.performRestore(savedState)

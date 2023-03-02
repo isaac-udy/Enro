@@ -26,4 +26,11 @@ public class NavigationBackstackTransition(
         previousBackstack.active != activeBackstack.active -> previousBackstack.active
         else -> null
     }
+
+    public val removed: List<AnyOpenInstruction> by lazy {
+        val active = activeBackstack.associateBy { it.instructionId }
+        previousBackstack.filter {
+            active[it.instructionId] == null
+        }
+    }
 }

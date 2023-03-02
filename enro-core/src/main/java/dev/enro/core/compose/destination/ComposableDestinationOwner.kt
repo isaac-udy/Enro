@@ -1,6 +1,7 @@
 package dev.enro.core.compose.destination
 
 import android.annotation.SuppressLint
+import android.os.Bundle
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -46,6 +47,7 @@ internal class ComposableDestinationOwner(
     onNavigationContextSaved: OnNavigationContextSaved,
     private val composeEnvironment: ComposeEnvironment,
     viewModelStore: ViewModelStore,
+    private val savedInstanceState: Bundle?,
 ) : ViewModel(),
     LifecycleOwner,
     ViewModelStoreOwner,
@@ -61,7 +63,7 @@ internal class ComposableDestinationOwner(
     private val lifecycleRegistry = LifecycleRegistry(this)
 
     @Suppress("LeakingThis")
-    private val savedStateRegistryOwner = ComposableDestinationSavedStateRegistryOwner(this, onNavigationContextSaved)
+    private val savedStateRegistryOwner = ComposableDestinationSavedStateRegistryOwner(this, onNavigationContextSaved, savedInstanceState)
 
     @Suppress("LeakingThis")
     private val viewModelStoreOwner = ComposableDestinationViewModelStoreOwner(
@@ -100,6 +102,12 @@ internal class ComposableDestinationOwner(
 
     internal fun destroy() {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+
+        val parentContainer = _parentContainer
+        when {
+            parentContainer == null -> viewModelStore.clear()
+            !parentContainer.backstack.contains(instruction) -> viewModelStore.clear()
+        }
         _parentContainer = null
     }
 
