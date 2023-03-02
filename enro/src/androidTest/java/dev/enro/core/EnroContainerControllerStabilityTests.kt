@@ -16,6 +16,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -90,6 +91,7 @@ class EnroContainerControllerStabilityTests {
     private fun getSnapshot(): EnroStabilitySnapshot = EnroStabilitySnapshot(
         viewModelHashCode = getTextFromNode("viewModelHashCode"),
         viewModelStoreHashCode = getTextFromNode("viewModelStoreHashCode"),
+        viewModelSavedItem = getTextFromNode("viewModelSavedItem"),
         navigationId = getTextFromNode("navigationId"),
         keyId = getTextFromNode("keyId"),
         rememberSaveableItem = getTextFromNode("rememberSaveableItem"),
@@ -128,14 +130,21 @@ class EnroStabilityKey(
     val id: String
 ) : NavigationKey
 
-class EnroStabilityViewModel : ViewModel()
+class EnroStabilityViewModel(
+    private val savedStateHandle: SavedStateHandle
+) : ViewModel() {
+    val savedStateHandleValue = savedStateHandle.get<String>("savedStateHandleValue")
+        ?: UUID.randomUUID().toString().also { savedStateHandle["savedStateHandleValue"] = it }
+}
 
 @Composable
 @NavigationDestination(EnroStabilityKey::class)
 fun EnroStabilityScreen() {
     val navigation = navigationHandle<EnroStabilityKey>()
-    val viewModelHashCode = viewModel<EnroStabilityViewModel>().hashCode().toString()
+    val viewModel = viewModel<EnroStabilityViewModel>()
+    val viewModelHashCode = viewModel.hashCode().toString()
     val viewModelStoreHashCode = LocalViewModelStoreOwner.current?.viewModelStore.hashCode().toString()
+    val viewModelSavedItem = viewModel.savedStateHandleValue
 
     val navigationId = navigation.id
     val keyId = navigation.key.id
@@ -153,6 +162,12 @@ fun EnroStabilityScreen() {
             text = viewModelStoreHashCode,
             modifier = Modifier.semantics {
                 testTag = "viewModelStoreHashCode"
+            }
+        )
+        Text(
+            text = viewModelSavedItem,
+            modifier = Modifier.semantics {
+                testTag = "viewModelSavedItem"
             }
         )
         Text(
@@ -179,6 +194,7 @@ fun EnroStabilityScreen() {
 data class EnroStabilitySnapshot(
     val viewModelHashCode: String,
     val viewModelStoreHashCode: String,
+    val viewModelSavedItem: String,
     val navigationId: String,
     val keyId: String,
     val rememberSaveableItem: String,
@@ -187,6 +203,7 @@ data class EnroStabilitySnapshot(
 fun assertSnapshotsAreCompletelyDifferent(left: EnroStabilitySnapshot, right: EnroStabilitySnapshot) {
     assertNotEquals(left.viewModelHashCode, right.viewModelHashCode)
     assertNotEquals(left.viewModelStoreHashCode, right.viewModelStoreHashCode)
+    assertNotEquals(left.viewModelSavedItem, right.viewModelSavedItem)
     assertNotEquals(left.navigationId, right.navigationId)
     assertNotEquals(left.keyId, right.keyId)
     assertNotEquals(left.rememberSaveableItem, right.rememberSaveableItem)
