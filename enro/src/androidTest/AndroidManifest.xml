@@ -37,5 +37,7 @@
         <activity android:name="dev.enro.core.destinations.ActivityDestinationsRootActivity"/>
         <activity android:name="dev.enro.core.destinations.ActivityDestinationsPresentableActivity"/>
         <activity android:name="dev.enro.core.plugins.MultipleFragmentContainerActivity"/>
+        <activity android:name="dev.enro.core.compose.SaveHierarchyActivity" />
+        <activity android:name="dev.enro.core.fragment.SaveHierarchyActivity" />
     </application>
 </manifest>

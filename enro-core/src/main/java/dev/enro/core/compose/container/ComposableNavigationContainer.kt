@@ -1,9 +1,10 @@
 package dev.enro.core.compose.container
 
+import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.SaveableStateHolder
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
+import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -38,7 +39,7 @@ public class ComposableNavigationContainer internal constructor(
     private val viewModelStoreStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
     private val viewModelStores = viewModelStoreStorage.viewModelStores.getOrPut(key) { mutableMapOf() }
 
-    private var saveableStateHolder: SaveableStateHolder? = null
+    private var saveableStateRegistry: SaveableStateRegistry? by mutableStateOf(null)
 
     private var destinationOwners by mutableStateOf<List<ComposableDestinationOwner>>(emptyList())
     private val currentDestination
@@ -61,17 +62,38 @@ public class ComposableNavigationContainer internal constructor(
                 && backstack.size <= 1
                 && currentTransition?.lastInstruction != NavigationInstruction.Close
 
+    public fun save() : Map<String, List<Any?>>? {
+        return saveableStateRegistry?.performSave()?.also {
+            Log.e("COMPOSABLE", "saving $it")
+        }
+    }
+
+    public fun restore(state: Map<String, List<Any?>>?) {
+        Log.e("COMPOSABLE", "restoring $state")
+        val backstack = state?.get("example") as? NavigationBackstack
+        saveableStateRegistry = SaveableStateRegistry(
+            canBeSaved = { true },
+            restoredValues = state
+        )
+
+        setBackstack(backstack ?: return)
+    }
+
     // We want "Render" to look like it's a Composable function (it's a Composable lambda), so
     // we are uppercasing the first letter of the property name, which triggers a PropertyName lint warning
     @Suppress("PropertyName")
     public val Render: @Composable () -> Unit = movableContentOf {
         key(key.name) {
-            saveableStateHolder?.SaveableStateProvider(key.name) {
-                val backstack by backstackFlow.collectAsState()
-                destinationOwners
-                    .forEach {
-                        it.Render(backstack)
-                    }
+            val backstack by backstackFlow.collectAsState()
+            if (saveableStateRegistry != null) {
+                CompositionLocalProvider(
+                    LocalSaveableStateRegistry provides saveableStateRegistry
+                ) {
+                    destinationOwners
+                        .forEach {
+                            it.Render(backstack)
+                        }
+                }
             }
         }
     }
@@ -126,6 +148,7 @@ public class ComposableNavigationContainer internal constructor(
         destinationOwners.forEach {
             if(activeDestinations[it.instruction] == null) {
                 it.transitionState.targetState = false
+                viewModelStores.remove(it.instruction.instructionId)?.clear()
             }
         }
         destinationOwners = merge(transition.previousBackstack, transition.activeBackstack)
@@ -189,10 +212,22 @@ public class ComposableNavigationContainer internal constructor(
     internal fun registerWithContainerManager(
         registrationStrategy: ContainerRegistrationStrategy
     ): Boolean {
-        saveableStateHolder = rememberSaveableStateHolder()
-        DisposableEffect(Unit) {
-            onDispose { saveableStateHolder = null }
+        val localSaveableStateRegistry = LocalSaveableStateRegistry.current
+        DisposableEffect(localSaveableStateRegistry) {
+            if(localSaveableStateRegistry == null) return@DisposableEffect onDispose {  }
+
+            val restored = localSaveableStateRegistry.consumeRestored(key.name)
+            restore(restored as Map<String, List<Any?>>?)
+            val entry = localSaveableStateRegistry.registerProvider(key.name) {
+                saveableStateRegistry?.performSave().orEmpty().plus("example" to backstack)
+            }
+
+            onDispose { entry.unregister() }
         }
+//        saveableStateHolder = rememberSaveableStateHolder()
+//        DisposableEffect(Unit) {
+//            onDispose { saveableStateHolder = null }
+//        }
 
         DisposableEffect(key, registrationStrategy) {
             val containerManager = parentContext.containerManager

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.setPadding
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
@@ -86,6 +87,9 @@ abstract class TestActivity : AppCompatActivity() {
         val debugText = View.generateViewId()
         val primaryFragmentContainer = View.generateViewId()
         val secondaryFragmentContainer = View.generateViewId()
+
+        val primaryFragmentContainerKey = NavigationContainerKey.FromId(primaryFragmentContainer)
+        val secondaryFragmentContainerKey = NavigationContainerKey.FromId(secondaryFragmentContainer)
     }
 }
 
@@ -149,6 +153,8 @@ abstract class TestFragment : Fragment() {
         val primaryFragmentContainer = View.generateViewId()
         val secondaryFragmentContainer = View.generateViewId()
 
+        val primaryFragmentContainerKey = NavigationContainerKey.FromId(primaryFragmentContainer)
+        val secondaryFragmentContainerKey = NavigationContainerKey.FromId(secondaryFragmentContainer)
     }
 }
 

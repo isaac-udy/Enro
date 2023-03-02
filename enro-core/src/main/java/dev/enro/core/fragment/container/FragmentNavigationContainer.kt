@@ -54,6 +54,24 @@ public class FragmentNavigationContainer internal constructor(
 
     private val ownedFragments = mutableSetOf<String>()
 
+    public fun save(): List<Pair<AnyOpenInstruction, Fragment.SavedState>> {
+        return backstack
+            .asFragmentAndInstruction()
+            .map {
+                it.instruction to fragmentManager.saveFragmentInstanceState(it.fragment)
+            }
+            .mapNotNull {
+                if(it.second == null) return@mapNotNull null
+
+                it.first to it.second!!
+            }
+    }
+
+    private var restoreStates: List<Pair<AnyOpenInstruction, Fragment.SavedState>> = emptyList()
+    public fun restore(states: List<Pair<AnyOpenInstruction, Fragment.SavedState>>) {
+        restoreStates = states
+    }
+
     init {
         fragmentManager.registerFragmentLifecycleCallbacks(object : FragmentLifecycleCallbacks() {
             override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
@@ -229,7 +247,13 @@ public class FragmentNavigationContainer internal constructor(
             fragment = FragmentFactory.createFragment(
                 parentContext,
                 hostInstructionAs(type, parentContext, instruction)
-            ),
+            ).also {
+               restoreStates.firstOrNull {
+                   it.first.instructionId == instruction.instructionId
+               }?.let { (instruction, ss) ->
+                   it.setInitialSavedState(ss)
+               }
+            },
             instruction = instruction
         )
     }
