@@ -1,14 +1,12 @@
 package dev.enro.core.compose.container
 
 import android.os.Bundle
+import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.*
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
@@ -18,6 +16,7 @@ import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import kotlinx.coroutines.launch
 import kotlin.collections.set
 
 public class ComposableNavigationContainer internal constructor(
@@ -27,7 +26,6 @@ public class ComposableNavigationContainer internal constructor(
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     initialBackstack: NavigationBackstack,
-    internal var saveableStateHolder: SaveableStateHolder,
 ) : NavigationContainer(
     key = key,
     parentContext = parentContext,
@@ -69,7 +67,7 @@ public class ComposableNavigationContainer internal constructor(
             val backstack by backstackFlow.collectAsState()
             destinationOwners
                 .forEach {
-                    it.Render(backstack, saveableStateHolder)
+                    it.Render(backstack)
                 }
         }
     }
@@ -78,9 +76,8 @@ public class ComposableNavigationContainer internal constructor(
         val bundle = bundleOf()
         bundle.putParcelableArrayList("backstack", ArrayList(backstack))
         destinationOwners.forEach {
-            val (saved, savable) = it.save()
-            bundle.putBundle(it.instruction.instructionId+"@saved", saved)
-            bundle.putBundle(it.instruction.instructionId+"@savable", savable)
+            val savedState = it.save()
+            bundle.putBundle(it.instruction.instructionId, savedState)
         }
         return bundle
     }
@@ -94,7 +91,24 @@ public class ComposableNavigationContainer internal constructor(
     }
 
     init {
-        setOrLoadInitialBackstack(initialBackstack)
+        val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
+        savedStateRegistry.registerSavedStateProvider(key.name) { save() }
+
+        val initialise = {
+            when(val restoredState = savedStateRegistry.consumeRestoredStateForKey(key.name)) {
+                null -> setBackstack(initialBackstack)
+                else -> restore(restoredState)
+            }
+        }
+
+        if (!savedStateRegistry.isRestored) {
+            parentContext.lifecycleOwner.lifecycleScope.launch {
+                parentContext.lifecycle.withCreated {
+                    initialise()
+                }
+            }
+        } else initialise()
+
         val lifecycleEventObserver = LifecycleEventObserver { _, event ->
             if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
             destroy()
@@ -148,6 +162,9 @@ public class ComposableNavigationContainer internal constructor(
             .mapNotNull { instruction ->
                 activeDestinations[instruction]
             }
+            .also {
+                Log.e("Backstack", "[" + transition.previousBackstack.joinToString { it.navigationKey::class.java.simpleName } + "] -> [" + transition.activeBackstack.joinToString { it.navigationKey::class.java.simpleName }+"]")
+            }
         setVisibilityForBackstack(transition)
         return true
     }
@@ -167,8 +184,7 @@ public class ComposableNavigationContainer internal constructor(
             onNavigationContextCreated = parentContext.controller.dependencyScope.get(),
             onNavigationContextSaved = parentContext.controller.dependencyScope.get(),
             composeEnvironment = parentContext.controller.dependencyScope.get(),
-            savedInstanceState = restoredState?.getBundle(instruction.instructionId+"@saved"),
-            saveableRegistryState = restoredState?.getBundle(instruction.instructionId+"@savable"),
+            savedInstanceState = restoredState?.getBundle(instruction.instructionId),
         )
     }
 

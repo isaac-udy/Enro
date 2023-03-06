@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -22,7 +21,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.os.bundleOf
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -45,11 +43,10 @@ internal class ComposableDestinationOwner(
     val instruction: AnyOpenInstruction,
     val destination: ComposableDestination,
     onNavigationContextCreated: OnNavigationContextCreated,
-    onNavigationContextSaved: OnNavigationContextSaved,
+    private val onNavigationContextSaved: OnNavigationContextSaved,
     private val composeEnvironment: ComposeEnvironment,
     viewModelStore: ViewModelStore,
     private val savedInstanceState: Bundle?,
-    private val saveableRegistryState: Bundle?
 ) : ViewModel(),
     LifecycleOwner,
     ViewModelStoreOwner,
@@ -65,7 +62,7 @@ internal class ComposableDestinationOwner(
     private val lifecycleRegistry = LifecycleRegistry(this)
 
     @Suppress("LeakingThis")
-    private val savedStateRegistryOwner = ComposableDestinationSavedStateRegistryOwner(this, onNavigationContextSaved, savedInstanceState)
+    private val savedStateRegistryOwner = ComposableDestinationSavedStateRegistryOwner(this, savedInstanceState)
 
     @Suppress("LeakingThis")
     private val viewModelStoreOwner = ComposableDestinationViewModelStoreOwner(
@@ -80,14 +77,20 @@ internal class ComposableDestinationOwner(
     init {
         destination.owner = this
         onNavigationContextCreated(
-            destination.context,
-            savedStateRegistryOwner.savedState
+            context = destination.context,
+            savedInstanceState = savedInstanceState
         )
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
     }
 
-    internal fun save(): Pair<Bundle, Bundle> {
-        return bundleOf().also { savedStateRegistry.performSave(it) } to bundleOf()
+    internal fun save(): Bundle {
+        return Bundle().also {
+            savedStateRegistry.performSave(it)
+            onNavigationContextSaved(
+                context = destination.context,
+                outState = it
+            )
+        }
     }
 
     override val lifecycle: Lifecycle
@@ -122,7 +125,6 @@ internal class ComposableDestinationOwner(
     @Composable
     internal fun Render(
         backstackState: List<AnyOpenInstruction>,
-        saveableStateHolder: SaveableStateHolder
     ) {
         val parentContainer = _parentContainer ?: return
         val lifecycleState = rememberLifecycleState()
@@ -131,7 +133,7 @@ internal class ComposableDestinationOwner(
         val renderDestination = remember(instruction.instructionId) {
             movableContentOf {
                 ProvideCompositionLocals {
-                    saveableStateHolder.SaveableStateProvider(key = instruction.instructionId) {
+                    savedStateRegistryOwner.SaveableStateProvider {
                         destination.Render()
                     }
                 }

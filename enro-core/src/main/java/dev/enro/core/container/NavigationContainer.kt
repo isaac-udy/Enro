@@ -281,7 +281,7 @@ public fun NavigationContainer.getAnimationsForExiting(instruction: AnyOpenInstr
     val activeInstruction = currentTransition.activeBackstack.active
         ?: return animations.closing(instruction, null).exiting
 
-    if(currentTransition.lastInstruction is NavigationInstruction.Close || backstack.isEmpty()) {
+    if(currentTransition.lastInstruction is NavigationInstruction.Close || backstack.isEmpty() || !currentTransition.activeBackstack.contains(instruction)) {
         return animations.closing(instruction, activeInstruction).exiting
     }
     return animations.opening(instruction, activeInstruction).exiting
