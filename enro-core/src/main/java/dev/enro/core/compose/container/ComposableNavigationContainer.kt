@@ -1,7 +1,6 @@
 package dev.enro.core.compose.container
 
 import android.os.Bundle
-import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
 import androidx.fragment.app.Fragment
@@ -88,13 +87,12 @@ public class ComposableNavigationContainer internal constructor(
         return savedState
     }
 
-    @Suppress("DEPRECATION")
     public override fun restore(bundle: Bundle) {
         bundle.keySet()
-            .forEach {
-                if (!it.startsWith(DESTINATION_STATE_PREFIX_KEY)) return@forEach
-                val instructionId = it.removePrefix(DESTINATION_STATE_PREFIX_KEY)
-                val restoredState = bundle.getBundle(instructionId) ?: return@forEach
+            .forEach { key ->
+                if (!key.startsWith(DESTINATION_STATE_PREFIX_KEY)) return@forEach
+                val instructionId = key.removePrefix(DESTINATION_STATE_PREFIX_KEY)
+                val restoredState = bundle.getBundle(key) ?: return@forEach
                 restoredDestinationState[instructionId] = restoredState
             }
         super.restore(bundle)
@@ -147,9 +145,6 @@ public class ComposableNavigationContainer internal constructor(
             .mapNotNull { instruction ->
                 activeDestinations[instruction]
             }
-            .also {
-                Log.e("Backstack", "[" + transition.previousBackstack.joinToString { it.navigationKey::class.java.simpleName } + "] -> [" + transition.activeBackstack.joinToString { it.navigationKey::class.java.simpleName }+"]")
-            }
         setVisibilityForBackstack(transition)
         return true
     }
@@ -161,7 +156,7 @@ public class ComposableNavigationContainer internal constructor(
             (controller.bindingForKeyType(composeKey::class) as ComposableNavigationBinding<NavigationKey, ComposableDestination>)
                 .constructDestination()
 
-        val restoredState = restoredDestinationState[instruction.instructionId]
+        val restoredState = restoredDestinationState.remove(instruction.instructionId)
         return ComposableDestinationOwner(
             parentContainer = this,
             instruction = instruction,
