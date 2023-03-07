@@ -82,7 +82,7 @@ public class ComposableNavigationContainer internal constructor(
     public override fun save(): Bundle {
         val savedState = super.save()
         destinationOwners.forEach { destinationOwner ->
-            savedState.putBundle(destinationOwner.instruction.instructionId, destinationOwner.save())
+            savedState.putBundle(DESTINATION_STATE_PREFIX_KEY + destinationOwner.instruction.instructionId, destinationOwner.save())
         }
         return savedState
     }
