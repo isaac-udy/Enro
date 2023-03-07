@@ -64,7 +64,7 @@ public abstract class NavigationContainer(
     @CallSuper
     public open fun save(): Bundle {
         return bundleOf(
-            BACKSTACK_KEY to backstack
+            BACKSTACK_KEY to ArrayList(backstack)
         )
     }
 
