@@ -5,19 +5,16 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.annotation.IdRes
-import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.*
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.withCreated
 import dev.enro.core.*
 import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
 import dev.enro.extensions.animate
-import kotlinx.coroutines.launch
+import dev.enro.extensions.getParcelableCompat
 
 public class FragmentNavigationContainer internal constructor(
     @IdRes public val containerId: Int,
@@ -54,29 +51,8 @@ public class FragmentNavigationContainer internal constructor(
         }
 
     private val ownedFragments = mutableSetOf<String>()
+    private val restoredFragmentStates = mutableMapOf<String, Fragment.SavedState>()
 
-    public fun save(): Bundle {
-        return bundleOf(
-            "backstack" to ArrayList(backstack),
-            *backstack
-                .asFragmentAndInstruction()
-                .map {
-                    it.instruction to fragmentManager.saveFragmentInstanceState(it.fragment)
-                }
-                .mapNotNull {
-                    if(it.second == null) return@mapNotNull null
-
-                    it.first.instructionId to it.second!!
-                }
-                .toTypedArray()
-        )
-    }
-
-    private var restoreStates: Bundle = bundleOf()
-    public fun restore(states: Bundle) {
-        restoreStates = states
-        setBackstack(states.getParcelableArrayList<AnyOpenInstruction>("backstack").orEmpty().toBackstack())
-    }
 
     init {
         fragmentManager.registerFragmentLifecycleCallbacks(object : FragmentLifecycleCallbacks() {
@@ -90,28 +66,32 @@ public class FragmentNavigationContainer internal constructor(
             }
         }, false)
 
-        setOrLoadInitialBackstack(initialBackstack)
+        restoreOrSetBackstack(initialBackstack)
+    }
 
-        val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
-        savedStateRegistry.unregisterSavedStateProvider(key.name + ".ownedFragments")
-        savedStateRegistry.registerSavedStateProvider(key.name + ".ownedFragments") {
-            bundleOf("${key.name}.ownedFragments" to ArrayList(ownedFragments))
-        }
-
-        val initialise = {
-            savedStateRegistry
-                .consumeRestoredStateForKey(key.name + ".ownedFragments")
-                ?.getStringArrayList("${key.name}.ownedFragments")
-                ?.let { ownedFragments.addAll(it) }
-            onBackstackUpdated(NavigationBackstackTransition(backstack to backstack))
-        }
-        if (!savedStateRegistry.isRestored) {
-            parentContext.lifecycleOwner.lifecycleScope.launch {
-                parentContext.lifecycle.withCreated {
-                    initialise()
-                }
+    public override fun save(): Bundle {
+        val savedState = super.save()
+        backstack.asFragmentAndInstruction()
+            .forEach {
+                val fragmentState = fragmentManager.saveFragmentInstanceState(it.fragment)
+                savedState.putParcelable(
+                    "${FRAGMENT_STATE_PREFIX_KEY}${it.instruction.instructionId}",
+                    fragmentState
+                )
             }
-        } else initialise()
+        savedState.putStringArrayList(OWNED_FRAGMENTS_KEY, ArrayList(ownedFragments))
+        return savedState
+    }
+
+    public override fun restore(bundle: Bundle) {
+        bundle.keySet().forEach { key ->
+            if(!key.startsWith(FRAGMENT_STATE_PREFIX_KEY)) return@forEach
+            val fragmentState = bundle.getParcelableCompat<Fragment.SavedState>(key) ?: return@forEach
+            val instructionId = key.removePrefix(FRAGMENT_STATE_PREFIX_KEY)
+            restoredFragmentStates[instructionId] = fragmentState
+        }
+        ownedFragments.addAll(bundle.getStringArrayList(OWNED_FRAGMENTS_KEY).orEmpty())
+        super.restore(bundle)
     }
 
     override fun onBackstackUpdated(
@@ -249,15 +229,16 @@ public class FragmentNavigationContainer internal constructor(
             instruction = instruction
         )
 
+        val fragment = FragmentFactory.createFragment(
+            parentContext = parentContext,
+            instruction = hostInstructionAs(type, parentContext, instruction)
+        )
+
+        val restoredState = restoredFragmentStates.remove(instruction.instructionId)
+        if(restoredState != null) fragment.setInitialSavedState(restoredState)
+
         return FragmentAndInstruction(
-            fragment = FragmentFactory.createFragment(
-                parentContext,
-                hostInstructionAs(type, parentContext, instruction)
-            ).also {
-               restoreStates.getParcelable<Fragment.SavedState>(instruction.instructionId)?.let { savedState ->
-                   it.setInitialSavedState(savedState)
-               }
-            },
+            fragment = fragment,
             instruction = instruction
         )
     }
@@ -314,6 +295,11 @@ public class FragmentNavigationContainer internal constructor(
             if (active?.fragment is NavigationHost) noOpEntering else entering.id,
             exitingId
         )
+    }
+
+    private companion object {
+        private const val FRAGMENT_STATE_PREFIX_KEY = "FragmentState@"
+        private const val OWNED_FRAGMENTS_KEY = "OWNED_FRAGMENTS_KEY"
     }
 }
 

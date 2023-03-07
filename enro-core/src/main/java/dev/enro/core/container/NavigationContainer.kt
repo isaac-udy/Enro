@@ -1,6 +1,8 @@
 package dev.enro.core.container
 
+import android.os.Bundle
 import android.os.Looper
+import androidx.annotation.CallSuper
 import androidx.annotation.MainThread
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
@@ -13,6 +15,7 @@ import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
 import dev.enro.core.controller.usecase.GetNavigationAnimations
+import dev.enro.extensions.getParcelableListCompat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,9 +47,6 @@ public abstract class NavigationContainer(
     public val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
     public val backstack: NavigationBackstack get() = backstackFlow.value
 
-    public var lastTransition: NavigationBackstackTransition? = null
-        private set
-
     public var currentTransition: NavigationBackstackTransition? = null
         private set
 
@@ -59,6 +59,22 @@ public abstract class NavigationContainer(
                 performBackstackUpdate(NavigationBackstackTransition(backstack to backstack))
             }
         }
+    }
+
+    @CallSuper
+    public open fun save(): Bundle {
+        return bundleOf(
+            BACKSTACK_KEY to backstack
+        )
+    }
+
+    @CallSuper
+    public open fun restore(bundle: Bundle) {
+        val restoredBackstack = bundle.getParcelableListCompat<AnyOpenInstruction>(BACKSTACK_KEY)
+            .orEmpty()
+            .toBackstack()
+
+        setBackstack(restoredBackstack)
     }
 
     @MainThread
@@ -84,7 +100,6 @@ public abstract class NavigationContainer(
     private fun performBackstackUpdate(transition: NavigationBackstackTransition) {
         currentTransition = transition
         if (onBackstackUpdated(transition)) {
-            lastTransition = transition
             return
         }
         renderJob = parentContext.lifecycleOwner.lifecycleScope.launch {
@@ -92,7 +107,6 @@ public abstract class NavigationContainer(
             while (!onBackstackUpdated(transition) && isActive) {
                 delay(16)
             }
-            lastTransition = transition
         }
     }
 
@@ -113,24 +127,18 @@ public abstract class NavigationContainer(
         )
     }
 
-    protected fun setOrLoadInitialBackstack(initialBackstack: NavigationBackstack) {
+    protected fun restoreOrSetBackstack(backstack: NavigationBackstack) {
         val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
 
         savedStateRegistry.unregisterSavedStateProvider(key.name)
-        savedStateRegistry.registerSavedStateProvider(key.name) {
-            bundleOf(
-                BACKSTACK_KEY to ArrayList(backstack)
-            )
-        }
+        savedStateRegistry.registerSavedStateProvider(key.name) { save() }
 
         val initialise = {
-            val restoredBackstack = savedStateRegistry
-                .consumeRestoredStateForKey(key.name)
-                ?.getParcelableArrayList<AnyOpenInstruction>(BACKSTACK_KEY)
-                ?.toBackstack()
-
-            val backstack = (restoredBackstack ?: initialBackstack)
-            setBackstack(backstack)
+            val savedState = savedStateRegistry.consumeRestoredStateForKey(key.name)
+            when(savedState) {
+                null -> setBackstack(backstack)
+                else -> restore(savedState)
+            }
         }
         if (!savedStateRegistry.isRestored) {
             parentContext.lifecycleOwner.lifecycleScope.launch {

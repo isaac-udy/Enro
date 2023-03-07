@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import dev.enro.core.*
@@ -16,7 +15,6 @@ import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
-import kotlinx.coroutines.launch
 import kotlin.collections.set
 
 public class ComposableNavigationContainer internal constructor(
@@ -38,6 +36,7 @@ public class ComposableNavigationContainer internal constructor(
     private val viewModelStoreStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
     private val viewModelStores = viewModelStoreStorage.viewModelStores.getOrPut(key) { mutableMapOf() }
 
+    private val restoredDestinationState = mutableMapOf<String, Bundle>()
     private var destinationOwners by mutableStateOf<List<ComposableDestinationOwner>>(emptyList())
     private val currentDestination
         get() = destinationOwners
@@ -72,49 +71,35 @@ public class ComposableNavigationContainer internal constructor(
         }
     }
 
-    public fun save(): Bundle {
-        val bundle = bundleOf()
-        bundle.putParcelableArrayList("backstack", ArrayList(backstack))
-        destinationOwners.forEach {
-            val savedState = it.save()
-            bundle.putBundle(it.instruction.instructionId, savedState)
-        }
-        return bundle
-    }
-
-    private var restoredState: Bundle? = null
-    @Suppress("DEPRECATION")
-    public fun restore(bundle: Bundle) {
-        val backstack = bundle.getParcelableArrayList<NavigationInstruction.Open<*>>("backstack")
-        restoredState = bundle
-        setBackstack(backstack.orEmpty().toBackstack())
-    }
-
     init {
-        val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
-        savedStateRegistry.registerSavedStateProvider(key.name) { save() }
-
-        val initialise = {
-            when(val restoredState = savedStateRegistry.consumeRestoredStateForKey(key.name)) {
-                null -> setBackstack(initialBackstack)
-                else -> restore(restoredState)
-            }
-        }
-
-        if (!savedStateRegistry.isRestored) {
-            parentContext.lifecycleOwner.lifecycleScope.launch {
-                parentContext.lifecycle.withCreated {
-                    initialise()
-                }
-            }
-        } else initialise()
-
         val lifecycleEventObserver = LifecycleEventObserver { _, event ->
             if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
             destroy()
         }
         parentContext.lifecycle.addObserver(lifecycleEventObserver)
+        restoreOrSetBackstack(initialBackstack)
     }
+
+    public override fun save(): Bundle {
+        val savedState = super.save()
+        destinationOwners.forEach { destinationOwner ->
+            savedState.putBundle(destinationOwner.instruction.instructionId, destinationOwner.save())
+        }
+        return savedState
+    }
+
+    @Suppress("DEPRECATION")
+    public override fun restore(bundle: Bundle) {
+        bundle.keySet()
+            .forEach {
+                if (!it.startsWith(DESTINATION_STATE_PREFIX_KEY)) return@forEach
+                val instructionId = it.removePrefix(DESTINATION_STATE_PREFIX_KEY)
+                val restoredState = bundle.getBundle(instructionId) ?: return@forEach
+                restoredDestinationState[instructionId] = restoredState
+            }
+        super.restore(bundle)
+    }
+
 
     @OptIn(ExperimentalMaterialApi::class)
     override fun onBackstackUpdated(
@@ -176,6 +161,7 @@ public class ComposableNavigationContainer internal constructor(
             (controller.bindingForKeyType(composeKey::class) as ComposableNavigationBinding<NavigationKey, ComposableDestination>)
                 .constructDestination()
 
+        val restoredState = restoredDestinationState[instruction.instructionId]
         return ComposableDestinationOwner(
             parentContainer = this,
             instruction = instruction,
@@ -184,7 +170,7 @@ public class ComposableNavigationContainer internal constructor(
             onNavigationContextCreated = parentContext.controller.dependencyScope.get(),
             onNavigationContextSaved = parentContext.controller.dependencyScope.get(),
             composeEnvironment = parentContext.controller.dependencyScope.get(),
-            savedInstanceState = restoredState?.getBundle(instruction.instructionId),
+            savedInstanceState = restoredState,
         )
     }
 
@@ -254,6 +240,10 @@ public class ComposableNavigationContainer internal constructor(
             onDispose { parentContext.lifecycle.removeObserver(lifecycleObserver) }
         }
         return true
+    }
+
+    private companion object {
+        private const val DESTINATION_STATE_PREFIX_KEY = "DestinationState@"
     }
 }
 
