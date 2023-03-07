@@ -203,7 +203,7 @@ fun expectNoActivity() {
 }
 
 fun waitFor(block: () -> Boolean) {
-    val maximumTime = 3_000
+    val maximumTime = 2_000
     val startTime = System.currentTimeMillis()
 
     while(true) {
@@ -216,7 +216,7 @@ fun waitFor(block: () -> Boolean) {
 fun <T: Any> waitOnMain(block: () -> T?): T {
     if(isDebugging) { Thread.sleep(2000) }
 
-    val maximumTime = 3_000
+    val maximumTime = 2_000
     val startTime = System.currentTimeMillis()
     var currentResponse: T? = null
 
