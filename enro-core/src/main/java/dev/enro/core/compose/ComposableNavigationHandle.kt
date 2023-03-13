@@ -26,22 +26,24 @@ public fun navigationHandle(): NavigationHandle {
 
 @SuppressLint("ComposableNaming")
 @Composable
-public fun NavigationHandle.configure(configuration: LazyNavigationHandleConfiguration<NavigationKey>.() -> Unit = {}) {
-    remember {
+public fun NavigationHandle.configure(configuration: LazyNavigationHandleConfiguration<NavigationKey>.() -> Unit = {}): NavigationHandle {
+    return remember(configuration) {
         LazyNavigationHandleConfiguration(NavigationKey::class)
             .apply(configuration)
             .configure(this)
-        true
+
+        return@remember this
     }
 }
 
 @SuppressLint("ComposableNaming")
 @Composable
-public inline fun <reified T : NavigationKey> TypedNavigationHandle<T>.configure(crossinline configuration: LazyNavigationHandleConfiguration<T>.() -> Unit = {}) {
-    remember {
+public inline fun <reified T : NavigationKey> TypedNavigationHandle<T>.configure(noinline configuration: LazyNavigationHandleConfiguration<T>.() -> Unit = {}): TypedNavigationHandle<T> {
+    return remember(configuration) {
         LazyNavigationHandleConfiguration(T::class)
             .apply(configuration)
             .configure(this)
-        true
+
+        return@remember this
     }
 }
