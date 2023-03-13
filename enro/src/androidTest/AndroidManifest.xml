@@ -38,6 +38,7 @@
         <activity android:name="dev.enro.core.plugins.MultipleFragmentContainerActivity"/>
         <activity android:name="dev.enro.core.compose.ComposeStabilityActivity" />
         <activity android:name="dev.enro.core.compose.ComposeStabilityGroupsActivity" />
-        <activity android:name="dev.enro.core.fragment.SaveHierarchyActivity" />
+        <activity android:name="dev.enro.core.fragment.FragmentStabilityActivity" />
+        <activity android:name="dev.enro.core.fragment.FragmentStabilityGroupsActivity" />
     </application>
 </manifest>
