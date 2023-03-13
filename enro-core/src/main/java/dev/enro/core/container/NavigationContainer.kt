@@ -4,6 +4,10 @@ import android.os.Bundle
 import android.os.Looper
 import androidx.annotation.CallSuper
 import androidx.annotation.MainThread
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -20,7 +24,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -43,9 +46,11 @@ public abstract class NavigationContainer(
     public abstract val activeContext: NavigationContext<*>?
     public abstract val isVisible: Boolean
 
-    private val mutableBackstack: MutableStateFlow<NavigationBackstack> = MutableStateFlow(emptyBackstack())
-    public val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstack
-    public val backstack: NavigationBackstack get() = backstackFlow.value
+    private val mutableBackstackFlow: MutableStateFlow<NavigationBackstack> = MutableStateFlow(emptyBackstack())
+    public val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstackFlow
+
+    private var mutableBackstack by mutableStateOf(emptyBackstack())
+    public val backstack: NavigationBackstack by derivedStateOf { mutableBackstack }
 
     public var currentTransition: NavigationBackstackTransition? = null
         private set
@@ -91,7 +96,9 @@ public abstract class NavigationContainer(
 
         requireBackstackIsAccepted(processedBackstack)
         if (handleEmptyBehaviour(processedBackstack)) return
-        val lastBackstack = mutableBackstack.getAndUpdate { processedBackstack }
+        val lastBackstack = mutableBackstack
+        mutableBackstack = processedBackstack
+        mutableBackstackFlow.value = mutableBackstack
         val transition = NavigationBackstackTransition(lastBackstack to processedBackstack)
         setActiveContainerFrom(transition)
         performBackstackUpdate(transition)

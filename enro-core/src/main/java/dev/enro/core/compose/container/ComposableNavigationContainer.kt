@@ -37,17 +37,23 @@ public class ComposableNavigationContainer internal constructor(
 
     private val restoredDestinationState = mutableMapOf<String, Bundle>()
     private var destinationOwners by mutableStateOf<List<ComposableDestinationOwner>>(emptyList())
-    private val currentDestination
-        get() = destinationOwners
+    private val currentDestination by derivedStateOf {
+        destinationOwners
             .lastOrNull {
                 it.instruction == backstack.active
             }
+    }
 
-    override val activeContext: NavigationContext<out ComposableDestination>?
-        get() = currentDestination?.destination?.navigationContext
+    override val activeContext: NavigationContext<out ComposableDestination>? by derivedStateOf {
+        currentDestination?.destination?.context
+    }
 
     override val isVisible: Boolean
         get() = true
+
+    public val isAnimating: Boolean by derivedStateOf {
+        destinationOwners.any { !it.transitionState.isIdle }
+    }
 
     // When we've got a NavigationHost wrapping this ComposableNavigationContainer,
     // we want to take the animations provided by the NavigationHost's NavigationContainer,
@@ -62,7 +68,6 @@ public class ComposableNavigationContainer internal constructor(
     @Suppress("PropertyName")
     public val Render: @Composable () -> Unit = movableContentOf {
         key(key.name) {
-            val backstack by backstackFlow.collectAsState()
             destinationOwners
                 .forEach {
                     it.Render(backstack)
@@ -81,9 +86,11 @@ public class ComposableNavigationContainer internal constructor(
 
     public override fun save(): Bundle {
         val savedState = super.save()
-        destinationOwners.forEach { destinationOwner ->
-            savedState.putBundle(DESTINATION_STATE_PREFIX_KEY + destinationOwner.instruction.instructionId, destinationOwner.save())
-        }
+        destinationOwners
+            .filter { it.lifecycle.currentState != Lifecycle.State.DESTROYED }
+            .forEach { destinationOwner ->
+                savedState.putBundle(DESTINATION_STATE_PREFIX_KEY + destinationOwner.instruction.instructionId, destinationOwner.save())
+            }
         return savedState
     }
 

@@ -67,7 +67,7 @@ fun ExampleScreenTemplate(
     val scrollState = rememberScrollState()
     val viewModel = viewModel<ExampleScreenViewModel>(factory = ViewModelProvider.NewInstanceFactory().withNavigationHandle())
     val navigation = navigationHandle()
-    val backstack by parentContainer?.backstackFlow?.collectAsState() ?: remember { mutableStateOf(null) }
+    val backstack = parentContainer?.backstack ?: emptyBackstack()
     var backstackItems by remember { mutableStateOf(listOf<String>()) }
     navigation.instruction.additionalData.putString("example", navigation.sentenceId)
 
@@ -76,7 +76,6 @@ fun ExampleScreenTemplate(
 
     DisposableEffect(backstack) {
         backstackItems = backstack
-            .orEmpty()
             .takeWhile { it.instructionId != navigation.id }
             .map { instruction ->
                 instruction.sentenceId

@@ -4,9 +4,11 @@ import androidx.fragment.app.Fragment
 import androidx.test.espresso.Espresso
 import dev.enro.core.AdvancedEnroApi
 import dev.enro.core.compose.container.ComposableNavigationContainer
+import dev.enro.core.containerManager
 import dev.enro.core.destinations.*
 import dev.enro.core.directParentContainer
 import dev.enro.expectContext
+import dev.enro.expectNoComposableContext
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -27,6 +29,25 @@ class ComposableDestinationPush {
             .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
                 IntoSameContainer
             )
+    }
+
+    @Test
+    fun givenComposableDestination_whenExecutingMultiplePushes_andBackNavigation_andContainerIsSaved_thenEverythingWorksFine() {
+        val root = launchComposableRoot()
+        val first = ComposableDestinations.PushesToPrimary()
+        val second = ComposableDestinations.PushesToPrimary()
+        val third = ComposableDestinations.PushesToPrimary()
+        root
+            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoChildContainer, first)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoSameContainer, second)
+            .assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(IntoSameContainer, third)
+            .assertClosesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(second)
+            .assertClosesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(first)
+
+        expectNoComposableContext<ComposableDestinations.PushesToPrimary> {
+            it.navigation.key == second || it.navigation.key == third
+        }
+        root.context.containerManager.activeContainer?.save()
     }
 
     @Test

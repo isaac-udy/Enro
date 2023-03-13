@@ -84,6 +84,7 @@ internal class ComposableDestinationOwner(
     }
 
     internal fun save(): Bundle {
+        if (lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) return Bundle()
         return Bundle().also {
             savedStateRegistry.performSave(it)
             onNavigationContextSaved(
