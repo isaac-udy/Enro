@@ -130,9 +130,3 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
         arguments = null
     }
 }
-
-// Used reflectively by ResultExtensions in enro-test
-@Keep
-private fun getResultId(navigationInstruction: NavigationInstruction.Open<*>): ResultChannelId? {
-    return navigationInstruction.internal.resultId
-}
