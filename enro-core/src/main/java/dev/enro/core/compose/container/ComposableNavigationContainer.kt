@@ -22,6 +22,7 @@ public class ComposableNavigationContainer internal constructor(
     accept: (NavigationKey) -> Boolean,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
+    animations: NavigationAnimationOverrideBuilder.() -> Unit,
     initialBackstack: NavigationBackstack,
 ) : NavigationContainer(
     key = key,
@@ -29,6 +30,7 @@ public class ComposableNavigationContainer internal constructor(
     contextType = ComposableDestination::class.java,
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
+    animations = animations,
     acceptsNavigationKey = accept,
     acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward || it is NavigationDirection.Present },
 ) {

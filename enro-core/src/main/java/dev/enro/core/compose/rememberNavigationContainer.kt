@@ -16,6 +16,7 @@ public fun rememberNavigationContainer(
     root: NavigationKey.SupportsPush,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
+    animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
@@ -25,6 +26,7 @@ public fun rememberNavigationContainer(
         },
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
+        animations = animations,
         accept = accept
     )
 }
@@ -35,6 +37,7 @@ public fun rememberNavigationContainer(
     initialState: List<NavigationKey.SupportsPush> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
+    animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
@@ -46,6 +49,7 @@ public fun rememberNavigationContainer(
         },
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
+        animations = animations,
         accept = accept
     )
 }
@@ -57,6 +61,7 @@ public fun rememberNavigationContainer(
     initialBackstack: NavigationBackstack,
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
+    animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     val localNavigationHandle = navigationHandle()
@@ -70,6 +75,7 @@ public fun rememberNavigationContainer(
             accept = accept,
             emptyBehavior = emptyBehavior,
             interceptor = interceptor,
+            animations = animations,
             initialBackstack = initialBackstack,
         )
     }
@@ -90,12 +96,14 @@ public fun rememberEnroContainerController(
     initialBackstack: List<AnyOpenInstruction> = emptyList(),
     emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
+    animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
         initialBackstack = initialBackstack.toBackstack(),
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
+        animations = animations,
         accept = accept,
     )
 }

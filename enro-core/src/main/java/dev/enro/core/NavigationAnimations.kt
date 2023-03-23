@@ -21,12 +21,14 @@ import dev.enro.extensions.getNestedAttributeResourceId
 @Deprecated("Please use NavigationAnimation")
 public typealias AnimationPair = NavigationAnimation
 
-public sealed class NavigationAnimation {
-    public sealed class ForView : NavigationAnimation()
+public sealed interface NavigationAnimation {
+    public sealed interface ForView : NavigationAnimation
+    public sealed interface Enter : NavigationAnimation
+    public sealed interface Exit : NavigationAnimation
 
     public data class Resource(
         public val id: Int
-    ) : ForView() {
+    ) : ForView, Enter, Exit {
         public fun isAnim(context: Context): Boolean = runCatching {
             if (id == 0) return@runCatching false
             context.resources.getResourceTypeName(id) == "anim"
@@ -40,13 +42,13 @@ public sealed class NavigationAnimation {
 
     public data class Attr(
         public val attr: Int,
-    ) : ForView()
+    ) : ForView, Enter, Exit
 
     public data class Theme(
         public val id: (Resources.Theme) -> Int,
-    ) : ForView()
+    ) : ForView, Enter, Exit
 
-    public sealed class Composable : NavigationAnimation() {
+    public sealed class Composable : NavigationAnimation, Enter, Exit {
         internal abstract val forView: ForView
 
         @androidx.compose.runtime.Composable
@@ -63,6 +65,16 @@ public sealed class NavigationAnimation {
             ): Composable = EnterExit(enter, exit, forView)
 
             public operator fun invoke(
+                enter: EnterTransition,
+                forView: ForView = DefaultAnimations.ForView.noneEnter,
+            ): Enter = EnterExit(enter, ExitTransition.None, forView)
+
+            public operator fun invoke(
+                exit: ExitTransition,
+                forView: ForView = DefaultAnimations.ForView.noneEnter,
+            ): Enter = EnterExit(EnterTransition.None, exit, forView)
+
+            public operator fun invoke(
                 forView: ForView,
             ): Composable = FromView(forView)
         }
@@ -72,7 +84,7 @@ public sealed class NavigationAnimation {
             val enter: EnterTransition = EnterTransition.None,
             val exit: ExitTransition = ExitTransition.None,
             override val forView: ForView = DefaultAnimations.ForView.noneEnter,
-        ) : Composable() {
+        ) : Composable(), Enter, Exit {
             @OptIn(ExperimentalAnimationApi::class)
             @androidx.compose.runtime.Composable
             override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
@@ -90,7 +102,7 @@ public sealed class NavigationAnimation {
         @Immutable
         internal data class FromView(
             override val forView: ForView
-        ) : Composable() {
+        ) : Composable(), Enter, Exit {
             @androidx.compose.runtime.Composable
             override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
                 val context = LocalContext.current
@@ -107,7 +119,7 @@ public sealed class NavigationAnimation {
         }
 
         @Immutable
-        internal object NoAnimation : Composable() {
+        internal object NoAnimation : Composable(), Enter, Exit {
             override val forView: ForView = Resource(0)
 
             @androidx.compose.runtime.Composable
@@ -304,5 +316,180 @@ public object DefaultAnimations {
         public val noneCloseExit: NavigationAnimation.ForView = NavigationAnimation.Resource(
             id = 0
         )
+    }
+}
+
+internal data class OpeningTransition(
+    val priority: Int,
+    val transition: (exiting: AnyOpenInstruction?, entering: AnyOpenInstruction) -> NavigationAnimationTransition?
+)
+
+internal data class ClosingTransition(
+    val priority: Int,
+    val transition: (exiting: AnyOpenInstruction, entering: AnyOpenInstruction?) -> NavigationAnimationTransition?
+)
+
+internal data class NavigationAnimationOverride(
+    val parent: NavigationAnimationOverride?,
+    val opening: List<OpeningTransition>,
+    val closing: List<ClosingTransition>,
+)
+
+public class NavigationAnimationOverrideBuilder {
+    private val opening = mutableListOf<OpeningTransition>()
+    private val closing = mutableListOf<ClosingTransition>()
+
+    public fun addOpeningTransition(priority: Int, transition: (exiting: AnyOpenInstruction?, entering: AnyOpenInstruction) -> NavigationAnimationTransition?) {
+        opening.add(OpeningTransition(priority, transition))
+    }
+
+    public fun addClosingTransition(priority: Int, transition: (exiting: AnyOpenInstruction, entering: AnyOpenInstruction?) -> NavigationAnimationTransition?) {
+        closing.add(ClosingTransition(priority, transition))
+    }
+
+    public fun direction(
+        direction: NavigationDirection,
+        entering: NavigationAnimation.Enter,
+        exiting: NavigationAnimation.Exit,
+    ) {
+        addOpeningTransition(DIRECTION_PRIORITY) { _, enteringInstruction ->
+            if (enteringInstruction.originalNavigationDirection() != direction) return@addOpeningTransition null
+            NavigationAnimationTransition(
+                entering = entering,
+                exiting = exiting,
+            )
+        }
+    }
+
+    public fun direction(
+        direction: NavigationDirection,
+        entering: NavigationAnimation.Enter,
+        exiting: NavigationAnimation.Exit,
+        returnEntering: NavigationAnimation.Enter,
+        returnExiting: NavigationAnimation.Exit,
+    ) {
+        addOpeningTransition(DIRECTION_PRIORITY) { _, enteringInstruction ->
+            if (enteringInstruction.originalNavigationDirection() != direction) return@addOpeningTransition null
+            NavigationAnimationTransition(
+                entering = entering,
+                exiting = exiting,
+            )
+        }
+
+        addClosingTransition(DIRECTION_PRIORITY) { _, enteringInstruction ->
+            if (enteringInstruction == null) return@addClosingTransition null
+            if (enteringInstruction.originalNavigationDirection() != direction) return@addClosingTransition null
+            NavigationAnimationTransition(
+                entering = returnEntering,
+                exiting = returnExiting,
+            )
+        }
+    }
+
+    public inline fun <reified Key : NavigationKey> transitionTo(
+        direction: NavigationDirection? = null,
+        entering: NavigationAnimation.Enter,
+        exiting: NavigationAnimation.Exit,
+    ) {
+        addOpeningTransition(PARTIAL_KEY_PRIORITY) { _, enteringInstruction ->
+            if (direction != null && enteringInstruction.originalNavigationDirection() != direction) return@addOpeningTransition null
+            if (enteringInstruction.navigationKey !is Key) return@addOpeningTransition null
+            NavigationAnimationTransition(
+                entering = entering,
+                exiting = exiting,
+            )
+        }
+    }
+
+    public inline fun <reified Key : NavigationKey> transitionTo(
+        direction: NavigationDirection? = null,
+        entering: NavigationAnimation.Enter,
+        exiting: NavigationAnimation.Exit,
+        returnEntering: NavigationAnimation.Enter,
+        returnExiting: NavigationAnimation.Exit,
+    ) {
+        addOpeningTransition(PARTIAL_KEY_PRIORITY) { _, enteringInstruction ->
+            if (direction != null && enteringInstruction.originalNavigationDirection() != direction) return@addOpeningTransition null
+            if (enteringInstruction.navigationKey !is Key) return@addOpeningTransition null
+            NavigationAnimationTransition(
+                entering = entering,
+                exiting = exiting,
+            )
+        }
+
+        addClosingTransition(PARTIAL_KEY_PRIORITY) { exitingInstruction, _ ->
+            if (direction != null && exitingInstruction.originalNavigationDirection() != direction) return@addClosingTransition null
+            if (exitingInstruction.navigationKey !is Key) return@addClosingTransition null
+            NavigationAnimationTransition(
+                entering = returnEntering,
+                exiting = returnExiting,
+            )
+        }
+    }
+
+    public inline fun <reified Exit : NavigationKey, reified Enter : NavigationKey> transitionBetween(
+        direction: NavigationDirection? = null,
+        entering: NavigationAnimation.Enter,
+        exiting: NavigationAnimation.Exit,
+    ) {
+        addOpeningTransition(EXACT_KEY_PRIORITY) { exitingInstruction, enteringInstruction ->
+            if (exitingInstruction == null) return@addOpeningTransition null
+            if (direction != null && enteringInstruction.originalNavigationDirection() != direction) return@addOpeningTransition null
+            if (exitingInstruction.navigationKey !is Exit) return@addOpeningTransition null
+            if (enteringInstruction.navigationKey !is Enter) return@addOpeningTransition null
+            NavigationAnimationTransition(
+                entering = entering,
+                exiting = exiting,
+            )
+        }
+    }
+
+    public inline fun <reified Exit : NavigationKey, reified Enter : NavigationKey> transitionBetween(
+        direction: NavigationDirection? = null,
+        entering: NavigationAnimation.Enter,
+        exiting: NavigationAnimation.Exit,
+        returnEntering: NavigationAnimation.Enter,
+        returnExiting: NavigationAnimation.Exit,
+    ) {
+        addOpeningTransition(EXACT_KEY_PRIORITY) { exitingInstruction, enteringInstruction ->
+            if (exitingInstruction == null) return@addOpeningTransition null
+            if (direction != null && enteringInstruction.originalNavigationDirection() != direction) return@addOpeningTransition null
+            if (exitingInstruction.navigationKey !is Exit) return@addOpeningTransition null
+            if (enteringInstruction.navigationKey !is Enter) return@addOpeningTransition null
+            NavigationAnimationTransition(
+                entering = entering,
+                exiting = exiting,
+            )
+        }
+
+        addClosingTransition(EXACT_KEY_PRIORITY) { exitingInstruction, enteringInstruction ->
+            if (enteringInstruction == null) return@addClosingTransition null
+            if (direction != null && exitingInstruction.originalNavigationDirection() != direction) return@addClosingTransition null
+            if (exitingInstruction.navigationKey !is Enter) return@addClosingTransition null
+            if (enteringInstruction.navigationKey !is Exit) return@addClosingTransition null
+            NavigationAnimationTransition(
+                entering = returnEntering,
+                exiting = returnExiting,
+            )
+        }
+    }
+
+    internal fun build(parent: NavigationAnimationOverride?): NavigationAnimationOverride {
+        return NavigationAnimationOverride(
+            parent = parent,
+            opening = opening,
+            closing = closing
+        )
+    }
+
+    public companion object {
+        @PublishedApi
+        internal const val DEFAULT_PRIORITY: Int = 0
+        @PublishedApi
+        internal const val DIRECTION_PRIORITY: Int = 10
+        @PublishedApi
+        internal const val PARTIAL_KEY_PRIORITY: Int = 20
+        @PublishedApi
+        internal const val EXACT_KEY_PRIORITY: Int = 30
     }
 }

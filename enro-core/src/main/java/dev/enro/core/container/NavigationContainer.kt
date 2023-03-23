@@ -33,11 +33,18 @@ public abstract class NavigationContainer(
     public val parentContext: NavigationContext<*>,
     public val emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
+    animations: NavigationAnimationOverrideBuilder.() -> Unit,
     public val acceptsNavigationKey: (NavigationKey) -> Boolean,
     public val acceptsDirection: (NavigationDirection) -> Boolean,
 ) {
-    internal val getNavigationAnimations = parentContext.controller.dependencyScope.get<GetNavigationAnimations>()
-    private val canInstructionBeHostedAs = parentContext.controller.dependencyScope.get<CanInstructionBeHostedAs>()
+    internal val dependencyScope by lazy {
+        NavigationContainerScope(
+            owner = this,
+            animations = animations
+        )
+    }
+    internal val getNavigationAnimations = dependencyScope.get<GetNavigationAnimations>()
+    private val canInstructionBeHostedAs = dependencyScope.get<CanInstructionBeHostedAs>()
 
     internal val interceptor = NavigationInterceptorBuilder()
         .apply(interceptor)
@@ -275,7 +282,7 @@ private fun NavigationContainer.getTransitionForInstruction(instruction: AnyOpen
 }
 
 public fun NavigationContainer.getAnimationsForEntering(instruction: AnyOpenInstruction): NavigationAnimation {
-    val animations = parentContext.controller.dependencyScope.get<GetNavigationAnimations>()
+    val animations = dependencyScope.get<GetNavigationAnimations>()
     val currentTransition = getTransitionForInstruction(instruction)
         ?: return animations.opening(null, instruction).entering
 
@@ -289,7 +296,7 @@ public fun NavigationContainer.getAnimationsForEntering(instruction: AnyOpenInst
 }
 
 public fun NavigationContainer.getAnimationsForExiting(instruction: AnyOpenInstruction): NavigationAnimation {
-    val animations = parentContext.controller.dependencyScope.get<GetNavigationAnimations>()
+    val animations = dependencyScope.get<GetNavigationAnimations>()
     val currentTransition = getTransitionForInstruction(instruction)
         ?: return animations.closing(instruction, null).exiting
 

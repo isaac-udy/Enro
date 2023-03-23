@@ -13,6 +13,7 @@ internal fun AnyOpenInstruction.asPushInstruction(): OpenPushInstruction =
 internal fun AnyOpenInstruction.asPresentInstruction(): OpenPresentInstruction =
     asDirection(NavigationDirection.Present)
 
+@PublishedApi
 internal fun AnyOpenInstruction.originalNavigationDirection(): NavigationDirection {
     if (additionalData.containsKey(ORIGINAL_NAVIGATION_DIRECTION))
         return additionalData.getParcelableCompat(ORIGINAL_NAVIGATION_DIRECTION)!!

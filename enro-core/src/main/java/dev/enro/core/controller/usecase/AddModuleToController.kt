@@ -8,6 +8,7 @@ internal class AddModuleToController(
     private val navigationBindingRepository: NavigationBindingRepository,
     private val executorRepository: ExecutorRepository,
     private val interceptorRepository: InstructionInterceptorRepository,
+    private val animationRepository: NavigationAnimationRepository,
     private val composeEnvironmentRepository: ComposeEnvironmentRepository,
     private val navigationHostFactoryRepository: NavigationHostFactoryRepository,
 ) {
@@ -17,7 +18,7 @@ internal class AddModuleToController(
         navigationBindingRepository.addNavigationBindings(module.bindings)
         executorRepository.addExecutors(module.overrides)
         interceptorRepository.addInterceptors(module.interceptors)
-
+        module.animations.forEach { animationRepository.addAnimations(it) }
         module.hostFactories.forEach { navigationHostFactoryRepository.addFactory(it) }
 
         module.composeEnvironment.let { environment ->

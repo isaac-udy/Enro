@@ -23,6 +23,7 @@ internal class ActivityNavigationContainer internal constructor(
     contextType = Activity::class.java,
     emptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor = { },
+    animations = { },
     acceptsNavigationKey = { true },
     acceptsDirection = { true },
 ) {

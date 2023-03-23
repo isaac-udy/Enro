@@ -20,6 +20,9 @@ public class NavigationModule {
     internal val interceptors: MutableList<NavigationInstructionInterceptor> = mutableListOf()
 
     @PublishedApi
+    internal val animations: MutableList<NavigationAnimationOverride> = mutableListOf()
+
+    @PublishedApi
     internal val hostFactories: MutableList<NavigationHostFactory<*>> = mutableListOf()
 
     @PublishedApi
@@ -49,6 +52,14 @@ public class NavigationModuleScope internal constructor(
 
     public fun interceptor(interceptor: NavigationInstructionInterceptor) {
         module.interceptors.add(interceptor)
+    }
+
+    public fun animations(block: NavigationAnimationOverrideBuilder.() -> Unit) {
+        module.animations.add(
+            NavigationAnimationOverrideBuilder()
+                .apply(block)
+                .build(null)
+        )
     }
 
     @AdvancedEnroApi

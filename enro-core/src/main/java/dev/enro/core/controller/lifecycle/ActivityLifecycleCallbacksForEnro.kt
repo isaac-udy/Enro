@@ -44,6 +44,7 @@ internal class ActivityLifecycleCallbacksForEnro(
                         accept = { false },
                         emptyBehavior = EmptyBehavior.AllowEmpty,
                         interceptor = {},
+                        animations = {},
                         initialBackstack = emptyBackstack(),
                     ).also {
                         if (activity.containerManager.activeContainer != it) return@also
