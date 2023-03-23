@@ -9,7 +9,7 @@ import dev.enro.test.EnroTest
 fun <T: Any> NavigationInstruction.Open<*>.sendResultForTest(type: Class<T>, result: T) {
     val navigationController = EnroTest.getCurrentNavigationController()
     val resultId = internal.resultId!!
-    val pendingResult = PendingResult(
+    val pendingResult = PendingResult.Result(
         resultId,
         type.kotlin,
         result

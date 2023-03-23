@@ -19,6 +19,7 @@ internal class CreateResultChannel(
 ) {
     operator fun <Result: Any, Key: NavigationKey.WithResult<Result>> invoke(
         resultType: KClass<Result>,
+        onClosed: () -> Unit,
         onResult: (Result) -> Unit,
         additionalResultId: String = "",
     ): UnmanagedEnroResultChannel<Result, Key> {
@@ -26,6 +27,7 @@ internal class CreateResultChannel(
             enroResult = enroResult,
             navigationHandle = navigationHandle,
             resultType = resultType.java,
+            onClosed = onClosed,
             onResult = onResult,
             additionalResultId = additionalResultId,
         )

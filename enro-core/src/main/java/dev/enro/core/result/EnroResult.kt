@@ -24,14 +24,14 @@ internal class EnroResult: EnroPlugin() {
             }
             .forEach {
                 val result = consumePendingResult(it.id) ?: return@forEach
-                it.consumeResult(result.result)
+                it.consumeResult(result)
             }
     }
 
     internal fun addPendingResult(result: PendingResult) {
         val channel = channels[result.resultChannelId]
         if(channel != null) {
-            channel.consumeResult(result.result)
+            channel.consumeResult(result)
         }
         else {
             pendingResults[result.resultChannelId] = result
@@ -50,7 +50,7 @@ internal class EnroResult: EnroPlugin() {
     internal fun registerChannel(channel: ResultChannelImpl<*, *>) {
         channels[channel.id] = channel
         val result = consumePendingResult(channel.id) ?: return
-        channel.consumeResult(result.result)
+        channel.consumeResult(result)
     }
 
     @PublishedApi

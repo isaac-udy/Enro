@@ -55,7 +55,12 @@ class ResultReceiverActivity : TestActivity() {
     private val primaryContainer by navigationContainer(primaryFragmentContainer) { it is NestedResultFragmentKey }
 
     var result: String? = null
-    val resultChannel by registerForNavigationResult<String> {
+    var closedNoResult: Boolean = false
+    val resultChannel by registerForNavigationResult<String>(
+        onClosed = {
+            closedNoResult = true
+        }
+    ) {
         result = it
         findViewById<TextView>(debugText).text = "Result: $result\nSecondary Result: $secondaryResult"
     }

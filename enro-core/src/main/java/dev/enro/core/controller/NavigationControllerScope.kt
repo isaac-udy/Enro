@@ -32,7 +32,7 @@ internal class NavigationControllerScope(
             // Usecases
             register { AddModuleToController(get(), get(), get(), get(), get(), get(), get()) }
             register { GetNavigationExecutor(get(), get()) }
-            register { AddPendingResult(get()) }
+            register { AddPendingResult(get(), get()) }
             register<ExecuteOpenInstruction> { ExecuteOpenInstructionImpl(get(), get(), get()) }
             register<ExecuteCloseInstruction> { ExecuteCloseInstructionImpl(get(), get(), get()) }
             register<ExecuteContainerOperationInstruction> { ExecuteContainerOperationInstructionImpl() }

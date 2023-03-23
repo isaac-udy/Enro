@@ -20,6 +20,7 @@ import kotlin.reflect.KProperty
 internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithResult<Result>>(
     owner: Any,
     resultType: KClass<Result>,
+    onClosed: () -> Unit = {},
     onResult: (Result) -> Unit
 ) : ReadOnlyProperty<Any, EnroResultChannel<Result, Key>> {
 
@@ -40,6 +41,7 @@ internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithRes
                 if (event != Lifecycle.Event.ON_CREATE) return;
                 resultChannel = handle.value.createResultChannel<Result, Key>(
                     resultType = resultType,
+                    onClosed = onClosed,
                     onResult = onResult,
                 ).managedByLifecycle(lifecycle)
             }

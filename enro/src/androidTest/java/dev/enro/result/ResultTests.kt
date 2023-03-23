@@ -5,10 +5,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
 import dev.enro.DefaultActivity
 import dev.enro.DefaultActivityKey
-import dev.enro.core.asTyped
-import dev.enro.core.closeWithResult
-import dev.enro.core.forward
-import dev.enro.core.getNavigationHandle
+import dev.enro.core.*
 import dev.enro.expectActivity
 import dev.enro.expectContext
 import junit.framework.Assert.*
@@ -41,6 +38,23 @@ class ResultTests {
     }
 
     @Test
+    fun whenActivityRequestsResult_andResultProviderIsStandaloneFragment_andResultProviderIsClosed_thenOnClosedIsCalled() {
+        val scenario = ActivityScenario.launch(ResultReceiverActivity::class.java)
+        scenario.onActivity {
+            it.resultChannel.open(FragmentResultKey())
+        }
+
+        expectContext<ResultFragment, FragmentResultKey>()
+            .navigation
+            .close()
+
+        val activity = expectActivity<ResultReceiverActivity>()
+
+        assertEquals(null, activity.result)
+        assertEquals(true, activity.closedNoResult)
+    }
+
+    @Test
     fun whenActivityRequestsResult_andResultProviderIsActivity_thenResultIsReceived() {
         val scenario = ActivityScenario.launch(ResultReceiverActivity::class.java)
         val result = UUID.randomUUID().toString()
@@ -56,6 +70,24 @@ class ResultTests {
         val activity = expectActivity<ResultReceiverActivity>()
 
         assertEquals(result, activity.result)
+    }
+
+    @Test
+    fun whenActivityRequestsResult_andResultProviderIsActivity_andResultProviderIsClosed_thenOnClosedIsCalled() {
+        val scenario = ActivityScenario.launch(ResultReceiverActivity::class.java)
+        scenario.onActivity {
+            it.resultChannel.open(ActivityResultKey())
+        }
+
+        val resultActivity = expectActivity<ResultActivity>()
+        resultActivity.getNavigationHandle()
+            .asTyped<ActivityResultKey>()
+            .close()
+
+        val activity = expectActivity<ResultReceiverActivity>()
+
+        assertEquals(null, activity.result)
+        assertEquals(true, activity.closedNoResult)
     }
 
     @Test
@@ -443,6 +475,25 @@ class ResultTests {
                 .context
                 .result
         )
+    }
+
+
+    @Test
+    fun whenActivityRequestResult_andResultProviderIsSyntheticDestination_andSyntheticDestinationForwardsResultFromActivityKey_andClosesWithNoResult_thenOnClosedIsCalled() {
+        ActivityScenario.launch(ResultReceiverActivity::class.java)
+
+        expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
+            .context
+            .resultChannel
+            .open(ForwardingSyntheticActivityResultKey())
+
+        expectContext<ResultActivity, ActivityResultKey>()
+            .navigation
+            .close()
+
+        val activity = expectContext<ResultReceiverActivity, ResultReceiverActivityKey>().context
+        assertEquals(null, activity.result)
+        assertEquals(true, activity.closedNoResult)
     }
 
     @Test

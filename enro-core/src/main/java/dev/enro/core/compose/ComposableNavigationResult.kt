@@ -23,6 +23,7 @@ public inline fun <reified T : Any> registerForNavigationResult(
     id: String = rememberSaveable {
         UUID.randomUUID().toString()
     },
+    noinline onClosed: @DisallowComposableCalls () -> Unit = {},
     noinline onResult: @DisallowComposableCalls (T) -> Unit
 ): EnroResultChannel<T, NavigationKey.WithResult<T>> {
     val navigationHandle = navigationHandle()
@@ -30,6 +31,7 @@ public inline fun <reified T : Any> registerForNavigationResult(
     val resultChannel = remember(onResult) {
         navigationHandle.createResultChannel(
             resultType = T::class,
+            onClosed = onClosed,
             onResult = onResult,
             additionalResultId = id
         )

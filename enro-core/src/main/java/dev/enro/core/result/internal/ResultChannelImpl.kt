@@ -1,6 +1,5 @@
 package dev.enro.core.result.internal
 
-import androidx.annotation.Keep
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -11,6 +10,7 @@ import dev.enro.core.result.UnmanagedEnroResultChannel
 private class ResultChannelProperties<T>(
     val navigationHandle: NavigationHandle,
     val resultType: Class<T>,
+    val onClosed: () -> Unit,
     val onResult: (T) -> Unit,
 )
 
@@ -18,6 +18,7 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
     private val enroResult: EnroResult,
     navigationHandle: NavigationHandle,
     resultType: Class<Result>,
+    onClosed: @DisallowComposableCalls () -> Unit,
     onResult: @DisallowComposableCalls (Result) -> Unit,
     additionalResultId: String = "",
 ) : UnmanagedEnroResultChannel<Result, Key> {
@@ -31,6 +32,7 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
     private var arguments: ResultChannelProperties<Result>? = ResultChannelProperties(
         navigationHandle = navigationHandle,
         resultType = resultType,
+        onClosed = onClosed,
         onResult = onResult,
     )
 
@@ -102,13 +104,23 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
     }
 
     @Suppress("UNCHECKED_CAST")
-    internal fun consumeResult(result: Any) {
+    internal fun consumeResult(pendingResult: PendingResult) {
         val properties = arguments ?: return
-        if (!properties.resultType.isAssignableFrom(result::class.java))
-            throw EnroException.ReceivedIncorrectlyTypedResult("Attempted to consume result with wrong type!")
-        result as Result
-        properties.navigationHandle.runWhenHandleActive {
-            properties.onResult(result)
+        when(pendingResult) {
+            is PendingResult.Closed -> {
+                properties.navigationHandle.runWhenHandleActive {
+                    properties.onClosed()
+                }
+            }
+            is PendingResult.Result -> {
+                val result = pendingResult.result
+                if (!properties.resultType.isAssignableFrom(result::class.java))
+                    throw EnroException.ReceivedIncorrectlyTypedResult("Attempted to consume result with wrong type!")
+                result as Result
+                properties.navigationHandle.runWhenHandleActive {
+                    properties.onResult(result)
+                }
+            }
         }
     }
 
