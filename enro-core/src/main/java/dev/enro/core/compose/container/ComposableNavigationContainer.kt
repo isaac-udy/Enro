@@ -14,6 +14,7 @@ import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import java.io.Closeable
 import kotlin.collections.set
 
 public class ComposableNavigationContainer internal constructor(
@@ -213,12 +214,15 @@ public class ComposableNavigationContainer internal constructor(
     internal fun registerWithContainerManager(
         registrationStrategy: ContainerRegistrationStrategy
     ): Boolean {
-        DisposableEffect(key, registrationStrategy) {
+        val registration = remember(key, registrationStrategy) {
             val containerManager = parentContext.containerManager
             containerManager.addContainer(this@ComposableNavigationContainer)
+            Closeable { destroy() }
+        }
+        DisposableEffect(key, registrationStrategy) {
             onDispose {
                 when (registrationStrategy) {
-                    ContainerRegistrationStrategy.DisposeWithComposition -> destroy()
+                    ContainerRegistrationStrategy.DisposeWithComposition -> registration.close()
                     ContainerRegistrationStrategy.DisposeWithLifecycle -> {} // handled by init
                 }
             }
