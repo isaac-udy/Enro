@@ -24,18 +24,6 @@ internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithRes
     onResult: (Key, Result) -> Unit
 ) : ReadOnlyProperty<Any, EnroResultChannel<Result, Key>> {
 
-    constructor(
-        owner: Any,
-        resultType: KClass<Result>,
-        onClosed: () -> Unit = {},
-        onResult: (Result) -> Unit
-    ) : this(
-        owner = owner,
-        resultType = resultType,
-        onClosed = { _ -> onClosed() },
-        onResult = { _, result -> onResult(result) },
-    )
-
     private var resultChannel: EnroResultChannel<Result, Key>? = null
 
     init {
