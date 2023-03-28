@@ -22,9 +22,11 @@ internal class HostInstructionAs(
         val host = navigationHostFactoryRepository.getNavigationHost(hostType, navigationContext, instruction)
             ?: throw IllegalStateException()
 
-        return host.wrap(navigationContext, instruction).internal.copy(
+        val wrapped = host.wrap(navigationContext, instruction)
+        if (wrapped == instruction) return instruction
+        return wrapped.internal.copy(
             openingType = hostType,
-            resultId = null,
+            resultId = null
         )
     }
 
