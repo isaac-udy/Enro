@@ -207,4 +207,31 @@ class EnroTestJvmTest {
             assertEquals(expectedKey, backstack.last().navigationKey)
         }
     }
+
+    @Test
+    fun givenFlowViewModel_whenFlowIsExecuted_thenFlowCompletesAsExpected() {
+        val navigationHandle = putNavigationHandleForViewModel<FlowViewModel>(FlowTestKey)
+        val viewModel = factory.create(FlowViewModel::class.java)
+        val expected = FlowData(
+            first = UUID.randomUUID().toString(),
+            second = UUID.randomUUID().toString(),
+            bottomSheet = UUID.randomUUID().toString(),
+            third = UUID.randomUUID().toString(),
+        )
+
+        navigationHandle.expectOpenInstruction<TestResultStringKey> { it.id == "first" }
+            .sendResultForTest(expected.first)
+
+        navigationHandle.expectOpenInstruction<TestResultStringKey> { it.id == "second" }
+            .sendResultForTest(expected.second)
+
+        navigationHandle.expectOpenInstruction<TestResultStringKey> { it.id == "bottomSheet" }
+            .sendResultForTest(expected.bottomSheet)
+
+        navigationHandle.expectOpenInstruction<TestResultStringKey> { it.id == "third" }
+            .sendResultForTest(expected.third)
+
+        val result = navigationHandle.assertResultDelivered<FlowData>()
+        assertEquals(expected, result)
+    }
 }

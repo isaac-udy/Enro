@@ -27,6 +27,22 @@ internal class CreateResultChannel(
             enroResult = enroResult,
             navigationHandle = navigationHandle,
             resultType = resultType.java,
+            onClosed = { _ -> onClosed() },
+            onResult = { _, result -> onResult(result) },
+            additionalResultId = additionalResultId,
+        )
+    }
+
+    operator fun <Result: Any, Key: NavigationKey.WithResult<Result>> invoke(
+        resultType: KClass<Result>,
+        onClosed: (Key) -> Unit,
+        onResult: (Key, Result) -> Unit,
+        additionalResultId: String = "",
+    ): UnmanagedEnroResultChannel<Result, Key> {
+        return ResultChannelImpl(
+            enroResult = enroResult,
+            navigationHandle = navigationHandle,
+            resultType = resultType.java,
             onClosed = onClosed,
             onResult = onResult,
             additionalResultId = additionalResultId,

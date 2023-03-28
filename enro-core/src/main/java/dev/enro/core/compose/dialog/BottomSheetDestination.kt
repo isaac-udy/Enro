@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.core.*
+import dev.enro.core.container.setBackstack
 
 @ExperimentalMaterialApi
 public class BottomSheetConfiguration : DialogConfiguration() {
@@ -111,7 +112,9 @@ internal fun EnroBottomSheetContainer(
     LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
         if (destination.bottomSheetConfiguration.isDismissed.value) {
             state.hide()
-            navigationHandle.close()
+            navigationHandle.onParentContainer {
+                setBackstack { it.filterNot { it.navigationKey == navigationHandle.key } }
+            }
         }
         else {
             state.show()

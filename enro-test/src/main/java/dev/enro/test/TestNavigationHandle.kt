@@ -143,14 +143,16 @@ fun TestNavigationHandle<*>.expectCloseInstruction() {
     TestCase.assertTrue(instructions.last() is NavigationInstruction.Close)
 }
 
-fun <T : Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): NavigationInstruction.Open<*> {
-    val instruction = instructions.filterIsInstance<NavigationInstruction.Open<*>>().last()
+fun <T : Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>, filter: (T) -> Boolean = { true }): NavigationInstruction.Open<*> {
+    val instruction = instructions.filterIsInstance<NavigationInstruction.Open<*>>().last {
+        runCatching { filter(it.navigationKey as T) }.getOrDefault(false)
+    }
     assertTrue(type.isAssignableFrom(instruction.navigationKey::class.java))
     return instruction
 }
 
-inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(): NavigationInstruction.Open<*> {
-    return expectOpenInstruction(T::class.java)
+inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(noinline filter: (T) -> Boolean = { true }): NavigationInstruction.Open<*> {
+    return expectOpenInstruction(T::class.java, filter)
 }
 
 fun TestNavigationHandle<*>.expectParentContainer(): NavigationContainerContext {

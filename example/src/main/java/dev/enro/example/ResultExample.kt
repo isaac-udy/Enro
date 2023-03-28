@@ -96,7 +96,7 @@ class RequestExampleViewModel() : ViewModel() {
 }
 
 @Parcelize
-class RequestStringKey : NavigationKey.WithResult<String>
+class RequestStringKey : NavigationKey.SupportsPush.WithResult<String>
 
 @NavigationDestination(RequestStringKey::class)
 class RequestStringFragment : Fragment() {
@@ -121,7 +121,7 @@ class RequestStringFragment : Fragment() {
 }
 
 @Parcelize
-class RequestStringBottomSheetKey : NavigationKey.WithResult<String>
+class RequestStringBottomSheetKey : NavigationKey.SupportsPresent.WithResult<String>
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

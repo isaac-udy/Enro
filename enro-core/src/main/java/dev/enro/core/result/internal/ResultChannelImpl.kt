@@ -7,19 +7,19 @@ import dev.enro.core.*
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.UnmanagedEnroResultChannel
 
-private class ResultChannelProperties<T>(
+private class ResultChannelProperties<Result : Any, Key : NavigationKey.WithResult<Result>>(
     val navigationHandle: NavigationHandle,
-    val resultType: Class<T>,
-    val onClosed: () -> Unit,
-    val onResult: (T) -> Unit,
+    val resultType: Class<Result>,
+    val onClosed: (Key) -> Unit,
+    val onResult: (Key, Result) -> Unit,
 )
 
 internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Result>> @PublishedApi internal constructor(
     private val enroResult: EnroResult,
     navigationHandle: NavigationHandle,
     resultType: Class<Result>,
-    onClosed: @DisallowComposableCalls () -> Unit,
-    onResult: @DisallowComposableCalls (Result) -> Unit,
+    onClosed: @DisallowComposableCalls (Key) -> Unit,
+    onResult: @DisallowComposableCalls (Key, Result) -> Unit,
     additionalResultId: String = "",
 ) : UnmanagedEnroResultChannel<Result, Key> {
 
@@ -29,7 +29,7 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
      * a variable which is cleared to null when the ResultChannelImpl is destroyed, to ensure
      * that these references are not held by the ResultChannelImpl after it has been destroyed.
      */
-    private var arguments: ResultChannelProperties<Result>? = ResultChannelProperties(
+    private var arguments: ResultChannelProperties<Result, Key>? = ResultChannelProperties(
         navigationHandle = navigationHandle,
         resultType = resultType,
         onClosed = onClosed,
@@ -85,7 +85,7 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
         )
     }
 
-    override fun push(key: NavigationKey.SupportsPush.WithResult<Result>) {
+    override fun push(key: NavigationKey.SupportsPush.WithResult<out Result>) {
         val properties = arguments ?: return
         properties.navigationHandle.executeInstruction(
             NavigationInstruction.Push(key).internal.copy(
@@ -94,7 +94,7 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
         )
     }
 
-    override fun present(key: NavigationKey.SupportsPresent.WithResult<Result>) {
+    override fun present(key: NavigationKey.SupportsPresent.WithResult<out Result>) {
         val properties = arguments ?: return
         properties.navigationHandle.executeInstruction(
             NavigationInstruction.Present(key).internal.copy(
@@ -108,17 +108,21 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
         val properties = arguments ?: return
         when(pendingResult) {
             is PendingResult.Closed -> {
+                val key = pendingResult.navigationKey
+                key as Key
                 properties.navigationHandle.runWhenHandleActive {
-                    properties.onClosed()
+                    properties.onClosed(key)
                 }
             }
             is PendingResult.Result -> {
                 val result = pendingResult.result
+                val key = pendingResult.navigationKey
                 if (!properties.resultType.isAssignableFrom(result::class.java))
                     throw EnroException.ReceivedIncorrectlyTypedResult("Attempted to consume result with wrong type!")
                 result as Result
+                key as Key
                 properties.navigationHandle.runWhenHandleActive {
-                    properties.onResult(result)
+                    properties.onResult(key, result)
                 }
             }
         }

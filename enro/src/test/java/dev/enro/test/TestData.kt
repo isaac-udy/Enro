@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import dev.enro.core.*
 import dev.enro.core.container.push
 import dev.enro.core.container.setBackstack
+import dev.enro.core.result.registerForFlowResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
+import java.util.*
 
 @Parcelize
 data class TestTestKeyWithData(
@@ -16,7 +18,9 @@ data class TestTestKeyWithData(
 val testContainerKey = NavigationContainerKey.FromName("test container")
 
 @Parcelize
-class TestResultStringKey : NavigationKey.WithResult<String>
+class TestResultStringKey(val id: String = UUID.randomUUID().toString()) :
+    NavigationKey.SupportsPush.WithResult<String>,
+    NavigationKey.SupportsPresent.WithResult<String>
 
 class TestResultStringViewModel : ViewModel() {
     private val navigation by navigationHandle<TestResultStringKey>()
@@ -113,5 +117,40 @@ class TestTestViewModel : ViewModel() {
 
     fun forwardToTestWithData(id: String) {
         navigation.forward(TestTestKeyWithData(id))
+    }
+}
+
+@Parcelize
+object FlowTestKey : NavigationKey.SupportsPresent.WithResult<FlowData>
+
+data class FlowData(
+    val first: String,
+    val second: String,
+    val bottomSheet: String,
+    val third: String,
+)
+
+class FlowViewModel() : ViewModel() {
+    val navigation by navigationHandle<FlowTestKey>()
+    val flow by registerForFlowResult(
+        flow = {
+            val first = push(TestResultStringKey("first"))
+            val second = push(TestResultStringKey("second"))
+            val bottomSheet = present(TestResultStringKey("bottomSheet"), listOf(second))
+            val third = push(TestResultStringKey("third"))
+            FlowData(
+                first = first,
+                second = second,
+                bottomSheet = bottomSheet,
+                third = third,
+            )
+        },
+        onCompleted = {
+            navigation.closeWithResult(it)
+        }
+    )
+
+    init {
+        flow.next()
     }
 }

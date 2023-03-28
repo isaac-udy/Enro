@@ -20,9 +20,21 @@ import kotlin.reflect.KProperty
 internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithResult<Result>>(
     owner: Any,
     resultType: KClass<Result>,
-    onClosed: () -> Unit = {},
-    onResult: (Result) -> Unit
+    onClosed: (Key) -> Unit = {},
+    onResult: (Key, Result) -> Unit
 ) : ReadOnlyProperty<Any, EnroResultChannel<Result, Key>> {
+
+    constructor(
+        owner: Any,
+        resultType: KClass<Result>,
+        onClosed: () -> Unit = {},
+        onResult: (Result) -> Unit
+    ) : this(
+        owner = owner,
+        resultType = resultType,
+        onClosed = { _ -> onClosed() },
+        onResult = { _, result -> onResult(result) },
+    )
 
     private var resultChannel: EnroResultChannel<Result, Key>? = null
 

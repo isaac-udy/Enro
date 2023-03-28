@@ -116,7 +116,7 @@ val features = listOf(
                 
                 Click the 'Launch' button to try this out.
             """.trimIndent(),
-            positiveActionInstruction = NavigationInstruction.Forward(ResultExampleKey())
+            positiveActionInstruction = NavigationInstruction.Push(ExampleFlowKey())
         )
     ),
     FeatureDescription(

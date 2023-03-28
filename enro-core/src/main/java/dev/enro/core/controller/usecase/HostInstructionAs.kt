@@ -23,7 +23,8 @@ internal class HostInstructionAs(
             ?: throw IllegalStateException()
 
         return host.wrap(navigationContext, instruction).internal.copy(
-            openingType = hostType
+            openingType = hostType,
+            resultId = null,
         )
     }
 
