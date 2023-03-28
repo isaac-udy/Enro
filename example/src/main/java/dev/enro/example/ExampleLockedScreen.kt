@@ -12,12 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationKey
-import dev.enro.core.compose.container.ComposableNavigationContainer
+import dev.enro.core.*
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.fragment.container.FragmentNavigationContainer
-import dev.enro.core.onContainer
-import dev.enro.core.requireRootContainer
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -37,16 +33,9 @@ fun ExampleLockedScreen() {
             .background(MaterialTheme.colors.background)
     ) {
         Button(onClick = {
-            navigation.onContainer {
-                val root = requireRootContainer()
-                when (root) {
-                    is ComposableNavigationContainer -> root.restore(navigation.key.previousState)
-                    is FragmentNavigationContainer -> root.restore(navigation.key.previousState)
-                }
-            }
+            navigation.present(RestoreRootState(navigation.key.previousState))
         }) {
             Text("Unlock")
         }
     }
 }
-

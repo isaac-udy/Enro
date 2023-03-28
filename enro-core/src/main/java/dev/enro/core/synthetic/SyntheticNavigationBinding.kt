@@ -31,12 +31,29 @@ public inline fun <reified KeyType : NavigationKey> createSyntheticNavigationBin
         destination = destination
     )
 
+public fun <T : NavigationKey> createSyntheticNavigationBinding(
+    navigationKeyType: Class<T>,
+    provider: SyntheticDestinationProvider<T>,
+): NavigationBinding<T, SyntheticDestination<*>> =
+    SyntheticNavigationBinding(
+        keyType = navigationKeyType.kotlin,
+        destination = provider::create
+    )
+
+public inline fun <reified KeyType : NavigationKey> createSyntheticNavigationBinding(
+    provider: SyntheticDestinationProvider<KeyType>,
+): NavigationBinding<KeyType, SyntheticDestination<*>> =
+    SyntheticNavigationBinding(
+        keyType = KeyType::class,
+        destination = provider::create
+    )
+
+
 public inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> createSyntheticNavigationBinding(): NavigationBinding<KeyType, SyntheticDestination<*>> =
     SyntheticNavigationBinding(
         keyType = KeyType::class,
         destination = { DestinationType::class.java.newInstance() }
     )
-
 
 public inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> NavigationModuleScope.syntheticDestination() {
     binding(createSyntheticNavigationBinding<KeyType, DestinationType>())
@@ -44,4 +61,13 @@ public inline fun <reified KeyType : NavigationKey, reified DestinationType : Sy
 
 public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.syntheticDestination(noinline destination: () -> SyntheticDestination<KeyType>) {
     binding(createSyntheticNavigationBinding(destination))
+}
+
+public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.syntheticDestination(noinline block: SyntheticDestinationScope<KeyType>.() -> Unit) {
+    val provider: SyntheticDestinationProvider<KeyType> = dev.enro.core.synthetic.syntheticDestination(block)
+    binding(createSyntheticNavigationBinding(provider))
+}
+
+public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.syntheticDestination(provider: SyntheticDestinationProvider<KeyType>) {
+    binding(createSyntheticNavigationBinding(provider))
 }

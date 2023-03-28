@@ -106,10 +106,10 @@ public fun NavigationHandle.onContainer(
     executeInstruction(NavigationInstruction.OnContainer(key, block))
 }
 
-public fun NavigationHandle.onContainer(
+public fun NavigationHandle.onActiveContainer(
     block: NavigationContainerContext.() -> Unit
 ) {
-    executeInstruction(NavigationInstruction.OnContainer(block))
+    executeInstruction(NavigationInstruction.OnActiveContainer(block))
 }
 
 public fun NavigationHandle.onParentContainer(

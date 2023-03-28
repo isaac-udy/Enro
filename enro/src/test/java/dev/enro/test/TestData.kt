@@ -96,7 +96,7 @@ class TestTestViewModel : ViewModel() {
     }
 
     fun activeContainerOperation(id: String) {
-        navigation.onContainer {
+        navigation.onActiveContainer {
             setBackstack {
                 it.push(TestTestKeyWithData(id))
             }

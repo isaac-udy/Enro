@@ -109,16 +109,35 @@ class NavigationDestinationProcessor : BaseProcessor() {
         if (element.kind != ElementKind.METHOD) return
         element as ExecutableElement
 
-        element.annotationMirrors
+        val isComposable = element.annotationMirrors
             .firstOrNull {
                 it.annotationType.asElement()
                     .getElementName() == "androidx.compose.runtime.Composable"
-            }
-            ?: run {
-                processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "Function ${element.getElementName()} was marked as @NavigationDestination, but was not marked as @Composable")
-                return
-            }
+            } != null
 
+        val syntheticElement = runCatching {
+            val parent = (element.enclosingElement as TypeElement)
+            val actualName = element.simpleName.removeSuffix("\$annotations")
+            val syntheticElement = parent.enclosedElements
+                .filterIsInstance<ExecutableElement>()
+                .firstOrNull { actualName == it.simpleName.toString() && it != element }
+
+            val syntheticProviderMirror = processingEnv.elementUtils
+                .getTypeElement("dev.enro.core.synthetic.SyntheticDestinationProvider")
+                .asType()
+            val erasedSyntheticProvider = processingEnv.typeUtils.erasure(syntheticProviderMirror)
+            val erasedReturnType = processingEnv.typeUtils.erasure(syntheticElement!!.returnType)
+
+            syntheticElement.takeIf {
+                processingEnv.typeUtils.isSameType(erasedReturnType, erasedSyntheticProvider)
+            }
+        }.getOrNull()
+
+        val isSynthetic = syntheticElement != null
+        if (!isSynthetic && !isComposable) {
+            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "Function ${element.getElementName()} was marked as @NavigationDestination, but was not marked as @Composable and did not return a SyntheticDestinationProvider")
+            return
+        }
 
         val isStatic = element.modifiers.contains(Modifier.STATIC)
         val parentIsObject = element.enclosingElement.enclosedElements.any { it.simpleName.toString() == "INSTANCE" }
@@ -127,6 +146,105 @@ class NavigationDestinationProcessor : BaseProcessor() {
             return
         }
 
+        when {
+            isComposable -> generateComposableDestination(element)
+            isSynthetic -> generateSyntheticDestination(element, requireNotNull(syntheticElement))
+        }
+
+    }
+
+    private fun generateSyntheticDestination(element: ExecutableElement, syntheticElement: ExecutableElement) {
+        val hasNoParameters = syntheticElement.parameters.size == 0
+        if(!hasNoParameters) {
+            processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, "Function ${syntheticElement.getElementName()} has parameters which is not allowed.")
+            return
+        }
+
+        val annotation = element.getAnnotation(NavigationDestination::class.java)
+        val keyType =
+            processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
+
+
+        val bindingName = syntheticElement.getElementName()
+            .replace(".", "_")
+            .let { "${it}_GeneratedNavigationBinding" }
+
+        val classBuilder = TypeSpec.classBuilder(bindingName)
+            .addOriginatingElement(element)
+            .addModifiers(Modifier.PUBLIC)
+            .addSuperinterface(
+                ParameterizedTypeName.get(
+                    ClassNames.kotlinFunctionOne,
+                    ClassNames.navigationModuleScope,
+                    ClassName.get(Unit::class.java)
+                )
+            )
+            .addAnnotation(
+                AnnotationSpec.builder(GeneratedNavigationBinding::class.java)
+                    .addMember(
+                        "destination",
+                        CodeBlock.of("\"${EnroProcessor.GENERATED_PACKAGE}.$bindingName\"")
+                    )
+                    .addMember(
+                        "navigationKey",
+                        CodeBlock.of("\"${keyType.getElementName()}\"")
+                    )
+                    .build()
+            )
+            .addGeneratedAnnotation()
+            .addMethod(
+                MethodSpec.methodBuilder("invoke")
+                    .addAnnotation(Override::class.java)
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(Unit::class.java)
+                    .addParameter(
+                        ParameterSpec
+                            .builder(ClassNames.navigationModuleScope, "navigationModuleScope")
+                            .build()
+                    )
+                    .addStatement(
+                        CodeBlock.of(
+                            """
+                                navigationModuleScope.binding(
+                                    createSyntheticNavigationBinding(
+                                        $1T.class,
+                                        $2T.${syntheticElement.simpleName}()
+                                    )
+                                )
+                            """.trimIndent(),
+                            ClassName.get(keyType),
+                            ClassName.get(syntheticElement.enclosingElement as TypeElement)
+                        )
+                    )
+                    .addStatement(CodeBlock.of("return kotlin.Unit.INSTANCE"))
+                    .build()
+            )
+            .build()
+
+        JavaFile
+            .builder(EnroProcessor.GENERATED_PACKAGE, classBuilder)
+            .addStaticImport(
+                ClassNames.activityNavigationBindingKt,
+                "createActivityNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.fragmentNavigationBindingKt,
+                "createFragmentNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.syntheticNavigationBindingKt,
+                "createSyntheticNavigationBinding"
+            )
+            .addStaticImport(
+                ClassNames.composeNavigationBindingKt,
+                "createComposableNavigationBinding"
+            )
+            .addStaticImport(ClassNames.jvmClassMappings, "getKotlinClass")
+            .build()
+            .writeTo(processingEnv.filer)
+    }
+
+    private fun generateComposableDestination(element: ExecutableElement) {
         val receiverTypes = element.kotlinReceiverTypes()
         val allowedReceiverTypes = listOf(
             "java.lang.Object",

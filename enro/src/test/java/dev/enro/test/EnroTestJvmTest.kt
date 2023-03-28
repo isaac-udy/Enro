@@ -1,6 +1,7 @@
 package dev.enro.test
 
 import androidx.lifecycle.ViewModelProvider
+import dev.enro.core.onActiveContainer
 import dev.enro.core.onContainer
 import dev.enro.core.onParentContainer
 import dev.enro.core.requestClose
@@ -183,7 +184,7 @@ class EnroTestJvmTest {
         navigationHandle.expectActiveContainer().assertActive(expectedKey)
 
         assertEquals(expectedKey, activeContainer.backstack.last().navigationKey)
-        navigationHandle.onContainer {
+        navigationHandle.onActiveContainer {
             assertEquals(expectedKey, backstack.last().navigationKey)
         }
     }

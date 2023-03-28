@@ -12,19 +12,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.enro.core.*
-import dev.enro.core.compose.container.ComposableNavigationContainer
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.container.emptyBackstack
-import dev.enro.core.container.push
-import dev.enro.core.container.setBackstack
-import dev.enro.core.fragment.container.FragmentNavigationContainer
+import dev.enro.core.parentContainer
 import dev.enro.example.*
 import dev.enro.example.R
 import dev.enro.example.data.sentenceId
@@ -183,15 +181,7 @@ private fun defaultNavigationOverflow(): List<Pair<String, NavigationInstruction
     "Present Dialog (Fragment)" to NavigationInstruction.Present(ExampleDialogFragmentKey()),
     "Replace Root (Fragment)" to NavigationInstruction.ReplaceRoot(ExampleFragmentKey()),
     "" to null,
-    "Save/Restore State" to NavigationInstruction.OnContainer {
-        val root = requireRootContainer()
-        val savedState = when(root) {
-            is ComposableNavigationContainer -> root.save()
-            is FragmentNavigationContainer -> root.save()
-            else -> bundleOf()
-        }
-        root.setBackstack { emptyBackstack().push(ExampleLockedScreenKey(savedState)) }
-    },
+    "Save/Restore State" to NavigationInstruction.Present(SaveRootState()),
     "Close" to NavigationInstruction.Close,
     "Request Close" to NavigationInstruction.RequestClose,
 )

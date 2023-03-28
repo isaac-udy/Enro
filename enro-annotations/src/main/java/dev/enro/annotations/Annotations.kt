@@ -3,7 +3,7 @@ package dev.enro.annotations
 import kotlin.reflect.KClass
 
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
 annotation class NavigationDestination(
     val key: KClass<out Any>
 )

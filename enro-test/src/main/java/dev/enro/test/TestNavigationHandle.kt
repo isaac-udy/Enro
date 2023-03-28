@@ -161,7 +161,7 @@ fun TestNavigationHandle<*>.expectParentContainer(): NavigationContainerContext 
 
 fun TestNavigationHandle<*>.expectActiveContainer(): NavigationContainerContext {
     lateinit var container: NavigationContainerContext
-    onContainer { container = this@onContainer }
+    onActiveContainer { container = this@onActiveContainer }
     return container
 }
 

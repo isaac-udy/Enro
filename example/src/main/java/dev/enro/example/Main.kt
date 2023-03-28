@@ -9,8 +9,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.isActive
-import dev.enro.core.container.setActive
 import dev.enro.core.containerManager
 import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.fragment.container.navigationContainer

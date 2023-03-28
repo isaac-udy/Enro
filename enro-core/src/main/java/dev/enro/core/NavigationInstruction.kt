@@ -184,7 +184,7 @@ public sealed class NavigationInstruction {
             operation = block,
         )
 
-        public fun OnContainer(
+        public fun OnActiveContainer(
             block: NavigationContainerContext.() -> Unit
         ): ContainerOperation = ContainerOperation(
             target = ContainerOperation.Target.ActiveContainer,
