@@ -4,7 +4,6 @@ import androidx.test.core.app.ActivityScenario
 import dev.enro.GenericFragmentKey
 import dev.enro.TestActivity
 import dev.enro.TestPlugin
-import dev.enro.core.container.setActive
 import dev.enro.core.containerManager
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.getNavigationHandle

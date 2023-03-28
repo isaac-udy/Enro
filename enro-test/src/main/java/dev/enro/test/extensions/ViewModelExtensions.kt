@@ -9,14 +9,14 @@ import kotlin.reflect.KClass
 
 
 inline fun <reified T: ViewModel> putNavigationHandleForViewModel(
-    key: NavigationKey
+    key: NavigationKey,
 ) : TestNavigationHandle<NavigationKey> {
     return putNavigationHandleForViewModel(T::class, key)
 }
 
 fun <T: ViewModel> putNavigationHandleForViewModel(
     viewModel: KClass<T>,
-    key: NavigationKey
+    key: NavigationKey,
 ) : TestNavigationHandle<NavigationKey> {
     val providerClass = Class.forName("dev.enro.viewmodel.EnroViewModelNavigationHandleProvider")
     val instance = providerClass.getDeclaredField("INSTANCE").get(null)

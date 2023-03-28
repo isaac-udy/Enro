@@ -1,4 +1,5 @@
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+
 package dev.enro.test
 
 import android.annotation.SuppressLint
@@ -6,6 +7,10 @@ import android.os.Bundle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import dev.enro.core.*
+import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationContainerContext
+import dev.enro.core.container.backstackOf
+import dev.enro.core.container.toBackstack
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.internal.handle.NavigationHandleScope
 import junit.framework.TestCase
@@ -13,7 +18,7 @@ import org.junit.Assert.*
 import java.lang.ref.WeakReference
 
 class TestNavigationHandle<T : NavigationKey>(
-    private val navigationHandle: NavigationHandle
+    internal val navigationHandle: NavigationHandle
 ) : TypedNavigationHandle<T> {
     override val id: String
         get() = navigationHandle.id
@@ -32,9 +37,10 @@ class TestNavigationHandle<T : NavigationKey>(
 
     internal var internalOnCloseRequested: () -> Unit = { close() }
 
-    override val lifecycle: Lifecycle get() {
-        return navigationHandle.lifecycle
-    }
+    override val lifecycle: Lifecycle
+        get() {
+            return navigationHandle.lifecycle
+        }
 
     val instructions: List<NavigationInstruction>
         get() = navigationHandle::class.java.getDeclaredField("instructions").let {
@@ -49,38 +55,88 @@ class TestNavigationHandle<T : NavigationKey>(
     }
 }
 
-fun <T : NavigationKey> createTestNavigationHandle(
-    key: T
-): TestNavigationHandle<T> {
-    val instruction = NavigationInstruction.Forward(
+class FakeNavigationHandle internal constructor(
+    key: NavigationKey,
+    private val onCloseRequested: () -> Unit,
+): NavigationHandle {
+    override val instruction: NavigationInstruction.Open<*> = NavigationInstruction.Open.OpenInternal(
+        navigationDirection = when(key) {
+            is NavigationKey.SupportsPush -> NavigationDirection.Push
+            is NavigationKey.SupportsPresent -> NavigationDirection.Present
+            else -> NavigationDirection.Forward
+        },
         navigationKey = key
     )
-    lateinit var navigationHandle: WeakReference<TestNavigationHandle<T>>
-    navigationHandle = WeakReference(TestNavigationHandle(object : NavigationHandle {
-        private val instructions = mutableListOf<NavigationInstruction>()
+    private val instructions = mutableListOf<NavigationInstruction>()
 
-        @SuppressLint("VisibleForTests")
-        override val lifecycle: LifecycleRegistry = LifecycleRegistry.createUnsafe(this).apply {
-            currentState = Lifecycle.State.RESUMED
-        }
+    internal val navigationContainers = mutableMapOf<NavigationContainerKey, TestNavigationContainer>(
+        TestNavigationContainer.parentContainer to createTestNavigationContainer(
+            key = TestNavigationContainer.parentContainer,
+            backstack = backstackOf(instruction)
+        ),
+        TestNavigationContainer.activeContainer to createTestNavigationContainer(TestNavigationContainer.activeContainer)
+    )
 
-        override val id: String = instruction.instructionId
-        override val additionalData: Bundle = instruction.additionalData
-        override val key: NavigationKey = key
-        override val instruction: NavigationInstruction.Open<*> = instruction
-        override val dependencyScope: EnroDependencyScope = NavigationHandleScope(
-            EnroTest.getCurrentNavigationController()
-        ).bind(this)
 
-        override fun executeInstruction(navigationInstruction: NavigationInstruction) {
-            instructions.add(navigationInstruction)
-            if(navigationInstruction is NavigationInstruction.RequestClose) {
-                navigationHandle.get()?.internalOnCloseRequested?.invoke()
+    @SuppressLint("VisibleForTests")
+    override val lifecycle: LifecycleRegistry = LifecycleRegistry.createUnsafe(this).apply {
+        currentState = Lifecycle.State.RESUMED
+    }
+
+    override val id: String = instruction.instructionId
+    override val additionalData: Bundle = instruction.additionalData
+    override val key: NavigationKey = key
+    override val dependencyScope: EnroDependencyScope = NavigationHandleScope(
+        EnroTest.getCurrentNavigationController()
+    ).bind(this)
+
+    override fun executeInstruction(navigationInstruction: NavigationInstruction) {
+        instructions.add(navigationInstruction)
+        when (navigationInstruction) {
+            is NavigationInstruction.RequestClose -> {
+                onCloseRequested()
             }
+            is NavigationInstruction.ContainerOperation -> {
+                val containerKey = when (navigationInstruction.target) {
+                    NavigationInstruction.ContainerOperation.Target.ParentContainer -> TestNavigationContainer.parentContainer
+                    is NavigationInstruction.ContainerOperation.Target.TargetContainer -> navigationInstruction.target.key
+                }
+                val container = navigationContainers[containerKey]
+                    ?: throw IllegalStateException("TestNavigationHandle was not configured to have container with key $containerKey")
+                container.apply(navigationInstruction.operation)
+            }
+            else -> {}
         }
-    }))
+    }
+}
+
+fun <T : NavigationKey> createTestNavigationHandle(
+    key: T,
+): TestNavigationHandle<T> {
+    lateinit var navigationHandle: WeakReference<TestNavigationHandle<T>>
+    val fakeNavigationHandle = FakeNavigationHandle(key) {
+        navigationHandle.get()?.internalOnCloseRequested?.invoke()
+    }
+    navigationHandle = WeakReference(TestNavigationHandle(fakeNavigationHandle))
     return navigationHandle.get()!!
 }
+
+fun TestNavigationHandle<*>.putNavigationContainer(
+    key: NavigationContainerKey,
+    backstack: NavigationBackstack,
+) : TestNavigationContainer {
+    if(navigationHandle !is FakeNavigationHandle) {
+        throw IllegalStateException("Cannot putNavigationContainer: TestNavigationHandle operating in a real environment")
+    }
+    val container = createTestNavigationContainer(key, backstack)
+    navigationHandle.navigationContainers[key] = container
+    return container
+}
+
+fun TestNavigationHandle<*>.putNavigationContainer(
+    key: NavigationContainerKey,
+    vararg instructions: NavigationInstruction.Open<*>,
+) : TestNavigationContainer = putNavigationContainer(key, instructions.toList().toBackstack())
 
 fun TestNavigationHandle<*>.expectCloseInstruction() {
     TestCase.assertTrue(instructions.last() is NavigationInstruction.Close)
@@ -94,6 +150,18 @@ fun <T : Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>): Nav
 
 inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(): NavigationInstruction.Open<*> {
     return expectOpenInstruction(T::class.java)
+}
+
+fun TestNavigationHandle<*>.expectParentContainer(): NavigationContainerContext {
+    lateinit var container: NavigationContainerContext
+    onContainer { container = this@onContainer }
+    return container
+}
+
+fun TestNavigationHandle<*>.expectContainer(key: NavigationContainerKey): NavigationContainerContext {
+    lateinit var container: NavigationContainerContext
+    onContainer(key) { container = this@onContainer }
+    return container
 }
 
 fun TestNavigationHandle<*>.assertRequestedClose() {
@@ -122,7 +190,7 @@ fun <T : Any> TestNavigationHandle<*>.assertOpened(type: Class<T>, direction: Na
     requireNotNull(instruction)
 
     assertTrue(type.isAssignableFrom(instruction.navigationKey::class.java))
-    if(direction != null) {
+    if (direction != null) {
         assertEquals(direction, instruction.navigationDirection)
     }
     return instruction.navigationKey as T
@@ -140,7 +208,7 @@ fun <T : Any> TestNavigationHandle<*>.assertAnyOpened(type: Class<T>, direction:
     requireNotNull(instruction)
 
     assertTrue(type.isAssignableFrom(instruction.navigationKey::class.java))
-    if(direction != null) {
+    if (direction != null) {
         assertEquals(direction, instruction.navigationDirection)
     }
     return instruction.navigationKey as T
@@ -162,7 +230,7 @@ internal fun TestNavigationHandle<*>.getResult(): Any? {
         ?.result
 }
 
-fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(predicate: (T) -> Boolean): T {
+fun <T : Any> TestNavigationHandle<*>.assertResultDelivered(predicate: (T) -> Boolean): T {
     val result = getResult()
     assertNotNull(result)
     requireNotNull(result)
@@ -171,13 +239,13 @@ fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(predicate: (T) -> Boo
     return result
 }
 
-fun <T: Any> TestNavigationHandle<*>.assertResultDelivered(expected: T): T {
+fun <T : Any> TestNavigationHandle<*>.assertResultDelivered(expected: T): T {
     val result = getResult()
     assertEquals(expected, result)
     return result as T
 }
 
-inline fun <reified T: Any> TestNavigationHandle<*>.assertResultDelivered(): T {
+inline fun <reified T : Any> TestNavigationHandle<*>.assertResultDelivered(): T {
     return assertResultDelivered { true }
 }
 

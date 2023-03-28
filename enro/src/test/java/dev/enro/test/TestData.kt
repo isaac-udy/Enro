@@ -1,10 +1,9 @@
 package dev.enro.test
 
 import androidx.lifecycle.ViewModel
-import dev.enro.core.NavigationKey
-import dev.enro.core.close
-import dev.enro.core.closeWithResult
-import dev.enro.core.forward
+import dev.enro.core.*
+import dev.enro.core.container.push
+import dev.enro.core.container.setBackstack
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
@@ -12,7 +11,9 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class TestTestKeyWithData(
     val id: String
-) : NavigationKey
+) : NavigationKey.SupportsPush, NavigationKey.SupportsPresent
+
+val testContainerKey = NavigationContainerKey.FromName("test container")
 
 @Parcelize
 class TestResultStringKey : NavigationKey.WithResult<String>
@@ -84,6 +85,22 @@ class TestTestViewModel : ViewModel() {
 
     fun openIntTwo() {
         intTwo.open(TestResultIntKey())
+    }
+
+    fun parentContainerOperation(id: String) {
+        navigation.onContainer {
+            setBackstack {
+                it.push(TestTestKeyWithData(id))
+            }
+        }
+    }
+
+    fun childContainerOperation(id: String) {
+        navigation.onContainer(testContainerKey) {
+            setBackstack {
+                it.push(TestTestKeyWithData(id))
+            }
+        }
     }
 
     fun forwardToTestWithData(id: String) {

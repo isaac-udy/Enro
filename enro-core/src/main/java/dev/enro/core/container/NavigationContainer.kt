@@ -36,7 +36,7 @@ public abstract class NavigationContainer(
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
     public val acceptsNavigationKey: (NavigationKey) -> Boolean,
     public val acceptsDirection: (NavigationDirection) -> Boolean,
-) {
+) : NavigationContainerContext {
     internal val dependencyScope by lazy {
         NavigationContainerScope(
             owner = this,
@@ -53,11 +53,18 @@ public abstract class NavigationContainer(
     public abstract val activeContext: NavigationContext<*>?
     public abstract val isVisible: Boolean
 
+    public override val isActive: Boolean
+        get() = parentContext.containerManager.activeContainer == this
+
+    public override fun setActive() {
+        parentContext.containerManager.setActiveContainer(this)
+    }
+
     private val mutableBackstackFlow: MutableStateFlow<NavigationBackstack> = MutableStateFlow(emptyBackstack())
-    public val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstackFlow
+    public override val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstackFlow
 
     private var mutableBackstack by mutableStateOf(emptyBackstack())
-    public val backstack: NavigationBackstack by derivedStateOf { mutableBackstack }
+    public override val backstack: NavigationBackstack by derivedStateOf { mutableBackstack }
 
     public var currentTransition: NavigationBackstackTransition? = null
         private set
@@ -74,14 +81,14 @@ public abstract class NavigationContainer(
     }
 
     @CallSuper
-    public open fun save(): Bundle {
+    public override fun save(): Bundle {
         return bundleOf(
             BACKSTACK_KEY to ArrayList(backstack)
         )
     }
 
     @CallSuper
-    public open fun restore(bundle: Bundle) {
+    public override fun restore(bundle: Bundle) {
         val restoredBackstack = bundle.getParcelableListCompat<AnyOpenInstruction>(BACKSTACK_KEY)
             .orEmpty()
             .toBackstack()
@@ -90,7 +97,7 @@ public abstract class NavigationContainer(
     }
 
     @MainThread
-    public fun setBackstack(backstack: NavigationBackstack): Unit = synchronized(this) {
+    public override fun setBackstack(backstack: NavigationBackstack): Unit = synchronized(this) {
         if (Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
@@ -229,19 +236,9 @@ public abstract class NavigationContainer(
         }.toBackstack()
     }
 
-
     public companion object {
         private const val BACKSTACK_KEY = "NavigationContainer.BACKSTACK_KEY"
-
-        public val presentationContainer: NavigationContainerKey = NavigationContainerKey.FromName("NavigationContainer.presentationContainer")
     }
-}
-
-public val NavigationContainer.isActive: Boolean
-    get() = parentContext.containerManager.activeContainer == this
-
-public fun NavigationContainer.setActive() {
-    parentContext.containerManager.setActiveContainer(this)
 }
 
 private fun NavigationContainer.getTransitionForInstruction(instruction: AnyOpenInstruction): NavigationBackstackTransition? {

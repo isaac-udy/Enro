@@ -1,6 +1,7 @@
 package dev.enro.test
 
 import androidx.lifecycle.ViewModelProvider
+import dev.enro.core.onContainer
 import dev.enro.core.requestClose
 import dev.enro.test.extensions.putNavigationHandleForViewModel
 import dev.enro.test.extensions.sendResultForTest
@@ -144,5 +145,44 @@ class EnroTestJvmTest {
             navigationHandle.assertResultDelivered<String>()
         }.onSuccess { fail() }
         navigationHandle.assertNoResultDelivered()
+    }
+
+
+    @Test
+    fun givenViewModel_whenContainerOperationIsPerformedOnParentContainer_thenParentContainerIsUpdated() {
+        val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
+        val parentContainer = navigationHandle.putNavigationContainer(TestNavigationContainer.parentContainer)
+        val viewModel = factory.create(TestTestViewModel::class.java)
+
+        val expectedId = UUID.randomUUID().toString()
+        val expectedKey = TestTestKeyWithData(expectedId)
+        viewModel.parentContainerOperation(expectedId)
+
+        navigationHandle.expectParentContainer().assertContains(expectedKey)
+        navigationHandle.expectParentContainer().assertActive(expectedKey)
+
+        assertEquals(expectedKey, parentContainer.backstack.last().navigationKey)
+        navigationHandle.onContainer {
+            assertEquals(expectedKey, backstack.last().navigationKey)
+        }
+    }
+
+    @Test
+    fun givenViewModel_whenContainerOperationIsPerformedOnChildContainer_thenParentContainerIsUpdated() {
+        val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
+        val childContainer = navigationHandle.putNavigationContainer(testContainerKey)
+        val viewModel = factory.create(TestTestViewModel::class.java)
+
+        val expectedId = UUID.randomUUID().toString()
+        val expectedKey = TestTestKeyWithData(expectedId)
+        viewModel.childContainerOperation(expectedId)
+
+        navigationHandle.expectContainer(testContainerKey).assertContains(expectedKey)
+        navigationHandle.expectContainer(testContainerKey).assertActive(expectedKey)
+
+        assertEquals(expectedKey, childContainer.backstack.last().navigationKey)
+        navigationHandle.onContainer(testContainerKey) {
+            assertEquals(expectedKey, backstack.last().navigationKey)
+        }
     }
 }

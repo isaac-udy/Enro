@@ -6,7 +6,7 @@ import android.os.Parcelable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.fragment.app.Fragment
-import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.result.internal.ResultChannelId
 import kotlinx.parcelize.Parcelize
 import java.util.*
@@ -95,7 +95,7 @@ public sealed class NavigationInstruction {
 
     public class ContainerOperation internal constructor(
         internal val target: Target,
-        internal val operation: (container: NavigationContainer) -> Unit
+        internal val operation: (container: NavigationContainerContext) -> Unit
     ) : NavigationInstruction() {
         internal sealed class Target {
             object ParentContainer : Target()
@@ -177,15 +177,15 @@ public sealed class NavigationInstruction {
 
         public fun OnContainer(
             key: NavigationContainerKey,
-            block: NavigationContainer.() -> Unit
-        ): NavigationInstruction.ContainerOperation = NavigationInstruction.ContainerOperation(
+            block: NavigationContainerContext.() -> Unit
+        ): ContainerOperation = ContainerOperation(
             target = ContainerOperation.Target.TargetContainer(key),
             operation = block,
         )
 
         public fun OnContainer(
-            block: NavigationContainer.() -> Unit
-        ): NavigationInstruction.ContainerOperation = NavigationInstruction.ContainerOperation(
+            block: NavigationContainerContext.() -> Unit
+        ): ContainerOperation = ContainerOperation(
             target = ContainerOperation.Target.ParentContainer,
             operation = block,
         )

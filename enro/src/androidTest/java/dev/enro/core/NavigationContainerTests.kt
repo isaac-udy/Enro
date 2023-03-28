@@ -20,8 +20,6 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.isActive
-import dev.enro.core.container.setActive
 import dev.enro.core.fragment.container.navigationContainer
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertFalse

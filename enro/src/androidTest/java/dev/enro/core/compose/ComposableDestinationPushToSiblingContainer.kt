@@ -1,6 +1,5 @@
 package dev.enro.core.compose
 
-import dev.enro.core.container.setActive
 import dev.enro.core.destinations.*
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule

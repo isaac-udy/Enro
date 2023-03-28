@@ -25,7 +25,6 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.activity
 import dev.enro.core.compose.container.rememberNavigationContainerGroup
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.setActive
 import dev.enro.core.destinations.launchComposable
 import dev.enro.expectComposableContext
 import kotlinx.coroutines.runBlocking

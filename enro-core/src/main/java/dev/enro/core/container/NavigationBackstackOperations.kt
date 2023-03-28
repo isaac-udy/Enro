@@ -4,7 +4,7 @@ import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 
-public fun NavigationContainer.setBackstack(
+public fun NavigationContainerContext.setBackstack(
     block: (NavigationBackstack) -> List<AnyOpenInstruction>
 ) {
     setBackstack(block(backstack).toBackstack())

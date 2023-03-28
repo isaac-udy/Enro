@@ -6,7 +6,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withCreated
-import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
@@ -101,13 +101,13 @@ public fun NavigationHandle.close() {
 
 public fun NavigationHandle.onContainer(
     key: NavigationContainerKey,
-    block: NavigationContainer.() -> Unit
+    block: NavigationContainerContext.() -> Unit
 ) {
     executeInstruction(NavigationInstruction.OnContainer(key, block))
 }
 
 public fun NavigationHandle.onContainer(
-    block: NavigationContainer.() -> Unit
+    block: NavigationContainerContext.() -> Unit
 ) {
     executeInstruction(NavigationInstruction.OnContainer(block))
 }
