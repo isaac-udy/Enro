@@ -19,6 +19,7 @@ internal class ExecuteContainerOperationInstructionImpl(): ExecuteContainerOpera
     ) {
         val container = when(instruction.target) {
             NavigationInstruction.ContainerOperation.Target.ParentContainer -> navigationContext.parentContainer()
+            NavigationInstruction.ContainerOperation.Target.ActiveContainer -> navigationContext.containerManager.activeContainer
             is NavigationInstruction.ContainerOperation.Target.TargetContainer -> navigationContext.findContainer(instruction.target.key)
         }
         requireNotNull(container)

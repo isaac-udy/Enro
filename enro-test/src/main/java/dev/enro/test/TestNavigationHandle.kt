@@ -99,6 +99,7 @@ class FakeNavigationHandle internal constructor(
             is NavigationInstruction.ContainerOperation -> {
                 val containerKey = when (navigationInstruction.target) {
                     NavigationInstruction.ContainerOperation.Target.ParentContainer -> TestNavigationContainer.parentContainer
+                    NavigationInstruction.ContainerOperation.Target.ActiveContainer -> TestNavigationContainer.activeContainer
                     is NavigationInstruction.ContainerOperation.Target.TargetContainer -> navigationInstruction.target.key
                 }
                 val container = navigationContainers[containerKey]
@@ -153,6 +154,12 @@ inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(): Na
 }
 
 fun TestNavigationHandle<*>.expectParentContainer(): NavigationContainerContext {
+    lateinit var container: NavigationContainerContext
+    onParentContainer { container = this@onParentContainer }
+    return container
+}
+
+fun TestNavigationHandle<*>.expectActiveContainer(): NavigationContainerContext {
     lateinit var container: NavigationContainerContext
     onContainer { container = this@onContainer }
     return container

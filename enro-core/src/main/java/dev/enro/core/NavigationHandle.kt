@@ -112,6 +112,12 @@ public fun NavigationHandle.onContainer(
     executeInstruction(NavigationInstruction.OnContainer(block))
 }
 
+public fun NavigationHandle.onParentContainer(
+    block: NavigationContainerContext.() -> Unit
+) {
+    executeInstruction(NavigationInstruction.OnParentContainer(block))
+}
+
 public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
     executeInstruction(NavigationInstruction.Close.WithResult(result))
 }

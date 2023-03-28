@@ -88,6 +88,14 @@ class TestTestViewModel : ViewModel() {
     }
 
     fun parentContainerOperation(id: String) {
+        navigation.onParentContainer {
+            setBackstack {
+                it.push(TestTestKeyWithData(id))
+            }
+        }
+    }
+
+    fun activeContainerOperation(id: String) {
         navigation.onContainer {
             setBackstack {
                 it.push(TestTestKeyWithData(id))
@@ -95,7 +103,7 @@ class TestTestViewModel : ViewModel() {
         }
     }
 
-    fun childContainerOperation(id: String) {
+    fun specificContainerOperation(id: String) {
         navigation.onContainer(testContainerKey) {
             setBackstack {
                 it.push(TestTestKeyWithData(id))

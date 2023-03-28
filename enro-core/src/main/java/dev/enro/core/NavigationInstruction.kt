@@ -99,6 +99,7 @@ public sealed class NavigationInstruction {
     ) : NavigationInstruction() {
         internal sealed class Target {
             object ParentContainer : Target()
+            object ActiveContainer : Target()
             class TargetContainer(val key: NavigationContainerKey) : Target()
         }
     }
@@ -184,6 +185,13 @@ public sealed class NavigationInstruction {
         )
 
         public fun OnContainer(
+            block: NavigationContainerContext.() -> Unit
+        ): ContainerOperation = ContainerOperation(
+            target = ContainerOperation.Target.ActiveContainer,
+            operation = block,
+        )
+
+        public fun OnParentContainer(
             block: NavigationContainerContext.() -> Unit
         ): ContainerOperation = ContainerOperation(
             target = ContainerOperation.Target.ParentContainer,
