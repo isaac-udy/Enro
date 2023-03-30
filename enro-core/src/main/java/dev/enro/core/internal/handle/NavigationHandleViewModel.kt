@@ -1,7 +1,6 @@
 package dev.enro.core.internal.handle
 
 import android.annotation.SuppressLint
-import android.os.Bundle
 import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
@@ -29,7 +28,6 @@ internal open class NavigationHandleViewModel(
     internal val hasKey get() = instruction.navigationKey !is NoNavigationKey
     final override val key: NavigationKey get() = instruction.navigationKey
     final override val id: String get() = instruction.instructionId
-    final override val additionalData: Bundle get() = instruction.additionalData
 
     internal var internalOnCloseRequested: () -> Unit = { close() }
 

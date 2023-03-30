@@ -22,9 +22,9 @@ import dev.enro.extensions.getNestedAttributeResourceId
 public typealias AnimationPair = NavigationAnimation
 
 public sealed interface NavigationAnimation {
-    public sealed interface ForView : NavigationAnimation
     public sealed interface Enter : NavigationAnimation
     public sealed interface Exit : NavigationAnimation
+    public sealed interface ForView : NavigationAnimation, Enter, Exit
 
     public data class Resource(
         public val id: Int
@@ -71,8 +71,8 @@ public sealed interface NavigationAnimation {
 
             public operator fun invoke(
                 exit: ExitTransition,
-                forView: ForView = DefaultAnimations.ForView.noneEnter,
-            ): Enter = EnterExit(EnterTransition.None, exit, forView)
+                forView: ForView = DefaultAnimations.ForView.noneCloseExit,
+            ): Exit = EnterExit(EnterTransition.None, exit, forView)
 
             public operator fun invoke(
                 forView: ForView,

@@ -1,6 +1,5 @@
 package dev.enro.core.compose.preview
 
-import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -19,7 +18,6 @@ internal class PreviewNavigationHandle(
     override val id: String = instruction.instructionId
     override val key: NavigationKey = instruction.navigationKey
     override val dependencyScope: EnroDependencyScope = NavigationHandleScope(NavigationController()).bind(this)
-    override val additionalData: Bundle = Bundle.EMPTY
 
     private val lifecycleRegistry by lazy {
         LifecycleRegistry(this).apply {

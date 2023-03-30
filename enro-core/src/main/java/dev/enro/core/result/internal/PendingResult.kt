@@ -18,8 +18,4 @@ internal sealed class PendingResult {
         val resultType: KClass<out Any>,
         val result: Any
     ) : PendingResult()
-
-    internal companion object {
-        const val OVERRIDE_NAVIGATION_KEY_EXTRA = "PendingResult.OVERRIDE_NAVIGATION_KEY_EXTRA"
-    }
 }

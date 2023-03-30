@@ -130,14 +130,16 @@ data class FlowData(
     val third: String,
 )
 
+@OptIn(AdvancedEnroApi::class)
 class FlowViewModel() : ViewModel() {
     val navigation by navigationHandle<FlowTestKey>()
     val flow by registerForFlowResult(
+        savedStateHandle = null,
         flow = {
-            val first = push(TestResultStringKey("first"))
-            val second = push(TestResultStringKey("second"))
-            val bottomSheet = present(TestResultStringKey("bottomSheet"), listOf(second))
-            val third = push(TestResultStringKey("third"))
+            val first = push { TestResultStringKey("first") }
+            val second = push { TestResultStringKey("second") }
+            val bottomSheet = present(listOf(second)) { TestResultStringKey("bottomSheet") }
+            val third = push { TestResultStringKey("third") }
             FlowData(
                 first = first,
                 second = second,

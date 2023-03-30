@@ -1,7 +1,6 @@
 package dev.enro.core.container
 
 import dev.enro.core.*
-import dev.enro.extensions.getParcelableCompat
 
 private const val ORIGINAL_NAVIGATION_DIRECTION = "OpenInstructionExtensions.ORIGINAL_NAVIGATION_DIRECTION"
 
@@ -16,7 +15,7 @@ internal fun AnyOpenInstruction.asPresentInstruction(): OpenPresentInstruction =
 @PublishedApi
 internal fun AnyOpenInstruction.originalNavigationDirection(): NavigationDirection {
     if (additionalData.containsKey(ORIGINAL_NAVIGATION_DIRECTION))
-        return additionalData.getParcelableCompat(ORIGINAL_NAVIGATION_DIRECTION)!!
+        return additionalData[ORIGINAL_NAVIGATION_DIRECTION] as NavigationDirection
     return navigationDirection
 }
 
@@ -27,7 +26,7 @@ internal fun <T: NavigationDirection> AnyOpenInstruction.asDirection(direction: 
         navigationDirection = direction,
         additionalData = additionalData.apply {
             if (containsKey(ORIGINAL_NAVIGATION_DIRECTION)) return@apply
-            putParcelable(ORIGINAL_NAVIGATION_DIRECTION, navigationDirection)
+            put(ORIGINAL_NAVIGATION_DIRECTION, navigationDirection)
         }
     ) as NavigationInstruction.Open<T>
 }

@@ -42,6 +42,7 @@ internal fun merge(
 ): List<AnyOpenInstruction> {
     val results = mutableMapOf<Int, MutableList<AnyOpenInstruction>>()
     val indexes = mutableMapOf<AnyOpenInstruction, Int>()
+    val addedInstructions = newBackstack.map { it.instructionId }.toSet()
     newBackstack.forEachIndexed { index, it ->
         results[index] = mutableListOf(it)
         indexes[it] = index
@@ -50,6 +51,7 @@ internal fun merge(
 
     var oldIndex = -1
     oldBackstack.forEach { oldItem ->
+        if(addedInstructions.contains(oldItem.instructionId)) return@forEach
         oldIndex = maxOf(indexes[oldItem] ?: -1, oldIndex)
         results[oldIndex].let {
             if(it == null) return@let

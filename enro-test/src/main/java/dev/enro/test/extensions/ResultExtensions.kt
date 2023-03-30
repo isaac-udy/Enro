@@ -5,15 +5,13 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.internal.PendingResult
-import dev.enro.extensions.getParcelableCompat
 import dev.enro.test.EnroTest
 
 fun <T: Any> NavigationInstruction.Open<*>.sendResultForTest(type: Class<T>, result: T) {
     val navigationController = EnroTest.getCurrentNavigationController()
     val resultId = internal.resultId!!
 
-    val navigationKey = additionalData.getParcelableCompat(PendingResult.OVERRIDE_NAVIGATION_KEY_EXTRA)
-        ?: navigationKey
+    val navigationKey = internal.resultKey ?: navigationKey
 
     val pendingResult = PendingResult.Result(
         resultId,

@@ -13,7 +13,6 @@ import dev.enro.core.controller.usecase.createResultChannel
 import dev.enro.core.result.internal.LazyResultChannelProperty
 import dev.enro.core.result.internal.PendingResult
 import dev.enro.core.synthetic.SyntheticDestination
-import dev.enro.extensions.getParcelableCompat
 import dev.enro.viewmodel.getNavigationHandle
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -34,7 +33,7 @@ public fun <T : Any> ExecutorArgs<out Any, out Any, out NavigationKey.WithResult
 ) {
     val resultId = instruction.internal.resultId
     if (resultId != null) {
-        val keyForResult = instruction.additionalData.getParcelableCompat(PendingResult.OVERRIDE_NAVIGATION_KEY_EXTRA)
+        val keyForResult = instruction.internal.resultKey
             ?: instruction.navigationKey
         if (keyForResult !is NavigationKey.WithResult<*>) return
 
@@ -54,7 +53,7 @@ public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.sendR
 ) {
     val resultId = instruction.internal.resultId
     if (resultId != null) {
-        val keyForResult = instruction.additionalData.getParcelableCompat(PendingResult.OVERRIDE_NAVIGATION_KEY_EXTRA)
+        val keyForResult = instruction.internal.resultKey
             ?: instruction.navigationKey
         if (keyForResult !is NavigationKey.WithResult<*>) return
 
@@ -79,20 +78,19 @@ public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwa
     if (resultId == null) {
         navigationContext.getNavigationHandle().executeInstruction(
             NavigationInstruction.DefaultDirection(navigationKey)
-                .apply {
-                    additionalData.putParcelable(PendingResult.OVERRIDE_NAVIGATION_KEY_EXTRA, key)
-                }
+                .internal
+                .copy(
+                    resultKey = key
+                )
         )
     } else {
         navigationContext.getNavigationHandle().executeInstruction(
             NavigationInstruction.DefaultDirection(navigationKey)
                 .internal
                 .copy(
-                    resultId = resultId
+                    resultId = resultId,
+                    resultKey = key
                 )
-                .apply {
-                    additionalData.putParcelable(PendingResult.OVERRIDE_NAVIGATION_KEY_EXTRA, key)
-                }
         )
     }
 }

@@ -219,16 +219,24 @@ class EnroTestJvmTest {
             third = UUID.randomUUID().toString(),
         )
 
-        navigationHandle.expectOpenInstruction<TestResultStringKey> { it.id == "first" }
+        navigationHandle
+            .expectActiveContainer()
+            .expectOpenInstruction<TestResultStringKey> { it.id == "first" }
             .sendResultForTest(expected.first)
 
-        navigationHandle.expectOpenInstruction<TestResultStringKey> { it.id == "second" }
+        navigationHandle
+            .expectActiveContainer()
+            .expectOpenInstruction<TestResultStringKey> { it.id == "second" }
             .sendResultForTest(expected.second)
 
-        navigationHandle.expectOpenInstruction<TestResultStringKey> { it.id == "bottomSheet" }
+        navigationHandle
+            .expectActiveContainer()
+            .expectOpenInstruction<TestResultStringKey> { it.id == "bottomSheet" }
             .sendResultForTest(expected.bottomSheet)
 
-        navigationHandle.expectOpenInstruction<TestResultStringKey> { it.id == "third" }
+        navigationHandle
+            .expectActiveContainer()
+            .expectOpenInstruction<TestResultStringKey> { it.id == "third" }
             .sendResultForTest(expected.third)
 
         val result = navigationHandle.assertResultDelivered<FlowData>()

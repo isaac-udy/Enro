@@ -8,7 +8,6 @@ import dev.enro.core.readOpenInstruction
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.internal.PendingResult
 import dev.enro.core.result.internal.ResultChannelId
-import dev.enro.extensions.getParcelableCompat
 
 internal class AddPendingResult(
     private val controller: NavigationController,
@@ -19,7 +18,7 @@ internal class AddPendingResult(
         instruction: NavigationInstruction.Close
     ) {
         val openInstruction = navigationContext.arguments.readOpenInstruction() ?: return
-        val navigationKey = openInstruction.additionalData.getParcelableCompat(PendingResult.OVERRIDE_NAVIGATION_KEY_EXTRA)
+        val navigationKey = openInstruction.internal.resultKey
             ?: openInstruction.navigationKey
 
         if (navigationKey !is NavigationKey.WithResult<*>) return

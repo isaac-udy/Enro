@@ -1,6 +1,5 @@
 package dev.enro.core
 
-import android.os.Bundle
 import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -15,7 +14,6 @@ import kotlin.reflect.KClass
 
 public interface NavigationHandle : LifecycleOwner {
     public val id: String
-    public val additionalData: Bundle
     public val key: NavigationKey
     public val instruction: NavigationInstruction.Open<*>
     public val dependencyScope: EnroDependencyScope
@@ -32,7 +30,6 @@ internal class TypedNavigationHandleImpl<T : NavigationKey>(
     private val type: Class<T>
 ): TypedNavigationHandle<T> {
     override val id: String get() = navigationHandle.id
-    override val additionalData: Bundle get() = navigationHandle.additionalData
     override val instruction: NavigationInstruction.Open<*> = navigationHandle.instruction
     override val dependencyScope: EnroDependencyScope get() = navigationHandle.dependencyScope
 

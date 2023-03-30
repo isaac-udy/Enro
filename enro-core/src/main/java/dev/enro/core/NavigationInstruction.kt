@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.result.internal.ResultChannelId
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 import java.util.*
 
 public sealed class NavigationDirection : Parcelable {
@@ -42,7 +43,7 @@ public sealed class NavigationInstruction {
     public sealed class Open<T : NavigationDirection> : NavigationInstruction(), Parcelable {
         public abstract val navigationDirection: T
         public abstract val navigationKey: NavigationKey
-        public abstract val additionalData: Bundle
+        public abstract val additionalData: MutableMap<String, Any>
         public abstract val instructionId: String
 
         internal val internal by lazy { this as OpenInternal<NavigationDirection> }
@@ -61,12 +62,13 @@ public sealed class NavigationInstruction {
         internal data class OpenInternal<T : NavigationDirection> constructor(
             override val navigationDirection: T,
             override val navigationKey: NavigationKey,
-            override val additionalData: Bundle = Bundle(),
+            override val additionalData: @RawValue  MutableMap<String, Any> = mutableMapOf(),
             override val instructionId: String = UUID.randomUUID().toString(),
             val previouslyActiveContainer: NavigationContainerKey? = null,
             val openingType: Class<out Any> = Any::class.java,
             val openedByType: Class<out Any> = Any::class.java, // the type of context that requested this open instruction was executed
             val openedById: String? = null,
+            val resultKey: NavigationKey? = null,
             val resultId: ResultChannelId? = null,
         ) : Open<T>() {
             override fun equals(other: Any?): Boolean {
@@ -78,6 +80,7 @@ public sealed class NavigationInstruction {
                 if (navigationDirection != other.navigationDirection) return false
                 if (navigationKey != other.navigationKey) return false
                 if (instructionId != other.instructionId) return false
+                if (resultKey != other.resultKey) return false
                 if (resultId != other.resultId) return false
 
                 return true
@@ -87,6 +90,7 @@ public sealed class NavigationInstruction {
                 var result = navigationDirection.hashCode()
                 result = 31 * result + navigationKey.hashCode()
                 result = 31 * result + instructionId.hashCode()
+                result = 31 * result + resultKey.hashCode()
                 result = 31 * result + (resultId?.hashCode() ?: 0)
                 return result
             }

@@ -13,7 +13,6 @@ import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.HostInstructionAs
-import dev.enro.extensions.getParcelableCompat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import dev.enro.core.container.NavigationContainer as RealNavigationContainer
@@ -48,7 +47,7 @@ internal object Compatibility {
                         isDialog -> args.instruction.asPresentInstruction()
                         else -> args.instruction.asPushInstruction()
                     }.apply {
-                        additionalData.putParcelable(COMPATIBILITY_NAVIGATION_DIRECTION, args.instruction.navigationDirection)
+                        additionalData[COMPATIBILITY_NAVIGATION_DIRECTION] = args.instruction.navigationDirection
                     }
                 }
                 else -> args.instruction
@@ -75,8 +74,7 @@ internal object Compatibility {
                     presentInstruction
                 )
 
-            val originalDirection = instruction.additionalData
-                .getParcelableCompat<NavigationDirection>(COMPATIBILITY_NAVIGATION_DIRECTION)
+            val originalDirection = instruction.additionalData[COMPATIBILITY_NAVIGATION_DIRECTION] as? NavigationDirection
             val isReplace = originalDirection == NavigationDirection.Replace
 
             requireNotNull(presentContainer)

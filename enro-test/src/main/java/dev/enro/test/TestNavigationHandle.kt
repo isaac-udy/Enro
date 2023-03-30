@@ -3,7 +3,6 @@
 package dev.enro.test
 
 import android.annotation.SuppressLint
-import android.os.Bundle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import dev.enro.core.*
@@ -22,9 +21,6 @@ class TestNavigationHandle<T : NavigationKey>(
 ) : TypedNavigationHandle<T> {
     override val id: String
         get() = navigationHandle.id
-
-    override val additionalData: Bundle
-        get() = navigationHandle.additionalData
 
     override val key: T
         get() = navigationHandle.key as T
@@ -84,7 +80,6 @@ class FakeNavigationHandle internal constructor(
     }
 
     override val id: String = instruction.instructionId
-    override val additionalData: Bundle = instruction.additionalData
     override val key: NavigationKey = key
     override val dependencyScope: EnroDependencyScope = NavigationHandleScope(
         EnroTest.getCurrentNavigationController()
@@ -153,6 +148,10 @@ fun <T : Any> TestNavigationHandle<*>.expectOpenInstruction(type: Class<T>, filt
 
 inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(noinline filter: (T) -> Boolean = { true }): NavigationInstruction.Open<*> {
     return expectOpenInstruction(T::class.java, filter)
+}
+
+inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(key: T): NavigationInstruction.Open<*> {
+    return expectOpenInstruction(T::class.java) { it == key }
 }
 
 fun TestNavigationHandle<*>.expectParentContainer(): NavigationContainerContext {
