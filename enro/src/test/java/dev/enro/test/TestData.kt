@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import dev.enro.core.*
 import dev.enro.core.container.push
 import dev.enro.core.container.setBackstack
-import dev.enro.core.result.registerForFlowResult
+import dev.enro.core.result.flows.registerForFlowResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize

@@ -4,7 +4,7 @@ import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.get
 import dev.enro.core.result.EnroResult
-import dev.enro.core.result.UnmanagedEnroResultChannel
+import dev.enro.core.result.UnmanagedNavigationResultChannel
 import dev.enro.core.result.internal.ResultChannelImpl
 import kotlin.reflect.KClass
 
@@ -22,7 +22,7 @@ internal class CreateResultChannel(
         onClosed: () -> Unit,
         onResult: (Result) -> Unit,
         additionalResultId: String = "",
-    ): UnmanagedEnroResultChannel<Result, Key> {
+    ): UnmanagedNavigationResultChannel<Result, Key> {
         return ResultChannelImpl(
             enroResult = enroResult,
             navigationHandle = navigationHandle,
@@ -38,7 +38,7 @@ internal class CreateResultChannel(
         onClosed: (Key) -> Unit,
         onResult: (Key, Result) -> Unit,
         additionalResultId: String = "",
-    ): UnmanagedEnroResultChannel<Result, Key> {
+    ): UnmanagedNavigationResultChannel<Result, Key> {
         return ResultChannelImpl(
             enroResult = enroResult,
             navigationHandle = navigationHandle,

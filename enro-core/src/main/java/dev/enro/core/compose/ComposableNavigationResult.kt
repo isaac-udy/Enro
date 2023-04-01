@@ -7,7 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.usecase.createResultChannel
-import dev.enro.core.result.EnroResultChannel
+import dev.enro.core.result.NavigationResultChannel
 import java.util.*
 
 
@@ -25,7 +25,7 @@ public inline fun <reified T : Any> registerForNavigationResult(
     },
     noinline onClosed: @DisallowComposableCalls () -> Unit = {},
     noinline onResult: @DisallowComposableCalls (T) -> Unit
-): EnroResultChannel<T, NavigationKey.WithResult<T>> {
+): NavigationResultChannel<T, NavigationKey.WithResult<T>> {
     val navigationHandle = navigationHandle()
 
     val resultChannel = remember(onResult) {

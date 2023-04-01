@@ -10,7 +10,7 @@ import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.usecase.createResultChannel
 import dev.enro.core.getNavigationHandle
-import dev.enro.core.result.EnroResultChannel
+import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.managedByLifecycle
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -22,9 +22,9 @@ internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithRes
     resultType: KClass<Result>,
     onClosed: (Key) -> Unit = {},
     onResult: (Key, Result) -> Unit
-) : ReadOnlyProperty<Any, EnroResultChannel<Result, Key>> {
+) : ReadOnlyProperty<Any, NavigationResultChannel<Result, Key>> {
 
-    private var resultChannel: EnroResultChannel<Result, Key>? = null
+    private var resultChannel: NavigationResultChannel<Result, Key>? = null
 
     init {
         val handle = when (owner) {
@@ -51,7 +51,7 @@ internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithRes
     override fun getValue(
         thisRef: Any,
         property: KProperty<*>
-    ): EnroResultChannel<Result, Key> = resultChannel ?: throw EnroException.ResultChannelIsNotInitialised(
+    ): NavigationResultChannel<Result, Key> = resultChannel ?: throw EnroException.ResultChannelIsNotInitialised(
         "LazyResultChannelProperty's EnroResultChannel is not initialised. Are you attempting to use the result channel before the result channel's lifecycle owner has entered the CREATED state?"
     )
 }

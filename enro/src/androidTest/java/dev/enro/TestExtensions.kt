@@ -17,7 +17,7 @@ import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.setBackstack
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
-import dev.enro.core.result.EnroResultChannel
+import dev.enro.core.result.NavigationResultChannel
 import kotlin.reflect.KClass
 
 private val isDebugging: Boolean get() = Debug.isDebuggerConnected()
@@ -231,7 +231,7 @@ fun <T: Any> waitOnMain(block: () -> T?): T {
     }
 }
 
-fun getActiveEnroResultChannels(): List<EnroResultChannel<*, *>> {
+fun getActiveEnroResultChannels(): List<NavigationResultChannel<*, *>> {
     val enroResultClass = Class.forName("dev.enro.core.result.EnroResult")
     val getEnroResult = enroResultClass.getDeclaredMethod("from", NavigationController::class.java)
     getEnroResult.isAccessible = true
@@ -239,7 +239,7 @@ fun getActiveEnroResultChannels(): List<EnroResultChannel<*, *>> {
     getEnroResult.isAccessible = false
 
     requireNotNull(enroResult)
-    val channels = enroResult.getPrivate<Map<Any, EnroResultChannel<*, * >>>("channels")
+    val channels = enroResult.getPrivate<Map<Any, NavigationResultChannel<*, * >>>("channels")
     return channels.values.toList()
 }
 
@@ -251,7 +251,7 @@ fun clearAllEnroResultChannels() {
     getEnroResult.isAccessible = false
 
     requireNotNull(enroResult)
-    val channels = enroResult.getPrivate<MutableMap<Any, EnroResultChannel<*, * >>>("channels")
+    val channels = enroResult.getPrivate<MutableMap<Any, NavigationResultChannel<*, * >>>("channels")
     channels.clear()
 }
 

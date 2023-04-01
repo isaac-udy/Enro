@@ -13,7 +13,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.fragment.container.navigationContainer
-import dev.enro.core.result.registerForFlowResult
+import dev.enro.core.result.flows.registerForFlowResult
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize

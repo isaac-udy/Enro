@@ -1,47 +1,23 @@
-package dev.enro.core.result
+package dev.enro.core.result.flows
 
 import android.os.Bundle
 import android.os.Parcelable
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.core.os.bundleOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dev.enro.core.*
 import dev.enro.core.container.toBackstack
+import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.internal.ResultChannelImpl
+import dev.enro.core.result.registerForNavigationResultWithKey
 import dev.enro.extensions.getParcelableListCompat
-import dev.enro.extensions.isSaveableInBundle
 import dev.enro.viewmodel.getNavigationHandle
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 
-@PublishedApi
-internal class FlowResultManager(
-    savedStateHandle: SavedStateHandle?
-) {
-    val results = mutableStateMapOf<String, CompletedFlowStep>().apply {
-        savedStateHandle ?: return@apply
-        val bundle = savedStateHandle.get<Bundle>(RESULTS_KEY) ?: return@apply
-        val savedList = bundle.getParcelableListCompat<CompletedFlowStep>(RESULTS_KEY).orEmpty()
-        val savedMap = savedList.associateBy { it.stepId }
-        putAll(savedMap)
-    }
 
-    init {
-        savedStateHandle?.setSavedStateProvider(RESULTS_KEY) {
-            val saveable = results.values.filter { it.result.isSaveableInBundle() }
-            bundleOf(RESULTS_KEY to ArrayList(saveable))
-        }
-    }
-
-    companion object {
-        private const val RESULTS_KEY = "FlowResultManager.RESULTS_KEY"
-    }
-}
 
 @PublishedApi
 @Parcelize
@@ -79,94 +55,16 @@ internal data class CompletedFlowStep(
 @PublishedApi
 internal fun List<Any>.contentHash(): Long = fold(0L) { result, it -> 31L * result + it.hashCode() }
 
-public class NavigationFlowScope internal constructor(
-    @PublishedApi
-    internal val resultManager: FlowResultManager
-) {
-    @PublishedApi
-    internal val steps: MutableList<FlowStep> = mutableListOf()
-
-    public inline fun <reified T : Any> push(
-        dependsOn: List<Any> = emptyList(),
-        noinline key: () -> NavigationKey.SupportsPush.WithResult<T>,
-    ): T {
-        val baseId = key::class.java.name
-        val count = steps.count { it.stepId.startsWith(baseId) }
-        val step = FlowStep(
-            stepId = "$baseId@$count",
-            key = key(),
-            dependsOn = dependsOn.contentHash(),
-            direction = NavigationDirection.Push,
-        )
-        steps.add(step)
-
-        val completedStep = resultManager.results[step.stepId]?.let {
-            if (it.result !is T) {
-                resultManager.results.remove(it.stepId)
-                return@let null
-            }
-            if (it.dependsOn != step.dependsOn) {
-                resultManager.results.remove(it.stepId)
-                return@let null
-            }
-            it
-        }
-        return completedStep?.result as? T ?: throw NoResultForPush(step)
-    }
-
-    public inline fun <reified T : Any> present(
-        dependsOn: List<Any> = emptyList(),
-        noinline key: () -> NavigationKey.SupportsPresent.WithResult<T>,
-    ): T {
-        val baseId = key::class.java.name
-        val count = steps.count { it.stepId.startsWith(baseId) }
-        val step = FlowStep(
-            stepId = "$baseId@$count",
-            key = key(),
-            dependsOn = dependsOn.contentHash(),
-            direction = NavigationDirection.Present,
-        )
-        steps.add(step)
-
-        val completedStep = resultManager.results[step.stepId]?.let {
-            if (it.result !is T) {
-                resultManager.results.remove(it.stepId)
-                return@let null
-            }
-            if (it.dependsOn != step.dependsOn) {
-                resultManager.results.remove(it.stepId)
-                return@let null
-            }
-            it
-        }
-        return completedStep?.result as? T ?: throw NoResultForPresent(step)
-    }
-
-    public fun escape(): Nothing {
-        throw Escape()
-    }
-
-    @PublishedApi
-    internal class NoResultForPush(val step: FlowStep) : RuntimeException()
-
-    @PublishedApi
-    internal class NoResultForPresent(val step: FlowStep) : RuntimeException()
-
-    @PublishedApi
-    internal class Escape : RuntimeException()
-}
-
 
 internal fun interface CreateResultChannel {
     operator fun invoke(
         onClosed: (Any) -> Unit,
         onResult: (NavigationKey.WithResult<*>, Any) -> Unit
-    ): EnroResultChannel<Any, NavigationKey.WithResult<Any>>
+    ): NavigationResultChannel<Any, NavigationKey.WithResult<Any>>
 }
 
 @AdvancedEnroApi
 public class NavigationFlow<T> internal constructor(
-    private val scope: CoroutineScope,
     private val savedStateHandle: SavedStateHandle?,
     private val navigation: NavigationHandle,
     private val registerForNavigationResult: CreateResultChannel,
@@ -265,8 +163,7 @@ public fun <T> ViewModel.registerForFlowResult(
     onCompleted: (T) -> Unit,
 ): PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationFlow<T>>> {
     return PropertyDelegateProvider { thisRef, property ->
-        val flow = NavigationFlow(
-            scope = viewModelScope,
+        val navigationFlow = NavigationFlow(
             savedStateHandle = savedStateHandle,
             navigation = getNavigationHandle(),
             registerForNavigationResult = { onClosed, onResult ->
@@ -279,6 +176,6 @@ public fun <T> ViewModel.registerForFlowResult(
             onCompleted = onCompleted,
         )
 
-        ReadOnlyProperty { _, _ -> flow }
+        ReadOnlyProperty { _, _ -> navigationFlow }
     }
 }

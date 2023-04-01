@@ -5,7 +5,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import dev.enro.core.*
 import dev.enro.core.result.EnroResult
-import dev.enro.core.result.UnmanagedEnroResultChannel
+import dev.enro.core.result.UnmanagedNavigationResultChannel
 
 private class ResultChannelProperties<Result : Any, Key : NavigationKey.WithResult<Result>>(
     val navigationHandle: NavigationHandle,
@@ -21,7 +21,7 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
     onClosed: @DisallowComposableCalls (Key) -> Unit,
     onResult: @DisallowComposableCalls (Key, Result) -> Unit,
     additionalResultId: String = "",
-) : UnmanagedEnroResultChannel<Result, Key> {
+) : UnmanagedNavigationResultChannel<Result, Key> {
 
     /**
      * The arguments passed to the ResultChannelImpl hold references to the external world, and

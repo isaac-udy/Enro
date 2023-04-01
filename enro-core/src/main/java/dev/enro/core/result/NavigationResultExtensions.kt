@@ -100,7 +100,7 @@ public inline fun <reified T : Any> ViewModel.registerForNavigationResult(
     navigationHandle: NavigationHandle,
     noinline onClosed: () -> Unit = {},
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<Any, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
+): ReadOnlyProperty<Any, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = navigationHandle,
         resultType = T::class,
@@ -111,7 +111,7 @@ public inline fun <reified T : Any> ViewModel.registerForNavigationResult(
 public inline fun <reified T : Any> ViewModel.registerForNavigationResult(
     noinline onClosed: () -> Unit = {},
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<Any, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
+): ReadOnlyProperty<Any, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = getNavigationHandle(),
         resultType = T::class,
@@ -122,7 +122,7 @@ public inline fun <reified T : Any> ViewModel.registerForNavigationResult(
 public inline fun <reified T : Any> ViewModel.registerForNavigationResultWithKey(
     noinline onClosed: (NavigationKey.WithResult<T>) -> Unit = {},
     noinline onResult: (NavigationKey.WithResult<T>, T) -> Unit
-): ReadOnlyProperty<Any, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
+): ReadOnlyProperty<Any, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = getNavigationHandle(),
         resultType = T::class,
@@ -134,7 +134,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> ViewModel
     key: KClass<Key>,
     noinline onClosed: () -> Unit = {},
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<Any, EnroResultChannel<T, Key>> =
+): ReadOnlyProperty<Any, NavigationResultChannel<T, Key>> =
     LazyResultChannelProperty(
         owner = getNavigationHandle(),
         resultType = T::class,
@@ -146,7 +146,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> ViewModel
     key: KClass<Key>,
     noinline onClosed: (Key) -> Unit = {},
     noinline onResult: (Key, T) -> Unit
-): ReadOnlyProperty<Any, EnroResultChannel<T, Key>> =
+): ReadOnlyProperty<Any, NavigationResultChannel<T, Key>> =
     LazyResultChannelProperty(
         owner = getNavigationHandle(),
         resultType = T::class,
@@ -157,7 +157,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> ViewModel
 public inline fun <reified T : Any> ComponentActivity.registerForNavigationResult(
     noinline onClosed: () -> Unit = {},
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<ComponentActivity, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
+): ReadOnlyProperty<ComponentActivity, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
@@ -168,7 +168,7 @@ public inline fun <reified T : Any> ComponentActivity.registerForNavigationResul
 public inline fun <reified T : Any> ComponentActivity.registerForNavigationResultWithKey(
     noinline onClosed: (NavigationKey.WithResult<T>) -> Unit = {},
     noinline onResult: (NavigationKey.WithResult<T>, T) -> Unit
-): ReadOnlyProperty<ComponentActivity, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
+): ReadOnlyProperty<ComponentActivity, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
@@ -180,7 +180,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Component
     key: KClass<Key>,
     noinline onClosed: () -> Unit = {},
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<ComponentActivity, EnroResultChannel<T, Key>> =
+): ReadOnlyProperty<ComponentActivity, NavigationResultChannel<T, Key>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
@@ -192,7 +192,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Component
     key: KClass<Key>,
     noinline onClosed: (Key) -> Unit = {},
     noinline onResult: (Key, T) -> Unit
-): ReadOnlyProperty<ComponentActivity, EnroResultChannel<T, Key>> =
+): ReadOnlyProperty<ComponentActivity, NavigationResultChannel<T, Key>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
@@ -203,7 +203,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Component
 public inline fun <reified T : Any> Fragment.registerForNavigationResult(
     noinline onClosed: () -> Unit = {},
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<Fragment, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
+): ReadOnlyProperty<Fragment, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
@@ -214,7 +214,7 @@ public inline fun <reified T : Any> Fragment.registerForNavigationResult(
 public inline fun <reified T : Any> Fragment.registerForNavigationResultWithKey(
     noinline onClosed: (NavigationKey.WithResult<T>) -> Unit = {},
     noinline onResult: (NavigationKey.WithResult<T>, T) -> Unit
-): ReadOnlyProperty<Fragment, EnroResultChannel<T, NavigationKey.WithResult<T>>> =
+): ReadOnlyProperty<Fragment, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
@@ -226,7 +226,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Fragment.
     key: KClass<Key>,
     noinline onClosed: () -> Unit = {},
     noinline onResult: (T) -> Unit
-): ReadOnlyProperty<Fragment, EnroResultChannel<T, Key>> =
+): ReadOnlyProperty<Fragment, NavigationResultChannel<T, Key>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
@@ -238,7 +238,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Fragment.
     key: KClass<Key>,
     noinline onClosed: (Key) -> Unit = {},
     noinline onResult: (Key, T) -> Unit
-): ReadOnlyProperty<Fragment, EnroResultChannel<T, Key>> =
+): ReadOnlyProperty<Fragment, NavigationResultChannel<T, Key>> =
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
@@ -252,7 +252,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Fragment.
  * Be aware that you need to manage the attach/detach/destroy lifecycle events of this result channel
  * yourself, including the initial attach.
  *
- * @see UnmanagedEnroResultChannel
+ * @see UnmanagedNavigationResultChannel
  * @see managedByLifecycle
  * @see managedByView
  */
@@ -260,7 +260,7 @@ public inline fun <reified T : Any> NavigationHandle.registerForNavigationResult
     id: String,
     noinline onClosed: () -> Unit = {},
     noinline onResult: (T) -> Unit
-): UnmanagedEnroResultChannel<T, NavigationKey.WithResult<T>> {
+): UnmanagedNavigationResultChannel<T, NavigationKey.WithResult<T>> {
     return createResultChannel(
         resultType = T::class,
         onClosed = onClosed,
@@ -275,7 +275,7 @@ public inline fun <reified T : Any> NavigationHandle.registerForNavigationResult
  * Be aware that you need to manage the attach/detach/destroy lifecycle events of this result channel
  * yourself, including the initial attach.
  *
- * @see UnmanagedEnroResultChannel
+ * @see UnmanagedNavigationResultChannel
  * @see managedByLifecycle
  * @see managedByView
  */
@@ -283,7 +283,7 @@ public inline fun <reified T : Any> NavigationHandle.registerForNavigationResult
     id: String,
     noinline onClosed: (NavigationKey.WithResult<T>) -> Unit = {},
     noinline onResult: (NavigationKey.WithResult<T>, T) -> Unit
-): UnmanagedEnroResultChannel<T, NavigationKey.WithResult<T>> {
+): UnmanagedNavigationResultChannel<T, NavigationKey.WithResult<T>> {
     return createResultChannel(
         resultType = T::class,
         onClosed = onClosed,
@@ -298,7 +298,7 @@ public inline fun <reified T : Any> NavigationHandle.registerForNavigationResult
  * Be aware that you need to manage the attach/detach/destroy lifecycle events of this result channel
  * yourself, including the initial attach.
  *
- * @see UnmanagedEnroResultChannel
+ * @see UnmanagedNavigationResultChannel
  * @see managedByLifecycle
  * @see managedByView
  */
@@ -307,7 +307,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Navigatio
     key: KClass<Key>,
     noinline onClosed: () -> Unit = {},
     noinline onResult: (T) -> Unit
-): UnmanagedEnroResultChannel<T, Key> {
+): UnmanagedNavigationResultChannel<T, Key> {
     return createResultChannel(
         resultType = T::class,
         onClosed = onClosed,
@@ -322,7 +322,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Navigatio
  * Be aware that you need to manage the attach/detach/destroy lifecycle events of this result channel
  * yourself, including the initial attach.
  *
- * @see UnmanagedEnroResultChannel
+ * @see UnmanagedNavigationResultChannel
  * @see managedByLifecycle
  * @see managedByView
  */
@@ -331,7 +331,7 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Navigatio
     key: KClass<Key>,
     noinline onClosed: (Key) -> Unit = {},
     noinline onResult: (Key, T) -> Unit
-): UnmanagedEnroResultChannel<T, Key> {
+): UnmanagedNavigationResultChannel<T, Key> {
     return createResultChannel(
         resultType = T::class,
         onClosed = onClosed,
@@ -346,9 +346,9 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Navigatio
  * The result channel will be attached when the ON_START event occurs, detached when the ON_STOP
  * event occurs, and destroyed when ON_DESTROY occurs.
  */
-public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByLifecycle(
+public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedNavigationResultChannel<T, R>.managedByLifecycle(
     lifecycle: Lifecycle
-): EnroResultChannel<T, R> {
+): NavigationResultChannel<T, R> {
     lifecycle.addObserver(LifecycleEventObserver { _, event ->
         if (event == Lifecycle.Event.ON_START) attach()
         if (event == Lifecycle.Event.ON_STOP) detach()
@@ -364,7 +364,7 @@ public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<
  * detached when the view is detached from a Window, and destroyed when the ViewTreeLifecycleOwner
  * lifecycle receives the ON_DESTROY event.
  */
-public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByView(view: View): EnroResultChannel<T, R> {
+public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedNavigationResultChannel<T, R>.managedByView(view: View): NavigationResultChannel<T, R> {
     var activeLifecycle: Lifecycle? = null
     val lifecycleObserver = LifecycleEventObserver { _, event ->
         if (event == Lifecycle.Event.ON_DESTROY) destroy()
@@ -409,9 +409,9 @@ public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<
  * destroyed every time the ViewHolder is re-bound to data through onBindViewHolder, which means the
  * result channel should be created each time the ViewHolder is bound.
  */
-public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedEnroResultChannel<T, R>.managedByViewHolderItem(
+public fun <T: Any, R : NavigationKey.WithResult<T>> UnmanagedNavigationResultChannel<T, R>.managedByViewHolderItem(
     viewHolder: RecyclerView.ViewHolder
-): EnroResultChannel<T, R> {
+): NavigationResultChannel<T, R> {
     if (viewHolder.itemView.isAttachedToWindow) {
         attach()
     }

@@ -15,7 +15,7 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.requestClose
-import dev.enro.core.result.EnroResultChannel
+import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
@@ -83,9 +83,9 @@ object ComposableDestinations {
     }
 }
 
-val ComposableDestination.resultChannel: EnroResultChannel<TestResult, NavigationKey.WithResult<TestResult>>
+val ComposableDestination.resultChannel: NavigationResultChannel<TestResult, NavigationKey.WithResult<TestResult>>
     get() {
-        lateinit var resultChannel: EnroResultChannel<TestResult, NavigationKey.WithResult<TestResult>>
+        lateinit var resultChannel: NavigationResultChannel<TestResult, NavigationKey.WithResult<TestResult>>
          InstrumentationRegistry.getInstrumentation().runOnMainSync {
              resultChannel = ViewModelProvider(viewModelStore, defaultViewModelProviderFactory)
                 .get(ComposableDestinations.TestViewModel::class.java)

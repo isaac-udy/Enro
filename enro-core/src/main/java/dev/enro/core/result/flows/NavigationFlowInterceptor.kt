@@ -1,4 +1,4 @@
-package dev.enro.core.result
+package dev.enro.core.result.flows
 
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
