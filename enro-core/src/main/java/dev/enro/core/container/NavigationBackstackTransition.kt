@@ -12,9 +12,13 @@ public class NavigationBackstackTransition(
     private val currentlyActiveIndexInPrevious = previousBackstack.indexOfLast { it.instructionId == activeBackstack.active?.instructionId }
     private val previouslyActiveIndexInBackstack = activeBackstack.indexOfLast { it.instructionId == previousBackstack.active?.instructionId }
 
+    private val previouslyActiveCountInPrevious = previousBackstack.count { it.instructionId == previousBackstack.active?.instructionId }
+    private val previouslyActiveCountInActive = activeBackstack.count { it.instructionId == previousBackstack.active?.instructionId }
+
     // The last instruction is considered to be a Close if the previously active item has been removed from the list,
     // and the newly active item is not present in the initial list
-    private val isClosing = previouslyActiveIndexInBackstack == -1 && currentlyActiveIndexInPrevious != -1
+    private val isClosing = (previouslyActiveIndexInBackstack == -1 && currentlyActiveIndexInPrevious != -1)
+            || (previouslyActiveCountInPrevious < previouslyActiveCountInActive && currentlyActiveIndexInPrevious >= 0)
 
     public val lastInstruction: NavigationInstruction =  when {
         isClosing -> NavigationInstruction.Close

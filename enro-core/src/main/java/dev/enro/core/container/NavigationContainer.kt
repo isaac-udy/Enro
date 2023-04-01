@@ -282,7 +282,7 @@ private fun NavigationContainer.getTransitionForInstruction(instruction: AnyOpen
 public fun NavigationContainer.getAnimationsForEntering(instruction: AnyOpenInstruction): NavigationAnimation {
     val animations = dependencyScope.get<GetNavigationAnimations>()
     val currentTransition = getTransitionForInstruction(instruction)
-    if(System.identityHashCode(currentTransition.previousBackstack) == System.identityHashCode(NavigationContainer.initialBackstack)) {
+    if(currentTransition.previousBackstack.identity == NavigationContainer.initialBackstack.identity) {
         return DefaultAnimations.noOp.entering
     }
 

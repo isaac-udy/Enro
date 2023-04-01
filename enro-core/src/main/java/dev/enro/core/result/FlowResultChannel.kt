@@ -16,6 +16,7 @@ import dev.enro.viewmodel.getNavigationHandle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
+import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 
 @PublishedApi
@@ -203,11 +204,10 @@ public class NavigationFlow<T> internal constructor(
         val flowScope = NavigationFlowScope(resultManager)
         runCatching { onCompleted(flowScope.flow()) }
             .recover {
-                steps = flowScope.steps.toList()
                 when(it) {
                     is NavigationFlowScope.NoResultForPush -> {}
                     is NavigationFlowScope.NoResultForPresent -> {}
-                    is NavigationFlowScope.Escape -> {}
+                    is NavigationFlowScope.Escape -> return
                     else -> throw it
                 }
             }
@@ -263,9 +263,9 @@ public fun <T> ViewModel.registerForFlowResult(
     savedStateHandle: SavedStateHandle?,
     flow: NavigationFlowScope.() -> T,
     onCompleted: (T) -> Unit,
-): ReadOnlyProperty<ViewModel, NavigationFlow<T>> {
-    return ReadOnlyProperty { thisRef, property ->
-        NavigationFlow(
+): PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationFlow<T>>> {
+    return PropertyDelegateProvider { thisRef, property ->
+        val flow = NavigationFlow(
             scope = viewModelScope,
             savedStateHandle = savedStateHandle,
             navigation = getNavigationHandle(),
@@ -278,5 +278,7 @@ public fun <T> ViewModel.registerForFlowResult(
             flow = flow,
             onCompleted = onCompleted,
         )
+
+        ReadOnlyProperty { _, _ -> flow }
     }
 }

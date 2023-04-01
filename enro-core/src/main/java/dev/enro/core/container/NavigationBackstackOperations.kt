@@ -23,8 +23,7 @@ public fun NavigationBackstack.close(id: String): NavigationBackstack {
         it.instructionId == id
     }
     if (index < 0) return this
-    val exiting = get(index)
-    return minus(exiting).toBackstack()
+    return filterIndexed { i, _ -> i != index }.toBackstack()
 }
 
 public fun NavigationBackstack.pop(): NavigationBackstack {
