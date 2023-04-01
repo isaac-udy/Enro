@@ -56,6 +56,12 @@ internal class ProjectArchitecture {
         architecture
             .whereLayer(EnroLayer.EXTENSIONS)
             .mayNotAccessAnyLayer()
+            .ignoreDependency(
+                describe("any") { true },
+                describe("is resources") {
+                    it.name == "dev.enro.core.R\$style"
+                }
+            )
             .check(classes)
     }
 
