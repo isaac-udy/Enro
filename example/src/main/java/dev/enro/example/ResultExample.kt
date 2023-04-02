@@ -32,7 +32,7 @@ import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.configureBottomSheet
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.navigationHandle
-import dev.enro.core.result.flows.flowResult
+import dev.enro.core.result.flows.rememberFlowResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.example.databinding.FragmentRequestStringBinding
 import dev.enro.example.databinding.FragmentResultExampleBinding
@@ -135,7 +135,7 @@ fun BottomSheetDestination.RequestStringBottomSheet() {
     }
 
     val navigation = navigationHandle<RequestStringBottomSheetKey>()
-    val flowResult = navigation.flowResult()
+    val flowResult = navigation.rememberFlowResult()
     val result = remember {
         mutableStateOf(flowResult ?: "")
     }

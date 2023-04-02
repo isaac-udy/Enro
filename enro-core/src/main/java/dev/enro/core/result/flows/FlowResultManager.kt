@@ -10,7 +10,6 @@ import androidx.lifecycle.SavedStateHandle
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.core.TypedNavigationHandle
-import dev.enro.core.compose.navigationHandle
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.NavigationHandleExtras
 import dev.enro.core.getParentNavigationHandle
@@ -110,19 +109,26 @@ public class FlowResultManager private constructor(
     }
 }
 
+public fun <T: Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.getFlowResult(): T? {
+    val step = instruction.internal.resultKey
+    if (step == null || step !is FlowStep<*>) return null
+    val parentNavigationHandle = getParentNavigationHandle() ?: return null
+    val resultManager = FlowResultManager.get(parentNavigationHandle) ?: return null
+    return resultManager.get(step) as? T
+}
+
 @Composable
-public fun <T: Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.flowResult(): T? {
+public fun <T: Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.rememberFlowResult(): T? {
     val step = instruction.internal.resultKey
     if (step == null || step !is FlowStep<*>) return null
 
-    val navigationHandle = navigationHandle()
-
-    val parentNavigationHandle = remember(navigationHandle) {
-        navigationHandle.getParentNavigationHandle()
+    val parentNavigationHandle = remember(this) {
+        getParentNavigationHandle()
     } ?: return null
 
     val resultManager = remember(parentNavigationHandle) {
         FlowResultManager.get(parentNavigationHandle)
     } ?: return null
+
     return resultManager.get(step) as? T
 }
