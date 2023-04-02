@@ -67,7 +67,7 @@ fun ExampleScreenTemplate(
     val navigation = navigationHandle()
     val backstack = parentContainer?.backstack ?: emptyBackstack()
     var backstackItems by remember { mutableStateOf(listOf<String>()) }
-    navigation.instruction.additionalData.putString("example", navigation.sentenceId)
+    navigation.instruction.additionalData["example"] = navigation.sentenceId
 
     val ticks by viewModel.ticks.collectAsState()
     val savedState = rememberSaveable { UUID.randomUUID().toString() }

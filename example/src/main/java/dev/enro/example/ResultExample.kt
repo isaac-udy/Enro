@@ -32,6 +32,7 @@ import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.configureBottomSheet
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.navigationHandle
+import dev.enro.core.result.flows.flowResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.example.databinding.FragmentRequestStringBinding
 import dev.enro.example.databinding.FragmentResultExampleBinding
@@ -40,7 +41,7 @@ import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ResultExampleKey : NavigationKey
+class ResultExampleKey : NavigationKey.SupportsPush
 
 @SuppressLint("SetTextI18n")
 @NavigationDestination(ResultExampleKey::class)
@@ -121,7 +122,7 @@ class RequestStringFragment : Fragment() {
 }
 
 @Parcelize
-class RequestStringBottomSheetKey : NavigationKey.SupportsPresent.WithResult<String>
+class RequestStringBottomSheetKey : NavigationKey.SupportsPresent.WithResult<String>,  NavigationKey.SupportsPush.WithResult<String>
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -134,8 +135,9 @@ fun BottomSheetDestination.RequestStringBottomSheet() {
     }
 
     val navigation = navigationHandle<RequestStringBottomSheetKey>()
+    val flowResult = navigation.flowResult()
     val result = remember {
-        mutableStateOf("")
+        mutableStateOf(flowResult ?: "")
     }
 
     Column(

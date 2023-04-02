@@ -104,6 +104,14 @@ internal fun NavigationHandle.getNavigationContext(): NavigationContext<*>? {
     }
 }
 
+internal fun NavigationHandle.getParentNavigationHandle() : NavigationHandle? {
+    var parentContext = getNavigationContext()?.parentContext
+    if (parentContext?.contextReference is NavigationHost) {
+        parentContext = parentContext.parentContext
+    }
+    return parentContext?.getNavigationHandle()
+}
+
 internal fun NavigationHandle.requireNavigationContext(): NavigationContext<*> {
     return requireNotNull(getNavigationContext())
 }

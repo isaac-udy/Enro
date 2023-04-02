@@ -1,5 +1,6 @@
 package dev.enro.test
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dev.enro.core.*
 import dev.enro.core.container.push
@@ -130,15 +131,18 @@ data class FlowData(
     val third: String,
 )
 
-@OptIn(AdvancedEnroApi::class)
+@OptIn(ExperimentalEnroApi::class)
 class FlowViewModel() : ViewModel() {
     val navigation by navigationHandle<FlowTestKey>()
     val flow by registerForFlowResult(
-        savedStateHandle = null,
+        savedStateHandle = SavedStateHandle(),
         flow = {
             val first = push { TestResultStringKey("first") }
             val second = push { TestResultStringKey("second") }
-            val bottomSheet = present(listOf(second)) { TestResultStringKey("bottomSheet") }
+            val bottomSheet = present {
+                dependsOn("second")
+                TestResultStringKey("bottomSheet")
+            }
             val third = push { TestResultStringKey("third") }
             FlowData(
                 first = first,

@@ -1,7 +1,6 @@
 package dev.enro.core.result.flows
 
 import android.os.Bundle
-import android.os.Parcelable
 import androidx.core.os.bundleOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -12,49 +11,8 @@ import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.result.registerForNavigationResultWithKey
 import dev.enro.extensions.getParcelableListCompat
 import dev.enro.viewmodel.getNavigationHandle
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.RawValue
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
-
-
-
-@PublishedApi
-@Parcelize
-internal data class FlowStep(
-    val stepId: String,
-    val key: NavigationKey,
-    val dependsOn: Long,
-    val direction: NavigationDirection,
-) : Parcelable {
-    fun complete(result: Any): CompletedFlowStep {
-        return CompletedFlowStep(
-            stepId = stepId,
-            result = result,
-            dependsOn = dependsOn
-        )
-    }
-}
-
-@Parcelize
-internal data class FlowStepKey(
-    val stepId: String,
-) :
-    NavigationKey.SupportsPush.WithResult<Any>,
-    NavigationKey.SupportsPresent.WithResult<Any>
-
-
-@PublishedApi
-@Parcelize
-internal data class CompletedFlowStep(
-    val stepId: String,
-    val result: @RawValue Any,
-    val dependsOn: Long,
-) : Parcelable
-
-@PublishedApi
-internal fun List<Any>.contentHash(): Long = fold(0L) { result, it -> 31L * result + it.hashCode() }
-
 
 internal fun interface CreateResultChannel {
     operator fun invoke(
@@ -63,37 +21,37 @@ internal fun interface CreateResultChannel {
     ): NavigationResultChannel<Any, NavigationKey.WithResult<Any>>
 }
 
-@AdvancedEnroApi
+@ExperimentalEnroApi
 public class NavigationFlow<T> internal constructor(
-    private val savedStateHandle: SavedStateHandle?,
+    private val savedStateHandle: SavedStateHandle,
     private val navigation: NavigationHandle,
+    private val resultManager: FlowResultManager,
     private val registerForNavigationResult: CreateResultChannel,
     private val flow: NavigationFlowScope.() -> T,
     private val onCompleted: (T) -> Unit,
 ) {
-    private var steps: List<FlowStep> = savedStateHandle?.get<Bundle>(STEPS_KEY)
-        ?.getParcelableListCompat<FlowStep>(STEPS_KEY)
+    private var steps: List<FlowStep<out Any>> = savedStateHandle.get<Bundle>(STEPS_KEY)
+        ?.getParcelableListCompat<FlowStep<out Any>>(STEPS_KEY)
         .orEmpty()
 
-    private val resultManager = FlowResultManager(savedStateHandle)
+    @Suppress("UNCHECKED_CAST")
     private val resultChannel = registerForNavigationResult(
         onClosed = { key ->
-            if (key !is FlowStepKey) return@registerForNavigationResult
-            if (key.stepId == steps.lastOrNull()?.stepId) {
-                resultManager.results.remove(key.stepId)
+            val step = key as? FlowStep<Any> ?: return@registerForNavigationResult
+            if (step.stepId == steps.lastOrNull()?.stepId) {
+                resultManager.clear(step)
                 steps = steps.dropLast(1)
             }
         },
         onResult = { key, result ->
-            if (key !is FlowStepKey) return@registerForNavigationResult
-            val step = steps.first { it.stepId == key.stepId }
-            resultManager.results[key.stepId] = step.complete(result)
+            val step = key as? FlowStep<Any> ?: return@registerForNavigationResult
+            resultManager.set(step, result)
             next()
         },
     )
 
     init {
-        savedStateHandle?.setSavedStateProvider(STEPS_KEY) {
+        savedStateHandle.setSavedStateProvider(STEPS_KEY) {
             bundleOf(STEPS_KEY to ArrayList(steps))
         }
     }
@@ -103,8 +61,7 @@ public class NavigationFlow<T> internal constructor(
         runCatching { onCompleted(flowScope.flow()) }
             .recover {
                 when(it) {
-                    is NavigationFlowScope.NoResultForPush -> {}
-                    is NavigationFlowScope.NoResultForPresent -> {}
+                    is NavigationFlowScope.NoResult -> {}
                     is NavigationFlowScope.Escape -> return
                     else -> throw it
                 }
@@ -117,7 +74,7 @@ public class NavigationFlow<T> internal constructor(
         navigation.onActiveContainer {
             val existingInstructions = backstack
                 .mapNotNull { instruction ->
-                    val flowKey = instruction.internal.resultKey as? FlowStepKey ?: return@mapNotNull null
+                    val flowKey = instruction.internal.resultKey as? FlowStep<Any> ?: return@mapNotNull null
                     val step = steps.firstOrNull { it.stepId == flowKey.stepId } ?: return@mapNotNull null
                     step to instruction
                 }
@@ -133,7 +90,7 @@ public class NavigationFlow<T> internal constructor(
                 existingStep ?: NavigationInstruction.Open.OpenInternal(
                     navigationDirection = step.direction,
                     navigationKey = step.key,
-                    resultKey = FlowStepKey(step.stepId),
+                    resultKey = step,
                     resultId = resultChannelId,
                     additionalData = mutableMapOf(
                         IS_PUSHED_IN_FLOW to (step.direction is NavigationDirection.Push)
@@ -158,14 +115,18 @@ public class NavigationFlow<T> internal constructor(
 }
 
 public fun <T> ViewModel.registerForFlowResult(
-    savedStateHandle: SavedStateHandle?,
+    savedStateHandle: SavedStateHandle,
     flow: NavigationFlowScope.() -> T,
     onCompleted: (T) -> Unit,
 ): PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationFlow<T>>> {
     return PropertyDelegateProvider { thisRef, property ->
+        val navigationHandle = getNavigationHandle()
+        val resultManager = FlowResultManager.create(navigationHandle, savedStateHandle)
+
         val navigationFlow = NavigationFlow(
             savedStateHandle = savedStateHandle,
-            navigation = getNavigationHandle(),
+            navigation = navigationHandle,
+            resultManager = resultManager,
             registerForNavigationResult = { onClosed, onResult ->
                 registerForNavigationResultWithKey(
                     onClosed = onClosed,
@@ -175,7 +136,6 @@ public fun <T> ViewModel.registerForFlowResult(
             flow = flow,
             onCompleted = onCompleted,
         )
-
         ReadOnlyProperty { _, _ -> navigationFlow }
     }
 }

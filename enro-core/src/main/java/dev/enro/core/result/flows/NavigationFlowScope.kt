@@ -8,62 +8,43 @@ public class NavigationFlowScope internal constructor(
     internal val resultManager: FlowResultManager
 ) {
     @PublishedApi
-    internal val steps: MutableList<FlowStep> = mutableListOf()
+    internal val steps: MutableList<FlowStep<out Any>> = mutableListOf()
 
     public inline fun <reified T : Any> push(
-        dependsOn: List<Any> = emptyList(),
-        noinline key: () -> NavigationKey.SupportsPush.WithResult<T>,
-    ): T {
-        val baseId = key::class.java.name
-        val count = steps.count { it.stepId.startsWith(baseId) }
-        val step = FlowStep(
-            stepId = "$baseId@$count",
-            key = key(),
-            dependsOn = dependsOn.contentHash(),
-            direction = NavigationDirection.Push,
-        )
-        steps.add(step)
-
-        val completedStep = resultManager.results[step.stepId]?.let {
-            if (it.result !is T) {
-                resultManager.results.remove(it.stepId)
-                return@let null
-            }
-            if (it.dependsOn != step.dependsOn) {
-                resultManager.results.remove(it.stepId)
-                return@let null
-            }
-            it
-        }
-        return completedStep?.result as? T ?: throw NoResultForPush(step)
-    }
+        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.SupportsPush.WithResult<T>,
+    ): T = step(
+        direction = NavigationDirection.Push,
+        block = block,
+    )
 
     public inline fun <reified T : Any> present(
-        dependsOn: List<Any> = emptyList(),
-        noinline key: () -> NavigationKey.SupportsPresent.WithResult<T>,
-    ): T {
-        val baseId = key::class.java.name
-        val count = steps.count { it.stepId.startsWith(baseId) }
-        val step = FlowStep(
-            stepId = "$baseId@$count",
-            key = key(),
-            dependsOn = dependsOn.contentHash(),
-            direction = NavigationDirection.Present,
-        )
-        steps.add(step)
+        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.SupportsPresent.WithResult<T>,
+    ): T = step(
+        direction = NavigationDirection.Present,
+        block = block,
+    )
 
-        val completedStep = resultManager.results[step.stepId]?.let {
-            if (it.result !is T) {
-                resultManager.results.remove(it.stepId)
-                return@let null
-            }
-            if (it.dependsOn != step.dependsOn) {
-                resultManager.results.remove(it.stepId)
-                return@let null
-            }
-            it
+    @PublishedApi
+    internal inline fun <reified T: Any> step(
+        direction: NavigationDirection,
+        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithResult<T>,
+    ) : T {
+        val baseId = block::class.java.name
+        val count = steps.count { it.stepId.startsWith(baseId) }
+        val builder = FlowStepBuilder<T>()
+        val key = builder.scope.run(block)
+        val step = builder.build(
+            stepId = "$baseId@$count",
+            navigationKey = key,
+            navigationDirection = direction,
+        )
+        val defaultResult = builder.getDefaultResult()
+        if (defaultResult != null) {
+            resultManager.setDefault(step, defaultResult)
         }
-        return completedStep?.result as? T ?: throw NoResultForPresent(step)
+        steps.add(step)
+        val result = resultManager.get(step)
+        return result ?: throw NoResult(step)
     }
 
     public fun escape(): Nothing {
@@ -71,10 +52,7 @@ public class NavigationFlowScope internal constructor(
     }
 
     @PublishedApi
-    internal class NoResultForPush(val step: FlowStep) : RuntimeException()
-
-    @PublishedApi
-    internal class NoResultForPresent(val step: FlowStep) : RuntimeException()
+    internal class NoResult(val step: FlowStep<out Any>) : RuntimeException()
 
     @PublishedApi
     internal class Escape : RuntimeException()

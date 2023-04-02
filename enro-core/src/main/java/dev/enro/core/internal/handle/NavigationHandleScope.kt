@@ -5,6 +5,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import dev.enro.core.NavigationHandle
 import dev.enro.core.controller.*
 import dev.enro.core.controller.usecase.CreateResultChannel
+import dev.enro.core.controller.usecase.NavigationHandleExtras
 
 internal class NavigationHandleScope(
     navigationController: NavigationController,
@@ -17,6 +18,7 @@ internal class NavigationHandleScope(
         registration = {
             register { requireNotNull(boundNavigationHandle) }
             register { CreateResultChannel(get(), get()) }
+            register { NavigationHandleExtras() }
         }
     )
 

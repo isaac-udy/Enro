@@ -36,9 +36,3 @@ annotation class GeneratedNavigationComponent(
 @Target(AnnotationTarget.FUNCTION)
 @Deprecated("This annotation is no longer required by Enro")
 annotation class ExperimentalComposableDestination
-
-@RequiresOptIn(
-    message = "This Enro API is experimental and may change in the future",
-    level = RequiresOptIn.Level.ERROR
-)
-annotation class ExperimentalEnroApi
