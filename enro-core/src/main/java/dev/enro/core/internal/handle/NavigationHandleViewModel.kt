@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import dev.enro.core.*
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.usecase.ExecuteCloseInstruction
 import dev.enro.core.controller.usecase.ExecuteContainerOperationInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
@@ -36,7 +35,7 @@ internal open class NavigationHandleViewModel(
     private val lifecycleRegistry = LifecycleRegistry(this)
 
     @Suppress("LeakingThis")
-    final override val dependencyScope: EnroDependencyScope = dependencyScope.bind(this)
+    final override val dependencyScope: NavigationHandleScope = dependencyScope.bind(this)
 
     final override val lifecycle: Lifecycle get() {
         return lifecycleRegistry
@@ -87,6 +86,7 @@ internal open class NavigationHandleViewModel(
 
     override fun onCleared() {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        dependencyScope.close()
         dependencyScope.container.clear()
         navigationContext = null
     }

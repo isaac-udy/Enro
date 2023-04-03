@@ -6,10 +6,11 @@ import dev.enro.core.NavigationHandle
 import dev.enro.core.controller.*
 import dev.enro.core.controller.usecase.CreateResultChannel
 import dev.enro.core.controller.usecase.NavigationHandleExtras
+import java.io.Closeable
 
 internal class NavigationHandleScope(
     navigationController: NavigationController,
-) : EnroDependencyScope {
+) : EnroDependencyScope, Closeable {
 
     private var boundNavigationHandle: NavigationHandle? = null
 
@@ -31,5 +32,14 @@ internal class NavigationHandleScope(
             }
         )
         return this
+    }
+
+    override fun close() {
+        container.bindings.values.forEach {
+            if(it.isInitialized) {
+                val closeable = it.value as? Closeable ?: return@forEach
+                closeable.close()
+            }
+        }
     }
 }
