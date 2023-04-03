@@ -28,14 +28,14 @@ internal class GetNavigationAnimations(
         val opening = mutableMapOf<Int, MutableList<OpeningTransition>>()
         var override: NavigationAnimationOverride? = navigationAnimationOverride
         while(override != null) {
-            override.opening.forEach {
+            override.opening.reversed().forEach {
                 opening.getOrPut(it.priority) { mutableListOf() }
                     .add(it)
             }
             override = override.parent
         }
         opening.keys.sortedDescending()
-            .flatMap { opening[it].orEmpty().reversed() }
+            .flatMap { opening[it].orEmpty() }
             .forEach {
                 return it.transition(exiting, entering) ?: return@forEach
             }
@@ -46,14 +46,14 @@ internal class GetNavigationAnimations(
         val closing = mutableMapOf<Int, MutableList<ClosingTransition>>()
         var override: NavigationAnimationOverride? = navigationAnimationOverride
         while(override != null) {
-            override.closing.forEach {
+            override.closing.reversed().forEach {
                 closing.getOrPut(it.priority) { mutableListOf() }
                     .add(it)
             }
             override = override.parent
         }
         closing.keys.sortedDescending()
-            .flatMap { closing[it].orEmpty().reversed() }
+            .flatMap { closing[it].orEmpty() }
             .forEach {
                 return it.transition(exiting, entering) ?: return@forEach
             }
