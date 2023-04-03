@@ -73,7 +73,7 @@ class HiltViewModelCreationTests {
 
         // TODO: Once Enro 2.0 is released, this hacky way of checking the current top composable can be removed
         val activeNavigation = waitOnMain {
-            fragment.context.containerManager.activeContainer?.activeContext?.getNavigationHandle()
+            fragment.context.containerManager.activeContainer?.childContext?.getNavigationHandle()
         }
         Thread.sleep(1000)
         assertTrue(activeNavigation.key is Compose.Key)

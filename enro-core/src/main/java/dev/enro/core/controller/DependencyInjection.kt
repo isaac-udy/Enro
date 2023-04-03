@@ -33,9 +33,11 @@ internal class Dependency<T: Any>(
     private val container: EnroDependencyContainer,
     private val createDependency: EnroDependencyScope.() -> T
 ) {
-    val value: T by lazy {
+    private val lazy = lazy {
         container.createDependency()
     }
+    val isInitialized get() = lazy.isInitialized()
+    val value: T by lazy
 }
 
 public class EnroDependencyContainer internal constructor(

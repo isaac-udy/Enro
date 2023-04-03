@@ -27,7 +27,7 @@ public class FragmentNavigationContainer internal constructor(
     initialBackstack: NavigationBackstack
 ) : NavigationContainer(
     key = key,
-    parentContext = parentContext,
+    context = parentContext,
     contextType = Fragment::class.java,
     acceptsNavigationKey = accept,
     emptyBehavior = emptyBehavior,
@@ -45,7 +45,7 @@ public class FragmentNavigationContainer internal constructor(
             containerView?.isVisible = value
         }
 
-    override val activeContext: NavigationContext<out Fragment>?
+    override val childContext: NavigationContext<out Fragment>?
         get() {
             val fragment =  backstack.lastOrNull()?.let { fragmentManager.findFragmentByTag(it.instructionId) }
                 ?: fragmentManager.findFragmentById(containerId)
@@ -232,8 +232,8 @@ public class FragmentNavigationContainer internal constructor(
         )
 
         val fragment = FragmentFactory.createFragment(
-            parentContext = parentContext,
-            instruction = hostInstructionAs(type, parentContext, instruction)
+            parentContext = context,
+            instruction = hostInstructionAs(type, context, instruction)
         )
 
         val restoredState = restoredFragmentStates.remove(instruction.instructionId)
@@ -262,11 +262,11 @@ public class FragmentNavigationContainer internal constructor(
         active: FragmentAndInstruction?
     ) {
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
-        val entering = (active?.let { getAnimationsForEntering(it.instruction) } ?: DefaultAnimations.none.entering).asResource(parentContext.activity.theme)
-        val exiting = (currentTransition?.exitingInstruction?.let { getAnimationsForExiting(it) } ?: DefaultAnimations.none.exiting).asResource(parentContext.activity.theme)
+        val entering = (active?.let { getAnimationsForEntering(it.instruction) } ?: DefaultAnimations.none.entering).asResource(context.activity.theme)
+        val exiting = (currentTransition?.exitingInstruction?.let { getAnimationsForExiting(it) } ?: DefaultAnimations.none.exiting).asResource(context.activity.theme)
 
         val noOpEntering = when {
-            exiting.isAnimator(parentContext.activity) -> R.animator.animator_example_no
+            exiting.isAnimator(context.activity) -> R.animator.animator_example_no
             else -> R.anim.enro_no_op_enter_animation
         }
 
@@ -276,17 +276,17 @@ public class FragmentNavigationContainer internal constructor(
         // for the exit animation, in the case that the enter/exit anim/animator types do not match.
         val exitingId = when {
             previouslyActiveFragment is NavigationHost -> when {
-                entering.isAnimator(parentContext.activity) -> R.animator.animator_no_op_exit
+                entering.isAnimator(context.activity) -> R.animator.animator_no_op_exit
                 else -> R.anim.enro_no_op_exit_animation
             }
             exiting.id == 0 -> 0
-            entering.isAnimator(parentContext.activity)
-                    && !exiting.isAnimator(parentContext.activity) -> {
+            entering.isAnimator(context.activity)
+                    && !exiting.isAnimator(context.activity) -> {
                 Log.e("Enro", "Fragment enter animation was 'animator' and exit was 'anim', falling back to default animator for exit animations")
                 R.animator.animator_enro_fallback_exit
             }
-            entering.isAnim(parentContext.activity)
-                    && !exiting.isAnim(parentContext.activity) -> {
+            entering.isAnim(context.activity)
+                    && !exiting.isAnim(context.activity) -> {
                 Log.e("Enro", "Fragment enter animation was 'anim' and exit was 'animator', falling back to default anim for exit animations")
                 R.anim.enro_fallback_exit
             }
@@ -312,9 +312,9 @@ private data class FragmentAndInstruction(
 
 public val FragmentNavigationContainer.containerView: View?
     get() {
-        return when (parentContext.contextReference) {
-            is Activity -> parentContext.contextReference.findViewById(containerId)
-            is Fragment -> parentContext.contextReference.view?.findViewById(containerId)
+        return when (context.contextReference) {
+            is Activity -> context.contextReference.findViewById(containerId)
+            is Fragment -> context.contextReference.view?.findViewById(containerId)
             else -> null
         }
     }

@@ -13,7 +13,7 @@ public class NavigationContainerProperty<T : NavigationContainer> @PublishedApi 
 
     internal val navigationContainer: T by lazy {
         navigationContainerProducer().also {
-            it.parentContext.containerManager.addContainer(it)
+            it.context.containerManager.addContainer(it)
         }
     }
 

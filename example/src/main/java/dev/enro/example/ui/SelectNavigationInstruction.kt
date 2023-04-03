@@ -19,7 +19,6 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.compose.navigationHandle
-import java.util.*
 
 class SelectNavigationInstructionState {
     var instructions: List<Pair<String, NavigationInstruction?>> by mutableStateOf(emptyList())
@@ -94,9 +93,7 @@ fun rememberSelectNavigationInstructionState(): SelectNavigationInstructionState
                                     .clickable {
                                         state.dismiss()
                                         val instruction = when (val instruction = it.second) {
-                                            is NavigationInstruction.Open<*> -> (it.second as NavigationInstruction.Open<*>).copy(
-                                                UUID.randomUUID().toString()
-                                            )
+                                            is NavigationInstruction.Open<*> -> (it.second as NavigationInstruction.Open<*>).copy()
                                             else -> instruction
                                         }
                                         instruction ?: return@clickable

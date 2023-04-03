@@ -94,12 +94,12 @@ fun assertPushContainerType(
     InstrumentationRegistry.getInstrumentation().runOnMainSync {
         fun NavigationContainer.hasActiveContext(navigationContext: NavigationContext<*>): Boolean {
             val isActiveContextComposeHost =
-                activeContext?.contextReference is AbstractFragmentHostForComposable
+                childContext?.contextReference is AbstractFragmentHostForComposable
 
             val isActiveContextInChildContainer =
-                activeContext?.containerManager?.activeContainer?.activeContext == navigationContext
+                childContext?.containerManager?.activeContainer?.childContext == navigationContext
 
-            return activeContext == navigationContext || (isActiveContextComposeHost && isActiveContextInChildContainer)
+            return childContext == navigationContext || (isActiveContextComposeHost && isActiveContextInChildContainer)
         }
 
         fun <T : Any> withParentContext(parentContext: NavigationContext<*>?, block: (parentContext: NavigationContext<*>) -> T?) : T? {
@@ -161,7 +161,7 @@ fun <Context : Any, Key : NavigationKey> TestNavigationContext<Context, Key>.ass
     }
 
     val containingContainer = containerManager.containers.firstOrNull {
-        it.activeContext?.contextReference == context
+        it.childContext?.contextReference == context
     }
     assertNotNull(containingContainer)
     return this

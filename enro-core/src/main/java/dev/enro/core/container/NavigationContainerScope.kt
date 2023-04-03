@@ -12,7 +12,7 @@ internal class NavigationContainerScope(
     owner: NavigationContainer,
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
 ) : EnroDependencyScope {
-    private val parentScope = owner.parentContainer()?.dependencyScope ?: owner.parentContext.controller.dependencyScope
+    private val parentScope = owner.parentContainer()?.dependencyScope ?: owner.context.controller.dependencyScope
 
     override val container: EnroDependencyContainer = EnroDependencyContainer(
         parentScope = parentScope,
@@ -20,7 +20,7 @@ internal class NavigationContainerScope(
             register {
                 val parentOverride = parentScope.get<GetNavigationAnimations>().navigationAnimationOverride
                 GetNavigationAnimations(
-                    controller = owner.parentContext.controller,
+                    controller = owner.context.controller,
                     navigationAnimationOverride = NavigationAnimationOverrideBuilder()
                         .apply(animations)
                         .build(parentOverride)

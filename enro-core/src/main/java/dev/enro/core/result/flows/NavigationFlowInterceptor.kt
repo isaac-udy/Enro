@@ -19,7 +19,7 @@ internal object NavigationFlowInterceptor : NavigationInstructionInterceptor {
         val navigationKey = openInstruction.navigationKey
         if (navigationKey !is NavigationKey.WithResult<*>) return instruction
 
-        val isFlowResult = openInstruction.additionalData[NavigationFlow.IS_PUSHED_IN_FLOW] as? Boolean ?: false
+        val isFlowResult = openInstruction.extras[NavigationFlow.IS_PUSHED_IN_FLOW] as? Boolean ?: false
         if (!isFlowResult) return instruction
 
         val addPendingResult = context.controller.dependencyScope.get<AddPendingResult>()

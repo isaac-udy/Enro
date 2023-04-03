@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 public abstract class NavigationContainer(
     public val key: NavigationContainerKey,
     public val contextType: Class<out Any>,
-    public val parentContext: NavigationContext<*>,
+    public val context: NavigationContext<*>,
     public val emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
@@ -48,16 +48,16 @@ public abstract class NavigationContainer(
 
     internal val interceptor = NavigationInterceptorBuilder()
         .apply(interceptor)
-        .build(parentContext.controller.dependencyScope)
+        .build(context.controller.dependencyScope)
 
-    public abstract val activeContext: NavigationContext<*>?
+    public abstract val childContext: NavigationContext<*>?
     public abstract val isVisible: Boolean
 
     public override val isActive: Boolean
-        get() = parentContext.containerManager.activeContainer == this
+        get() = context.containerManager.activeContainer == this
 
     public override fun setActive() {
-        parentContext.containerManager.setActiveContainer(this)
+        context.containerManager.setActiveContainer(this)
     }
 
     private val mutableBackstackFlow: MutableStateFlow<NavigationBackstack> = MutableStateFlow(initialBackstack)
@@ -71,8 +71,8 @@ public abstract class NavigationContainer(
     private var renderJob: Job? = null
 
     init {
-        parentContext.lifecycleOwner.lifecycleScope.launch {
-            parentContext.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        context.lifecycleOwner.lifecycleScope.launch {
+            context.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 if(currentTransition === initialTransition) return@repeatOnLifecycle
                 performBackstackUpdate(NavigationBackstackTransition(initialBackstack to backstack))
             }
@@ -104,7 +104,7 @@ public abstract class NavigationContainer(
         renderJob?.cancel()
         val processedBackstack = Compatibility.NavigationContainer
             .processBackstackForDeprecatedInstructionTypes(backstack, acceptsNavigationKey)
-            .ensureOpeningTypeIsSet(parentContext)
+            .ensureOpeningTypeIsSet(context)
             .processBackstackForPreviouslyActiveContainer()
 
         requireBackstackIsAccepted(processedBackstack)
@@ -122,8 +122,8 @@ public abstract class NavigationContainer(
         if (onBackstackUpdated(transition)) {
             return
         }
-        renderJob = parentContext.lifecycleOwner.lifecycleScope.launch {
-            parentContext.lifecycle.withCreated {}
+        renderJob = context.lifecycleOwner.lifecycleScope.launch {
+            context.lifecycle.withCreated {}
             while (!onBackstackUpdated(transition) && isActive) {
                 delay(16)
             }
@@ -142,13 +142,13 @@ public abstract class NavigationContainer(
                 && acceptsDirection(instruction.navigationDirection)
                 && canInstructionBeHostedAs(
             hostType = contextType,
-            navigationContext = parentContext,
+            navigationContext = context,
             instruction = instruction
         )
     }
 
     protected fun restoreOrSetBackstack(backstack: NavigationBackstack) {
-        val savedStateRegistry = parentContext.savedStateRegistryOwner.savedStateRegistry
+        val savedStateRegistry = context.savedStateRegistryOwner.savedStateRegistry
 
         savedStateRegistry.unregisterSavedStateProvider(key.name)
         savedStateRegistry.registerSavedStateProvider(key.name) { save() }
@@ -161,8 +161,8 @@ public abstract class NavigationContainer(
             }
         }
         if (!savedStateRegistry.isRestored) {
-            parentContext.lifecycleOwner.lifecycleScope.launch {
-                parentContext.lifecycle.withCreated {
+            context.lifecycleOwner.lifecycleScope.launch {
+                context.lifecycle.withCreated {
                     initialise()
                 }
             }
@@ -191,8 +191,8 @@ public abstract class NavigationContainer(
                     /* If allow empty, pass through to default behavior */
                 }
                 EmptyBehavior.CloseParent -> {
-                    if (parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-                        parentContext.getNavigationHandle().close()
+                    if (context.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                        context.getNavigationHandle().close()
                     }
                     return true
                 }
@@ -205,32 +205,31 @@ public abstract class NavigationContainer(
     }
 
     private fun setActiveContainerFrom(backstackTransition: NavigationBackstackTransition) {
-        // TODO
-        if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
-        if (!parentContext.containerManager.containers.contains(this)) return
+        if (!context.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
+        if (!context.containerManager.containers.contains(this)) return
 
         val isClosing = backstackTransition.lastInstruction is NavigationInstruction.Close
         val isEmpty = backstackTransition.activeBackstack.isEmpty()
 
         if (!isClosing) {
-            parentContext.containerManager.setActiveContainer(this)
+            context.containerManager.setActiveContainer(this)
             return
         }
 
         if (backstackTransition.exitingInstruction != null) {
-            parentContext.containerManager.setActiveContainerByKey(
+            context.containerManager.setActiveContainerByKey(
                 backstackTransition.exitingInstruction.internal.previouslyActiveContainer
             )
         }
 
-        if (isActive && isEmpty) parentContext.containerManager.setActiveContainer(null)
+        if (isActive && isEmpty) context.containerManager.setActiveContainer(null)
     }
 
     private fun NavigationBackstack.processBackstackForPreviouslyActiveContainer(): NavigationBackstack {
         return map {
             if (it.internal.previouslyActiveContainer != null) return@map it
             it.internal.copy(
-                previouslyActiveContainer = parentContext.containerManager.activeContainer?.key
+                previouslyActiveContainer = context.containerManager.activeContainer?.key
             )
         }.toBackstack()
     }
@@ -243,10 +242,10 @@ public abstract class NavigationContainer(
 }
 
 private fun NavigationContainer.getTransitionForInstruction(instruction: AnyOpenInstruction): NavigationBackstackTransition {
-    val isHosted = parentContext.contextReference is NavigationHost
+    val isHosted = context.contextReference is NavigationHost
     if (!isHosted) return currentTransition
 
-    val parentContainer = parentContext.parentContainer() ?: return currentTransition
+    val parentContainer = context.parentContainer() ?: return currentTransition
     val parentRoot = parentContainer.currentTransition.activeBackstack.getOrNull(0)
     val parentActive = parentContainer.currentTransition.activeBackstack.active
     val thisRoot = currentTransition.activeBackstack.getOrNull(0)

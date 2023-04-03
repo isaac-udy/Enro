@@ -176,7 +176,7 @@ internal class ComposableDestinationOwner(
         backstackState: List<AnyOpenInstruction>,
         parentContainer: NavigationContainer,
     ) {
-        val parentLifecycle = parentContainer.parentContext.lifecycleOwner.rememberLifecycleState()
+        val parentLifecycle = parentContainer.context.lifecycleOwner.rememberLifecycleState()
         DisposableEffect(backstackState, parentLifecycle) {
             val isActive = backstackState.lastOrNull() == instruction
             val isInBackstack = backstackState.contains(instruction)
@@ -259,6 +259,6 @@ internal class ComposableDestinationOwner(
     }
 }
 
-internal val ComposableDestinationOwner.navigationController get() = parentContainer.parentContext.controller
-internal val ComposableDestinationOwner.parentSavedStateRegistry get() = parentContainer.parentContext.savedStateRegistryOwner.savedStateRegistry
-internal val ComposableDestinationOwner.activity: ComponentActivity get() = parentContainer.parentContext.activity
+internal val ComposableDestinationOwner.navigationController get() = parentContainer.context.controller
+internal val ComposableDestinationOwner.parentSavedStateRegistry get() = parentContainer.context.savedStateRegistryOwner.savedStateRegistry
+internal val ComposableDestinationOwner.activity: ComponentActivity get() = parentContainer.context.activity

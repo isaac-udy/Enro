@@ -18,7 +18,6 @@ public class NavigationBackstackTransition(
     // The last instruction is considered to be a Close if the previously active item has been removed from the list,
     // and the newly active item is not present in the initial list
     private val isClosing = (previouslyActiveIndexInBackstack == -1 && currentlyActiveIndexInPrevious != -1)
-            || (previouslyActiveCountInPrevious < previouslyActiveCountInActive && currentlyActiveIndexInPrevious >= 0)
 
     public val lastInstruction: NavigationInstruction =  when {
         isClosing -> NavigationInstruction.Close

@@ -92,7 +92,7 @@ public class NavigationFlow<T> internal constructor(
                     navigationKey = step.key,
                     resultKey = step,
                     resultId = resultChannelId,
-                    additionalData = mutableMapOf(
+                    extras = mutableMapOf(
                         IS_PUSHED_IN_FLOW to (step.direction is NavigationDirection.Push)
                     )
                 )

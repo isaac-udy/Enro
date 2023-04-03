@@ -27,7 +27,7 @@ public class ComposableNavigationContainer internal constructor(
     initialBackstack: NavigationBackstack,
 ) : NavigationContainer(
     key = key,
-    parentContext = parentContext,
+    context = parentContext,
     contextType = ComposableDestination::class.java,
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
@@ -47,7 +47,7 @@ public class ComposableNavigationContainer internal constructor(
             }
     }
 
-    override val activeContext: NavigationContext<out ComposableDestination>? by derivedStateOf {
+    override val childContext: NavigationContext<out ComposableDestination>? by derivedStateOf {
         currentDestination?.destination?.context
     }
 
@@ -62,7 +62,7 @@ public class ComposableNavigationContainer internal constructor(
     // we want to take the animations provided by the NavigationHost's NavigationContainer,
     // and sometimes skip other animation jobs
     private val shouldTakeAnimationsFromParentContainer: Boolean
-        get() = parentContext.contextReference is NavigationHost
+        get() = context.contextReference is NavigationHost
                 && backstack.size <= 1
                 && currentTransition?.lastInstruction != NavigationInstruction.Close
 
@@ -113,8 +113,8 @@ public class ComposableNavigationContainer internal constructor(
     override fun onBackstackUpdated(
         transition: NavigationBackstackTransition
     ): Boolean {
-        if (!parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return false
-        if (parentContext.runCatching { activity }.getOrNull() == null) return false
+        if (!context.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return false
+        if (context.runCatching { activity }.getOrNull() == null) return false
 
         val activeDestinations = destinationOwners
             .filter {
@@ -160,7 +160,7 @@ public class ComposableNavigationContainer internal constructor(
     }
 
     private fun createDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner {
-        val controller = parentContext.controller
+        val controller = context.controller
         val composeKey = instruction.navigationKey
         val destination =
             (controller.bindingForKeyType(composeKey::class) as ComposableNavigationBinding<NavigationKey, ComposableDestination>)
@@ -172,20 +172,20 @@ public class ComposableNavigationContainer internal constructor(
             instruction = instruction,
             destination = destination,
             viewModelStore = viewModelStores.getOrPut(instruction.instructionId) { ViewModelStore() },
-            onNavigationContextCreated = parentContext.controller.dependencyScope.get(),
-            onNavigationContextSaved = parentContext.controller.dependencyScope.get(),
-            composeEnvironment = parentContext.controller.dependencyScope.get(),
+            onNavigationContextCreated = context.controller.dependencyScope.get(),
+            onNavigationContextSaved = context.controller.dependencyScope.get(),
+            composeEnvironment = context.controller.dependencyScope.get(),
             savedInstanceState = restoredState,
         )
     }
 
     @OptIn(ExperimentalMaterialApi::class)
     private fun setVisibilityForBackstack(transition: NavigationBackstackTransition) {
-        val isParentContextStarted = parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+        val isParentContextStarted = context.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
         if (!isParentContextStarted && shouldTakeAnimationsFromParentContainer) return
 
         val isParentBeingRemoved = when {
-            parentContext.contextReference is Fragment && !parentContext.contextReference.isAdded -> true
+            context.contextReference is Fragment && !context.contextReference.isAdded -> true
             else -> false
         }
         val presented = transition.activeBackstack.takeLastWhile { it.navigationDirection is NavigationDirection.Present }.toSet()
@@ -215,7 +215,7 @@ public class ComposableNavigationContainer internal constructor(
         registrationStrategy: ContainerRegistrationStrategy
     ): Boolean {
         val registration = remember(key, registrationStrategy) {
-            val containerManager = parentContext.containerManager
+            val containerManager = context.containerManager
             containerManager.addContainer(this@ComposableNavigationContainer)
             Closeable { destroy() }
         }
@@ -229,7 +229,7 @@ public class ComposableNavigationContainer internal constructor(
         }
 
         DisposableEffect(key) {
-            val containerManager = parentContext.containerManager
+            val containerManager = context.containerManager
             onDispose {
                 if (containerManager.activeContainer == this@ComposableNavigationContainer) {
                     val previouslyActiveContainer = backstack.active?.internal?.previouslyActiveContainer?.takeIf { it != key }
@@ -244,8 +244,8 @@ public class ComposableNavigationContainer internal constructor(
                     setVisibilityForBackstack(NavigationBackstackTransition(backstack to backstack))
                 }
             }
-            parentContext.lifecycle.addObserver(lifecycleObserver)
-            onDispose { parentContext.lifecycle.removeObserver(lifecycleObserver) }
+            context.lifecycle.addObserver(lifecycleObserver)
+            onDispose { context.lifecycle.removeObserver(lifecycleObserver) }
         }
         return true
     }

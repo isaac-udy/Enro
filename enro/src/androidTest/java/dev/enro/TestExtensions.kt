@@ -89,7 +89,7 @@ fun <ContextType: Any, KeyType: NavigationKey> findContextFrom(
         activeContext.containerManager.containers
             .filter { it.acceptsDirection(NavigationDirection.Present) }
             .forEach { presentationContainer ->
-                presentationContainer.activeContext
+                presentationContainer.childContext
                     ?.let {
                         findContextFrom(contextType, keyType, it, selector)
                     }
@@ -98,7 +98,7 @@ fun <ContextType: Any, KeyType: NavigationKey> findContextFrom(
                     }
             }
 
-        activeContext = activeContext.containerManager.activeContainer?.activeContext
+        activeContext = activeContext.containerManager.activeContainer?.childContext
             ?: when(val reference = activeContext.contextReference) {
                 is FragmentActivity -> reference.supportFragmentManager.primaryNavigationFragment?.navigationContext
                 is Fragment -> reference.childFragmentManager.primaryNavigationFragment?.navigationContext

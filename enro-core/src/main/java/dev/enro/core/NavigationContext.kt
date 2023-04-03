@@ -79,7 +79,7 @@ internal class ComposeContext<ContextType : ComposableDestination>(
     contextReference: ContextType
 ) : NavigationContext<ContextType>(contextReference) {
     override val controller: NavigationController get() = contextReference.owner.activity.application.navigationController
-    override val parentContext: NavigationContext<*> get() = contextReference.owner.parentContainer.parentContext
+    override val parentContext: NavigationContext<*> get() = contextReference.owner.parentContainer.context
     override val lifecycle: Lifecycle get() = contextReference.owner.lifecycle
     override val arguments: Bundle by lazy { bundleOf(OPEN_ARG to contextReference.owner.instruction) }
 
@@ -107,7 +107,7 @@ public fun NavigationContext<*>.parentContainer(): NavigationContainer? {
 
     return getParentContainerFrom(parentContext)
 }
-public fun NavigationContainer.parentContainer(): NavigationContainer? = parentContext.parentContainer()
+public fun NavigationContainer.parentContainer(): NavigationContainer? = context.parentContainer()
 
 @AdvancedEnroApi
 public fun NavigationContext<*>.directParentContainer(): NavigationContainer? {
@@ -129,12 +129,12 @@ public fun NavigationContext<*>.findRootContainer(): NavigationContainer? {
     }
     return null
 }
-public fun NavigationContainer.findRootContainer(): NavigationContainer? = parentContext.findRootContainer()
+public fun NavigationContainer.findRootContainer(): NavigationContainer? = context.findRootContainer()
 
 public fun NavigationContext<*>.requireRootContainer(): NavigationContainer {
     return requireNotNull(findRootContainer())
 }
-public fun NavigationContainer.requireRootContainer(): NavigationContainer = parentContext.requireRootContainer()
+public fun NavigationContainer.requireRootContainer(): NavigationContainer = context.requireRootContainer()
 
 public fun NavigationContext<*>.findContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer? {
     val seen = mutableSetOf<NavigationContext<*>>()
@@ -149,7 +149,7 @@ public fun NavigationContext<*>.findContainer(navigationContainerKey: Navigation
         }
         context.containerManager.containers.forEach { container ->
             if (container.key == navigationContainerKey) return container
-            val childContext = container.activeContext ?: return@forEach
+            val childContext = container.childContext ?: return@forEach
             val found = findFrom(childContext)
             if (found != null) return found
         }
@@ -159,13 +159,12 @@ public fun NavigationContext<*>.findContainer(navigationContainerKey: Navigation
 
     return findFrom(this)
 }
-public fun NavigationContainer.findContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer? = parentContext.findContainer(navigationContainerKey)
+public fun NavigationContainer.findContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer? = context.findContainer(navigationContainerKey)
 
 public fun NavigationContext<*>.requireContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer {
     return requireNotNull(findContainer(navigationContainerKey))
 }
-public fun NavigationContainer.requireContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer = parentContext.requireContainer(navigationContainerKey)
-
+public fun NavigationContainer.requireContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer = context.requireContainer(navigationContainerKey)
 
 public val NavigationContext<*>.activity: ComponentActivity
     get() = when (contextReference) {
@@ -175,20 +174,25 @@ public val NavigationContext<*>.activity: ComponentActivity
         else -> throw EnroException.UnreachableState()
     }
 
-@PublishedApi
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
-internal val <T : ComponentActivity> T.navigationContext: ActivityContext<T>
+public val <T : ComponentActivity> T.navigationContext: NavigationContext<T>
     get() = getNavigationHandleViewModel().navigationContext as ActivityContext<T>
 
-@PublishedApi
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
-internal val <T : Fragment> T.navigationContext: FragmentContext<T>
+public val <T : Fragment> T.navigationContext: NavigationContext<T>
     get() = getNavigationHandleViewModel().navigationContext as FragmentContext<T>
 
 @PublishedApi
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 internal val <T : ComposableDestination> T.navigationContext: ComposeContext<T>
     get() = context as ComposeContext<T>
+
+public val navigationContext: NavigationContext<*>
+    @Composable
+    get() {
+        val viewModelStoreOwner = requireNotNull(LocalViewModelStoreOwner.current)
+        return remember(viewModelStoreOwner) { requireNotNull(viewModelStoreOwner.navigationContext) }
+    }
 
 internal val ViewModelStoreOwner.navigationContext: NavigationContext<*>?
     get() = getNavigationHandleViewModel().navigationContext
@@ -209,8 +213,18 @@ public fun NavigationContext<*>.parentContext(): NavigationContext<*>? {
                 null -> fragment.requireActivity().navigationContext
                 else -> parentFragment.navigationContext
             }
-        is ComposeContext<out ComposableDestination> -> contextReference.owner.parentContainer.parentContext
+        is ComposeContext<out ComposableDestination> -> contextReference.owner.parentContainer.context
     }
+}
+
+public fun NavigationContext<*>.activeChildContext(): NavigationContext<*>? {
+    val fragmentManager = when (contextReference) {
+        is FragmentActivity -> contextReference.supportFragmentManager
+        is Fragment -> contextReference.childFragmentManager
+        else -> null
+    }
+    return containerManager.activeContainer?.childContext
+        ?: fragmentManager?.primaryNavigationFragment?.navigationContext
 }
 
 public fun NavigationContext<*>.leafContext(): NavigationContext<*> {
@@ -220,7 +234,7 @@ public fun NavigationContext<*>.leafContext(): NavigationContext<*> {
         is Fragment -> contextReference.childFragmentManager
         else -> null
     }
-    return containerManager.activeContainer?.activeContext?.leafContext()
+    return containerManager.activeContainer?.childContext?.leafContext()
         ?: fragmentManager?.primaryNavigationFragment?.navigationContext?.leafContext()
         ?: this
 }

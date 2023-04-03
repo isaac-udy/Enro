@@ -19,7 +19,7 @@ internal class ActivityNavigationContainer internal constructor(
     activityContext: NavigationContext<out ComponentActivity>,
 ) : NavigationContainer(
     key = NavigationContainerKey.FromName("ActivityNavigationContainer"),
-    parentContext = activityContext,
+    context = activityContext,
     contextType = Activity::class.java,
     emptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor = { },
@@ -27,14 +27,14 @@ internal class ActivityNavigationContainer internal constructor(
     acceptsNavigationKey = { true },
     acceptsDirection = { true },
 ) {
-    override val activeContext: NavigationContext<*>
-        get() = parentContext
+    override val childContext: NavigationContext<*>
+        get() = context
 
     override val isVisible: Boolean
-        get() = parentContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+        get() = context.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
 
     private val rootInstruction: AnyOpenInstruction
-        get() = activeContext.getNavigationHandle().instruction
+        get() = childContext.getNavigationHandle().instruction
 
     init {
         setBackstack(backstackOf(rootInstruction))
@@ -46,14 +46,14 @@ internal class ActivityNavigationContainer internal constructor(
 
         val activeInstructionIsPresent = transition.activeBackstack.any { it.instructionId == rootInstruction.instructionId }
         if (!activeInstructionIsPresent) {
-            ActivityCompat.finishAfterTransition(activeContext.activity)
+            ActivityCompat.finishAfterTransition(childContext.activity)
             val animations = getNavigationAnimations.closing(
                 exiting = rootInstruction,
                 entering = transition.activeBackstack.active,
             )
-            activeContext.activity.overridePendingTransition(
-                animations.entering.asResource(activeContext.activity.theme).id,
-                animations.exiting.asResource(activeContext.activity.theme).id
+            childContext.activity.overridePendingTransition(
+                animations.entering.asResource(childContext.activity.theme).id,
+                animations.exiting.asResource(childContext.activity.theme).id
             )
         }
 
@@ -64,23 +64,23 @@ internal class ActivityNavigationContainer internal constructor(
             }
             .firstOrNull() ?: return true
 
-        val instructionToOpenHosted = activeContext.controller.dependencyScope.get<HostInstructionAs>().invoke<Activity>(
-            activeContext,
+        val instructionToOpenHosted = childContext.controller.dependencyScope.get<HostInstructionAs>().invoke<Activity>(
+            childContext,
             instructionToOpen
         )
         val binding = requireNotNull(
-            activeContext.controller.dependencyScope.get<GetNavigationBinding>()
+            childContext.controller.dependencyScope.get<GetNavigationBinding>()
                 .invoke(instructionToOpenHosted)
         )
 
-        val intent = Intent(activeContext.activity, binding.destinationType.java)
+        val intent = Intent(childContext.activity, binding.destinationType.java)
             .addOpenInstruction(instructionToOpenHosted)
 
         if (instructionToOpen.navigationDirection == NavigationDirection.ReplaceRoot) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
 
-        val activity = activeContext.activity
+        val activity = childContext.activity
 
         val animations = getNavigationAnimations.opening(
             exiting = rootInstruction,
@@ -89,8 +89,8 @@ internal class ActivityNavigationContainer internal constructor(
 
         val options = ActivityOptionsCompat.makeCustomAnimation(
             activity,
-            animations.entering.asResource(activeContext.activity.theme).id,
-            animations.exiting.asResource(activeContext.activity.theme).id
+            animations.entering.asResource(childContext.activity.theme).id,
+            animations.exiting.asResource(childContext.activity.theme).id
         )
         activity.startActivity(intent, options.toBundle())
 

@@ -14,8 +14,8 @@ internal fun AnyOpenInstruction.asPresentInstruction(): OpenPresentInstruction =
 
 @PublishedApi
 internal fun AnyOpenInstruction.originalNavigationDirection(): NavigationDirection {
-    if (additionalData.containsKey(ORIGINAL_NAVIGATION_DIRECTION))
-        return additionalData[ORIGINAL_NAVIGATION_DIRECTION] as NavigationDirection
+    if (extras.containsKey(ORIGINAL_NAVIGATION_DIRECTION))
+        return extras[ORIGINAL_NAVIGATION_DIRECTION] as NavigationDirection
     return navigationDirection
 }
 
@@ -24,7 +24,7 @@ internal fun <T: NavigationDirection> AnyOpenInstruction.asDirection(direction: 
     if(navigationDirection == direction) return this as NavigationInstruction.Open<T>
     return internal.copy(
         navigationDirection = direction,
-        additionalData = additionalData.apply {
+        extras = extras.apply {
             if (containsKey(ORIGINAL_NAVIGATION_DIRECTION)) return@apply
             put(ORIGINAL_NAVIGATION_DIRECTION, navigationDirection)
         }

@@ -10,13 +10,19 @@ import androidx.lifecycle.SavedStateHandle
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.core.TypedNavigationHandle
-import dev.enro.core.controller.get
-import dev.enro.core.controller.usecase.NavigationHandleExtras
+import dev.enro.core.controller.usecase.extras
 import dev.enro.core.getParentNavigationHandle
 import dev.enro.extensions.getParcelableListCompat
 import dev.enro.extensions.isSaveableInBundle
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
+import kotlin.collections.ArrayList
+import kotlin.collections.associateBy
+import kotlin.collections.filter
+import kotlin.collections.getOrPut
+import kotlin.collections.mutableSetOf
+import kotlin.collections.orEmpty
+import kotlin.collections.set
 
 public class FlowResultManager private constructor(
     savedStateHandle: SavedStateHandle?
@@ -94,8 +100,7 @@ public class FlowResultManager private constructor(
             navigationHandle: NavigationHandle,
             savedStateHandle: SavedStateHandle,
         ) : FlowResultManager {
-            val extras = navigationHandle.dependencyScope.get<NavigationHandleExtras>()
-            return extras.extras.getOrPut(NAVIGATION_HANDLE_EXTRA) {
+            return navigationHandle.extras.getOrPut(NAVIGATION_HANDLE_EXTRA) {
                 FlowResultManager(savedStateHandle)
             } as FlowResultManager
         }
@@ -103,8 +108,7 @@ public class FlowResultManager private constructor(
         public fun get(
             navigationHandle: NavigationHandle,
         ) : FlowResultManager? {
-            val extras = navigationHandle.dependencyScope.get<NavigationHandleExtras>()
-            return extras.extras[NAVIGATION_HANDLE_EXTRA] as? FlowResultManager
+            return navigationHandle.extras[NAVIGATION_HANDLE_EXTRA] as? FlowResultManager
         }
     }
 }

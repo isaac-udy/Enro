@@ -141,7 +141,7 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
                 .activeContainer
             when (
                 val activeContextReference = activeContainer
-                    ?.activeContext
+                    ?.childContext
                     ?.contextReference
             ) {
                 is DialogDestination -> activeContextReference.dialogConfiguration.isDismissed.value = true

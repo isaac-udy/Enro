@@ -47,7 +47,7 @@ internal object Compatibility {
                         isDialog -> args.instruction.asPresentInstruction()
                         else -> args.instruction.asPushInstruction()
                     }.apply {
-                        additionalData[COMPATIBILITY_NAVIGATION_DIRECTION] = args.instruction.navigationDirection
+                        extras[COMPATIBILITY_NAVIGATION_DIRECTION] = args.instruction.navigationDirection
                     }
                 }
                 else -> args.instruction
@@ -74,7 +74,7 @@ internal object Compatibility {
                     presentInstruction
                 )
 
-            val originalDirection = instruction.additionalData[COMPATIBILITY_NAVIGATION_DIRECTION] as? NavigationDirection
+            val originalDirection = instruction.extras[COMPATIBILITY_NAVIGATION_DIRECTION] as? NavigationDirection
             val isReplace = originalDirection == NavigationDirection.Replace
 
             requireNotNull(presentContainer)

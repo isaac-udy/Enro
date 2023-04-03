@@ -43,17 +43,18 @@ public sealed class NavigationInstruction {
     public sealed class Open<T : NavigationDirection> : NavigationInstruction(), Parcelable {
         public abstract val navigationDirection: T
         public abstract val navigationKey: NavigationKey
-        public abstract val additionalData: MutableMap<String, Any>
+        public abstract val extras: MutableMap<String, Any>
         public abstract val instructionId: String
 
         internal val internal by lazy { this as OpenInternal<NavigationDirection> }
 
         @Suppress("UNCHECKED_CAST")
         public fun copy(
-            instructionId: String = this.instructionId
+            instructionId: String = UUID.randomUUID().toString()
         ) : Open<T> = internal.copy(
             navigationDirection = navigationDirection,
-            instructionId = instructionId
+            instructionId = instructionId,
+            extras = extras.toMutableMap()
         ) as Open<T>
 
         @Stable
@@ -62,7 +63,7 @@ public sealed class NavigationInstruction {
         internal data class OpenInternal<T : NavigationDirection> constructor(
             override val navigationDirection: T,
             override val navigationKey: NavigationKey,
-            override val additionalData: @RawValue  MutableMap<String, Any> = mutableMapOf(),
+            override val extras: @RawValue  MutableMap<String, Any> = mutableMapOf(),
             override val instructionId: String = UUID.randomUUID().toString(),
             val previouslyActiveContainer: NavigationContainerKey? = null,
             val openingType: Class<out Any> = Any::class.java,

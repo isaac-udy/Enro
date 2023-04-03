@@ -11,12 +11,12 @@ data class TestResult(
 
 private const val REGISTERED_TEST_RESULT = "dev.enro.core.destinations.registeredTestResult"
 fun NavigationHandle.registerTestResult(result: TestResult) {
-    instruction.additionalData[REGISTERED_TEST_RESULT] = result
+    instruction.extras[REGISTERED_TEST_RESULT] = result
 }
 
 fun NavigationHandle.hasTestResult(): Boolean {
-    return instruction.additionalData.containsKey(REGISTERED_TEST_RESULT)
+    return instruction.extras.containsKey(REGISTERED_TEST_RESULT)
 }
 fun NavigationHandle.expectTestResult(): TestResult {
-    return instruction.additionalData[REGISTERED_TEST_RESULT] as TestResult
+    return instruction.extras[REGISTERED_TEST_RESULT] as TestResult
 }
