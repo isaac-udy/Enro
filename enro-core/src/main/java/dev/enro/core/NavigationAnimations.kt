@@ -8,10 +8,8 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Transition
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import dev.enro.core.container.originalNavigationDirection
 import dev.enro.extensions.ResourceAnimatedVisibility
@@ -92,7 +90,6 @@ public sealed interface NavigationAnimation {
                     visible = { it },
                     enter = enter,
                     exit = exit,
-                    modifier = Modifier.fillMaxSize()
                 ) {
                     content()
                 }
@@ -111,7 +108,6 @@ public sealed interface NavigationAnimation {
                     visible = { it },
                     enter = resourceAnimation.id,
                     exit = resourceAnimation.id,
-                    modifier = Modifier.fillMaxSize(),
                 ) {
                     content()
                 }
