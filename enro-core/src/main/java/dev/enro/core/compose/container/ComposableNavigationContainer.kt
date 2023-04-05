@@ -64,7 +64,7 @@ public class ComposableNavigationContainer internal constructor(
     private val shouldTakeAnimationsFromParentContainer: Boolean
         get() = context.contextReference is NavigationHost
                 && backstack.size <= 1
-                && currentTransition?.lastInstruction != NavigationInstruction.Close
+                && currentTransition.lastInstruction != NavigationInstruction.Close
 
     // We want "Render" to look like it's a Composable function (it's a Composable lambda), so
     // we are uppercasing the first letter of the property name, which triggers a PropertyName lint warning
