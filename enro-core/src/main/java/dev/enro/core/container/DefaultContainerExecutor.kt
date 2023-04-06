@@ -61,18 +61,28 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
             return ActivityNavigationContainer(fromContext.activity.navigationContext)
         }
         val containerManager = fromContext.containerManager
+        val defaultFragmentContainer = containerManager
+            .containers
+            .firstOrNull { it.key == NavigationContainerKey.FromId(android.R.id.content) }
 
         val container = containerManager.activeContainer?.takeIf {
-            it.isVisible && it.accept(instruction)
+            it.isVisible && it.accept(instruction) && it != defaultFragmentContainer
         } ?: containerManager.containers
             .filter { it.isVisible }
+            .filterNot { it == defaultFragmentContainer }
             .firstOrNull { it.accept(instruction) }
             .let {
+                val useDefaultFragmentContainer = it == null &&
+                        fromContext.parentContext() == null &&
+                        defaultFragmentContainer != null &&
+                        defaultFragmentContainer.accept(instruction)
+
                 val useActivityContainer = it == null &&
                         fromContext.parentContext() == null &&
                         instruction.navigationDirection != NavigationDirection.Push
 
                 when {
+                    useDefaultFragmentContainer -> defaultFragmentContainer
                     useActivityContainer -> ActivityNavigationContainer(fromContext.activity.navigationContext)
                     else -> it
                 }
