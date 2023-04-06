@@ -68,21 +68,20 @@ class PresentationTests {
     }
 
     @Test
-    fun givenActivityWithContainer_whenContainerDoesNotSupportKey_andKeyPresentsFragment_thenFragmentIsOpenedAsDialogFragment() {
+    fun givenActivityWithContainer_whenContainerDoesNotSupportKey_andKeyPresentsFragment_thenFragmentIsPresentedOnTopOfExistingContent() {
         val expectedKey = NotSupportedFragmentKey()
         ActivityScenario.launch(ActivityWithFragmentContainer::class.java)
         val activity = expectActivity<ActivityWithFragmentContainer>()
         activity.getNavigationHandle()
             .present(expectedKey)
 
-        val host = expectFragmentHostForPresentableFragment()
         val fragment = expectFragmentContext<NotSupportedFragmentKey>()
         assertEquals(expectedKey, fragment.navigation.key)
-        assertEquals(R.id.enro_internal_single_fragment_frame_layout, fragment.context.id)
-        assertEquals(host.childFragmentManager, fragment.context.parentFragmentManager)
+        assertEquals(ActivityWithFragmentContainer.containerId, fragment.context.id)
+        assertEquals(activity.supportFragmentManager, fragment.context.parentFragmentManager)
 
-        assertEquals(host, fragment.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(host, fragment.navigationContext.parentContext()?.contextReference)
+        assertEquals(activity, fragment.navigationContext.directParentContainer()?.context?.contextReference)
+        assertEquals(activity, fragment.navigationContext.parentContext()?.contextReference)
         assertEquals(activity, fragment.navigationContext.parentContainer()?.context?.contextReference)
     }
 
@@ -145,20 +144,17 @@ class PresentationTests {
     }
 
     @Test
-    fun givenActivityWithFragmentContainer_whenContainerDoesNotSupportKey_andKeyPresentsComposable_thenComposableIsOpenedAsDialogFragment() {
+    fun givenActivityWithFragmentContainer_whenContainerDoesNotSupportKey_andKeyPresentsComposable_thenComposableIsOpenedAsFragmentOnTopOfExistingContent() {
         val expectedKey = NotSupportedComposeKey()
         ActivityScenario.launch(ActivityWithFragmentContainer::class.java)
         val activity = expectActivity<ActivityWithFragmentContainer>()
         activity.getNavigationHandle()
             .present(expectedKey)
 
-        val dialogFragment = expectFragmentHostForPresentableFragment()
-        assertEquals(0, dialogFragment.id)
-
         val fragment = expectFragmentHostForComposable()
-        assertEquals(dialogFragment, fragment.navigationContext.parentContext?.contextReference)
-        assertEquals(dialogFragment.childFragmentManager, fragment.parentFragmentManager)
-        assertEquals(R.id.enro_internal_single_fragment_frame_layout, fragment.id)
+        assertEquals(activity, fragment.navigationContext.parentContext?.contextReference)
+        assertEquals(activity.supportFragmentManager, fragment.parentFragmentManager)
+        assertEquals(ActivityWithFragmentContainer.containerId, fragment.id)
 
         val composable = expectComposableContext<NotSupportedComposeKey>()
         assertEquals(expectedKey, composable.navigation.key)
@@ -207,25 +203,17 @@ class PresentationTests {
     }
 
     @Test
-    fun givenActivityWithComposeContainer_whenContainerDoesNotSupportKey_andKeyPresentsComposable_thenComposableIsOpenedAsDialogFragment() {
+    fun givenActivityWithComposeContainer_whenContainerDoesNotSupportKey_andKeyPresentsComposable_thenComposableIsPresentedOnTopOfExistingContent() {
         val expectedKey = NotSupportedComposeKey()
         ActivityScenario.launch(ActivityWithComposeContainer::class.java)
         val activity = expectActivity<ActivityWithComposeContainer>()
         activity.getNavigationHandle()
             .present(expectedKey)
 
-        val dialogFragment = expectFragmentHostForPresentableFragment()
-        assertEquals(0, dialogFragment.id)
-
-        val fragment = expectFragmentHostForComposable()
-        assertEquals(dialogFragment, fragment.navigationContext.parentContext?.contextReference)
-        assertEquals(dialogFragment.childFragmentManager, fragment.parentFragmentManager)
-        assertEquals(R.id.enro_internal_single_fragment_frame_layout, fragment.id)
-
         val composable = expectComposableContext<NotSupportedComposeKey>()
         assertEquals(expectedKey, composable.navigation.key)
-        assertEquals(fragment, composable.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(fragment, composable.navigationContext.parentContext()?.contextReference)
+        assertEquals(activity, composable.navigationContext.directParentContainer()?.context?.contextReference)
+        assertEquals(activity, composable.navigationContext.parentContext()?.contextReference)
         assertEquals(activity, composable.navigationContext.parentContainer()?.context?.contextReference)
     }
 
@@ -266,10 +254,17 @@ class PresentationTests {
     data class NotSupportedFragmentKey(val id: String = UUID.randomUUID().toString()) : NavigationKey.SupportsPresent
 
     @Parcelize
+    data class NotSupportedLegacyFragmentKey(val id: String = UUID.randomUUID().toString()) : NavigationKey
+
+    @Parcelize
     data class ComposeKey(val id: String = UUID.randomUUID().toString()) : NavigationKey.SupportsPresent
 
     @Parcelize
     data class NotSupportedComposeKey(val id: String = UUID.randomUUID().toString()) : NavigationKey.SupportsPresent
+
+    @Parcelize
+    data class NotSupportedLegacyComposeKey(val id: String = UUID.randomUUID().toString()) : NavigationKey
+
 }
 
 class ActivityWithFragmentContainer : FragmentActivity() {

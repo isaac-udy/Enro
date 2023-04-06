@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
+import dev.enro.core.activity.ActivityNavigationContainer
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.*
@@ -58,7 +59,6 @@ internal object Compatibility {
             fromContext: NavigationContext<*>,
             instruction: AnyOpenInstruction,
             container: RealNavigationContainer?,
-            findContainerFor: (NavigationContext<*>, AnyOpenInstruction) -> RealNavigationContainer?,
         ): Boolean {
             if (instruction.navigationDirection != NavigationDirection.Push) return false
             if (container != null) return false
@@ -68,22 +68,39 @@ internal object Compatibility {
                 instruction.navigationKey,
             )
             val presentInstruction = instruction.asPresentInstruction()
-            val presentContainer =
-                findContainerFor(
-                    fromContext.rootContext(),
-                    presentInstruction
-                )
+            val presentContainer = getPresentationContainerForLegacyInstruction(
+                fromContext,
+                presentInstruction
+            )
 
             val originalDirection = instruction.extras[COMPATIBILITY_NAVIGATION_DIRECTION] as? NavigationDirection
             val isReplace = originalDirection == NavigationDirection.Replace
 
-            requireNotNull(presentContainer)
             presentContainer.setBackstack { backstack ->
                 backstack
                     .let { if (isReplace) it.pop() else it }
                     .plus(presentInstruction)
             }
             return true
+        }
+
+        private fun getPresentationContainerForLegacyInstruction(
+            fromContext: NavigationContext<*>,
+            instruction: AnyOpenInstruction,
+        ): RealNavigationContainer {
+            val context = fromContext.rootContext()
+            val defaultFragmentContainer = context
+                .containerManager
+                .containers
+                .firstOrNull { it.key == NavigationContainerKey.FromId(android.R.id.content) }
+
+            val useDefaultFragmentContainer = defaultFragmentContainer != null &&
+                    defaultFragmentContainer.accept(instruction)
+
+            return when {
+                useDefaultFragmentContainer -> requireNotNull(defaultFragmentContainer)
+                else -> ActivityNavigationContainer(fromContext.activity.navigationContext)
+            }
         }
 
         internal fun earlyExitForNoContainer(context: NavigationContext<*>) : Boolean {

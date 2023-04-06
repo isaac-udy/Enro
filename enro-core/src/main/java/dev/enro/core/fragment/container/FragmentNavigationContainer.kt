@@ -25,7 +25,6 @@ public class FragmentNavigationContainer internal constructor(
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
     initialBackstack: NavigationBackstack,
-    acceptsDirection: (NavigationDirection) -> Boolean = { it is NavigationDirection.Push || it is NavigationDirection.Forward || it is NavigationDirection.Present },
 ) : NavigationContainer(
     key = key,
     context = parentContext,
@@ -34,7 +33,7 @@ public class FragmentNavigationContainer internal constructor(
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
     animations = animations,
-    acceptsDirection = acceptsDirection,
+    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward || it is NavigationDirection.Present },
 ) {
     private val hostInstructionAs = parentContext.controller.dependencyScope.get<HostInstructionAs>()
 

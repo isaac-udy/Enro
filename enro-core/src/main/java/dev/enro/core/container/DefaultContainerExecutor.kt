@@ -24,7 +24,6 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
                 fromContext = fromContext,
                 instruction = instruction,
                 container = container,
-                findContainerFor = ::findContainerFor,
             )
         ) return
 
