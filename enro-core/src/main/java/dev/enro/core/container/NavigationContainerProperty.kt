@@ -8,13 +8,16 @@ import kotlin.reflect.KProperty
 
 public class NavigationContainerProperty<T : NavigationContainer> @PublishedApi internal constructor(
     private val lifecycleOwner: LifecycleOwner,
-    private val navigationContainerProducer: () -> T
+    private val navigationContainerProducer: () -> T,
+    private val onContainerAttached: (T) -> Unit = {},
 ) : ReadOnlyProperty<Any, T> {
 
     internal val navigationContainer: T by lazy {
-        navigationContainerProducer().also {
-            it.context.containerManager.addContainer(it)
-        }
+        navigationContainerProducer()
+            .also {
+                it.context.containerManager.addContainer(it)
+                onContainerAttached(it)
+            }
     }
 
     init {

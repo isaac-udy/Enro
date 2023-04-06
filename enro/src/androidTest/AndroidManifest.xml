@@ -39,5 +39,10 @@
         <activity android:name="dev.enro.core.compose.ComposeStabilityGroupsActivity" />
         <activity android:name="dev.enro.core.fragment.FragmentStabilityActivity" />
         <activity android:name="dev.enro.core.fragment.FragmentStabilityGroupsActivity" />
+
+        <activity android:name="dev.enro.test.ActivityWithFragmentContainer" />
+        <activity android:name="dev.enro.test.ActivityWithComposeContainer" />
+        <activity android:name="dev.enro.test.ActivityWithNoContainer" />
+        <activity android:name="dev.enro.test.ActivityWithNoContainerAndNoFragments" />
     </application>
 </manifest>

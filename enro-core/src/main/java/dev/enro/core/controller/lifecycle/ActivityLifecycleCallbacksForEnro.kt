@@ -41,16 +41,18 @@ internal class ActivityLifecycleCallbacksForEnro(
                     FragmentNavigationContainer(
                         containerId = android.R.id.content,
                         parentContext = activity.navigationContext,
-                        accept = { false },
+                        accept = { true },
                         emptyBehavior = EmptyBehavior.AllowEmpty,
                         interceptor = {},
                         animations = {},
                         initialBackstack = emptyBackstack(),
-                    ).also {
-                        if (activity.containerManager.activeContainer != it) return@also
-                        if (savedInstanceState != null) return@also
-                        activity.containerManager.setActiveContainer(null)
-                    }
+                        acceptsDirection = { it is NavigationDirection.Present }
+                    )
+                },
+                onContainerAttached = {
+                    if (activity.containerManager.activeContainer != it) return@NavigationContainerProperty
+                    if (savedInstanceState != null) return@NavigationContainerProperty
+                    activity.containerManager.setActiveContainer(null)
                 }
             )
         }

@@ -1,14 +1,7 @@
 package dev.enro.core.fragment
 
-import androidx.compose.ui.test.junit4.createComposeRule
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.destinations.ComposableDestinations
-import dev.enro.core.destinations.FragmentDestinations
-import dev.enro.core.destinations.assertClosesTo
-import dev.enro.core.destinations.assertClosesWithResultTo
-import dev.enro.core.destinations.assertPresentsForResultTo
-import dev.enro.core.destinations.assertPresentsTo
-import dev.enro.core.destinations.launchFragmentRoot
+import dev.enro.core.destinations.*
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
@@ -17,9 +10,6 @@ class FragmentDestinationPresentDialog {
 
     @get:Rule(order = 1)
     val rule = DetectLeaksAfterTestSuccess()
-
-    @get:Rule(order = 2)
-    val composeContentRule = createComposeRule()
 
     @Test
     fun givenFragmentDestination_whenExecutingPresent_andTargetIsDialog_andTargetIsComposableDestination_thenCorrectDestinationIsOpened() {

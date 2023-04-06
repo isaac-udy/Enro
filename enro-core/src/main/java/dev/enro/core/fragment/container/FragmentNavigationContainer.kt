@@ -6,34 +6,13 @@ import android.util.Log
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.*
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
-import androidx.fragment.app.FragmentTransaction
-import androidx.fragment.app.commitNow
-import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.DefaultAnimations
-import dev.enro.core.NavigationAnimationOverrideBuilder
-import dev.enro.core.NavigationAnimationTransition
-import dev.enro.core.NavigationContainerKey
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationDirection
-import dev.enro.core.NavigationHost
-import dev.enro.core.NavigationKey
-import dev.enro.core.R
-import dev.enro.core.activity
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.NavigationBackstack
-import dev.enro.core.container.NavigationBackstackTransition
-import dev.enro.core.container.NavigationContainer
-import dev.enro.core.container.close
-import dev.enro.core.container.getAnimationsForEntering
-import dev.enro.core.container.getAnimationsForExiting
+import dev.enro.core.*
+import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
-import dev.enro.core.navigationContext
 import dev.enro.extensions.animate
 import dev.enro.extensions.getParcelableCompat
 
@@ -45,7 +24,8 @@ public class FragmentNavigationContainer internal constructor(
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
-    initialBackstack: NavigationBackstack
+    initialBackstack: NavigationBackstack,
+    acceptsDirection: (NavigationDirection) -> Boolean = { it is NavigationDirection.Push || it is NavigationDirection.Forward || it is NavigationDirection.Present },
 ) : NavigationContainer(
     key = key,
     context = parentContext,
@@ -54,7 +34,7 @@ public class FragmentNavigationContainer internal constructor(
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
     animations = animations,
-    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward || it is NavigationDirection.Present },
+    acceptsDirection = acceptsDirection,
 ) {
     private val hostInstructionAs = parentContext.controller.dependencyScope.get<HostInstructionAs>()
 
@@ -176,14 +156,15 @@ public class FragmentNavigationContainer internal constructor(
                     active = it
                 )
                 if(it.fragment is DialogFragment) {
-                    if(it.fragment.isDetached) {
+                    if(it.fragment.isAdded) {}
+                    else if(it.fragment.isDetached) {
                         attach(it.fragment)
                     } else {
                         add(it.fragment, it.instruction.instructionId)
                     }
                 }
-                else if(!it.fragment.isAdded) {
-                    if(it.fragment.isDetached) {
+                else {
+                    if(it.fragment.id != 0) {
                         attach(it.fragment)
                     } else {
                         add(containerId, it.fragment, it.instruction.instructionId)
@@ -242,7 +223,13 @@ public class FragmentNavigationContainer internal constructor(
             .takeLastWhile {
                 it.navigationDirection is NavigationDirection.Present
             }
-            .map { getOrCreateFragment(Fragment::class.java, it)  }
+            .map {
+                val cls = when(containerId){
+                    android.R.id.content -> DialogFragment::class.java
+                    else -> Fragment::class.java
+                }
+                getOrCreateFragment(cls, it)
+            }
             .takeLast(1)
     }
 

@@ -138,7 +138,7 @@ public abstract class NavigationContainer(
     public fun accept(
         instruction: AnyOpenInstruction
     ): Boolean {
-        return (acceptsNavigationKey.invoke(instruction.navigationKey) || instruction.navigationDirection is NavigationDirection.Present)
+        return (acceptsNavigationKey.invoke(instruction.navigationKey))
                 && acceptsDirection(instruction.navigationDirection)
                 && canInstructionBeHostedAs(
             hostType = contextType,

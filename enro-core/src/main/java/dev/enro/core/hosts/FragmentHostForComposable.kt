@@ -10,7 +10,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.asPushInstruction
 import dev.enro.core.container.backstackOf
 import kotlinx.parcelize.Parcelize
 
@@ -50,7 +49,7 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
         savedInstanceState: Bundle?
     ): View {
         val isRoot = isRoot
-        val initialBackstack = navigationHandle.key.instruction.asPushInstruction()
+        val initialBackstack = navigationHandle.key.instruction
         return ComposeView(requireContext()).apply {
             id = R.id.enro_internal_compose_fragment_view_id
             setContent {
