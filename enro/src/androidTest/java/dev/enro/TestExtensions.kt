@@ -152,6 +152,10 @@ fun expectFragmentHostForPresentableFragment(): Fragment {
     return expectFragment { it::class.java.simpleName == "FragmentHostForPresentableFragment" }
 }
 
+fun expectFragmentHostForComposable(): Fragment {
+    return expectFragment { it::class.java.simpleName == "FragmentHostForComposable" }
+}
+
 inline fun <reified T: ComponentActivity> expectActivity(crossinline selector: (ComponentActivity) -> Boolean = { it is T }): T {
     return expectContext<T, NavigationKey> {
         selector(it.context)

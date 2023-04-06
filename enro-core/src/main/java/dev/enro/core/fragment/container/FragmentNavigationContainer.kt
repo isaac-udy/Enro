@@ -6,13 +6,34 @@ import android.util.Log
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
-import androidx.fragment.app.*
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
-import dev.enro.core.*
-import dev.enro.core.container.*
+import androidx.fragment.app.FragmentTransaction
+import androidx.fragment.app.commitNow
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.DefaultAnimations
+import dev.enro.core.NavigationAnimationOverrideBuilder
+import dev.enro.core.NavigationAnimationTransition
+import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationHost
+import dev.enro.core.NavigationKey
+import dev.enro.core.R
+import dev.enro.core.activity
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationBackstackTransition
+import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.close
+import dev.enro.core.container.getAnimationsForEntering
+import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.core.navigationContext
 import dev.enro.extensions.animate
 import dev.enro.extensions.getParcelableCompat
 
@@ -140,16 +161,6 @@ public class FragmentNavigationContainer internal constructor(
             toDetach.forEach {
                 detach(it.fragment)
             }
-            toPresent.forEach {
-                if(!it.fragment.isAdded) {
-                    if(it.fragment.isDetached) {
-                        attach(it.fragment)
-                    } else {
-                        add(it.fragment, it.instruction.instructionId)
-                    }
-                }
-
-            }
             if (activePushed != null) {
                 when {
                     activePushed.fragment.id != 0 -> attach(activePushed.fragment)
@@ -158,6 +169,25 @@ public class FragmentNavigationContainer internal constructor(
                         activePushed.fragment,
                         activePushed.instruction.instructionId
                     )
+                }
+            }
+            toPresent.forEach {
+                applyAnimationsForTransaction(
+                    active = it
+                )
+                if(it.fragment is DialogFragment) {
+                    if(it.fragment.isDetached) {
+                        attach(it.fragment)
+                    } else {
+                        add(it.fragment, it.instruction.instructionId)
+                    }
+                }
+                else if(!it.fragment.isAdded) {
+                    if(it.fragment.isDetached) {
+                        attach(it.fragment)
+                    } else {
+                        add(containerId, it.fragment, it.instruction.instructionId)
+                    }
                 }
             }
             val activeFragmentAndInstruction = toPresent.lastOrNull() ?: activePushed ?: return@commitNow
@@ -212,7 +242,7 @@ public class FragmentNavigationContainer internal constructor(
             .takeLastWhile {
                 it.navigationDirection is NavigationDirection.Present
             }
-            .map { getOrCreateFragment(DialogFragment::class.java, it)  }
+            .map { getOrCreateFragment(Fragment::class.java, it)  }
             .takeLast(1)
     }
 
@@ -263,7 +293,7 @@ public class FragmentNavigationContainer internal constructor(
     ) {
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
         val entering = (active?.let { getAnimationsForEntering(it.instruction) } ?: DefaultAnimations.none.entering).asResource(context.activity.theme)
-        val exiting = (currentTransition?.exitingInstruction?.let { getAnimationsForExiting(it) } ?: DefaultAnimations.none.exiting).asResource(context.activity.theme)
+        val exiting = (currentTransition.exitingInstruction?.let { getAnimationsForExiting(it) } ?: DefaultAnimations.none.exiting).asResource(context.activity.theme)
 
         val noOpEntering = when {
             exiting.isAnimator(context.activity) -> R.animator.animator_example_no

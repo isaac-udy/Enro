@@ -2,25 +2,17 @@ package dev.enro.core.compose.destination
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.ViewGroup
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -214,30 +206,6 @@ internal class ComposableDestinationOwner(
                 destination = destination,
                 content = content
             )
-            instruction.navigationDirection is NavigationDirection.Present -> {
-                Dialog(
-                    onDismissRequest = { getNavigationHandle().requestClose() },
-                    properties = DialogProperties(
-                        dismissOnClickOutside = false,
-                        usePlatformDefaultWidth = false,
-                    )
-                ) {
-                    requireNotNull(rememberDialogWindowProvider())
-                        .window
-                        .apply {
-                            clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-                            setWindowAnimations(0)
-                            setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                        }
-
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        content()
-                    }
-                }
-            }
             else -> content()
         }
     }
