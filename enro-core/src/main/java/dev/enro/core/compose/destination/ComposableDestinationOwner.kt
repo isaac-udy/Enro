@@ -5,12 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeOut
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.*
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.lifecycle.*
@@ -45,7 +45,8 @@ internal class ComposableDestinationOwner(
     SavedStateRegistryOwner,
     HasDefaultViewModelProviderFactory {
 
-    internal val transitionState = MutableTransitionState(false)
+    internal var transitionState by mutableStateOf(MutableTransitionState(false))
+    internal lateinit var transition: Transition<Boolean>
     private var _parentContainer: NavigationContainer? = parentContainer
     internal val parentContainer get() = _parentContainer!!
 
@@ -146,7 +147,7 @@ internal class ComposableDestinationOwner(
                 }
             }
         }
-        val transition = updateTransition(transitionState, "ComposableDestination Visibility")
+        transition = updateTransition(transitionState, "ComposableDestination Visibility")
 
         if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
             && !transition.currentState
@@ -190,7 +191,7 @@ internal class ComposableDestinationOwner(
         }
     }
 
-    @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     private fun ProvideRenderingWindow(
         content: @Composable () -> Unit

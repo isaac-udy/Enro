@@ -102,7 +102,7 @@ internal fun <T> Transition<T>.ResourceAnimatedVisibility(
         else -> transition.animateNoResource()
     }
 
-    if (transition.currentState || transition.targetState || animationState.isActive || isRunning) {
+    if (transition.currentState || transition.targetState || isRunning) {
         Box(
             modifier = Modifier
                 .graphicsLayer {
@@ -232,6 +232,7 @@ private fun Transition<Boolean>.animateAnimatorResource(
                 )
                 delay(16)
             }
+            state.value = ResourceAnimationState.forAnimationEnd(targetState)
         }
     }
     return state
