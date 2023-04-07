@@ -79,7 +79,7 @@ internal fun <T> Transition<T>.ResourceAnimatedVisibility(
     val context = LocalContext.current
     val size = with(LocalDensity.current) { IntSize(maxWidth.roundToPx(), maxHeight.roundToPx()) }
 
-    val animationId = remember(transition.targetState) {
+    val animationId = remember(enter, exit, transition.targetState) {
         when (transition.targetState) {
             true -> enter
             false -> exit
@@ -99,9 +99,10 @@ internal fun <T> Transition<T>.ResourceAnimatedVisibility(
     val animationState by when {
         isAnim -> transition.animateAnimResource(animationId, size)
         isAnimator -> transition.animateAnimatorResource(animationId, size)
-        else -> transition.animateNoResource()
+        else -> remember {
+            derivedStateOf { ResourceAnimationState.forAnimationEnd(true) }
+        }
     }
-
     if (transition.currentState || transition.targetState || isRunning) {
         Box(
             modifier = Modifier
@@ -236,11 +237,4 @@ private fun Transition<Boolean>.animateAnimatorResource(
         }
     }
     return state
-}
-
-@Composable
-private fun Transition<Boolean>.animateNoResource(): State<ResourceAnimationState> {
-    return remember(currentState) {
-        derivedStateOf { ResourceAnimationState.forAnimationEnd(currentState) }
-    }
 }

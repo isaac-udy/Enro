@@ -1,7 +1,5 @@
 package dev.enro.core.compose
 
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.Lifecycle
@@ -43,15 +41,4 @@ public abstract class ComposableDestination : LifecycleOwner,
 
     @Composable
     public abstract fun Render()
-}
-
-public fun ComposableDestination.finishTransition() {
-    val transition = owner.transitionState
-    if (!transition.isIdle) {
-        owner.transitionState = MutableTransitionState(transition.targetState)
-    }
-}
-
-public fun ComposableDestination.getTransition() : Transition<Boolean> {
-    return owner.transition
 }

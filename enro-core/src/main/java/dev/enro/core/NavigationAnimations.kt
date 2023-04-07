@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -75,7 +76,7 @@ public sealed interface NavigationAnimation {
 
             public operator fun invoke(
                 forView: ForView,
-            ): Composable = FromView(forView)
+            ): Composable = EnterExit(forView = forView)
         }
 
         @Immutable
@@ -87,43 +88,22 @@ public sealed interface NavigationAnimation {
             @OptIn(ExperimentalAnimationApi::class)
             @androidx.compose.runtime.Composable
             override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
+                val context = LocalContext.current
+                val resourceAnimation = remember(this, forView) { forView.asResource(context.theme) }
                 visible.AnimatedVisibility(
                     visible = { it },
                     enter = enter,
                     exit = exit,
                 ) {
-                    content()
+                    transition.ResourceAnimatedVisibility(
+                        visible = { it == EnterExitState.Visible },
+                        enter = resourceAnimation.id,
+                        exit = resourceAnimation.id,
+                    ) {
+                        content()
+                    }
                     KeepVisibleWith(visible)
                 }
-            }
-        }
-
-        @Immutable
-        internal data class FromView(
-            override val forView: ForView
-        ) : Composable(), Enter, Exit {
-            @androidx.compose.runtime.Composable
-            override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
-                val context = LocalContext.current
-                val resourceAnimation = remember(forView) { forView.asResource(context.theme) }
-                visible.ResourceAnimatedVisibility(
-                    visible = { it },
-                    enter = resourceAnimation.id,
-                    exit = resourceAnimation.id,
-                ) {
-                    content()
-                }
-            }
-        }
-
-        @Immutable
-        internal object NoAnimation : Composable(), Enter, Exit {
-            override val forView: ForView = Resource(0)
-
-            @androidx.compose.runtime.Composable
-            override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
-                if (!visible.currentState && !visible.targetState) return
-                content()
             }
         }
     }

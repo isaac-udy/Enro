@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.tween
@@ -47,6 +48,7 @@ internal class ComposableDestinationOwner(
 
     internal var transitionState by mutableStateOf(MutableTransitionState(false))
     internal lateinit var transition: Transition<Boolean>
+    internal var animationOverride by mutableStateOf<NavigationAnimation.Composable?>(null)
     private var _parentContainer: NavigationContainer? = parentContainer
     internal val parentContainer get() = _parentContainer!!
 
@@ -134,9 +136,9 @@ internal class ComposableDestinationOwner(
             }
         }
 
-        val animation = remember(instruction.instructionId, transitionState.targetState, parentContainer) {
-            when (destination) {
-                is DialogDestination -> NavigationAnimation.Composable.NoAnimation
+        val animation = remember(instruction.instructionId, transitionState.targetState, parentContainer, animationOverride) {
+            animationOverride ?: when (destination) {
+                is DialogDestination -> NavigationAnimation.Composable(EnterTransition.None, ExitTransition.None)
                 is BottomSheetDestination -> NavigationAnimation.Composable(
                     enter = EnterTransition.None,
                     exit = fadeOut(tween(75, 150)),
