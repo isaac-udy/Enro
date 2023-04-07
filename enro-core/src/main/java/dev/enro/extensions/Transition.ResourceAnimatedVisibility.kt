@@ -102,7 +102,7 @@ internal fun <T> Transition<T>.ResourceAnimatedVisibility(
         else -> transition.animateNoResource()
     }
 
-    if (transition.currentState || transition.targetState || animationState.isActive) {
+    if (transition.currentState || transition.targetState || animationState.isActive || isRunning) {
         Box(
             modifier = Modifier
                 .graphicsLayer {

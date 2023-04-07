@@ -12,6 +12,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import dev.enro.core.container.originalNavigationDirection
+import dev.enro.extensions.KeepVisibleWith
 import dev.enro.extensions.ResourceAnimatedVisibility
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
@@ -92,6 +93,7 @@ public sealed interface NavigationAnimation {
                     exit = exit,
                 ) {
                     content()
+                    KeepVisibleWith(visible)
                 }
             }
         }
