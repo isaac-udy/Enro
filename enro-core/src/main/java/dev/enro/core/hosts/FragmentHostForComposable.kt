@@ -43,6 +43,10 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
         return@lazy activityKey.instruction.instructionId == navigationHandle.key.instruction.instructionId
     }
 
+    override fun accept(instruction: NavigationInstruction.Open<*>): Boolean {
+        return isRoot
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

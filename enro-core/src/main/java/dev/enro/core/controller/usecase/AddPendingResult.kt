@@ -5,6 +5,7 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.readOpenInstruction
+import dev.enro.core.result.AdvancedResultExtensions
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.internal.PendingResult
 import dev.enro.core.result.internal.ResultChannelId
@@ -30,12 +31,18 @@ internal class AddPendingResult(
             else -> return
         }
         when(instruction) {
-            NavigationInstruction.Close -> enroResult.addPendingResult(
-                PendingResult.Closed(
-                    resultChannelId = resultId,
-                    navigationKey = navigationKey,
+            NavigationInstruction.Close -> {
+                // If this instruction is forwarding a result from another instruction,
+                // we don't want this instruction to actually deliver the close result, as only
+                // the original instruction should deliver a close
+                if (AdvancedResultExtensions.getForwardingInstructionId(openInstruction) != null) return
+                enroResult.addPendingResult(
+                    PendingResult.Closed(
+                        resultChannelId = resultId,
+                        navigationKey = navigationKey,
+                    )
                 )
-            )
+            }
             is NavigationInstruction.Close.WithResult -> enroResult.addPendingResult(
                 PendingResult.Result(
                     resultChannelId = resultId,

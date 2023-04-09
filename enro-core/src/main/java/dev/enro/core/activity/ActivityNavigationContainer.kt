@@ -25,7 +25,6 @@ internal class ActivityNavigationContainer internal constructor(
     interceptor = { },
     animations = { },
     acceptsNavigationKey = { true },
-    acceptsDirection = { true },
 ) {
     override val childContext: NavigationContext<*>
         get() = context

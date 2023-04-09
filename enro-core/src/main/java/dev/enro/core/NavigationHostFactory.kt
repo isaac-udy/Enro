@@ -34,4 +34,6 @@ public abstract class NavigationHostFactory<HostType: Any>(
 }
 
 @AdvancedEnroApi
-public interface NavigationHost
+public interface NavigationHost {
+    public fun accept(instruction: NavigationInstruction.Open<*>): Boolean = true
+}

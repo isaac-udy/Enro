@@ -120,6 +120,28 @@ val features = listOf(
         )
     ),
     FeatureDescription(
+        name = "Managed Flows",
+        iconResource = R.drawable.ic_round_undo_24,
+        key = SimpleMessage(
+            title = "Managed Flows",
+            message = """
+                
+            """.trimIndent(),
+            positiveActionInstruction = NavigationInstruction.Push(ExampleManagedFlow())
+        )
+    ),
+    FeatureDescription(
+        name = "Embedded Flows",
+        iconResource = R.drawable.ic_round_undo_24,
+        key = SimpleMessage(
+            title = "Embedded Flows",
+            message = """
+                
+            """.trimIndent(),
+            positiveActionInstruction = NavigationInstruction.Push(ExampleEmbeddedFlow())
+        )
+    ),
+    FeatureDescription(
         name = "Deeplinking",
         iconResource = R.drawable.ic_round_link_24,
         key = SimpleMessage(

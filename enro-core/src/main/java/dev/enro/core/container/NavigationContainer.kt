@@ -35,7 +35,6 @@ public abstract class NavigationContainer(
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
     public val acceptsNavigationKey: (NavigationKey) -> Boolean,
-    public val acceptsDirection: (NavigationDirection) -> Boolean,
 ) : NavigationContainerContext {
     internal val dependencyScope by lazy {
         NavigationContainerScope(
@@ -107,7 +106,6 @@ public abstract class NavigationContainer(
             .ensureOpeningTypeIsSet(context)
             .processBackstackForPreviouslyActiveContainer()
 
-        requireBackstackIsAccepted(processedBackstack)
         if (handleEmptyBehaviour(processedBackstack)) return
         val lastBackstack = mutableBackstack
         mutableBackstack = processedBackstack
@@ -135,11 +133,16 @@ public abstract class NavigationContainer(
         transition: NavigationBackstackTransition
     ) : Boolean
 
+    private fun acceptedByContext(navigationInstruction: NavigationInstruction.Open<*>): Boolean {
+        if (context.contextReference !is NavigationHost) return true
+        return context.contextReference.accept(navigationInstruction)
+    }
+
     public fun accept(
         instruction: AnyOpenInstruction
     ): Boolean {
         return (acceptsNavigationKey.invoke(instruction.navigationKey) || instruction.navigationDirection == NavigationDirection.Present)
-                && acceptsDirection(instruction.navigationDirection)
+                && acceptedByContext(instruction)
                 && canInstructionBeHostedAs(
             hostType = contextType,
             navigationContext = context,
@@ -167,21 +170,6 @@ public abstract class NavigationContainer(
                 }
             }
         } else initialise()
-    }
-
-    private fun requireBackstackIsAccepted(backstack: List<AnyOpenInstruction>) {
-        backstack
-            .map {
-                it.navigationDirection to acceptsDirection(it.navigationDirection)
-            }
-            .filter { !it.second }
-            .map { it.first }
-            .toSet()
-            .let {
-                require(it.isEmpty()) {
-                    "Backstack does not support the following NavigationDirections: ${it.joinToString { it::class.java.simpleName }}"
-                }
-            }
     }
 
     private fun handleEmptyBehaviour(backstack: List<AnyOpenInstruction>): Boolean {
@@ -263,12 +251,12 @@ private fun NavigationContainer.getTransitionForInstruction(instruction: AnyOpen
         return NavigationBackstackTransition(mergedPreviousBackstack to mergedActiveBackstack)
     }
 
-    val isRootInstruction = backstack.size <= 1
+    val isRootInstruction = backstack.size <= 1 || backstack.firstOrNull()?.instructionId == instruction.instructionId
     if (!isRootInstruction) return currentTransition
 
     val isLastInstruction = parentContainer.currentTransition.lastInstruction == instruction
-    val isExitingInstruction = parentContainer.currentTransition.exitingInstruction == instruction
-    val isEnteringInstruction = parentContainer.currentTransition.activeBackstack.active == instruction
+    val isExitingInstruction = parentContainer.currentTransition.exitingInstruction?.instructionId == instruction.instructionId
+    val isEnteringInstruction = parentContainer.currentTransition.activeBackstack.active?.instructionId == instruction.instructionId
 
     if (isLastInstruction ||
         isExitingInstruction ||
@@ -281,7 +269,9 @@ private fun NavigationContainer.getTransitionForInstruction(instruction: AnyOpen
 public fun NavigationContainer.getAnimationsForEntering(instruction: AnyOpenInstruction): NavigationAnimation {
     val animations = dependencyScope.get<GetNavigationAnimations>()
     val currentTransition = getTransitionForInstruction(instruction)
-    if(currentTransition.previousBackstack.identity == NavigationContainer.initialBackstack.identity) {
+
+    val isInitialInstruction = currentTransition.previousBackstack.identity == NavigationContainer.initialBackstack.identity
+    if (isInitialInstruction) {
         return DefaultAnimations.noOp.entering
     }
 
@@ -297,7 +287,6 @@ public fun NavigationContainer.getAnimationsForEntering(instruction: AnyOpenInst
 public fun NavigationContainer.getAnimationsForExiting(instruction: AnyOpenInstruction): NavigationAnimation {
     val animations = dependencyScope.get<GetNavigationAnimations>()
     val currentTransition = getTransitionForInstruction(instruction)
-
 
     val activeInstruction = currentTransition.activeBackstack.active
         ?: return animations.closing(instruction, null).exiting

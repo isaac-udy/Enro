@@ -33,7 +33,6 @@ public class FragmentNavigationContainer internal constructor(
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
     animations = animations,
-    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward || it is NavigationDirection.Present },
 ) {
     private val hostInstructionAs = parentContext.controller.dependencyScope.get<HostInstructionAs>()
 

@@ -46,6 +46,8 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
         rootInstruction = { navigationHandle.key.instruction.asPushInstruction() },
         accept = { false }
     )
+    private val isHostingComposable
+        get() = navigationHandle.key.instruction.navigationKey is AbstractOpenComposableInFragmentKey
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = createFullscreenDialog()
     private var isDismissed: Boolean = false
@@ -71,7 +73,7 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
         // if the fragment transaction occurs immediately when the DialogFragment is created,
         // so to solve this issue, we post the animation to the view, which delays this slightly,
         // and ensures the animation occurs correctly
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null || isHostingComposable) {
             view.alpha = 1f
             return
         }
@@ -132,9 +134,7 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
             else -> R.anim.enro_fallback_exit
         }
 
-        val animationDuration = fragment.requireView().animate(
-            animOrAnimator = animationResource
-        )
+        val animationDuration = fragment.view?.animate(animationResource) ?: 0
         if(fragment is NavigationHost) {
             val activeContainer = fragment
                 .containerManager
