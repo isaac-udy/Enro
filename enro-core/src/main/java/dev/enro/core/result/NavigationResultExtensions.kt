@@ -11,8 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.enro.core.*
 import dev.enro.core.controller.usecase.createResultChannel
 import dev.enro.core.result.internal.LazyResultChannelProperty
-import dev.enro.core.result.internal.PendingResult
-import dev.enro.core.synthetic.SyntheticDestination
 import dev.enro.viewmodel.getNavigationHandle
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -28,71 +26,28 @@ public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.clos
     nonDeprecatedCloseWithResult(result)
 }
 
-public fun <T : Any> ExecutorArgs<out Any, out Any, out NavigationKey.WithResult<T>>.sendResult(
-    result: T
+public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.deliverResultFromPush(
+    navigationKey: NavigationKey.SupportsPush.WithResult<out T>
 ) {
-    val resultId = instruction.internal.resultId
-    if (resultId != null) {
-        val keyForResult = instruction.internal.resultKey
-            ?: instruction.navigationKey
-        if (keyForResult !is NavigationKey.WithResult<*>) return
-
-        EnroResult.from(fromContext.controller).addPendingResult(
-            PendingResult.Result(
-                resultChannelId = resultId,
-                navigationKey = keyForResult,
-                resultType = result::class,
-                result = result
-            )
+    executeInstruction(
+        AdvancedResultExtensions.getInstructionToForwardResult(
+            originalInstruction = instruction,
+            direction = NavigationDirection.Push,
+            navigationKey = navigationKey,
         )
-    }
+    )
 }
 
-public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.sendResult(
-    result: T
+public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.deliverResultFromPresent(
+    navigationKey: NavigationKey.SupportsPresent.WithResult<out T>
 ) {
-    val resultId = instruction.internal.resultId
-    if (resultId != null) {
-        val keyForResult = instruction.internal.resultKey
-            ?: instruction.navigationKey
-        if (keyForResult !is NavigationKey.WithResult<*>) return
-
-        EnroResult.from(navigationContext.controller).addPendingResult(
-            PendingResult.Result(
-                resultChannelId = resultId,
-                navigationKey = keyForResult,
-                resultType = result::class,
-                result = result
-            )
+    executeInstruction(
+        AdvancedResultExtensions.getInstructionToForwardResult(
+            originalInstruction = instruction,
+            direction = NavigationDirection.Present,
+            navigationKey = navigationKey,
         )
-    }
-}
-
-public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwardResult(
-    navigationKey: NavigationKey.WithResult<T>
-) {
-    val resultId = instruction.internal.resultId
-
-    // If the incoming instruction does not have a resultId attached, we
-    // still want to open the screen we are being forwarded to
-    if (resultId == null) {
-        navigationContext.getNavigationHandle().executeInstruction(
-            NavigationInstruction.DefaultDirection(navigationKey)
-                .internal
-                .copy(
-                    resultKey = key
-                )
-        )
-    } else {
-        navigationContext.getNavigationHandle().executeInstruction(
-            NavigationInstruction.DefaultDirection(navigationKey)
-                .internal
-                .copy(
-                    resultId = resultId,
-                    resultKey = key
-                )
-        )
-    }
+    )
 }
 
 @Deprecated("It is no longer required to provide a navigationHandle")

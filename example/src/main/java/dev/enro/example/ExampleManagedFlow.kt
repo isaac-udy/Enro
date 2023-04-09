@@ -20,9 +20,9 @@ import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ExampleFlowKey : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
+class ExampleManagedFlow : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
 
-data class FlowSteps(
+data class ManagedFlowResult(
     val first: String,
     val second: String,
     val bottomSheet: String,
@@ -30,7 +30,7 @@ data class FlowSteps(
 )
 
 @OptIn(ExperimentalEnroApi::class)
-class FlowViewModel(
+class ManagedFlowViewModel(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     val navigation by navigationHandle<NavigationKey>()
@@ -46,7 +46,7 @@ class FlowViewModel(
                 RequestStringBottomSheetKey()
             }
             val third = push { RequestStringKey() }
-            FlowSteps(
+            ManagedFlowResult(
                 first = first,
                 second = second,
                 bottomSheet = bottomSheet,
@@ -64,10 +64,10 @@ class FlowViewModel(
     }
 }
 
-@NavigationDestination(ExampleFlowKey::class)
-class ExampleFlowFragment : Fragment() {
+@NavigationDestination(ExampleManagedFlow::class)
+class ExampleManagedFlowFragment : Fragment() {
     private val navigationContainer by navigationContainer(R.id.flowContainer, emptyBehavior = EmptyBehavior.CloseParent)
-    private val viewModel by enroViewModels<FlowViewModel>()
+    private val viewModel by enroViewModels<ManagedFlowViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,

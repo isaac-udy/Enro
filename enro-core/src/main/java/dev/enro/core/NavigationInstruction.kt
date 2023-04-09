@@ -29,6 +29,16 @@ public sealed class NavigationDirection : Parcelable {
 
     @Parcelize
     public object ReplaceRoot : NavigationDirection()
+
+    public companion object {
+        public fun defaultDirection(navigationKey: NavigationKey) : NavigationDirection {
+            return when (navigationKey) {
+                is NavigationKey.SupportsPush -> Push
+                is NavigationKey.SupportsPresent -> Present
+                else -> Forward
+            }
+        }
+    }
 }
 
 internal const val OPEN_ARG = "dev.enro.core.OPEN_ARG"
@@ -121,11 +131,7 @@ public sealed class NavigationInstruction {
             navigationKey: NavigationKey,
         ): AnyOpenInstruction {
             return Open.OpenInternal(
-                navigationDirection = when (navigationKey) {
-                    is NavigationKey.SupportsPush -> NavigationDirection.Push
-                    is NavigationKey.SupportsPresent -> NavigationDirection.Present
-                    else -> NavigationDirection.Forward
-                },
+                navigationDirection = NavigationDirection.defaultDirection(navigationKey),
                 navigationKey = navigationKey,
             )
         }

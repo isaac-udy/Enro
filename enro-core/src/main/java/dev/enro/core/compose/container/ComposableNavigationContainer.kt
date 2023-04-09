@@ -33,7 +33,6 @@ public class ComposableNavigationContainer internal constructor(
     interceptor = interceptor,
     animations = animations,
     acceptsNavigationKey = accept,
-    acceptsDirection = { it is NavigationDirection.Push || it is NavigationDirection.Forward || it is NavigationDirection.Present },
 ) {
     private val viewModelStoreStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
     private val viewModelStores = viewModelStoreStorage.viewModelStores.getOrPut(key) { mutableMapOf() }

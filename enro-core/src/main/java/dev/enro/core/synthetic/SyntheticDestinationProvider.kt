@@ -5,10 +5,12 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationKey
 
 public class SyntheticDestinationScope<T : NavigationKey> internal constructor(
-    public val navigationContext: NavigationContext<out Any>,
-    public val key: T,
-    public val instruction: AnyOpenInstruction,
-)
+    internal val destination: SyntheticDestination<T>,
+) {
+    public val navigationContext: NavigationContext<out Any> = destination.navigationContext
+    public val key: T = destination.key
+    public val instruction: AnyOpenInstruction = destination.instruction
+}
 
 public class SyntheticDestinationProvider<T : NavigationKey> internal constructor(
     private val block: SyntheticDestinationScope<T>.() -> Unit
@@ -17,7 +19,7 @@ public class SyntheticDestinationProvider<T : NavigationKey> internal constructo
     internal fun create() : SyntheticDestination<T> {
         return object : SyntheticDestination<T>() {
             override fun process() {
-                SyntheticDestinationScope(navigationContext, key, instruction)
+                SyntheticDestinationScope(this)
                     .block()
             }
         }
