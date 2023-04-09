@@ -23,6 +23,8 @@ open class TestApplication : Application(), NavigationApplication {
 
     override fun onCreate() {
         super.onCreate()
+
+        // Ignoring library leak, see here: https://issuetracker.google.com/issues/277434271
         LeakCanary.config = LeakCanary.config.copy(
             referenceMatchers = AndroidReferenceMatchers.appDefaults +
                     AndroidReferenceMatchers.instanceFieldLeak(
