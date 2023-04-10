@@ -13,12 +13,25 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withCreated
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.DefaultAnimations
+import dev.enro.core.EnroException
+import dev.enro.core.NavigationAnimation
+import dev.enro.core.NavigationAnimationOverrideBuilder
+import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationHost
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.close
 import dev.enro.core.compatability.Compatibility
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
 import dev.enro.core.controller.usecase.GetNavigationAnimations
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.parentContainer
 import dev.enro.extensions.getParcelableListCompat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -47,7 +60,7 @@ public abstract class NavigationContainer(
 
     internal val interceptor = NavigationInterceptorBuilder()
         .apply(interceptor)
-        .build(context.controller.dependencyScope)
+        .build()
 
     public abstract val childContext: NavigationContext<*>?
     public abstract val isVisible: Boolean

@@ -16,6 +16,7 @@ import dev.enro.core.plugins.EnroLogger
 class ExampleApplication : Application(), NavigationApplication {
     override val navigationController = createNavigationController {
         plugin(EnroLogger())
+        interceptor(ExampleInterceptor)
         composeEnvironment { content ->
             EnroExampleTheme {
                 CompositionLocalProvider(

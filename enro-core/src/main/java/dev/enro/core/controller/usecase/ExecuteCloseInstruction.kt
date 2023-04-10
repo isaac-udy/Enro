@@ -1,7 +1,11 @@
 package dev.enro.core.controller.usecase
 
-import dev.enro.core.*
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationExecutor
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
+import dev.enro.core.getNavigationHandle
 
 internal interface ExecuteCloseInstruction {
     operator fun invoke(
@@ -34,6 +38,6 @@ internal class ExecuteCloseInstructionImpl(
         )
         executor.preClosed(navigationContext)
         executor.close(navigationContext)
-        addPendingResult(navigationContext, instruction)
+        addPendingResult(navigationContext, processedInstruction)
     }
 }

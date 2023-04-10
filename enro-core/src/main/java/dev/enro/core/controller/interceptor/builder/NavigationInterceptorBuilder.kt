@@ -1,14 +1,12 @@
 package dev.enro.core.controller.interceptor.builder
 
 import dev.enro.core.NavigationKey
-import dev.enro.core.controller.NavigationControllerScope
-import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 
-public class NavigationInterceptorBuilder {
+public class NavigationInterceptorBuilder internal constructor() {
 
     @PublishedApi
-    internal val interceptorBuilders: MutableList<NavigationControllerScope.() -> NavigationInstructionInterceptor> =
+    internal val interceptorBuilders: MutableList<() -> NavigationInstructionInterceptor> =
         mutableListOf()
 
     public inline fun <reified KeyType : NavigationKey> onOpen(
@@ -48,7 +46,6 @@ public class NavigationInterceptorBuilder {
     ) {
         interceptorBuilders += {
             OnNavigationKeyClosedWithResultInterceptor<T>(
-                addPendingResult = get(),
                 matcher = {
                     it is KeyType
                 },
@@ -60,10 +57,14 @@ public class NavigationInterceptorBuilder {
         }
     }
 
-    internal fun build(navigationControllerScope: NavigationControllerScope): NavigationInstructionInterceptor {
+    internal fun build(): NavigationInstructionInterceptor {
         val interceptors = interceptorBuilders.map { builder ->
-            builder.invoke(navigationControllerScope)
+            builder.invoke()
         }
         return AggregateNavigationInstructionInterceptor(interceptors)
     }
+}
+
+public fun createNavigationInterceptor(block: NavigationInterceptorBuilder.() -> Unit): NavigationInstructionInterceptor {
+    return NavigationInterceptorBuilder().apply(block).build()
 }
