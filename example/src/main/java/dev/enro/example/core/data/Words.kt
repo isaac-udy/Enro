@@ -1,18 +1,40 @@
-package dev.enro.example.data
+package dev.enro.example.core.data
 
-import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.NavigationHandle
-import kotlin.math.absoluteValue
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
-val NavigationHandle.sentenceId: String get() = instruction.sentenceId
+sealed interface Word : Parcelable
 
-val AnyOpenInstruction.sentenceId: String get() {
-    val hashCode = instructionId.hashCode()
-    val adverb = Words.adverbs[hashCode.absoluteValue % Words.adverbs.size]
-    val adjective = Words.adjectives[(hashCode.absoluteValue * 3).absoluteValue % Words.adjectives.size]
-    val noun = Words.nouns[(hashCode.absoluteValue * 5).absoluteValue % Words.nouns.size]
-    return "$adverb$adjective$noun"
+@JvmInline
+@Parcelize
+value class Adverb(val value: String) : Word {
+    override fun toString(): String {
+        return value
+    }
 }
+
+@JvmInline
+@Parcelize
+value class Adjective(val value: String) : Word {
+    override fun toString(): String {
+        return value
+    }
+}
+
+@JvmInline
+@Parcelize
+value class Noun(val value: String) : Word {
+    override fun toString(): String {
+        return value
+    }
+}
+
+val Word.typeName: String
+    get() = when(this) {
+        is Adjective -> "Adjective"
+        is Adverb -> "Adverb"
+        is Noun -> "Noun"
+    }
 
 object Words {
     val adverbs = listOf(
@@ -415,7 +437,9 @@ object Words {
         "Zealously",
         "Zestfully",
         "Zestily",
-    )
+    ).sorted()
+        .map { Adverb(it) }
+
     val adjectives = listOf(
         "Abrupt",
         "Acidic",
@@ -617,7 +641,9 @@ object Words {
         "Zany",
         "Zealous",
         "Zippy"
-    )
+    ).sorted()
+        .map { Adjective(it) }
+
     val nouns = listOf(
         "Actor",
         "Gold",
@@ -803,6 +829,10 @@ object Words {
         "Oyster",
         "Glass",
         "Garage",
-    )
+    ).sorted()
+        .map { Noun(it) }
+
+    val all = (adverbs + nouns + adjectives)
+        .sortedBy { it.toString() }
 }
 

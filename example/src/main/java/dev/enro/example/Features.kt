@@ -17,6 +17,12 @@ import dev.enro.core.container.present
 import dev.enro.core.container.push
 import dev.enro.core.container.setBackstack
 import dev.enro.example.databinding.FragmentFeaturesBinding
+import dev.enro.example.destinations.compose.ExampleComposable
+import dev.enro.example.destinations.fragment.DialogFragmentKey
+import dev.enro.example.destinations.fragment.ExampleFragment
+import dev.enro.example.destinations.listdetail.compose.ListDetailComposable
+import dev.enro.example.destinations.result.ResultExampleKey
+import dev.enro.example.destinations.synthetic.SimpleMessage
 import kotlinx.parcelize.Parcelize
 
 
@@ -27,9 +33,6 @@ class Features : NavigationKey.SupportsPush
 class FeaturesFragment : Fragment() {
 
     private val navigation by navigationHandle<Features>()
-    private val adapter = FeatureAdapter {
-        navigation.forward(it.key)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +43,9 @@ class FeaturesFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val adapter = FeatureAdapter {
+            navigation.present(it.key)
+        }
         FragmentFeaturesBinding.bind(view).apply {
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
             recyclerView.adapter = adapter
@@ -52,7 +58,7 @@ class FeaturesFragment : Fragment() {
 data class FeatureDescription(
     val name: String,
     val iconResource: Int = 0,
-    val key: NavigationKey = SimpleMessage(
+    val key: NavigationKey.SupportsPresent = SimpleMessage(
         "Missing",
         "This destination hasn't been implemented yet!"
     )
@@ -100,7 +106,7 @@ val features = listOf(
                 To see how this example is built, look at ComposeSimpleExample.kt in the examples.
             """.trimIndent(),
             positiveActionInstruction = NavigationInstruction.Present(
-                ExampleComposableKey()
+                ExampleComposable()
             )
         )
     ),
@@ -120,28 +126,6 @@ val features = listOf(
         )
     ),
     FeatureDescription(
-        name = "Managed Flows",
-        iconResource = R.drawable.ic_round_undo_24,
-        key = SimpleMessage(
-            title = "Managed Flows",
-            message = """
-                
-            """.trimIndent(),
-            positiveActionInstruction = NavigationInstruction.Push(ExampleManagedFlow())
-        )
-    ),
-    FeatureDescription(
-        name = "Embedded Flows",
-        iconResource = R.drawable.ic_round_undo_24,
-        key = SimpleMessage(
-            title = "Embedded Flows",
-            message = """
-                
-            """.trimIndent(),
-            positiveActionInstruction = NavigationInstruction.Push(ExampleEmbeddedFlow())
-        )
-    ),
-    FeatureDescription(
         name = "Deeplinking",
         iconResource = R.drawable.ic_round_link_24,
         key = SimpleMessage(
@@ -155,10 +139,10 @@ val features = listOf(
             positiveActionInstruction = NavigationInstruction.OnContainer(NavigationContainerKey.FromId(R.id.featuresContainer)) {
                 setBackstack {
                     it
-                        .push(ExampleFragmentKey())
-                        .push(ExampleComposableKey())
-                        .present(ExampleDialogFragmentKey())
-                        .push(ExampleComposableKey())
+                        .push(ExampleFragment())
+                        .push(ExampleComposable())
+                        .present(DialogFragmentKey())
+                        .push(ExampleComposable())
                 }
             }
         )
@@ -189,7 +173,7 @@ val features = listOf(
                 
                 Each tab maintains it's own backstack, and when you press the back button, you'll go backwards only on the current tab. If you're at the 'base' level of a tab and you press the back button, you'll go back to the 'Home' tab. 
                 
-                To see how this works, look at Main.kt in the examples.
+                To see how this works, look at ExampleActivity.kt in the examples.
             """.trimIndent()
         )
     ),
@@ -203,7 +187,7 @@ val features = listOf(
                 
                 To see how this example is built, look at ListDetailCompose.kt in the examples.
             """.trimIndent(),
-            positiveActionInstruction = NavigationInstruction.Push(ListDetailComposeKey())
+            positiveActionInstruction = NavigationInstruction.Push(ListDetailComposable())
         )
     )
 )

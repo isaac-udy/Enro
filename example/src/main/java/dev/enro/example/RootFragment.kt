@@ -1,8 +1,10 @@
 package dev.enro.example
 
 import android.os.Bundle
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.fragment.app.FragmentActivity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
@@ -13,60 +15,60 @@ import dev.enro.core.containerManager
 import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.fragment.container.setVisibilityAnimated
-import dev.enro.core.navigationHandle
-import dev.enro.example.databinding.ActivityMainBinding
+import dev.enro.example.databinding.FragmentRootBinding
+import dev.enro.example.destinations.compose.ExampleComposable
+import dev.enro.example.destinations.fragment.ExampleFragment
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class MainKey : NavigationKey.SupportsPresent
+class RootFragment : NavigationKey.SupportsPush
 
 @AndroidEntryPoint
-@NavigationDestination(MainKey::class)
-class MainActivity : FragmentActivity() {
+@NavigationDestination(RootFragment::class)
+class RootFragmentDestination : Fragment() {
 
     private val homeContainer by navigationContainer(
         containerId = R.id.homeContainer,
         root = { Home() },
         accept = {
-            it is Home || it is ExampleFragmentKey || it is ExampleComposableKey
+            it is Home || it is ExampleFragment || it is ExampleComposable
         },
         emptyBehavior = EmptyBehavior.CloseParent
     )
+
     private val featuresContainer by navigationContainer(
         containerId = R.id.featuresContainer,
         root = { Features() },
         emptyBehavior = EmptyBehavior.Action {
-            findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home
+            requireView().findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home
             true
         }
     )
 
-    private val profileContainer by navigationContainer(
+    private val backstackContainer by navigationContainer(
         containerId = R.id.profileContainer,
-        root = { Profile() },
+        root = { Backstacks() },
         accept = { false },
         emptyBehavior = EmptyBehavior.Action {
-            findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home
+            requireView().findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home
             true
         }
     )
 
-    private val navigation by navigationHandle<MainKey>()
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val binding = FragmentRootBinding.inflate(layoutInflater)
+        return binding.root
+    }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
-        super.onCreate(savedInstanceState)
-        val binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val binding = FragmentRootBinding.bind(view)
         binding.bottomNavigation.bindContainers(
             R.id.home to homeContainer,
             R.id.features to featuresContainer,
-            R.id.profile to profileContainer,
+            R.id.backstack to backstackContainer,
         )
-
         if(savedInstanceState == null) {
             binding.bottomNavigation.selectedItemId = R.id.home
         }

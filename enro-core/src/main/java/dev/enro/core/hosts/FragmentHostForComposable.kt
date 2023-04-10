@@ -4,13 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroInternalNavigationKey
+import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationHost
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.R
+import dev.enro.core.close
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.backstackOf
+import dev.enro.core.containerManager
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractOpenComposableInFragmentKey :
@@ -32,7 +43,12 @@ internal data class OpenComposableInHiltFragment(
 ) : AbstractOpenComposableInFragmentKey()
 
 public abstract class AbstractFragmentHostForComposable : Fragment(), NavigationHost {
-    private val navigationHandle by navigationHandle<AbstractOpenComposableInFragmentKey>()
+    private val navigationHandle by navigationHandle<AbstractOpenComposableInFragmentKey> {
+        onCloseRequested {
+            containerManager.containers.firstOrNull()?.setActive()
+
+        }
+    }
 
     private val isRoot by lazy {
         val activity = requireActivity()
@@ -58,7 +74,7 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
             id = R.id.enro_internal_compose_fragment_view_id
             setContent {
                 val navigation = dev.enro.core.compose.navigationHandle()
-                rememberNavigationContainer(
+                val container = rememberNavigationContainer(
                     key = NavigationContainerKey.FromName("FragmentHostForCompose"),
                     initialBackstack = backstackOf(initialBackstack),
                     accept = { isRoot },
@@ -69,7 +85,11 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
                             false
                         }
                     },
-                ).Render()
+                )
+                container.Render()
+                SideEffect {
+                    container.setActive()
+                }
             }
         }
     }

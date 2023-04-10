@@ -11,8 +11,8 @@
         android:name=".ExampleApplication">
 
         <activity
-            android:name=".SplashScreenActivity"
             android:exported="true"
+            android:name=".MainActivity"
             android:theme="@style/AppTheme.SplashScreen"
             >
             <intent-filter>
@@ -20,8 +20,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".MainActivity" />
     </application>
 
 </manifest>

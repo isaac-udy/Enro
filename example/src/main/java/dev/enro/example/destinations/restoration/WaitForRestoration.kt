@@ -1,4 +1,4 @@
-package dev.enro.example
+package dev.enro.example.destinations.restoration
 
 import android.os.Bundle
 import androidx.compose.foundation.background
@@ -17,14 +17,14 @@ import dev.enro.core.compose.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class ExampleLockedScreenKey(
+data class WaitForRestoration(
     val previousState: Bundle
 ) : NavigationKey.SupportsPush
 
-@NavigationDestination(ExampleLockedScreenKey::class)
+@NavigationDestination(WaitForRestoration::class)
 @Composable
-fun ExampleLockedScreen() {
-    val navigation = navigationHandle<ExampleLockedScreenKey>()
+fun WaitForRestorationDestination() {
+    val navigation = navigationHandle<WaitForRestoration>()
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -35,7 +35,7 @@ fun ExampleLockedScreen() {
         Button(onClick = {
             navigation.present(RestoreRootState(navigation.key.previousState))
         }) {
-            Text("Unlock")
+            Text("Restore")
         }
     }
 }

@@ -1,16 +1,16 @@
-package dev.enro.example
+package dev.enro.example.destinations.compose
 
 import androidx.compose.runtime.Composable
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.example.ui.ExampleScreenTemplate
+import dev.enro.example.core.ui.ExampleScreenTemplate
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ExampleComposableKey : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
+class ExampleComposable : NavigationKey.SupportsPresent, NavigationKey.SupportsPush
 
 @Composable
-@NavigationDestination(ExampleComposableKey::class)
+@NavigationDestination(ExampleComposable::class)
 fun ExampleComposableScreen() {
     ExampleScreenTemplate("Composable")
 }

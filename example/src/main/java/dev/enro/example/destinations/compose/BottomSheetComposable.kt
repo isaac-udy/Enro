@@ -1,4 +1,4 @@
-package dev.enro.example
+package dev.enro.example.destinations.compose
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
@@ -10,16 +10,16 @@ import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.example.ui.ExampleScreenTemplate
+import dev.enro.example.core.ui.ExampleScreenTemplate
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ExampleComposableBottomSheetKey : NavigationKey.SupportsPresent
+class BottomSheetComposable : NavigationKey.SupportsPresent
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-@NavigationDestination(ExampleComposableBottomSheetKey::class)
-fun ExampleBottomSheetScreen() = BottomSheetDestination { bottomSheetState ->
+@NavigationDestination(BottomSheetComposable::class)
+fun BottomSheetScreen() = BottomSheetDestination { bottomSheetState ->
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetContent = {

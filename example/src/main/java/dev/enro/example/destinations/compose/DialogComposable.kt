@@ -1,4 +1,4 @@
-package dev.enro.example
+package dev.enro.example.destinations.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -8,19 +8,18 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
-import dev.enro.example.ui.ExampleScreenTemplate
+import dev.enro.example.core.ui.ExampleScreenTemplate
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
 @Parcelize
-class ExampleDialogComposableKey : NavigationKey.SupportsPresent
+class DialogComposable : NavigationKey.SupportsPresent
 
 @Composable
-@NavigationDestination(ExampleDialogComposableKey::class)
-fun ExampleDialogComposable() = DialogDestination {
+@NavigationDestination(DialogComposable::class)
+fun DialogComposableDestination() = DialogDestination {
     val navigation = navigationHandle()
 
-    // Note: Dialogs do not save their instance state correctly when the saved state exists only in the dialog
     Dialog(onDismissRequest = { navigation.close() }) {
         ExampleScreenTemplate(title = "Dialog Composable", modifier = Modifier)
     }

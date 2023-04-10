@@ -1,47 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout
+    android:id="@+id/rootContainer"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <FrameLayout
-        android:id="@+id/homeContainer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="#FFFFFFFF"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"/>
-
-    <FrameLayout
-        android:id="@+id/featuresContainer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="#FFFFFFFF"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"/>
-
-    <FrameLayout
-        android:id="@+id/profileContainer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="#FFFFFFFF"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"/>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
-        style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/main_navigation_menu" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    android:layout_height="match_parent"
+    android:background="#FFFFFFFF"
+    xmlns:android="http://schemas.android.com/apk/res/android"/>

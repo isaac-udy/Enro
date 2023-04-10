@@ -1,14 +1,25 @@
-package dev.enro.example.ui
+package dev.enro.example.core.ui
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -23,9 +34,14 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.container.emptyBackstack
 import dev.enro.core.parentContainer
-import dev.enro.example.*
 import dev.enro.example.R
-import dev.enro.example.data.sentenceId
+import dev.enro.example.core.data.sentenceId
+import dev.enro.example.destinations.compose.BottomSheetComposable
+import dev.enro.example.destinations.compose.DialogComposable
+import dev.enro.example.destinations.compose.ExampleComposable
+import dev.enro.example.destinations.fragment.DialogFragmentKey
+import dev.enro.example.destinations.fragment.ExampleFragment
+import dev.enro.example.destinations.restoration.SaveRootState
 import dev.enro.viewmodel.navigationHandle
 import dev.enro.viewmodel.withNavigationHandle
 import kotlinx.coroutines.delay
@@ -33,7 +49,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.UUID
 
 
 class ExampleScreenViewModel : ViewModel() {
@@ -166,20 +182,20 @@ fun ExampleScreenTemplate(
 }
 
 private fun defaultNavigationButtons(): List<Pair<String, AnyOpenInstruction>> = listOf(
-    "Push (Compose)" to NavigationInstruction.Push(ExampleComposableKey()),
-    "Push (Fragment)" to NavigationInstruction.Push(ExampleFragmentKey()),
+    "Push (Compose)" to NavigationInstruction.Push(ExampleComposable()),
+    "Push (Fragment)" to NavigationInstruction.Push(ExampleFragment()),
 )
 
 private fun defaultNavigationOverflow(): List<Pair<String, NavigationInstruction?>> = listOf(
     "Compose" to null,
-    "Present (Compose)" to NavigationInstruction.Present(ExampleComposableKey()),
-    "Present Dialog (Compose)" to NavigationInstruction.Present(ExampleDialogComposableKey()),
-    "Present Bottom Sheet (Compose)" to NavigationInstruction.Present(ExampleComposableBottomSheetKey()),
-    "Replace Root (Compose)" to NavigationInstruction.ReplaceRoot(ExampleComposableKey()),
+    "Present (Compose)" to NavigationInstruction.Present(ExampleComposable()),
+    "Present Dialog (Compose)" to NavigationInstruction.Present(DialogComposable()),
+    "Present Bottom Sheet (Compose)" to NavigationInstruction.Present(BottomSheetComposable()),
+    "Replace Root (Compose)" to NavigationInstruction.ReplaceRoot(ExampleComposable()),
     "Fragment" to null,
-    "Present (Fragment)" to NavigationInstruction.Present(ExampleFragmentKey()),
-    "Present Dialog (Fragment)" to NavigationInstruction.Present(ExampleDialogFragmentKey()),
-    "Replace Root (Fragment)" to NavigationInstruction.ReplaceRoot(ExampleFragmentKey()),
+    "Present (Fragment)" to NavigationInstruction.Present(ExampleFragment()),
+    "Present Dialog (Fragment)" to NavigationInstruction.Present(DialogFragmentKey()),
+    "Replace Root (Fragment)" to NavigationInstruction.ReplaceRoot(ExampleFragment()),
     "" to null,
     "Save/Restore State" to NavigationInstruction.Present(SaveRootState()),
     "Close" to NavigationInstruction.Close,

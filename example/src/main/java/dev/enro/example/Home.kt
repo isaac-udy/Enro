@@ -7,9 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.forward
 import dev.enro.core.getNavigationHandle
+import dev.enro.core.push
 import dev.enro.example.databinding.FragmentHomeBinding
+import dev.enro.example.destinations.fragment.ExampleFragment
 import kotlinx.parcelize.Parcelize
 
 
@@ -31,7 +32,7 @@ class HomeFragment : Fragment() {
         FragmentHomeBinding.bind(view).apply {
             launchExample.setOnClickListener {
                 getNavigationHandle()
-                    .forward(ExampleFragmentKey())
+                    .push(ExampleFragment())
             }
         }
     }
