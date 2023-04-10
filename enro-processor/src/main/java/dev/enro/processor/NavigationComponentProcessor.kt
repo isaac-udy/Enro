@@ -11,7 +11,6 @@ import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
-import javax.tools.Diagnostic
 
 @IncrementalAnnotationProcessor(IncrementalAnnotationProcessorType.AGGREGATING)
 @AutoService(Processor::class)
@@ -42,35 +41,12 @@ class NavigationComponentProcessor : BaseProcessor() {
                 components,
                 bindings
             )
-            components.forEach { generateComponent(it, generatedModule) }
+            components.forEach { generateComponent(it, generatedModule, bindings) }
         }
         return true
     }
 
-    private fun generateComponent(component: Element, generatedModuleName: String?) {
-        val destinations = processingEnv.elementUtils
-            .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
-            .runCatching {
-                enclosedElements
-            }
-            .getOrNull()
-            .orEmpty()
-            .apply {
-                if(isEmpty()) {
-                    processingEnv.messager.printMessage(Diagnostic.Kind.WARNING, "Created a NavigationComponent but found no navigation destinations. This can indicate that the dependencies which define the @NavigationDestination annotated classes are not on the compile classpath for this module, or that you have forgotten to apply the enro-processor annotation processor to the modules that define the @NavigationDestination annotated classes.")
-                }
-            }
-            .mapNotNull {
-                val annotation = it.getAnnotation(GeneratedNavigationBinding::class.java)
-                    ?: return@mapNotNull null
-
-                NavigationDestinationArguments(
-                    generatedBinding = it,
-                    destination = annotation.destination,
-                    navigationKey = annotation.navigationKey
-                )
-            }
-
+    private fun generateComponent(component: Element, generatedModuleName: String?, generatedModuleBindings: List<Element>) {
         val modules =  processingEnv.elementUtils
             .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
             .runCatching {
@@ -78,9 +54,38 @@ class NavigationComponentProcessor : BaseProcessor() {
             }
             .getOrNull()
             .orEmpty()
+            .filter {
+                it.getAnnotation(GeneratedNavigationModule::class.java) != null
+            }
+
+        val destinations = modules
+            .flatMap {
+                val annotation = it.getAnnotation(GeneratedNavigationModule::class.java)
+                    ?: return@flatMap emptyList<NavigationDestinationArguments>()
+
+                annotation.bindings.map {
+                    val binding = processingEnv.elementUtils.getTypeElement(getNameFromKClass { it })
+                    val bindingAnnotation = binding.getAnnotation(GeneratedNavigationBinding::class.java)
+                    NavigationDestinationArguments(
+                        generatedBinding = binding,
+                        destination = bindingAnnotation.destination,
+                        navigationKey = bindingAnnotation.navigationKey
+                    )
+                }
+            }
+            .plus(
+                generatedModuleBindings.map {
+                    val annotation = it.getAnnotation(GeneratedNavigationBinding::class.java)
+                    NavigationDestinationArguments(
+                        generatedBinding = it,
+                        destination = annotation.destination,
+                        navigationKey = annotation.navigationKey
+                    )
+                }
+            )
+
+        val moduleNames = modules
             .mapNotNull {
-                it.getAnnotation(GeneratedNavigationModule::class.java)
-                    ?: return@mapNotNull null
                 it.getElementName() + ".class"
             }
             .let {
@@ -98,15 +103,15 @@ class NavigationComponentProcessor : BaseProcessor() {
                     .getPackageElement(EnroProcessor.GENERATED_PACKAGE)
             )
             .apply {
-                destinations.forEach {
-                    addOriginatingElement(it.generatedBinding)
+                modules.forEach {
+                    addOriginatingElement(it)
                 }
             }
             .addGeneratedAnnotation()
             .addAnnotation(
                 AnnotationSpec.builder(GeneratedNavigationComponent::class.java)
                     .addMember("bindings", "{\n${destinations.joinToString(separator = ",\n") { it.generatedBinding.toString() + ".class" }}\n}")
-                    .addMember("modules", "{\n$modules\n}")
+                    .addMember("modules", "{\n$moduleNames\n}")
                     .build()
             )
             .addModifiers(Modifier.PUBLIC)
