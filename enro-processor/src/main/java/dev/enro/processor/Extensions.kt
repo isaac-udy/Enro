@@ -2,6 +2,7 @@ package dev.enro.processor
 
 import com.squareup.javapoet.ClassName
 import javax.lang.model.type.MirroredTypeException
+import javax.lang.model.type.MirroredTypesException
 import kotlin.reflect.KClass
 
 internal object EnroProcessor {
@@ -39,5 +40,16 @@ internal fun getNameFromKClass(block: () -> KClass<*>) : String {
     }
     catch (ex: MirroredTypeException) {
         return ClassName.get(ex.typeMirror).toString()
+    }
+}
+
+internal fun getNamesFromKClasses(block: () -> Array<KClass<*>>) : List<String> {
+    try {
+        return block().map { it.java.name }
+    }
+    catch (ex: MirroredTypesException) {
+        return ex.typeMirrors.map {
+            ClassName.get(it).toString()
+        }
     }
 }

@@ -63,8 +63,9 @@ class NavigationComponentProcessor : BaseProcessor() {
                 val annotation = it.getAnnotation(GeneratedNavigationModule::class.java)
                     ?: return@flatMap emptyList<NavigationDestinationArguments>()
 
-                annotation.bindings.map {
-                    val binding = processingEnv.elementUtils.getTypeElement(getNameFromKClass { it })
+                val bindings = getNamesFromKClasses { annotation.bindings }
+                bindings.map { bindingName ->
+                    val binding = processingEnv.elementUtils.getTypeElement(bindingName)
                     val bindingAnnotation = binding.getAnnotation(GeneratedNavigationBinding::class.java)
                     NavigationDestinationArguments(
                         generatedBinding = binding,
