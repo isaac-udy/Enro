@@ -4,23 +4,14 @@ import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.SwipeableDefaults
-import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import dev.enro.core.AdvancedEnroApi
 import dev.enro.core.compose.OverrideNavigationAnimations
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.parentContainer
 import dev.enro.core.requestClose
+import kotlinx.coroutines.isActive
 
 
 @Composable
@@ -47,7 +38,11 @@ public fun ModalBottomSheetState.bindToNavigationHandle(): ModalBottomSheetState
 
     LaunchedEffect(isInBackstack, isInitialised, isActive, isVisible) {
         when {
-            !isInitialised -> show().also {
+            !isInitialised -> {
+                // In some cases, full screen dialogs and other things that don't necessarily render immediately
+                // can cause the show animation to be cancelled, so when we're initialising, we're going to
+                // force the show by looping until isVisible is true
+                while(!isVisible && this@LaunchedEffect.isActive) { runCatching { show() } }
                 isInitialised = true
             }
             isActive -> if(!isVisible) {
