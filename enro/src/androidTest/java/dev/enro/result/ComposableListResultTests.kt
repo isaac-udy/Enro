@@ -1,20 +1,23 @@
 package dev.enro.result
 
 import androidx.activity.ComponentActivity
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -29,7 +32,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 
 
@@ -132,10 +135,6 @@ class ComposableListResultTests {
         var scrollFinished = false
         val activeItems = AtomicInteger(0)
         composeContentRule.setContent {
-            val screenHeight = with(LocalDensity.current) {
-                LocalConfiguration.current.screenHeightDp.dp.toPx()
-            }
-
             LazyColumn(
                 state = state
             ) {
@@ -152,7 +151,7 @@ class ComposableListResultTests {
 
             LaunchedEffect(true) {
                 while(state.firstVisibleItemIndex < 500) {
-                    state.animateScrollBy(screenHeight * 0.2f, tween(easing = LinearEasing))
+                    state.animateScrollToItem(state.firstVisibleItemIndex + 10, 0)
                 }
                 scrollFinished = true
             }
