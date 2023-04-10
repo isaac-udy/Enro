@@ -123,7 +123,7 @@ public fun NavigationContext<*>.findRootContainer(): NavigationContainer? {
 
     var parentContainer = parentContainer()
     while(parentContainer != null) {
-        val nextParent = parentContainer()
+        val nextParent = parentContainer.parentContainer()
         if (nextParent == parentContainer) return parentContainer
         parentContainer = nextParent ?: return parentContainer
     }
