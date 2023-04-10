@@ -6,13 +6,34 @@ import android.util.Log
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
-import androidx.fragment.app.*
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
-import dev.enro.core.*
-import dev.enro.core.container.*
+import androidx.fragment.app.FragmentTransaction
+import androidx.fragment.app.commitNow
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.DefaultAnimations
+import dev.enro.core.NavigationAnimationOverrideBuilder
+import dev.enro.core.NavigationAnimationTransition
+import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationHost
+import dev.enro.core.NavigationKey
+import dev.enro.core.R
+import dev.enro.core.activity
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationBackstackTransition
+import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.close
+import dev.enro.core.container.getAnimationsForEntering
+import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.core.navigationContext
 import dev.enro.extensions.animate
 import dev.enro.extensions.getParcelableCompat
 
@@ -106,8 +127,9 @@ public class FragmentNavigationContainer internal constructor(
             && !activePushed.fragment.isAdded
             && activePushed.fragment.view != null
         ) {
+            val hasAnimation = activePushed.fragment.view?.animation != null
             activePushed.fragment.view?.clearAnimation()
-            return false
+            if (hasAnimation) return false
         }
 
         val toPresent = getFragmentsToPresent(backstack)
