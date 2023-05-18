@@ -43,7 +43,12 @@ android {
 
 dependencies {
     implementation project(":enro")
-    kapt project(":enro-processor")
+    if (project.hasProperty("enroExampleUseKapt")) {
+        kapt project(":enro-processor")
+    }
+    else {
+        ksp project(":enro-processor")
+    }
 
     lintChecks(project(":enro-lint"))
 
