@@ -6,16 +6,18 @@ publishJavaModule("dev.enro", "enro-processor")
 dependencies {
     implementation deps.kotlin.stdLib
 
+    implementation deps.processing.ksp
+
     implementation deps.processing.incremental
     kapt deps.processing.incrementalProcessor
 
     implementation deps.processing.autoService
     kapt deps.processing.autoService
 
-    implementation deps.processing.jsr250
-
     implementation project(":enro-annotations")
     implementation deps.processing.javaPoet
+    implementation deps.processing.kotlinPoet
+    implementation deps.processing.kotlinPoet.ksp
 }
 
 afterEvaluate {

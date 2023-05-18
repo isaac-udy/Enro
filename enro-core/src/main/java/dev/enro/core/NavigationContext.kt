@@ -35,10 +35,6 @@ public sealed class NavigationContext<ContextType : Any>(
     public abstract val savedStateRegistryOwner: SavedStateRegistryOwner
     public abstract val lifecycleOwner: LifecycleOwner
 
-    internal val binding: NavigationBinding<*, ContextType>? by lazy {
-        controller.bindingForDestinationType(contextReference::class) as? NavigationBinding<*, ContextType>
-    }
-
     public val containerManager: NavigationContainerManager = NavigationContainerManager()
 }
 

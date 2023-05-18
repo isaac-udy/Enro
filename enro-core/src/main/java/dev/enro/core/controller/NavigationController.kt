@@ -36,12 +36,6 @@ public class NavigationController internal constructor() {
         addModuleToController(component)
     }
 
-    public fun bindingForDestinationType(
-        destinationType: KClass<*>
-    ): NavigationBinding<*, *>? {
-        return navigationBindingRepository.bindingForDestinationType(destinationType)
-    }
-
     public fun bindingForKeyType(
         keyType: KClass<out NavigationKey>
     ): NavigationBinding<*, *>? {

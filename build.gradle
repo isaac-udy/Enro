@@ -9,6 +9,7 @@ buildscript {
         classpath deps.kotlin.gradle
         classpath deps.hilt.gradle
         classpath "wtf.emulator:gradle-plugin:0.0.11"
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0'
     }
 }
 
