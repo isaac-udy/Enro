@@ -74,7 +74,7 @@ object NavigationComponentGenerator {
                         bindings.forEach {
                             addStatement(
                                 "%T().invoke(navigationModuleScope)",
-                                ClassName.bestGuess(it.binding)
+                                ClassName(EnroLocation.GENERATED_PACKAGE, it.binding.split(".").last())
                             )
                         }
                     }

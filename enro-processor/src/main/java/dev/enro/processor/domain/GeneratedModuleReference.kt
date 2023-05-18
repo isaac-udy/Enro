@@ -54,7 +54,6 @@ sealed class GeneratedModuleReference {
                     val bindingAnnotation = binding.getAnnotationsByType(GeneratedNavigationBinding::class).first()
 
                     GeneratedBindingReference.Kotlin(
-                        resolver = resolver,
                         binding = bindingName,
                         destination = bindingAnnotation.destination,
                         navigationKey = bindingAnnotation.navigationKey
