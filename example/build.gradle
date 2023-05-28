@@ -10,11 +10,13 @@ useCompose()
 
 android {
     compileSdkVersion 33
+    compileSdkPreview "UpsideDownCake"
 
     defaultConfig {
         applicationId "dev.enro.example"
         minSdkVersion 21
         targetSdkVersion 33
+        targetSdkPreview "UpsideDownCake"
         versionCode 1
         versionName "1.0"
 

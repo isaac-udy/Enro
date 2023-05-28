@@ -8,10 +8,12 @@ ext.androidLibrary = {
 
     android {
         compileSdkVersion 33
+        compileSdkPreview "UpsideDownCake"
 
         defaultConfig {
             minSdkVersion 21
             targetSdkVersion 33
+            targetSdkPreview "UpsideDownCake"
             versionCode versionProperties.getProperty("versionCode").toInteger()
             versionName versionProperties.getProperty("versionName")
 

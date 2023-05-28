@@ -3,12 +3,14 @@ package dev.enro.core.controller.lifecycle
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import android.util.Log
+import android.window.BackEvent
 import androidx.activity.ComponentActivity
-import androidx.activity.addCallback
+import androidx.activity.OnBackPressedCallback
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import dev.enro.core.ActivityContext
-import dev.enro.core.compatability.interceptBackPressForAndroidxNavigation
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
 import dev.enro.core.container.emptyBackstack
@@ -16,10 +18,7 @@ import dev.enro.core.containerManager
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.fragment.container.FragmentNavigationContainer
-import dev.enro.core.getNavigationHandle
-import dev.enro.core.leafContext
 import dev.enro.core.navigationContext
-import dev.enro.core.requestClose
 
 internal class ActivityLifecycleCallbacksForEnro(
     private val onNavigationContextCreated: OnNavigationContextCreated,
@@ -62,12 +61,31 @@ internal class ActivityLifecycleCallbacksForEnro(
         }
 
         onNavigationContextCreated(navigationContext, savedInstanceState)
+        activity.onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+            }
 
-        activity.onBackPressedDispatcher.addCallback(activity) {
-            val leafContext = navigationContext.leafContext()
-            if (interceptBackPressForAndroidxNavigation(this, leafContext)) return@addCallback
-            leafContext.getNavigationHandle().requestClose()
-        }
+            @RequiresApi(34)
+            override fun handleOnBackProgressed(backEvent: BackEvent) {
+                isEnabled = false
+                activity.onBackPressedDispatcher.dispatchOnBackProgressed(backEvent)
+                isEnabled = true
+                Log.e("Back", "handleOnBackProgressed ${activity.window.decorView.rootView} ${backEvent.swipeEdge} ${backEvent.progress}")
+            }
+
+            @RequiresApi(34)
+            override fun handleOnBackStarted(backEvent: BackEvent) {
+                isEnabled = false
+                activity.onBackPressedDispatcher.dispatchOnBackStarted(backEvent)
+                isEnabled = true
+                Log.e("Back", "handleOnBackStarted ${backEvent.swipeEdge} ${backEvent.progress}")
+            }
+        })
+//        activity.onBackPressedDispatcher.addCallback(activity) {
+//            val leafContext = navigationContext.leafContext()
+//            if (interceptBackPressForAndroidxNavigation(this, leafContext)) return@addCallback
+//            leafContext.getNavigationHandle().requestClose()
+//        }
     }
 
     override fun onActivitySaveInstanceState(
