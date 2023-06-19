@@ -21,14 +21,17 @@ sealed class GeneratedModuleReference {
         val resolver: Resolver,
         val declaration: KSClassDeclaration
     ) : GeneratedModuleReference() {
-        val sources: List<KSFile> = listOf(requireNotNull(declaration.containingFile))
+        // containingFiles from references from other gradle modules will
+        // return null here, so we're going to filter nulls here.
+        // This means that sources may be an empty list, but that is expected in some cases.
+        val sources: List<KSFile> = listOf(declaration.containingFile)
             .plus(
                 bindings.map {
-                    val bindingDeclaration =
-                        requireNotNull(resolver.getClassDeclarationByName(it.binding))
-                    requireNotNull(bindingDeclaration.containingFile)
+                    val bindingDeclaration = requireNotNull(resolver.getClassDeclarationByName(it.binding))
+                    bindingDeclaration.containingFile
                 }
             )
+            .filterNotNull()
     }
 
     class Java(
