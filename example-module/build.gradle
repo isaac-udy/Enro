@@ -1,18 +1,17 @@
 plugins {
     id("com.google.devtools.ksp") version "1.8.0-1.0.9"
 }
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'dagger.hilt.android.plugin'
+
 useCompose()
 
 android {
     compileSdkVersion 33
-
+    namespace "dev.enro.example.module"
     defaultConfig {
-        applicationId "dev.enro.example"
         minSdkVersion 21
         targetSdkVersion 33
         versionCode 1
@@ -21,12 +20,6 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
@@ -43,7 +36,6 @@ android {
 
 dependencies {
     implementation project(":enro")
-    implementation project(":example-module")
     if (project.hasProperty("enroExampleUseKapt")) {
         kapt project(":enro-processor")
     }
@@ -57,14 +49,11 @@ dependencies {
     implementation deps.compose.accompanist.systemUiController
 
     implementation deps.hilt.android
-    kapt deps.hilt.compiler
-    kapt deps.hilt.androidCompiler
 
     debugImplementation deps.leakcanary
 
     implementation deps.kotlin.stdLib
     implementation deps.androidx.core
-    implementation deps.androidx.splashscreen
     implementation deps.androidx.appcompat
     implementation deps.androidx.lifecycle
     implementation deps.androidx.constraintlayout

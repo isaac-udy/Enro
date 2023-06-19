@@ -23,6 +23,7 @@ import dev.enro.example.destinations.fragment.ExampleFragment
 import dev.enro.example.destinations.listdetail.compose.ListDetailComposable
 import dev.enro.example.destinations.result.ResultExampleKey
 import dev.enro.example.destinations.synthetic.SimpleMessage
+import dev.enro.example.module.ExampleModuleScreen
 import kotlinx.parcelize.Parcelize
 
 
@@ -86,7 +87,10 @@ val features = listOf(
                 Enro was built with multi-module support as a key consideration. 
 
                 To support navigation between Fragments and Activities that don't know about each other, simply define your NavigationKeys in a shared module. Enro's annotation processor takes care of the rest!
-            """.trimIndent()
+            """.trimIndent(),
+            positiveActionInstruction = NavigationInstruction.Push(
+                ExampleModuleScreen()
+            )
         )
     ),
     FeatureDescription(

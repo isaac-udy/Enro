@@ -92,3 +92,4 @@ dependencyResolutionManagement {
     }
 }
 include ':enro:hilt-test'
+include ':example-module'
