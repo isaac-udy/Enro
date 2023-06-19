@@ -9,7 +9,7 @@ import dev.enro.core.*
 @Composable
 public inline fun <reified T : NavigationKey> navigationHandle(): TypedNavigationHandle<T> {
     val navigationHandle = navigationHandle()
-    return remember {
+    return remember(navigationHandle) {
         navigationHandle.asTyped()
     }
 }
@@ -19,7 +19,7 @@ public fun navigationHandle(): NavigationHandle {
     val localNavigationHandle = LocalNavigationHandle.current
     val localViewModelStoreOwner = LocalViewModelStoreOwner.current
 
-    return remember {
+    return remember(localNavigationHandle, localViewModelStoreOwner) {
         localNavigationHandle ?: localViewModelStoreOwner!!.getNavigationHandle()
     }
 }

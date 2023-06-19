@@ -5,6 +5,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -243,7 +246,15 @@ public val containerManager: NavigationContainerManager
     @Composable
     get() {
         val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
-        return remember {
+
+        val context = LocalContext.current
+        val view = LocalView.current
+        val lifecycleOwner = LocalLifecycleOwner.current
+
+        // The navigation context attached to a NavigationHandle may change when the Context, View,
+        // or LifecycleOwner changes, so we're going to re-query the navigation context whenever
+        // any of these change, to ensure the container always has an up-to-date NavigationContext
+        return remember(context, view, lifecycleOwner) {
             viewModelStoreOwner
                 .navigationContext!!
                 .containerManager
