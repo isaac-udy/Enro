@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import dev.enro.core.*
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.ContainerRegistrationStrategy
@@ -65,13 +66,15 @@ public fun rememberNavigationContainer(
     accept: (NavigationKey) -> Boolean = { true },
 ): ComposableNavigationContainer {
     val localNavigationHandle = navigationHandle()
-
-    val navigationContainer = remember {
-        val context = localNavigationHandle.requireNavigationContext()
-        val existingContainer = context.containerManager.getContainer(key) as? ComposableNavigationContainer
+    val context = LocalContext.current
+    val localNavigationContext = remember(context) {
+        localNavigationHandle.requireNavigationContext()
+    }
+    val navigationContainer = remember(localNavigationContext.containerManager) {
+        val existingContainer = localNavigationContext.containerManager.getContainer(key) as? ComposableNavigationContainer
         existingContainer ?: ComposableNavigationContainer(
             key = key,
-            parentContext = context,
+            parentContext = localNavigationContext,
             accept = accept,
             emptyBehavior = emptyBehavior,
             interceptor = interceptor,
