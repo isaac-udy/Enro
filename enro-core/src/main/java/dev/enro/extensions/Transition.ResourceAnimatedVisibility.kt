@@ -136,6 +136,7 @@ private fun Transition<Boolean>.animateAnimResource(
             ResourceAnimationState.forAnimationStart(targetState)
         )
     }
+    val isCompleted = targetState == currentState
 
     val anim = remember(resourceId, targetState) {
         AnimationUtils.loadAnimation(context, resourceId).apply {
@@ -150,6 +151,10 @@ private fun Transition<Boolean>.animateAnimResource(
     )
 
     LaunchedEffect(anim) {
+        if (isCompleted) {
+            state.value = ResourceAnimationState.forAnimationEnd(targetState)
+            return@LaunchedEffect
+        }
         withContext(Dispatchers.IO) {
             val startTime = System.currentTimeMillis()
             val transformation = Transformation()
@@ -198,6 +203,8 @@ private fun Transition<Boolean>.animateAnimatorResource(
             ResourceAnimationState.forAnimationStart(targetState)
         )
     }
+    val isCompleted = targetState == currentState
+
     val animator = remember(resourceId, targetState) {
         AnimatorInflater.loadAnimator(context, resourceId)
     }
@@ -211,6 +218,10 @@ private fun Transition<Boolean>.animateAnimatorResource(
     ) { if (it) 1.0f else 0.0f }
 
     LaunchedEffect(animator) {
+        if (isCompleted) {
+            state.value = ResourceAnimationState.forAnimationEnd(targetState)
+            return@LaunchedEffect
+        }
         val startTime = System.currentTimeMillis()
         val animatorView = AnimatorView(context).apply {
             layoutParams = ViewGroup.LayoutParams(size.width, size.height)
