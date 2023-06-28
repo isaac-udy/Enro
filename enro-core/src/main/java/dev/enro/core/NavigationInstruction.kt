@@ -31,7 +31,7 @@ public sealed class NavigationDirection : Parcelable {
     public object ReplaceRoot : NavigationDirection()
 
     public companion object {
-        public fun defaultDirection(navigationKey: NavigationKey) : NavigationDirection {
+        public fun defaultDirection(navigationKey: NavigationKey): NavigationDirection {
             return when (navigationKey) {
                 is NavigationKey.SupportsPush -> Push
                 is NavigationKey.SupportsPresent -> Present
@@ -61,7 +61,7 @@ public sealed class NavigationInstruction {
         @Suppress("UNCHECKED_CAST")
         public fun copy(
             instructionId: String = UUID.randomUUID().toString()
-        ) : Open<T> = internal.copy(
+        ): Open<T> = internal.copy(
             navigationDirection = navigationDirection,
             instructionId = instructionId,
             extras = extras.toMutableMap()
@@ -73,7 +73,7 @@ public sealed class NavigationInstruction {
         internal data class OpenInternal<T : NavigationDirection> constructor(
             override val navigationDirection: T,
             override val navigationKey: NavigationKey,
-            override val extras: @RawValue  MutableMap<String, Any> = mutableMapOf(),
+            override val extras: @RawValue MutableMap<String, Any> = mutableMapOf(),
             override val instructionId: String = UUID.randomUUID().toString(),
             val previouslyActiveContainer: NavigationContainerKey? = null,
             val openingType: Class<out Any> = Any::class.java,
@@ -121,7 +121,7 @@ public sealed class NavigationInstruction {
 
     public sealed class Close : NavigationInstruction() {
         public companion object : Close()
-        public class WithResult(public val result: Any): Close() {
+        public class WithResult(public val result: Any) : Close() {
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
                 if (javaClass != other?.javaClass) return false
@@ -178,6 +178,16 @@ public sealed class NavigationInstruction {
         )
 
         @Suppress("FunctionName")
+        public fun Push(
+            navigationKey: NavigationKey.WithExtras<out NavigationKey.SupportsPush>,
+        ): Open<NavigationDirection.Push> = Open.OpenInternal(
+            navigationDirection = NavigationDirection.Push,
+            navigationKey = navigationKey.navigationKey,
+        ).apply {
+            extras.putAll(navigationKey.extras)
+        }
+
+        @Suppress("FunctionName")
         public fun Present(
             navigationKey: NavigationKey.SupportsPresent,
         ): Open<NavigationDirection.Present> = Open.OpenInternal(
@@ -186,12 +196,32 @@ public sealed class NavigationInstruction {
         )
 
         @Suppress("FunctionName")
+        public fun Present(
+            navigationKey: NavigationKey.WithExtras<out NavigationKey.SupportsPresent>,
+        ): Open<NavigationDirection.Present> = Open.OpenInternal(
+            navigationDirection = NavigationDirection.Present,
+            navigationKey = navigationKey.navigationKey,
+        ).apply {
+            extras.putAll(navigationKey.extras)
+        }
+
+        @Suppress("FunctionName")
         public fun ReplaceRoot(
             navigationKey: NavigationKey.SupportsPresent,
         ): Open<NavigationDirection.ReplaceRoot> = Open.OpenInternal(
             navigationDirection = NavigationDirection.ReplaceRoot,
             navigationKey = navigationKey,
         )
+
+        @Suppress("FunctionName")
+        public fun ReplaceRoot(
+            navigationKey: NavigationKey.WithExtras<out NavigationKey.SupportsPresent>,
+        ): Open<NavigationDirection.ReplaceRoot> = Open.OpenInternal(
+            navigationDirection = NavigationDirection.ReplaceRoot,
+            navigationKey = navigationKey.navigationKey,
+        ).apply {
+            extras.putAll(navigationKey.extras)
+        }
 
         @Suppress("FunctionName")
         @Deprecated("You should only use ReplaceRoot with a NavigationKey that extends SupportsPresent")

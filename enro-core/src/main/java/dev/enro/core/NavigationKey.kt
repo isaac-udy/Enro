@@ -12,6 +12,31 @@ public interface NavigationKey : Parcelable {
     public interface SupportsPresent : NavigationKey {
         public interface WithResult<T: Any> : SupportsPresent, NavigationKey.WithResult<T>
     }
+
+    public data class WithExtras<T: NavigationKey> internal constructor(
+        val navigationKey: T,
+        val extras: Map<String, Any>,
+    )
+}
+
+public fun <T: NavigationKey> T.withExtra(
+    key: String,
+    value: Any,
+): NavigationKey.WithExtras<T> {
+    return NavigationKey.WithExtras(
+        navigationKey = this,
+        extras = mapOf(key to value)
+    )
+}
+
+public fun <T: NavigationKey> NavigationKey.WithExtras<T>.withExtra(
+    key: String,
+    value: Any,
+): NavigationKey.WithExtras<T> {
+    return NavigationKey.WithExtras(
+        navigationKey = navigationKey,
+        extras = extras + (key to value)
+    )
 }
 
 /**

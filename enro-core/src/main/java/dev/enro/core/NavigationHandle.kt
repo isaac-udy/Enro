@@ -65,14 +65,28 @@ public fun NavigationHandle.push(key: NavigationKey.SupportsPush) {
     executeInstruction(NavigationInstruction.Push(key))
 }
 
+public fun NavigationHandle.push(key: NavigationKey.WithExtras<out NavigationKey.SupportsPush>) {
+    executeInstruction(NavigationInstruction.Push(key))
+}
+
 public fun NavigationHandle.present(
     key: NavigationKey.SupportsPresent,
 ) {
     executeInstruction(NavigationInstruction.Present(key))
 }
 
+public fun NavigationHandle.present(key: NavigationKey.WithExtras<out NavigationKey.SupportsPresent>) {
+    executeInstruction(NavigationInstruction.Present(key))
+}
+
 public fun NavigationHandle.replaceRoot(
     key: NavigationKey.SupportsPresent,
+) {
+    executeInstruction(NavigationInstruction.ReplaceRoot(key))
+}
+
+public fun NavigationHandle.replaceRoot(
+    key: NavigationKey.WithExtras<out NavigationKey.SupportsPresent>,
 ) {
     executeInstruction(NavigationInstruction.ReplaceRoot(key))
 }
