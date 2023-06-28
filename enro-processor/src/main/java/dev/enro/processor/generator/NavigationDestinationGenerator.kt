@@ -9,7 +9,7 @@ import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.ksp.toClassName
+import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationBinding
 import dev.enro.processor.domain.DestinationReference
@@ -100,17 +100,17 @@ object NavigationDestinationGenerator {
         return when {
             destination.isActivity -> addCode(
                 "navigationModuleScope.activityDestination<%T, %T>()",
-                destination.keyType.toClassName(),
+                destination.keyType.asStarProjectedType().toTypeName(),
                 destination.toClassName(),
             )
             destination.isFragment -> addCode(
                 "navigationModuleScope.fragmentDestination<%T, %T>()",
-                destination.keyType.toClassName(),
+                destination.keyType.asStarProjectedType().toTypeName(),
                 destination.toClassName(),
             )
             destination.isSyntheticClass -> addCode(
                 "navigationModuleScope.syntheticDestination<%T, %T>()",
-                destination.keyType.toClassName(),
+                destination.keyType.asStarProjectedType().toTypeName(),
                 destination.toClassName(),
             )
             destination.isSyntheticProvider -> addCode(
@@ -119,7 +119,7 @@ object NavigationDestinationGenerator {
             )
             destination.isComposable -> addCode(
                 "navigationModuleScope.composableDestination<%T> { %L() }",
-                destination.keyType.toClassName(),
+                destination.keyType.asStarProjectedType().toTypeName(),
                 requireNotNull(destination.declaration.simpleName).asString(),
             )
             else -> error("${destination.declaration.qualifiedName?.asString()}")
