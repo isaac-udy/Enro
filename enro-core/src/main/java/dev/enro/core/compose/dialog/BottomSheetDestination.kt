@@ -89,7 +89,7 @@ internal fun EnroBottomSheetContainer(
 ) {
     val state = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
-        confirmStateChange = remember(Unit) {
+        confirmValueChange = remember(Unit) {
             fun(it: ModalBottomSheetValue): Boolean {
                 val isHidden = it == ModalBottomSheetValue.Hidden
                 val isHalfExpandedAndSkipped = it == ModalBottomSheetValue.HalfExpanded
@@ -102,7 +102,7 @@ internal fun EnroBottomSheetContainer(
                 }
                 return true
             }
-        }
+        }, skipHalfExpanded = destination.bottomSheetConfiguration.skipHalfExpanded
     )
     destination.bottomSheetConfiguration.bottomSheetState = state
     LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
@@ -126,9 +126,15 @@ internal fun EnroBottomSheetContainer(
 
     LaunchedEffect(true) {
         if (destination.bottomSheetConfiguration.animatesToInitialState) {
+            // wouldn't setting the initialValue animate to that automatically?
+            // why do you need to set Hidden and then call show?
             state.show()
         } else {
-            state.snapTo(ModalBottomSheetValue.Expanded)
+            state.show()
+            // snapTo is internal in compose 1.4
+            // potentially initialValue = ModalBottomSheetValue.Expanded,
+            // and a custom animationSpec is the appropriate replacement?
+            // state.snapTo(ModalBottomSheetValue.Expanded)
         }
     }
 }
