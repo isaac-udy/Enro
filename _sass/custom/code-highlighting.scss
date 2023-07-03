@@ -10,7 +10,7 @@ $code-function-name: #ffc66d;
 $code-primitive-string: #6A8759;
 $code-comment: #999999;
 
-.language-kotlin {
+.highlighter-rogue {
     background-color: $code-block-background-color !important;
     line-height: normal;
 
@@ -26,7 +26,11 @@ $code-comment: #999999;
             color: $code-normal-text;
             white-space: pre-wrap;
         }
+    }
+}
 
+.language-kotlin {
+    > .highlight {
         .p {
             color: $code-normal-text;
         }
@@ -67,17 +71,7 @@ $code-comment: #999999;
 }
 
 .language-xml {
-    background-color: $code-block-background-color !important;
-    line-height: normal;
-
     > .highlight {
-        line-height: 1;
-        code {
-            background-color: transparent;
-            border: none;
-            color: $code-normal-text;
-            white-space: pre-wrap;
-        }
         .s {
             color: $code-primitive-string;
         } 
