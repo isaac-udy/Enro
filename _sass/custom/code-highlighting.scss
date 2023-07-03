@@ -17,8 +17,11 @@ $code-comment: #999999;
     > .highlight {
         line-height: 1;
         background: transparent !important;
+        pre {
+            background: transparent !important;
+        }
         code {
-            background-color: transparent;
+            background: transparent !important;
             border: none;
             color: $code-normal-text;
             white-space: pre-wrap;
