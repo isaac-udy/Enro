@@ -39,8 +39,8 @@ dependencyResolutionManagement {
             library("androidx-activity", "androidx.activity:activity-ktx:1.6.1")
             library("compose-activity", "androidx.activity:activity-compose:1.6.1")
 
-            library("androidx-lifecycle", "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0-beta01")
-            library("compose-viewmodel", "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0-beta01")
+            library("androidx-lifecycle", "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+            library("compose-viewmodel", "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
 
             library("compose-compiler", "androidx.compose.compiler:compiler:1.4.3")
             library("compose-foundation", "androidx.compose.foundation:foundation:1.4.3")
