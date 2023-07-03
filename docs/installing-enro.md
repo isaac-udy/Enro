@@ -7,7 +7,8 @@ The first step in installing Enro is to add the Gradle dependencies to your proj
 ```kotlin
 dependencies {
     implementation("dev.enro:enro:<latest_version>")
-    kapt("dev.enro:enro-processor:<latest_version>") // optional but highly recommended
+    ksp("dev.enro:enro-processor:<latest_version>") // optional but highly recommended
+    // kapt("dev.enro:enro-processor:<latest_version>") - if you're using KAPT not KSP
     testImplementation("dev.enro:enro-test:<latest_version>") // optional test extensions
 }
 ```
