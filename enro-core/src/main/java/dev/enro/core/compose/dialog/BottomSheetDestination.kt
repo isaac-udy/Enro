@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION", "DeprecatedCallableAddReplaceWith")
+
 package dev.enro.core.compose.dialog
 
 import android.annotation.SuppressLint
@@ -15,6 +17,7 @@ import dev.enro.core.*
 import dev.enro.core.container.setBackstack
 
 @ExperimentalMaterialApi
+@Deprecated("See the BottomSheetDestination interface")
 public class BottomSheetConfiguration : DialogConfiguration() {
     internal var skipHalfExpanded: Boolean = false
     internal lateinit var bottomSheetState: ModalBottomSheetState
@@ -41,21 +44,40 @@ public class BottomSheetConfiguration : DialogConfiguration() {
     }
 }
 
+/**
+ * Instead of creating destinations like this:
+ * ```
+ * @Composable
+ * fun BottomSheetDestination.ExampleDestination() {
+ *     configureBottomSheet()
+ * }
+ * ```
+ *
+ * please use the `BottomSheetDestination` function, like this:
+ * @Composable
+ * fun ExampleDestination() = BottomSheetDestination(/* configuration */) { state ->
+ *     configureBottomSheet()
+ * }
+ */
 @ExperimentalMaterialApi
+@Deprecated("Don't create destinations that use BottomSheetDestination as a receiver type, instead use the BottomSheetDestination function inside of the destination")
 public interface BottomSheetDestination {
     public val bottomSheetConfiguration: BottomSheetConfiguration
 }
 
 @OptIn(ExperimentalMaterialApi::class)
+@Deprecated("See the BottomSheetDestination interface")
 public val BottomSheetDestination.isDismissed: Boolean
     get() = bottomSheetConfiguration.isDismissed.value
 
 @ExperimentalMaterialApi
+@Deprecated("See the BottomSheetDestination interface")
 public val BottomSheetDestination.bottomSheetState: ModalBottomSheetState get() = bottomSheetConfiguration.bottomSheetState
 
 @ExperimentalMaterialApi
 @SuppressLint("ComposableNaming")
 @Composable
+@Deprecated("See the BottomSheetDestination interface")
 public fun BottomSheetDestination.configureBottomSheet(block: BottomSheetConfiguration.Builder.() -> Unit) {
     remember {
         BottomSheetConfiguration.Builder(bottomSheetConfiguration)
@@ -72,7 +94,7 @@ internal fun EnroBottomSheetContainer(
 ) {
     val state = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
-        confirmStateChange = remember(Unit) {
+        confirmValueChange = remember(Unit) {
             fun(it: ModalBottomSheetValue): Boolean {
                 val isHidden = it == ModalBottomSheetValue.Hidden
                 val isHalfExpandedAndSkipped = it == ModalBottomSheetValue.HalfExpanded
@@ -85,7 +107,8 @@ internal fun EnroBottomSheetContainer(
                 }
                 return true
             }
-        }
+        },
+        skipHalfExpanded = destination.bottomSheetConfiguration.skipHalfExpanded,
     )
     destination.bottomSheetConfiguration.bottomSheetState = state
     ModalBottomSheetLayout(
@@ -116,8 +139,8 @@ internal fun EnroBottomSheetContainer(
                 setBackstack { it.filterNot { it.navigationKey == navigationHandle.key } }
             }
         }
-        else {
-            state.show()
-        }
+    }
+    LaunchedEffect(state) {
+        state.show()
     }
 }

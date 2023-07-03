@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dev.enro.core.*
@@ -21,6 +20,7 @@ public enum class WindowInputMode(internal val mode: Int) {
     RESIZE(mode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE),
 }
 
+@Deprecated("See the DialogDestination interface")
 public open class DialogConfiguration {
     internal var isDismissed = mutableStateOf(false)
 
@@ -66,15 +66,34 @@ internal fun DialogConfiguration.ConfigureWindow() {
     }
 }
 
+/**
+ * Instead of creating destinations like this:
+ * ```
+ * @Composable
+ * fun DialogDestination.ExampleDestination() {
+ *     configureDialog { }
+ * }
+ * ```
+ *
+ * please use the `BottomSheetDestination` function, like this:
+ * @Composable
+ * fun ExampleDestination() = DialogDestination(/* configuration */) { state ->
+ *
+ * }
+ */
+@Deprecated("Don't create destinations that use DialogDestination as a receiver type, instead use the DialogDestination function inside of the destination")
 public interface DialogDestination {
     public val dialogConfiguration: DialogConfiguration
 }
 
+
+@Deprecated("See the DialogDestination interface")
 public val DialogDestination.isDismissed: Boolean
     get() = dialogConfiguration.isDismissed.value
 
 @SuppressLint("ComposableNaming")
 @Composable
+@Deprecated("See the DialogDestination interface")
 public fun DialogDestination.configureDialog(block: DialogConfiguration.Builder.() -> Unit) {
     remember {
         DialogConfiguration.Builder(dialogConfiguration)
@@ -82,7 +101,6 @@ public fun DialogDestination.configureDialog(block: DialogConfiguration.Builder.
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun EnroDialogContainer(
     navigationHandle: NavigationHandle,
