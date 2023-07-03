@@ -39,6 +39,7 @@ class ExampleNavigationKey(
 class ExampleViewModel : ViewModel() {
 
     private val navigation by navigationHandle<ExampleNavigationKey>()
+
 ```
 {:.code-not-important}
 ```kotlin
@@ -184,6 +185,7 @@ If you are using Hilt, and the Activity hosting your Composable destinations is 
 ### Activities and Fragments
 From an Activity or Fragment, you have two options for making sure that a ViewModel has a NavigationHandle available: 
 1. Use `by enroViewModels<T>()` instead of `by viewModels<T>()`
+
 ```kotlin
 
 class ExampleActivity : AppCompatActivity() {
@@ -197,6 +199,7 @@ class ExampleActivity : AppCompatActivity() {
 ```
 
 2. Use `withNavigationHandle()` to bind a NavigationHandle to an existing ViewModelProvider.Factory
+
 ```kotlin
 
 class ExampleActivity : AppCompatActivity() {
