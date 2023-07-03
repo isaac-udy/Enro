@@ -6,6 +6,7 @@ Enro allows ViewModels to access the `NavigationHandle` for the screen that they
 To get a NavigationHandle from inside of a ViewModel, use the `by navigationHandle<T>()` property delegate. This will return a `TypedNavigationHandle<T>`. For more information on what a NavigationHandle is, see [Navigation Handles](./navigation-handles.md).
 
 ```kotlin
+
 @Parcelize
 class ExampleNavigationKey(
     val exampleArgument: String
@@ -14,7 +15,7 @@ class ExampleNavigationKey(
 class ExampleViewModel : ViewModel() {
 
 ```
-{:.code-not-important .code-start}
+{:.code-not-important}
 ```kotlin
     private val navigation by navigationHandle<ExampleNavigationKey>()
 ```
@@ -22,12 +23,14 @@ class ExampleViewModel : ViewModel() {
 ```kotlin
 
 }
+
 ```
-{:.code-not-important .code-end}
+{:.code-not-important}
 
 With a NavigationHandle inside of your ViewModel, you are able to perform all the regular functions that are available on a NavigationHandle. 
 
 ```kotlin
+
 @Parcelize
 class ExampleNavigationKey(
     val exampleArgument: String
@@ -37,7 +40,7 @@ class ExampleViewModel : ViewModel() {
 
     private val navigation by navigationHandle<ExampleNavigationKey>()
 ```
-{:.code-not-important .code-start}
+{:.code-not-important}
 ```kotlin
     fun goToNextScreen() {
         val argument = navigation.key.exampleArgument
@@ -49,19 +52,21 @@ class ExampleViewModel : ViewModel() {
 ```kotlin
 
 }
+
 ```
-{:.code-not-important .code-end}
+{:.code-not-important}
 
 ## Handle Results
 ViewModels are also able to create result channels, and manage results. To create a NavigationResultChannel, use the `by registerForNavigationResult<T>()` property delegate. This will return a NavigationResultChannel that will handle results of type `T`. For more information of NavigationResultChannels, see [Navigation Results](./navigation-results.md).
 
 ```kotlin
+
 @Parcelize
 class ExampleViewModel : ViewModel() {
 
     private val navigation by navigationHandle<ExampleNavigationKey>()
 ```
-{:.code-not-important .code-start}
+{:.code-not-important}
 ```kotlin
     private val stringResultChannel by registerForNavigationResult<String> { result: String ->
         // ...
@@ -74,8 +79,9 @@ class ExampleViewModel : ViewModel() {
         stringResultChannel.present(RequestStringKey())
     }
 }
+
 ```
-{:.code-not-important .code-end}
+{:.code-not-important}
 
 ## Creating navigation aware ViewModels
 To ensure that a NavigationHandle is available for `by navigationHandle<T>()`, the `ViewModelProvider.Factory` that is used to create the ViewModel must be made aware of the local NavigationHandle. Exactly how this works depends on whether the navigation destination is an Activity/Fragment/Composable. 
@@ -86,6 +92,7 @@ By default, all Composable navigation destinations (i.e. Composables annotated w
 If you are passing a custom ViewModelProvider.Factory to this function, you will need to bind the NavigationHandle to the factory using `withNavigationHandle`.
 
 ```kotlin
+
 @Composable
 @NavigationDestination(ExampleNavigationKey::class)
 fun ViewModelExample() {
@@ -97,6 +104,7 @@ fun ViewModelExample() {
         factory = CustomViewModelFactory().withNavigationHandle()
     )
 }
+
 ```
 
 If you use the same custom ViewModelProvider.Factory for all screens in your application, you may want to globally set the ViewModel Factory for all Composable navigation destinations, and ensure that this globally set factory also provides a NavigationHandle.
@@ -106,6 +114,7 @@ To do this, you can configure the `composeEnvironment` in the `createNavigationC
 Here is an example of a `composeEnvironment` block which will wrap the LocalViewModelStoreOwner with a special ViewModelStoreOwner that implements HasDefaultViewModelProviderFactory, and provides a custom ViewModelProvider.Factory. This will allow any screen to use the Composable `viewModel<T>()` function without needing to specify a custom ViewModelProvider.Factory, and which will allow these ViewModels to access a NavigationHandle.  
 
 ```kotlin
+
 @NavigationComponent
 class ExampleApplication : Application(), NavigationApplication {
     override val navigationController = createNavigationController {
@@ -148,11 +157,13 @@ class WrappedViewModelStore(
             else -> super.defaultViewModelCreationExtras
         }
 }
+
 ```
 
 Enro provides a `ProvideViewModelFactory` utility method which can be used to achieve the same as the code above.
 
 ```kotlin
+
 @NavigationComponent
 class ExampleApplication : Application(), NavigationApplication {
     override val navigationController = createNavigationController {
@@ -164,6 +175,7 @@ class ExampleApplication : Application(), NavigationApplication {
         }
     }
 }
+
 ```
 
 #### Hilt
@@ -173,17 +185,20 @@ If you are using Hilt, and the Activity hosting your Composable destinations is 
 From an Activity or Fragment, you have two options for making sure that a ViewModel has a NavigationHandle available: 
 1. Use `by enroViewModels<T>()` instead of `by viewModels<T>()`
 ```kotlin
+
 class ExampleActivity : AppCompatActivity() {
     private val firstViewModel by enroViewModels<FirstViewModel>()
 
     private val secondViewModel by enroViewModels<SecondViewModel>(
         factoryProducer = { CustomViewModelFactory() }
     )
-} 
+}
+
 ```
 
 2. Use `withNavigationHandle()` to bind a NavigationHandle to an existing ViewModelProvider.Factory
 ```kotlin
+
 class ExampleActivity : AppCompatActivity() {
     
     private val navigation by navigationHandle()
@@ -193,4 +208,5 @@ class ExampleActivity : AppCompatActivity() {
         }
     )
 }
+
 ```
