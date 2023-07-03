@@ -12,6 +12,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
+import dev.enro.core.addOpenInstruction
 
 internal class ComposableDestinationSavedStateRegistryOwner(
     private val owner: ComposableDestinationOwner,
@@ -19,11 +20,13 @@ internal class ComposableDestinationSavedStateRegistryOwner(
 ) : SavedStateRegistryOwner {
 
     private val savedStateController = SavedStateRegistryController.create(this)
-    internal val savedState: Bundle = (
-            savedInstanceState
-                ?: owner.parentSavedStateRegistry.consumeRestoredStateForKey(owner.instruction.instructionId)
-                ?: Bundle()
-        ).also { savedStateController.performRestore(it) }
+    internal val savedState: Bundle = run {
+        savedInstanceState
+            ?: owner.parentSavedStateRegistry.consumeRestoredStateForKey(owner.instruction.instructionId)
+            ?: Bundle()
+    }
+        .also { it.addOpenInstruction(owner.instruction) }
+        .also { savedStateController.performRestore(it) }
 
     private var restoredComposeState: Map<String, List<Any?>> = savedStateRegistry.consumeRestoredStateForKey("composeState")?.toMap().orEmpty()
     private var activeComposeRegistry: SaveableStateRegistry? = null
