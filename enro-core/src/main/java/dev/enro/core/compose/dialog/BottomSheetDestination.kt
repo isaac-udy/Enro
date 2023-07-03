@@ -106,7 +106,8 @@ internal fun EnroBottomSheetContainer(
                 }
                 return true
             }
-        }, skipHalfExpanded = destination.bottomSheetConfiguration.skipHalfExpanded
+        },
+        skipHalfExpanded = destination.bottomSheetConfiguration.skipHalfExpanded,
     )
     destination.bottomSheetConfiguration.bottomSheetState = state
     LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
@@ -127,7 +128,7 @@ internal fun EnroBottomSheetContainer(
         },
         content = {}
     )
-    LaunchedEffect(true) {
+    LaunchedEffect(state) {
         // if the destination is set to animate to the initial state, the state will start as hidden,
         // and needs to be shown to animate
         if (destination.bottomSheetConfiguration.animatesToInitialState) {
