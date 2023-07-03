@@ -15,51 +15,49 @@ $code-comment: #999999;
     line-height: normal;
 
     > .highlight {
-        > .highlight {
-            line-height: 1;
-            code {
-                background-color: transparent;
-                border: none;
-                color: $code-normal-text;
-                white-space: pre-wrap;
-            }
+        line-height: 1;
+        code {
+            background-color: transparent;
+            border: none;
+            color: $code-normal-text;
+            white-space: pre-wrap;
+        }
 
-            .p {
-                color: $code-normal-text;
-            }
-            .py {
-                color: $code-normal-text;
-            }
+        .p {
+            color: $code-normal-text;
+        }
+        .py {
+            color: $code-normal-text;
+        }
 
-            .nc {
-                color: $code-normal-text;
-            }
-            .n {
-                color: $code-normal-text;
-            }
+        .nc {
+            color: $code-normal-text;
+        }
+        .n {
+            color: $code-normal-text;
+        }
 
-            .s {
-                color: $code-primitive-string;
-            }
+        .s {
+            color: $code-primitive-string;
+        }
 
-            .c1 {
-                color: $code-comment;
-            }
-            .cm {
-                color: $code-comment;
-            }
-            .nd {
-                color: $code-annotation-name;
-            }
-            .kd {
-                color: $code-language-key-word;
-            }
-            .k {
-                color: $code-language-key-word;
-            }
-            .nf {
-                color: $code-function-name;
-            }
+        .c1 {
+            color: $code-comment;
+        }
+        .cm {
+            color: $code-comment;
+        }
+        .nd {
+            color: $code-annotation-name;
+        }
+        .kd {
+            color: $code-language-key-word;
+        }
+        .k {
+            color: $code-language-key-word;
+        }
+        .nf {
+            color: $code-function-name;
         }
     }
 }
