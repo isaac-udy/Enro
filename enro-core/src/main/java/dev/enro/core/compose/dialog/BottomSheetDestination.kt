@@ -88,7 +88,11 @@ internal fun EnroBottomSheetContainer(
     destination: BottomSheetDestination
 ) {
     val state = rememberModalBottomSheetState(
-        initialValue = if(destination.bottomSheetConfiguration.skipHalfExpanded) ModalBottomSheetValue.Expanded else ModalBottomSheetValue.HalfExpanded,
+        initialValue = when {
+            destination.bottomSheetConfiguration.animatesToInitialState -> ModalBottomSheetValue.Hidden
+            destination.bottomSheetConfiguration.skipHalfExpanded -> ModalBottomSheetValue.Expanded
+            else -> ModalBottomSheetValue.HalfExpanded
+        },
         confirmValueChange = remember(Unit) {
             fun(it: ModalBottomSheetValue): Boolean {
                 val isHidden = it == ModalBottomSheetValue.Hidden
@@ -123,4 +127,11 @@ internal fun EnroBottomSheetContainer(
         },
         content = {}
     )
+    LaunchedEffect(true) {
+        // if the destination is set to animate to the initial state, the state will start as hidden,
+        // and needs to be shown to animate
+        if (destination.bottomSheetConfiguration.animatesToInitialState) {
+            state.show()
+        }
+    }
 }
