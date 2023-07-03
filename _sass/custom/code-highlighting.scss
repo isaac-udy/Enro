@@ -10,7 +10,7 @@ $code-function-name: #ffc66d;
 $code-primitive-string: #6A8759;
 $code-comment: #999999;
 
-.highlighter-rouge {
+.highlighter-rouge:not(.language-plaintext) {
     background-color: $code-block-background-color !important;
     line-height: normal;
 
