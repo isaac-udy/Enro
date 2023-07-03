@@ -88,8 +88,8 @@ internal fun EnroBottomSheetContainer(
     destination: BottomSheetDestination
 ) {
     val state = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        confirmStateChange = remember(Unit) {
+        initialValue = if(destination.bottomSheetConfiguration.skipHalfExpanded) ModalBottomSheetValue.Expanded else ModalBottomSheetValue.HalfExpanded,
+        confirmValueChange = remember(Unit) {
             fun(it: ModalBottomSheetValue): Boolean {
                 val isHidden = it == ModalBottomSheetValue.Hidden
                 val isHalfExpandedAndSkipped = it == ModalBottomSheetValue.HalfExpanded
@@ -102,7 +102,7 @@ internal fun EnroBottomSheetContainer(
                 }
                 return true
             }
-        }
+        }, skipHalfExpanded = destination.bottomSheetConfiguration.skipHalfExpanded
     )
     destination.bottomSheetConfiguration.bottomSheetState = state
     LaunchedEffect(destination.bottomSheetConfiguration.isDismissed.value) {
@@ -123,12 +123,4 @@ internal fun EnroBottomSheetContainer(
         },
         content = {}
     )
-
-    LaunchedEffect(true) {
-        if (destination.bottomSheetConfiguration.animatesToInitialState) {
-            state.show()
-        } else {
-            state.snapTo(ModalBottomSheetValue.Expanded)
-        }
-    }
 }
