@@ -80,6 +80,19 @@ public fun <R: Any, Key: NavigationKey.SupportsPresent.WithResult<R>> activityRe
         return@syntheticDestination
     }
 
+    val synchronousResult = parameters.contract.getSynchronousResult(navigationContext.activity, parameters.input)
+    if (synchronousResult != null) {
+        val mappedResult = synchronousResult.let { parameters.result(it) }
+        if (mappedResult != null) {
+            AdvancedResultExtensions.setResultForInstruction(
+                navigationController = navigationContext.controller,
+                instruction = instruction,
+                result = mappedResult,
+            )
+            return@syntheticDestination
+        }
+    }
+
     navigationContext
         .getNavigationHandle()
         .present(
