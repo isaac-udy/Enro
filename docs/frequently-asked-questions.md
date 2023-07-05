@@ -6,7 +6,7 @@ nav_order: 99
 
 
 <details markdown="block">
-  <summary>
+  <summary class="faq-summary">
     ### How do I connect a NavigationKey to a screen/destination?
   </summary>
 
@@ -39,8 +39,8 @@ class ExampleActivityDestination : AppCompatActivity() {} // Or FragmentActivity
 </details>
 
 <details markdown="block">
-  <summary>
-    ### How do I open a screen/destination?
+  <summary class="faq-summary">
+    How do I open a screen/destination?
   </summary>
 
 Once you've defined a NavigationKey for your screen/destination:
@@ -56,8 +56,8 @@ navigation.push( ExampleNavigationKey() )
 </details>
 
 <details markdown="block">
-  <summary>
-    ### How do I open a screen if I want a result from that screen?
+  <summary class="faq-summary">
+    How do I open a screen if I want a result from that screen?
   </summary>
 
 Create a NavigationResultChannel, by using `registerForNavigationResult<T>()`, and then use the NavigationResultChannel to push or present the NavigationKey you want to get a result from. If you do not use the NavigationResultChannel to push or present, the result will not get delivered. If you have multiple NavigationResultChannels, the result will be delivered to the NavigationResultChannel that was used to push or present.
@@ -126,7 +126,7 @@ class ExampleActivity : Activity {
 </details>
 
 <details markdown="block">
-  <summary class="faq-summary">>
+  <summary class="faq-summary">
     What's the difference between Push and Present?
   </summary>
 
@@ -150,25 +150,25 @@ If "D" then pushed to "E", and the backstack was:
 </details>
 
 <details markdown="block">
-  <summary class="faq-summary">>
+  <summary class="faq-summary">
     How do I create a BottomSheet or a Dialog screen in Compose?
   </summary>
 </details>
 
 <details markdown="block">
-  <summary class="faq-summary">>
+  <summary class="faq-summary">
     What's a SyntheticDestination?
   </summary>
 </details>
 
 <details markdown="block">
-  <summary class="faq-summary">>
+  <summary class="faq-summary">
     How do I configure animations?
   </summary>
 </details>
 
 <details markdown="block">
-  <summary class="faq-summary">>
+  <summary class="faq-summary">
     How do I do analytics when a user views a screen?
   </summary>
 </details>
