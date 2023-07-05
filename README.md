@@ -27,8 +27,8 @@ Enro is published to [Maven Central](https://search.maven.org/). Make sure your 
 
 ```gradle
 dependencies {
-    implementation "dev.enro:enro:2.0.0-alpha05"
-    kapt "dev.enro:enro-processor:2.0.0-alpha05"
+    implementation "dev.enro:enro:2.0.0-beta01"
+    kapt "dev.enro:enro-processor:2.0.0-beta01"
 }
 ```
 
