@@ -7,6 +7,19 @@ nav_order: 99
 
 <details markdown="block">
   <summary class="faq-summary">
+    What's a NavigationKey?
+  </summary>
+
+A NavigationKey is a contract for a screen. It defines the inputs/parameters/arguments for a screen, and potentially the type of results returned from the screen (if any).
+
+When you perform navigation, you ask for a particular NavigationKey to be opened, and the screen/destination that is connected to that NavigationKey will be opened.
+
+From within a screen/destination, you have access to the NavigationKey that was used when opening it, and you can use this to read the inputs/parameters/arguments that were used.
+
+</details>
+
+<details markdown="block">
+  <summary class="faq-summary">
     How do I connect a NavigationKey to a screen/destination?
   </summary>
 
@@ -16,25 +29,25 @@ Using KAPT or KSP, annotate the screen/destination with `@NavigationDestination`
 
 // Composables:
 @Parcelize
-class ExampleComposable : NavigationKey.SupportsPush
+class ExampleComposableKey : NavigationKey.SupportsPush
 
 @Composable
-@NavigationDestination(ExampleComposable::class)
+@NavigationDestination(ExampleComposableKey::class)
 fun ExampleComposableScreen() {}
 
 // Fragments:
 @Parcelize
-class ExampleFragment : NavigationKey.SupportsPresent
+class ExampleFragmentKey : NavigationKey.SupportsPresent
 
-@NavigationDestination(ExampleFragment::class)
-class ExampleFragmentScreen : Fragment() {}
+@NavigationDestination(ExampleFragmentKey::class)
+class ExampleFragment : Fragment() {}
 
 // Activities:
 @Parcelize
-class ExampleActivity : NavigationKey.SupportsPresent
+class ExampleActivityKey : NavigationKey.SupportsPresent
 
-@NavigationDestination(ExampleActivity::class)
-class ExampleActivityDestination : AppCompatActivity() {} // Or FragmentActivity, or ComponentActivity
+@NavigationDestination(ExampleActivityKey::class)
+class ExampleActivity : AppCompatActivity() {} // Or FragmentActivity, or ComponentActivity
 
 ```
 
@@ -61,7 +74,27 @@ navigation.push( ExampleNavigationKey() )
 
 <details markdown="block">
   <summary class="faq-summary">
-    How do I open a screen if I want a result from that screen?
+    How do I close a screen/destination?
+  </summary>
+
+Get the NavigationHandle for the screen and use `close` or `requestClose`. 
+
+`close` will always cause the screen to be closed. 
+
+`requestClose` is the same as pressing the Android back button, and is a "softer" way of asking a screen to close. It is possible to configure the behaviour for `requestClose` to perform some side effect (e.g. a confirmation).
+
+```kotlin
+
+val navigation: NavigationHandle = TODO() // up to you!
+navigation.close()
+
+```
+
+</details>
+
+<details markdown="block">
+  <summary class="faq-summary">
+    How do I open a screen if I want a result from that screen/destination?
   </summary>
 
 Create a NavigationResultChannel, by using `registerForNavigationResult<T>()`, and then use the NavigationResultChannel to push or present the NavigationKey you want to get a result from. If you do not use the NavigationResultChannel to push or present, the result will not get delivered. If you have multiple NavigationResultChannels, the result will be delivered to the NavigationResultChannel that was used to push or present.
@@ -97,6 +130,28 @@ class ExampleFragment : Fragment() {
         exampleResult.present(ExampleResultKey())
     }
 }
+
+```
+
+</details>
+
+<details markdown="block">
+  <summary class="faq-summary">
+    How do I send a result from a screen/destination?
+  </summary>
+
+Make sure that the NavigationKey for that screen/destination extends `...WithResult<T>` (e.g. `NavigationKey.SupportsPresent.WithResult<T>`).
+
+Get a `TypedNavigationHandle` for the screen, with the correct NavigationKey type.
+
+Call `closeWithResult` and pass in an object that matches `T` from the NavigationKey's `...WithResult<T>`. 
+
+```kotlin
+
+class ExampleResultKey : NavigationKey.SupportsPush.WithResult<ExampleResultType> 
+
+val navigation: TypedNavigationHandle<ExampleResultKey> = TODO() // up to you!
+navigation.closeWithResult(ExampleResultType(/*...*/))
 
 ```
 
@@ -156,7 +211,6 @@ But if you presented "D" instead, and the backstack was:
 
 If "D" then pushed to "E", and the backstack was:
 `push(A), push(B), push(C), present(D), push(E)`, then both "C" and "D" would animate out, and "E" would be visible. Once "E" was closed, both "C" and "D" would become visible again.
-
 
 </details>
 
