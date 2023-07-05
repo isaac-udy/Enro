@@ -17,6 +17,7 @@ import dev.enro.core.container.present
 import dev.enro.core.container.push
 import dev.enro.core.container.setBackstack
 import dev.enro.example.databinding.FragmentFeaturesBinding
+import dev.enro.example.destinations.activity.ActivityResultExample
 import dev.enro.example.destinations.compose.ExampleComposable
 import dev.enro.example.destinations.fragment.DialogFragmentKey
 import dev.enro.example.destinations.fragment.ExampleFragment
@@ -193,7 +194,20 @@ val features = listOf(
             """.trimIndent(),
             positiveActionInstruction = NavigationInstruction.Push(ListDetailComposable())
         )
-    )
+    ),
+    FeatureDescription(
+        name = "ActivityResultContract integration",
+        iconResource = R.drawable.ic_empty,
+        key = SimpleMessage(
+            title = "ActivityResultContract integration",
+            message = """
+                Integrate directly with ActivityResultContract using "activityResultDestination"
+            """.trimIndent(),
+            positiveActionInstruction = NavigationInstruction.Push(
+                ActivityResultExample()
+            )
+        )
+    ),
 )
 
 class FeatureAdapter(

@@ -1,5 +1,8 @@
 package dev.enro.core.controller
 
+import dev.enro.core.activity.ActivityResultBridge
+import dev.enro.core.activity.ActivityResultDestination
+import dev.enro.core.compose.composableDestination
 import dev.enro.core.controller.interceptor.HiltInstructionInterceptor
 import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
 import dev.enro.core.controller.interceptor.NavigationContainerDelegateInterceptor
@@ -16,6 +19,7 @@ internal val defaultNavigationModule = createNavigationModule {
     interceptor(ForwardingResultInterceptor)
 
     binding(NoKeyNavigationBinding())
+    composableDestination<ActivityResultDestination> { ActivityResultBridge() }
 
     module(hostNavigationModule)
 }
