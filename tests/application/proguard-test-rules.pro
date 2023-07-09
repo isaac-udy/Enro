@@ -25,3 +25,4 @@
 -dontwarn javax.**
 
 -keep public class *.** { *;}
+-keep class kotlin.Metadata { *; }
