@@ -90,7 +90,7 @@ ext.publishModule = { Boolean isAndroid, String groupName, String moduleName, St
                     version versionName + versionSuffix
 
                     if(isAndroid) {
-                        artifact androidSourcesJar
+//                        artifact androidSourcesJar
                     }
                     else {
                         artifact sourcesJar
@@ -176,6 +176,9 @@ ext.publishModule = { Boolean isAndroid, String groupName, String moduleName, St
         if(isAndroid) {
             tasks.findByName("publishToMavenLocal")
                     .dependsOn("assembleRelease")
+
+            tasks.findByName("generateMetadataFileForReleasePublication")
+                    .dependsOn("androidSourcesJar")
         }
         else {
             tasks.findByName("publishToMavenLocal")
