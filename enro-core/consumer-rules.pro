@@ -1,3 +1,4 @@
+-dontwarn dagger.hilt.**
 -keep class * extends dev.enro.core.controller.NavigationComponentBuilderCommand
 -keep class * extends dev.enro.core.NavigationKey
 -keep public class * extends dev.enro.core.compose.ComposableDestination
