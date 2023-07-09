@@ -6,5 +6,5 @@ dependencies {
     implementation deps.kotlin.stdLib
 }
 
-sourceCompatibility = "8"
-targetCompatibility = "8"
+sourceCompatibility = "17"
+targetCompatibility = "17"

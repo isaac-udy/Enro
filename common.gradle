@@ -27,12 +27,12 @@ ext.androidLibrary = {
         }
 
         compileOptions {
-            sourceCompatibility JavaVersion.VERSION_1_8
-            targetCompatibility JavaVersion.VERSION_1_8
+            sourceCompatibility JavaVersion.VERSION_17
+            targetCompatibility JavaVersion.VERSION_17
         }
 
         kotlinOptions {
-            jvmTarget = JavaVersion.VERSION_1_8.toString()
+            jvmTarget = JavaVersion.VERSION_17.toString()
             freeCompilerArgs += "-Xjvm-default=enable"
         }
 
@@ -57,8 +57,8 @@ ext.useCompose = {
             compose true
         }
         composeOptions {
-            kotlinCompilerVersion "1.8.10"
-            kotlinCompilerExtensionVersion "1.4.2"
+            kotlinCompilerVersion "1.8.21"
+            kotlinCompilerExtensionVersion "1.4.7"
         }
     }
 

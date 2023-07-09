@@ -2,6 +2,7 @@ androidLibrary()
 publishAndroidModule("dev.enro", "enro-test")
 
 android {
+    namespace = "dev.enro.test"
     kotlinOptions {
         freeCompilerArgs += "-Xfriend-paths=../enro-core/src/main"
     }

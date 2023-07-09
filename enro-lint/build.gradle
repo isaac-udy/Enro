@@ -13,10 +13,5 @@ jar {
     }
 }
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
-}
 sourceCompatibility = "8"
 targetCompatibility = "8"

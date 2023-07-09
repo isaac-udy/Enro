@@ -1,5 +1,5 @@
 plugins {
-    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
+    id("com.google.devtools.ksp") version "1.8.21-1.0.11"
 }
 androidLibrary()
 useCompose()
@@ -8,6 +8,8 @@ apply plugin: "wtf.emulator.gradle"
 publishAndroidModule("dev.enro", "enro")
 
 android {
+    namespace = "dev.enro"
+
     lintOptions {
         textReport true
         textOutput 'stdout'

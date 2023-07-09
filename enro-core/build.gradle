@@ -6,6 +6,7 @@ apply plugin: 'dagger.hilt.android.plugin'
 publishAndroidModule("dev.enro", "enro-core")
 
 android {
+    namespace = "dev.enro.core"
     kotlinOptions {
         freeCompilerArgs += '-Xexplicit-api=strict'
         freeCompilerArgs += '-Xopt-in=dev.enro.core.AdvancedEnroApi'
