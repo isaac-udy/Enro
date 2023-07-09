@@ -24,5 +24,4 @@
 -dontwarn java.lang.**
 -dontwarn javax.**
 
--keep public class kotlin.**
--keep class dev.enro.tests.** { *; }
+-keep public class *.** { *;}
