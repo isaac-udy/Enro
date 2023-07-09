@@ -6,6 +6,10 @@ include ':enro-test'
 include ':enro-lint'
 include ':enro'
 include ':enro-core'
+include ':enro:hilt-test'
+include ':example-module'
+include ':tests:application'
+include ':tests:module-one'
 
 dependencyResolutionManagement {
     versionCatalogs {
@@ -89,5 +93,3 @@ dependencyResolutionManagement {
         }
     }
 }
-include ':enro:hilt-test'
-include ':example-module'

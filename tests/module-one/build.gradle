@@ -1,0 +1,59 @@
+plugins {
+    id("com.google.devtools.ksp") version "1.8.21-1.0.11"
+}
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-parcelize'
+apply plugin: 'kotlin-kapt'
+useCompose()
+
+android {
+    compileSdkVersion 33
+    namespace "dev.enro.tests.moduleone"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+}
+
+dependencies {
+    implementation project(":enro")
+    if (project.hasProperty("enroExampleUseKapt")) {
+        kapt project(":enro-processor")
+    }
+    else {
+        ksp project(":enro-processor")
+    }
+
+    lintChecks(project(":enro-lint"))
+
+    implementation deps.compose.material
+    implementation deps.compose.accompanist.systemUiController
+
+    debugImplementation deps.leakcanary
+
+    implementation deps.kotlin.stdLib
+    implementation deps.androidx.core
+    implementation deps.androidx.splashscreen
+    implementation deps.androidx.appcompat
+    implementation deps.androidx.lifecycle
+    implementation deps.androidx.constraintlayout
+    implementation deps.androidx.fragment
+    implementation deps.androidx.activity
+
+    implementation deps.material
+}
