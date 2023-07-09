@@ -38,13 +38,12 @@ ext.publishModule = { Boolean isAndroid, String groupName, String moduleName, St
     ext["signing.secretKeyRingFile"] = privateProperties['signingKeyLocation']
 
     if(isAndroid) {
-        task androidSourcesJar(type: Jar) {
-            archiveClassifier.set('sources')
-            from android.sourceSets.main.java.srcDirs
-        }
-
-        artifacts {
-            archives androidSourcesJar
+        android {
+            publishing {
+                singleVariant("release") {
+                    withSourcesJar()
+                }
+            }
         }
     }
     else {
@@ -176,9 +175,6 @@ ext.publishModule = { Boolean isAndroid, String groupName, String moduleName, St
         if(isAndroid) {
             tasks.findByName("publishToMavenLocal")
                     .dependsOn("assembleRelease")
-
-            tasks.findByName("generateMetadataFileForReleasePublication")
-                    .dependsOn("androidSourcesJar")
         }
         else {
             tasks.findByName("publishToMavenLocal")
