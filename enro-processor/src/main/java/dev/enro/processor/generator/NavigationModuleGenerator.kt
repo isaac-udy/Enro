@@ -2,12 +2,10 @@ package dev.enro.processor.generator
 
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.squareup.javapoet.JavaFile
-import com.squareup.kotlinpoet.AnnotationSpec
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationModule
 import dev.enro.processor.extensions.EnroLocation
@@ -16,6 +14,7 @@ import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
 import com.squareup.javapoet.AnnotationSpec as JavaAnnotationSpec
+import com.squareup.javapoet.ClassName as JavaClassName
 import com.squareup.javapoet.TypeSpec as JavaTypeSpec
 
 object NavigationModuleGenerator {
@@ -37,6 +36,9 @@ object NavigationModuleGenerator {
                     .addMember("bindings = $bindingsArray")
                     .build()
             )
+            .addSuperinterface(
+                ClassName("dev.enro.core", "EnroGeneratedClassMarker")
+            )
             .addModifiers(KModifier.PUBLIC)
             .build()
 
@@ -50,6 +52,13 @@ object NavigationModuleGenerator {
                     aggregating = true,
                     sources = bindings.mapNotNull { it.containingFile }.toTypedArray()
                 )
+            )
+
+        environment.codeGenerator
+            .associateWithClasses(
+                classes = bindings.filterIsInstance<KSClassDeclaration>(),
+                packageName = EnroLocation.GENERATED_PACKAGE,
+                fileName = requireNotNull(moduleName),
             )
     }
 
@@ -75,6 +84,9 @@ object NavigationModuleGenerator {
                 JavaAnnotationSpec.builder(GeneratedNavigationModule::class.java)
                     .addMember("bindings", bindingsArray)
                     .build()
+            )
+            .addSuperinterface(
+                JavaClassName.get("dev.enro.core", "EnroGeneratedClassMarker")
             )
             .addModifiers(Modifier.PUBLIC)
             .build()

@@ -58,6 +58,9 @@ object NavigationComponentGenerator {
                         ClassNames.Kotlin.unit
                     )
             )
+            .addSuperinterface(
+                ClassName("dev.enro.core", "EnroGeneratedClassMarker")
+            )
             .addFunction(
                 FunSpec.builder("invoke")
                     .addModifiers(KModifier.PUBLIC, KModifier.OVERRIDE)
@@ -95,6 +98,13 @@ object NavigationComponentGenerator {
                     aggregating = true,
                     sources = modules.flatMap { it.sources }.toTypedArray()
                 )
+            )
+
+        environment.codeGenerator
+            .associateWithClasses(
+                classes = modules.map { it.declaration },
+                declaration.packageName.asString(),
+                requireNotNull(generatedComponent.name),
             )
     }
 
@@ -153,6 +163,9 @@ object NavigationComponentGenerator {
                     ClassNames.Java.navigationModuleScope,
                     JavaClassName.get(Unit::class.java)
                 )
+            )
+            .addSuperinterface(
+                JavaClassName.get("dev.enro.core", "EnroGeneratedClassMarker")
             )
             .addMethod(
                 JavaMethodSpec.methodBuilder("invoke")

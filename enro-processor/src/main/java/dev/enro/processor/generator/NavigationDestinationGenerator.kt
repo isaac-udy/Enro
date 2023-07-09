@@ -46,6 +46,9 @@ object NavigationDestinationGenerator {
                         ClassNames.Kotlin.unit,
                     )
             )
+            .addSuperinterface(
+                ClassName("dev.enro.core", "EnroGeneratedClassMarker")
+            )
             .addAnnotation(
                 AnnotationSpec.builder(GeneratedNavigationBinding::class.java)
                     .addMember(
@@ -144,6 +147,9 @@ object NavigationDestinationGenerator {
                     ClassNames.Java.navigationModuleScope,
                     JavaClassName.get(Unit::class.java)
                 )
+            )
+            .addSuperinterface(
+                JavaClassName.get("dev.enro.core", "EnroGeneratedClassMarker")
             )
             .addAnnotation(
                 JavaAnnotationSpec.builder(GeneratedNavigationBinding::class.java)
