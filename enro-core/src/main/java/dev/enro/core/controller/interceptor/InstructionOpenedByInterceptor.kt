@@ -1,6 +1,11 @@
 package dev.enro.core.controller.interceptor
 
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroException
+import dev.enro.core.NavigationBinding
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationKey
+import dev.enro.core.readOpenInstruction
 
 internal object InstructionOpenedByInterceptor : NavigationInstructionInterceptor {
 
@@ -18,8 +23,10 @@ internal object InstructionOpenedByInterceptor : NavigationInstructionIntercepto
         parentContext: NavigationContext<*>
     ) : AnyOpenInstruction {
         if (internal.openingType != Any::class.java) return internal
+        val binding =  parentContext.controller.bindingForKeyType(navigationKey::class)
+            ?: throw EnroException.MissingNavigationBinding(navigationKey)
         return internal.copy(
-            openingType = parentContext.controller.bindingForKeyType(navigationKey::class)!!.destinationType.java
+            openingType = binding.destinationType.java
         )
     }
 

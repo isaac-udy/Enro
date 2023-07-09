@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.NavigationBinding
+import dev.enro.core.EnroException
 import dev.enro.core.NavigationContext
 import dev.enro.core.addOpenInstruction
 
@@ -19,7 +19,8 @@ internal object FragmentFactory {
             else -> throw IllegalStateException()
         }
 
-        val hostedBinding = parentContext.controller.bindingForKeyType(instruction.navigationKey::class) as NavigationBinding<*, *>
+        val hostedBinding = parentContext.controller.bindingForKeyType(instruction.navigationKey::class)
+            ?: throw EnroException.MissingNavigationBinding(instruction.navigationKey)
 
         return fragmentManager.fragmentFactory.instantiate(
             hostedBinding.destinationType.java.classLoader!!,

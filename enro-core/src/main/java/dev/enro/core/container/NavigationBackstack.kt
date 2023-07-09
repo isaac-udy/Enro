@@ -2,6 +2,7 @@ package dev.enro.core.container
 
 import android.os.Parcelable
 import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroException
 import dev.enro.core.NavigationContext
 import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
 import kotlinx.parcelize.Parcelize
@@ -31,7 +32,8 @@ internal fun NavigationBackstack.ensureOpeningTypeIsSet(
         InstructionOpenedByInterceptor.intercept(
             it,
             parentContext,
-            requireNotNull(parentContext.controller.bindingForKeyType(it.navigationKey::class)),
+            parentContext.controller.bindingForKeyType(it.navigationKey::class)
+                ?: throw EnroException.MissingNavigationBinding(it.navigationKey),
         )
     }.toBackstack()
 }

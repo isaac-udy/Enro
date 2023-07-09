@@ -58,9 +58,6 @@ object NavigationComponentGenerator {
                         ClassNames.Kotlin.unit
                     )
             )
-            .addSuperinterface(
-                ClassName("dev.enro.core", "EnroGeneratedClassMarker")
-            )
             .addFunction(
                 FunSpec.builder("invoke")
                     .addModifiers(KModifier.PUBLIC, KModifier.OVERRIDE)
@@ -163,9 +160,6 @@ object NavigationComponentGenerator {
                     ClassNames.Java.navigationModuleScope,
                     JavaClassName.get(Unit::class.java)
                 )
-            )
-            .addSuperinterface(
-                JavaClassName.get("dev.enro.core", "EnroGeneratedClassMarker")
             )
             .addMethod(
                 JavaMethodSpec.methodBuilder("invoke")

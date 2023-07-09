@@ -26,8 +26,7 @@ object ComposableWrapperGenerator {
                 "dev.enro.core.compose.dialog.BottomSheetDestination" -> "BottomSheetDestination"
                 else -> null
             }
-        }.plus("EnroGeneratedClassMarker")
-            .joinToString(separator = "") { ", $it" }
+        }.joinToString(separator = "") { ", $it" }
 
         val typeParameter = if (element.typeParameters.isEmpty()) "" else "<$composableWrapperName>"
 
@@ -44,8 +43,7 @@ object ComposableWrapperGenerator {
                 )
                 else -> emptyList()
             }
-        }.plus("dev.enro.core.EnroGeneratedClassMarker")
-            .joinToString(separator = "") { "\n                import $it" }
+        }.joinToString(separator = "") { "\n                import $it" }
 
         val additionalAnnotations = receiverTypes.mapNotNull {
             when (it) {

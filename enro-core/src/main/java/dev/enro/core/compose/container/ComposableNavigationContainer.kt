@@ -161,9 +161,13 @@ public class ComposableNavigationContainer internal constructor(
     private fun createDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner {
         val controller = context.controller
         val composeKey = instruction.navigationKey
-        val destination =
-            (controller.bindingForKeyType(composeKey::class) as ComposableNavigationBinding<NavigationKey, ComposableDestination>)
-                .constructDestination()
+        val rawBinding = controller.bindingForKeyType(composeKey::class)
+            ?: throw EnroException.MissingNavigationBinding(composeKey)
+
+        if (rawBinding !is ComposableNavigationBinding<*, *>) {
+            throw IllegalStateException("Expected ${composeKey::class.java.simpleName} to be bound to a Composable, but was instead bound to a ${rawBinding.baseType.java.simpleName}")
+        }
+        val destination = rawBinding.constructDestination()
 
         val restoredState = restoredDestinationState.remove(instruction.instructionId)
         return ComposableDestinationOwner(
