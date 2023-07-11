@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    id("kotlin-android")
 }
 configureAndroidLibrary("dev.enro.test")
 configureAndroidPublishing("dev.enro:enro-test")
