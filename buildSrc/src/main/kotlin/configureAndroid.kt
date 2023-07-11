@@ -77,7 +77,6 @@ private fun Project.commonAndroidConfig(
             jvmTarget = JavaVersion.VERSION_17.toString()
 
             freeCompilerArgs += "-Xjvm-default=enable"
-            freeCompilerArgs += "-Xexplicit-api=strict"
             freeCompilerArgs += "-Xopt-in=dev.enro.core.AdvancedEnroApi"
             freeCompilerArgs += "-Xopt-in=dev.enro.core.ExperimentalEnroApi"
         }

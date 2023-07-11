@@ -7,6 +7,7 @@ plugins {
 }
 configureAndroidLibrary("dev.enro.core")
 configureCompose()
+configureExplicitApi()
 configureAndroidPublishing("dev.enro:enro-core")
 
 dependencies {
