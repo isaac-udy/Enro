@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.enro.core">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <activity android:name=".hosts.ActivityHostForAnyInstruction"/>
         <activity android:name=".hosts.HiltActivityHostForAnyInstruction"/>
