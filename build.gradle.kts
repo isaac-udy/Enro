@@ -38,7 +38,7 @@ tasks.register("updateVersion") {
         existingProperties.load(FileInputStream(versionPropertiesFile))
 
         val versionName = project.properties["versionName"]
-        val versionCode = (existingProperties["versionCode"] as Int) + 1
+        val versionCode = (existingProperties["versionCode"].toString().toInt()) + 1
 
         if(versionName == existingProperties["versionName"]) {
             error("The versionName '$versionName' is the current versionName")
