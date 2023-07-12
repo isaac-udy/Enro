@@ -2,6 +2,7 @@ package dev.enro.core.activity
 
 import android.content.Context
 import android.content.Intent
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContract
@@ -22,20 +23,20 @@ import kotlinx.parcelize.Parcelize
 import kotlin.reflect.KClass
 
 
-public class ActivityResultParameters<I, O: Any, R> internal constructor(
-    internal val contract: ActivityResultContract<I, O?>,
+public class ActivityResultParameters<I, O : Any, R : Any> internal constructor(
+    internal val contract: ActivityResultContract<I, out O?>,
     internal val input: I,
     internal val result: (O) -> R
 )
 
-public fun <I, O : Any> ActivityResultContract<I, O?>.withInput(input: I): ActivityResultParameters<I, O, O> =
+public fun <I, O : Any> ActivityResultContract<I, out O?>.withInput(input: I): ActivityResultParameters<I, O, O> =
     ActivityResultParameters(
         contract = this,
         input = input,
         result = { it }
     )
 
-public fun <I, O : Any, R> ActivityResultParameters<I, O, O>.withMappedResult(block: (O) -> R): ActivityResultParameters<I, O, R> =
+public fun <I, O : Any, R: Any> ActivityResultParameters<I, O, O>.withMappedResult(block: (O) -> R): ActivityResultParameters<I, O, R> =
     ActivityResultParameters(
         contract = contract,
         input = input,
@@ -46,21 +47,23 @@ public class ActivityResultDestinationScope<T : NavigationKey.SupportsPresent.Wi
     internal constructor(
         public val key: T,
         public val instruction: NavigationInstruction.Open<*>,
-        public val context: Context
+        public val context: Context,
+        public val activity: ComponentActivity,
     )
 
 @ExperimentalEnroApi
 public fun <R: Any, Key: NavigationKey.SupportsPresent.WithResult<R>> activityResultDestination(
     @Suppress("UNUSED_PARAMETER") // used to infer types
     keyType: KClass<Key>,
-    block: ActivityResultDestinationScope<Key>.() -> ActivityResultParameters<*, *, R?>
+    block: ActivityResultDestinationScope<Key>.() -> ActivityResultParameters<*, *, R>
 ): SyntheticDestinationProvider<Key> = syntheticDestination {
     val scope = ActivityResultDestinationScope(
         key = key,
         instruction = instruction,
-        context = navigationContext.activity
+        context = navigationContext.activity,
+        activity = navigationContext.activity,
     )
-    val parameters = scope.block() as ActivityResultParameters<Any, Any, Any?>
+    val parameters = scope.block() as ActivityResultParameters<Any, Any, Any>
 
     val pendingResult = instruction.extras[PENDING_ACTIVITY_RESULT] as? ActivityResult
     if (pendingResult != null) {
@@ -82,7 +85,7 @@ public fun <R: Any, Key: NavigationKey.SupportsPresent.WithResult<R>> activityRe
 
     val synchronousResult = parameters.contract.getSynchronousResult(navigationContext.activity, parameters.input)
     if (synchronousResult != null) {
-        val mappedResult = synchronousResult.let { parameters.result(it) }
+        val mappedResult = synchronousResult.value?.let { parameters.result(it) }
         if (mappedResult != null) {
             AdvancedResultExtensions.setResultForInstruction(
                 navigationController = navigationContext.controller,

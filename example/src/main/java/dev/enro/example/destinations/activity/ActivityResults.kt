@@ -1,5 +1,7 @@
 package dev.enro.example.destinations.activity
 
+import android.Manifest
+import android.os.Build
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -49,13 +51,40 @@ fun ActivityResultExampleScreen() {
             )
         }
     )
+    val getCameraPermission = registerForNavigationResult<RequestCameraPermission.Result> {
+        when(it) {
+            RequestCameraPermission.Result.GRANTED -> navigation.present(
+                SimpleMessage(
+                    title = "Activity Result",
+                    message = "Camera permission granted"
+                )
+            )
+            RequestCameraPermission.Result.DENIED -> navigation.present(
+                SimpleMessage(
+                    title = "Activity Result",
+                    message = "Camera permission denied"
+                )
+            )
+            RequestCameraPermission.Result.DENIED_PERMANENTLY -> navigation.present(
+                SimpleMessage(
+                    title = "Activity Result",
+                    message = "Camera permission denied forever"
+                )
+            )
+        }
+    }
     Column(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.surface),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.surface),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Button(onClick = { getMediaName.present(GetVisualMediaFileName(false)) }) {
             Text("Get Media File Name")
+        }
+        Button(onClick = { getCameraPermission.present(RequestCameraPermission()) }) {
+            Text("Request Camera Permission")
         }
     }
 }
@@ -80,5 +109,29 @@ val pickFileDestination = activityResultDestination(GetVisualMediaFileName::clas
         )
         .withMappedResult {
             it.lastPathSegment ?: "unknown!"
+        }
+}
+
+@Parcelize
+class RequestCameraPermission : NavigationKey.SupportsPresent.WithResult<RequestCameraPermission.Result> {
+    enum class Result {
+        GRANTED,
+        DENIED,
+        DENIED_PERMANENTLY,
+    }
+}
+
+@OptIn(ExperimentalEnroApi::class)
+@NavigationDestination(RequestCameraPermission::class)
+val requestCameraPermission = activityResultDestination(RequestCameraPermission::class) {
+    ActivityResultContracts.RequestPermission()
+        .withInput(Manifest.permission.CAMERA)
+        .withMappedResult { granted ->
+            when {
+                granted -> RequestCameraPermission.Result.GRANTED
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                        activity.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> RequestCameraPermission.Result.DENIED
+                else -> RequestCameraPermission.Result.DENIED_PERMANENTLY
+            }
         }
 }
