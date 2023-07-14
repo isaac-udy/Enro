@@ -66,4 +66,4 @@ jobs:
       - name: Run tests
         env:
           EW_API_TOKEN: ${{ secrets.EW_API_TOKEN }}
-        run: ./gradlew :enro:testDebugWithEmulatorWtf :tests:application:testDebugWithEmulatorWtf :enro:testDebugUnitTest
+        run: ./gradlew :enro:testDebugWithEmulatorWtf :enro:testDebugUnitTest :tests:application:testDebugWithEmulatorWtf :tests:application:testDebugUnitTest
