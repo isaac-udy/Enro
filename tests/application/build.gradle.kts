@@ -60,7 +60,12 @@ dependencies {
     androidTestImplementation(libs.testing.androidx.compose)
 }
 
-fun Task.runBuildTest(
+class BuildTests(val task: Task) {
+    val tests = mutableListOf<Pair<String, Throwable?>>()
+}
+
+fun BuildTests.create(
+    name: String,
     block: () -> Unit
 ) {
     fun runBuild() {
@@ -74,7 +79,7 @@ fun Task.runBuildTest(
         }
     }
 
-    doFirst {
+    task.doFirst {
         rootProject.exec {
             commandLine(
                 "git",
@@ -91,16 +96,24 @@ fun Task.runBuildTest(
         rootProject.exec {
             commandLine(
                 "git",
+                "reset",
+                "--hard",
+            )
+        }
+        rootProject.exec {
+            commandLine(
+                "git",
                 "stash",
                 "pop",
             )
         }
-        result.getOrThrow()
+        tests.add(name to result.exceptionOrNull())
     }
 }
 
 task("testApplicationBuildTests") {
-    runBuildTest {
+    val suite = BuildTests(this)
+    suite.create("Renamed destination and file in application") {
         val editableFile = file("./src/main/java/dev/enro/tests/application/TestApplicationEditableDestination.kt")
         val editedContent = """
 package dev.enro.tests.application
@@ -124,5 +137,10 @@ internal fun TestApplicationEditableScreen_Edited() {
         editableFile.writeText(editedContent)
         val renamedFile = file("./src/main/java/dev/enro/tests/application/TestApplicationEditableDestination_Edited.kt")
         editableFile.renameTo(renamedFile)
+    }
+
+    val failed = suite.tests.filter { it.second != null }
+    if (failed.isNotEmpty()) {
+        error("Failed tests:\n${failed.joinToString(separator = "\n") { it.first }}")
     }
 }
