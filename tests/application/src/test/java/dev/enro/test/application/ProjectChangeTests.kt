@@ -9,7 +9,6 @@ class ProjectChangeTests {
 
     @Before
     fun before() {
-        exec("git", "stash", "push", "--include-untracked", ignoreExitValue = true)
         exec("./gradlew", "clean", ignoreExitValue = true)
     }
 
@@ -17,7 +16,6 @@ class ProjectChangeTests {
     fun after() {
         exec("git", "add", "-A", ignoreExitValue = true)
         exec("git", "reset", "--hard", ignoreExitValue = true)
-        exec("git", "stash", "pop", ignoreExitValue = true)
     }
 
     @Test
