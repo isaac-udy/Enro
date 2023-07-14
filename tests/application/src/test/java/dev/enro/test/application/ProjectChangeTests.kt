@@ -9,7 +9,7 @@ class ProjectChangeTests {
 
     @Before
     fun before() {
-        exec("./gradlew", "clean", ignoreExitValue = true)
+
     }
 
     @After
