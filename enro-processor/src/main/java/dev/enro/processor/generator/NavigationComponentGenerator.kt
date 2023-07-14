@@ -30,7 +30,9 @@ object NavigationComponentGenerator {
     fun generateKotlin(
         environment: SymbolProcessorEnvironment,
         resolver: Resolver,
-        declaration: KSDeclaration
+        declaration: KSDeclaration,
+        resolverBindings: List<KSDeclaration>,
+        resolverModules: List<KSDeclaration>,
     ) {
         val modules = GeneratedModuleReference.load(resolver)
         val bindings = modules.flatMap { it.bindings }
@@ -93,15 +95,17 @@ object NavigationComponentGenerator {
                 codeGenerator = environment.codeGenerator,
                 dependencies = Dependencies(
                     aggregating = true,
-                    sources = modules.flatMap { it.sources }.toTypedArray()
+                    sources = (resolverModules + resolverBindings).mapNotNull { it.containingFile }
+                        .plus(listOfNotNull(declaration.containingFile))
+                        .toTypedArray()
                 )
             )
 
         environment.codeGenerator
             .associateWithClasses(
                 classes = modules.map { it.declaration },
-                declaration.packageName.asString(),
-                requireNotNull(generatedComponent.name),
+                packageName = declaration.packageName.asString(),
+                fileName = requireNotNull(generatedComponent.name),
             )
     }
 

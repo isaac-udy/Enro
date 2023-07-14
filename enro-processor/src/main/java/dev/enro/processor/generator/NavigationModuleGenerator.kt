@@ -2,7 +2,6 @@ package dev.enro.processor.generator
 
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
-import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.squareup.javapoet.JavaFile
 import com.squareup.kotlinpoet.AnnotationSpec
@@ -22,7 +21,8 @@ import com.squareup.javapoet.TypeSpec as JavaTypeSpec
 object NavigationModuleGenerator {
     fun generateKotlin(
         environment: SymbolProcessorEnvironment,
-        bindings: List<KSDeclaration>
+        bindings: List<KSDeclaration>,
+        destinations: Sequence<KSDeclaration>
     ) {
         if (bindings.isEmpty()) return
         val moduleId = bindings
@@ -49,15 +49,8 @@ object NavigationModuleGenerator {
                 codeGenerator = environment.codeGenerator,
                 dependencies = Dependencies(
                     aggregating = true,
-                    sources = bindings.mapNotNull { it.containingFile }.toTypedArray()
+                    sources = destinations.mapNotNull { it.containingFile }.toList().toTypedArray()
                 )
-            )
-
-        environment.codeGenerator
-            .associateWithClasses(
-                classes = bindings.filterIsInstance<KSClassDeclaration>(),
-                packageName = EnroLocation.GENERATED_PACKAGE,
-                fileName = requireNotNull(moduleName),
             )
     }
 

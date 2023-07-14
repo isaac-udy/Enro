@@ -70,5 +70,6 @@ object ClassNames {
         val navigationDestination = ClassName("dev.enro.annotations", "NavigationDestination")
         val navigationComponent = ClassName("dev.enro.annotations", "NavigationComponent")
         val generatedNavigationBinding = ClassName("dev.enro.annotations", "GeneratedNavigationBinding")
+        val generatedNavigationModule = ClassName("dev.enro.annotations", "GeneratedNavigationModule")
     }
 }

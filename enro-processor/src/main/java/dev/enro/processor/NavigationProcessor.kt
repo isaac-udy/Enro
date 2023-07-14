@@ -13,11 +13,29 @@ import dev.enro.processor.generator.NavigationModuleGenerator
 class NavigationProcessor(
     private val environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
+
+    private val processed = mutableSetOf<String>()
+
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val processedDestinations = resolver
+        val destinations = resolver
             .getSymbolsWithAnnotation(ClassNames.Kotlin.navigationDestination.canonicalName)
             .filterIsInstance<KSDeclaration>()
+
+        val bindings = resolver
+            .getSymbolsWithAnnotation(ClassNames.Kotlin.generatedNavigationBinding.canonicalName)
+            .filterIsInstance<KSDeclaration>()
+
+        val modules = resolver
+            .getSymbolsWithAnnotation(ClassNames.Kotlin.generatedNavigationModule.canonicalName)
+            .filterIsInstance<KSDeclaration>()
+
+        val components = resolver
+            .getSymbolsWithAnnotation(ClassNames.Kotlin.navigationComponent.canonicalName)
+            .filterIsInstance<KSDeclaration>()
+
+        val processedDestinations = destinations.filter { !processed.contains(it.qualifiedName?.asString()) }
             .onEach {
+                processed.add(it.qualifiedName?.asString().orEmpty())
                 NavigationDestinationGenerator.generateKotlin(
                     environment = environment,
                     resolver = resolver,
@@ -26,30 +44,36 @@ class NavigationProcessor(
             }
             .count()
 
-        val components = resolver
-            .getSymbolsWithAnnotation(ClassNames.Kotlin.navigationComponent.canonicalName)
-            .filterIsInstance<KSDeclaration>()
-
-        val bindings = resolver
-            .getSymbolsWithAnnotation(ClassNames.Kotlin.generatedNavigationBinding.canonicalName)
-            .filterIsInstance<KSDeclaration>()
-
-        if (processedDestinations > 0) return (components + bindings).toList()
+        if (processedDestinations > 0) return (
+            components +
+            destinations +
+            bindings +
+            modules
+        ).toList()
         val bindingsToProcess = bindings.toList()
 
-        if (bindingsToProcess.isNotEmpty()) {
+        if (!processed.contains("module")) {
             NavigationModuleGenerator.generateKotlin(
                 environment = environment,
-                bindings = bindingsToProcess
+                bindings = bindingsToProcess,
+                destinations = destinations,
             )
-            return components.toList()
+            processed.add("module")
+            return (
+                components +
+                destinations +
+                bindings +
+                modules
+            ).toList()
         }
 
         components.forEach {
             NavigationComponentGenerator.generateKotlin(
                 environment = environment,
                 resolver = resolver,
-                declaration = it
+                declaration = it,
+                resolverModules = modules.toList(),
+                resolverBindings = destinations.toList(),
             )
         }
 
