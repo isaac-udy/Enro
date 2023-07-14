@@ -9,13 +9,14 @@ class ProjectChangeTests {
 
     @Before
     fun before() {
-
+        exec("git", "stash", "push", "--include-untracked", ignoreExitValue = true)
     }
 
     @After
     fun after() {
         exec("git", "add", "-A", ignoreExitValue = true)
         exec("git", "reset", "--hard", ignoreExitValue = true)
+        exec("git", "stash", "pop", ignoreExitValue = true)
     }
 
     @Test
