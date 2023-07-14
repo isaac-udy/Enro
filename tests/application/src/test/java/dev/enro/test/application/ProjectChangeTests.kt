@@ -9,15 +9,15 @@ class ProjectChangeTests {
 
     @Before
     fun before() {
-        exec("git", "stash", "push", "--include-untracked")
-        exec("./gradlew", "clean")
+        exec("git", "stash", "push", "--include-untracked", ignoreExitValue = true)
+        exec("./gradlew", "clean", ignoreExitValue = true)
     }
 
     @After
     fun after() {
-        exec("git", "add", "-A")
-        exec("git", "reset", "--hard")
-        exec("git", "stash", "pop")
+        exec("git", "add", "-A", ignoreExitValue = true)
+        exec("git", "reset", "--hard", ignoreExitValue = true)
+        exec("git", "stash", "pop", ignoreExitValue = true)
     }
 
     @Test
@@ -115,7 +115,8 @@ private fun execAssembleDebug() {
 }
 
 private fun exec(
-    vararg command: String
+    vararg command: String,
+    ignoreExitValue: Boolean = false,
 ) {
     val javaHome = System.getProperty("java.home")
 
@@ -146,6 +147,7 @@ private fun exec(
         .waitFor()
         .let {
             if (it == 0) return@let
+            if (ignoreExitValue) return@let
             error("Process exited with code $it")
         }
 }
