@@ -26,6 +26,8 @@ dependencies {
     implementation(libs.compose.material)
     implementation(libs.compose.accompanist.systemUiController)
 
+    implementation(libs.kotlin.reflect)
+
     implementation(libs.kotlin.stdLib)
     implementation(libs.androidx.core)
     implementation(libs.androidx.splashscreen)
@@ -56,4 +58,71 @@ dependencies {
     androidTestImplementation(libs.testing.androidx.runner)
 
     androidTestImplementation(libs.testing.androidx.compose)
+}
+
+fun Task.runBuildTest(
+    block: () -> Unit
+) {
+    fun runBuild() {
+        val home = System.getProperty("java.home")
+        exec {
+            environment("JAVA_HOME", home)
+            commandLine(
+                "$rootDir/gradlew",
+                ":tests:application:assembleDebug",
+            )
+        }
+    }
+
+    doFirst {
+        rootProject.exec {
+            commandLine(
+                "git",
+                "stash",
+                "push",
+                "--include-untracked"
+            )
+        }
+        val result = runCatching {
+            runBuild()
+            block()
+            runBuild()
+        }
+        rootProject.exec {
+            commandLine(
+                "git",
+                "stash",
+                "pop",
+            )
+        }
+        result.getOrThrow()
+    }
+}
+
+task("testApplicationBuildTests") {
+    runBuildTest {
+        val editableFile = file("./src/main/java/dev/enro/tests/application/TestApplicationEditableDestination.kt")
+        val editedContent = """
+package dev.enro.tests.application
+
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationKey
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+internal class TestApplicationEditableDestination_Edited : NavigationKey.SupportsPush
+
+@Composable
+@NavigationDestination(TestApplicationEditableDestination_Edited::class)
+internal fun TestApplicationEditableScreen_Edited() {
+    Text("Test Screen (Edited)")
+}
+""".trimIndent()
+
+        editableFile.writeText(editedContent)
+        val renamedFile = file("./src/main/java/dev/enro/tests/application/TestApplicationEditableDestination_Edited.kt")
+        editableFile.renameTo(renamedFile)
+    }
 }
