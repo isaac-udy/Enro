@@ -34,8 +34,6 @@ class ProjectChangeTests {
             .replace("TestApplicationEditableDestination", "TestApplicationEditableDestination_Edited_1")
             .replace("TestApplicationEditableScreen", "TestApplicationEditableScreen_Edited_1")
         editableFile.writeText(editedContent)
-        val renamedFile = File("src/main/java/dev/enro/tests/application/TestApplicationEditableDestination_Edited_1.kt")
-        editableFile.renameTo(renamedFile)
         execAssembleDebug()
     }
 
@@ -52,8 +50,7 @@ class ProjectChangeTests {
     fun givenFileInApp_whenDestinationFileDeleted_thenBuildSucceeds() {
         execAssembleDebug()
         val editableFile = File("src/main/java/dev/enro/tests/application/TestApplicationEditableDestination.kt")
-        val renamedFile = File("src/main/java/dev/enro/tests/application/TestApplicationEditableDestination_Edited_3.kt")
-        editableFile.renameTo(renamedFile)
+        editableFile.delete()
         execAssembleDebug()
     }
 
@@ -79,8 +76,6 @@ class ProjectChangeTests {
             .replace("TestModuleEditableDestination", "TestModuleEditableDestination_Edited_5")
             .replace("TestModuleEditableScreen", "TestModuleEditableScreen_Edited_5")
         editableFile.writeText(editedContent)
-        val renamedFile = File("../module-one/src/main/java/dev/enro/tests/module/TestModuleEditableDestination_Edited_5.kt")
-        editableFile.renameTo(renamedFile)
         execAssembleDebug()
     }
 
@@ -97,8 +92,7 @@ class ProjectChangeTests {
     fun givenFileInModule_whenDestinationFileDeleted_thenBuildSucceeds() {
         execAssembleDebug()
         val editableFile = File("../module-one/src/main/java/dev/enro/tests/module/TestModuleEditableDestination.kt")
-        val renamedFile = File("../module-one/src/main/java/dev/enro/tests/module/TestModuleEditableDestination_Edited_7.kt")
-        editableFile.renameTo(renamedFile)
+        editableFile.delete()
         execAssembleDebug()
     }
 
