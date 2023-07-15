@@ -111,7 +111,7 @@ class ProjectChangeTests {
 }
 
 private fun execAssembleDebug() {
-    exec("./gradlew", ":tests:application:assembleDebug")
+    exec("./gradlew", ":tests:application:assembleDebug", "--no-build-cache")
 }
 
 private fun isGitClean(): Boolean {
