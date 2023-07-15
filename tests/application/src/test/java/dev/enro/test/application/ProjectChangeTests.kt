@@ -7,10 +7,11 @@ import java.io.File
 
 class ProjectChangeTests {
 
-    var wasClean = false
+    private var wasClean = false
 
     @Before
     fun before() {
+        wasClean = false
         requireCleanGitStatus()
         wasClean = true
     }
@@ -18,8 +19,6 @@ class ProjectChangeTests {
     @After
     fun after() {
         if (!wasClean) return
-        wasClean = false
-
         exec("git", "add", "-A", ignoreExitValue = true)
         exec("git", "reset", "--hard", ignoreExitValue = true)
     }
