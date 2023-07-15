@@ -9,7 +9,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.tests.module.ModuleOneDestination
 
 class TestActivity : AppCompatActivity() {
 
@@ -19,7 +18,7 @@ class TestActivity : AppCompatActivity() {
             MaterialTheme {
                 Box(modifier = Modifier.fillMaxSize()) {
                     val container = rememberNavigationContainer(
-                        root = ModuleOneDestination,
+                        root = SelectDestination,
                         emptyBehavior = EmptyBehavior.CloseParent
                     )
                     container.Render()
