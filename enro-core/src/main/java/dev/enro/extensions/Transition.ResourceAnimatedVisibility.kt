@@ -137,6 +137,11 @@ private fun Transition<Boolean>.animateAnimResource(
         )
     }
     val isCompleted = targetState == currentState
+    if (isCompleted) {
+        SideEffect {
+            state.value = ResourceAnimationState.forAnimationEnd(targetState)
+        }
+    }
 
     val anim = remember(resourceId, targetState) {
         AnimationUtils.loadAnimation(context, resourceId).apply {
@@ -204,6 +209,11 @@ private fun Transition<Boolean>.animateAnimatorResource(
         )
     }
     val isCompleted = targetState == currentState
+    if (isCompleted) {
+        SideEffect {
+            state.value = ResourceAnimationState.forAnimationEnd(targetState)
+        }
+    }
 
     val animator = remember(resourceId, targetState) {
         AnimatorInflater.loadAnimator(context, resourceId)
