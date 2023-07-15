@@ -72,7 +72,8 @@ public abstract class NavigationContainer(
         context.containerManager.setActiveContainer(this)
     }
 
-    private val mutableBackstackFlow: MutableStateFlow<NavigationBackstack> = MutableStateFlow(initialBackstack)
+    private val mutableBackstackFlow: MutableStateFlow<NavigationBackstack> =
+        MutableStateFlow(initialBackstack)
     public override val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstackFlow
 
     private var mutableBackstack by mutableStateOf(initialBackstack)
@@ -85,7 +86,7 @@ public abstract class NavigationContainer(
     init {
         context.lifecycleOwner.lifecycleScope.launch {
             context.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                if(currentTransition === initialTransition) return@repeatOnLifecycle
+                if (currentTransition === initialTransition) return@repeatOnLifecycle
                 performBackstackUpdate(NavigationBackstackTransition(initialBackstack to backstack))
             }
         }
@@ -144,7 +145,7 @@ public abstract class NavigationContainer(
     // Returns true if the backstack was able to be updated successfully
     protected abstract fun onBackstackUpdated(
         transition: NavigationBackstackTransition
-    ) : Boolean
+    ): Boolean
 
     private fun acceptedByContext(navigationInstruction: NavigationInstruction.Open<*>): Boolean {
         if (context.contextReference !is NavigationHost) return true
@@ -171,7 +172,7 @@ public abstract class NavigationContainer(
 
         val initialise = {
             val savedState = savedStateRegistry.consumeRestoredStateForKey(key.name)
-            when(savedState) {
+            when (savedState) {
                 null -> setBackstack(backstack)
                 else -> restore(savedState)
             }
@@ -191,12 +192,14 @@ public abstract class NavigationContainer(
                 EmptyBehavior.AllowEmpty -> {
                     /* If allow empty, pass through to default behavior */
                 }
+
                 EmptyBehavior.CloseParent -> {
                     if (context.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
                         context.getNavigationHandle().close()
                     }
                     return true
                 }
+
                 is EmptyBehavior.Action -> {
                     return emptyBehavior.onEmpty()
                 }
@@ -238,7 +241,8 @@ public abstract class NavigationContainer(
     public companion object {
         private const val BACKSTACK_KEY = "NavigationContainer.BACKSTACK_KEY"
         internal val initialBackstack = emptyBackstack()
-        internal val initialTransition = NavigationBackstackTransition(initialBackstack to initialBackstack)
+        internal val initialTransition =
+            NavigationBackstackTransition(initialBackstack to initialBackstack)
     }
 }
 
@@ -264,12 +268,15 @@ private fun NavigationContainer.getTransitionForInstruction(instruction: AnyOpen
         return NavigationBackstackTransition(mergedPreviousBackstack to mergedActiveBackstack)
     }
 
-    val isRootInstruction = backstack.size <= 1 || backstack.firstOrNull()?.instructionId == instruction.instructionId
+    val isRootInstruction =
+        backstack.size <= 1 || backstack.firstOrNull()?.instructionId == instruction.instructionId
     if (!isRootInstruction) return currentTransition
 
     val isLastInstruction = parentContainer.currentTransition.lastInstruction == instruction
-    val isExitingInstruction = parentContainer.currentTransition.exitingInstruction?.instructionId == instruction.instructionId
-    val isEnteringInstruction = parentContainer.currentTransition.activeBackstack.active?.instructionId == instruction.instructionId
+    val isExitingInstruction =
+        parentContainer.currentTransition.exitingInstruction?.instructionId == instruction.instructionId
+    val isEnteringInstruction =
+        parentContainer.currentTransition.activeBackstack.active?.instructionId == instruction.instructionId
 
     if (isLastInstruction ||
         isExitingInstruction ||
@@ -283,7 +290,8 @@ public fun NavigationContainer.getAnimationsForEntering(instruction: AnyOpenInst
     val animations = dependencyScope.get<GetNavigationAnimations>()
     val currentTransition = getTransitionForInstruction(instruction)
 
-    val isInitialInstruction = currentTransition.previousBackstack.identity == NavigationContainer.initialBackstack.identity
+    val isInitialInstruction =
+        currentTransition.previousBackstack.identity == NavigationContainer.initialBackstack.identity
     if (isInitialInstruction) {
         return DefaultAnimations.noOp.entering
     }
@@ -291,7 +299,7 @@ public fun NavigationContainer.getAnimationsForEntering(instruction: AnyOpenInst
     val exitingInstruction = currentTransition.exitingInstruction
         ?: return animations.opening(null, instruction).entering
 
-    if(currentTransition.lastInstruction is NavigationInstruction.Close) {
+    if (currentTransition.lastInstruction is NavigationInstruction.Close) {
         return animations.closing(exitingInstruction, instruction).entering
     }
     return animations.opening(exitingInstruction, instruction).entering
@@ -304,7 +312,15 @@ public fun NavigationContainer.getAnimationsForExiting(instruction: AnyOpenInstr
     val activeInstruction = currentTransition.activeBackstack.active
         ?: return animations.closing(instruction, null).exiting
 
-    if(currentTransition.lastInstruction is NavigationInstruction.Close || backstack.isEmpty() || !currentTransition.activeBackstack.contains(instruction)) {
+    val closingNonActiveInstruction = !currentTransition.activeBackstack.contains(instruction)
+            && currentTransition.previousBackstack.contains(instruction)
+            && currentTransition.previousBackstack.indexOf(instruction) < currentTransition.previousBackstack.lastIndex
+
+    if (
+        currentTransition.lastInstruction is NavigationInstruction.Close ||
+        backstack.isEmpty() ||
+        (!currentTransition.activeBackstack.contains(instruction) && !closingNonActiveInstruction)
+    ) {
         return animations.closing(instruction, activeInstruction).exiting
     }
     return animations.opening(instruction, activeInstruction).exiting
