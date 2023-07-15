@@ -9,6 +9,7 @@ class ProjectChangeTests {
 
     @Before
     fun before() {
+        requireCleanGitStatus()
     }
 
     @After
@@ -111,40 +112,49 @@ private fun execAssembleDebug() {
     exec("./gradlew", ":tests:application:assembleDebug")
 }
 
+private fun requireCleanGitStatus() {
+    val output = exec("git", "status", "-s").trim()
+    if (output.isBlank()) return
+    error("There are local changes in the project, but these tests require a clean git status to execute")
+}
+
 private fun exec(
     vararg command: String,
     ignoreExitValue: Boolean = false,
-) {
+): String {
     val javaHome = System.getProperty("java.home")
 
-    ProcessBuilder()
-        .command(*command)
-        .directory(
-            File(".")
-                .absoluteFile
-                .parentFile!!
-                .parentFile!!
-                .parentFile!!
-        )
-        .apply {
-            environment().apply {
-                put("JAVA_HOME", javaHome)
+    return buildString {
+        ProcessBuilder()
+            .command(*command)
+            .directory(
+                File(".")
+                    .absoluteFile
+                    .parentFile!!
+                    .parentFile!!
+                    .parentFile!!
+            )
+            .apply {
+                environment().apply {
+                    put("JAVA_HOME", javaHome)
+                }
             }
-        }
-        .redirectErrorStream(true)
-        .start()
-        .apply {
-            inputStream.use {
-                it.bufferedReader()
-                    .forEachLine {
-                        println("\t$it")
-                    }
+            .redirectErrorStream(true)
+            .start()
+            .apply {
+                inputStream.use {
+                    it.bufferedReader()
+                        .forEachLine {
+                            append(it)
+                            println("\t$it")
+                        }
+                }
             }
-        }
-        .waitFor()
-        .let {
-            if (it == 0) return@let
-            if (ignoreExitValue) return@let
-            error("Process exited with code $it")
-        }
+            .waitFor()
+            .let {
+                if (it == 0) return@let
+                if (ignoreExitValue) return@let
+                error("Process exited with code $it")
+            }
+    }
 }
