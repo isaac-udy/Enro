@@ -11,16 +11,19 @@ class ProjectChangeTests {
 
     @Before
     fun before() {
-        wasClean = false
-        requireCleanGitStatus()
-        wasClean = true
+        wasClean = isGitClean()
+        if (!wasClean) {
+            exec("git", "stash", "push", "--include-untracked", ignoreExitValue = true)
+        }
     }
 
     @After
     fun after() {
-        if (!wasClean) return
         exec("git", "add", "-A", ignoreExitValue = true)
         exec("git", "reset", "--hard", ignoreExitValue = true)
+        if (!wasClean) {
+            exec("git", "stash", "pop", ignoreExitValue = true)
+        }
     }
 
     @Test
@@ -117,10 +120,9 @@ private fun execAssembleDebug() {
     exec("./gradlew", ":tests:application:assembleDebug")
 }
 
-private fun requireCleanGitStatus() {
+private fun isGitClean(): Boolean {
     val output = exec("git", "status", "-s").trim()
-    if (output.isBlank()) return
-    error("There are local changes in the project, but these tests require a clean git status to execute")
+    return output.isBlank()
 }
 
 private fun exec(
