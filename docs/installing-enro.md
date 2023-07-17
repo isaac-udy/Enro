@@ -5,12 +5,14 @@ The first step in installing Enro is to add the Gradle dependencies to your proj
 
 [![Maven Central](https://img.shields.io/maven-central/v/dev.enro/enro.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22dev.enro%22)
 ```kotlin
+
 dependencies {
     implementation("dev.enro:enro:<latest_version>")
     ksp("dev.enro:enro-processor:<latest_version>") // optional but highly recommended
     // kapt("dev.enro:enro-processor:<latest_version>") - if you're using KAPT not KSP
     testImplementation("dev.enro:enro-test:<latest_version>") // optional test extensions
 }
+
 ```
 
 ## Add Enro to your Application class
@@ -23,24 +25,29 @@ Enro needs to be added to the Application class used by your Application. This i
 
 **0. An application class without Enro installed**
 ```kotlin
+
 class ExampleApplication : Application {
     // ...
 }
+
 ```
 
 **1. Add the `NavigationApplication` interface**
 ```kotlin
+
 class ExampleApplication : Application, NavigationApplication {
 ```
 {:.code-important .code-start}
 ```kotlin
     // ...
 }
+
 ```
 {:.code-not-important .code-end}
 
 **2. Override the `navigationController` property**
 ```kotlin
+
 class ExampleApplication : Application, NavigationApplication {
 ```
 {:.code-not-important .code-start}
@@ -52,6 +59,7 @@ class ExampleApplication : Application, NavigationApplication {
 
     // ...
 }
+
 ```
 {:.code-not-important .code-end}
 
@@ -59,6 +67,7 @@ In the example above we're passing an empty block to the `createNavigationContro
 
 **3. Add the `@NavigationComponent` annotation to your Application (if using kapt/annotation processing)**
 ```kotlin
+
 @NavigationComponent
 ```
 {:.code-important .code-start}
@@ -68,6 +77,7 @@ class ExampleApplication : Application, NavigationApplication {
     
     // ...
 }
+
 ```
 {:.code-not-important .code-end}
 
@@ -93,16 +103,19 @@ If your application has Navigation Destinations that are a mix of Fragments and 
 
 **0. An Activity without a Navigation Container**
 ```kotlin
+
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
     }
 }
+
 ```
 
 **1. Add a FrameLayout to your Activity's layout file**
 ```xml
+
 <androidx.constraintlayout.widget.ConstraintLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -118,11 +131,13 @@ class MainActivity : AppCompatActivity() {
 ```xml
     <!-- ... -->
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 ```
 {:.code-not-important .code-end}
 
 **2. Add a Navigation Container property to your Activity**
 ```kotlin
+
 class MainActivity : AppCompatActivity() {
 
 ```
@@ -140,6 +155,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
     }
 }
+
 ```
 {:.code-not-important .code-end}
 
@@ -148,6 +164,7 @@ class MainActivity : AppCompatActivity() {
 The Navigation Container that we've defined above will start off with nothing in it, and it will allow any Navigation Destination to be pushed into it. Below is an example of a configured Navigation Container that will initially show the Navigation Destination for a particular Navigation Key, and will `finish` the Activity if the Navigation Container is ever about to become empty. This isn't always the behavior that you will want for a Navigation Container, but it is a reasonably common way to set up an Activity's root Navigation Container. For more information, please see the [Navigation Container documentation](./navigation-containers.md).
 
 ```kotlin
+
 class MainActivity : AppCompatActivity() {
 
     private val exampleContainer by navigationContainer(
@@ -167,6 +184,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
     }
 }
+
 ```
 {:.code-not-important .code-end}
 </details>
@@ -182,6 +200,7 @@ If your application only has Composable destinations, you can choose to use a Vi
 
 **0. A Composable Activity without a Navigation Container**
 ```kotlin
+
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -190,10 +209,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
 ```
 
 **1. Add a Navigation Container variable**
 ```kotlin
+
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -209,11 +230,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
 ```
 {:.code-not-important .code-end}
 
 **2. Render the Navigation Container**
 ```kotlin
+
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -233,6 +256,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
 ```
 {:.code-not-important .code-end}
 
@@ -241,6 +265,7 @@ class MainActivity : AppCompatActivity() {
 The Navigation Container that we've defined above will start off with nothing in it, and it will allow any Navigation Destination to be pushed into it. Below is an example of a configured Navigation Container that will initially show the Navigation Destination for a particular Navigation Key, and will `finish` the Activity if the Navigation Container is ever about to become empty. This isn't always the behavior that you will want for a Navigation Container, but it is a reasonably common way to set up an Activity's root Navigation Container. For more information, please see the [Navigation Container documentation](./navigation-containers.md).
 
 ```kotlin
+
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -263,6 +288,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
 ```
 {:.code-not-important .code-end}
 

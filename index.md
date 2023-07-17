@@ -15,11 +15,13 @@ Enro is a powerful navigation library based on a simple idea; screens within an 
 
 ## Gradle quick-start
 ```kotlin
+
 dependencies {
     implementation("dev.enro:enro:2.0.0-alpha10")
     kapt("dev.enro:enro-processor:2.0.0-alpha10")
     testImplementation("dev.enro:enro-test:2.0.0-alpha10")
 }
+
 ```
 
 ### Applications using Enro

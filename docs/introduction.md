@@ -16,6 +16,7 @@ Building a screen using Enro begins with defining a `NavigationKey`. A `Navigati
 
 Here's an example of two `NavigationKey`s that you might find in an Enro application:
 ```kotlin
+
 @Parcelize
 data class ShowUserProfile(
    val userId: UserId
@@ -26,12 +27,15 @@ data class SelectDate(
    val minDate: LocalDate? = null,
    val maxDate: LocalDate? = null,
 ) : NavigationKey.SupportsPresent.WithResult<LocalDate>
+
 ```
 
 If you think of the `NavigationKey`s as function signatures, they could look something like this:
 ```kotlin
+
 fun showUserProfile(userId: UserId): Unit
 fun selectDate(minDate: LocalDate? = null, maxDate: LocalDate? = null): LocalDate
+
 ```
 
 ## NavigationHandles
@@ -39,6 +43,7 @@ Once you've defined the `NavigationKey` for a screen, you'll want to use it. In 
 
 ### In a Fragment or Activity:
 ```kotlin
+
 class ExampleFragment : Fragment() {
    val selectDate by registerForNavigationResult<LocalDate> { selectedDate: LocalDate -> 
      /* do something! */ 
@@ -54,10 +59,12 @@ class ExampleFragment : Fragment() {
       )
    }
 }
+
 ```
 
 ### In a Composable: 
 ```kotlin
+
 @Composable
 fun ExampleComposable() {
    val navigation = navigationHandle()
@@ -77,6 +84,7 @@ fun ExampleComposable() {
       )
    }) { /* ... */ }
 }
+
 ```
 
 ## NavigationDestinations 
@@ -86,6 +94,7 @@ The recommended approach to mark an Activity, Fragment or Composable as a `Navig
 
 ### In a Fragment or Activity:
 ```kotlin
+
 @NavigationDestination(ShowUserProfile::class)
 class ProfileFragment : Fragment {
    // providing a type to `by navigationHandle<T>()` gives you access to the NavigationKey 
@@ -93,10 +102,12 @@ class ProfileFragment : Fragment {
    // arguments for the destination
     val navigation by navigationHandle<ShowProfile>() 
 }
+
 ```
 
 ### In a Composable:
 ```kotlin
+
 @Composable
 @NavigationDestination(SelectDate::class)
 fun SelectDateComposable() { 
@@ -109,14 +120,17 @@ fun SelectDateComposable() {
        navigation.closeWithResult( /* pass a local date here to return that as a result */ )
    }) { /* ... */ }
 }
+
 ```
 
 ### Without annotation processing:
 If you'd prefer to avoid annotation processing, you can use a DSL to define these bindings when creating your application (see [here]() for more information):
 ```kotlin
+
 // this needs to be registered with your application
 val exampleNavigationComponent = createNavigationComponent {
    fragmentDestination<ShowProfile, ProfileFragment>() 
    composableDestination<SelectDate> { SelectDateComposable() }
 }
+
 ```
