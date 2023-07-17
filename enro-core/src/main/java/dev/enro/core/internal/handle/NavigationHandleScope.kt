@@ -3,7 +3,11 @@ package dev.enro.core.internal.handle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import dev.enro.core.NavigationHandle
-import dev.enro.core.controller.*
+import dev.enro.core.controller.EnroDependencyContainer
+import dev.enro.core.controller.EnroDependencyScope
+import dev.enro.core.controller.NavigationController
+import dev.enro.core.controller.get
+import dev.enro.core.controller.register
 import dev.enro.core.controller.usecase.CreateResultChannel
 import dev.enro.core.controller.usecase.NavigationHandleExtras
 import java.io.Closeable
@@ -17,7 +21,11 @@ internal class NavigationHandleScope(
     override val container: EnroDependencyContainer = EnroDependencyContainer(
         parentScope = navigationController.dependencyScope,
         registration = {
-            register { requireNotNull(boundNavigationHandle) }
+            register {
+                requireNotNull(boundNavigationHandle) {
+                    "NavigationHandleScope was not bound to any NavigationHandle"
+                }
+            }
             register { CreateResultChannel(get(), get()) }
             register { NavigationHandleExtras() }
         }

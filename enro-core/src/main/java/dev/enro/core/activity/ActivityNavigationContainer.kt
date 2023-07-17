@@ -6,7 +6,12 @@ import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.Lifecycle
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
+import dev.enro.core.activity
+import dev.enro.core.addOpenInstruction
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
@@ -14,6 +19,7 @@ import dev.enro.core.container.backstackOf
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.GetNavigationBinding
 import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.core.getNavigationHandle
 
 internal class ActivityNavigationContainer internal constructor(
     activityContext: NavigationContext<out ComponentActivity>,
@@ -70,7 +76,7 @@ internal class ActivityNavigationContainer internal constructor(
         val binding = requireNotNull(
             childContext.controller.dependencyScope.get<GetNavigationBinding>()
                 .invoke(instructionToOpenHosted)
-        )
+        ) { "Could not open ${instructionToOpenHosted.navigationKey::class.java.simpleName}: No NavigationBinding was found" }
 
         val intent = Intent(childContext.activity, binding.destinationType.java)
             .addOpenInstruction(instructionToOpenHosted)

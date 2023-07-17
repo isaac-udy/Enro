@@ -1,9 +1,21 @@
 package dev.enro.core.container
 
 import androidx.activity.ComponentActivity
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.ExecutorArgs
+import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationExecutor
+import dev.enro.core.NavigationKey
+import dev.enro.core.activity
 import dev.enro.core.activity.ActivityNavigationContainer
 import dev.enro.core.compatability.Compatibility
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.navigationContext
+import dev.enro.core.parentContainer
+import dev.enro.core.parentContext
+import dev.enro.core.readOpenInstruction
 
 internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, NavigationKey>(
     fromType = Any::class,
@@ -27,7 +39,9 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
             )
         ) return
 
-        requireNotNull(container)
+        requireNotNull(container) {
+            "Failed to execute instruction from context with NavigationKey ${fromContext.arguments.readOpenInstruction()!!.navigationKey::class.java.simpleName}: Could not find valid container for NavigationKey of type ${keyType.java.simpleName}"
+        }
         container.setBackstack { backstack ->
             backstack
                 .let { if (isReplace) it.pop() else it }

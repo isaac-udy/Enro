@@ -20,7 +20,9 @@ public fun ProvideViewModelFactory(
     val localViewModelStoreOwner = LocalViewModelStoreOwner.current
     val wrappedViewModelStoreOwner = remember(enroFactory, localViewModelStoreOwner) {
         WrappedViewModelStoreOwner(
-            wrapped = requireNotNull(localViewModelStoreOwner),
+            wrapped = requireNotNull(localViewModelStoreOwner) {
+                "Failed to ProvideViewModelFactory: LocalViewModelStoreOwner was not found"
+            },
             factory = enroFactory,
         )
     }

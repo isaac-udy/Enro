@@ -25,7 +25,9 @@ public fun ModalBottomSheetState.bindToNavigationHandle(): ModalBottomSheetState
         exit = fadeOut(tween(durationMillis = 125, delayMillis = 225))
     )
 
-    val parent = requireNotNull(parentContainer)
+    val parent = requireNotNull(parentContainer) {
+        "Failed to bind ModalBottomSheetState to NavigationHandle: parentContainer was not found"
+    }
     val isInBackstack by remember {
         derivedStateOf { parent.backstack.any { it.instructionId == navigationHandle.id } }
     }
@@ -65,7 +67,9 @@ public fun BottomSheetDestination(
     content: @Composable (ModalBottomSheetState) -> Unit,
 ) {
     val navigationHandle = navigationHandle()
-    val container = requireNotNull(parentContainer)
+    val container = requireNotNull(parentContainer) {
+        "Failed to render BottomSheetDestination: parentContainer was not found"
+    }
     val isActive = remember { derivedStateOf { container.backstack.active?.instructionId == navigationHandle.id } }
 
     val bottomSheetState = rememberModalBottomSheetState(

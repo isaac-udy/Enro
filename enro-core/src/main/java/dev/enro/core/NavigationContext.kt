@@ -189,8 +189,14 @@ internal val <T : ComposableDestination> T.navigationContext: ComposeContext<T>
 public val navigationContext: NavigationContext<*>
     @Composable
     get() {
-        val viewModelStoreOwner = requireNotNull(LocalViewModelStoreOwner.current)
-        return remember(viewModelStoreOwner) { requireNotNull(viewModelStoreOwner.navigationContext) }
+        val viewModelStoreOwner = requireNotNull(LocalViewModelStoreOwner.current) {
+            "Failed to get navigationContext in Composable: LocalViewModelStoreOwner was null"
+        }
+        return remember(viewModelStoreOwner) {
+            requireNotNull(viewModelStoreOwner.navigationContext) {
+                "Failed to get navigationContext in Composable: ViewModelStore owner does not have a NavigationContext reference"
+            }
+        }
     }
 
 internal val ViewModelStoreOwner.navigationContext: NavigationContext<*>?
@@ -267,7 +273,9 @@ public val ComposableDestination.parentContainer: NavigationContainer? get() = n
 public val parentContainer: NavigationContainer?
     @Composable
     get() {
-        val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
+        val viewModelStoreOwner = requireNotNull(LocalViewModelStoreOwner.current) {
+            "Failed to get parentContainer in Composable: LocalViewModelStoreOwner was null"
+        }
         return remember {
             viewModelStoreOwner
                 .navigationContext
