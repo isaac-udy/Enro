@@ -198,18 +198,18 @@ class ExampleActivity : Activity {
 
 When you "push" a screen/destination, you're saying that the screen should be the top element of it's container, and it should be the only thing rendered within the container.
 
-When you "present" a screen/destination, you're saying that the screen should appear above the most recently pushed screen. Generally, these destinations are Dialogs, BottomSheets, or similar.
+When you "present" a screen/destination, you're saying that the screen should appear above the most recently pushed screen. Generally, these destinations are Dialogs, BottomSheets, or similar. Activities are also always considered to be presented, because they cannot be contained within a container.
 
-For example, if you have a container with a backstack that looks like this: 
+For example, if you have a container with a backstack that looks like this: <br>
 `push(A), push(B), push(C)`, that container will show "C", and no other screens will be visible. 
 
-If you pushed "D", and the backstack became:
+If you pushed "D", and the backstack became:<br>
 `push(A), push(B), push(C), push(D)`, then "C" would animate out, and "D" would become visible. "C" would become inactive.
 
-But if you presented "D" instead, and the backstack was:
+But if you presented "D" instead, and the backstack was:<br>
 `push(A), push(B), push(C), present(D)`, then "C" would not animate out, and both "C" and "D" would be visible (assuming that D did not cover the entire screen). "C" remains active in the background.
 
-If "D" then pushed to "E", and the backstack was:
+If "D" then pushed to "E", and the backstack was:<br>
 `push(A), push(B), push(C), present(D), push(E)`, then both "C" and "D" would animate out, and "E" would be visible. Once "E" was closed, both "C" and "D" would become visible again.
 
 </details>
@@ -230,6 +230,67 @@ If "D" then pushed to "E", and the backstack was:
   <summary class="faq-summary">
     How do I configure animations?
   </summary>
+
+In the configuration for your application's `navigationController`, you can provide an `animations { }` block, which allows you to configure animations for a variety of situations. This can also be configured within a `navigationModule`, which can be installed on the `navigationController`, or can be configured on an individual `navigationContainer`.
+
+```kotlin
+
+val specificNavigationModule = createNavigationModule {
+    animations {
+        // Configure the default animations for destinations that are pushed
+        direction(
+            direction = NavigationDirection.Push, 
+            entering = yourAnimationHere,
+            exiting = yourAnimationHere,
+            returnEntering = yourAnimationHere,
+            returnExiting = yourAnimationHere,
+        )
+        
+        // Configure an animations for when any destination opens the "ExampleComposableKey"
+        transitionTo<ExampleComposableKey>(
+            entering = yourAnimationHere,  // the entering animation for ExampleComposableKey
+            exiting = yourAnimationHere, // the exiting animation for the destination that opened ExampleComposableKey
+            returnEntering = yourAnimationHere,  // the entering animation for the destination that opened ExampleComposableKey, when ExampleComposableKey is closed
+            returnExiting = yourAnimationHere, // the exiting animation for ExampleComposableKey, when ExampleComposableKey is closed
+        )
+
+        // Configure an animations for when FooKey opens BarKey
+        transitionBetween<FooKey, BarKey>(
+            entering = yourAnimationHere,  // the entering animation for BarKey
+            exiting = yourAnimationHere, // the exiting animation for FooKey
+            returnEntering = yourAnimationHere,  // the entering animation for FooKey when BarKey is closed
+            returnExiting = yourAnimationHere, // the exiting animation for BarKey when BarKey is closed
+        )
+
+        // Advanced APIs for adding animations in more complex situations
+        addOpeningTransition(/* ... */) 
+        addClosingTransition(/* ... */) 
+    }
+}
+
+class ExampleApplication : Application(), NavigationApplication {
+    override val navigationController = createNavigationController {
+        module(specificNavigationModule) // install the module defined outside of the application
+        animations {
+            // this block has the same functionality as the 
+            // animations block in specificNavigationModule above
+        }
+    }
+}
+
+@Composable
+fun ExampleScreen() {
+    val container = rememberNavigationContainer(
+        animations = {
+            // this block has the same functionality as the 
+            // animations block in specificNavigationModule above
+        }
+    )
+    // ...
+}
+
+```
+
 </details>
 
 <details markdown="block">
