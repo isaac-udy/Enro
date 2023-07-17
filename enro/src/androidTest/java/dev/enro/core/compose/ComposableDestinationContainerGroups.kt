@@ -123,8 +123,12 @@ class ComposableDestinationContainerGroups {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             root.navigationContext.activity.recreate()
         }
-        runBlocking { composeContentRule.awaitIdle() }
-        expectComposableContext<Destinations.SecondTab>()
+        runBlocking {
+            composeContentRule.waitUntil(timeoutMillis = 10_000) {
+                runCatching { expectComposableContext<Destinations.SecondTab>() }
+                    .isSuccess
+            }
+        }
         composeContentRule.onNodeWithText("First Tab Screen").assertDoesNotExist()
         composeContentRule.onNodeWithText("Second Tab Screen").assertExists()
         composeContentRule.onNodeWithText("Third Tab Screen").assertDoesNotExist()
