@@ -17,9 +17,9 @@ Enro is a powerful navigation library based on a simple idea; screens within an 
 ```kotlin
 
 dependencies {
-    implementation("dev.enro:enro:2.0.0-alpha10")
-    kapt("dev.enro:enro-processor:2.0.0-alpha10")
-    testImplementation("dev.enro:enro-test:2.0.0-alpha10")
+    implementation("dev.enro:enro:2.0.0-beta04")
+    kapt("dev.enro:enro-processor:2.0.0-beta04")
+    testImplementation("dev.enro:enro-test:2.0.0-beta04")
 }
 
 ```
@@ -28,6 +28,9 @@ dependencies {
 <p>
     <a href="https://www.splitwise.com/">
         <img width="50px" src="./assets/splitwise-icon.png" />
+    </a>
+    <a href="https://play.google.com/store/apps/details?id=com.beyondbudget">
+        <img width="50px" src="./assets/beyond-budget-icon.png" />
     </a>
 </p>
 
