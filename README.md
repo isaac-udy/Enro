@@ -106,6 +106,9 @@ fun MyComposableScreen() {
     <a href="https://www.splitwise.com/">
         <img width="100px" src="resources/splitwise-icon.png" />
     </a>
+    <a href="https://play.google.com/store/apps/details?id=com.beyondbudget">
+        <img width="100px" src="./assets/beyond-budget-icon.png" />
+    </a>
 </p>
 
 ## FAQ
