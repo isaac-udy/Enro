@@ -27,10 +27,11 @@ dependencies {
 ### Applications using Enro
 <p>
     <a href="https://www.splitwise.com/">
-        <img width="50px" src="./assets/splitwise-icon.png" />
+        <img width="80px" src="./assets/splitwise-icon.png" />
     </a>
+    &nbsp;&nbsp;
     <a href="https://play.google.com/store/apps/details?id=com.beyondbudget">
-        <img width="50px" src="./assets/beyond-budget-icon.png" />
+        <img width="80px" src="./assets/beyond-budget-icon.png" />
     </a>
 </p>
 
