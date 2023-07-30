@@ -5,10 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
@@ -58,7 +58,7 @@ fun SelectDestinationScreen() {
     val destinations = remember {
         loadNavigationDestinations(context.applicationContext as Application)
     }
-    
+
     val destinationsList = remember {
         movableContentOf {
             destinations.forEach {
@@ -95,8 +95,7 @@ fun SelectDestinationScreen() {
                 }
             }
         }
-    }
-    else {
+    } else {
         Column(
             modifier = Modifier
                 .background(MaterialTheme.colors.background)
@@ -125,21 +124,21 @@ fun ReflectedDestinationCard(
     ) {
         Row(
             modifier = Modifier
-                .height(56.dp)
+                .heightIn(min = 56.dp)
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
                 text = reflectedDestination.title,
+                modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.button,
             )
-
-            Spacer(modifier = Modifier.weight(1f))
 
             when {
                 reflectedDestination.pushInstance == null -> {
                     TextButton(
+                        modifier = Modifier.widthIn(min = 56.dp),
                         onClick = {
                             navigation.present(reflectedDestination.presentInstance!!)
                         }
@@ -150,6 +149,7 @@ fun ReflectedDestinationCard(
 
                 reflectedDestination.presentInstance == null -> {
                     TextButton(
+                        modifier = Modifier.widthIn(min = 56.dp),
                         onClick = {
                             navigation.push(reflectedDestination.pushInstance)
                         }
@@ -161,6 +161,7 @@ fun ReflectedDestinationCard(
                 else -> {
                     var popUpVisible by remember { mutableStateOf(false) }
                     TextButton(
+                        modifier = Modifier.widthIn(min = 56.dp),
                         onClick = { popUpVisible = true }
                     ) {
                         Text("Open")
