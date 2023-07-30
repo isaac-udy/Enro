@@ -23,13 +23,13 @@ import dev.enro.core.present
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object BottomSheetCloseAndPresentsBottomSheet : NavigationKey.SupportsPush {
+object BottomSheetCloseAndPresent : NavigationKey.SupportsPush {
     @Parcelize
     internal object BottomSheet : NavigationKey.SupportsPresent
 }
 
 @Composable
-@NavigationDestination(BottomSheetCloseAndPresentsBottomSheet::class)
+@NavigationDestination(BottomSheetCloseAndPresent::class)
 fun CloseBottomSheetAndPresentScreen() {
     val navigation = navigationHandle()
     Column(
@@ -41,7 +41,7 @@ fun CloseBottomSheetAndPresentScreen() {
         Text(text = "BottomSheet Closes and Presents BottomSheet", style = MaterialTheme.typography.h6)
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
-            navigation.present(BottomSheetCloseAndPresentsBottomSheet.BottomSheet)
+            navigation.present(BottomSheetCloseAndPresent.BottomSheet)
         }) {
             Text(text = "Open BottomSheet")
         }
@@ -50,7 +50,7 @@ fun CloseBottomSheetAndPresentScreen() {
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-@NavigationDestination(BottomSheetCloseAndPresentsBottomSheet.BottomSheet::class)
+@NavigationDestination(BottomSheetCloseAndPresent.BottomSheet::class)
 fun CloseBottomSheetAndPresentBottomSheetScreen() = BottomSheetDestination { state ->
     val navigation = navigationHandle()
     ModalBottomSheetLayout(
@@ -65,7 +65,7 @@ fun CloseBottomSheetAndPresentBottomSheetScreen() = BottomSheetDestination { sta
                 Text(text = "BottomSheet")
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = {
-                    navigation.present(BottomSheetCloseAndPresentsBottomSheet.BottomSheet)
+                    navigation.present(BottomSheetCloseAndPresent.BottomSheet)
                     navigation.close()
                 }) {
                     Text(text = "Close and Present BottomSheet")

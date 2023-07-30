@@ -8,6 +8,6 @@ import dev.enro.core.controller.createNavigationController
 @NavigationComponent
 class TestApplication : Application(), NavigationApplication {
     override val navigationController = createNavigationController {
-
+        plugin(TestApplicationPlugin)
     }
 }
