@@ -72,7 +72,9 @@ public class ComposableNavigationContainer internal constructor(
         key(key.name) {
             destinationOwners
                 .forEach {
-                    it.Render(backstack)
+                    key(it.instruction.instructionId) {
+                        it.Render(backstack)
+                    }
                 }
         }
     }
