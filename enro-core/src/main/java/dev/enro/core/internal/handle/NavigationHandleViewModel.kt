@@ -94,9 +94,9 @@ internal open class NavigationHandleViewModel(
 
 private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
     val isMainThread = Looper.getMainLooper() == Looper.myLooper()
-    when(this) {
-        is FragmentContext<out Fragment> -> {
-            if(isMainThread && !fragment.isStateSaved && fragment.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+    when(contextReference) {
+        is Fragment -> {
+            if(isMainThread && !contextReference.isStateSaved && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 block()
             } else {
                 lifecycleOwner.lifecycleScope.launch {
@@ -104,7 +104,7 @@ private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
                 }
             }
         }
-        is ActivityContext<out ComponentActivity> -> {
+        is ComponentActivity -> {
             if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
                 block()
             } else {
@@ -113,7 +113,7 @@ private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
                 }
             }
         }
-        is ComposeContext<out ComposableDestination> -> {
+        is ComposableDestination -> {
             if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 block()
             } else {

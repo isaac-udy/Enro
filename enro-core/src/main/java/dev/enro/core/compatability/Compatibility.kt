@@ -24,13 +24,13 @@ internal object Compatibility {
         private const val COMPATIBILITY_NAVIGATION_DIRECTION = "Compatibility.DefaultContainerExecutor.COMPATIBILITY_NAVIGATION_DIRECTION"
 
         fun earlyExitForFragments(args: ExecutorArgs<*, *, *>): Boolean {
-            return args.fromContext is FragmentContext && !args.fromContext.fragment.isAdded
+            return args.fromContext.contextReference is Fragment && !args.fromContext.contextReference.isAdded
         }
 
         fun earlyExitForReplace(args: ExecutorArgs<*, *, *>): Boolean {
             val isReplace = args.instruction.navigationDirection is NavigationDirection.Replace
 
-            val isReplaceActivity = args.fromContext is ActivityContext && isReplace
+            val isReplaceActivity = args.fromContext.contextReference is Activity && isReplace
             if (!isReplaceActivity) return false
 
             openInstructionAsActivity(args.fromContext, NavigationDirection.Present, args.instruction)

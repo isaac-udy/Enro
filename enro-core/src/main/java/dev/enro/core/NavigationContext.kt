@@ -26,62 +26,73 @@ import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
-public sealed class NavigationContext<ContextType : Any>(
-    public val contextReference: ContextType
+public class NavigationContext<ContextType : Any> internal constructor(
+    public val contextReference: ContextType,
+    private val getController: () -> NavigationController,
+    private val getParentContext: () -> NavigationContext<*>?,
+    private val getArguments: () -> Bundle,
+    private val getViewModelStoreOwner: () -> ViewModelStoreOwner,
+    private val getSavedStateRegistryOwner: () -> SavedStateRegistryOwner,
+    private val getLifecycleOwner: () -> LifecycleOwner,
 ) {
-    public abstract val controller: NavigationController
-    public abstract val parentContext: NavigationContext<*>?
+    public val controller: NavigationController get() = getController()
+    public val parentContext: NavigationContext<*>? get() = getParentContext()
 
-    public abstract val arguments: Bundle
-    public abstract val viewModelStoreOwner: ViewModelStoreOwner
-    public abstract val savedStateRegistryOwner: SavedStateRegistryOwner
-    public abstract val lifecycleOwner: LifecycleOwner
+    public val arguments: Bundle get() = getArguments()
+    public val viewModelStoreOwner: ViewModelStoreOwner get() = getViewModelStoreOwner()
+    public val savedStateRegistryOwner: SavedStateRegistryOwner get() = getSavedStateRegistryOwner()
+    public val lifecycleOwner: LifecycleOwner get() = getLifecycleOwner()
     public val lifecycle: Lifecycle get() = lifecycleOwner.lifecycle
 
     public val containerManager: NavigationContainerManager = NavigationContainerManager()
 }
 
-internal class ActivityContext<ContextType : ComponentActivity>(
+internal fun <ContextType : ComponentActivity> ActivityContext(
     contextReference: ContextType,
-) : NavigationContext<ContextType>(contextReference) {
-    override val controller get() = contextReference.application.navigationController
-    override val parentContext: NavigationContext<*>? = null
-    override val arguments: Bundle by lazy { contextReference.intent.extras ?: Bundle() }
-
-    override val viewModelStoreOwner: ViewModelStoreOwner get() = contextReference
-    override val savedStateRegistryOwner: SavedStateRegistryOwner get() = contextReference
-    override val lifecycleOwner: LifecycleOwner get() = contextReference
+) : NavigationContext<ContextType> {
+    return NavigationContext(
+        contextReference = contextReference,
+        getController = { contextReference.application.navigationController },
+        getParentContext =  { null },
+        getArguments = { contextReference.intent.extras ?: Bundle() },
+        getViewModelStoreOwner = { contextReference },
+        getSavedStateRegistryOwner = { contextReference },
+        getLifecycleOwner =  { contextReference },
+    )
 }
 
-internal class FragmentContext<ContextType : Fragment>(
+internal fun <ContextType : Fragment> FragmentContext(
     contextReference: ContextType,
-) : NavigationContext<ContextType>(contextReference) {
-    override val controller get() = contextReference.requireActivity().application.navigationController
-    override val arguments: Bundle by lazy { contextReference.arguments ?: Bundle() }
-
-    override val viewModelStoreOwner: ViewModelStoreOwner get() = contextReference
-    override val savedStateRegistryOwner: SavedStateRegistryOwner get() = contextReference
-    override val lifecycleOwner: LifecycleOwner get() = contextReference
-
-    override val parentContext: NavigationContext<*>
-        get() {
-            return when (val parentFragment = fragment.parentFragment) {
-                null -> fragment.requireActivity().navigationContext
+) : NavigationContext<ContextType> {
+    return NavigationContext(
+        contextReference = contextReference,
+        getController = { contextReference.requireActivity().application.navigationController },
+        getParentContext =  {
+            when (val parentFragment = contextReference.parentFragment) {
+                null -> contextReference.requireActivity().navigationContext
                 else -> parentFragment.navigationContext
             }
-        }
+        },
+        getArguments = { contextReference.arguments ?: Bundle() },
+        getViewModelStoreOwner = { contextReference },
+        getSavedStateRegistryOwner = { contextReference },
+        getLifecycleOwner =  { contextReference },
+    )
 }
 
-internal class ComposeContext<ContextType : ComposableDestination>(
-    contextReference: ContextType
-) : NavigationContext<ContextType>(contextReference) {
-    override val controller: NavigationController get() = contextReference.owner.activity.application.navigationController
-    override val parentContext: NavigationContext<*> get() = contextReference.owner.parentContainer.context
-    override val arguments: Bundle by lazy { bundleOf(OPEN_ARG to contextReference.owner.instruction) }
 
-    override val viewModelStoreOwner: ViewModelStoreOwner get() = contextReference
-    override val savedStateRegistryOwner: SavedStateRegistryOwner get() = contextReference
-    override val lifecycleOwner: LifecycleOwner get() = contextReference
+internal fun <ContextType : ComposableDestination> ComposeContext(
+    contextReference: ContextType,
+) : NavigationContext<ContextType> {
+    return NavigationContext(
+        contextReference = contextReference,
+        getController = { contextReference.owner.activity.application.navigationController },
+        getParentContext =  { contextReference.owner.parentContainer.context },
+        getArguments = { bundleOf(OPEN_ARG to contextReference.owner.instruction) },
+        getViewModelStoreOwner = { contextReference },
+        getSavedStateRegistryOwner = { contextReference },
+        getLifecycleOwner =  { contextReference },
+    )
 }
 
 public val NavigationContext<out Fragment>.fragment: Fragment get() = contextReference
@@ -172,16 +183,16 @@ public val NavigationContext<*>.activity: ComponentActivity
 
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 public val <T : ComponentActivity> T.navigationContext: NavigationContext<T>
-    get() = getNavigationHandleViewModel().navigationContext as ActivityContext<T>
+    get() = getNavigationHandleViewModel().navigationContext as NavigationContext<T>
 
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 public val <T : Fragment> T.navigationContext: NavigationContext<T>
-    get() = getNavigationHandleViewModel().navigationContext as FragmentContext<T>
+    get() = getNavigationHandleViewModel().navigationContext as NavigationContext<T>
 
 @PublishedApi
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
-internal val <T : ComposableDestination> T.navigationContext: ComposeContext<T>
-    get() = context as ComposeContext<T>
+internal val <T : ComposableDestination> T.navigationContext: NavigationContext<T>
+    get() = context as NavigationContext<T>
 
 public val navigationContext: NavigationContext<*>
     @Composable

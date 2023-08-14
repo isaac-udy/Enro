@@ -1,14 +1,21 @@
 package dev.enro.core.controller.usecase
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
-import dev.enro.core.*
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationHandleProperty
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.activity
 import dev.enro.core.internal.NoNavigationKey
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
-import java.util.*
+import dev.enro.core.readOpenInstruction
+import java.util.UUID
 
 internal const val CONTEXT_ID_ARG = "dev.enro.core.ContextController.CONTEXT_ID"
 
@@ -20,7 +27,7 @@ internal class OnNavigationContextCreated(
         context: NavigationContext<*>,
         savedInstanceState: Bundle?
     ) {
-        if (context is ActivityContext) {
+        if (context.contextReference is Activity) {
             context.activity.theme.applyStyle(android.R.style.Animation_Activity, false)
         }
 
