@@ -8,6 +8,7 @@ import androidx.compose.runtime.Stable
 import androidx.fragment.app.Fragment
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.result.internal.ResultChannelId
+import dev.enro.extensions.getParcelableCompat
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 import java.util.*
@@ -274,5 +275,5 @@ public fun Fragment.addOpenInstruction(instruction: AnyOpenInstruction): Fragmen
 }
 
 public fun Bundle.readOpenInstruction(): AnyOpenInstruction? {
-    return getParcelable<NavigationInstruction.Open.OpenInternal<*>>(OPEN_ARG)
+    return getParcelableCompat<NavigationInstruction.Open.OpenInternal<*>>(OPEN_ARG)
 }

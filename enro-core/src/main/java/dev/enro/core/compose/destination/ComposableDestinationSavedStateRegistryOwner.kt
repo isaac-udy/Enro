@@ -13,6 +13,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.addOpenInstruction
+import dev.enro.extensions.getParcelableListCompat
 
 internal class ComposableDestinationSavedStateRegistryOwner(
     private val owner: ComposableDestinationOwner,
@@ -75,12 +76,10 @@ internal class ComposableDestinationSavedStateRegistryOwner(
     }
 }
 
-
-@Suppress("DEPRECATION")
 private fun Bundle.toMap(): Map<String, List<Any?>>? {
     val map = mutableMapOf<String, List<Any?>>()
     this.keySet().forEach { key ->
-        val list = getParcelableArrayList<Parcelable?>(key) as ArrayList<Any?>
+        val list = getParcelableListCompat<Parcelable?>(key).orEmpty()
         map[key] = list
     }
     return map

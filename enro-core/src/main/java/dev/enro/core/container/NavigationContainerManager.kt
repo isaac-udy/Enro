@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationContainerKey
+import dev.enro.extensions.getParcelableCompat
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -57,7 +58,7 @@ public class NavigationContainerManager {
 
     internal fun restore(savedInstanceState: Bundle?) {
         if(savedInstanceState == null) return
-        val activeKey = savedInstanceState.getParcelable<NavigationContainerKey>(ACTIVE_CONTAINER_KEY)
+        val activeKey = savedInstanceState.getParcelableCompat<NavigationContainerKey>(ACTIVE_CONTAINER_KEY)
         activeContainerState.value = activeKey
         mutableActiveContainerFlow.value = activeKey
     }
