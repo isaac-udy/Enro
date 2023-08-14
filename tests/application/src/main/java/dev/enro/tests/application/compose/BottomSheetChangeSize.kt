@@ -24,6 +24,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.present
+import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -78,6 +79,7 @@ fun BottomSheetChangeSizeBottomSheetScreen() = BottomSheetDestination { state ->
     ) {}
 
     LaunchedEffect(items.size) {
+        delay(1)
         if(items.size < 100) {
             items = items + items.size
         }
