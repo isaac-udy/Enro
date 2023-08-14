@@ -8,7 +8,15 @@ import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 
 internal class ComposableViewModelStoreStorage : ViewModel() {
-    val viewModelStores = mutableMapOf<NavigationContainerKey, MutableMap<String, ViewModelStore>>()
+    private val viewModelStores = mutableMapOf<NavigationContainerKey, MutableMap<String, ViewModelStore>>()
+
+    fun getStorageForContainer(key: NavigationContainerKey): MutableMap<String, ViewModelStore> {
+        return viewModelStores.getOrPut(key) { mutableMapOf() }
+    }
+
+    fun clearStorageForContainer(key: NavigationContainerKey) {
+        viewModelStores.remove(key)
+    }
 
     override fun onCleared() {
         viewModelStores.values

@@ -35,7 +35,7 @@ public class ComposableNavigationContainer internal constructor(
     acceptsNavigationKey = accept,
 ) {
     private val viewModelStoreStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
-    private val viewModelStores = viewModelStoreStorage.viewModelStores.getOrPut(key) { mutableMapOf() }
+    private val viewModelStores = viewModelStoreStorage.getStorageForContainer(key)
 
     private val restoredDestinationState = mutableMapOf<String, Bundle>()
     private var destinationOwners by mutableStateOf<List<ComposableDestinationOwner>>(emptyList())
@@ -55,6 +55,13 @@ public class ComposableNavigationContainer internal constructor(
 
     public val isAnimating: Boolean by derivedStateOf {
         destinationOwners.any { !it.transitionState.isIdle }
+    }
+
+    private val onDestroyLifecycleObserver = LifecycleEventObserver { _, event ->
+        if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
+        destroy()
+    }.also { observer ->
+        parentContext.lifecycle.addObserver(observer)
     }
 
     // When we've got a NavigationHost wrapping this ComposableNavigationContainer,
@@ -80,11 +87,6 @@ public class ComposableNavigationContainer internal constructor(
     }
 
     init {
-        val lifecycleEventObserver = LifecycleEventObserver { _, event ->
-            if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
-            destroy()
-        }
-        parentContext.lifecycle.addObserver(lifecycleEventObserver)
         restoreOrSetBackstack(initialBackstack)
     }
 
@@ -208,11 +210,27 @@ public class ComposableNavigationContainer internal constructor(
         }
     }
 
+    /**
+     * This is an Advanced Enro API, and should only be used in cases where you are certain that you want to
+     * destroy the ComposableNavigationContainer.
+     *
+     * This is not recommended for general use, and is primarily provided for situations where a
+     * NavigationContainer's lifecycle does not match the parent context's lifecycle.
+     */
+    @AdvancedEnroApi
+    public fun manuallyDestroy() {
+        destroy()
+    }
+
     private fun destroy() {
         destinationOwners.forEach { composableDestinationOwner ->
             composableDestinationOwner.destroy()
         }
         destinationOwners = emptyList()
+        viewModelStoreStorage.clearStorageForContainer(key)
+        context.containerManager.removeContainer(this)
+        context.savedStateRegistryOwner.savedStateRegistry.unregisterSavedStateProvider(key.name)
+        context.lifecycleOwner.lifecycle.removeObserver(onDestroyLifecycleObserver)
     }
 
     @Composable
