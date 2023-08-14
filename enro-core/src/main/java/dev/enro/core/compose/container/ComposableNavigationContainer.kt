@@ -227,7 +227,6 @@ public class ComposableNavigationContainer internal constructor(
             composableDestinationOwner.destroy()
         }
         destinationOwners = emptyList()
-        viewModelStoreStorage.clearStorageForContainer(key)
         context.containerManager.removeContainer(this)
         context.savedStateRegistryOwner.savedStateRegistry.unregisterSavedStateProvider(key.name)
         context.lifecycleOwner.lifecycle.removeObserver(onDestroyLifecycleObserver)
