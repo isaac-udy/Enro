@@ -108,7 +108,7 @@ fun assertPushContainerType(
             val result = block(parentContext)
             return when {
                 result != null -> result
-                parentContext.contextReference is NavigationHost -> withParentContext(parentContext.parentContext(), block)
+                parentContext.contextReference is NavigationHost -> withParentContext(parentContext.parentContext, block)
                 else -> null
             }
         }
@@ -118,7 +118,7 @@ fun assertPushContainerType(
             val parentContainer = fromContext.parentContainer()
             if (parentContainer?.let(block) == true) return parentContainer
 
-            val parentContext = fromContext.parentContext()
+            val parentContext = fromContext.parentContext
             return when (parentContext?.contextReference) {
                 is NavigationHost -> getParentContainer(parentContext, block)
                 else -> null
@@ -135,7 +135,7 @@ fun assertPushContainerType(
                 .firstOrNull {
                     it.hasActiveContext(pushOpened.navigationContext)
                 }
-            is IntoSiblingContainer -> withParentContext(pushFrom.navigationContext.parentContext()) { parentContext ->
+            is IntoSiblingContainer -> withParentContext(pushFrom.navigationContext.parentContext) { parentContext ->
                 parentContext
                     .containerManager
                     .containers

@@ -99,8 +99,8 @@ private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
             if(isMainThread && !fragment.isStateSaved && fragment.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 block()
             } else {
-                fragment.lifecycleScope.launch {
-                    fragment.lifecycle.withStarted(block)
+                lifecycleOwner.lifecycleScope.launch {
+                    lifecycle.withStarted(block)
                 }
             }
         }
@@ -108,8 +108,8 @@ private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
             if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
                 block()
             } else {
-                contextReference.lifecycleScope.launch {
-                    contextReference.lifecycle.withStarted(block)
+                lifecycleOwner.lifecycleScope.launch {
+                    lifecycle.withStarted(block)
                 }
             }
         }
@@ -117,8 +117,8 @@ private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
             if(isMainThread && contextReference.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 block()
             } else {
-                contextReference.lifecycleScope.launch {
-                    contextReference.lifecycle.withStarted(block)
+                lifecycleOwner.lifecycleScope.launch {
+                    lifecycle.withStarted(block)
                 }
             }
         }

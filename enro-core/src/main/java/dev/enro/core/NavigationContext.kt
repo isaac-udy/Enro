@@ -32,11 +32,11 @@ public sealed class NavigationContext<ContextType : Any>(
     public abstract val controller: NavigationController
     public abstract val parentContext: NavigationContext<*>?
 
-    public abstract val lifecycle: Lifecycle
     public abstract val arguments: Bundle
     public abstract val viewModelStoreOwner: ViewModelStoreOwner
     public abstract val savedStateRegistryOwner: SavedStateRegistryOwner
     public abstract val lifecycleOwner: LifecycleOwner
+    public val lifecycle: Lifecycle get() = lifecycleOwner.lifecycle
 
     public val containerManager: NavigationContainerManager = NavigationContainerManager()
 }
@@ -45,7 +45,6 @@ internal class ActivityContext<ContextType : ComponentActivity>(
     contextReference: ContextType,
 ) : NavigationContext<ContextType>(contextReference) {
     override val controller get() = contextReference.application.navigationController
-    override val lifecycle get() = contextReference.lifecycle
     override val parentContext: NavigationContext<*>? = null
     override val arguments: Bundle by lazy { contextReference.intent.extras ?: Bundle() }
 
@@ -58,7 +57,6 @@ internal class FragmentContext<ContextType : Fragment>(
     contextReference: ContextType,
 ) : NavigationContext<ContextType>(contextReference) {
     override val controller get() = contextReference.requireActivity().application.navigationController
-    override val lifecycle get() = contextReference.lifecycle
     override val arguments: Bundle by lazy { contextReference.arguments ?: Bundle() }
 
     override val viewModelStoreOwner: ViewModelStoreOwner get() = contextReference
@@ -79,7 +77,6 @@ internal class ComposeContext<ContextType : ComposableDestination>(
 ) : NavigationContext<ContextType>(contextReference) {
     override val controller: NavigationController get() = contextReference.owner.activity.application.navigationController
     override val parentContext: NavigationContext<*> get() = contextReference.owner.parentContainer.context
-    override val lifecycle: Lifecycle get() = contextReference.owner.lifecycle
     override val arguments: Bundle by lazy { bundleOf(OPEN_ARG to contextReference.owner.instruction) }
 
     override val viewModelStoreOwner: ViewModelStoreOwner get() = contextReference
@@ -152,7 +149,7 @@ public fun NavigationContext<*>.findContainer(navigationContainerKey: Navigation
             val found = findFrom(childContext)
             if (found != null) return found
         }
-        val parentContext = context.parentContext() ?: return null
+        val parentContext = context.parentContext ?: return null
         return findFrom(parentContext)
     }
 
@@ -206,19 +203,7 @@ public fun NavigationContext<*>.rootContext(): NavigationContext<*> {
     var parent = this
     while (true) {
         val currentContext = parent
-        parent = parent.parentContext() ?: return currentContext
-    }
-}
-
-public fun NavigationContext<*>.parentContext(): NavigationContext<*>? {
-    return when (this) {
-        is ActivityContext -> null
-        is FragmentContext<out Fragment> ->
-            when (val parentFragment = fragment.parentFragment) {
-                null -> fragment.requireActivity().navigationContext
-                else -> parentFragment.navigationContext
-            }
-        is ComposeContext<out ComposableDestination> -> contextReference.owner.parentContainer.context
+        parent = parent.parentContext ?: return currentContext
     }
 }
 

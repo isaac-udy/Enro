@@ -64,7 +64,7 @@ class PresentationTests {
         assertEquals(activity.supportFragmentManager, fragment.context.parentFragmentManager)
         assertEquals(activity, fragment.navigationContext.directParentContainer()?.context?.contextReference)
         assertEquals(activity, fragment.navigationContext.parentContainer()?.context?.contextReference)
-        assertEquals(activity, fragment.navigationContext.parentContext()?.contextReference)
+        assertEquals(activity, fragment.navigationContext.parentContext?.contextReference)
     }
 
     @Test
@@ -81,7 +81,7 @@ class PresentationTests {
         assertEquals(activity.supportFragmentManager, fragment.context.parentFragmentManager)
 
         assertEquals(activity, fragment.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(activity, fragment.navigationContext.parentContext()?.contextReference)
+        assertEquals(activity, fragment.navigationContext.parentContext?.contextReference)
         assertEquals(activity, fragment.navigationContext.parentContainer()?.context?.contextReference)
     }
 
@@ -100,7 +100,7 @@ class PresentationTests {
         assertEquals(host.childFragmentManager, fragment.context.parentFragmentManager)
 
         assertEquals(host, fragment.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(host, fragment.navigationContext.parentContext()?.contextReference)
+        assertEquals(host, fragment.navigationContext.parentContext?.contextReference)
         assertEquals(activity, fragment.navigationContext.parentContainer()?.context?.contextReference)
     }
 
@@ -119,7 +119,7 @@ class PresentationTests {
         assertEquals(host.supportFragmentManager, fragment.context.parentFragmentManager)
 
         assertEquals(host, fragment.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(host, fragment.navigationContext.parentContext()?.contextReference)
+        assertEquals(host, fragment.navigationContext.parentContext?.contextReference)
         assertEquals(host, fragment.navigationContext.parentContainer()?.context?.contextReference)
     }
 
@@ -139,7 +139,7 @@ class PresentationTests {
         val composable = expectComposableContext<ComposeKey>()
         assertEquals(expectedKey, composable.navigation.key)
         assertEquals(fragment, composable.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(fragment, composable.navigationContext.parentContext()?.contextReference)
+        assertEquals(fragment, composable.navigationContext.parentContext?.contextReference)
         assertEquals(activity, composable.navigationContext.parentContainer()?.context?.contextReference)
     }
 
@@ -159,7 +159,7 @@ class PresentationTests {
         val composable = expectComposableContext<NotSupportedComposeKey>()
         assertEquals(expectedKey, composable.navigation.key)
         assertEquals(fragment, composable.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(fragment, composable.navigationContext.parentContext()?.contextReference)
+        assertEquals(fragment, composable.navigationContext.parentContext?.contextReference)
         assertEquals(activity, composable.navigationContext.parentContainer()?.context?.contextReference)
     }
 
@@ -182,7 +182,7 @@ class PresentationTests {
         val composable = expectComposableContext<ComposeKey>()
         assertEquals(expectedKey, composable.navigation.key)
         assertEquals(fragment, composable.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(fragment, composable.navigationContext.parentContext()?.contextReference)
+        assertEquals(fragment, composable.navigationContext.parentContext?.contextReference)
         assertEquals(activity, composable.navigationContext.parentContainer()?.context?.contextReference)
     }
 
@@ -198,7 +198,7 @@ class PresentationTests {
         val composable = expectComposableContext<ComposeKey>()
         assertEquals(expectedKey, composable.navigation.key)
         assertEquals(activity, composable.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(activity, composable.navigationContext.parentContext()?.contextReference)
+        assertEquals(activity, composable.navigationContext.parentContext?.contextReference)
         assertEquals(activity, composable.navigationContext.parentContainer()?.context?.contextReference)
     }
 
@@ -213,7 +213,7 @@ class PresentationTests {
         val composable = expectComposableContext<NotSupportedComposeKey>()
         assertEquals(expectedKey, composable.navigation.key)
         assertEquals(activity, composable.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(activity, composable.navigationContext.parentContext()?.contextReference)
+        assertEquals(activity, composable.navigationContext.parentContext?.contextReference)
         assertEquals(activity, composable.navigationContext.parentContainer()?.context?.contextReference)
     }
 
@@ -228,7 +228,7 @@ class PresentationTests {
         val activityHost = expectActivityHostForAnyInstruction()
         val fragmentHost = expectFragmentHostForComposable()
         assertEquals(activityHost, fragmentHost.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(activityHost, fragmentHost.navigationContext.parentContext()?.contextReference)
+        assertEquals(activityHost, fragmentHost.navigationContext.parentContext?.contextReference)
         assertEquals(activityHost, fragmentHost.navigationContext.parentContainer()?.context?.contextReference)
 
         val compose = expectComposableContext<ComposeKey>()
@@ -238,7 +238,7 @@ class PresentationTests {
         assertEquals(activityHost.supportFragmentManager, fragmentHost.parentFragmentManager)
 
         assertEquals(fragmentHost, compose.navigationContext.directParentContainer()?.context?.contextReference)
-        assertEquals(fragmentHost, compose.navigationContext.parentContext()?.contextReference)
+        assertEquals(fragmentHost, compose.navigationContext.parentContext?.contextReference)
         assertEquals(activityHost, fragmentHost.navigationContext.parentContainer()?.context?.contextReference)
     }
 

@@ -14,7 +14,6 @@ import dev.enro.core.compatability.Compatibility
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.navigationContext
 import dev.enro.core.parentContainer
-import dev.enro.core.parentContext
 import dev.enro.core.readOpenInstruction
 
 internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, NavigationKey>(
@@ -86,12 +85,12 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
             .firstOrNull { it.accept(instruction) }
             .let {
                 val useDefaultFragmentContainer = it == null &&
-                        fromContext.parentContext() == null &&
+                        fromContext.parentContext == null &&
                         defaultFragmentContainer != null &&
                         defaultFragmentContainer.accept(instruction)
 
                 val useActivityContainer = it == null &&
-                        fromContext.parentContext() == null &&
+                        fromContext.parentContext == null &&
                         instruction.navigationDirection != NavigationDirection.Push
 
                 when {
