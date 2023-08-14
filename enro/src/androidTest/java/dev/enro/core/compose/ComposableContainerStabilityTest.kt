@@ -21,6 +21,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.test.core.app.ActivityScenario
@@ -29,6 +30,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.compose.container.rememberNavigationContainerGroup
 import dev.enro.core.container.*
+import kotlinx.coroutines.isActive
 import kotlinx.parcelize.Parcelize
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.*
@@ -444,6 +446,7 @@ data class ComposeStabilitySnapshot(
     val viewModelHashCode: String,
     val viewModelSavedStateId: String,
     val viewModelStoreHashCode: String,
+    val viewModelScopeActive: String,
     val rememberSaveableId: String,
 ) {
     // This function provides the stability snapshot without any instance state related to ViewModels or ViewModelStoreOwners,
@@ -455,6 +458,7 @@ data class ComposeStabilitySnapshot(
         viewModelId = "",
         viewModelHashCode = "",
         viewModelStoreHashCode = "",
+        viewModelScopeActive = "",
     )
 
     fun isCompletelyNotEqualTo(other: ComposeStabilitySnapshot) : Boolean {
@@ -503,6 +507,8 @@ fun ComposeStabilityContentScreen() {
         appendLine("viewModelHashCode: ${viewModel.hashCode()}")
         appendLine("viewModelSavedStateId: ${viewModel.saveStateHandleId.value}")
         appendLine("viewModelStoreHashCode: ${viewModelStore.hashCode()}")
+        appendLine("viewModelStoreHashCode: ${viewModelStore.hashCode()}")
+        appendLine("viewModelScopeActive: ${viewModel.viewModelScope.isActive}")
         appendLine("rememberSaveableId: $rememberSaveable")
     }
 
@@ -544,6 +550,7 @@ fun ComposeContentTestRule.getSnapshotFor(key: ComposeStabilityContentKey) : Com
         viewModelHashCode = content["viewModelHashCode"]!!,
         viewModelSavedStateId = content["viewModelSavedStateId"]!!,
         viewModelStoreHashCode = content["viewModelStoreHashCode"]!!,
+        viewModelScopeActive = content["viewModelScopeActive"]!!,
         rememberSaveableId = content["rememberSaveableId"]!!,
     )
 }
