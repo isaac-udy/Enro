@@ -5,6 +5,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onSiblings
 import androidx.compose.ui.test.performClick
+import dev.enro.test.application.compose.BottomSheetChangeSizeRobot
 import dev.enro.test.application.compose.BottomSheetCloseAndPresentRobot
 import dev.enro.tests.application.SelectDestination
 
@@ -25,5 +26,14 @@ class SelectDestinationRobot(
             .performClick()
 
         return BottomSheetCloseAndPresentRobot(composeRule)
+    }
+
+    fun openBottomSheetChangeSize() : BottomSheetChangeSizeRobot {
+        composeRule.onNode(hasText("Bottom Sheet Change Size"))
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+
+        return BottomSheetChangeSizeRobot(composeRule)
     }
 }
