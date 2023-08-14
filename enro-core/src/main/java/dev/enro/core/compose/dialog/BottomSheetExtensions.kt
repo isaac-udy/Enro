@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import dev.enro.core.AdvancedEnroApi
 import dev.enro.core.compose.OverrideNavigationAnimations
 import dev.enro.core.compose.navigationHandle
@@ -71,6 +72,7 @@ public fun BottomSheetDestination(
         "Failed to render BottomSheetDestination: parentContainer was not found"
     }
     val isActive = remember { derivedStateOf { container.backstack.active?.instructionId == navigationHandle.id } }
+    var hasBeenDisplayed by rememberSaveable { mutableStateOf(false) }
 
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -78,6 +80,8 @@ public fun BottomSheetDestination(
         confirmValueChange = remember(Unit) {
             fun(it: ModalBottomSheetValue): Boolean {
                 val isHiding = it == ModalBottomSheetValue.Hidden
+                if (!isHiding) hasBeenDisplayed = true
+                if (!hasBeenDisplayed) return false
                 return when {
                     !confirmValueChange(it) -> false
                     isHiding && isActive.value -> {
