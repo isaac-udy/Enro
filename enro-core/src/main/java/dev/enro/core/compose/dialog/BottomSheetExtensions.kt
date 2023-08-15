@@ -80,8 +80,7 @@ public fun BottomSheetDestination(
         confirmValueChange = remember(Unit) {
             fun(it: ModalBottomSheetValue): Boolean {
                 val isHiding = it == ModalBottomSheetValue.Hidden
-                if (!isHiding) hasBeenDisplayed = true
-                if (!hasBeenDisplayed) return false
+                if (isHiding && !hasBeenDisplayed) return false
                 return when {
                     !confirmValueChange(it) -> false
                     isHiding && isActive.value -> {
@@ -94,6 +93,10 @@ public fun BottomSheetDestination(
         },
         skipHalfExpanded = skipHalfExpanded,
     ).bindToNavigationHandle()
+
+    SideEffect {
+        hasBeenDisplayed = hasBeenDisplayed || bottomSheetState.isVisible
+    }
 
     content(bottomSheetState)
 }
