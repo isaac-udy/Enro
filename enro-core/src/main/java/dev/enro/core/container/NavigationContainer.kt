@@ -82,13 +82,10 @@ public abstract class NavigationContainer(
     public var currentTransition: NavigationBackstackTransition = initialTransition
 
     private var renderJob: Job? = null
-
-    init {
-        context.lifecycleOwner.lifecycleScope.launch {
-            context.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                if (currentTransition === initialTransition) return@repeatOnLifecycle
-                performBackstackUpdate(NavigationBackstackTransition(initialBackstack to backstack))
-            }
+    private val backstackUpdateJob = context.lifecycleOwner.lifecycleScope.launch {
+        context.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            if (currentTransition === initialTransition) return@repeatOnLifecycle
+            performBackstackUpdate(NavigationBackstackTransition(initialBackstack to backstack))
         }
     }
 
@@ -106,6 +103,17 @@ public abstract class NavigationContainer(
             .toBackstack()
 
         setBackstack(restoredBackstack)
+    }
+
+    /**
+     * This exists to expose a way for the ComposableNavigationContainer to cancel
+     * long running lifecycle related coroutines, which is specifically useful for the manualDestroy
+     * functionality that exists for ComposableNavigationContainer, as these containers can have
+     * slightly different lifecycles to those of the navigation context they are contained within
+     */
+    protected fun cancelJobs() {
+        renderJob?.cancel()
+        backstackUpdateJob.cancel()
     }
 
     @MainThread

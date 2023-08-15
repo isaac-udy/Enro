@@ -220,6 +220,7 @@ public class ComposableNavigationContainer internal constructor(
     @AdvancedEnroApi
     public fun manuallyDestroy() {
         destroy()
+        viewModelStoreStorage.clearStorageForContainer(key)
     }
 
     private fun destroy() {
@@ -230,6 +231,7 @@ public class ComposableNavigationContainer internal constructor(
         context.containerManager.removeContainer(this)
         context.savedStateRegistryOwner.savedStateRegistry.unregisterSavedStateProvider(key.name)
         context.lifecycleOwner.lifecycle.removeObserver(onDestroyLifecycleObserver)
+        cancelJobs()
     }
 
     @Composable

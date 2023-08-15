@@ -15,6 +15,7 @@ internal class ComposableViewModelStoreStorage : ViewModel() {
     }
 
     fun clearStorageForContainer(key: NavigationContainerKey) {
+        viewModelStores[key]?.values?.forEach(ViewModelStore::clear)
         viewModelStores.remove(key)
     }
 
