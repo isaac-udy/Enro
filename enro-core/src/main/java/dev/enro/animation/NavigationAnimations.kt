@@ -1,5 +1,6 @@
-package dev.enro.core
+package dev.enro.animation
 
+import android.R
 import android.content.Context
 import android.content.res.Resources
 import android.os.Build
@@ -12,6 +13,8 @@ import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationDirection
 import dev.enro.core.container.originalNavigationDirection
 import dev.enro.extensions.KeepVisibleWith
 import dev.enro.extensions.ResourceAnimatedVisibility
@@ -200,31 +203,31 @@ public object DefaultAnimations {
 
     public object ForView {
         public val pushEnter: NavigationAnimation.ForView = NavigationAnimation.Attr(
-            attr = android.R.attr.activityOpenEnterAnimation,
+            attr = R.attr.activityOpenEnterAnimation,
         )
 
         public val pushExit: NavigationAnimation.ForView = NavigationAnimation.Attr(
-            attr = android.R.attr.activityOpenExitAnimation
+            attr = R.attr.activityOpenExitAnimation
         )
 
         public val pushCloseEnter: NavigationAnimation.ForView = NavigationAnimation.Attr(
-            attr = android.R.attr.activityCloseEnterAnimation,
+            attr = R.attr.activityCloseEnterAnimation,
         )
 
         public val pushCloseExit: NavigationAnimation.ForView = NavigationAnimation.Attr(
-            attr = android.R.attr.activityCloseExitAnimation
+            attr = R.attr.activityCloseExitAnimation
         )
 
         public val presentEnter: NavigationAnimation.ForView = NavigationAnimation.Theme(
             id = { theme ->
                 if (Build.VERSION.SDK_INT >= 33) {
                     theme.getNestedAttributeResourceId(
-                        android.R.attr.dialogTheme,
-                        android.R.attr.windowAnimationStyle,
-                        android.R.attr.windowEnterAnimation
-                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
+                        R.attr.dialogTheme,
+                        R.attr.windowAnimationStyle,
+                        R.attr.windowEnterAnimation
+                    ) ?: theme.getAttributeResourceId(R.attr.activityOpenEnterAnimation)
                 } else {
-                    theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
+                    theme.getAttributeResourceId(R.attr.activityOpenEnterAnimation)
                 }
             }
         )
@@ -233,12 +236,12 @@ public object DefaultAnimations {
             id = { theme ->
                 if (Build.VERSION.SDK_INT >= 33) {
                     theme.getNestedAttributeResourceId(
-                        android.R.attr.dialogTheme,
-                        android.R.attr.windowAnimationStyle,
-                        android.R.attr.windowExitAnimation
-                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+                        R.attr.dialogTheme,
+                        R.attr.windowAnimationStyle,
+                        R.attr.windowExitAnimation
+                    ) ?: theme.getAttributeResourceId(R.attr.activityOpenExitAnimation)
                 } else {
-                    theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+                    theme.getAttributeResourceId(R.attr.activityOpenExitAnimation)
                 }
             }
         )
@@ -247,12 +250,12 @@ public object DefaultAnimations {
             id = { theme ->
                 if (Build.VERSION.SDK_INT >= 33) {
                     theme.getNestedAttributeResourceId(
-                        android.R.attr.dialogTheme,
-                        android.R.attr.windowAnimationStyle,
-                        android.R.attr.windowEnterAnimation
-                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
+                        R.attr.dialogTheme,
+                        R.attr.windowAnimationStyle,
+                        R.attr.windowEnterAnimation
+                    ) ?: theme.getAttributeResourceId(R.attr.activityOpenEnterAnimation)
                 } else {
-                    theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
+                    theme.getAttributeResourceId(R.attr.activityOpenEnterAnimation)
                 }
             }
         )
@@ -261,22 +264,22 @@ public object DefaultAnimations {
             id = { theme ->
                 if (Build.VERSION.SDK_INT >= 33) {
                     theme.getNestedAttributeResourceId(
-                        android.R.attr.dialogTheme,
-                        android.R.attr.windowAnimationStyle,
-                        android.R.attr.windowExitAnimation
-                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+                        R.attr.dialogTheme,
+                        R.attr.windowAnimationStyle,
+                        R.attr.windowExitAnimation
+                    ) ?: theme.getAttributeResourceId(R.attr.activityOpenExitAnimation)
                 } else {
-                    theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+                    theme.getAttributeResourceId(R.attr.activityOpenExitAnimation)
                 }
             }
         )
 
         public val replaceRootEnter: NavigationAnimation.ForView = NavigationAnimation.Attr(
-            attr = android.R.attr.taskOpenEnterAnimation,
+            attr = R.attr.taskOpenEnterAnimation,
         )
 
         public val replaceRootExit: NavigationAnimation.ForView = NavigationAnimation.Attr(
-            attr = android.R.attr.taskOpenExitAnimation
+            attr = R.attr.taskOpenExitAnimation
         )
 
         public val noneEnter: NavigationAnimation.ForView = NavigationAnimation.Resource(
@@ -284,7 +287,7 @@ public object DefaultAnimations {
         )
 
         public val noneExit: NavigationAnimation.ForView = NavigationAnimation.Resource(
-            id = R.anim.enro_no_op_exit_animation
+            id = dev.enro.core.R.anim.enro_no_op_exit_animation
         )
 
         public val noneCloseEnter: NavigationAnimation.ForView = NavigationAnimation.Resource(

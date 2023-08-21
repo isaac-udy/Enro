@@ -1,6 +1,8 @@
 package dev.enro.core.controller
 
 import androidx.compose.runtime.Composable
+import dev.enro.animation.NavigationAnimationOverride
+import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.*
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor

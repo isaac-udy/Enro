@@ -1,8 +1,8 @@
 package dev.enro.core.controller.repository
 
-import dev.enro.core.ClosingTransition
-import dev.enro.core.NavigationAnimationOverride
-import dev.enro.core.OpeningTransition
+import dev.enro.animation.ClosingTransition
+import dev.enro.animation.NavigationAnimationOverride
+import dev.enro.animation.OpeningTransition
 
 internal class NavigationAnimationRepository {
     private val opening = mutableListOf<OpeningTransition>()

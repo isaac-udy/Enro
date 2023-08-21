@@ -14,10 +14,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withCreated
 import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.DefaultAnimations
+import dev.enro.animation.DefaultAnimations
 import dev.enro.core.EnroException
-import dev.enro.core.NavigationAnimation
-import dev.enro.core.NavigationAnimationOverrideBuilder
+import dev.enro.animation.NavigationAnimation
+import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
@@ -25,7 +25,7 @@ import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
-import dev.enro.core.compatability.Compatibility
+import dev.enro.compatability.Compatibility
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.CanInstructionBeHostedAs

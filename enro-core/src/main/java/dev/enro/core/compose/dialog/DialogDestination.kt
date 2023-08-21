@@ -9,6 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import dev.enro.animation.DefaultAnimations
+import dev.enro.animation.NavigationAnimationTransition
 import dev.enro.core.*
 
 @Deprecated("Use 'configureWindow' and set the soft input mode on the window directly")

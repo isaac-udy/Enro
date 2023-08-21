@@ -1,9 +1,12 @@
-package dev.enro.core
+package dev.enro.animation
 
 import androidx.annotation.AnimRes
 import androidx.annotation.AnimatorRes
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationKey
 import dev.enro.core.container.originalNavigationDirection
 
 

@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.enro.animation.DefaultAnimations
 import dev.enro.core.*
 import dev.enro.core.container.setBackstack
 

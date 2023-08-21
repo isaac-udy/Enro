@@ -1,6 +1,6 @@
 package dev.enro.core.container
 
-import dev.enro.core.NavigationAnimationOverrideBuilder
+import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.core.controller.EnroDependencyContainer
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.get

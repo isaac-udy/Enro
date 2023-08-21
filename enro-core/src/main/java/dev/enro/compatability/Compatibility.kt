@@ -1,4 +1,4 @@
-package dev.enro.core.compatability
+package dev.enro.compatability
 
 import android.app.Activity
 import androidx.compose.material.ExperimentalMaterialApi

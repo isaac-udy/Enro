@@ -10,7 +10,7 @@ import dev.enro.core.NavigationExecutor
 import dev.enro.core.NavigationKey
 import dev.enro.core.activity
 import dev.enro.core.activity.ActivityNavigationContainer
-import dev.enro.core.compatability.Compatibility
+import dev.enro.compatability.Compatibility
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.navigationContext
 import dev.enro.core.parentContainer

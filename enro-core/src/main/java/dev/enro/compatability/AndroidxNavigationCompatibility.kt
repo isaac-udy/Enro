@@ -1,4 +1,4 @@
-package dev.enro.core.compatability
+package dev.enro.compatability
 
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment

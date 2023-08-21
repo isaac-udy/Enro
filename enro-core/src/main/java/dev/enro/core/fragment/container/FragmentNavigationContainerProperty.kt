@@ -3,6 +3,7 @@ package dev.enro.core.fragment.container
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty

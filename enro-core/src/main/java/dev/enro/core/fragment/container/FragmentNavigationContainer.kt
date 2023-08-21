@@ -13,9 +13,9 @@ import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commitNow
 import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.DefaultAnimations
-import dev.enro.core.NavigationAnimationOverrideBuilder
-import dev.enro.core.NavigationAnimationTransition
+import dev.enro.animation.DefaultAnimations
+import dev.enro.animation.NavigationAnimationOverrideBuilder
+import dev.enro.animation.NavigationAnimationTransition
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection

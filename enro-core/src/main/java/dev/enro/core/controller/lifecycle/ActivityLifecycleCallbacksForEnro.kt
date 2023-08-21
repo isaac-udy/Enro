@@ -8,7 +8,7 @@ import androidx.activity.addCallback
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import dev.enro.core.ActivityContext
-import dev.enro.core.compatability.interceptBackPressForAndroidxNavigation
+import dev.enro.compatability.interceptBackPressForAndroidxNavigation
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
 import dev.enro.core.container.emptyBackstack
