@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
-import dev.enro.core.ComposeContext
 import dev.enro.destination.compose.destination.ComposableDestinationOwner
 
 public abstract class ComposableDestination : LifecycleOwner,
