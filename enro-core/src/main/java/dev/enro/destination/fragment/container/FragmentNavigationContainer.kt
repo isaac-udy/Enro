@@ -22,7 +22,7 @@ import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationKey
 import dev.enro.core.R
-import dev.enro.core.activity
+import dev.enro.destination.activity.activity
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition
@@ -33,7 +33,7 @@ import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
-import dev.enro.core.navigationContext
+import dev.enro.destination.fragment.navigationContext
 import dev.enro.extensions.animate
 import dev.enro.extensions.getParcelableCompat
 

@@ -4,6 +4,7 @@ import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.*
 import dev.enro.core.hosts.*
+import dev.enro.destination.activity.activity
 
 internal object HiltInstructionInterceptor : NavigationInstructionInterceptor {
 

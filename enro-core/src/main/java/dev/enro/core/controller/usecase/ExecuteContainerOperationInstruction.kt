@@ -4,6 +4,7 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.findContainer
 import dev.enro.core.parentContainer
+import dev.enro.destination.fragment.parentContainer
 import dev.enro.core.readOpenInstruction
 
 internal interface ExecuteContainerOperationInstruction {

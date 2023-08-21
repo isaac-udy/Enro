@@ -8,8 +8,6 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.SavedStateHandle
@@ -20,6 +18,7 @@ import dev.enro.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.container.*
+import dev.enro.destination.activity.containerManager
 import dev.enro.destination.fragment.container.navigationContainer
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach

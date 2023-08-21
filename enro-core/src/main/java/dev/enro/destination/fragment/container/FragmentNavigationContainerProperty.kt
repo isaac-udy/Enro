@@ -9,6 +9,8 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
 import dev.enro.core.container.backstackOfNotNull
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.destination.activity.navigationContext
+import dev.enro.destination.fragment.navigationContext
 
 
 public fun FragmentActivity.navigationContainer(

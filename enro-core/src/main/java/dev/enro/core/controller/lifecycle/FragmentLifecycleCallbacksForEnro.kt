@@ -15,6 +15,7 @@ import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.destination.fragment.FragmentContext
+import dev.enro.destination.fragment.navigationContext
 
 internal class FragmentLifecycleCallbacksForEnro(
     private val onNavigationContextCreated: OnNavigationContextCreated,

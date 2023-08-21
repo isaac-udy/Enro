@@ -7,6 +7,7 @@ import dev.enro.core.controller.get
 import dev.enro.core.controller.register
 import dev.enro.core.controller.usecase.GetNavigationAnimations
 import dev.enro.core.parentContainer
+import dev.enro.destination.fragment.parentContainer
 
 internal class NavigationContainerScope(
     owner: NavigationContainer,

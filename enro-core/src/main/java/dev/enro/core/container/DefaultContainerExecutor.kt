@@ -8,13 +8,14 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationExecutor
 import dev.enro.core.NavigationKey
-import dev.enro.core.activity
+import dev.enro.destination.activity.activity
 import dev.enro.destination.activity.ActivityNavigationContainer
 import dev.enro.compatability.Compatibility
 import dev.enro.core.getNavigationHandle
-import dev.enro.core.navigationContext
 import dev.enro.core.parentContainer
+import dev.enro.destination.fragment.parentContainer
 import dev.enro.core.readOpenInstruction
+import dev.enro.destination.activity.navigationContext
 
 internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, NavigationKey>(
     fromType = Any::class,

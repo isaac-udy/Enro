@@ -11,6 +11,9 @@ import dev.enro.core.*
 import dev.enro.destination.compose.ComposableDestination
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
+import dev.enro.destination.activity.containerManager
+import dev.enro.destination.compose.containerManager
+import dev.enro.destination.fragment.containerManager
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import java.util.*

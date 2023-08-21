@@ -10,9 +10,8 @@ import dev.enro.core.NavigationBinding
 import dev.enro.core.addOpenInstruction
 
 public object DefaultFragmentExecutor {
-
     @Deprecated("Please create a fragment and use `fragment.arguments = Bundle().addOpenInstruction(instruction)` yourself")
-    public fun DefaultFragmentExecutor.createFragment(
+    public fun createFragment(
         fragmentManager: FragmentManager,
         binding: NavigationBinding<*, *>,
         instruction: AnyOpenInstruction

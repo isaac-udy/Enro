@@ -4,9 +4,11 @@ import android.app.Activity
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
+import dev.enro.core.NavigationContext
 import dev.enro.destination.activity.ActivityNavigationContainer
 import dev.enro.destination.compose.dialog.BottomSheetDestination
 import dev.enro.destination.compose.dialog.DialogDestination
@@ -14,8 +16,12 @@ import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.destination.activity.activity
+import dev.enro.destination.activity.navigationContext
+import dev.enro.destination.fragment.navigationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import dev.enro.core.NavigationContext as RealNavigationContext
 import dev.enro.core.container.NavigationContainer as RealNavigationContainer
 
 internal object Compatibility {
@@ -56,7 +62,7 @@ internal object Compatibility {
         }
 
         internal fun earlyExitForMissingContainerPush(
-            fromContext: NavigationContext<*>,
+            fromContext: RealNavigationContext<*>,
             instruction: AnyOpenInstruction,
             container: RealNavigationContainer?,
         ): Boolean {
@@ -85,7 +91,7 @@ internal object Compatibility {
         }
 
         private fun getPresentationContainerForLegacyInstruction(
-            fromContext: NavigationContext<*>,
+            fromContext: RealNavigationContext<*>,
             instruction: AnyOpenInstruction,
         ): RealNavigationContainer {
             val context = fromContext.rootContext()
@@ -103,7 +109,7 @@ internal object Compatibility {
             }
         }
 
-        internal fun earlyExitForNoContainer(context: NavigationContext<*>) : Boolean {
+        internal fun earlyExitForNoContainer(context: RealNavigationContext<*>) : Boolean {
             if (context.contextReference !is Fragment) return false
 
             val container = context.parentContainer()
@@ -166,10 +172,21 @@ internal object Compatibility {
             }.toBackstack()
         }
     }
+
+    object NavigationContext {
+        fun leafContextFromFragment(navigationContext: RealNavigationContext<*>) : RealNavigationContext<*>? {
+            val fragmentManager = when (navigationContext.contextReference) {
+                is FragmentActivity -> navigationContext.contextReference.supportFragmentManager
+                is Fragment -> navigationContext.contextReference.childFragmentManager
+                else -> null
+            }
+            return fragmentManager?.primaryNavigationFragment?.navigationContext
+        }
+    }
 }
 
 private fun openInstructionAsActivity(
-    fromContext: NavigationContext<out Any>,
+    fromContext: RealNavigationContext<out Any>,
     navigationDirection: NavigationDirection,
     instruction: AnyOpenInstruction
 ) {

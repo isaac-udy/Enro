@@ -33,7 +33,7 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.destination.compose.navigationHandle
 import dev.enro.core.container.emptyBackstack
-import dev.enro.core.parentContainer
+import dev.enro.destination.fragment.parentContainer
 import dev.enro.example.R
 import dev.enro.example.core.data.sentenceId
 import dev.enro.example.destinations.compose.BottomSheetComposable

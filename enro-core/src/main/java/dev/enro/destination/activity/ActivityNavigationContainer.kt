@@ -10,7 +10,6 @@ import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
-import dev.enro.core.activity
 import dev.enro.core.addOpenInstruction
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackTransition

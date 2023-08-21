@@ -11,7 +11,7 @@ import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHandleProperty
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.activity
+import dev.enro.destination.activity.activity
 import dev.enro.core.internal.NoNavigationKey
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
 import dev.enro.core.readOpenInstruction

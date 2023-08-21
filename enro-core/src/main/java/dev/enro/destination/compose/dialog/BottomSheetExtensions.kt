@@ -10,8 +10,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.destination.compose.OverrideNavigationAnimations
 import dev.enro.destination.compose.navigationHandle
-import dev.enro.core.parentContainer
+import dev.enro.destination.fragment.parentContainer
 import dev.enro.core.requestClose
+import dev.enro.destination.compose.parentContainer
 import kotlinx.coroutines.isActive
 
 

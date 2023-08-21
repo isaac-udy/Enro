@@ -2,7 +2,8 @@ package dev.enro.destination.compose.container
 
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import dev.enro.core.containerManager
+import dev.enro.destination.activity.containerManager
+import dev.enro.destination.compose.containerManager
 
 @Immutable
 public data class NavigationContainerGroup(

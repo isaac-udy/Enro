@@ -17,6 +17,8 @@ import dev.enro.destination.compose.dialog.BottomSheetDestination
 import dev.enro.destination.compose.dialog.DialogDestination
 import dev.enro.core.container.*
 import dev.enro.destination.fragment.container.navigationContainer
+import dev.enro.destination.fragment.containerManager
+import dev.enro.destination.fragment.navigationContext
 import dev.enro.extensions.animate
 import dev.enro.extensions.createFullscreenDialog
 import kotlinx.parcelize.Parcelize

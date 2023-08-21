@@ -4,10 +4,11 @@ import androidx.fragment.app.Fragment
 import androidx.test.espresso.Espresso
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.destination.compose.container.ComposableNavigationContainer
-import dev.enro.core.containerManager
+import dev.enro.destination.activity.containerManager
 import dev.enro.core.destinations.*
 import dev.enro.core.directParentContainer
 import dev.enro.destination.compose.ComposableDestination
+import dev.enro.destination.compose.containerManager
 import dev.enro.expectContext
 import dev.enro.expectNoComposableContext
 import leakcanary.DetectLeaksAfterTestSuccess

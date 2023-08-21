@@ -16,6 +16,7 @@ import dev.enro.destination.compose.dialog.DialogDestination
 import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.destination.activity.activity
 import java.io.Closeable
 import kotlin.collections.set
 

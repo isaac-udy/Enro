@@ -12,14 +12,14 @@ import dev.enro.destination.activity.ActivityContext
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
 import dev.enro.core.container.emptyBackstack
-import dev.enro.core.containerManager
+import dev.enro.destination.activity.containerManager
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.destination.fragment.container.FragmentNavigationContainer
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.leafContext
-import dev.enro.core.navigationContext
 import dev.enro.core.requestClose
+import dev.enro.destination.activity.navigationContext
 
 internal class ActivityLifecycleCallbacksForEnro(
     private val onNavigationContextCreated: OnNavigationContextCreated,

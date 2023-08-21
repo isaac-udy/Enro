@@ -23,7 +23,7 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationKey
 import dev.enro.core.getNavigationHandle
-import dev.enro.core.navigationContext
+import dev.enro.destination.fragment.navigationContext
 import dev.enro.core.rootContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
