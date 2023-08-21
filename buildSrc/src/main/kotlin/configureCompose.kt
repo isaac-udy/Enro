@@ -10,7 +10,7 @@ fun Project.configureCompose() {
     extensions.configure<BaseExtension> {
         buildFeatures.compose = true
         composeOptions {
-            kotlinCompilerExtensionVersion = "1.4.7"
+            kotlinCompilerExtensionVersion = "1.5.1"
         }
     }
 

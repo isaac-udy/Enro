@@ -45,10 +45,10 @@ private fun Project.commonAndroidConfig(
 
     extensions.configure<BaseExtension> {
         this@configure.namespace = namespace
-        compileSdkVersion(33)
+        compileSdkVersion(34)
         defaultConfig {
             minSdk = 21
-            targetSdk = 33
+            targetSdk = 34
             versionCode = versionProperties.getProperty("versionCode").toInt()
             versionName = versionProperties.getProperty("versionName")
 
@@ -76,7 +76,6 @@ private fun Project.commonAndroidConfig(
         kotlinOptions {
             jvmTarget = JavaVersion.VERSION_17.toString()
 
-            freeCompilerArgs += "-Xjvm-default=enable"
             freeCompilerArgs += "-Xopt-in=dev.enro.core.AdvancedEnroApi"
             freeCompilerArgs += "-Xopt-in=dev.enro.core.ExperimentalEnroApi"
         }

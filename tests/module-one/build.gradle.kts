@@ -1,5 +1,5 @@
 plugins {
-    id("com.google.devtools.ksp") version "1.8.21-1.0.11"
+    id("com.google.devtools.ksp")
     id("com.android.library")
     id("kotlin-android")
     id("kotlin-parcelize")

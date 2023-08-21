@@ -40,10 +40,10 @@ kotlin-gradle = "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0"
 kotlin-stdLib = "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
 kotlin-reflect = "org.jetbrains.kotlin:kotlin-reflect:1.9.0"
 
-hilt-gradle = "com.google.dagger:hilt-android-gradle-plugin:2.44.2"
-hilt-android = "com.google.dagger:hilt-android:2.44.2"
-hilt-androidCompiler = "com.google.dagger:hilt-android-compiler:2.44.2"
-hilt-testing = "com.google.dagger:hilt-android-testing:2.44.2"
+hilt-gradle = "com.google.dagger:hilt-android-gradle-plugin:2.47"
+hilt-android = "com.google.dagger:hilt-android:2.47"
+hilt-androidCompiler = "com.google.dagger:hilt-android-compiler:2.47"
+hilt-testing = "com.google.dagger:hilt-android-testing:2.47"
 hilt-compiler = "androidx.hilt:hilt-compiler:1.0.0"
 
 leakcanary = "com.squareup.leakcanary:leakcanary-android:2.10"
@@ -65,6 +65,7 @@ testing-leakcanary-instrumentation = "com.squareup.leakcanary:leakcanary-android
 
 testing-archunit = "com.tngtech.archunit:archunit:1.0.0"
 
+processing-ksp-gradle = "com.google.devtools.ksp:symbol-processing-gradle-plugin:1.9.0-1.0.13"
 processing-ksp = "com.google.devtools.ksp:symbol-processing-api:1.9.0-1.0.13"
 processing-incremental = "net.ltgt.gradle.incap:incap:0.3"
 processing-incrementalProcessor = "net.ltgt.gradle.incap:incap-processor:0.3"
