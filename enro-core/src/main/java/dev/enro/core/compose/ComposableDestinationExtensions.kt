@@ -6,7 +6,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import dev.enro.core.AdvancedEnroApi
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationAnimation
 import dev.enro.core.navigationContext
 

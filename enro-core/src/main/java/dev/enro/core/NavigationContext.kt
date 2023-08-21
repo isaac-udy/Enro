@@ -18,6 +18,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.destination.activity
 import dev.enro.core.container.NavigationContainer

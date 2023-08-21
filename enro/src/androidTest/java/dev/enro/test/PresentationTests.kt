@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
 import dev.enro.*
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.R

@@ -1,6 +1,6 @@
 package dev.enro.core.result
 
-import dev.enro.core.AdvancedEnroApi
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey

@@ -2,7 +2,7 @@ package dev.enro.core.compose
 
 import androidx.fragment.app.Fragment
 import androidx.test.espresso.Espresso
-import dev.enro.core.AdvancedEnroApi
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.containerManager
 import dev.enro.core.destinations.*

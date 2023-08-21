@@ -51,7 +51,7 @@ public class ActivityResultDestinationScope<T : NavigationKey.SupportsPresent.Wi
         public val activity: ComponentActivity,
     )
 
-@ExperimentalEnroApi
+@dev.enro.annotations.ExperimentalEnroApi
 public fun <R: Any, Key: NavigationKey.SupportsPresent.WithResult<R>> activityResultDestination(
     @Suppress("UNUSED_PARAMETER") // used to infer types
     keyType: KClass<Key>,

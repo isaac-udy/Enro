@@ -1,5 +1,6 @@
 package dev.enro.core
 
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.GetNavigationBinding

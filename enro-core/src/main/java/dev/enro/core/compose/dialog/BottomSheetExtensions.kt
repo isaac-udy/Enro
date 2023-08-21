@@ -7,7 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import dev.enro.core.AdvancedEnroApi
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.compose.OverrideNavigationAnimations
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.parentContainer

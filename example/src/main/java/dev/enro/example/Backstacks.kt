@@ -18,7 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.AdvancedEnroApi
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationKey

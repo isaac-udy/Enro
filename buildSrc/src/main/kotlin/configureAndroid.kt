@@ -76,8 +76,8 @@ private fun Project.commonAndroidConfig(
         kotlinOptions {
             jvmTarget = JavaVersion.VERSION_17.toString()
 
-            freeCompilerArgs += "-Xopt-in=dev.enro.core.AdvancedEnroApi"
-            freeCompilerArgs += "-Xopt-in=dev.enro.core.ExperimentalEnroApi"
+            freeCompilerArgs += "-Xopt-in=dev.enro.annotations.AdvancedEnroApi"
+            freeCompilerArgs += "-Xopt-in=dev.enro.annotations.ExperimentalEnroApi"
         }
     }
 

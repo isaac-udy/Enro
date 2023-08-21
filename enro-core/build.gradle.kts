@@ -11,6 +11,9 @@ configureExplicitApi()
 configureAndroidPublishing("dev.enro:enro-core")
 
 dependencies {
+    releaseApi("dev.enro:enro-annotations:${android.defaultConfig.versionName}")
+    debugApi(project(":enro-annotations"))
+
     implementation(libs.androidx.core)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.fragment)

@@ -15,7 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.ExperimentalEnroApi
+import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.core.NavigationKey
 import dev.enro.core.activity.activityResultDestination
 import dev.enro.core.activity.withInput

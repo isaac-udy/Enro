@@ -21,7 +21,7 @@ internal fun interface CreateResultChannel {
     ): NavigationResultChannel<Any, NavigationKey.WithResult<Any>>
 }
 
-@ExperimentalEnroApi
+@dev.enro.annotations.ExperimentalEnroApi
 public class NavigationFlow<T> internal constructor(
     private val savedStateHandle: SavedStateHandle,
     private val navigation: NavigationHandle,
