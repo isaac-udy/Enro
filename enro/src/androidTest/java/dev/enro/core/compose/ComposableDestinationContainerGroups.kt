@@ -22,7 +22,7 @@ import androidx.test.espresso.Espresso
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.destination.activity.activity
+import dev.enro.android.activity
 import dev.enro.destination.compose.container.rememberNavigationContainerGroup
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.destinations.launchComposable

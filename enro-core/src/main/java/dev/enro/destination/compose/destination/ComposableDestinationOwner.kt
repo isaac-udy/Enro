@@ -30,7 +30,7 @@ import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
-import dev.enro.destination.activity.activity
+import dev.enro.android.activity
 import dev.enro.extensions.rememberLifecycleState
 
 internal class ComposableDestinationOwner(

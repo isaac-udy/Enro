@@ -8,7 +8,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
-import dev.enro.core.NavigationContext
 import dev.enro.destination.activity.ActivityNavigationContainer
 import dev.enro.destination.compose.dialog.BottomSheetDestination
 import dev.enro.destination.compose.dialog.DialogDestination
@@ -16,7 +15,7 @@ import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.HostInstructionAs
-import dev.enro.destination.activity.activity
+import dev.enro.android.activity
 import dev.enro.destination.activity.navigationContext
 import dev.enro.destination.fragment.navigationContext
 import kotlinx.coroutines.delay

@@ -4,7 +4,7 @@ import android.app.AlertDialog
 import androidx.activity.ComponentActivity
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
-import dev.enro.destination.activity.activity
+import dev.enro.android.activity
 import dev.enro.core.close
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.getNavigationHandle

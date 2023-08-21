@@ -4,7 +4,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import dev.enro.core.NavigationContext
-import dev.enro.destination.activity.activity
+import dev.enro.android.activity
 
 /**
  * In applications that contain both AndroidX Navigation and Enro, the back pressed behaviour

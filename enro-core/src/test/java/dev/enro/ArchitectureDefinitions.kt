@@ -14,10 +14,10 @@ internal enum class EnroPackage(val packageName: String) {
     RESULTS_PACKAGE("dev.enro.core.result"),
 
     // Feature packages
-    ACTIVITY_PACKAGE("dev.enro.core.activity.."),
+    ACTIVITY_PACKAGE("dev.enro.destination.activity.."),
     COMPOSE_PACKAGE("dev.enro.destination.compose.."),
-    FRAGMENT_PACKAGE("dev.enro.core.fragment.."),
-    SYNTHETIC_PACKAGE("dev.enro.core.synthetic.."),
+    FRAGMENT_PACKAGE("dev.enro.destination.fragment.."),
+    SYNTHETIC_PACKAGE("dev.enro.destination.synthetic.."),
     HOST_PACKAGE("dev.enro.core.hosts.."),
     VIEWMODEL_PACKAGE("dev.enro.viewmodel.."),
 

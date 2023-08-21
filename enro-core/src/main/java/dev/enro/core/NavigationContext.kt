@@ -2,22 +2,16 @@ package dev.enro.core
 
 import android.app.Activity
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
-import dagger.hilt.internal.GeneratedComponentManager
-import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.compatability.Compatibility
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
-import dev.enro.destination.activity.activity
-import dev.enro.destination.fragment.navigationContext
 
 public class NavigationContext<ContextType : Any> internal constructor(
     public val contextReference: ContextType,

@@ -22,7 +22,7 @@ import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationKey
 import dev.enro.core.R
-import dev.enro.destination.activity.activity
+import dev.enro.android.activity
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition

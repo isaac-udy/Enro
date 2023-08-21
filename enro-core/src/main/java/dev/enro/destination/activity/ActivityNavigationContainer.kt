@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.Lifecycle
+import dev.enro.android.activity
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext

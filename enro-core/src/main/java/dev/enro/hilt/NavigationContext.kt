@@ -3,7 +3,7 @@ package dev.enro.hilt
 import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.NavigationContext
-import dev.enro.destination.activity.activity
+import dev.enro.android.activity
 
 private val generatedComponentManagerHolderClass  by lazy {
     runCatching {
