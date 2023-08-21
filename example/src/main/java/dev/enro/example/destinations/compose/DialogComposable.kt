@@ -6,8 +6,8 @@ import androidx.compose.ui.window.Dialog
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.navigationHandle
+import dev.enro.destination.compose.dialog.DialogDestination
+import dev.enro.destination.compose.navigationHandle
 import dev.enro.example.core.ui.ExampleScreenTemplate
 import kotlinx.parcelize.Parcelize
 import java.util.*

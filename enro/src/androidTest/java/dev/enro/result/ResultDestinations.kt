@@ -13,12 +13,12 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.closeWithResult
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.destination.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.forwardResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.core.result.sendResult
-import dev.enro.core.synthetic.SyntheticDestination
+import dev.enro.destination.synthetic.SyntheticDestination
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize

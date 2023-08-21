@@ -12,7 +12,7 @@ import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.core.NavigationKey
 import dev.enro.core.closeWithResult
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.destination.fragment.container.navigationContainer
 import dev.enro.core.result.flows.registerForFlowResult
 import dev.enro.example.R
 import dev.enro.example.core.data.Sentence

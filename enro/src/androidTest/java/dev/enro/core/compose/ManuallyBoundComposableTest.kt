@@ -4,6 +4,7 @@ import dev.enro.core.destinations.ComposableDestinations
 import dev.enro.core.destinations.IntoChildContainer
 import dev.enro.core.destinations.assertPushesTo
 import dev.enro.core.destinations.launchComposableRoot
+import dev.enro.destination.compose.ComposableDestination
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertNotEquals
 import org.junit.Rule

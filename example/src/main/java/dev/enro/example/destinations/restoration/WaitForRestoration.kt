@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.compose.navigationHandle
+import dev.enro.destination.compose.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

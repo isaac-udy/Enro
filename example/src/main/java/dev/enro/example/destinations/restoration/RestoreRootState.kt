@@ -4,7 +4,7 @@ import android.os.Bundle
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.requireRootContainer
-import dev.enro.core.synthetic.syntheticDestination
+import dev.enro.destination.synthetic.syntheticDestination
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

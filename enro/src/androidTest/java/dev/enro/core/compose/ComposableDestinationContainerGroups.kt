@@ -23,9 +23,10 @@ import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.activity
-import dev.enro.core.compose.container.rememberNavigationContainerGroup
+import dev.enro.destination.compose.container.rememberNavigationContainerGroup
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.destinations.launchComposable
+import dev.enro.destination.compose.rememberNavigationContainer
 import dev.enro.expectComposableContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.parcelize.Parcelize

@@ -8,6 +8,7 @@ import dev.enro.core.*
 import dev.enro.core.container.present
 import dev.enro.core.container.push
 import dev.enro.core.destinations.*
+import dev.enro.destination.compose.ComposableDestination
 import dev.enro.expectComposableContext
 import dev.enro.setBackstackOnMain
 import dev.enro.waitFor

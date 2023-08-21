@@ -7,9 +7,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.*
-import dev.enro.core.activity.ActivityNavigationContainer
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
+import dev.enro.destination.activity.ActivityNavigationContainer
+import dev.enro.destination.compose.dialog.BottomSheetDestination
+import dev.enro.destination.compose.dialog.DialogDestination
 import dev.enro.core.container.*
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction

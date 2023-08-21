@@ -19,8 +19,8 @@ import androidx.compose.ui.window.Dialog
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.closeWithResult
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.navigationHandle
+import dev.enro.destination.compose.dialog.DialogDestination
+import dev.enro.destination.compose.navigationHandle
 import dev.enro.core.requestClose
 import dev.enro.example.core.data.Adjective
 import dev.enro.example.core.data.Adverb

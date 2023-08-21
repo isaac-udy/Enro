@@ -5,10 +5,10 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import dev.enro.core.*
-import dev.enro.core.activity.ActivityNavigationBinding
-import dev.enro.core.compose.ComposableNavigationBinding
+import dev.enro.destination.activity.ActivityNavigationBinding
+import dev.enro.destination.compose.ComposableNavigationBinding
 import dev.enro.core.container.asPresentInstruction
-import dev.enro.core.fragment.FragmentNavigationBinding
+import dev.enro.destination.fragment.FragmentNavigationBinding
 
 internal class ActivityHost : NavigationHostFactory<Activity>(Activity::class.java) {
     override fun supports(

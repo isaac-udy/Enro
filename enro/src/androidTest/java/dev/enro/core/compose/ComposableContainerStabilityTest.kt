@@ -28,8 +28,10 @@ import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.compose.container.rememberNavigationContainerGroup
+import dev.enro.destination.compose.container.rememberNavigationContainerGroup
 import dev.enro.core.container.*
+import dev.enro.destination.compose.navigationHandle
+import dev.enro.destination.compose.rememberNavigationContainer
 import kotlinx.coroutines.isActive
 import kotlinx.parcelize.Parcelize
 import leakcanary.DetectLeaksAfterTestSuccess

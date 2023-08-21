@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.navigationHandle
+import dev.enro.destination.compose.navigationHandle
 import dev.enro.core.container.emptyBackstack
 import dev.enro.core.container.push
 import dev.enro.core.container.setBackstack

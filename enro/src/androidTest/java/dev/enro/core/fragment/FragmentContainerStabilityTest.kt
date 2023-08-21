@@ -20,7 +20,7 @@ import dev.enro.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.container.*
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.destination.fragment.container.navigationContainer
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize

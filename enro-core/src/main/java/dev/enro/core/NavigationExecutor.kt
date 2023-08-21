@@ -2,13 +2,13 @@ package dev.enro.core
 
 import android.app.Activity
 import androidx.fragment.app.Fragment
-import dev.enro.core.activity.ActivityNavigationBinding
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.ComposableNavigationBinding
+import dev.enro.destination.activity.ActivityNavigationBinding
+import dev.enro.destination.compose.ComposableDestination
+import dev.enro.destination.compose.ComposableNavigationBinding
 import dev.enro.core.container.DefaultContainerExecutor
-import dev.enro.core.fragment.FragmentNavigationBinding
-import dev.enro.core.synthetic.DefaultSyntheticExecutor
-import dev.enro.core.synthetic.SyntheticNavigationBinding
+import dev.enro.destination.fragment.FragmentNavigationBinding
+import dev.enro.destination.synthetic.DefaultSyntheticExecutor
+import dev.enro.destination.synthetic.SyntheticNavigationBinding
 import kotlin.reflect.KClass
 
 // This class is used primarily to simplify the lambda signature of NavigationExecutor.open

@@ -2,7 +2,7 @@ package dev.enro.core.legacy
 
 import androidx.test.core.app.ActivityScenario
 import dev.enro.GenericComposableKey
-import dev.enro.core.compose.ComposableDestination
+import dev.enro.destination.compose.ComposableDestination
 import dev.enro.core.forward
 import dev.enro.core.getNavigationHandle
 import dev.enro.expectContext

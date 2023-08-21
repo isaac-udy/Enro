@@ -27,7 +27,7 @@ object ClassNames {
             "ComponentActivity"
         )
         val activityNavigationBindingKt = JavaClassName.get(
-            "dev.enro.core.activity",
+            "dev.enro.destination.activity",
             "ActivityNavigationBindingKt"
         )
         val fragment = JavaClassName.get(
@@ -35,25 +35,25 @@ object ClassNames {
             "Fragment"
         )
         val fragmentNavigationBindingKt = JavaClassName.get(
-            "dev.enro.core.fragment",
+            "dev.enro.destination.fragment",
             "FragmentNavigationBindingKt"
         )
 
         val syntheticDestination = JavaClassName.get(
-            "dev.enro.core.synthetic",
+            "dev.enro.destination.synthetic",
             "SyntheticDestination"
         )
         val syntheticNavigationBindingKt = JavaClassName.get(
-            "dev.enro.core.synthetic",
+            "dev.enro.destination.synthetic",
             "SyntheticNavigationBindingKt"
         )
 
         val composableDestination = JavaClassName.get(
-            "dev.enro.core.compose",
+            "dev.enro.destination.compose",
             "ComposableDestination"
         )
         val composeNavigationBindingKt = JavaClassName.get(
-            "dev.enro.core.compose",
+            "dev.enro.destination.compose",
             "ComposableNavigationBindingKt"
         )
     }

@@ -8,7 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.*
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.*
-import dev.enro.core.compose.ComposableDestination
+import dev.enro.destination.compose.ComposableDestination
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
 import org.junit.Assert.assertEquals

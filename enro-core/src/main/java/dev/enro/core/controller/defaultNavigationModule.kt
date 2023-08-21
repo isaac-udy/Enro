@@ -1,8 +1,8 @@
 package dev.enro.core.controller
 
-import dev.enro.core.activity.ActivityResultBridge
-import dev.enro.core.activity.ActivityResultDestination
-import dev.enro.core.compose.composableDestination
+import dev.enro.destination.activity.ActivityResultBridge
+import dev.enro.destination.activity.ActivityResultDestination
+import dev.enro.destination.compose.composableDestination
 import dev.enro.core.controller.interceptor.HiltInstructionInterceptor
 import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
 import dev.enro.core.controller.interceptor.NavigationContainerDelegateInterceptor

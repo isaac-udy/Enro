@@ -5,7 +5,7 @@ import dev.enro.GenericFragmentKey
 import dev.enro.TestActivity
 import dev.enro.TestPlugin
 import dev.enro.core.containerManager
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.destination.fragment.container.navigationContainer
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.push
 import dev.enro.expectActivity

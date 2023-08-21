@@ -17,8 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.registerForNavigationResult
+import dev.enro.destination.compose.navigationHandle
+import dev.enro.destination.compose.registerForNavigationResult
 import dev.enro.core.result.deliverResultFromPush
 import dev.enro.example.core.data.Adverb
 import dev.enro.example.core.data.Sentence

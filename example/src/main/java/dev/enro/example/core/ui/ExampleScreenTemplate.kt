@@ -31,7 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.navigationHandle
+import dev.enro.destination.compose.navigationHandle
 import dev.enro.core.container.emptyBackstack
 import dev.enro.core.parentContainer
 import dev.enro.example.R

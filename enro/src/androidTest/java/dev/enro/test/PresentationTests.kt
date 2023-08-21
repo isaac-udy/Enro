@@ -22,8 +22,8 @@ import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.R
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.destination.compose.rememberNavigationContainer
+import dev.enro.destination.fragment.container.navigationContainer
 import junit.framework.TestCase.*
 import kotlinx.parcelize.Parcelize
 import org.junit.Test

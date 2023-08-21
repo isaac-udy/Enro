@@ -22,8 +22,8 @@ object ComposableWrapperGenerator {
         val receiverTypes = element.kotlinReceiverTypes(processingEnv)
         val additionalInterfaces = receiverTypes.mapNotNull {
             when (it) {
-                "dev.enro.core.compose.dialog.DialogDestination" -> "DialogDestination"
-                "dev.enro.core.compose.dialog.BottomSheetDestination" -> "BottomSheetDestination"
+                "dev.enro.destination.compose.dialog.DialogDestination" -> "DialogDestination"
+                "dev.enro.destination.compose.dialog.BottomSheetDestination" -> "BottomSheetDestination"
                 else -> null
             }
         }.joinToString(separator = "") { ", $it" }
@@ -32,13 +32,13 @@ object ComposableWrapperGenerator {
 
         val additionalImports = receiverTypes.flatMap {
             when (it) {
-                "dev.enro.core.compose.dialog.DialogDestination" -> listOf(
-                    "dev.enro.core.compose.dialog.DialogDestination",
-                    "dev.enro.core.compose.dialog.DialogConfiguration"
+                "dev.enro.destination.compose.dialog.DialogDestination" -> listOf(
+                    "dev.enro.destination.compose.dialog.DialogDestination",
+                    "dev.enro.destination.compose.dialog.DialogConfiguration"
                 )
-                "dev.enro.core.compose.dialog.BottomSheetDestination" -> listOf(
-                    "dev.enro.core.compose.dialog.BottomSheetDestination",
-                    "dev.enro.core.compose.dialog.BottomSheetConfiguration",
+                "dev.enro.destination.compose.dialog.BottomSheetDestination" -> listOf(
+                    "dev.enro.destination.compose.dialog.BottomSheetDestination",
+                    "dev.enro.destination.compose.dialog.BottomSheetConfiguration",
                     "androidx.compose.material.ExperimentalMaterialApi"
                 )
                 else -> emptyList()
@@ -47,7 +47,7 @@ object ComposableWrapperGenerator {
 
         val additionalAnnotations = receiverTypes.mapNotNull {
             when (it) {
-                "dev.enro.core.compose.dialog.BottomSheetDestination" ->
+                "dev.enro.destination.compose.dialog.BottomSheetDestination" ->
                     """
                         @OptIn(ExperimentalMaterialApi::class)
                     """.trimIndent()
@@ -57,11 +57,11 @@ object ComposableWrapperGenerator {
 
         val additionalBody = receiverTypes.mapNotNull {
             when (it) {
-                "dev.enro.core.compose.dialog.DialogDestination" ->
+                "dev.enro.destination.compose.dialog.DialogDestination" ->
                     """
                         override val dialogConfiguration: DialogConfiguration = DialogConfiguration()
                     """.trimIndent()
-                "dev.enro.core.compose.dialog.BottomSheetDestination" ->
+                "dev.enro.destination.compose.dialog.BottomSheetDestination" ->
                     """
                         override val bottomSheetConfiguration: BottomSheetConfiguration = BottomSheetConfiguration()
                     """.trimIndent()

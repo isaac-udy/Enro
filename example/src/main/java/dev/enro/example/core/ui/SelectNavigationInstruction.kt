@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import dev.enro.core.NavigationInstruction
-import dev.enro.core.compose.navigationHandle
+import dev.enro.destination.compose.navigationHandle
 
 class SelectNavigationInstructionState {
     var instructions: List<Pair<String, NavigationInstruction?>> by mutableStateOf(emptyList())

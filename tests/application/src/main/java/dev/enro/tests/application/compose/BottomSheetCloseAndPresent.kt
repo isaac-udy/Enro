@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.navigationHandle
+import dev.enro.destination.compose.dialog.BottomSheetDestination
+import dev.enro.destination.compose.navigationHandle
 import dev.enro.core.present
 import kotlinx.parcelize.Parcelize
 

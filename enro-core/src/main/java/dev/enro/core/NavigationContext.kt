@@ -19,8 +19,8 @@ import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.annotations.AdvancedEnroApi
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.destination.activity
+import dev.enro.destination.compose.ComposableDestination
+import dev.enro.destination.compose.destination.activity
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController

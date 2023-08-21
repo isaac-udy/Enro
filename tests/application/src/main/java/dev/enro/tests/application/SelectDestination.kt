@@ -33,8 +33,8 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.navigationHandle
+import dev.enro.destination.compose.dialog.DialogDestination
+import dev.enro.destination.compose.navigationHandle
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.present

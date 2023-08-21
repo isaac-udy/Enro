@@ -16,12 +16,12 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.R
 import dev.enro.core.close
-import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.backstackOf
 import dev.enro.core.containerManager
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.navigationHandle
+import dev.enro.destination.compose.rememberNavigationContainer
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractOpenComposableInFragmentKey :
@@ -73,7 +73,7 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
         return ComposeView(requireContext()).apply {
             id = R.id.enro_internal_compose_fragment_view_id
             setContent {
-                val navigation = dev.enro.core.compose.navigationHandle()
+                val navigation = dev.enro.destination.compose.navigationHandle()
                 val container = rememberNavigationContainer(
                     key = NavigationContainerKey.FromName("FragmentHostForCompose"),
                     initialBackstack = backstackOf(initialBackstack),

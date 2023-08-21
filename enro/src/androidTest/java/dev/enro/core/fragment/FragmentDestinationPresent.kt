@@ -2,7 +2,7 @@ package dev.enro.core.fragment
 
 import android.os.Parcelable
 import androidx.fragment.app.Fragment
-import dev.enro.core.compose.ComposableDestination
+import dev.enro.destination.compose.ComposableDestination
 import dev.enro.core.destinations.*
 import junit.framework.TestCase
 import kotlinx.parcelize.Parcelize

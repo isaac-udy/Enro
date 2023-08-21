@@ -12,11 +12,11 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.*
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
+import dev.enro.destination.compose.ComposableDestination
+import dev.enro.destination.compose.dialog.BottomSheetDestination
+import dev.enro.destination.compose.dialog.DialogDestination
 import dev.enro.core.container.*
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.destination.fragment.container.navigationContainer
 import dev.enro.extensions.animate
 import dev.enro.extensions.createFullscreenDialog
 import kotlinx.parcelize.Parcelize

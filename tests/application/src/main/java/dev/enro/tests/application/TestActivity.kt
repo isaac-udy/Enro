@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
-import dev.enro.core.compose.rememberNavigationContainer
+import dev.enro.destination.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 
 class TestActivity : AppCompatActivity() {

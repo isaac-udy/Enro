@@ -3,6 +3,7 @@ package dev.enro.core.compose
 import androidx.activity.ComponentActivity
 import dev.enro.core.close
 import dev.enro.core.destinations.*
+import dev.enro.destination.compose.ComposableDestination
 import dev.enro.expectActivity
 import dev.enro.expectComposableContext
 import leakcanary.DetectLeaksAfterTestSuccess

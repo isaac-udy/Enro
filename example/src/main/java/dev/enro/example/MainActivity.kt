@@ -7,7 +7,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.destination.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.example.databinding.ActivityMainBinding
 import kotlinx.parcelize.Parcelize

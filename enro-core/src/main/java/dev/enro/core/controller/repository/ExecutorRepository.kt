@@ -4,10 +4,10 @@ import android.app.Activity
 import androidx.fragment.app.Fragment
 import dev.enro.core.NavigationExecutor
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.ComposableDestination
+import dev.enro.destination.compose.ComposableDestination
 import dev.enro.core.container.DefaultContainerExecutor
-import dev.enro.core.synthetic.DefaultSyntheticExecutor
-import dev.enro.core.synthetic.SyntheticDestination
+import dev.enro.destination.synthetic.DefaultSyntheticExecutor
+import dev.enro.destination.synthetic.SyntheticDestination
 import kotlin.reflect.KClass
 
 internal class ExecutorRepository(

@@ -11,9 +11,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import dev.enro.TestComposable
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.navigationHandle
+import dev.enro.destination.compose.ComposableDestination
+import dev.enro.destination.compose.dialog.DialogDestination
+import dev.enro.destination.compose.navigationHandle
 import dev.enro.core.requestClose
 import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.registerForNavigationResult

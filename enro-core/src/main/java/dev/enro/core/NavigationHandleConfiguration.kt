@@ -5,7 +5,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.destination.fragment.container.navigationContainer
 import dev.enro.core.hosts.AbstractOpenComposableInFragmentKey
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass

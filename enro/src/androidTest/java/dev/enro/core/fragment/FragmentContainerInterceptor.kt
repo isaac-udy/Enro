@@ -11,7 +11,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.destinations.*
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.destination.fragment.container.navigationContainer
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.expectFragmentContext
 import dev.enro.expectNoFragmentContext

@@ -5,7 +5,7 @@ import dev.enro.TestDialogFragment
 import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.destination.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.registerForNavigationResult
 import kotlinx.parcelize.Parcelize

@@ -25,7 +25,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import dev.enro.clearAllEnroResultChannels
-import dev.enro.core.compose.registerForNavigationResult
+import dev.enro.destination.compose.registerForNavigationResult
 import dev.enro.getActiveEnroResultChannels
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert

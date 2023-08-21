@@ -10,7 +10,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalConfiguration
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.compose.rememberNavigationContainer
+import dev.enro.destination.compose.rememberNavigationContainer
 import dev.enro.core.container.*
 import kotlinx.parcelize.Parcelize
 import java.util.*

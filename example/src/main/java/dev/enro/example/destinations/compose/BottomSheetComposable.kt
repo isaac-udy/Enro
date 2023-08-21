@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
-import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.destination.compose.dialog.BottomSheetDestination
 import dev.enro.example.core.ui.ExampleScreenTemplate
 import kotlinx.parcelize.Parcelize
 

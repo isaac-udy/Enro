@@ -12,9 +12,9 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.containerManager
-import dev.enro.core.fragment.container.FragmentNavigationContainer
-import dev.enro.core.fragment.container.navigationContainer
-import dev.enro.core.fragment.container.setVisibilityAnimated
+import dev.enro.destination.fragment.container.FragmentNavigationContainer
+import dev.enro.destination.fragment.container.navigationContainer
+import dev.enro.destination.fragment.container.setVisibilityAnimated
 import dev.enro.example.databinding.FragmentRootBinding
 import dev.enro.example.destinations.compose.ExampleComposable
 import dev.enro.example.destinations.fragment.ExampleFragment
