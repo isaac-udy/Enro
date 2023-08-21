@@ -3,6 +3,7 @@ plugins {
     id("kotlin")
 }
 configureJavaPublishing("dev.enro:enro-annotations")
+configureExplicitApi()
 
 dependencies {
     implementation(libs.kotlin.stdLib)
