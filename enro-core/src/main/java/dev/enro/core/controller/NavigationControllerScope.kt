@@ -2,8 +2,8 @@ package dev.enro.core.controller
 
 import android.app.Application
 import androidx.fragment.app.FragmentManager
-import dev.enro.core.controller.lifecycle.ActivityLifecycleCallbacksForEnro
-import dev.enro.core.controller.lifecycle.FragmentLifecycleCallbacksForEnro
+import dev.enro.destination.activity.internal.ActivityLifecycleCallbacksForEnro
+import dev.enro.destination.fragment.internal.FragmentLifecycleCallbacksForEnro
 import dev.enro.core.controller.repository.*
 import dev.enro.core.controller.usecase.*
 import dev.enro.core.controller.usecase.ComposeEnvironment
@@ -48,8 +48,8 @@ internal class NavigationControllerScope(
             register { GetNavigationAnimations(get(), get<NavigationAnimationRepository>().controllerOverrides) }
 
             // Other
-            register<Application.ActivityLifecycleCallbacks> { ActivityLifecycleCallbacksForEnro(get(), get(), get()) }
-            register<FragmentManager.FragmentLifecycleCallbacks> { FragmentLifecycleCallbacksForEnro(get(), get()) }
+            register<ActivityLifecycleCallbacksForEnro> { ActivityLifecycleCallbacksForEnro(get(), get()) }
+            register<FragmentLifecycleCallbacksForEnro> { FragmentLifecycleCallbacksForEnro(get(), get()) }
         }
     )
 }

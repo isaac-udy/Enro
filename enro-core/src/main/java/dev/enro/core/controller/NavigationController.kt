@@ -2,6 +2,7 @@ package dev.enro.core.controller
 
 import android.app.Application
 import androidx.annotation.Keep
+import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationExecutor
@@ -11,6 +12,8 @@ import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.controller.usecase.AddModuleToController
 import dev.enro.core.result.EnroResult
+import dev.enro.destination.activity.internal.ActivityLifecycleCallbacksForEnro
+import dev.enro.destination.fragment.internal.FragmentLifecycleCallbacksForEnro
 import kotlin.reflect.KClass
 
 public class NavigationController internal constructor() {
@@ -52,7 +55,8 @@ public class NavigationController internal constructor() {
 
     public fun install(application: Application) {
         navigationControllerBindings[application] = this
-        application.registerActivityLifecycleCallbacks(dependencyScope.get())
+        application.registerActivityLifecycleCallbacks(dependencyScope.get<ActivityLifecycleCallbacksForEnro>())
+        application.registerActivityLifecycleCallbacks(dependencyScope.get<FragmentLifecycleCallbacksForEnro>())
         pluginRepository.onAttached(this)
     }
 
@@ -66,7 +70,8 @@ public class NavigationController internal constructor() {
     // This method is called by the test module to install/uninstall Enro from test applications
     internal fun uninstall(application: Application) {
         navigationControllerBindings.remove(application)
-        application.unregisterActivityLifecycleCallbacks(dependencyScope.get())
+        application.unregisterActivityLifecycleCallbacks(dependencyScope.get<ActivityLifecycleCallbacksForEnro>())
+        application.unregisterActivityLifecycleCallbacks(dependencyScope.get<FragmentLifecycleCallbacksForEnro>())
     }
 
     public companion object {

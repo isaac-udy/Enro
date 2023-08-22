@@ -8,7 +8,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.os.bundleOf
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.core.NavigationContext
-import dev.enro.core.OPEN_ARG
+import dev.enro.core.addOpenInstruction
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.navigationController
@@ -23,7 +23,7 @@ internal fun <ContextType : ComposableDestination> ComposeContext(
         contextReference = contextReference,
         getController = { contextReference.owner.activity.application.navigationController },
         getParentContext = { contextReference.owner.parentContainer.context },
-        getArguments = { bundleOf(OPEN_ARG to contextReference.owner.instruction) },
+        getArguments = { bundleOf().addOpenInstruction(contextReference.owner.instruction) },
         getViewModelStoreOwner = { contextReference },
         getSavedStateRegistryOwner = { contextReference },
         getLifecycleOwner = { contextReference },

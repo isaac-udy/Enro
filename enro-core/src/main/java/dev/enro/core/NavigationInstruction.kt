@@ -13,36 +13,7 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 import java.util.*
 
-public sealed class NavigationDirection : Parcelable {
-    @Parcelize
-    @Deprecated("Please use Push or Present")
-    public object Forward : NavigationDirection()
-
-    @Parcelize
-    @Deprecated("Please use a close instruction followed by a Push or Present")
-    public object Replace : NavigationDirection()
-
-    @Parcelize
-    public object Push : NavigationDirection()
-
-    @Parcelize
-    public object Present : NavigationDirection()
-
-    @Parcelize
-    public object ReplaceRoot : NavigationDirection()
-
-    public companion object {
-        public fun defaultDirection(navigationKey: NavigationKey): NavigationDirection {
-            return when (navigationKey) {
-                is NavigationKey.SupportsPush -> Push
-                is NavigationKey.SupportsPresent -> Present
-                else -> Forward
-            }
-        }
-    }
-}
-
-internal const val OPEN_ARG = "dev.enro.core.OPEN_ARG"
+private const val OPEN_ARG = "dev.enro.core.OPEN_ARG"
 
 public typealias AnyOpenInstruction = NavigationInstruction.Open<*>
 public typealias OpenPushInstruction = NavigationInstruction.Open<NavigationDirection.Push>
@@ -267,13 +238,13 @@ public fun Bundle.addOpenInstruction(instruction: AnyOpenInstruction): Bundle {
     return this
 }
 
+public fun Bundle.readOpenInstruction(): AnyOpenInstruction? {
+    return getParcelableCompat<NavigationInstruction.Open.OpenInternal<*>>(OPEN_ARG)
+}
+
 public fun Fragment.addOpenInstruction(instruction: AnyOpenInstruction): Fragment {
     arguments = (arguments ?: Bundle()).apply {
         putParcelable(OPEN_ARG, instruction.internal)
     }
     return this
-}
-
-public fun Bundle.readOpenInstruction(): AnyOpenInstruction? {
-    return getParcelableCompat<NavigationInstruction.Open.OpenInternal<*>>(OPEN_ARG)
 }
