@@ -1,4 +1,4 @@
-package dev.enro.destination.activity
+package dev.enro.android
 
 import android.content.Context
 import android.content.Intent
@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import dev.enro.android.activity
 import dev.enro.core.*
 import dev.enro.destination.compose.OverrideNavigationAnimations
 import dev.enro.destination.compose.navigationHandle

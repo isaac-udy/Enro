@@ -1,4 +1,4 @@
-package dev.enro.core.controller.usecase
+package dev.enro.animation.internal
 
 import android.provider.Settings
 import dev.enro.animation.ClosingTransition

@@ -15,6 +15,7 @@ import dev.enro.destination.activity.containerManager
 import dev.enro.destination.fragment.container.FragmentNavigationContainer
 import dev.enro.destination.fragment.container.navigationContainer
 import dev.enro.destination.fragment.container.setVisibilityAnimated
+import dev.enro.destination.fragment.containerManager
 import dev.enro.example.databinding.FragmentRootBinding
 import dev.enro.example.destinations.compose.ExampleComposable
 import dev.enro.example.destinations.fragment.ExampleFragment

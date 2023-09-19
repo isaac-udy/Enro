@@ -7,8 +7,8 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.registerForNavigationResult
-import dev.enro.viewmodel.enroViewModels
-import dev.enro.viewmodel.navigationHandle
+import dev.enro.android.viewmodel.enroViewModels
+import dev.enro.android.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 interface EnroTestTestKey : NavigationKey {

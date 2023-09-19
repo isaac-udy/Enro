@@ -4,10 +4,10 @@ package dev.enro.test
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import dev.enro.core.controller.NavigationApplication
+import dev.enro.android.NavigationApplication
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.createUnattachedNavigationController
-import dev.enro.viewmodel.EnroViewModelNavigationHandleProvider
+import dev.enro.android.viewmodel.EnroViewModelNavigationHandleProvider
 
 object EnroTest {
 

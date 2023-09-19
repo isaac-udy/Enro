@@ -37,7 +37,18 @@ internal class ProjectArchitecture {
         val allowedDependencies = listOf(
             "" to "dev.enro.core",
             "" to "dev.enro.annotation",
+            "" to "dev.enro.extensions",
+
+            "dev.enro.compatability" to "",
+            "" to "dev.enro.compatability",
+
             "dev.enro.destination" to "dev.enro.animation",
+
+            // Should be removed
+            "dev.enro.core.hosts" to "",
+
+            "dev.enro.core.container" to "dev.enro.animation",
+
             // Destinations are allowed to access Android specific functionality,
             // and the Android specific functionality is allowed to access the destinations
             "dev.enro.destination" to "dev.enro.android",
@@ -45,7 +56,7 @@ internal class ProjectArchitecture {
         )
         ArchRuleDefinition.classes()
             .that()
-            .resideInAPackage("dev.enro.destination.activity")
+            .resideInAPackage("dev.enro..")
             .should(NotDependOnOtherPackageGroups(allowedDependencies))
             .check(classes)
     }
@@ -69,7 +80,7 @@ internal object NotDependOnInternalClasses : ArchCondition<JavaClass>("not depen
 
 internal class NotDependOnOtherPackageGroups(
     private val allowedDependencies: List<Pair<String, String>>
-) : ArchCondition<JavaClass>("not depend on internal classes") {
+) : ArchCondition<JavaClass>("not depend on other package groups") {
     override fun check(item: JavaClass, events: ConditionEvents) {
         item.directDependenciesFromSelf
             .forEach { dependency ->
@@ -80,9 +91,12 @@ internal class NotDependOnOtherPackageGroups(
                 val targetPackage = dependency.targetClass.packageName
                 if (!targetPackage.startsWith("dev.enro")) return@forEach
 
+                if (originPackage.startsWith(targetPackage)) return@forEach
+                val commonPrefix = originPackage.commonPrefixWith(targetPackage)
+                if (commonPrefix.count { it == '.' } >= 3) return@forEach
+
                 val isAllowed = allowedDependencies.any {
-                    originPackage.startsWith(it.first) &&
-                            targetPackage.startsWith(it.second)
+                    (originPackage.startsWith(it.first) && targetPackage.startsWith(it.second))
                 }
                 if (isAllowed) return@forEach
 

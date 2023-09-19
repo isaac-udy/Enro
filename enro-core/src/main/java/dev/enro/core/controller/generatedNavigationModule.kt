@@ -1,5 +1,7 @@
 package dev.enro.core.controller
 
+import dev.enro.android.NavigationApplication
+
 
 @Suppress("UNCHECKED_CAST")
 internal fun NavigationApplication.loadGeneratedNavigationModule(): NavigationModule  {

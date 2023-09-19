@@ -29,10 +29,9 @@ import dev.enro.compatability.Compatibility
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
-import dev.enro.core.controller.usecase.GetNavigationAnimations
+import dev.enro.animation.internal.GetNavigationAnimations
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.parentContainer
-import dev.enro.destination.fragment.parentContainer
 import dev.enro.extensions.getParcelableListCompat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

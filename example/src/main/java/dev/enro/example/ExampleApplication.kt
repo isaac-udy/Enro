@@ -7,7 +7,7 @@ import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.CompositionLocalProvider
 import dagger.hilt.android.HiltAndroidApp
 import dev.enro.annotations.NavigationComponent
-import dev.enro.core.controller.NavigationApplication
+import dev.enro.android.NavigationApplication
 import dev.enro.core.controller.createNavigationController
 import dev.enro.core.plugins.EnroLogger
 
@@ -26,5 +26,9 @@ class ExampleApplication : Application(), NavigationApplication {
                 }
             }
         }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
     }
 }

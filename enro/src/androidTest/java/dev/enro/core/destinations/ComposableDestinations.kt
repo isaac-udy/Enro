@@ -17,7 +17,7 @@ import dev.enro.destination.compose.navigationHandle
 import dev.enro.core.requestClose
 import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.registerForNavigationResult
-import dev.enro.viewmodel.navigationHandle
+import dev.enro.android.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 import java.util.*
 

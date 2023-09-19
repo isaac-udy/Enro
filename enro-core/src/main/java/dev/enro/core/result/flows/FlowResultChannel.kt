@@ -10,7 +10,7 @@ import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.result.registerForNavigationResultWithKey
 import dev.enro.extensions.getParcelableListCompat
-import dev.enro.viewmodel.getNavigationHandle
+import dev.enro.android.viewmodel.getNavigationHandle
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 

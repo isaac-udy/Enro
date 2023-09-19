@@ -1,5 +1,6 @@
 package dev.enro.core.controller.usecase
 
+import dev.enro.animation.internal.NavigationAnimationRepository
 import dev.enro.core.controller.NavigationModule
 import dev.enro.core.controller.repository.*
 

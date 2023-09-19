@@ -2,6 +2,7 @@ package dev.enro.core.controller
 
 import android.app.Application
 import androidx.annotation.Keep
+import dev.enro.android.NavigationApplication
 
 /**
  * Create a NavigationController from the NavigationControllerDefinition/DSL, and immediately attach it

@@ -19,8 +19,8 @@ import dev.enro.example.core.data.Sentence
 import dev.enro.example.destinations.result.compose.SelectAdjective
 import dev.enro.example.destinations.result.compose.SelectAdverb
 import dev.enro.example.destinations.result.compose.SelectNoun
-import dev.enro.viewmodel.enroViewModels
-import dev.enro.viewmodel.navigationHandle
+import dev.enro.android.viewmodel.enroViewModels
+import dev.enro.android.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

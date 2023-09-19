@@ -2,7 +2,7 @@ package dev.enro.core.controller
 
 import android.app.Application
 import androidx.annotation.Keep
-import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
+import dev.enro.android.NavigationApplication
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationExecutor

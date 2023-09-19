@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import dev.enro.viewmodel.withNavigationHandle
+import dev.enro.android.viewmodel.withNavigationHandle
 
 @Composable
 public fun ProvideViewModelFactory(

@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.enro.core.*
 import dev.enro.core.controller.usecase.createResultChannel
 import dev.enro.core.result.internal.LazyResultChannelProperty
-import dev.enro.viewmodel.getNavigationHandle
+import dev.enro.android.viewmodel.getNavigationHandle
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import dev.enro.core.closeWithResult as nonDeprecatedCloseWithResult

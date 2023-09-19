@@ -17,9 +17,9 @@ import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationDestination
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.core.NavigationKey
-import dev.enro.destination.activity.activityResultDestination
-import dev.enro.destination.activity.withInput
-import dev.enro.destination.activity.withMappedResult
+import dev.enro.android.activityResultDestination
+import dev.enro.android.withInput
+import dev.enro.android.withMappedResult
 import dev.enro.destination.compose.navigationHandle
 import dev.enro.destination.compose.registerForNavigationResult
 import dev.enro.core.present

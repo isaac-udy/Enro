@@ -9,7 +9,7 @@ import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.addOpenInstruction
 import dev.enro.core.controller.application
 import dev.enro.core.getNavigationHandle
-import dev.enro.viewmodel.withNavigationHandle
+import dev.enro.android.viewmodel.withNavigationHandle
 
 internal class ComposableDestinationViewModelStoreOwner(
     private val owner: ComposableDestinationOwner,

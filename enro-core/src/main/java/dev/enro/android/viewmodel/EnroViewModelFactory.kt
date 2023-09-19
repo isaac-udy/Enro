@@ -1,4 +1,4 @@
-package dev.enro.viewmodel
+package dev.enro.android.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

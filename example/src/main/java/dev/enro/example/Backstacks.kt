@@ -17,14 +17,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.enro.annotations.NavigationDestination
 import dev.enro.annotations.AdvancedEnroApi
+import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationKey
 import dev.enro.core.getNavigationHandle
-import dev.enro.destination.fragment.navigationContext
 import dev.enro.core.rootContext
+import dev.enro.destination.compose.navigationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.parcelize.Parcelize

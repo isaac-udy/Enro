@@ -1,4 +1,4 @@
-package dev.enro.core.controller.repository
+package dev.enro.animation.internal
 
 import dev.enro.animation.ClosingTransition
 import dev.enro.animation.NavigationAnimationOverride

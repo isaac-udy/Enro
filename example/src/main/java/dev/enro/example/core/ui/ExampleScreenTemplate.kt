@@ -42,8 +42,9 @@ import dev.enro.example.destinations.compose.ExampleComposable
 import dev.enro.example.destinations.fragment.DialogFragmentKey
 import dev.enro.example.destinations.fragment.ExampleFragment
 import dev.enro.example.destinations.restoration.SaveRootState
-import dev.enro.viewmodel.navigationHandle
-import dev.enro.viewmodel.withNavigationHandle
+import dev.enro.android.viewmodel.navigationHandle
+import dev.enro.android.viewmodel.withNavigationHandle
+import dev.enro.destination.compose.parentContainer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -9,8 +9,8 @@ import dev.enro.destination.activity.ActivityNavigationBinding
 import dev.enro.destination.compose.ComposableNavigationBinding
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.destination.fragment.FragmentNavigationBinding
-import dev.enro.hilt.isHiltApplication
-import dev.enro.hilt.isHiltContext
+import dev.enro.android.hilt.isHiltApplication
+import dev.enro.android.hilt.isHiltContext
 
 internal class ActivityHost : NavigationHostFactory<Activity>(Activity::class.java) {
     override fun supports(

@@ -18,11 +18,13 @@ public interface NavigationHandle : LifecycleOwner {
     public val instruction: NavigationInstruction.Open<*>
     public val dependencyScope: EnroDependencyScope
     public fun executeInstruction(navigationInstruction: NavigationInstruction)
+
+    public interface Typed<T : NavigationKey> : NavigationHandle {
+        override val key: T
+    }
 }
 
-public interface TypedNavigationHandle<T : NavigationKey> : NavigationHandle {
-    override val key: T
-}
+public typealias TypedNavigationHandle<T> = NavigationHandle.Typed<T>
 
 @PublishedApi
 internal class TypedNavigationHandleImpl<T : NavigationKey>(

@@ -1,4 +1,4 @@
-package dev.enro.hilt
+package dev.enro.android.hilt
 
 import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder

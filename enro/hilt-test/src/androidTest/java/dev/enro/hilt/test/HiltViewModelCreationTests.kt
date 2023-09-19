@@ -27,8 +27,8 @@ import dev.enro.core.*
 import dev.enro.destination.compose.EnroContainer
 import dev.enro.destination.fragment.containerManager
 import dev.enro.expectContext
-import dev.enro.viewmodel.enroViewModels
-import dev.enro.viewmodel.navigationHandle
+import dev.enro.android.viewmodel.enroViewModels
+import dev.enro.android.viewmodel.navigationHandle
 import dev.enro.waitOnMain
 import junit.framework.TestCase.assertTrue
 import kotlinx.parcelize.Parcelize

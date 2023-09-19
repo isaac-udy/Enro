@@ -11,8 +11,8 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.closeWithResult
 import dev.enro.core.forward
 import dev.enro.core.result.registerForNavigationResult
-import dev.enro.viewmodel.enroViewModels
-import dev.enro.viewmodel.navigationHandle
+import dev.enro.android.viewmodel.enroViewModels
+import dev.enro.android.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule

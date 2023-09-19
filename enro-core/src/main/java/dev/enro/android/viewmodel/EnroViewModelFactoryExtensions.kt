@@ -1,4 +1,4 @@
-package dev.enro.viewmodel
+package dev.enro.android.viewmodel
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember

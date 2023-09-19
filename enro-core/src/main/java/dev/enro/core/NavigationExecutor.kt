@@ -65,7 +65,7 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
     public fun defaultOpened(args: ExecutorArgs<out FromContext, out OpensContext, out KeyType>) {
         when (args.binding) {
             is ActivityNavigationBinding ->
-                DefaultContainerExecutor::open as ((ExecutorArgs<out Any, out OpensContext, out NavigationKey>) -> Unit)
+                DefaultContainerExecutor::open
 
             is FragmentNavigationBinding ->
                 DefaultContainerExecutor::open
@@ -83,7 +83,7 @@ public class NavigationExecutorBuilder<FromContext : Any, OpensContext : Any, Ke
     @Suppress("UNCHECKED_CAST")
     public fun defaultClosed(context: NavigationContext<out OpensContext>) {
         when (context.contextReference) {
-            is Activity -> DefaultContainerExecutor::close as (NavigationContext<out OpensContext>) -> Unit
+            is Activity -> DefaultContainerExecutor::close
             is Fragment -> DefaultContainerExecutor::close
             is ComposableDestination -> DefaultContainerExecutor::close
             else -> throw IllegalArgumentException("No default close executor found for context ${context.contextReference::class.java.simpleName}")

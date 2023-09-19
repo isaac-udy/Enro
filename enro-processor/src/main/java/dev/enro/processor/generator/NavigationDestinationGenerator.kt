@@ -306,19 +306,19 @@ fun JavaFile.Builder.addImportsForBinding(): JavaFile.Builder {
 fun FileSpec.Builder.addImportsForBinding(): FileSpec.Builder {
     return this
         .addImport(
-        "dev.enro.core.activity",
+        "dev.enro.destination.activity",
             "activityDestination"
         )
         .addImport(
-            "dev.enro.core.fragment",
+            "dev.enro.destination.fragment",
             "fragmentDestination"
         )
         .addImport(
-            "dev.enro.core.synthetic",
+            "dev.enro.destination.synthetic",
             "syntheticDestination"
         )
         .addImport(
-            "dev.enro.core.compose",
+            "dev.enro.destination.compose",
             "composableDestination"
         )
 }

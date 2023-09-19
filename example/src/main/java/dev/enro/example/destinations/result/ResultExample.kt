@@ -1,6 +1,7 @@
 package dev.enro.example.destinations.result
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import dev.enro.android.viewmodel.enroViewModels
+import dev.enro.android.viewmodel.navigationHandle
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.result.registerForNavigationResult
@@ -18,9 +21,14 @@ import dev.enro.example.databinding.FragmentResultExampleBinding
 import dev.enro.example.destinations.result.compose.GetString
 import dev.enro.example.destinations.result.flow.embedded.CreateSentenceEmbeddedFlow
 import dev.enro.example.destinations.result.flow.managed.CreateSentenceManagedFlow
-import dev.enro.viewmodel.enroViewModels
-import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
+import net.bytebuddy.ByteBuddy
+import net.bytebuddy.android.AndroidClassLoadingStrategy.Wrapping
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy
+import net.bytebuddy.implementation.InvocationHandlerAdapter
+import net.bytebuddy.matcher.ElementMatcher
+import kotlin.coroutines.coroutineContext
+
 
 @Parcelize
 class ResultExampleKey : NavigationKey.SupportsPush
@@ -29,7 +37,9 @@ class ResultExampleKey : NavigationKey.SupportsPush
 @NavigationDestination(ResultExampleKey::class)
 class RequestExampleFragment : Fragment() {
 
-    private val viewModel by enroViewModels<RequestExampleViewModel>()
+    private val viewModel by lazy {
+        enroViewModels<RequestExampleViewModel>().value.instrumented(requireActivity())
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,7 +74,7 @@ class RequestExampleFragment : Fragment() {
     }
 }
 
-class RequestExampleViewModel() : ViewModel() {
+open class RequestExampleViewModel() : ViewModel() {
 
     private val navigation by navigationHandle<ResultExampleKey>()
 
@@ -98,4 +108,25 @@ class RequestExampleViewModel() : ViewModel() {
     fun onRequestSentenceEmbeddedFlow() {
         requestSentence.push(CreateSentenceEmbeddedFlow())
     }
+}
+
+inline fun <reified T: Any> T.instrumented(context : Context) : T {
+    val strategy = Wrapping(
+        context.getDir(
+            "generated",
+            Context.MODE_PRIVATE
+        )
+    )
+    val wrapped = this
+    return ByteBuddy()
+        .subclass(T::class.java)
+        .method { true }
+        .intercept(InvocationHandlerAdapter.of { proxy, method, args ->
+            method.invoke(wrapped, *args)
+        })
+//        .
+        .make()
+        .load(T::class.java.classLoader, strategy)
+        .loaded
+        .newInstance()
 }
