@@ -30,3 +30,11 @@ dependencies {
     testImplementation(libs.testing.archunit)
     testImplementation(libs.kotlin.reflect)
 }
+
+afterEvaluate {
+    tasks.named("preReleaseBuild") {
+        dependsOn(
+            ":enro-annotations:publishToMavenLocal"
+        )
+    }
+}
