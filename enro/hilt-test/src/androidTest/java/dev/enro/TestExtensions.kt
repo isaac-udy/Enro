@@ -78,7 +78,6 @@ fun <ContextType: Any, KeyType: NavigationKey> findContextFrom(
         }
 
         activeContext.containerManager.containers
-            .filter { it.acceptsDirection(NavigationDirection.Present) }
             .forEach { presentationContainer ->
                 presentationContainer.childContext
                     ?.let {

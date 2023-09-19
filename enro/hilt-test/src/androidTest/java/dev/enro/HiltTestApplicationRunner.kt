@@ -14,7 +14,7 @@ class HiltTestApplicationRunner : AndroidJUnitRunner() {
     override fun newApplication(cl: ClassLoader?, name: String?, context: Context?): Application {
         return super.newApplication(cl, HiltTestApplication_Application::class.java.name, context).apply {
             navigationController.addModule(createNavigationModule {
-                TestApplicationNavigation().execute(this)
+                TestApplicationNavigation().invoke(this)
             })
         }
     }
