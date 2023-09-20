@@ -8,6 +8,9 @@ import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.createUnattachedNavigationController
 import dev.enro.viewmodel.EnroViewModelNavigationHandleProvider
+import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
 object EnroTest {
 
@@ -70,5 +73,24 @@ object EnroTest {
             return true
         }
         return false
+    }
+}
+
+fun runEnroTest(block: () -> Unit) {
+    EnroTest.installNavigationController()
+    try {
+        block()
+    } finally {
+        EnroTest.uninstallNavigationController()
+    }
+}
+
+class EnroTestRule : TestRule {
+    override fun apply(base: Statement, description: Description): Statement {
+        return object : Statement() {
+            override fun evaluate() {
+                runEnroTest { base.evaluate() }
+            }
+        }
     }
 }

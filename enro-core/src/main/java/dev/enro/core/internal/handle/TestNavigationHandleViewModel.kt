@@ -8,6 +8,14 @@ import dev.enro.core.controller.usecase.ExecuteCloseInstruction
 import dev.enro.core.controller.usecase.ExecuteContainerOperationInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 
+/**
+ * A special type of [NavigationHandleViewModel] for testing. This class  prevents
+ * navigation instructions from being executed as they normally would be, instead
+ * recording the instructions for verification during testing.
+ *
+ * When using the EnroTestRule, runEnroTest, or EnroTest.installNavigationController,
+ * all NavigationHandles created will be instances of [TestNavigationHandleViewModel].
+ */
 internal class TestNavigationHandleViewModel(
     controller: NavigationController,
     instruction: AnyOpenInstruction
@@ -33,7 +41,7 @@ internal class TestNavigationHandleViewModel(
         ) {}
     },
 ) {
-    private val instructions = mutableListOf<NavigationInstruction>()
+    internal val instructions = mutableListOf<NavigationInstruction>()
 
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {
         instructions.add(navigationInstruction)

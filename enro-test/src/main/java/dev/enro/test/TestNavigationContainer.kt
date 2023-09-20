@@ -3,16 +3,12 @@ package dev.enro.test
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import dev.enro.core.NavigationContainerKey
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.container.emptyBackstack
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.junit.Assert
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 
 public class TestNavigationContainer(
     val key: NavigationContainerKey,
@@ -50,88 +46,3 @@ fun createTestNavigationContainer(
     key: NavigationContainerKey,
     backstack: NavigationBackstack = emptyBackstack(),
 ) = TestNavigationContainer(key, backstack)
-
-
-fun <T : Any> NavigationContainerContext.expectOpenInstruction(type: Class<T>, filter: (T) -> Boolean = { true }): NavigationInstruction.Open<*> {
-    val instruction = backstack.last {
-        runCatching { filter(it.navigationKey as T) }.getOrDefault(false)
-    }
-    Assert.assertTrue(type.isAssignableFrom(instruction.navigationKey::class.java))
-    return instruction
-}
-
-inline fun <reified T : Any> NavigationContainerContext.expectOpenInstruction(noinline filter: (T) -> Boolean = { true }): NavigationInstruction.Open<*> {
-    return expectOpenInstruction(T::class.java, filter)
-}
-
-inline fun <reified T : Any> NavigationContainerContext.expectOpenInstruction(key: T): NavigationInstruction.Open<*> {
-    return expectOpenInstruction(T::class.java) { it == key }
-}
-
-fun NavigationContainerContext.assertBackstackEquals(
-    backstack: NavigationBackstack
-) {
-    assertEquals(backstack, this.backstack)
-}
-
-fun NavigationContainerContext.assertContains(
-    instruction: NavigationInstruction.Open<*>
-) {
-    assertEquals(
-        instruction,
-        backstack.firstOrNull { it == instruction }
-    )
-}
-
-fun NavigationContainerContext.assertContains(
-    key: NavigationKey
-) {
-    assertEquals(
-        key,
-        backstack.map { it.navigationKey }
-            .firstOrNull { it == key }
-    )
-}
-
-fun NavigationContainerContext.assertDoesNotContain(
-    instruction: NavigationInstruction.Open<*>
-) {
-    assertEquals(
-        null,
-        backstack.firstOrNull { it == instruction }
-    )
-}
-
-fun NavigationContainerContext.assertDoesNotContain(
-    key: NavigationKey
-) {
-    assertEquals(
-        null,
-        backstack.map { it.navigationKey }
-            .firstOrNull { it == key }
-    )
-}
-
-fun NavigationContainerContext.assertActive(
-    instruction: NavigationInstruction.Open<*>
-) {
-    assertEquals(instruction, backstack.active)
-}
-
-fun NavigationContainerContext.assertActive(
-    key: NavigationKey
-) {
-    assertEquals(key, backstack.active?.navigationKey)
-}
-
-fun NavigationContainerContext.assertNotActive(
-    instruction: NavigationInstruction.Open<*>
-) {
-    assertNotEquals(instruction, backstack.active)
-}
-
-fun NavigationContainerContext.assertNotActive(
-    key: NavigationKey
-) {
-    assertNotEquals(key, backstack.active?.navigationKey)
-}

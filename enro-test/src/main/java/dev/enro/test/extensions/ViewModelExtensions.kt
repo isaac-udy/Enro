@@ -1,10 +1,11 @@
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 package dev.enro.test.extensions
 
 import androidx.lifecycle.ViewModel
-import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.test.TestNavigationHandle
 import dev.enro.test.createTestNavigationHandle
+import dev.enro.viewmodel.EnroViewModelNavigationHandleProvider
 import kotlin.reflect.KClass
 
 
@@ -18,10 +19,7 @@ fun <T: ViewModel> putNavigationHandleForViewModel(
     viewModel: KClass<T>,
     key: NavigationKey,
 ) : TestNavigationHandle<NavigationKey> {
-    val providerClass = Class.forName("dev.enro.viewmodel.EnroViewModelNavigationHandleProvider")
-    val instance = providerClass.getDeclaredField("INSTANCE").get(null)
-    val putMethod = providerClass.getDeclaredMethod("put", java.lang.Class::class.java, NavigationHandle::class.java)
-    val mockedNavigationHandle = createTestNavigationHandle<NavigationKey>(key)
-    putMethod.invoke(instance, viewModel.java, mockedNavigationHandle)
+    val mockedNavigationHandle = createTestNavigationHandle(key)
+    EnroViewModelNavigationHandleProvider.put(viewModel.java, mockedNavigationHandle)
     return mockedNavigationHandle
 }
