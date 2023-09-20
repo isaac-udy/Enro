@@ -5,7 +5,6 @@ import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.addCallback
-import dev.enro.core.ActivityContext
 import dev.enro.compatability.interceptBackPressForAndroidxNavigation
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application

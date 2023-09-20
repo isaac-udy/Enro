@@ -48,54 +48,6 @@ public class NavigationContext<ContextType : Any> internal constructor(
     public val containerManager: NavigationContainerManager = NavigationContainerManager()
 }
 
-internal fun <ContextType : ComponentActivity> ActivityContext(
-    contextReference: ContextType,
-) : NavigationContext<ContextType> {
-    return NavigationContext(
-        contextReference = contextReference,
-        getController = { contextReference.application.navigationController },
-        getParentContext =  { null },
-        getArguments = { contextReference.intent.extras ?: Bundle() },
-        getViewModelStoreOwner = { contextReference },
-        getSavedStateRegistryOwner = { contextReference },
-        getLifecycleOwner =  { contextReference },
-    )
-}
-
-internal fun <ContextType : Fragment> FragmentContext(
-    contextReference: ContextType,
-) : NavigationContext<ContextType> {
-    return NavigationContext(
-        contextReference = contextReference,
-        getController = { contextReference.requireActivity().application.navigationController },
-        getParentContext =  {
-            when (val parentFragment = contextReference.parentFragment) {
-                null -> contextReference.requireActivity().navigationContext
-                else -> parentFragment.navigationContext
-            }
-        },
-        getArguments = { contextReference.arguments ?: Bundle() },
-        getViewModelStoreOwner = { contextReference },
-        getSavedStateRegistryOwner = { contextReference },
-        getLifecycleOwner =  { contextReference },
-    )
-}
-
-
-internal fun <ContextType : ComposableDestination> ComposeContext(
-    contextReference: ContextType,
-) : NavigationContext<ContextType> {
-    return NavigationContext(
-        contextReference = contextReference,
-        getController = { contextReference.owner.activity.application.navigationController },
-        getParentContext =  { contextReference.owner.parentContainer.context },
-        getArguments = { bundleOf(OPEN_ARG to contextReference.owner.instruction) },
-        getViewModelStoreOwner = { contextReference },
-        getSavedStateRegistryOwner = { contextReference },
-        getLifecycleOwner =  { contextReference },
-    )
-}
-
 public val NavigationContext<out Fragment>.fragment: Fragment get() = contextReference
 
 public fun NavigationContext<*>.parentContainer(): NavigationContainer? {
