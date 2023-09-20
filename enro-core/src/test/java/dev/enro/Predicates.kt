@@ -2,7 +2,6 @@ package dev.enro
 
 import com.tngtech.archunit.base.DescribedPredicate
 import com.tngtech.archunit.core.domain.JavaClass
-import dev.enro.core.ArchitectureException
 
 internal fun <T> describe(description: String, predicate: (T) -> Boolean): DescribedPredicate<T> =
     object : DescribedPredicate<T>(description) {
@@ -30,10 +29,4 @@ internal val isTestSource: DescribedPredicate<JavaClass> = describe("is in test 
         ?.uri
         ?.toString() ?: return@describe false
     return@describe fileName.contains("UnitTest")
-}
-
-internal val isArchitectureException: DescribedPredicate<JavaClass> = describe("is architecture exception") { fromClass ->
-    describe<JavaClass>("has architecture exception annotation") {
-        it.isAnnotatedWith(ArchitectureException::class.java)
-    }.includingEnclosing().test(fromClass)
 }

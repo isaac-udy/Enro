@@ -15,10 +15,6 @@ internal class ProjectArchitecture {
 
     private val architecture = Architectures.layeredArchitecture()
         .consideringOnlyDependenciesInAnyPackage("dev.enro..")
-        .ignoreDependency(
-            isArchitectureException,
-            describe("any class") { true },
-        )
         .let {
             EnroLayer.values().fold(it) { architecture, layer ->
                 architecture.layer(layer)
