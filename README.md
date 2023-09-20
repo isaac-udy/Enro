@@ -1,7 +1,8 @@
 [![Maven Central](https://img.shields.io/maven-central/v/dev.enro/enro.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22dev.enro%22)
 > **Note**
 >
-> Enro 2.x.x has now merged to the main branch, but is still in an alpha/beta release phase. The Enro 1.x.x branch is still being maintained for bug fixes and can be found [here](https://github.com/isaac-udy/Enro/tree/1.x.x)
+> Please see the [CHANGELOG](./CHANGELOG.md) to understand the latest changes in Enro
+
 
 # Enro 🗺️
 

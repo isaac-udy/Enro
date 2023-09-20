@@ -19,7 +19,7 @@ public sealed class NavigationDirection : Parcelable {
     public object Forward : NavigationDirection()
 
     @Parcelize
-    @Deprecated("Please use a close instruction followed by a Push or Present")
+    @Deprecated("Please use a Push or Present followed by a close")
     public object Replace : NavigationDirection()
 
     @Parcelize
