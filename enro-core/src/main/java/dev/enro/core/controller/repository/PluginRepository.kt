@@ -17,6 +17,15 @@ internal class PluginRepository {
         }
     }
 
+    fun removePlugins(
+        plugins: List<EnroPlugin>,
+    ) {
+        this.plugins -= plugins
+        attachedController?.let { attachedController ->
+            plugins.forEach { it.onDetached(attachedController) }
+        }
+    }
+
     fun hasPlugin(block: (EnroPlugin) -> Boolean): Boolean {
         return plugins.any(block)
     }
@@ -27,6 +36,12 @@ internal class PluginRepository {
         }
         attachedController = navigationController
         plugins.forEach { it.onAttached(navigationController) }
+    }
+
+    internal fun onDetached(navigationController: NavigationController) {
+        if (attachedController == null) return
+        plugins.forEach { it.onDetached(navigationController) }
+        attachedController = null
     }
 
     internal fun onOpened(navigationHandle: NavigationHandle) {

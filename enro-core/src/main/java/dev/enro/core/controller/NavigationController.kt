@@ -52,7 +52,6 @@ public class NavigationController internal constructor() {
 
     public fun install(application: Application) {
         navigationControllerBindings[application] = this
-        application.registerActivityLifecycleCallbacks(dependencyScope.get())
         pluginRepository.onAttached(this)
     }
 
@@ -65,8 +64,8 @@ public class NavigationController internal constructor() {
     @Keep
     // This method is called by the test module to install/uninstall Enro from test applications
     internal fun uninstall(application: Application) {
+        pluginRepository.onDetached(this)
         navigationControllerBindings.remove(application)
-        application.unregisterActivityLifecycleCallbacks(dependencyScope.get())
     }
 
     public companion object {
