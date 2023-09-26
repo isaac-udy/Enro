@@ -25,8 +25,6 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.compose.dialog.*
 import dev.enro.core.container.NavigationContainer
-import dev.enro.core.container.getAnimationsForEntering
-import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
