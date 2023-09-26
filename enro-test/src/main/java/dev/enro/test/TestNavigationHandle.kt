@@ -3,9 +3,12 @@
 package dev.enro.test
 
 import androidx.lifecycle.Lifecycle
-import dev.enro.core.*
+import dev.enro.core.NavigationHandle
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.TypedNavigationHandle
+import dev.enro.core.close
 import dev.enro.core.controller.EnroDependencyScope
-import dev.enro.core.internal.handle.TestNavigationHandleViewModel
 import java.lang.ref.WeakReference
 
 class TestNavigationHandle<T : NavigationKey>(
@@ -31,10 +34,11 @@ class TestNavigationHandle<T : NavigationKey>(
         }
 
     val instructions: List<NavigationInstruction>
-        get() = when(navigationHandle) {
-            is TestNavigationHandleViewModel -> navigationHandle.instructions
-            is FakeNavigationHandle -> navigationHandle.instructions
-            else -> error("")
+        get() = navigationHandle::class.java.getDeclaredField("instructions").let {
+            it.isAccessible = true
+            val instructions = it.get(navigationHandle)
+            it.isAccessible = false
+            return instructions as List<NavigationInstruction>
         }
 
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {
