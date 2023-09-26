@@ -17,6 +17,7 @@ import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition
+import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.emptyBackstack
 import dev.enro.core.container.ensureOpeningTypeIsSet
 import dev.enro.core.container.toBackstack
@@ -29,21 +30,20 @@ private const val BACKSTACK_KEY = "NavigationContainer.BACKSTACK_KEY"
 
 public class ContainerState(
     private val key: NavigationContainerKey,
-    private val context: NavigationContext<*>,
     initialBackstack: NavigationBackstack,
-    private val savables: List<Savable>,
+    private val context: NavigationContext<*>,
     private val acceptPolicy: ContainerAcceptPolicy,
     private val emptyPolicy: ContainerEmptyPolicy,
     private val activePolicy: ContainerActivePolicy,
+    private val components: List<NavigationContainer.Component>,
 ) {
-
     private val mutableBackstackFlow: MutableStateFlow<NavigationBackstack> =
-        MutableStateFlow(initialBackstack)
+        MutableStateFlow(emptyBackstack())
 
     public val backstackFlow: StateFlow<NavigationBackstack> get() = mutableBackstackFlow
 
     // snapshotFlow {  } on this for the backstack flow?
-    private var mutableBackstack by mutableStateOf(initialBackstack)
+    private var mutableBackstack by mutableStateOf(ContainerState.initialBackstack)
     public val backstack: NavigationBackstack by derivedStateOf { mutableBackstack }
 
     public var currentTransition: NavigationBackstackTransition = initialTransition
@@ -65,6 +65,7 @@ public class ContainerState(
                 null -> setBackstack(backstack)
                 else -> restore(savedState)
             }
+            components.forEach { it.create(this) }
         }
         if (!savedStateRegistry.isRestored) {
             context.lifecycleOwner.lifecycleScope.launch {
@@ -75,16 +76,17 @@ public class ContainerState(
         } else initialise()
     }
 
-    public fun save(): Bundle {
+
+    internal fun save(): Bundle {
         val out = bundleOf(
             BACKSTACK_KEY to ArrayList(backstack)
         )
-        savables.forEach { out.putAll(it.save()) }
+        components.forEach { out.putAll(it.save()) }
         return out
     }
 
-    public fun restore(bundle: Bundle) {
-        savables.forEach { it.restore(bundle) }
+    internal fun restore(bundle: Bundle) {
+        components.forEach { it.restore(bundle) }
 
         val restoredBackstack = bundle.getParcelableListCompat<AnyOpenInstruction>(
             BACKSTACK_KEY
@@ -93,6 +95,10 @@ public class ContainerState(
             .toBackstack()
 
         setBackstack(restoredBackstack)
+    }
+
+    internal fun destroy() {
+        components.forEach { it.destroy() }
     }
 
     @MainThread
@@ -123,11 +129,6 @@ public class ContainerState(
                 previouslyActiveContainer = context.containerManager.activeContainer?.key
             )
         }.toBackstack()
-    }
-
-    public interface Savable {
-        public fun save(): Bundle
-        public fun restore(bundle: Bundle)
     }
 
     public companion object {

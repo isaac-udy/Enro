@@ -8,9 +8,6 @@ public interface ContainerContextProvider <T: Any>{
     public fun getActiveNavigationContext(backstack: NavigationBackstack): NavigationContext<out T>?
     public fun getContext(instruction: AnyOpenInstruction): T?
     public fun createContext(instruction: AnyOpenInstruction): T
-
-    public fun bind(state: ContainerState)
-    public fun destroy()
 }
 
 public fun <T : Any> ContainerContextProvider<T>.getOrCreateContext(instruction: AnyOpenInstruction): T {

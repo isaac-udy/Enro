@@ -3,6 +3,8 @@ package dev.enro.core.container
 import android.os.Bundle
 import androidx.annotation.CallSuper
 import androidx.annotation.MainThread
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import dev.enro.animation.NavigationAnimation
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.core.AnyOpenInstruction
@@ -27,11 +29,19 @@ public abstract class NavigationContainer(
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
     private val emptyPolicy: ContainerEmptyPolicy,
     private val acceptPolicy: ContainerAcceptPolicy,
-    private val activePolicy: ContainerActivePolicy,
-    private val animationPolicy: ContainerAnimationPolicy,
-    private val containerRenderer: ContainerRenderer,
+    private val activePolicy: ContainerActivePolicy = ContainerActivePolicy.Default(key, context),
+    private val animationPolicy: ContainerAnimationPolicy = ContainerAnimationPolicy.Default(context),
+    internal val containerRenderer: ContainerRenderer,
     private val containerContextProvider: ContainerContextProvider<*>,
+    private val additionalComponents: List<Component> = emptyList(),
 ) : NavigationContainerContext {
+
+    private val onDestroyLifecycleObserver = LifecycleEventObserver { _, event ->
+        if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
+//        destroy()
+    }.also { observer ->
+        context.lifecycle.addObserver(observer)
+    }
 
     internal val dependencyScope by lazy {
         NavigationContainerScope(
@@ -42,15 +52,21 @@ public abstract class NavigationContainer(
 
     internal val state = ContainerState(
         key = key,
-        context = context,
         initialBackstack = initialBackstack,
-        savables = emptyList(),
+        context = context,
         acceptPolicy = acceptPolicy,
         emptyPolicy = emptyPolicy,
         activePolicy = activePolicy,
-    ).also {
-        containerRenderer.bind(it)
-    }
+        components = listOf(
+            emptyPolicy,
+            acceptPolicy,
+            activePolicy,
+            animationPolicy,
+            containerRenderer,
+            containerContextProvider,
+        ).filterIsInstance<Component>()
+            .plus(additionalComponents)
+    )
 
     internal val interceptor = NavigationInterceptorBuilder()
         .apply(interceptor)
@@ -82,6 +98,12 @@ public abstract class NavigationContainer(
         state.restore(bundle)
     }
 
+    internal fun destroy() {
+        state.destroy()
+        context.lifecycle.removeObserver(onDestroyLifecycleObserver)
+        context.containerManager.removeContainer(this)
+    }
+
     @MainThread
     public final override fun setBackstack(backstack: NavigationBackstack) {
         state.setBackstack(backstack)
@@ -105,5 +127,12 @@ public abstract class NavigationContainer(
 
     public fun getAnimationsForExiting(instruction: AnyOpenInstruction): NavigationAnimation {
         return animationPolicy.getAnimationsForEntering(this, instruction)
+    }
+
+    public interface Component {
+        public fun create(state: ContainerState) {}
+        public fun save(): Bundle { return Bundle.EMPTY }
+        public fun restore(bundle: Bundle) {}
+        public fun destroy() {}
     }
 }

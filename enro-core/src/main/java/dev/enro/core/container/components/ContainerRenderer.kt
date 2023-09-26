@@ -2,9 +2,6 @@ package dev.enro.core.container.components
 
 public interface ContainerRenderer {
     public val isVisible: Boolean
-
-    public fun bind(state: ContainerState)
-    public fun destroy()
 }
 
 /*

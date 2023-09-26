@@ -15,8 +15,6 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.components.ContainerAcceptPolicy
-import dev.enro.core.container.components.ContainerActivePolicy
-import dev.enro.core.container.components.ContainerAnimationPolicy
 import dev.enro.core.container.components.ContainerEmptyPolicy
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.destination.fragment.container.FragmentContainerRenderer
@@ -35,7 +33,7 @@ public class FragmentNavigationContainer internal constructor(
     containerContextProvider: FragmentContextProvider = FragmentContextProvider(
         containerId = containerId,
         context = parentContext,
-    )
+    ),
 ) : NavigationContainer(
     key = key,
     initialBackstack = initialBackstack,
@@ -47,15 +45,10 @@ public class FragmentNavigationContainer internal constructor(
         acceptsContextType = Fragment::class,
         acceptsNavigationKey = accept,
     ),
-    activePolicy = ContainerActivePolicy.Default(
-        key = key,
-        context = parentContext
-    ),
     emptyPolicy = ContainerEmptyPolicy.Default(
         context = parentContext,
         emptyBehavior = emptyBehavior,
     ),
-    animationPolicy = ContainerAnimationPolicy.Default(),
     containerRenderer = FragmentContainerRenderer(
         containerId = containerId,
         context = parentContext,
@@ -69,36 +62,6 @@ public class FragmentNavigationContainer internal constructor(
             containerView?.isVisible = value
         }
 }
-
-//    public override fun save(): Bundle {
-//        val savedState = super.save()
-//        backstack.asFragmentAndInstruction()
-//            .forEach {
-//                val fragmentState = fragmentManager.saveFragmentInstanceState(it.fragment)
-//                savedState.putParcelable(
-//                    "${FRAGMENT_STATE_PREFIX_KEY}${it.instruction.instructionId}",
-//                    fragmentState
-//                )
-//            }
-//        savedState.putStringArrayList(OWNED_FRAGMENTS_KEY, ArrayList(ownedFragments))
-//        return savedState
-//    }
-//
-//    public override fun restore(bundle: Bundle) {
-//        bundle.keySet().forEach { key ->
-//            if (!key.startsWith(FRAGMENT_STATE_PREFIX_KEY)) return@forEach
-//            val fragmentState =
-//                bundle.getParcelableCompat<Fragment.SavedState>(key) ?: return@forEach
-//            val instructionId = key.removePrefix(FRAGMENT_STATE_PREFIX_KEY)
-//            restoredFragmentStates[instructionId] = fragmentState
-//        }
-//        ownedFragments.addAll(bundle.getStringArrayList(OWNED_FRAGMENTS_KEY).orEmpty())
-//        super.restore(bundle)
-//    }
-//private companion object {
-//    private const val FRAGMENT_STATE_PREFIX_KEY = "FragmentState@"
-//    private const val OWNED_FRAGMENTS_KEY = "OWNED_FRAGMENTS_KEY"
-//}
 
 public val FragmentNavigationContainer.containerView: View?
     get() {

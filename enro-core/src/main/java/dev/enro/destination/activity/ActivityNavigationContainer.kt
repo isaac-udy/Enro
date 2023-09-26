@@ -2,6 +2,8 @@ package dev.enro.core.activity
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -19,13 +21,10 @@ import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.backstackOf
 import dev.enro.core.container.components.ContainerAcceptPolicy
-import dev.enro.core.container.components.ContainerActivePolicy
-import dev.enro.core.container.components.ContainerAnimationPolicy
 import dev.enro.core.container.components.ContainerContextProvider
 import dev.enro.core.container.components.ContainerEmptyPolicy
 import dev.enro.core.container.components.ContainerRenderer
 import dev.enro.core.container.components.ContainerState
-import dev.enro.core.container.emptyBackstack
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.GetNavigationBinding
 import dev.enro.core.controller.usecase.HostInstructionAs
@@ -43,29 +42,22 @@ internal class ActivityNavigationContainer internal constructor(
     context = activityContext,
     interceptor = { },
     animations = { },
-    initialBackstack = emptyBackstack(),
+    initialBackstack = backstackOf(activityContext.getNavigationHandle().instruction),
     acceptPolicy = ContainerAcceptPolicy.Default(
         context = activityContext,
         acceptsContextType = Fragment::class,
         acceptsNavigationKey = { true },
     ),
-    activePolicy = ContainerActivePolicy.Default(
-        key = NavigationContainerKey.FromName("ActivityNavigationContainer"),
-        context = activityContext
-    ),
     emptyPolicy = ContainerEmptyPolicy.Default(
         context = activityContext,
         emptyBehavior = EmptyBehavior.AllowEmpty,
     ),
-    animationPolicy = ContainerAnimationPolicy.Default(),
-    containerRenderer = object : ContainerRenderer {
+    containerRenderer = object : ContainerRenderer, Component {
         override val isVisible: Boolean
             get() = true
         private var renderJob: Job? = null
 
-        override fun bind(state: ContainerState) {
-
-
+        override fun create(state: ContainerState) {
             fun onBackstackUpdated(transition: NavigationBackstackTransition): Boolean {
                 val rootInstruction = activityContext.getNavigationHandle().instruction
                 if (transition.activeBackstack.singleOrNull()?.instructionId == rootInstruction.instructionId) return true
@@ -74,6 +66,7 @@ internal class ActivityNavigationContainer internal constructor(
                 val activeInstructionIsPresent =
                     transition.activeBackstack.any { it.instructionId == rootInstruction.instructionId }
                 if (!activeInstructionIsPresent) {
+                    Log.e("Render", "FINISHACTIVITY ${rootInstruction.navigationKey::class.java.name}")
                     ActivityCompat.finishAfterTransition(activityContext.activity)
 //                    val animations = getNavigationAnimations.closing(
 //                        exiting = rootInstruction,
@@ -138,6 +131,10 @@ internal class ActivityNavigationContainer internal constructor(
             }
         }
 
+        override fun restore(bundle: Bundle) {
+            super.restore(bundle)
+        }
+
         override fun destroy() {
             renderJob?.cancel()
             renderJob = null
@@ -154,12 +151,6 @@ internal class ActivityNavigationContainer internal constructor(
 
         override fun createContext(instruction: AnyOpenInstruction): ComponentActivity {
             TODO("Not yet implemented")
-        }
-
-        override fun bind(state: ContainerState) {
-        }
-
-        override fun destroy() {
         }
     }
 ) {

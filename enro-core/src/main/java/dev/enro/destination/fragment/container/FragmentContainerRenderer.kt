@@ -1,6 +1,7 @@
 package dev.enro.destination.fragment.container
 
 import android.app.Activity
+import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -14,6 +15,7 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition
+import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.components.ContainerRenderer
 import dev.enro.core.container.components.ContainerState
 import dev.enro.core.container.components.getOrCreateContext
@@ -29,11 +31,11 @@ internal class FragmentContainerRenderer(
     private val containerId: Int,
     private val context: NavigationContext<out Any>,
     private val contextProvider: FragmentContextProvider,
-) : ContainerRenderer {
+) : ContainerRenderer, NavigationContainer.Component {
 
     private val fragmentManager = context.fragmentManager
 
-    override val isVisible: Boolean
+    override var isVisible: Boolean
         get() {
             val view = when (context.contextReference) {
                 is Activity -> context.contextReference.findViewById<View>(containerId)
@@ -43,11 +45,20 @@ internal class FragmentContainerRenderer(
 
             return view.isVisible
         }
+        set(value) {
+            val view = when (context.contextReference) {
+                is Activity -> context.contextReference.findViewById<View>(containerId)
+                is Fragment -> context.contextReference.view?.findViewById<View>(containerId)
+                else -> null
+            } ?: return
+
+            view.isVisible = value
+        }
 
     private var renderJob: Job? = null
     private var lastRenderedBackstack: NavigationBackstack = emptyBackstack()
 
-    override fun bind(state: ContainerState) {
+    override fun create(state: ContainerState) {
         if (renderJob != null) error("FragmentContainerRenderer is already bound")
         renderJob = context.lifecycleOwner.lifecycleScope.launch {
             context.lifecycle.withCreated {}
@@ -56,6 +67,7 @@ internal class FragmentContainerRenderer(
                 while (!onBackstackUpdated(transition) && isActive) {
                     delay(16)
                 }
+                Log.e("Rendered", "${transition.activeBackstack.joinToString { it.navigationKey::class.java.simpleName }}")
                 lastRenderedBackstack = it
             }
         }
@@ -90,6 +102,10 @@ internal class FragmentContainerRenderer(
         val toDetach = getInstructionsToDetach(backstack)
             .mapNotNull { it.withFragment(contextProvider::getContext) }
 
+        val toRemove = getFragmentsToRemove(backstack)
+        val toRemoveDialogs = toRemove.filterIsInstance<DialogFragment>()
+        val toRemoveDirect = toRemove.filter { it !is DialogFragment }
+
         (toDetach + activePushed)
             .filterNotNull()
             .forEach {
@@ -100,6 +116,16 @@ internal class FragmentContainerRenderer(
             applyAnimationsForTransaction(
                 active = activePushed?.instruction
             )
+            toRemoveDirect.forEach {
+                remove(it)
+                contextProvider.ownedFragments.remove(it.tag)
+            }
+            runOnCommit {
+                toRemoveDialogs.forEach {
+                    it.dismiss()
+                    contextProvider.ownedFragments.remove(it.tag)
+                }
+            }
             toDetach.forEach {
                 detach(it.fragment)
             }
@@ -165,6 +191,13 @@ internal class FragmentContainerRenderer(
             }
     }
 
+    private fun getFragmentsToRemove(backstackState: List<AnyOpenInstruction>): List<Fragment> {
+        val activeIds = backstackState.map { it.instructionId }.toSet()
+        contextProvider.ownedFragments.addAll(activeIds)
+        return contextProvider.ownedFragments.filter { !activeIds.contains(it) }
+            .mapNotNull { fragmentManager.findFragmentByTag(it) }
+    }
+
     private fun getInstructionsToPresent(backstackState: List<AnyOpenInstruction>): List<AnyOpenInstruction> {
         return backstackState
             .takeLastWhile {
@@ -178,23 +211,6 @@ internal class FragmentContainerRenderer(
             .lastOrNull {
                 it.navigationDirection is NavigationDirection.Push
             }
-    }
-
-    private data class InstructionWithFragment(
-        val instruction: AnyOpenInstruction,
-        val fragment: Fragment,
-    )
-
-    private fun AnyOpenInstruction?.withFragment(
-        block: (AnyOpenInstruction) -> Fragment?
-    ): InstructionWithFragment? {
-        this ?: return null
-        val fragment = block(this)
-            ?: return null
-        return InstructionWithFragment(
-            instruction = this,
-            fragment = fragment
-        )
     }
 
     // TODO this doesn't work, it needs to know about the exiting element
