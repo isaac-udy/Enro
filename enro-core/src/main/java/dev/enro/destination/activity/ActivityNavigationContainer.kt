@@ -3,7 +3,6 @@ package dev.enro.core.activity
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -66,7 +65,6 @@ internal class ActivityNavigationContainer internal constructor(
                 val activeInstructionIsPresent =
                     transition.activeBackstack.any { it.instructionId == rootInstruction.instructionId }
                 if (!activeInstructionIsPresent) {
-                    Log.e("Render", "FINISHACTIVITY ${rootInstruction.navigationKey::class.java.name}")
                     ActivityCompat.finishAfterTransition(activityContext.activity)
 //                    val animations = getNavigationAnimations.closing(
 //                        exiting = rootInstruction,

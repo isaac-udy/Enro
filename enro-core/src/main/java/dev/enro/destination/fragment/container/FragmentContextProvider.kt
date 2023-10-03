@@ -1,7 +1,6 @@
 package dev.enro.destination.fragment.container
 
 import android.os.Bundle
-import android.util.Log
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -51,7 +50,6 @@ internal class FragmentContextProvider(
             ?.let { fragmentManager.findFragmentByTag(it.instructionId) }
             ?: fragmentManager.findFragmentById(containerId)
         val result = fragment?.navigationContext
-        Log.e("Rendered", "getActiveNContext: ${result?.lifecycle?.currentState} [${backstack.joinToString { it.navigationKey::class.java.simpleName }}]")
         return result
     }
 

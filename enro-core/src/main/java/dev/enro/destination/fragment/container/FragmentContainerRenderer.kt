@@ -1,7 +1,6 @@
 package dev.enro.destination.fragment.container
 
 import android.app.Activity
-import android.util.Log
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -67,7 +66,6 @@ internal class FragmentContainerRenderer(
                 while (!onBackstackUpdated(transition) && isActive) {
                     delay(16)
                 }
-                Log.e("Rendered", "${transition.activeBackstack.joinToString { it.navigationKey::class.java.simpleName }}")
                 lastRenderedBackstack = it
             }
         }
@@ -231,7 +229,7 @@ internal class FragmentContainerRenderer(
     private fun FragmentTransaction.applyAnimationsForTransaction(
         active: AnyOpenInstruction?
     ) {
-//        val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
+        val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
 //        val entering = (active?.let { getAnimationsForEntering(it.instruction) }
 //            ?: DefaultAnimations.none.entering).asResource(context.activity.theme)
 //        val exiting = (state.currentTransition.exitingInstruction?.let { getAnimationsForExiting(it) }
