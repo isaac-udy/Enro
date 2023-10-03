@@ -17,23 +17,36 @@ internal class CreateResultChannel(
     private val navigationHandle: NavigationHandle,
     private val enroResult: EnroResult,
 ) {
-    operator fun <Result: Any, Key: NavigationKey.WithResult<Result>> invoke(
+    inline operator fun <Result : Any, Key : NavigationKey.WithResult<Result>> invoke(
         resultType: KClass<Result>,
-        onClosed: () -> Unit,
-        onResult: (Result) -> Unit,
+        crossinline onClosed: () -> Unit,
+        crossinline onResult: (Result) -> Unit,
         additionalResultId: String = "",
     ): UnmanagedNavigationResultChannel<Result, Key> {
-        return ResultChannelImpl(
-            enroResult = enroResult,
-            navigationHandle = navigationHandle,
-            resultType = resultType.java,
+        return create(
+            resultType = resultType,
             onClosed = { _ -> onClosed() },
             onResult = { _, result -> onResult(result) },
             additionalResultId = additionalResultId,
         )
     }
 
-    operator fun <Result: Any, Key: NavigationKey.WithResult<Result>> invoke(
+    operator fun <Result : Any, Key : NavigationKey.WithResult<Result>> invoke(
+        resultType: KClass<Result>,
+        onClosed: (Key) -> Unit,
+        onResult: (Key, Result) -> Unit,
+        additionalResultId: String = "",
+    ): UnmanagedNavigationResultChannel<Result, Key> {
+        return create(
+            resultType = resultType,
+            onClosed = onClosed,
+            onResult = onResult,
+            additionalResultId = additionalResultId,
+        )
+    }
+
+    @PublishedApi
+    internal fun <Result : Any, Key : NavigationKey.WithResult<Result>> create(
         resultType: KClass<Result>,
         onClosed: (Key) -> Unit,
         onResult: (Key, Result) -> Unit,
