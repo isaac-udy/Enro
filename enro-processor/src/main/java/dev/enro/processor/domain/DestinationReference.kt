@@ -11,7 +11,11 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.squareup.kotlinpoet.ksp.toClassName
 import dev.enro.annotations.NavigationDestination
-import dev.enro.processor.extensions.*
+import dev.enro.processor.extensions.ClassNames
+import dev.enro.processor.extensions.extends
+import dev.enro.processor.extensions.getElementName
+import dev.enro.processor.extensions.getNameFromKClass
+import dev.enro.processor.extensions.implements
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
@@ -40,6 +44,14 @@ sealed class DestinationReference {
 
         val isComposable = declaration is KSFunctionDeclaration && declaration.annotations
             .any { it.shortName.asString() == "Composable" }
+
+        val isLegacyDialog = declaration is KSFunctionDeclaration
+                && declaration.extensionReceiver != null
+                && declaration.extensionReceiver?.resolve()?.toClassName() == ClassNames.Kotlin.legacyDialogDestination
+
+        val isLegacyBottomSheet = declaration is KSFunctionDeclaration
+                && declaration.extensionReceiver != null
+                && declaration.extensionReceiver?.resolve()?.toClassName() == ClassNames.Kotlin.legacyBottomSheetDestination
 
         val annotation = declaration.getAnnotationsByType(NavigationDestination::class)
             .firstOrNull()

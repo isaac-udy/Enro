@@ -116,7 +116,8 @@ public inline fun <reified KeyType : NavigationKey> createComposableDialogNaviga
     )
 }
 
-public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.composableDialogDestination(noinline content: @Composable DialogDestination.() -> Unit) {
+@Deprecated("See BottomSheetDestination interface")
+public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.legacyComposableDialogDestination(noinline content: @Composable DialogDestination.() -> Unit) {
     binding(createComposableDialogNavigationBinding<KeyType>(content))
 }
 
@@ -152,6 +153,7 @@ public inline fun <reified KeyType : NavigationKey> createComposableBottomSheetN
 }
 
 @OptIn(ExperimentalMaterialApi::class)
-public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.composableBottomSheetDestination(noinline content: @Composable BottomSheetDestination.() -> Unit) {
+@Deprecated("See BottomSheetDestination interface")
+public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.legacyComposableBottomSheetDestination(noinline content: @Composable BottomSheetDestination.() -> Unit) {
     binding(createComposableBottomSheetNavigationBinding<KeyType>(content))
 }

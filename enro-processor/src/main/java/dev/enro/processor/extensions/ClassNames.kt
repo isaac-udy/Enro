@@ -71,5 +71,11 @@ object ClassNames {
         val navigationComponent = ClassName("dev.enro.annotations", "NavigationComponent")
         val generatedNavigationBinding = ClassName("dev.enro.annotations", "GeneratedNavigationBinding")
         val generatedNavigationModule = ClassName("dev.enro.annotations", "GeneratedNavigationModule")
+
+        val legacyDialogDestination = ClassName("dev.enro.core.compose.dialog","DialogDestination")
+        val legacyBottomSheetDestination = ClassName("dev.enro.core.compose.dialog","BottomSheetDestination")
+
+        val optIn = ClassName("kotlin", "OptIn")
+        val experimentalMaterialApi = ClassName("androidx.compose.material", "ExperimentalMaterialApi")
     }
 }
