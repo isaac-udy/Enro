@@ -10,8 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import dev.enro.animation.DefaultAnimations
 import dev.enro.core.*
@@ -93,10 +98,14 @@ internal fun EnroBottomSheetContainer(
     destination: BottomSheetDestination,
     content: @Composable () -> Unit
 ) {
+    var firstRender by remember { mutableStateOf(true) }
+    var wasVisible by remember { mutableStateOf(false) }
+
     val state = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         confirmValueChange = remember(Unit) {
             fun(it: ModalBottomSheetValue): Boolean {
+                if (!wasVisible) return true
                 val isHidden = it == ModalBottomSheetValue.Hidden
                 val isHalfExpandedAndSkipped = it == ModalBottomSheetValue.HalfExpanded
                         && destination.bottomSheetConfiguration.skipHalfExpanded
@@ -111,9 +120,11 @@ internal fun EnroBottomSheetContainer(
         },
         skipHalfExpanded = destination.bottomSheetConfiguration.skipHalfExpanded,
     )
+    wasVisible = wasVisible || state.isVisible
     destination.bottomSheetConfiguration.bottomSheetState = state
     ModalBottomSheetLayout(
         sheetState = state,
+        modifier = Modifier.alpha(if(firstRender) 0f else 1f),
         sheetContent = {
             Box(
                 modifier = Modifier
@@ -121,6 +132,9 @@ internal fun EnroBottomSheetContainer(
                     .defaultMinSize(minHeight = .5.dp)
             ) {
                 content()
+            }
+            SideEffect {
+                firstRender = false
             }
             destination.bottomSheetConfiguration.ConfigureWindow()
         },
@@ -141,7 +155,8 @@ internal fun EnroBottomSheetContainer(
             }
         }
     }
-    LaunchedEffect(state) {
+    LaunchedEffect(state, wasVisible) {
+        if (wasVisible) return@LaunchedEffect
         state.show()
     }
 }
