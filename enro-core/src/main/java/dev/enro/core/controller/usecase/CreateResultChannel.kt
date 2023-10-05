@@ -17,6 +17,8 @@ internal class CreateResultChannel(
     private val navigationHandle: NavigationHandle,
     private val enroResult: EnroResult,
 ) {
+    // Inlining is important here to ensure uniqueness of generated lambda names,
+    // which are used as part of the identity of the result channels
     inline operator fun <Result : Any, Key : NavigationKey.WithResult<Result>> invoke(
         resultType: KClass<Result>,
         crossinline onClosed: () -> Unit,
@@ -31,16 +33,18 @@ internal class CreateResultChannel(
         )
     }
 
-    operator fun <Result : Any, Key : NavigationKey.WithResult<Result>> invoke(
+    // Inlining is important here to ensure uniqueness of generated lambda names,
+    // which are used as part of the identity of the result channels
+    inline operator fun <Result : Any, Key : NavigationKey.WithResult<Result>> invoke(
         resultType: KClass<Result>,
-        onClosed: (Key) -> Unit,
-        onResult: (Key, Result) -> Unit,
+        crossinline onClosed: (Key) -> Unit,
+        crossinline onResult: (Key, Result) -> Unit,
         additionalResultId: String = "",
     ): UnmanagedNavigationResultChannel<Result, Key> {
         return create(
             resultType = resultType,
-            onClosed = onClosed,
-            onResult = onResult,
+            onClosed = { key -> onClosed(key) },
+            onResult = { key, result -> onResult(key, result) },
             additionalResultId = additionalResultId,
         )
     }
