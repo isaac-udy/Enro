@@ -9,6 +9,7 @@ import dev.enro.compatability.interceptBackPressForAndroidxNavigation
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
 import dev.enro.core.controller.get
+import dev.enro.core.controller.isInAndroidContext
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.getNavigationHandle
@@ -22,6 +23,8 @@ internal object ActivityPlugin : EnroPlugin() {
     private var callbacks: ActivityLifecycleCallbacksForEnro? = null
 
     override fun onAttached(navigationController: NavigationController) {
+        if (!navigationController.isInAndroidContext) return
+
         callbacks = ActivityLifecycleCallbacksForEnro(
             navigationController.dependencyScope.get(),
             navigationController.dependencyScope.get(),
@@ -31,6 +34,8 @@ internal object ActivityPlugin : EnroPlugin() {
     }
 
     override fun onDetached(navigationController: NavigationController) {
+        if (!navigationController.isInAndroidContext) return
+
         callbacks?.let { callbacks ->
             navigationController.application.unregisterActivityLifecycleCallbacks(callbacks)
         }

@@ -89,6 +89,9 @@ public val Application.navigationController: NavigationController
         }
     }
 
+public val NavigationController.isInAndroidContext: Boolean
+    get() = NavigationController.navigationControllerBindings.isNotEmpty()
+
 internal val NavigationController.application: Application
     get() {
         return NavigationController.navigationControllerBindings.entries

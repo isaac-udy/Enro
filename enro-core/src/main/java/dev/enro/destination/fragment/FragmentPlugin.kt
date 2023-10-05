@@ -13,23 +13,30 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
-import dev.enro.core.*
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
 import dev.enro.core.container.emptyBackstack
+import dev.enro.core.containerManager
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
 import dev.enro.core.controller.get
+import dev.enro.core.controller.isInAndroidContext
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.fragment.container.FragmentNavigationContainer
+import dev.enro.core.getNavigationHandle
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import dev.enro.core.leafContext
+import dev.enro.core.navigationContext
 import dev.enro.core.plugins.EnroPlugin
+import dev.enro.core.requestClose
 
 internal object FragmentPlugin : EnroPlugin() {
     private var callbacks: FragmentLifecycleCallbacksForEnro? = null
 
     override fun onAttached(navigationController: NavigationController) {
+        if (!navigationController.isInAndroidContext) return
+
         callbacks = FragmentLifecycleCallbacksForEnro(
             navigationController.dependencyScope.get(),
             navigationController.dependencyScope.get(),
@@ -39,6 +46,8 @@ internal object FragmentPlugin : EnroPlugin() {
     }
 
     override fun onDetached(navigationController: NavigationController) {
+        if (!navigationController.isInAndroidContext) return
+
         callbacks?.let { callbacks ->
             navigationController.application.unregisterActivityLifecycleCallbacks(callbacks)
         }
