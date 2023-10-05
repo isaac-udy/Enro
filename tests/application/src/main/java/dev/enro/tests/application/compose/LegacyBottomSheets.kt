@@ -15,7 +15,7 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object LegacyBottomSheetDestination : NavigationKey.SupportsPush {
+object LegacyBottomSheets : NavigationKey.SupportsPush {
     @Parcelize
     internal class BottomSheet(
         val skipHalfExpanded: Boolean = false,
@@ -23,7 +23,7 @@ object LegacyBottomSheetDestination : NavigationKey.SupportsPush {
     }
 }
 
-@NavigationDestination(LegacyBottomSheetDestination::class)
+@NavigationDestination(LegacyBottomSheets::class)
 @Composable
 fun LegacyBottomSheetDestination() {
     val navigationHandle = navigationHandle()
@@ -31,7 +31,7 @@ fun LegacyBottomSheetDestination() {
     TitledColumn("Legacy BottomSheet") {
         Button(onClick = {
             navigationHandle.present(
-                LegacyBottomSheetDestination.BottomSheet()
+                LegacyBottomSheets.BottomSheet()
             )
         }) {
             Text(text = "Bottom Sheet")
@@ -39,7 +39,7 @@ fun LegacyBottomSheetDestination() {
 
         Button(onClick = {
             navigationHandle.present(
-                LegacyBottomSheetDestination.BottomSheet(skipHalfExpanded = true)
+                LegacyBottomSheets.BottomSheet(skipHalfExpanded = true)
             )
         }) {
             Text(text = "Bottom Sheet (Skip Half Expanded)")
@@ -48,10 +48,10 @@ fun LegacyBottomSheetDestination() {
 }
 
 @OptIn(ExperimentalMaterialApi::class)
-@NavigationDestination(LegacyBottomSheetDestination.BottomSheet::class)
+@NavigationDestination(LegacyBottomSheets.BottomSheet::class)
 @Composable
 fun BottomSheetDestination.LegacyBottomSheetBottomSheet() {
-    val navigationHandle = navigationHandle<LegacyBottomSheetDestination.BottomSheet>()
+    val navigationHandle = navigationHandle<LegacyBottomSheets.BottomSheet>()
     val key = navigationHandle.key
 
     configureBottomSheet {

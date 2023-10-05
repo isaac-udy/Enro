@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onSiblings
 import androidx.compose.ui.test.performClick
 import dev.enro.test.application.compose.BottomSheetChangeSizeRobot
 import dev.enro.test.application.compose.BottomSheetCloseAndPresentRobot
+import dev.enro.test.application.compose.LegacyBottomSheetsRobot
 import dev.enro.tests.application.SelectDestination
 
 class SelectDestinationRobot(
@@ -35,5 +36,14 @@ class SelectDestinationRobot(
             .performClick()
 
         return BottomSheetChangeSizeRobot(composeRule)
+    }
+
+    fun openLegacyBottomSheets() : LegacyBottomSheetsRobot {
+        composeRule.onNode(hasText("Legacy Bottom Sheets"))
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+
+        return LegacyBottomSheetsRobot(composeRule)
     }
 }

@@ -14,12 +14,12 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object LegacyDialogDestination : NavigationKey.SupportsPush {
+object LegacyDialogs : NavigationKey.SupportsPush {
     @Parcelize
     internal object Dialog : NavigationKey.SupportsPresent
 }
 
-@NavigationDestination(LegacyDialogDestination::class)
+@NavigationDestination(LegacyDialogs::class)
 @Composable
 fun LegacyDialogDestination() {
     val navigationHandle = navigationHandle()
@@ -27,14 +27,14 @@ fun LegacyDialogDestination() {
         "Legacy Dialog"
     ) {
         Button(onClick = {
-            navigationHandle.present(LegacyDialogDestination.Dialog)
+            navigationHandle.present(LegacyDialogs.Dialog)
         }) {
             Text(text = "Dialog")
         }
     }
 }
 
-@NavigationDestination(LegacyDialogDestination.Dialog::class)
+@NavigationDestination(LegacyDialogs.Dialog::class)
 @Composable
 fun DialogDestination.LegacyDialogDialog() {
     val navigationHandle = navigationHandle()
