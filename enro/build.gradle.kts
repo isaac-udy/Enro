@@ -23,6 +23,12 @@ android {
     }
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
+    kotlinOptions {
+        freeCompilerArgs += "-Xfriend-paths=../enro-core/src/main"
+    }
+}
+
 dependencies {
     releaseApi("dev.enro:enro-core:${android.defaultConfig.versionName}")
     debugApi(project(":enro-core"))
