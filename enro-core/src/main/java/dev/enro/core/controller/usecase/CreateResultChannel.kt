@@ -58,7 +58,7 @@ internal class CreateResultChannel(
     // the code
     inline operator fun <Result : Any, Key : NavigationKey.WithResult<Result>> invoke(
         resultType: KClass<Result>,
-        noinline onClosed: () -> Unit,
+        crossinline onClosed: () -> Unit,
         noinline onResult: (Result) -> Unit,
         additionalResultId: String = "",
     ): UnmanagedNavigationResultChannel<Result, Key> {
@@ -79,7 +79,7 @@ internal class CreateResultChannel(
     // the code
     inline operator fun <Result : Any, Key : NavigationKey.WithResult<Result>> invoke(
         resultType: KClass<Result>,
-        noinline onClosed: (Key) -> Unit,
+        crossinline onClosed: (Key) -> Unit,
         noinline onResult: (Key, Result) -> Unit,
         additionalResultId: String = "",
     ): UnmanagedNavigationResultChannel<Result, Key> {
