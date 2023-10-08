@@ -59,8 +59,8 @@ public inline fun <reified T : Any> ViewModel.registerForNavigationResult(
     LazyResultChannelProperty(
         owner = navigationHandle,
         resultType = T::class,
-        onClosed = { onClosed() },
-        onResult = { _, it -> onResult(it) }
+        onClosed = onClosed,
+        onResult = onResult
     )
 
 public inline fun <reified T : Any> ViewModel.registerForNavigationResult(
@@ -70,8 +70,8 @@ public inline fun <reified T : Any> ViewModel.registerForNavigationResult(
     LazyResultChannelProperty(
         owner = getNavigationHandle(),
         resultType = T::class,
-        onClosed = { onClosed() },
-        onResult = { _, it -> onResult(it) }
+        onClosed = onClosed,
+        onResult = onResult,
     )
 
 public inline fun <reified T : Any> ViewModel.registerForNavigationResultWithKey(
@@ -93,8 +93,8 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> ViewModel
     LazyResultChannelProperty(
         owner = getNavigationHandle(),
         resultType = T::class,
-        onClosed = { onClosed() },
-        onResult = { _, it -> onResult(it) }
+        onClosed = onClosed,
+        onResult = onResult
     )
 
 public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> ViewModel.registerForNavigationResultWithKey(
@@ -116,8 +116,8 @@ public inline fun <reified T : Any> ComponentActivity.registerForNavigationResul
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
-        onClosed = { onClosed() },
-        onResult = { _, it -> onResult(it) }
+        onClosed = onClosed,
+        onResult = onResult
     )
 
 public inline fun <reified T : Any> ComponentActivity.registerForNavigationResultWithKey(
@@ -139,8 +139,8 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Component
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
-        onClosed = { onClosed() },
-        onResult = { _, it -> onResult(it) }
+        onClosed = onClosed,
+        onResult = onResult
     )
 
 public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> ComponentActivity.registerForNavigationResultWithKey(
@@ -162,8 +162,8 @@ public inline fun <reified T : Any> Fragment.registerForNavigationResult(
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
-        onClosed = { onClosed() },
-        onResult = { _, it -> onResult(it) }
+        onClosed = onClosed,
+        onResult = onResult
     )
 
 public inline fun <reified T : Any> Fragment.registerForNavigationResultWithKey(
@@ -185,8 +185,8 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Fragment.
     LazyResultChannelProperty(
         owner = this,
         resultType = T::class,
-        onClosed = { onClosed() },
-        onResult = { _, it -> onResult(it) }
+        onClosed = onClosed,
+        onResult = onResult
     )
 
 public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Fragment.registerForNavigationResultWithKey(

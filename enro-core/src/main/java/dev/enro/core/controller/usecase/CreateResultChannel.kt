@@ -14,37 +14,83 @@ internal val NavigationHandle.createResultChannel: CreateResultChannel
 
 @PublishedApi
 internal class CreateResultChannel(
-    private val navigationHandle: NavigationHandle,
-    private val enroResult: EnroResult,
+    @PublishedApi internal val navigationHandle: NavigationHandle,
+    @PublishedApi internal val enroResult: EnroResult,
 ) {
-    // Inlining is important here to ensure uniqueness of generated lambda names,
-    // which are used as part of the identity of the result channels
+
+
+
+    /**
+     * The resultId being set here to the JVM class name of the onResult lambda is a key part of
+     * being able to make result channels work without providing an explicit id. The JVM will treat
+     * the lambda as an anonymous class, which is uniquely identifiable by it's class name.
+     *
+     * If the behaviour of the Kotlin/JVM interaction changes in a future release, it may be required
+     * to pass an explicit resultId as a part of the ResultChannelImpl constructor, which would need
+     * to be unique per result channel created.
+     *
+     * It is possible to have two result channels registered for the same result type:
+     * <code>
+     *     val resultOne = registerForResult<Boolean> { ... }
+     *     val resultTwo = registerForResult<Boolean> { ... }
+     *
+     *     // ...
+     *     resultTwo.open(SomeNavigationKey( ... ))
+     * </code>
+     *
+     * It's important in this case that resultTwo can be identified as the channel to deliver the
+     * result into, and this identification needs to be stable across application process death.
+     * The simple solution would be to require users to provide a name for the channel:
+     * <code>
+     *     val resultTwo = registerForResult<Boolean>("resultTwo") { ... }
+     * </code>
+     *
+     * but using the anonymous class name is a nicer way to do things for now, with the ability to
+     * fall back to explicit identification of the channels in the case that the Kotlin/JVM behaviour
+     * changes in the future.
+     */
+    fun Any.createResultId() : String {
+        return this::class.java.name
+    }
+
+    // It is important that these functions are inlined, so that the empty lambda can be used
+    // as a part of the result id, which is helpful for providing uniqueness related to location in
+    // the code
     inline operator fun <Result : Any, Key : NavigationKey.WithResult<Result>> invoke(
         resultType: KClass<Result>,
-        crossinline onClosed: () -> Unit,
-        crossinline onResult: (Result) -> Unit,
+        noinline onClosed: () -> Unit,
+        noinline onResult: (Result) -> Unit,
         additionalResultId: String = "",
     ): UnmanagedNavigationResultChannel<Result, Key> {
+        val internalOnClosed: (Key) -> Unit = { _ -> onClosed() }
+        val internalOnResult: (Key, Result) -> Unit = { _, result -> onResult(result) }
+        val resultId = onResult.createResultId() + "@" + internalOnResult.createResultId().hashCode()
         return create(
             resultType = resultType,
-            onClosed = { _ -> onClosed() },
-            onResult = { _, result -> onResult(result) },
+            resultId = resultId,
+            onClosed = internalOnClosed,
+            onResult = internalOnResult,
             additionalResultId = additionalResultId,
         )
     }
 
-    // Inlining is important here to ensure uniqueness of generated lambda names,
-    // which are used as part of the identity of the result channels
+    // It is important that these functions are inlined, so that the empty lambda can be used
+    // as a part of the result id, which is helpful for providing uniqueness related to location in
+    // the code
     inline operator fun <Result : Any, Key : NavigationKey.WithResult<Result>> invoke(
         resultType: KClass<Result>,
-        crossinline onClosed: (Key) -> Unit,
-        crossinline onResult: (Key, Result) -> Unit,
+        noinline onClosed: (Key) -> Unit,
+        noinline onResult: (Key, Result) -> Unit,
         additionalResultId: String = "",
     ): UnmanagedNavigationResultChannel<Result, Key> {
+        val internalOnClosed: (Key) -> Unit = { key -> onClosed(key) }
+        val internalOnResult: (Key, Result) -> Unit = { key, result -> onResult(key, result) }
+        val resultId = onResult.createResultId() + "@" + internalOnResult.createResultId().hashCode()
         return create(
             resultType = resultType,
-            onClosed = { key -> onClosed(key) },
-            onResult = { key, result -> onResult(key, result) },
+            resultId = resultId,
+            onClosed = internalOnClosed,
+            onResult = internalOnResult,
             additionalResultId = additionalResultId,
         )
     }
@@ -52,6 +98,7 @@ internal class CreateResultChannel(
     @PublishedApi
     internal fun <Result : Any, Key : NavigationKey.WithResult<Result>> create(
         resultType: KClass<Result>,
+        resultId: String,
         onClosed: (Key) -> Unit,
         onResult: (Key, Result) -> Unit,
         additionalResultId: String = "",
@@ -62,6 +109,7 @@ internal class CreateResultChannel(
             resultType = resultType.java,
             onClosed = onClosed,
             onResult = onResult,
+            resultId = resultId,
             additionalResultId = additionalResultId,
         )
     }
