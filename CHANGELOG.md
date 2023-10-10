@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0
+* Update to Compose 1.5.x
+* Moved Activity/Fragment integrations out of the core of Enro and into independent plugins (which are still installed by default)
+* Fixed a bug with NavigationResult channels not using the correct result channel id in some cases
+
 ## 2.0.0
 Enro 2.0.0 introduces some important changes from the 1.x.x branch: 
 * Compose destinations are now stable 
