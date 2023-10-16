@@ -143,6 +143,7 @@ public sealed class NavigationInstruction {
     public object RequestClose : NavigationInstruction()
 
     public companion object {
+        @Suppress("FunctionName") // mimicking constructor
         internal fun DefaultDirection(
             navigationKey: NavigationKey,
         ): AnyOpenInstruction {
@@ -152,7 +153,7 @@ public sealed class NavigationInstruction {
             )
         }
 
-        @Suppress("FunctionName")
+        @Suppress("FunctionName") // mimicking constructor
         @Deprecated("Please use Push or Present")
         public fun Forward(
             navigationKey: NavigationKey,
@@ -161,7 +162,7 @@ public sealed class NavigationInstruction {
             navigationKey = navigationKey,
         )
 
-        @Suppress("FunctionName")
+        @Suppress("FunctionName") // mimicking constructor
         @Deprecated("Please use Push or Present")
         public fun Replace(
             navigationKey: NavigationKey,
@@ -170,7 +171,7 @@ public sealed class NavigationInstruction {
             navigationKey = navigationKey,
         )
 
-        @Suppress("FunctionName")
+        @Suppress("FunctionName") // mimicking constructor
         public fun Push(
             navigationKey: NavigationKey.SupportsPush,
         ): Open<NavigationDirection.Push> = Open.OpenInternal(
@@ -178,7 +179,7 @@ public sealed class NavigationInstruction {
             navigationKey = navigationKey,
         )
 
-        @Suppress("FunctionName")
+        @Suppress("FunctionName") // mimicking constructor
         public fun Push(
             navigationKey: NavigationKey.WithExtras<out NavigationKey.SupportsPush>,
         ): Open<NavigationDirection.Push> = Open.OpenInternal(
@@ -188,7 +189,7 @@ public sealed class NavigationInstruction {
             extras.putAll(navigationKey.extras)
         }
 
-        @Suppress("FunctionName")
+        @Suppress("FunctionName") // mimicking constructor
         public fun Present(
             navigationKey: NavigationKey.SupportsPresent,
         ): Open<NavigationDirection.Present> = Open.OpenInternal(
@@ -196,7 +197,7 @@ public sealed class NavigationInstruction {
             navigationKey = navigationKey,
         )
 
-        @Suppress("FunctionName")
+        @Suppress("FunctionName") // mimicking constructor
         public fun Present(
             navigationKey: NavigationKey.WithExtras<out NavigationKey.SupportsPresent>,
         ): Open<NavigationDirection.Present> = Open.OpenInternal(
@@ -206,7 +207,7 @@ public sealed class NavigationInstruction {
             extras.putAll(navigationKey.extras)
         }
 
-        @Suppress("FunctionName")
+        @Suppress("FunctionName") // mimicking constructor
         public fun ReplaceRoot(
             navigationKey: NavigationKey.SupportsPresent,
         ): Open<NavigationDirection.ReplaceRoot> = Open.OpenInternal(
@@ -214,7 +215,7 @@ public sealed class NavigationInstruction {
             navigationKey = navigationKey,
         )
 
-        @Suppress("FunctionName")
+        @Suppress("FunctionName") // mimicking constructor
         public fun ReplaceRoot(
             navigationKey: NavigationKey.WithExtras<out NavigationKey.SupportsPresent>,
         ): Open<NavigationDirection.ReplaceRoot> = Open.OpenInternal(
@@ -224,7 +225,7 @@ public sealed class NavigationInstruction {
             extras.putAll(navigationKey.extras)
         }
 
-        @Suppress("FunctionName")
+        @Suppress("FunctionName") // mimicking constructor
         @Deprecated("You should only use ReplaceRoot with a NavigationKey that extends SupportsPresent")
         public fun ReplaceRoot(
             navigationKey: NavigationKey,
@@ -233,6 +234,7 @@ public sealed class NavigationInstruction {
             navigationKey = navigationKey,
         )
 
+        @Suppress("FunctionName") // mimicking constructor
         public fun OnContainer(
             key: NavigationContainerKey,
             block: NavigationContainerContext.() -> Unit
@@ -241,6 +243,7 @@ public sealed class NavigationInstruction {
             operation = block,
         )
 
+        @Suppress("FunctionName") // mimicking constructor
         public fun OnActiveContainer(
             block: NavigationContainerContext.() -> Unit
         ): ContainerOperation = ContainerOperation(
@@ -248,6 +251,7 @@ public sealed class NavigationInstruction {
             operation = block,
         )
 
+        @Suppress("FunctionName") // mimicking constructor
         public fun OnParentContainer(
             block: NavigationContainerContext.() -> Unit
         ): ContainerOperation = ContainerOperation(
