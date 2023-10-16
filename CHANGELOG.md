@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.1
+* Fixed a bug with `EnroTestRule`/`runEnroTest` that would cause instrumented `androidTest` tests to fail when including both tests that use `EnroTestRule`/`runEnroTest` and tests that do not in the same test suite
+
 ## 2.1.0
 * Update to Compose 1.5.x
 * Moved Activity/Fragment integrations out of the core of Enro and into independent plugins (which are still installed by default)
