@@ -2,18 +2,40 @@ package dev.enro.core.compose.container
 
 import android.os.Bundle
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.ViewModelStore
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroException
+import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationHost
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.activity
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.container.*
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationBackstackTransition
+import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.merge
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import java.io.Closeable
@@ -283,6 +305,6 @@ public class ComposableNavigationContainer internal constructor(
 
 @AdvancedEnroApi
 public sealed interface ContainerRegistrationStrategy {
-    public object DisposeWithComposition : ContainerRegistrationStrategy
-    public object DisposeWithLifecycle : ContainerRegistrationStrategy
+    public data object DisposeWithComposition : ContainerRegistrationStrategy
+    public data object DisposeWithLifecycle : ContainerRegistrationStrategy
 }
