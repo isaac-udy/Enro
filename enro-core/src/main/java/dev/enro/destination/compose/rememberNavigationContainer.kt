@@ -1,7 +1,8 @@
 package dev.enro.core.compose
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -9,17 +10,25 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.ContainerRegistrationStrategy
-import dev.enro.core.container.*
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.backstackOf
+import dev.enro.core.container.emptyBackstack
+import dev.enro.core.container.toBackstack
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.core.requireNavigationContext
 
 @Composable
 public fun rememberNavigationContainer(
     key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
     root: NavigationKey.SupportsPush,
-    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
@@ -40,7 +49,7 @@ public fun rememberNavigationContainer(
 public fun rememberNavigationContainer(
     key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
     initialState: List<NavigationKey.SupportsPush> = emptyList(),
-    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
@@ -64,7 +73,7 @@ public fun rememberNavigationContainer(
 public fun rememberNavigationContainer(
     key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
     initialBackstack: NavigationBackstack,
-    emptyBehavior: EmptyBehavior = EmptyBehavior.AllowEmpty,
+    emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     accept: (NavigationKey) -> Boolean = { true },
@@ -132,7 +141,8 @@ public fun rememberEnroContainerController(
 public fun EnroContainer(
     modifier: Modifier = Modifier,
     container: ComposableNavigationContainer = rememberNavigationContainer(
-        initialBackstack = emptyBackstack()
+        initialBackstack = emptyBackstack(),
+        emptyBehavior = EmptyBehavior.AllowEmpty,
     ),
 ) {
     Box(modifier = modifier) {
