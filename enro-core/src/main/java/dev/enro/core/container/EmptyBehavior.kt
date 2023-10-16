@@ -1,5 +1,10 @@
 package dev.enro.core.container
 
+/**
+ * [EmptyBehavior] defines the behavior that should occur when a [NavigationContainer] would become
+ * empty if the container is about to become empty. This allows a container to instead close it's
+ * parent, or perform some other action instead (such as making another container active).
+ */
 public sealed class EmptyBehavior {
     /**
      * When this container is about to become empty, allow this container to become empty
