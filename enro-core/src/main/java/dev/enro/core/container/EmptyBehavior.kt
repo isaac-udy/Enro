@@ -9,13 +9,13 @@ public sealed class EmptyBehavior {
     /**
      * When this container is about to become empty, allow this container to become empty
      */
-    public object AllowEmpty : EmptyBehavior()
+    public data object AllowEmpty : EmptyBehavior()
 
     /**
      * When this container is about to become empty, do not close the NavigationDestination in the
      * container, but instead close the parent NavigationDestination (i.e. the owner of this container)
      */
-    public object CloseParent : EmptyBehavior()
+    public data object CloseParent : EmptyBehavior()
 
     /**
      * When this container is about to become empty, execute an action. If the result of the action function is
