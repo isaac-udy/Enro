@@ -5,6 +5,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onSiblings
 import androidx.compose.ui.test.performClick
+import dev.enro.test.application.activity.SimpleActivityRobot
 import dev.enro.test.application.compose.BottomSheetChangeSizeRobot
 import dev.enro.test.application.compose.BottomSheetCloseAndPresentRobot
 import dev.enro.test.application.compose.LegacyBottomSheetsRobot
@@ -45,5 +46,14 @@ class SelectDestinationRobot(
             .performClick()
 
         return LegacyBottomSheetsRobot(composeRule)
+    }
+
+    fun openSimpleActivity() : SimpleActivityRobot {
+        composeRule.onNode(hasText("Simple Activity"))
+            .onSiblings()
+            .filterToOne(hasText("Present"))
+            .performClick()
+
+        return SimpleActivityRobot(composeRule)
     }
 }

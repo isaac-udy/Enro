@@ -20,10 +20,6 @@ object EnroTest {
         if (navigationController != null) {
             uninstallNavigationController()
         }
-        navigationController = createUnattachedNavigationController()
-            .apply {
-                isInTest = true
-            }
 
         if (isInstrumented()) {
             val application = ApplicationProvider.getApplicationContext<Application>()
@@ -35,7 +31,11 @@ object EnroTest {
             }
             navigationController?.apply { install(application) }
         } else {
-            navigationController?.installForJvmTests()
+            navigationController = createUnattachedNavigationController()
+                .apply {
+                    isInTest = true
+                    installForJvmTests()
+                }
         }
     }
 
@@ -44,15 +44,7 @@ object EnroTest {
         navigationController?.apply {
             isInTest = false
         }
-
-        val uninstallNavigationController = navigationController
         navigationController = null
-
-        if (isInstrumented()) {
-            val application = ApplicationProvider.getApplicationContext<Application>()
-            if (application is NavigationApplication) return
-            uninstallNavigationController?.uninstall(application)
-        }
     }
 
     fun getCurrentNavigationController(): NavigationController {

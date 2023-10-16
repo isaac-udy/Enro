@@ -4,9 +4,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.coroutineScope
-import dev.enro.core.*
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationHandle
 import dev.enro.core.controller.repository.PluginRepository
+import dev.enro.core.getNavigationHandle
 import dev.enro.core.internal.handle.NavigationHandleViewModel
+import dev.enro.core.leafContext
+import dev.enro.core.rootContext
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.lang.ref.WeakReference
@@ -34,7 +38,7 @@ internal class ConfigureNavigationHandleForPlugins(
         // in which case, we just ignore the exception
         runCatching {
             val active = context.rootContext().leafContext().getNavigationHandle()
-            if (!active.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return@runCatching
+            if (!active.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return@runCatching
             activeNavigationHandle = WeakReference(active)
         }
     }

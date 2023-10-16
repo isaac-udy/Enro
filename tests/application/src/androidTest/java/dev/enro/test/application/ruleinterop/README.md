@@ -1,0 +1,6 @@
+# Rule Interop Tests
+`EnroTest` (`EnroTestRule` or `runEnroTest`) are designed for testing screens in isolation. When using `EnroTest` functionality in instrumented tests (i.e. those in `src/androidTest`), the NavigationController configures NavigationHandles so that they don't launch any NavigationInstructions, but instead record the NavigationInstructions that were executed against a NavigationHandle, which can be verified against expected state without performing the navigation action. When the test is finished, the `EnroTest` functionality will revert this behaviour.
+
+When running instrumented tests without using `EnroTest` functionality, navigation is expected to occur as normal. 
+
+The tests in this package are designed to be ran as a package (not as individual tests). A bug was reported where packages that mix isolated single screen tests using `EnroTest` and tests that do not use `EnroTest` (i.e. tests that perform "real" navigation). This bug would cause the tests not using `EnroTest` to fail, due to the clean up process of `EnroTest` being overeager and clearing NavigationBindings that should not have been cleared and needed to be accessed by the tests. Running the tests in this package together as a whole verifies that this bug is no longer present.
