@@ -11,25 +11,25 @@ import dev.enro.core.result.internal.ResultChannelId
 import dev.enro.extensions.getParcelableCompat
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
-import java.util.*
+import java.util.UUID
 
 public sealed class NavigationDirection : Parcelable {
     @Parcelize
     @Deprecated("Please use Push or Present")
-    public object Forward : NavigationDirection()
+    public data object Forward : NavigationDirection()
 
     @Parcelize
     @Deprecated("Please use a Push or Present followed by a close")
-    public object Replace : NavigationDirection()
+    public data object Replace : NavigationDirection()
 
     @Parcelize
-    public object Push : NavigationDirection()
+    public data object Push : NavigationDirection()
 
     @Parcelize
-    public object Present : NavigationDirection()
+    public data object Present : NavigationDirection()
 
     @Parcelize
-    public object ReplaceRoot : NavigationDirection()
+    public data object ReplaceRoot : NavigationDirection()
 
     public companion object {
         public fun defaultDirection(navigationKey: NavigationKey): NavigationDirection {
