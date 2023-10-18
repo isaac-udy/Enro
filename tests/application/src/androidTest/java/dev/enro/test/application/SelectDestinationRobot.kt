@@ -9,6 +9,7 @@ import dev.enro.test.application.activity.SimpleActivityRobot
 import dev.enro.test.application.compose.BottomSheetChangeSizeRobot
 import dev.enro.test.application.compose.BottomSheetCloseAndPresentRobot
 import dev.enro.test.application.compose.LegacyBottomSheetsRobot
+import dev.enro.test.application.fragment.UnboundBottomSheetRobot
 import dev.enro.tests.application.SelectDestination
 
 class SelectDestinationRobot(
@@ -55,5 +56,14 @@ class SelectDestinationRobot(
             .performClick()
 
         return SimpleActivityRobot(composeRule)
+    }
+
+    fun openUnboundBottomSheet() : UnboundBottomSheetRobot {
+        composeRule.onNode(hasText("Unbound Bottom Sheet"))
+            .onSiblings()
+            .filterToOne(hasText("Present"))
+            .performClick()
+
+        return UnboundBottomSheetRobot(composeRule)
     }
 }
