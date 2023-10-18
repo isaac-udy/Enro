@@ -21,11 +21,13 @@ import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
 import dev.enro.core.controller.get
 import dev.enro.core.controller.isInAndroidContext
+import dev.enro.core.controller.navigationController
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import dev.enro.core.internal.hasKey
 import dev.enro.core.leafContext
 import dev.enro.core.navigationContext
 import dev.enro.core.plugins.EnroPlugin
@@ -111,6 +113,7 @@ private class FragmentLifecycleCallbacksForEnro(
             outState: Bundle?
         ) {
             if (fragment !is DialogFragment || !fragment.showsDialog) return
+            if (earlyExitForUnboundFragmentsInTesting(fragment)) return
 
             val dialog = fragment.requireDialog()
             when (dialog) {
@@ -137,6 +140,24 @@ private class FragmentLifecycleCallbacksForEnro(
     override fun onActivityStopped(activity: Activity) = Unit
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
     override fun onActivityDestroyed(activity: Activity) = Unit
+}
+
+/**
+ * When an unbound DialogFragment is opened, it will get a back press listener bound to it's View,
+ * so that it can be integrated with Enro. However, when an EnroTestRule is active,
+ * this back press listener will capture Espresso.pressBack instructions and prevent the
+ * DialogFragment from closing in situations that it *would* close in a real application; for this
+ * reason, we skip adding back press listeners based on this method. This means that an EnroTestRule
+ * can't be used to test all the navigation behaviour of an unbound DialogFragment, but this is not
+ * really a concern, because if a user wanted to test the Fragment using Enro, the Fragment can
+ * be migrated to be a correctly bound Fragment, rather than relying on unbound interoperability
+ */
+private fun earlyExitForUnboundFragmentsInTesting(
+    fragment: Fragment
+) : Boolean {
+    val hasKey = fragment.getNavigationHandle().hasKey
+    val isInTest = fragment.requireActivity().application.navigationController.isInTest
+    return isInTest && !hasKey
 }
 
 private object DialogFragmentBackPressedListener : ViewCompat.OnUnhandledKeyEventListenerCompat {
