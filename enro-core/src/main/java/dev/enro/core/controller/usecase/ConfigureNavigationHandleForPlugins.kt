@@ -9,6 +9,7 @@ import dev.enro.core.NavigationHandle
 import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.internal.handle.NavigationHandleViewModel
+import dev.enro.core.internal.hasKey
 import dev.enro.core.leafContext
 import dev.enro.core.rootContext
 import kotlinx.coroutines.flow.launchIn

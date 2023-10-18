@@ -10,7 +10,6 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.usecase.ExecuteCloseInstruction
 import dev.enro.core.controller.usecase.ExecuteContainerOperationInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
-import dev.enro.core.internal.NoNavigationKey
 import kotlinx.coroutines.launch
 
 internal open class NavigationHandleViewModel(
@@ -24,7 +23,6 @@ internal open class NavigationHandleViewModel(
 
     private var pendingInstruction: NavigationInstruction? = null
 
-    internal val hasKey get() = instruction.navigationKey !is NoNavigationKey
     final override val key: NavigationKey get() = instruction.navigationKey
     final override val id: String get() = instruction.instructionId
 
