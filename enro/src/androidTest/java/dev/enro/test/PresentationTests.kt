@@ -17,17 +17,30 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
-import dev.enro.*
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.*
+import dev.enro.core.NavigationKey
 import dev.enro.core.R
 import dev.enro.core.compose.rememberNavigationContainer
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.directParentContainer
 import dev.enro.core.fragment.container.navigationContainer
-import junit.framework.TestCase.*
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.parentContainer
+import dev.enro.core.present
+import dev.enro.expectActivity
+import dev.enro.expectActivityHostForAnyInstruction
+import dev.enro.expectComposableContext
+import dev.enro.expectFragmentContext
+import dev.enro.expectFragmentHostForComposable
+import dev.enro.expectFragmentHostForPresentableFragment
+import dev.enro.navigationContext
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertTrue
 import kotlinx.parcelize.Parcelize
 import org.junit.Test
-import java.util.*
+import java.util.UUID
 
 @OptIn(AdvancedEnroApi::class)
 class PresentationTests {
@@ -296,6 +309,7 @@ class ActivityWithComposeContainer : FragmentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val container = rememberNavigationContainer(
+                emptyBehavior = EmptyBehavior.AllowEmpty,
                 accept = { it !is PresentationTests.NotSupportedComposeKey }
             )
             Box(modifier = Modifier.fillMaxSize()) {

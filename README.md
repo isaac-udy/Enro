@@ -316,7 +316,8 @@ Here is an example of creating a Composable that supports nested Composable navi
 fun MyNestedComposableScreen() {
     val navigation = navigationHandle<MyComposeKey>()
     val navigationContainer = rememberNavigationContainer(
-        accept = { it is NestedComposeKey }
+        accept = { it is NestedComposeKey },
+        emptyBehavior = EmptyBehavior.AllowEmpty
     )
 
     Column {

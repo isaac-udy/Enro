@@ -12,7 +12,12 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +33,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
+import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.getNavigationHandle
 
 abstract class TestActivity : AppCompatActivity() {
@@ -230,11 +236,13 @@ fun TestComposable(
     secondaryContainerAccepts: (NavigationKey) -> Boolean = { false }
 ) {
     val primaryContainer = rememberNavigationContainer(
-        accept = primaryContainerAccepts
+        accept = primaryContainerAccepts,
+        emptyBehavior = EmptyBehavior.AllowEmpty,
     )
 
     val secondaryContainer = rememberNavigationContainer(
-        accept = secondaryContainerAccepts
+        accept = secondaryContainerAccepts,
+        emptyBehavior = EmptyBehavior.AllowEmpty,
     )
 
     Column(

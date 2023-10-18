@@ -8,9 +8,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.*
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.close
+import dev.enro.core.closeWithResult
+import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
-import dev.enro.core.destinations.*
+import dev.enro.core.destinations.ComposableDestinations
+import dev.enro.core.destinations.IntoChildContainer
+import dev.enro.core.destinations.TestResult
+import dev.enro.core.destinations.assertPushesTo
+import dev.enro.core.destinations.launchComposable
+import dev.enro.core.push
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.expectComposableContext
 import dev.enro.expectNoComposableContext
@@ -23,7 +32,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.util.*
+import java.util.UUID
 
 class ComposeContainerInterceptor {
 
@@ -339,7 +348,8 @@ fun ContainerInterceptorScreen() {
     val viewModel = viewModel<ContainerInterceptorViewModel>()
     val navigation = navigationHandle<ComposeScreenWithContainerInterceptor>()
     val container = rememberNavigationContainer(
-        interceptor = ComposeContainerInterceptor.interceptor
+        interceptor = ComposeContainerInterceptor.interceptor,
+        emptyBehavior = EmptyBehavior.AllowEmpty,
     )
     Box(modifier = Modifier.fillMaxWidth()) {
         container.Render()

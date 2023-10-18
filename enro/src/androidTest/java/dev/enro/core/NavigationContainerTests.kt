@@ -5,7 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,13 +19,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.test.core.app.ActivityScenario
-import dev.enro.*
+import dev.enro.GenericComposableKey
+import dev.enro.GenericFragment
+import dev.enro.GenericFragmentKey
+import dev.enro.TestActivity
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.rememberNavigationContainer
+import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.expectActivity
+import dev.enro.expectComposableContext
+import dev.enro.expectContext
+import dev.enro.expectFragmentContext
+import dev.enro.expectNoActivity
+import dev.enro.waitFor
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertFalse
 import kotlinx.parcelize.Parcelize
@@ -624,7 +639,7 @@ class SingleComposableContainerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            primaryContainer = rememberNavigationContainer()
+            primaryContainer = rememberNavigationContainer(emptyBehavior = EmptyBehavior.AllowEmpty)
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
                 Text(text = "SingleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
@@ -656,8 +671,8 @@ class MultipleComposableContainerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            primaryContainer = rememberNavigationContainer()
-            secondaryContainer = rememberNavigationContainer()
+            primaryContainer = rememberNavigationContainer(emptyBehavior = EmptyBehavior.AllowEmpty)
+            secondaryContainer = rememberNavigationContainer(emptyBehavior = EmptyBehavior.AllowEmpty)
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
                 Text(text = "MultipleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))
@@ -703,10 +718,10 @@ class MultipleComposableContainerActivityWithAccept : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            primaryContainer = rememberNavigationContainer {
+            primaryContainer = rememberNavigationContainer(emptyBehavior = EmptyBehavior.AllowEmpty) {
                 it is GenericComposableKey && primaryContainerKeys.contains(it.id)
             }
-            secondaryContainer = rememberNavigationContainer {
+            secondaryContainer = rememberNavigationContainer(emptyBehavior = EmptyBehavior.AllowEmpty) {
                 it is GenericComposableKey && secondaryContainerKeys.contains(it.id)
             }
 

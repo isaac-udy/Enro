@@ -392,7 +392,7 @@ class ComposeStabilityActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val container = rememberNavigationContainer(primaryContainer)
+            val container = rememberNavigationContainer(primaryContainer, emptyBehavior = EmptyBehavior.AllowEmpty)
             Column {
                 Text("ComposeStabilityActivity")
                 Box {
@@ -418,9 +418,9 @@ class ComposeStabilityGroupsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val containerGroup = rememberNavigationContainerGroup(
-                rememberNavigationContainer(primaryContainer),
-                rememberNavigationContainer(secondaryContainer),
-                rememberNavigationContainer(tertiaryContainer),
+                rememberNavigationContainer(primaryContainer, emptyBehavior = EmptyBehavior.AllowEmpty),
+                rememberNavigationContainer(secondaryContainer, emptyBehavior = EmptyBehavior.AllowEmpty),
+                rememberNavigationContainer(tertiaryContainer, emptyBehavior = EmptyBehavior.AllowEmpty),
             )
             Column {
                 Text("ComposeStabilityGroupsActivity")
@@ -512,7 +512,10 @@ fun ComposeStabilityContentScreen() {
         appendLine("rememberSaveableId: $rememberSaveable")
     }
 
-    val childContainer = rememberNavigationContainer(typedNavigationHandle.key.childContainerKey)
+    val childContainer = rememberNavigationContainer(
+        typedNavigationHandle.key.childContainerKey,
+        emptyBehavior = EmptyBehavior.AllowEmpty,
+    )
     Column(
         modifier = Modifier
             .padding(8.dp)
