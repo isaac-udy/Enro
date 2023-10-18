@@ -52,6 +52,8 @@ dependencies {
     androidTestImplementation(libs.androidx.activity)
     androidTestImplementation(libs.androidx.recyclerview)
 
+    androidTestImplementation(libs.testing.androidx.espresso)
+
     androidTestImplementation(libs.testing.androidx.fragment)
     androidTestImplementation(libs.testing.androidx.junit)
     androidTestImplementation(libs.testing.androidx.espresso)
