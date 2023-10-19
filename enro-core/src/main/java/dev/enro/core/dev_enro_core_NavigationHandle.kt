@@ -91,21 +91,6 @@ public fun NavigationHandle.replaceRoot(
     executeInstruction(NavigationInstruction.ReplaceRoot(key))
 }
 
-@Deprecated("You should use push or present")
-public fun NavigationHandle.forward(key: NavigationKey) {
-    executeInstruction(NavigationInstruction.Forward(key))
-}
-
-@Deprecated("You should use a close instruction followed by a push or present")
-public fun NavigationHandle.replace(key: NavigationKey) {
-    executeInstruction(NavigationInstruction.Replace(key))
-}
-
-@Deprecated("You should only use replaceRoot with a NavigationKey.SupportsPresent")
-public fun NavigationHandle.replaceRoot(key: NavigationKey, vararg childKeys: NavigationKey) {
-    executeInstruction(NavigationInstruction.ReplaceRoot(key))
-}
-
 public fun NavigationHandle.close() {
     executeInstruction(NavigationInstruction.Close)
 }
