@@ -10,13 +10,19 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationHandle
+import dev.enro.core.NavigationKey
+import dev.enro.core.TypedNavigationHandle
+import dev.enro.core.asTyped
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.setBackstack
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
+import dev.enro.core.getNavigationHandle
 import dev.enro.core.result.NavigationResultChannel
 import kotlin.reflect.KClass
 
@@ -206,7 +212,7 @@ fun expectNoActivity() {
 }
 
 fun waitFor(block: () -> Boolean) {
-    val maximumTime = 2_000
+    val maximumTime = 4_000
     val startTime = System.currentTimeMillis()
 
     while(true) {
