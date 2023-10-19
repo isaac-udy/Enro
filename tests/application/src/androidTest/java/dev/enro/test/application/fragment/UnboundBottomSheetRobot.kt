@@ -4,7 +4,10 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.Lifecycle
-import androidx.test.espresso.Espresso
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions
+import androidx.test.espresso.matcher.RootMatchers.isDialog
+import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import dev.enro.test.application.waitForFragment
 import dev.enro.tests.application.fragment.UnboundBottomSheetFragment
 
@@ -40,8 +43,11 @@ class UnboundBottomSheetRobot(
         // manually requested for focus. This does not occur on API 23, 27 or 33. I believe this
         // is a bug in Espresso/API 30 specifically.
         fragment.requireView().requestFocus()
+        // dirty hack to wait for the focus to come through, because waiting for
+        // requireView().isFocused isn't working
+        Thread.sleep(1000)
 
-        Espresso.pressBack()
+        onView(isRoot()).inRoot(isDialog()).perform(ViewActions.pressBack())
         composeRule.waitUntil(5_000) {
             !fragment.isAdded && fragment.activity == null
         }
