@@ -3,6 +3,7 @@
 ## Unreleased
 * Removed NavigationAnimationOverrideBuilder methods that did not take a `returnEntering` or `returnExiting` parameter, in favour of defaulting these parameters to `entering` and `exiting` respectively. If you do not want to override return animations, you are able to pass null for these parameters to override the defaults.
 * Removed default `EmptyBehavior` parameter for `rememberNavigationContainer`; an explicit EmptyBehaviour is now required. The default was previously `EmptyBehavior.AllowEmpty`, and usages of `rememberNavigationContainer` that were relying on this default parameter should be updated to pass this explicitly.
+* Fixed a bug with `EnroTestRule` incorrectly capturing back presses for DialogFragments that are not bound into Enro
 
 ## 2.1.1
 * Fixed a bug with `EnroTestRule`/`runEnroTest` that would cause instrumented `androidTest` tests to fail when including both tests that use `EnroTestRule`/`runEnroTest` and tests that do not in the same test suite
