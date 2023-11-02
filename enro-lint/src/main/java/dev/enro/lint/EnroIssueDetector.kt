@@ -7,7 +7,12 @@ import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiType
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiUtil
-import org.jetbrains.uast.*
+import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UClassLiteralExpression
+import org.jetbrains.uast.UElement
+import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.getContainingUFile
+import org.jetbrains.uast.toUElementOfType
 
 @Suppress("UnstableApiUsage")
 class EnroIssueDetector : Detector(), Detector.UastScanner {
@@ -29,6 +34,8 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
         )
 
         return object : UElementHandler() {
+            override fun visitMethod(node: UMethod) {}
+
             override fun visitCallExpression(node: UCallExpression) {
                 val returnType = node.returnType as? PsiClassType ?: return
                 if (!navigationHandlePropertyType.isAssignableFrom(returnType)) return
