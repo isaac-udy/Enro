@@ -6,9 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
@@ -24,7 +24,6 @@ import dev.enro.core.compose.destination.activity
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.controller.navigationController
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
 public class NavigationContext<ContextType : Any> internal constructor(
@@ -150,6 +149,8 @@ internal val <T : ComposableDestination> T.navigationContext: NavigationContext<
 public val navigationContext: NavigationContext<*>
     @Composable
     get() {
+        if (LocalInspectionMode.current) error("Not able to access navigationContext when LocalInspectionMode.current is 'true'")
+
         val viewModelStoreOwner = requireNotNull(LocalViewModelStoreOwner.current) {
             "Failed to get navigationContext in Composable: LocalViewModelStoreOwner was null"
         }
