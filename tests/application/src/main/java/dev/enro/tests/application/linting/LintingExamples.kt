@@ -1,7 +1,8 @@
 // comment the line below to test linting errors
-//@file:SuppressLint("IncorrectlyTypedNavigationHandle", "MissingNavigationDestinationAnnotation")
+@file:SuppressLint("IncorrectlyTypedNavigationHandle", "MissingNavigationDestinationAnnotation")
 package dev.enro.tests.application.linting
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.fragment.app.Fragment

@@ -123,7 +123,7 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
 
                 val functionSource = composableParent.sourceElement?.text
                 context.report(
-                    issue = missingNavigationDestinationAnnotation,
+                    issue = missingNavigationDestinationAnnotationCompose,
                     location = context.getLocation(node),
                     message = "${composableParent.name} is not marked as a NavigationDestination.\nRequesting a TypedNavigationHandle in this way may be cause a crash if ${composableParent.name} is called from a NavigationDestination that is not bound to '${navigationHandleGenericType.presentableText}'",
                     quickfixData = fix()
