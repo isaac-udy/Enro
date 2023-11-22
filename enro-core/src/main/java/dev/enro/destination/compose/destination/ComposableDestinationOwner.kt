@@ -10,26 +10,51 @@ import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.ReusableContent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
-import androidx.lifecycle.*
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.invisibleToUser
+import androidx.lifecycle.HasDefaultViewModelProviderFactory
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.animation.NavigationAnimation
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.activity
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
-import dev.enro.core.compose.dialog.*
+import dev.enro.core.compose.dialog.BottomSheetDestination
+import dev.enro.core.compose.dialog.DialogDestination
+import dev.enro.core.compose.dialog.EnroBottomSheetContainer
+import dev.enro.core.compose.dialog.EnroDialogContainer
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.getAnimationsForEntering
 import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
+import dev.enro.core.getNavigationHandle
 import dev.enro.extensions.rememberLifecycleState
 
 internal class ComposableDestinationOwner(
@@ -158,7 +183,7 @@ internal class ComposableDestinationOwner(
         ) return
 
         ReusableContent(instruction.instructionId) {
-            ProvideRenderingWindow {
+            ProvideRenderingWindow(backstackState) {
                 animation.Animate(transition) {
                     renderDestination()
                     RegisterComposableLifecycleState(backstackState, parentContainer)
@@ -194,23 +219,40 @@ internal class ComposableDestinationOwner(
         }
     }
 
-    @OptIn(ExperimentalMaterialApi::class)
+    @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
     @Composable
     private fun ProvideRenderingWindow(
-        content: @Composable () -> Unit
+        backstackState: List<AnyOpenInstruction>,
+        content: @Composable () -> Unit,
     ) {
-        when {
-            destination is DialogDestination -> EnroDialogContainer(
-                navigationHandle = destination.getNavigationHandle(),
-                destination = destination,
-                content = content
-            )
-            destination is BottomSheetDestination -> EnroBottomSheetContainer(
-                navigationHandle = destination.getNavigationHandle(),
-                destination = destination,
-                content = content
-            )
-            else -> content()
+        val isActive = remember(backstackState) {
+            backstackState.lastOrNull() == instruction
+        }
+        Box(
+            // When this ComposableDestinationOwner is not the current active item in the backstack, we're going to
+            // hide it from accessibility, so that you can't focus "through" presented destinations
+            modifier = Modifier.run {
+                when {
+                    !isActive -> Modifier.clearAndSetSemantics { invisibleToUser() }
+                    else -> this
+                }
+            }
+        ) {
+            when {
+                destination is DialogDestination -> EnroDialogContainer(
+                    navigationHandle = destination.getNavigationHandle(),
+                    destination = destination,
+                    content = content
+                )
+
+                destination is BottomSheetDestination -> EnroBottomSheetContainer(
+                    navigationHandle = destination.getNavigationHandle(),
+                    destination = destination,
+                    content = content
+                )
+
+                else -> content()
+            }
         }
     }
 
