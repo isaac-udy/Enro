@@ -4,8 +4,12 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import dev.enro.core.*
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationHandle
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
 import dev.enro.core.container.toBackstack
+import dev.enro.core.onActiveContainer
 import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.result.registerForNavigationResultWithKey
@@ -107,6 +111,12 @@ public class NavigationFlow<T> internal constructor(
             setBackstack(finalInstructions.toBackstack())
         }
     }
+
+    @PublishedApi
+    internal fun getSteps(): List<FlowStep<out Any>> = steps
+
+    @PublishedApi
+    internal fun getResultManager(): FlowResultManager = resultManager
 
     internal companion object {
         const val IS_PUSHED_IN_FLOW = "NavigationFlow.IS_PUSHED_IN_FLOW"
