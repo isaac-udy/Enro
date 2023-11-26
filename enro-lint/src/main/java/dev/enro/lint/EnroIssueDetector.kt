@@ -8,6 +8,7 @@ import com.intellij.psi.PsiJvmModifiersOwner
 import com.intellij.psi.PsiType
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiUtil
+import com.intellij.psi.util.TypeConversionUtil
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClassLiteralExpression
 import org.jetbrains.uast.UElement
@@ -79,12 +80,6 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
             }
         }
 
-        val viewModelNavigationHandlePropertyType = PsiType.getTypeByName(
-            "dev.enro.viewmodel.NavigationHandleProperty",
-            context.project.ideaProject,
-            GlobalSearchScope.allScope(context.project.ideaProject)
-        )
-
         val typedNavigationHandleType = PsiType.getTypeByName(
             "dev.enro.core.TypedNavigationHandle",
             context.project.ideaProject,
@@ -114,7 +109,7 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
             val returnType = node.returnType as? PsiClassType ?: return
             if (!typedNavigationHandleType.isAssignableFrom(returnType)) return
 
-            val navigationHandleGenericType = returnType.parameters.first()
+            val navigationHandleGenericType = TypeConversionUtil.erasure(returnType.parameters.first())
             val navigationDestinationType = composableParent.getNavigationDestinationType()
 
             if (navigationDestinationType == null) {
