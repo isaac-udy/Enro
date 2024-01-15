@@ -252,3 +252,9 @@ public fun Fragment.addOpenInstruction(instruction: AnyOpenInstruction): Fragmen
 public fun Bundle.readOpenInstruction(): AnyOpenInstruction? {
     return getParcelableCompat<NavigationInstruction.Open.OpenInternal<*>>(OPEN_ARG)
 }
+
+public fun NavigationKey.SupportsPush.asPush(): OpenPushInstruction =
+    NavigationInstruction.Push(this)
+
+public fun NavigationKey.SupportsPresent.asPresent(): OpenPresentInstruction =
+    NavigationInstruction.Present(this)
