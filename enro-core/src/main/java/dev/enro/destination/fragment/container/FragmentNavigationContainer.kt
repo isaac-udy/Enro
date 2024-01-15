@@ -12,10 +12,10 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commitNow
-import dev.enro.core.AnyOpenInstruction
 import dev.enro.animation.DefaultAnimations
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.animation.NavigationAnimationTransition
+import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
@@ -55,7 +55,8 @@ public class FragmentNavigationContainer internal constructor(
     interceptor = interceptor,
     animations = animations,
 ) {
-    private val hostInstructionAs = parentContext.controller.dependencyScope.get<HostInstructionAs>()
+    private val hostInstructionAs =
+        parentContext.controller.dependencyScope.get<HostInstructionAs>()
 
     override var isVisible: Boolean
         get() {
@@ -67,8 +68,9 @@ public class FragmentNavigationContainer internal constructor(
 
     override val childContext: NavigationContext<out Fragment>?
         get() {
-            val fragment =  backstack.lastOrNull()?.let { fragmentManager.findFragmentByTag(it.instructionId) }
-                ?: fragmentManager.findFragmentById(containerId)
+            val fragment =
+                backstack.lastOrNull()?.let { fragmentManager.findFragmentByTag(it.instructionId) }
+                    ?: fragmentManager.findFragmentById(containerId)
             return fragment?.navigationContext
         }
 
@@ -107,8 +109,9 @@ public class FragmentNavigationContainer internal constructor(
 
     public override fun restore(bundle: Bundle) {
         bundle.keySet().forEach { key ->
-            if(!key.startsWith(FRAGMENT_STATE_PREFIX_KEY)) return@forEach
-            val fragmentState = bundle.getParcelableCompat<Fragment.SavedState>(key) ?: return@forEach
+            if (!key.startsWith(FRAGMENT_STATE_PREFIX_KEY)) return@forEach
+            val fragmentState =
+                bundle.getParcelableCompat<Fragment.SavedState>(key) ?: return@forEach
             val instructionId = key.removePrefix(FRAGMENT_STATE_PREFIX_KEY)
             restoredFragmentStates[instructionId] = fragmentState
         }
@@ -118,7 +121,7 @@ public class FragmentNavigationContainer internal constructor(
 
     override fun onBackstackUpdated(
         transition: NavigationBackstackTransition
-    ) : Boolean {
+    ): Boolean {
         if (!tryExecutePendingTransitions()) return false
         if (fragmentManager.isStateSaved) return false
 
@@ -175,23 +178,23 @@ public class FragmentNavigationContainer internal constructor(
                 applyAnimationsForTransaction(
                     active = it
                 )
-                if(it.fragment is DialogFragment) {
-                    if(it.fragment.isAdded) {}
-                    else if(it.fragment.isDetached) {
+                if (it.fragment is DialogFragment) {
+                    if (it.fragment.isAdded) {
+                    } else if (it.fragment.isDetached) {
                         attach(it.fragment)
                     } else {
                         add(it.fragment, it.instruction.instructionId)
                     }
-                }
-                else {
-                    if(it.fragment.id != 0) {
+                } else {
+                    if (it.fragment.id != 0) {
                         attach(it.fragment)
                     } else {
                         add(containerId, it.fragment, it.instruction.instructionId)
                     }
                 }
             }
-            val activeFragmentAndInstruction = toPresent.lastOrNull() ?: activePushed ?: return@commitNow
+            val activeFragmentAndInstruction =
+                toPresent.lastOrNull() ?: activePushed ?: return@commitNow
             val activeFragment = activeFragmentAndInstruction.fragment
             setPrimaryNavigationFragment(activeFragment)
         }
@@ -210,7 +213,8 @@ public class FragmentNavigationContainer internal constructor(
 
     private fun List<AnyOpenInstruction>.asFragmentAndInstruction(): List<FragmentAndInstruction> {
         return mapNotNull { instruction ->
-            val fragment = fragmentManager.findFragmentByTag(instruction.instructionId) ?: return@mapNotNull null
+            val fragment = fragmentManager.findFragmentByTag(instruction.instructionId)
+                ?: return@mapNotNull null
             FragmentAndInstruction(
                 fragment = fragment,
                 instruction = instruction
@@ -219,10 +223,12 @@ public class FragmentNavigationContainer internal constructor(
     }
 
     private fun getFragmentsToDetach(backstackState: List<AnyOpenInstruction>): List<FragmentAndInstruction> {
-        val pushed = backstackState.indexOfLast { it.navigationDirection == NavigationDirection.Push }
+        val pushed =
+            backstackState.indexOfLast { it.navigationDirection == NavigationDirection.Push }
 
-        val presented = backstackState.indexOfLast { it.navigationDirection == NavigationDirection.Present }
-            .takeIf { it > pushed } ?: -1
+        val presented =
+            backstackState.indexOfLast { it.navigationDirection == NavigationDirection.Present }
+                .takeIf { it > pushed } ?: -1
 
         return backstackState
             .filterIndexed { i, _ ->
@@ -238,13 +244,13 @@ public class FragmentNavigationContainer internal constructor(
             .mapNotNull { fragmentManager.findFragmentByTag(it) }
     }
 
-    private fun getFragmentsToPresent(backstackState: List<AnyOpenInstruction>) : List<FragmentAndInstruction> {
+    private fun getFragmentsToPresent(backstackState: List<AnyOpenInstruction>): List<FragmentAndInstruction> {
         return backstackState
             .takeLastWhile {
                 it.navigationDirection is NavigationDirection.Present
             }
             .map {
-                val cls = when(containerId){
+                val cls = when (containerId) {
                     android.R.id.content -> DialogFragment::class.java
                     else -> Fragment::class.java
                 }
@@ -253,7 +259,7 @@ public class FragmentNavigationContainer internal constructor(
             .takeLast(1)
     }
 
-    private fun getActivePushedFragment(backstackState: List<AnyOpenInstruction>) : FragmentAndInstruction? {
+    private fun getActivePushedFragment(backstackState: List<AnyOpenInstruction>): FragmentAndInstruction? {
         val activePushedFragment = backstackState
             .lastOrNull {
                 it.navigationDirection is NavigationDirection.Push
@@ -261,7 +267,10 @@ public class FragmentNavigationContainer internal constructor(
         return getOrCreateFragment(Fragment::class.java, activePushedFragment)
     }
 
-    private fun getOrCreateFragment(type: Class<out Fragment>, instruction: AnyOpenInstruction): FragmentAndInstruction {
+    private fun getOrCreateFragment(
+        type: Class<out Fragment>,
+        instruction: AnyOpenInstruction
+    ): FragmentAndInstruction {
         val existingFragment = fragmentManager.findFragmentByTag(instruction.instructionId)
         if (existingFragment != null) return FragmentAndInstruction(
             fragment = existingFragment,
@@ -274,7 +283,7 @@ public class FragmentNavigationContainer internal constructor(
         )
 
         val restoredState = restoredFragmentStates.remove(instruction.instructionId)
-        if(restoredState != null) fragment.setInitialSavedState(restoredState)
+        if (restoredState != null) fragment.setInitialSavedState(restoredState)
 
         return FragmentAndInstruction(
             fragment = fragment,
@@ -283,7 +292,10 @@ public class FragmentNavigationContainer internal constructor(
     }
 
     // TODO this doesn't work, it needs to know about the exiting element
-    private fun setZIndexForAnimations(backstack: List<AnyOpenInstruction>, fragmentAndInstruction: FragmentAndInstruction) {
+    private fun setZIndexForAnimations(
+        backstack: List<AnyOpenInstruction>,
+        fragmentAndInstruction: FragmentAndInstruction
+    ) {
         val activeIndex =
             backstack.indexOfFirst { it.instructionId == backstack.lastOrNull()?.instructionId }
         val index = backstack.indexOf(fragmentAndInstruction.instruction)
@@ -299,8 +311,10 @@ public class FragmentNavigationContainer internal constructor(
         active: FragmentAndInstruction?
     ) {
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
-        val entering = (active?.let { getAnimationsForEntering(it.instruction) } ?: DefaultAnimations.none.entering).asResource(context.activity.theme)
-        val exiting = (currentTransition.exitingInstruction?.let { getAnimationsForExiting(it) } ?: DefaultAnimations.none.exiting).asResource(context.activity.theme)
+        val entering = (active?.let { getAnimationsForEntering(it.instruction) }
+            ?: DefaultAnimations.none.entering).asResource(context.activity.theme)
+        val exiting = (currentTransition.exitingInstruction?.let { getAnimationsForExiting(it) }
+            ?: DefaultAnimations.none.exiting).asResource(context.activity.theme)
 
         val noOpEntering = when {
             exiting.isAnimator(context.activity) -> R.animator.animator_example_no
@@ -316,17 +330,26 @@ public class FragmentNavigationContainer internal constructor(
                 entering.isAnimator(context.activity) -> R.animator.animator_no_op_exit
                 else -> R.anim.enro_no_op_exit_animation
             }
+
             exiting.id == 0 -> 0
             entering.isAnimator(context.activity)
                     && !exiting.isAnimator(context.activity) -> {
-                Log.e("Enro", "Fragment enter animation was 'animator' and exit was 'anim', falling back to default animator for exit animations")
+                Log.e(
+                    "Enro",
+                    "Fragment enter animation was 'animator' and exit was 'anim', falling back to default animator for exit animations"
+                )
                 R.animator.animator_enro_fallback_exit
             }
+
             entering.isAnim(context.activity)
                     && !exiting.isAnim(context.activity) -> {
-                Log.e("Enro", "Fragment enter animation was 'anim' and exit was 'animator', falling back to default anim for exit animations")
+                Log.e(
+                    "Enro",
+                    "Fragment enter animation was 'anim' and exit was 'animator', falling back to default anim for exit animations"
+                )
                 R.anim.enro_fallback_exit
             }
+
             else -> exiting.id
         }
 
