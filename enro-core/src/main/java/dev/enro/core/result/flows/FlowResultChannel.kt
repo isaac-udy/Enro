@@ -62,7 +62,7 @@ public class NavigationFlow<T> internal constructor(
 
     public fun next() {
         val flowScope = NavigationFlowScope(resultManager)
-        runCatching { onCompleted(flowScope.flow()) }
+        runCatching { return@next onCompleted(flowScope.flow()) }
             .recover {
                 when(it) {
                     is NavigationFlowScope.NoResult -> {}

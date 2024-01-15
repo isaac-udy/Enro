@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+* Updated NavigationFlow to return from `next` after `onCompleted` is called, rather than continuing to set the backstack from the flow
 
 ## 2.2.0
 * Removed NavigationAnimationOverrideBuilder methods that did not take a `returnEntering` or `returnExiting` parameter, in favour of defaulting these parameters to `entering` and `exiting` respectively. If you do not want to override return animations, you are able to pass null for these parameters to override the defaults.
