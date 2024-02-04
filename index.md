@@ -17,9 +17,9 @@ Enro is a powerful navigation library based on a simple idea; screens within an 
 ```kotlin
 
 dependencies {
-    implementation("dev.enro:enro:2.1.0")
-    ksp("dev.enro:enro-processor:2.1.0") // both kapt and ksp are supported
-    testImplementation("dev.enro:enro-test:2.1.0")
+    implementation("dev.enro:enro:2.2.0")
+    ksp("dev.enro:enro-processor:2.2.0") // both kapt and ksp are supported
+    testImplementation("dev.enro:enro-test:2.2.0")
 }
 
 ```
