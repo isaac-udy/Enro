@@ -2,6 +2,8 @@
 
 ## Unreleased
 * Updated NavigationFlow to return from `next` after `onCompleted` is called, rather than continuing to set the backstack from the flow
+* Updated NavigationContainer to take a `filter` of type NavigationContainerFilter instead of an `accept: (NavigationKey) -> Boolean` lambda. This allows for more advanced filtering of NavigationKeys, and this API will likely be expanded in the future. 
+  * For containers that pass an argument of `accept = { <logic> }` a quick replacement is `filter = acceptKey { <logic> }`, which will have the same behavior.
 
 ## 2.2.0
 * Removed NavigationAnimationOverrideBuilder methods that did not take a `returnEntering` or `returnExiting` parameter, in favour of defaulting these parameters to `entering` and `exiting` respectively. If you do not want to override return animations, you are able to pass null for these parameters to override the defaults.

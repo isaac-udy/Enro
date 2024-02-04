@@ -5,11 +5,12 @@ import dev.enro.TestDialogFragment
 import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
+import dev.enro.core.container.acceptKey
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.registerForNavigationResult
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import java.util.UUID
 
 object FragmentDestinations {
     @Parcelize
@@ -63,8 +64,8 @@ object FragmentDestinations {
         primaryContainerAccepts: (NavigationKey) -> Boolean,
         secondaryContainerAccepts: (NavigationKey) -> Boolean,
     ) : TestFragment() {
-        private val primaryContainer by navigationContainer(primaryFragmentContainer, accept = primaryContainerAccepts)
-        private val secondaryContainer by navigationContainer(secondaryFragmentContainer, accept = secondaryContainerAccepts)
+        private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey { primaryContainerAccepts(it) })
+        private val secondaryContainer by navigationContainer(secondaryFragmentContainer, filter = acceptKey {secondaryContainerAccepts(it) } )
         val navigation by navigationHandle<NavigationKey>()
         val resultChannel by registerForNavigationResult<TestResult> {
             navigation.registerTestResult(it)
@@ -75,8 +76,8 @@ object FragmentDestinations {
         primaryContainerAccepts: (NavigationKey) -> Boolean,
         secondaryContainerAccepts: (NavigationKey) -> Boolean,
     ) : TestDialogFragment() {
-        private val primaryContainer by navigationContainer(primaryFragmentContainer, accept = primaryContainerAccepts)
-        private val secondaryContainer by navigationContainer(secondaryFragmentContainer, accept = secondaryContainerAccepts)
+        private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey(primaryContainerAccepts))
+        private val secondaryContainer by navigationContainer(secondaryFragmentContainer, filter = acceptKey(secondaryContainerAccepts))
         val navigation by navigationHandle<NavigationKey>()
         val resultChannel by registerForNavigationResult<TestResult> {
             navigation.registerTestResult(it)

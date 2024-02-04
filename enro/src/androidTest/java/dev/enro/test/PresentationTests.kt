@@ -23,6 +23,9 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.R
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.acceptKey
+import dev.enro.core.container.doNotAccept
+import dev.enro.core.container.key
 import dev.enro.core.directParentContainer
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.getNavigationHandle
@@ -285,7 +288,7 @@ class ActivityWithFragmentContainer : FragmentActivity() {
 
     val container by navigationContainer(
         containerId = containerId,
-        accept = {
+        filter = acceptKey {
             it !is PresentationTests.NotSupportedFragmentKey && it !is PresentationTests.NotSupportedComposeKey
         }
     )
@@ -310,7 +313,7 @@ class ActivityWithComposeContainer : FragmentActivity() {
         setContent {
             val container = rememberNavigationContainer(
                 emptyBehavior = EmptyBehavior.AllowEmpty,
-                accept = { it !is PresentationTests.NotSupportedComposeKey }
+                filter = doNotAccept { key<PresentationTests.NotSupportedComposeKey>() }
             )
             Box(modifier = Modifier.fillMaxSize()) {
                 container.Render()

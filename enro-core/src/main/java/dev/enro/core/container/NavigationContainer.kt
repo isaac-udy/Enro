@@ -24,7 +24,6 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
@@ -47,7 +46,7 @@ public abstract class NavigationContainer(
     public val emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
-    public val acceptsNavigationKey: (NavigationKey) -> Boolean,
+    public val instructionFilter: NavigationInstructionFilter,
 ) : NavigationContainerContext {
     internal val dependencyScope by lazy {
         NavigationContainerScope(
@@ -124,7 +123,7 @@ public abstract class NavigationContainer(
         if (backstack == backstackFlow.value) return@synchronized
         renderJob?.cancel()
         val processedBackstack = Compatibility.NavigationContainer
-            .processBackstackForDeprecatedInstructionTypes(backstack, acceptsNavigationKey)
+            .processBackstackForDeprecatedInstructionTypes(backstack, instructionFilter)
             .ensureOpeningTypeIsSet(context)
             .processBackstackForPreviouslyActiveContainer()
 
@@ -163,7 +162,7 @@ public abstract class NavigationContainer(
     public fun accept(
         instruction: AnyOpenInstruction
     ): Boolean {
-        return (acceptsNavigationKey.invoke(instruction.navigationKey) || instruction.navigationDirection == NavigationDirection.Present)
+        return (instructionFilter.accept(instruction) || instruction.navigationDirection == NavigationDirection.Present)
                 && acceptedByContext(instruction)
                 && canInstructionBeHostedAs(
             hostType = contextType,

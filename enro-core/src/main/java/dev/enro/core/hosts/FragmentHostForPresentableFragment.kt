@@ -11,12 +11,25 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import dev.enro.core.*
+import dev.enro.core.EnroInternalNavigationKey
+import dev.enro.core.NavigationHost
+import dev.enro.core.NavigationKey
+import dev.enro.core.OpenPresentInstruction
+import dev.enro.core.R
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.container.*
+import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.acceptNone
+import dev.enro.core.container.asPushInstruction
+import dev.enro.core.container.getAnimationsForEntering
+import dev.enro.core.container.getAnimationsForExiting
+import dev.enro.core.container.setBackstack
+import dev.enro.core.containerManager
 import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.navigationContext
+import dev.enro.core.navigationHandle
+import dev.enro.core.parentContainer
 import dev.enro.extensions.animate
 import dev.enro.extensions.createFullscreenDialog
 import kotlinx.parcelize.Parcelize
@@ -44,7 +57,7 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
         containerId = R.id.enro_internal_single_fragment_frame_layout,
         emptyBehavior = EmptyBehavior.CloseParent,
         rootInstruction = { navigationHandle.key.instruction.asPushInstruction() },
-        accept = { false }
+        filter = acceptNone()
     )
     private val isHostingComposable
         get() = navigationHandle.key.instruction.navigationKey is AbstractOpenComposableInFragmentKey

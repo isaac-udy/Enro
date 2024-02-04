@@ -1,19 +1,24 @@
 package dev.enro.core.plugins
 
 import androidx.test.core.app.ActivityScenario
-import dev.enro.*
+import dev.enro.TestActivity
+import dev.enro.TestFragment
+import dev.enro.TestPlugin
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
+import dev.enro.core.container.acceptKey
 import dev.enro.core.forward
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
+import dev.enro.expectContext
+import dev.enro.waitFor
 import junit.framework.TestCase.assertEquals
 import kotlinx.parcelize.Parcelize
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
-import java.util.*
+import java.util.UUID
 
 class PluginTests {
 
@@ -134,13 +139,13 @@ class PluginTestActivity : TestActivity() {
     private val navigation by navigationHandle<PluginTestActivityKey> {
         defaultKey(PluginTestActivityKey())
     }
-    private val primaryContainer by navigationContainer(primaryFragmentContainer) {
+    private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey  {
         it is PluginPrimaryTestFragmentKey
-    }
+    })
 
-    private val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+    private val secondaryContainer by navigationContainer(secondaryFragmentContainer, filter = acceptKey {
         it is PluginSecondaryTestFragmentKey
-    }
+    })
 }
 
 @Parcelize
@@ -150,13 +155,13 @@ data class PluginPrimaryTestFragmentKey(val keyId: String = UUID.randomUUID().to
 @NavigationDestination(PluginPrimaryTestFragmentKey::class)
 class PluginPrimaryTestFragment : TestFragment() {
     private val navigation by navigationHandle<PluginTestActivityKey> ()
-    private val primaryContainer by navigationContainer(primaryFragmentContainer) {
+    private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey {
         it is PluginPrimaryTestFragmentKey
-    }
+    })
 
-    private val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+    private val secondaryContainer by navigationContainer(secondaryFragmentContainer, filter = acceptKey {
         it is PluginSecondaryTestFragmentKey
-    }
+    })
 }
 
 @Parcelize
@@ -167,11 +172,11 @@ data class PluginSecondaryTestFragmentKey(val keyId: String = UUID.randomUUID().
 class PluginSecondaryTestFragment : TestFragment() {
     private val navigation by navigationHandle<PluginTestActivityKey>()
 
-    private val primaryContainer by navigationContainer(primaryFragmentContainer) {
+    private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey {
         it is PluginPrimaryTestFragmentKey
-    }
+    })
 
-    private val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+    private val secondaryContainer by navigationContainer(secondaryFragmentContainer, filter = acceptKey {
         it is PluginSecondaryTestFragmentKey
-    }
+    })
 }

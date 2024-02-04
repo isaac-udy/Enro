@@ -20,13 +20,13 @@ import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHost
-import dev.enro.core.NavigationKey
 import dev.enro.core.R
 import dev.enro.core.activity
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.NavigationInstructionFilter
 import dev.enro.core.container.close
 import dev.enro.core.container.getAnimationsForEntering
 import dev.enro.core.container.getAnimationsForExiting
@@ -41,7 +41,7 @@ public class FragmentNavigationContainer internal constructor(
     @IdRes public val containerId: Int,
     key: NavigationContainerKey = NavigationContainerKey.FromId(containerId),
     parentContext: NavigationContext<*>,
-    accept: (NavigationKey) -> Boolean,
+    filter: NavigationInstructionFilter,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
@@ -50,7 +50,7 @@ public class FragmentNavigationContainer internal constructor(
     key = key,
     context = parentContext,
     contextType = Fragment::class.java,
-    acceptsNavigationKey = accept,
+    instructionFilter = filter,
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
     animations = animations,

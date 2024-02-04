@@ -236,12 +236,12 @@ fun TestComposable(
     secondaryContainerAccepts: (NavigationKey) -> Boolean = { false }
 ) {
     val primaryContainer = rememberNavigationContainer(
-        accept = primaryContainerAccepts,
+        filter = primaryContainerAccepts,
         emptyBehavior = EmptyBehavior.AllowEmpty,
     )
 
     val secondaryContainer = rememberNavigationContainer(
-        accept = secondaryContainerAccepts,
+        filter = secondaryContainerAccepts,
         emptyBehavior = EmptyBehavior.AllowEmpty,
     )
 

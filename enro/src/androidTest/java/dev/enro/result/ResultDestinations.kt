@@ -13,6 +13,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.closeWithResult
+import dev.enro.core.container.acceptKey
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.forwardResult
@@ -52,7 +53,9 @@ class ResultReceiverActivity : TestActivity() {
         defaultKey(ResultReceiverActivityKey())
 
     }
-    private val primaryContainer by navigationContainer(primaryFragmentContainer) { it is NestedResultFragmentKey }
+    private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey {
+        it is NestedResultFragmentKey
+    })
 
     var result: String? = null
     var closedNoResult: Boolean = false
@@ -81,7 +84,7 @@ class NestedResultReceiverActivity : TestActivity() {
     private val navigation by navigationHandle<NestedResultReceiverActivityKey> {
         defaultKey(NestedResultReceiverActivityKey())
     }
-    private val primaryContainer by navigationContainer(primaryFragmentContainer) { it is ResultReceiverFragmentKey || it is NestedResultFragmentKey }
+    private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey { it is ResultReceiverFragmentKey || it is NestedResultFragmentKey })
 }
 
 @Parcelize
@@ -92,8 +95,8 @@ class SideBySideNestedResultReceiverActivity : TestActivity() {
     private val navigation by navigationHandle<SideBySideNestedResultReceiverActivityKey> {
         defaultKey(SideBySideNestedResultReceiverActivityKey())
     }
-    private val primaryContainer by navigationContainer(primaryFragmentContainer) { it is ResultReceiverFragmentKey }
-    private val secondaryContainer by navigationContainer(secondaryFragmentContainer) { it is NestedResultFragmentKey }
+    private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey { it is ResultReceiverFragmentKey })
+    private val secondaryContainer by navigationContainer(secondaryFragmentContainer, filter = acceptKey { it is NestedResultFragmentKey })
 }
 
 @Parcelize
@@ -122,7 +125,7 @@ class NestedResultReceiverFragment : TestFragment() {
 
     private val navigation by navigationHandle<NestedResultReceiverFragmentKey>()
 
-    private val primaryContainer by navigationContainer(primaryFragmentContainer) { it is NestedResultFragmentKey }
+    private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey { it is NestedResultFragmentKey })
 
     var result: String? = null
     val resultChannel by registerForNavigationResult<String> {
@@ -265,7 +268,7 @@ class ResultFlowFragmentRootActivity : TestActivity() {
         defaultKey(ResultFlowDialogFragmentRootKey())
     }
 
-    private val primaryContainer by navigationContainer(primaryFragmentContainer)  { it is ResultFlowDialogFragmentKey }
+    private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey { it is ResultFlowDialogFragmentKey })
 
     var lastResult: String = ""
     val nestedResult by registerForNavigationResult<String> {
@@ -285,9 +288,9 @@ class ResultFlowDialogFragmentKey : NavigationKey.WithResult<String>
 @NavigationDestination(ResultFlowDialogFragmentKey::class)
 class ResultFlowDialogFragment : TestDialogFragment() {
     val navigation by navigationHandle<ResultFlowDialogFragmentKey>()
-    private val primaryContainer by navigationContainer(primaryFragmentContainer) {
+    private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey {
         it is NestedResultFlowFragmentKey
-    }
+    })
 
     val nestedResult by registerForNavigationResult<Int> {
         navigation.closeWithResult("*".repeat(it))
@@ -306,9 +309,9 @@ class NestedResultFlowFragmentKey : NavigationKey.WithResult<Int>
 @NavigationDestination(NestedResultFlowFragmentKey::class)
 class NestedResultFlowFragment : TestFragment() {
     val navigation by navigationHandle<NestedResultFlowFragmentKey>()
-    private val primaryContainer by navigationContainer(primaryFragmentContainer) {
+    private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey {
         it is NestedNestedResultFlowFragmentKey
-    }
+    })
 
     val nestedResult by registerForNavigationResult<Int> {
         navigation.closeWithResult(it)

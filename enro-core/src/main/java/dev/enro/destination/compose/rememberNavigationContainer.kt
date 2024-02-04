@@ -15,6 +15,8 @@ import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.container.ContainerRegistrationStrategy
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationInstructionFilter
+import dev.enro.core.container.acceptAll
 import dev.enro.core.container.backstackOf
 import dev.enro.core.container.toBackstack
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
@@ -27,7 +29,7 @@ public fun rememberNavigationContainer(
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
-    accept: (NavigationKey) -> Boolean = { true },
+    filter: NavigationInstructionFilter = acceptAll(),
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
         key = key,
@@ -37,7 +39,7 @@ public fun rememberNavigationContainer(
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         animations = animations,
-        accept = accept
+        filter = filter
     )
 }
 
@@ -48,7 +50,7 @@ public fun rememberNavigationContainer(
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
-    accept: (NavigationKey) -> Boolean = { true },
+    filter: NavigationInstructionFilter = acceptAll(),
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
         key = key,
@@ -60,7 +62,7 @@ public fun rememberNavigationContainer(
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         animations = animations,
-        accept = accept
+        filter = filter
     )
 }
 
@@ -72,7 +74,7 @@ public fun rememberNavigationContainer(
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
-    accept: (NavigationKey) -> Boolean = { true },
+    filter: NavigationInstructionFilter = acceptAll(),
 ): ComposableNavigationContainer {
     val localNavigationHandle = navigationHandle()
     val context = LocalContext.current
@@ -90,7 +92,7 @@ public fun rememberNavigationContainer(
         existingContainer ?: ComposableNavigationContainer(
             key = key,
             parentContext = localNavigationContext,
-            accept = accept,
+            instructionFilter = filter,
             emptyBehavior = emptyBehavior,
             interceptor = interceptor,
             animations = animations,

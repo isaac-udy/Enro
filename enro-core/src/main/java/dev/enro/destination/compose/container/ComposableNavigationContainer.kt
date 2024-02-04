@@ -24,7 +24,6 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
 import dev.enro.core.activity
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
@@ -35,6 +34,7 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.NavigationInstructionFilter
 import dev.enro.core.container.merge
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
@@ -44,7 +44,7 @@ import kotlin.collections.set
 public class ComposableNavigationContainer internal constructor(
     key: NavigationContainerKey,
     parentContext: NavigationContext<*>,
-    accept: (NavigationKey) -> Boolean,
+    instructionFilter: NavigationInstructionFilter,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
@@ -56,7 +56,7 @@ public class ComposableNavigationContainer internal constructor(
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
     animations = animations,
-    acceptsNavigationKey = accept,
+    instructionFilter = instructionFilter,
 ) {
     private val viewModelStoreStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
     private val viewModelStores = viewModelStoreStorage.getStorageForContainer(key)

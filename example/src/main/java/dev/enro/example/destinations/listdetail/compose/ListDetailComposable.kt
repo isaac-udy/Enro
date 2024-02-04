@@ -15,6 +15,8 @@ import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.accept
+import dev.enro.core.container.key
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -30,12 +32,12 @@ fun ListDetailComposeScreen() {
         root = ListComposable(),
         key = listContainerKey,
         emptyBehavior = EmptyBehavior.CloseParent,
-        accept = { it is ListComposable }
+        filter = accept { key<ListComposable>() }
     )
     val detailContainerController = rememberNavigationContainer(
         key = detailContainerKey,
         emptyBehavior = EmptyBehavior.AllowEmpty,
-        accept = { it is DetailComposable }
+        filter = accept { key<DetailComposable>() }
     )
 
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE

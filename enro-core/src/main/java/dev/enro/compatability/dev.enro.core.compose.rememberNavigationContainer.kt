@@ -28,7 +28,9 @@ public fun rememberEnroContainerController(
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         animations = animations,
-        accept = accept,
+        filter = dev.enro.core.container.accept {
+            key(accept)
+        },
     )
 }
 

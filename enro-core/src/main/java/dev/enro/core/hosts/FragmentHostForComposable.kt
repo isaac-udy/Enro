@@ -18,6 +18,8 @@ import dev.enro.core.R
 import dev.enro.core.close
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.acceptAll
+import dev.enro.core.container.acceptNone
 import dev.enro.core.container.backstackOf
 import dev.enro.core.containerManager
 import dev.enro.core.getNavigationHandle
@@ -55,7 +57,8 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
         if (activity !is AbstractActivityHostForAnyInstruction) return@lazy false
         val hasParent = parentFragment != null
         if (hasParent) return@lazy false
-        val activityKey = activity.getNavigationHandle().instruction.navigationKey as AbstractOpenInstructionInActivityKey
+        val activityKey =
+            activity.getNavigationHandle().instruction.navigationKey as AbstractOpenInstructionInActivityKey
         return@lazy activityKey.instruction.instructionId == navigationHandle.key.instruction.instructionId
     }
 
@@ -77,7 +80,10 @@ public abstract class AbstractFragmentHostForComposable : Fragment(), Navigation
                 val container = rememberNavigationContainer(
                     key = NavigationContainerKey.FromName("FragmentHostForCompose"),
                     initialBackstack = backstackOf(initialBackstack),
-                    accept = { isRoot },
+                    filter = when {
+                        isRoot -> acceptAll()
+                        else -> acceptNone()
+                    },
                     emptyBehavior = when {
                         isRoot -> EmptyBehavior.CloseParent
                         else -> EmptyBehavior.Action {

@@ -15,6 +15,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
+import dev.enro.core.container.acceptNone
 import dev.enro.core.container.emptyBackstack
 import dev.enro.core.containerManager
 import dev.enro.core.controller.NavigationController
@@ -72,7 +73,7 @@ private class FragmentLifecycleCallbacksForEnro(
                 FragmentNavigationContainer(
                     containerId = android.R.id.content,
                     parentContext = activity.navigationContext,
-                    accept = { false },
+                    filter = acceptNone(),
                     emptyBehavior = EmptyBehavior.AllowEmpty,
                     interceptor = {},
                     animations = {},

@@ -6,14 +6,33 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.lifecycleScope
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroException
+import dev.enro.core.ExecutorArgs
+import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.activity
 import dev.enro.core.activity.ActivityNavigationContainer
+import dev.enro.core.close
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.container.*
+import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationInstructionFilter
+import dev.enro.core.container.asDirection
+import dev.enro.core.container.asPresentInstruction
+import dev.enro.core.container.asPushInstruction
+import dev.enro.core.container.pop
+import dev.enro.core.container.setBackstack
+import dev.enro.core.container.toBackstack
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.navigationContext
+import dev.enro.core.parentContainer
+import dev.enro.core.rootContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import dev.enro.core.container.NavigationContainer as RealNavigationContainer
@@ -155,12 +174,12 @@ internal object Compatibility {
     object NavigationContainer {
         fun processBackstackForDeprecatedInstructionTypes(
             backstack: NavigationBackstack,
-            acceptsNavigationKey: (NavigationKey) -> Boolean,
+            navigationInstructionFilter: NavigationInstructionFilter,
         ): NavigationBackstack {
             return backstack.mapIndexed { i, it ->
                 when {
                     it.navigationDirection !is NavigationDirection.Forward -> it
-                    i == 0 || acceptsNavigationKey(it.navigationKey) -> it.asPushInstruction()
+                    i == 0 || navigationInstructionFilter.accept(it.asPushInstruction()) -> it.asPushInstruction()
                     else -> it.asPresentInstruction()
                 }
             }.toBackstack()

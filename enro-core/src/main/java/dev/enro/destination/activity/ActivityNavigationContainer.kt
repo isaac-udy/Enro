@@ -15,6 +15,7 @@ import dev.enro.core.addOpenInstruction
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.acceptAll
 import dev.enro.core.container.backstackOf
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.GetNavigationBinding
@@ -30,7 +31,7 @@ internal class ActivityNavigationContainer internal constructor(
     emptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor = { },
     animations = { },
-    acceptsNavigationKey = { true },
+    instructionFilter = acceptAll(),
 ) {
     override val childContext: NavigationContext<*>
         get() = context

@@ -3,6 +3,7 @@ package dev.enro.core
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import dev.enro.core.container.acceptKey
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
 import dev.enro.core.fragment.container.navigationContainer
@@ -53,13 +54,13 @@ public class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi inte
                 is FragmentActivity -> {
                     context.contextReference.navigationContainer(
                         containerId = it.containerId,
-                        accept = it::accept
+                        filter = acceptKey(it::accept)
                     )
                 }
                 is Fragment -> {
                     context.contextReference.navigationContainer(
                         containerId = it.containerId,
-                        accept = it::accept
+                        filter = acceptKey(it::accept)
                     )
                 }
                 else -> return@forEach

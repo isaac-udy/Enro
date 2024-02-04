@@ -29,6 +29,7 @@ import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.container.ComposableNavigationContainer
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.acceptKey
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.expectActivity
 import dev.enro.expectComposableContext
@@ -616,14 +617,14 @@ class MultipleFragmentContainerActivityWithAccept : TestActivity() {
     }
 
     private val primaryContainerKeys = listOf("One", "Three", "Five")
-    val primaryContainer by navigationContainer(primaryFragmentContainer) {
+    val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey {
         it is GenericFragmentKey && primaryContainerKeys.contains(it.id)
-    }
+    })
 
     private val secondaryContainerKeys = listOf("Two", "Four", "Six")
-    val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+    val secondaryContainer by navigationContainer(secondaryFragmentContainer, filter = acceptKey {
         it is GenericFragmentKey && secondaryContainerKeys.contains(it.id)
-    }
+    })
 }
 
 @Parcelize
@@ -718,12 +719,12 @@ class MultipleComposableContainerActivityWithAccept : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            primaryContainer = rememberNavigationContainer(emptyBehavior = EmptyBehavior.AllowEmpty) {
+            primaryContainer = rememberNavigationContainer(emptyBehavior = EmptyBehavior.AllowEmpty, filter = acceptKey {
                 it is GenericComposableKey && primaryContainerKeys.contains(it.id)
-            }
-            secondaryContainer = rememberNavigationContainer(emptyBehavior = EmptyBehavior.AllowEmpty) {
+            })
+            secondaryContainer = rememberNavigationContainer(emptyBehavior = EmptyBehavior.AllowEmpty, filter = acceptKey {
                 it is GenericComposableKey && secondaryContainerKeys.contains(it.id)
-            }
+            })
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize()) {
                 Text(text = "MultipleComposableContainerActivity", fontSize = 32.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(20.dp))

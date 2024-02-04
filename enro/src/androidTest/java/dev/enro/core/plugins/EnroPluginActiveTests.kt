@@ -4,6 +4,7 @@ import androidx.test.core.app.ActivityScenario
 import dev.enro.GenericFragmentKey
 import dev.enro.TestActivity
 import dev.enro.TestPlugin
+import dev.enro.core.container.acceptKey
 import dev.enro.core.containerManager
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.getNavigationHandle
@@ -52,10 +53,10 @@ class EnroPluginActiveTests {
 class MultipleFragmentContainerActivity() : TestActivity() {
     val primaryContainer by navigationContainer(
         containerId = primaryFragmentContainer,
-        accept = { it is GenericFragmentKey && it.id.startsWith("primary") }
+        filter = acceptKey { it is GenericFragmentKey && it.id.startsWith("primary") }
     )
     val secondaryContainer by navigationContainer(
         containerId = secondaryFragmentContainer,
-        accept = { it is GenericFragmentKey && it.id.startsWith("secondary") }
+        filter = acceptKey { it is GenericFragmentKey && it.id.startsWith("secondary") }
     )
 }

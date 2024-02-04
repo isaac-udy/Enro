@@ -4,11 +4,12 @@ import android.os.Parcelable
 import dev.enro.TestActivity
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
+import dev.enro.core.container.acceptKey
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.registerForNavigationResult
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import java.util.UUID
 
 object ActivityDestinations {
     @Parcelize
@@ -30,12 +31,12 @@ object ActivityDestinations {
 
     abstract class Activity : TestActivity() {
         private val navigation by navigationHandle<NavigationKey>()
-        private val primaryContainer by navigationContainer(primaryFragmentContainer) {
+        private val primaryContainer by navigationContainer(primaryFragmentContainer, filter = acceptKey {
             it is TestDestination.IntoPrimaryContainer
-        }
-        private val secondaryContainer by navigationContainer(secondaryFragmentContainer) {
+        })
+        private val secondaryContainer by navigationContainer(secondaryFragmentContainer, filter = acceptKey {
             it is TestDestination.IntoSecondaryContainer
-        }
+        })
         val resultChannel by registerForNavigationResult<TestResult> {
             navigation.registerTestResult(it)
         }
