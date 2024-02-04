@@ -7,6 +7,7 @@ nav_order: 1
 This introduction is designed to give a brief overview of how Enro works. It doesn't contain all the information you might need to know to get Enro installed in an application, or provide specific details about each of the topics covered. For this information please refer to the other documentation, such as: 
 * [Installing Enro](./installing-enro.md)
 * [Navigation Keys](./navigation-keys.md)
+* [Navigation Destinations](./navigation-destinations.md)
 * [Navigation Handles](./navigation-handles.md)
 * [Navigation Containers](./navigation-containers.md)
 * [Testing](./testing.md)

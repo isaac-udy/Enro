@@ -16,6 +16,8 @@ When you perform navigation, you ask for a particular NavigationKey to be opened
 
 From within a screen/destination, you have access to the NavigationKey that was used when opening it, and you can use this to read the inputs/parameters/arguments that were used.
 
+See [NavigationKeys](./navigation-keys.md) for more information.
+
 </details>
 
 <details markdown="block">
@@ -479,4 +481,10 @@ fun ExampleScreen() {
   <summary class="faq-summary">
     How do I do analytics when a user views a screen?
   </summary>
+
+Enro allows you to create `EnroPlugin` classes, and register these with the `navigationController`. These plugins can be used to perform side-effects when a screen is opened or closed, and can be used to perform analytics, logging, or any other side-effect. The `EnroLogger` plugin that is defined within the Enro library is an example of this. The key functions to be interested in are:
+* `onOpened(navigationHandle: NavigationHandle)` which is called the first time a screen is opened. This should be invoked once per screen.
+* `onActive(navigationHandle: NavigationHandle)` which is called whenever a screen becomes "active", which essentially means whenever that screen would receive the system back button press. This can be invoked multiple times for a screen. 
+* `onClosed(navigationHandle: NavigationHandle)` which is called whenever a screen is closed. This should be invoked once per screen.
+
 </details>
