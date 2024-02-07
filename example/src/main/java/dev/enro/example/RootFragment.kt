@@ -11,6 +11,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.acceptKey
+import dev.enro.core.container.acceptNone
 import dev.enro.core.containerManager
 import dev.enro.core.fragment.container.FragmentNavigationContainer
 import dev.enro.core.fragment.container.navigationContainer
@@ -32,7 +34,7 @@ class RootFragmentDestination : Fragment() {
     private val homeContainer by navigationContainer(
         containerId = R.id.homeContainer,
         root = { Home() },
-        accept = {
+        filter = acceptKey {
             it is Home || it is ExampleFragment || it is ExampleComposable
         },
         emptyBehavior = EmptyBehavior.CloseParent
@@ -50,7 +52,7 @@ class RootFragmentDestination : Fragment() {
     private val backstackContainer by navigationContainer(
         containerId = R.id.profileContainer,
         root = { Backstacks() },
-        accept = { false },
+        filter = acceptNone(),
         emptyBehavior = EmptyBehavior.Action {
             requireView().findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.home
             true
