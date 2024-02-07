@@ -31,6 +31,7 @@ import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
 import dev.enro.core.controller.usecase.GetNavigationAnimations
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.parentContainer
+import dev.enro.core.requestClose
 import dev.enro.extensions.getParcelableListCompat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -201,6 +202,13 @@ public abstract class NavigationContainer(
                 }
 
                 EmptyBehavior.CloseParent -> {
+                    if (context.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+                        context.getNavigationHandle().requestClose()
+                    }
+                    return true
+                }
+
+                EmptyBehavior.ForceCloseParent -> {
                     if (context.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
                         context.getNavigationHandle().close()
                     }
