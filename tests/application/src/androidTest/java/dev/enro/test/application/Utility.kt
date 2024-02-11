@@ -18,7 +18,7 @@ fun ComposeTestRule.waitForNavigationHandle(
     block: (NavigationHandle) -> Boolean
 ): NavigationHandle {
     var navigationHandle: NavigationHandle? = null
-    waitUntil {
+    waitUntil(5_000) {
         val activity = runOnUiThread {
             ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
                 .singleOrNull() as? ComponentActivity

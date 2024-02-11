@@ -5,6 +5,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onSiblings
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import dev.enro.test.application.activity.SimpleActivityRobot
 import dev.enro.test.application.compose.BottomNavigationRobot
 import dev.enro.test.application.compose.BottomSheetChangeSizeRobot
@@ -25,6 +26,7 @@ class SelectDestinationRobot(
 
     fun openBottomSheetCloseAndPresent() : BottomSheetCloseAndPresentRobot {
         composeRule.onNode(hasText("Bottom Sheet Close And Present"))
+            .performScrollTo()
             .onSiblings()
             .filterToOne(hasText("Push"))
             .performClick()
@@ -34,6 +36,7 @@ class SelectDestinationRobot(
 
     fun openBottomSheetChangeSize() : BottomSheetChangeSizeRobot {
         composeRule.onNode(hasText("Bottom Sheet Change Size"))
+            .performScrollTo()
             .onSiblings()
             .filterToOne(hasText("Push"))
             .performClick()
@@ -43,6 +46,7 @@ class SelectDestinationRobot(
 
     fun openLegacyBottomSheets() : LegacyBottomSheetsRobot {
         composeRule.onNode(hasText("Legacy Bottom Sheets"))
+            .performScrollTo()
             .onSiblings()
             .filterToOne(hasText("Push"))
             .performClick()
@@ -52,6 +56,7 @@ class SelectDestinationRobot(
 
     fun openSimpleActivity() : SimpleActivityRobot {
         composeRule.onNode(hasText("Simple Activity"))
+            .performScrollTo()
             .onSiblings()
             .filterToOne(hasText("Present"))
             .performClick()
@@ -60,7 +65,9 @@ class SelectDestinationRobot(
     }
 
     fun openUnboundBottomSheet() : UnboundBottomSheetRobot {
-        composeRule.onNode(hasText("Unbound Bottom Sheet"))
+        composeRule
+            .onNode(hasText("Unbound Bottom Sheet"))
+            .performScrollTo()
             .onSiblings()
             .filterToOne(hasText("Present"))
             .performClick()
@@ -70,6 +77,7 @@ class SelectDestinationRobot(
 
     fun openBottomNavigation() : BottomNavigationRobot {
         composeRule.onNode(hasText("Bottom Navigation"))
+            .performScrollTo()
             .onSiblings()
             .filterToOne(hasText("Push"))
             .performClick()
