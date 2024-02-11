@@ -279,6 +279,7 @@ public class ComposableNavigationContainer internal constructor(
         DisposableEffect(key) {
             val containerManager = context.containerManager
             onDispose {
+                if (!context.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return@onDispose
                 if (containerManager.activeContainer == this@ComposableNavigationContainer) {
                     val previouslyActiveContainer = backstack.active?.internal?.previouslyActiveContainer?.takeIf { it != key }
                     containerManager.setActiveContainerByKey(previouslyActiveContainer)
