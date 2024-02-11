@@ -100,14 +100,14 @@ fun RootScreen() {
 @NavigationDestination(BottomNavigation.MutliContainer::class)
 fun MultiContainerBottomNavigationScreen() {
     val firstContainer = rememberNavigationContainer(
-        key = NavigationContainerKey.FromName("firstContainer"),
+        key = NavigationContainerKey.FromName("FirstTab"),
         root = BottomNavigation.FirstTab,
         filter = acceptNone(),
         emptyBehavior = EmptyBehavior.CloseParent,
     )
 
     val secondContainer = rememberNavigationContainer(
-        key = NavigationContainerKey.FromName("secondContainer"),
+        key = NavigationContainerKey.FromName("SecondTab"),
         root = BottomNavigation.SecondTab,
         filter = acceptNone(),
         emptyBehavior = remember { EmptyBehavior.Action {
@@ -117,7 +117,7 @@ fun MultiContainerBottomNavigationScreen() {
     )
 
     val thirdContainer = rememberNavigationContainer(
-        key = NavigationContainerKey.FromName("thirdContainer"),
+        key = NavigationContainerKey.FromName("ThirdTab"),
         root = BottomNavigation.ThirdTab,
         filter = acceptNone(),
         emptyBehavior = remember { EmptyBehavior.Action {
@@ -147,7 +147,7 @@ fun MultiContainerBottomNavigationScreen() {
                 BottomNavigationItem(
                     selected = it == group.activeContainer,
                     onClick = { it.setActive() },
-                    label = { Text(it.key::class.simpleName ?: "") },
+                    label = { Text(it.key.name) },
                     icon = { Text((group.containers.indexOf(it) + 1).toString()) }
                 )
             }
@@ -292,7 +292,10 @@ fun ResultScreen() {
     val navigation = navigationHandle<BottomNavigation.ResultScreen>()
     var text by rememberSaveable { mutableStateOf("") }
     TitledColumn("Result") {
-        TextField(value = text, onValueChange = { text = it })
+        TextField(
+            value = text,
+            onValueChange = { text = it }
+        )
         Button(onClick = { navigation.closeWithResult(text) }) {
             Text("Send Result")
         }

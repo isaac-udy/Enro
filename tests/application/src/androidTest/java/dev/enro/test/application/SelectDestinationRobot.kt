@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onSiblings
 import androidx.compose.ui.test.performClick
 import dev.enro.test.application.activity.SimpleActivityRobot
+import dev.enro.test.application.compose.BottomNavigationRobot
 import dev.enro.test.application.compose.BottomSheetChangeSizeRobot
 import dev.enro.test.application.compose.BottomSheetCloseAndPresentRobot
 import dev.enro.test.application.compose.LegacyBottomSheetsRobot
@@ -65,5 +66,14 @@ class SelectDestinationRobot(
             .performClick()
 
         return UnboundBottomSheetRobot(composeRule)
+    }
+
+    fun openBottomNavigation() : BottomNavigationRobot {
+        composeRule.onNode(hasText("Bottom Navigation"))
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+
+        return BottomNavigationRobot(composeRule)
     }
 }
