@@ -213,11 +213,12 @@ fun SingleContainerBackstackManipulationBottomNavigation() {
             container.Render()
         }
         BottomNavigation {
-            listOf(
+            val tabs = listOf(
                 BottomNavigation.FirstTab,
                 BottomNavigation.SecondTab,
                 BottomNavigation.ThirdTab,
-            ).forEachIndexed { index, tabKey ->
+            )
+            tabs.forEachIndexed { index, tabKey ->
                 val activeKey = container.backstack.lastOrNull()?.navigationKey
 
                 BottomNavigationItem(
