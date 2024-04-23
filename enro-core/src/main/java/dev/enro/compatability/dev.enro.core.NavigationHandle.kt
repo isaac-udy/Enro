@@ -8,7 +8,7 @@ public fun NavigationHandle.forward(key: NavigationKey) {
     executeInstruction(NavigationInstruction.Forward(key))
 }
 
-@Deprecated("You should use a close instruction followed by a push or present")
+@Deprecated("You should use a push or present followed by a close instruction")
 public fun NavigationHandle.replace(key: NavigationKey) {
     executeInstruction(NavigationInstruction.Replace(key))
 }

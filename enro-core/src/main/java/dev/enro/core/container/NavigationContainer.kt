@@ -29,9 +29,12 @@ import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
 import dev.enro.core.controller.usecase.GetNavigationAnimations
+import dev.enro.core.findContainer
 import dev.enro.core.getNavigationHandle
+import dev.enro.core.leafContext
 import dev.enro.core.parentContainer
 import dev.enro.core.requestClose
+import dev.enro.core.rootContext
 import dev.enro.extensions.getParcelableListCompat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -62,7 +65,7 @@ public abstract class NavigationContainer(
         .apply(interceptor)
         .build()
 
-    public abstract val childContext: NavigationContext<*>?
+    public val childContext: NavigationContext<*>? get() = getChildContext(ContextFilter.Active)
     public abstract val isVisible: Boolean
 
     public override val isActive: Boolean
@@ -70,6 +73,8 @@ public abstract class NavigationContainer(
 
     public override fun setActive() {
         context.containerManager.setActiveContainer(this)
+        val parent = parentContainer() ?: return
+        if (parent != this) parent.setActive()
     }
 
     private val mutableBackstackFlow: MutableStateFlow<NavigationBackstack> =
@@ -149,6 +154,8 @@ public abstract class NavigationContainer(
             }
         }
     }
+
+    public abstract fun getChildContext(contextFilter: ContextFilter): NavigationContext<*>?
 
     // Returns true if the backstack was able to be updated successfully
     protected abstract fun onBackstackUpdated(
@@ -231,14 +238,17 @@ public abstract class NavigationContainer(
         val isEmpty = backstackTransition.activeBackstack.isEmpty()
 
         if (!isClosing) {
-            context.containerManager.setActiveContainer(this)
+            setActive()
             return
         }
 
         if (backstackTransition.exitingInstruction != null) {
-            context.containerManager.setActiveContainerByKey(
-                backstackTransition.exitingInstruction.internal.previouslyActiveContainer
-            )
+            val previouslyActiveContainer = backstackTransition.exitingInstruction.internal.previouslyActiveContainer
+            if (previouslyActiveContainer != null) {
+                context.rootContext()
+                    .findContainer(previouslyActiveContainer)
+                    ?.setActive()
+            }
         }
 
         if (isActive && isEmpty) context.containerManager.setActiveContainer(null)
@@ -248,9 +258,16 @@ public abstract class NavigationContainer(
         return map {
             if (it.internal.previouslyActiveContainer != null) return@map it
             it.internal.copy(
-                previouslyActiveContainer = context.containerManager.activeContainer?.key
+                previouslyActiveContainer = context.rootContext().leafContext().parentContainer()?.key
             )
         }.toBackstack()
+    }
+
+    public sealed class ContextFilter {
+        public data object Active : ContextFilter()
+        public data object ActivePresented : ContextFilter()
+        public data object ActivePushed : ContextFilter()
+        public data class WithId(val id: String) : ContextFilter()
     }
 
     public companion object {

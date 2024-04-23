@@ -66,17 +66,8 @@ public class FragmentNavigationContainer internal constructor(
             containerView?.isVisible = value
         }
 
-    override val childContext: NavigationContext<out Fragment>?
-        get() {
-            val fragment =
-                backstack.lastOrNull()?.let { fragmentManager.findFragmentByTag(it.instructionId) }
-                    ?: fragmentManager.findFragmentById(containerId)
-            return fragment?.navigationContext
-        }
-
     private val ownedFragments = mutableSetOf<String>()
     private val restoredFragmentStates = mutableMapOf<String, Fragment.SavedState>()
-
 
     init {
         fragmentManager.registerFragmentLifecycleCallbacks(object : FragmentLifecycleCallbacks() {
@@ -117,6 +108,29 @@ public class FragmentNavigationContainer internal constructor(
         }
         ownedFragments.addAll(bundle.getStringArrayList(OWNED_FRAGMENTS_KEY).orEmpty())
         super.restore(bundle)
+    }
+
+    override fun getChildContext(contextFilter: ContextFilter): NavigationContext<*>? {
+        val fragment = when(contextFilter) {
+            is ContextFilter.Active -> {
+                backstack.lastOrNull()?.let { fragmentManager.findFragmentByTag(it.instructionId) }
+                    ?: fragmentManager.findFragmentById(containerId)
+            }
+            is ContextFilter.ActivePushed -> {
+                backstack
+                    .lastOrNull { it.navigationDirection == NavigationDirection.Push }
+                    ?.let { fragmentManager.findFragmentByTag(it.instructionId) }
+            }
+            is ContextFilter.ActivePresented -> {
+                backstack.takeLastWhile { it.navigationDirection != NavigationDirection.Push }
+                    .lastOrNull { it.navigationDirection == NavigationDirection.Present }
+                    ?.let { fragmentManager.findFragmentByTag(it.instructionId) }
+            }
+            is ContextFilter.WithId -> {
+                fragmentManager.findFragmentByTag(contextFilter.id)
+            }
+        }
+        return fragment?.navigationContext
     }
 
     override fun onBackstackUpdated(

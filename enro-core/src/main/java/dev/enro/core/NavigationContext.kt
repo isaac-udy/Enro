@@ -38,7 +38,18 @@ public class NavigationContext<ContextType : Any> internal constructor(
     public val controller: NavigationController get() = getController()
     public val parentContext: NavigationContext<*>? get() = getParentContext()
 
+    /**
+     * The arguments provided to this NavigationContext. It is possible to read the open instruction from these arguments,
+     * but it may be different than the open instruction attached to the NavigationHandle. If the arguments do not contain
+     * a NavigationInstruction, a NavigationInstruction is still provided to the NavigationHandle, which will be either a
+     * default key (if one is provided with the destination) or a "NoNavigationKey" NavigationKey.
+     *
+     * Generally it should be preferred to read the instruction property, rather than read the instruction from the arguments.
+     */
+    @AdvancedEnroApi
     public val arguments: Bundle get() = getArguments()
+
+    public val instruction: NavigationInstruction.Open<*> by lazy { getNavigationHandle().instruction }
     public val viewModelStoreOwner: ViewModelStoreOwner get() = getViewModelStoreOwner()
     public val savedStateRegistryOwner: SavedStateRegistryOwner get() = getSavedStateRegistryOwner()
     public val lifecycleOwner: LifecycleOwner get() = getLifecycleOwner()

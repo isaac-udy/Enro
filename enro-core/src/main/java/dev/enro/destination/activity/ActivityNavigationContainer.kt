@@ -20,7 +20,6 @@ import dev.enro.core.container.backstackOf
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.GetNavigationBinding
 import dev.enro.core.controller.usecase.HostInstructionAs
-import dev.enro.core.getNavigationHandle
 
 internal class ActivityNavigationContainer internal constructor(
     activityContext: NavigationContext<out ComponentActivity>,
@@ -33,21 +32,23 @@ internal class ActivityNavigationContainer internal constructor(
     animations = { },
     instructionFilter = acceptAll(),
 ) {
-    override val childContext: NavigationContext<*>
-        get() = context
-
     override val isVisible: Boolean
         get() = context.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
 
     private val rootInstruction: AnyOpenInstruction
-        get() = childContext.getNavigationHandle().instruction
+        get() = getChildContext(ContextFilter.Active).instruction
 
     init {
         setBackstack(backstackOf(rootInstruction))
     }
 
+    override fun getChildContext(contextFilter: ContextFilter): NavigationContext<*> {
+        return context
+    }
+
     override fun onBackstackUpdated(transition: NavigationBackstackTransition): Boolean {
         if (transition.activeBackstack.singleOrNull()?.instructionId == rootInstruction.instructionId) return true
+        val childContext = requireNotNull(childContext)
         setBackstack(backstackOf(rootInstruction))
 
         val activeInstructionIsPresent = transition.activeBackstack.any { it.instructionId == rootInstruction.instructionId }

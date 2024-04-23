@@ -10,7 +10,9 @@ import dev.enro.test.application.activity.SimpleActivityRobot
 import dev.enro.test.application.compose.BottomNavigationRobot
 import dev.enro.test.application.compose.BottomSheetChangeSizeRobot
 import dev.enro.test.application.compose.BottomSheetCloseAndPresentRobot
+import dev.enro.test.application.compose.FindContextRobot
 import dev.enro.test.application.compose.LegacyBottomSheetsRobot
+import dev.enro.test.application.compose.SyntheticViewModelAccessRobot
 import dev.enro.test.application.fragment.UnboundBottomSheetRobot
 import dev.enro.tests.application.SelectDestination
 
@@ -83,5 +85,25 @@ class SelectDestinationRobot(
             .performClick()
 
         return BottomNavigationRobot(composeRule)
+    }
+
+    fun openSyntheticViewModelAccess() : SyntheticViewModelAccessRobot {
+        composeRule.onNode(hasText("Synthetic View Model Access"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+
+        return SyntheticViewModelAccessRobot(composeRule)
+    }
+
+    fun openFindContext() : FindContextRobot {
+        composeRule.onNode(hasText("Find Context"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+
+        return FindContextRobot(composeRule)
     }
 }

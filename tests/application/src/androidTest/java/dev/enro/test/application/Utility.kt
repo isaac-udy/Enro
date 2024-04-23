@@ -26,7 +26,8 @@ fun ComposeTestRule.waitForNavigationHandle(
 
         var activeContext: NavigationContext<*>? = activity.navigationContext
         while (activeContext != null) {
-            navigationHandle = activeContext.getNavigationHandle()
+            navigationHandle = runCatching { activeContext!!.getNavigationHandle() }.getOrNull()
+                ?: return@waitUntil false
             if (block(navigationHandle!!)) {
                 return@waitUntil true
             }

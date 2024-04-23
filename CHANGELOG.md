@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+* Updated dependency versions
+* Added `instruction` property directly to `NavigationContext`, to provide easy access to the instruction
+* Added extensions `getViewModel` and `requireViewModel` to `NavigationContext` to access `ViewModels` directly from a context reference
+* Added extensions for `findContext` and `findActiveContext` to `NavigationContext` to allow for finding other NavigationContexts from a context reference
+* Updated `NavigationContainer` to add `getChildContext` which allows finding specific Active/ActivePushed/ActivePresented/Specific contexts from a container reference
+* Added `instruction` property to `NavigationContext`, and marked `NavigationContext` as `@AdvancedEnroApi`
+
 ## 2.3.0
 * Updated NavigationFlow to return from `next` after `onCompleted` is called, rather than continuing to set the backstack from the flow
 * Updated NavigationContainer to take a `filter` of type NavigationContainerFilter instead of an `accept: (NavigationKey) -> Boolean` lambda. This allows for more advanced filtering of NavigationKeys, and this API will likely be expanded in the future. 

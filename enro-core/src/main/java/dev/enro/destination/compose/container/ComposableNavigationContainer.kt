@@ -63,16 +63,6 @@ public class ComposableNavigationContainer internal constructor(
 
     private val restoredDestinationState = mutableMapOf<String, Bundle>()
     private var destinationOwners by mutableStateOf<List<ComposableDestinationOwner>>(emptyList())
-    private val currentDestination by derivedStateOf {
-        destinationOwners
-            .lastOrNull {
-                it.instruction == backstack.active
-            }
-    }
-
-    override val childContext: NavigationContext<out ComposableDestination>? by derivedStateOf {
-        currentDestination?.destination?.context
-    }
 
     override val isVisible: Boolean
         get() = true
@@ -119,7 +109,10 @@ public class ComposableNavigationContainer internal constructor(
         destinationOwners
             .filter { it.lifecycle.currentState != Lifecycle.State.DESTROYED }
             .forEach { destinationOwner ->
-                savedState.putBundle(DESTINATION_STATE_PREFIX_KEY + destinationOwner.instruction.instructionId, destinationOwner.save())
+                savedState.putBundle(
+                    DESTINATION_STATE_PREFIX_KEY + destinationOwner.instruction.instructionId,
+                    destinationOwner.save()
+                )
             }
         return savedState
     }
@@ -135,6 +128,36 @@ public class ComposableNavigationContainer internal constructor(
         super.restore(bundle)
     }
 
+    override fun getChildContext(contextFilter: ContextFilter): NavigationContext<*>? {
+        return when (contextFilter) {
+            is ContextFilter.Active -> destinationOwners
+                .lastOrNull { it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED) }
+                ?.destination
+                ?.context
+
+            is ContextFilter.ActivePushed -> destinationOwners
+                .lastOrNull {
+                    it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED) &&
+                            it.instruction.navigationDirection == NavigationDirection.Push
+                }
+                ?.destination
+                ?.context
+
+            is ContextFilter.ActivePresented -> destinationOwners
+                .takeLastWhile { it.instruction.navigationDirection != NavigationDirection.Push }
+                .lastOrNull {
+                    it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED) &&
+                            it.instruction.navigationDirection == NavigationDirection.Push
+                }
+                ?.destination
+                ?.context
+
+            is ContextFilter.WithId -> destinationOwners
+                .lastOrNull { it.instruction.instructionId == contextFilter.id }
+                ?.destination
+                ?.context
+        }
+    }
 
     @OptIn(ExperimentalMaterialApi::class)
     override fun onBackstackUpdated(
@@ -153,14 +176,14 @@ public class ComposableNavigationContainer internal constructor(
         transition.removed
             .mapNotNull { activeDestinations[it]?.destination }
             .forEach {
-                when(it) {
+                when (it) {
                     is DialogDestination -> it.dialogConfiguration.isDismissed.value = true
                     is BottomSheetDestination -> it.bottomSheetConfiguration.isDismissed.value = true
                 }
             }
 
         backstack.forEach { instruction ->
-            if(activeDestinations[instruction] == null) {
+            if (activeDestinations[instruction] == null) {
                 activeDestinations[instruction] = createDestinationOwner(instruction)
             }
         }
@@ -174,7 +197,7 @@ public class ComposableNavigationContainer internal constructor(
             ?.let { visible.add(it) }
 
         destinationOwners.forEach {
-            if(activeDestinations[it.instruction] == null) {
+            if (activeDestinations[it.instruction] == null) {
                 it.transitionState.targetState = false
             }
         }
@@ -219,12 +242,14 @@ public class ComposableNavigationContainer internal constructor(
             context.contextReference is Fragment && !context.contextReference.isAdded -> true
             else -> false
         }
-        val presented = transition.activeBackstack.takeLastWhile { it.navigationDirection is NavigationDirection.Present }.toSet()
+        val presented =
+            transition.activeBackstack.takeLastWhile { it.navigationDirection is NavigationDirection.Present }.toSet()
         val activePush = transition.activeBackstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }
         val activePresented = presented.lastOrNull()
         destinationOwners.forEach { destinationOwner ->
             val instruction = destinationOwner.instruction
-            val isPushedDialogOrBottomSheet = ((destinationOwner.destination is DialogDestination || destinationOwner.destination is BottomSheetDestination) && activePresented != null)
+            val isPushedDialogOrBottomSheet =
+                ((destinationOwner.destination is DialogDestination || destinationOwner.destination is BottomSheetDestination) && activePresented != null)
 
             destinationOwner.transitionState.targetState = when (instruction) {
                 activePresented -> !isParentBeingRemoved
