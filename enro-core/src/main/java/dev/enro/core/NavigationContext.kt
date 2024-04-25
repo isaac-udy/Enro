@@ -201,10 +201,9 @@ public fun NavigationContext<*>.leafContext(): NavigationContext<*> {
         else -> null
     }
     return containerManager.activeContainer?.childContext?.leafContext()
-        ?: fragmentManager?.primaryNavigationFragment?.navigationContext?.leafContext()
+        ?: runCatching { fragmentManager?.primaryNavigationFragment?.navigationContext }.getOrNull()?.leafContext()
         ?: this
 }
-
 public val ComponentActivity.containerManager: NavigationContainerManager get() = navigationContext.containerManager
 public val Fragment.containerManager: NavigationContainerManager get() = navigationContext.containerManager
 public val ComposableDestination.containerManager: NavigationContainerManager get() = navigationContext.containerManager
