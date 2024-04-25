@@ -7,6 +7,7 @@
 * Added extensions for `findContext` and `findActiveContext` to `NavigationContext` to allow for finding other NavigationContexts from a context reference
 * Updated `NavigationContainer` to add `getChildContext` which allows finding specific Active/ActivePushed/ActivePresented/Specific contexts from a container reference
 * Added `instruction` property to `NavigationContext`, and marked `NavigationContext` as `@AdvancedEnroApi`
+* Added support for androidx.lifecycle `2.8.0-beta01` and the removal of setTagIfAbsent/getTag (will use addCloseable/getCloseable if it is possible)
 
 ## 2.3.0
 * Updated NavigationFlow to return from `next` after `onCompleted` is called, rather than continuing to set the backstack from the flow
