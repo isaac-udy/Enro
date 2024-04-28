@@ -310,9 +310,7 @@ public class ComposableNavigationContainer internal constructor(
                         ContainerRegistrationStrategy.DisposeWithCompositionDoNotSave -> Unit
                         ContainerRegistrationStrategy.DisposeWithLifecycle -> Unit
                     }
-                    if (activeBeforeRestore != null) {
-                        context.containerManager.setActiveContainerByKey(activeBeforeRestore)
-                    }
+                    context.containerManager.setActiveContainerByKey(activeBeforeRestore)
                 }
 
                 override fun SaverScope.save(value: Unit): Bundle? = when(registrationStrategy) {
