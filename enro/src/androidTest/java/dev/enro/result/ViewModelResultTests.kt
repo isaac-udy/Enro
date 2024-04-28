@@ -4,15 +4,22 @@ package dev.enro.result
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.test.core.app.ActivityScenario
-import dev.enro.*
+import dev.enro.DefaultActivity
+import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.closeWithResult
 import dev.enro.core.forward
 import dev.enro.core.result.registerForNavigationResult
+import dev.enro.expectFragment
+import dev.enro.getNavigationHandle
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
+import dev.enro.waitFor
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
@@ -52,7 +59,10 @@ class OrchestratorViewModel : ViewModel() {
     }
 
     init {
-        resultOne.open(FirstStepKey())
+        viewModelScope.launch {
+            delay(100)
+            resultOne.open(FirstStepKey())
+        }
     }
 }
 
@@ -70,7 +80,10 @@ class FirstStepKey : NavigationKey.WithResult<String>
 class FirstStepViewModel : ViewModel() {
     private val navigation by navigationHandle<FirstStepKey>()
     init {
-        navigation.closeWithResult("FirstStep")
+        viewModelScope.launch {
+            delay(100)
+            navigation.closeWithResult("FirstStep")
+        }
     }
 }
 
@@ -91,7 +104,10 @@ class SecondStepViewModel : ViewModel() {
         navigation.closeWithResult("SecondStep($it)")
     }
     init {
-        nested.open(SecondStepNestedKey())
+        viewModelScope.launch {
+            delay(100)
+            nested.open(SecondStepNestedKey())
+        }
     }
 }
 
@@ -110,7 +126,10 @@ class SecondStepNestedKey : NavigationKey.WithResult<String>
 class SecondStepNestedViewModel : ViewModel() {
     private val navigation by navigationHandle<SecondStepNestedKey>()
     init {
-        navigation.closeWithResult("SecondStepNested")
+        viewModelScope.launch {
+            delay(100)
+            navigation.closeWithResult("SecondStepNested")
+        }
     }
 }
 
