@@ -299,10 +299,20 @@ public class ComposableNavigationContainer internal constructor(
                 mutableStateOf(Unit)
             },
             stateSaver = object : Saver<Unit, Bundle> {
-                override fun restore(value: Bundle) = when(registrationStrategy) {
-                    ContainerRegistrationStrategy.DisposeWithComposition -> this@ComposableNavigationContainer.restore(value)
-                    ContainerRegistrationStrategy.DisposeWithCompositionDoNotSave -> Unit
-                    ContainerRegistrationStrategy.DisposeWithLifecycle -> Unit
+                override fun restore(value: Bundle) {
+                    // When restoring, there are some cases where the active container is not the container that is being restored,
+                    // and performing the restore might set that container to be active when that's not actually what we want,
+                    // so we're going to remember the currently active container key, before performing the restore,
+                    // and then re-set the active container afterwards.
+                    val activeBeforeRestore = context.containerManager.activeContainer?.key
+                    when (registrationStrategy) {
+                        ContainerRegistrationStrategy.DisposeWithComposition -> this@ComposableNavigationContainer.restore(value)
+                        ContainerRegistrationStrategy.DisposeWithCompositionDoNotSave -> Unit
+                        ContainerRegistrationStrategy.DisposeWithLifecycle -> Unit
+                    }
+                    if (activeBeforeRestore != null) {
+                        context.containerManager.setActiveContainerByKey(activeBeforeRestore)
+                    }
                 }
 
                 override fun SaverScope.save(value: Unit): Bundle? = when(registrationStrategy) {

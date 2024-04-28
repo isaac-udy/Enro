@@ -545,6 +545,7 @@ class NavigationContainerTests {
             .forward(GenericComposableKey("Five"))
         expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Five" }
 
+        waitFor { activity.primaryContainer.isActive }
         scenario.recreate()
         activity = expectActivity()
         assertEquals(
