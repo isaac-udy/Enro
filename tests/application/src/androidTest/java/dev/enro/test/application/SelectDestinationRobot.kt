@@ -13,6 +13,7 @@ import dev.enro.test.application.compose.BottomSheetCloseAndPresentRobot
 import dev.enro.test.application.compose.FindContextRobot
 import dev.enro.test.application.compose.LegacyBottomSheetsRobot
 import dev.enro.test.application.compose.SyntheticViewModelAccessRobot
+import dev.enro.test.application.compose.results.ComposeEmbeddedResultFlowRobot
 import dev.enro.test.application.fragment.UnboundBottomSheetRobot
 import dev.enro.tests.application.SelectDestination
 
@@ -105,5 +106,15 @@ class SelectDestinationRobot(
             .performClick()
 
         return FindContextRobot(composeRule)
+    }
+
+    fun openComposeEmbeddedResultFlow(): ComposeEmbeddedResultFlowRobot {
+        composeRule.onNode(hasText("Compose Embedded Result Flow"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+
+        return ComposeEmbeddedResultFlowRobot(composeRule)
     }
 }

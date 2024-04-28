@@ -20,6 +20,7 @@ import dev.enro.core.container.backstackOf
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.GetNavigationBinding
 import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.core.result.EnroResult
 
 internal class ActivityNavigationContainer internal constructor(
     activityContext: NavigationContext<out ComponentActivity>,
@@ -47,6 +48,14 @@ internal class ActivityNavigationContainer internal constructor(
     }
 
     override fun onBackstackUpdated(transition: NavigationBackstackTransition): Boolean {
+        // When the backstack is updated, we need to check if there are pending results and close
+        // immediately to ensure forwarding results work correctly
+        val result = EnroResult.from(context.controller)
+        if (result.hasPendingResultFrom(context.instruction)) {
+            context.activity.finish()
+            return true
+        }
+
         if (transition.activeBackstack.singleOrNull()?.instructionId == rootInstruction.instructionId) return true
         val childContext = requireNotNull(childContext)
         setBackstack(backstackOf(rootInstruction))

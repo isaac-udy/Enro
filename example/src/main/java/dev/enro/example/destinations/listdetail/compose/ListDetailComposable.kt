@@ -16,7 +16,6 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.accept
-import dev.enro.core.container.key
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

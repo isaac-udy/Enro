@@ -1,5 +1,6 @@
 package dev.enro.core.result
 
+import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationHandle
 import dev.enro.core.controller.NavigationController
@@ -38,6 +39,9 @@ internal class EnroResult: EnroPlugin() {
         }
     }
 
+    internal fun hasPendingResultFrom(instruction: AnyOpenInstruction): Boolean {
+        return pendingResults[instruction.internal.resultId] != null
+    }
 
     private fun consumePendingResult(resultChannelId: ResultChannelId): PendingResult? {
         val result = pendingResults[resultChannelId] ?: return null

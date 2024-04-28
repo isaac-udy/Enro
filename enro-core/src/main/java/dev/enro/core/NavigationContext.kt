@@ -26,6 +26,14 @@ import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 
+/**
+ * NavigationContext represents a context in which navigation can occur. In Android, this may be a Fragment, Activity, or Composable.
+ *
+ * When constructing a NavigationContext, the contextReference is the actual object that the NavigationContext represents
+ * (e.g. a Fragment, Activity or Composable), and the other parameters are functions that can be used to retrieve information
+ * about the context. The get functions are invoked lazily, either when the are accessed for the first time,
+ * or once the NavigationContext is bound to a NavigationHandle.
+ */
 public class NavigationContext<ContextType : Any> internal constructor(
     public val contextReference: ContextType,
     private val getController: () -> NavigationController,
@@ -35,8 +43,8 @@ public class NavigationContext<ContextType : Any> internal constructor(
     private val getSavedStateRegistryOwner: () -> SavedStateRegistryOwner,
     private val getLifecycleOwner: () -> LifecycleOwner,
 ) {
-    public val controller: NavigationController get() = getController()
-    public val parentContext: NavigationContext<*>? get() = getParentContext()
+    public val controller: NavigationController by lazy { getController() }
+    public val parentContext: NavigationContext<*>? by lazy { getParentContext() }
 
     /**
      * The arguments provided to this NavigationContext. It is possible to read the open instruction from these arguments,
@@ -47,15 +55,34 @@ public class NavigationContext<ContextType : Any> internal constructor(
      * Generally it should be preferred to read the instruction property, rather than read the instruction from the arguments.
      */
     @AdvancedEnroApi
-    public val arguments: Bundle get() = getArguments()
+    public val arguments: Bundle by lazy { getArguments() }
 
-    public val instruction: NavigationInstruction.Open<*> by lazy { getNavigationHandle().instruction }
-    public val viewModelStoreOwner: ViewModelStoreOwner get() = getViewModelStoreOwner()
-    public val savedStateRegistryOwner: SavedStateRegistryOwner get() = getSavedStateRegistryOwner()
-    public val lifecycleOwner: LifecycleOwner get() = getLifecycleOwner()
+    private lateinit var _instruction: NavigationInstruction.Open<*>
+    public val instruction: NavigationInstruction.Open<*> get() = _instruction
+
+    public val viewModelStoreOwner: ViewModelStoreOwner by lazy { getViewModelStoreOwner() }
+    public val savedStateRegistryOwner: SavedStateRegistryOwner by lazy { getSavedStateRegistryOwner() }
+    public val lifecycleOwner: LifecycleOwner by lazy { getLifecycleOwner() }
     public val lifecycle: Lifecycle get() = lifecycleOwner.lifecycle
 
     public val containerManager: NavigationContainerManager = NavigationContainerManager()
+
+    private var _navigationHandle: NavigationHandle? = null
+    public val navigationHandle: NavigationHandle get() = requireNotNull(_navigationHandle)
+
+    internal fun bind(navigationHandle: NavigationHandle) {
+        _navigationHandle = navigationHandle
+        _instruction = navigationHandle.instruction
+
+        // Invoke hashcode on all lazy items to ensure they are initialized
+
+        controller.hashCode()
+        parentContext.hashCode()
+        arguments.hashCode()
+        viewModelStoreOwner.hashCode()
+        savedStateRegistryOwner.hashCode()
+        lifecycleOwner.hashCode()
+    }
 }
 
 public val NavigationContext<out Fragment>.fragment: Fragment get() = contextReference

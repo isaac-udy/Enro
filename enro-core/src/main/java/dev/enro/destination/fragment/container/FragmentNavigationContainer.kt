@@ -108,22 +108,27 @@ public class FragmentNavigationContainer internal constructor(
         }
         ownedFragments.addAll(bundle.getStringArrayList(OWNED_FRAGMENTS_KEY).orEmpty())
         super.restore(bundle)
+
+        // After the backstack has been set, we're going to remove the restored states which aren't in the backstack
+        val instructionsInBackstack = backstack.map { it.instructionId }.toSet()
+        restoredFragmentStates.keys.minus(instructionsInBackstack).forEach {
+            restoredFragmentStates.remove(it)
+        }
     }
 
     override fun getChildContext(contextFilter: ContextFilter): NavigationContext<*>? {
         val fragment = when(contextFilter) {
             is ContextFilter.Active -> {
-                backstack.lastOrNull()?.let { fragmentManager.findFragmentByTag(it.instructionId) }
+                backstack.active
+                    ?.let { fragmentManager.findFragmentByTag(it.instructionId) }
                     ?: fragmentManager.findFragmentById(containerId)
             }
             is ContextFilter.ActivePushed -> {
-                backstack
-                    .lastOrNull { it.navigationDirection == NavigationDirection.Push }
+                backstack.activePushed
                     ?.let { fragmentManager.findFragmentByTag(it.instructionId) }
             }
             is ContextFilter.ActivePresented -> {
-                backstack.takeLastWhile { it.navigationDirection != NavigationDirection.Push }
-                    .lastOrNull { it.navigationDirection == NavigationDirection.Present }
+                backstack.activePresented
                     ?.let { fragmentManager.findFragmentByTag(it.instructionId) }
             }
             is ContextFilter.WithId -> {

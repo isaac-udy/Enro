@@ -4,8 +4,18 @@ import android.annotation.SuppressLint
 import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.*
-import dev.enro.core.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withStarted
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationHandle
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.close
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.usecase.ExecuteCloseInstruction
 import dev.enro.core.controller.usecase.ExecuteContainerOperationInstruction
@@ -44,6 +54,7 @@ internal open class NavigationHandleViewModel(
             field = value
             if (value == null) return
 
+            value.bind(this)
             registerLifecycleObservers(value)
             executePendingInstruction()
 

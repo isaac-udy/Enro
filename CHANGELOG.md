@@ -7,6 +7,8 @@
 * Added extensions for `findContext` and `findActiveContext` to `NavigationContext` to allow for finding other NavigationContexts from a context reference
 * Updated `NavigationContainer` to add `getChildContext` which allows finding specific Active/ActivePushed/ActivePresented/Specific contexts from a container reference
 * Added `instruction` property to `NavigationContext`, and marked `NavigationContext` as `@AdvancedEnroApi`
+* Updated `NavigationContext` and `NavigationHandle` to bind each other to allow for easier access to the other from either reference, and to ensure the lazy references are still available while the context is being referenced
+* Updated result handling for forwarding results to fix several bugs and improve behaviour (including correctly handling forwarded results through Activities)
 
 ## 2.3.0
 * Updated NavigationFlow to return from `next` after `onCompleted` is called, rather than continuing to set the backstack from the flow

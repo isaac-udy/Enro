@@ -21,6 +21,14 @@ public class NavigationContainerFilterBuilder internal constructor() {
         filters.add(NavigationInstructionFilter { predicate(it.navigationKey) })
     }
 
+    public fun key(key: NavigationKey) {
+        key { it == key }
+    }
+
+    public inline fun <reified T: NavigationKey> key() {
+        key { it is T }
+    }
+
     public fun instruction(predicate: (NavigationInstruction.Open<*>) -> Boolean) {
         filters.add(NavigationInstructionFilter(predicate))
     }
@@ -30,14 +38,6 @@ public class NavigationContainerFilterBuilder internal constructor() {
             filters.any { it.accept(instruction) }
         }
     }
-}
-
-public fun NavigationContainerFilterBuilder.key(key: NavigationKey) {
-    key { it == key }
-}
-
-public inline fun <reified T: NavigationKey> NavigationContainerFilterBuilder.key() {
-    key { it is T }
 }
 
 /**

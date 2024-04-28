@@ -34,7 +34,6 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.accept
-import dev.enro.core.container.key
 import dev.enro.core.findActiveContext
 import dev.enro.core.findContext
 import dev.enro.core.navigationContext

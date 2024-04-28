@@ -10,6 +10,9 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -48,7 +51,6 @@ public class ComposableNavigationContainer internal constructor(
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
-    initialBackstack: NavigationBackstack,
 ) : NavigationContainer(
     key = key,
     context = parentContext,
@@ -100,10 +102,6 @@ public class ComposableNavigationContainer internal constructor(
         }
     }
 
-    init {
-        restoreOrSetBackstack(initialBackstack)
-    }
-
     public override fun save(): Bundle {
         val savedState = super.save()
         destinationOwners
@@ -126,29 +124,28 @@ public class ComposableNavigationContainer internal constructor(
                 restoredDestinationState[instructionId] = restoredState
             }
         super.restore(bundle)
+
+        // After the backstack has been set, we're going to remove the restored states which aren't in the backstack
+        val instructionsInBackstack = backstack.map { it.instructionId }.toSet()
+        restoredDestinationState.keys.minus(instructionsInBackstack).forEach {
+            restoredDestinationState.remove(it)
+        }
     }
 
     override fun getChildContext(contextFilter: ContextFilter): NavigationContext<*>? {
         return when (contextFilter) {
             is ContextFilter.Active -> destinationOwners
-                .lastOrNull { it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED) }
+                .lastOrNull { it.instruction == backstack.active }
                 ?.destination
                 ?.context
 
             is ContextFilter.ActivePushed -> destinationOwners
-                .lastOrNull {
-                    it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED) &&
-                            it.instruction.navigationDirection == NavigationDirection.Push
-                }
+                .lastOrNull { it.instruction == backstack.activePushed }
                 ?.destination
                 ?.context
 
             is ContextFilter.ActivePresented -> destinationOwners
-                .takeLastWhile { it.instruction.navigationDirection != NavigationDirection.Push }
-                .lastOrNull {
-                    it.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED) &&
-                            it.instruction.navigationDirection == NavigationDirection.Push
-                }
+                .lastOrNull { it.instruction == backstack.activePresented }
                 ?.destination
                 ?.context
 
@@ -285,17 +282,42 @@ public class ComposableNavigationContainer internal constructor(
 
     @Composable
     internal fun registerWithContainerManager(
-        registrationStrategy: ContainerRegistrationStrategy
+        registrationStrategy: ContainerRegistrationStrategy,
+        initialBackstack: NavigationBackstack,
     ): Boolean {
         val registration = remember(key, registrationStrategy) {
             val containerManager = context.containerManager
             containerManager.addContainer(this@ComposableNavigationContainer)
             Closeable { destroy() }
         }
+
+        rememberSaveable<Unit> (
+            init = {
+                if (currentTransition === initialTransition) {
+                    restoreOrSetBackstack(initialBackstack)
+                }
+                mutableStateOf(Unit)
+            },
+            stateSaver = object : Saver<Unit, Bundle> {
+                override fun restore(value: Bundle) = when(registrationStrategy) {
+                    ContainerRegistrationStrategy.DisposeWithComposition -> this@ComposableNavigationContainer.restore(value)
+                    ContainerRegistrationStrategy.DisposeWithCompositionDoNotSave -> Unit
+                    ContainerRegistrationStrategy.DisposeWithLifecycle -> Unit
+                }
+
+                override fun SaverScope.save(value: Unit): Bundle? = when(registrationStrategy) {
+                    ContainerRegistrationStrategy.DisposeWithComposition -> this@ComposableNavigationContainer.save()
+                    ContainerRegistrationStrategy.DisposeWithCompositionDoNotSave -> null
+                    ContainerRegistrationStrategy.DisposeWithLifecycle -> null
+                }
+            }
+        )
+
         DisposableEffect(key, registrationStrategy) {
             onDispose {
                 when (registrationStrategy) {
                     ContainerRegistrationStrategy.DisposeWithComposition -> registration.close()
+                    ContainerRegistrationStrategy.DisposeWithCompositionDoNotSave -> registration.close()
                     ContainerRegistrationStrategy.DisposeWithLifecycle -> {} // handled by init
                 }
             }
@@ -316,6 +338,7 @@ public class ComposableNavigationContainer internal constructor(
             val lifecycleObserver = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_RESUME || event == Lifecycle.Event.ON_PAUSE) {
                     setVisibilityForBackstack(NavigationBackstackTransition(backstack to backstack))
+                    setBackstack(backstack)
                 }
             }
             context.lifecycle.addObserver(lifecycleObserver)
@@ -329,8 +352,32 @@ public class ComposableNavigationContainer internal constructor(
     }
 }
 
+/**
+ * The ContainerRegistrationStrategy defines how ComposableNavigationContainers are managed within the context
+ * of a Composable function. This is used to determine when the container should destroy child destinations (and associated
+ * resources such as ViewModels) and when the container should save and restore its state.
+ *
+ * By default, containers with dynamic NavigationContainerKeys use DisposeWithComposition, and containers with defined keys
+ * are managed with DisposeWithLifecycle.
+ *
+ * DisposeWithLifecycle will keep a container active while the parent lifecycle is active. This means that ViewModels and other
+ * resources will be kept alive, even if the container is not currently being rendered within the composition.
+ *
+ * DisposeWithComposition will keep a container active only while the container is in the composition, but will save the container's
+ * state using the Composable rememberSaveable. This means that ViewModels and other resources will be destroyed when the
+ * container is removed from the composition, but that when the container returns to the composition, it's state should be restored.
+ *
+ * DisposeWithCompositionDoNotSave will keep a container active only while the container is in the composition, and will not
+ * save the container's state. This means that ViewModels and other resources will be destroyed when the container is removed from
+ * the composition, and that when the container returns to the composition, it's state will not be restored. This behaviour
+ * should be used only in advanced cases where multiple dynamic navigation containers are required, and there is some other
+ * state saving management defined in application code using NavigationContainer's save/restore functions.
+ *
+ * This is an Advanced Enro API, and should only be used in cases where you are sure that you want to change the default behavior.
+ */
 @AdvancedEnroApi
 public sealed interface ContainerRegistrationStrategy {
     public data object DisposeWithComposition : ContainerRegistrationStrategy
+    public data object DisposeWithCompositionDoNotSave : ContainerRegistrationStrategy
     public data object DisposeWithLifecycle : ContainerRegistrationStrategy
 }

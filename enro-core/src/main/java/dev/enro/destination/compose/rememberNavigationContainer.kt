@@ -30,6 +30,12 @@ public fun rememberNavigationContainer(
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     filter: NavigationInstructionFilter = acceptAll(),
+    registrationStrategy: ContainerRegistrationStrategy = remember(key) {
+        when(key) {
+            is NavigationContainerKey.Dynamic -> ContainerRegistrationStrategy.DisposeWithComposition
+            else -> ContainerRegistrationStrategy.DisposeWithLifecycle
+        }
+    }
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
         key = key,
@@ -39,7 +45,8 @@ public fun rememberNavigationContainer(
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         animations = animations,
-        filter = filter
+        filter = filter,
+        registrationStrategy = registrationStrategy,
     )
 }
 
@@ -51,6 +58,12 @@ public fun rememberNavigationContainer(
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     filter: NavigationInstructionFilter = acceptAll(),
+    registrationStrategy: ContainerRegistrationStrategy = remember(key) {
+        when(key) {
+            is NavigationContainerKey.Dynamic -> ContainerRegistrationStrategy.DisposeWithComposition
+            else -> ContainerRegistrationStrategy.DisposeWithLifecycle
+        }
+    }
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
         key = key,
@@ -62,7 +75,8 @@ public fun rememberNavigationContainer(
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         animations = animations,
-        filter = filter
+        filter = filter,
+        registrationStrategy = registrationStrategy,
     )
 }
 
@@ -75,6 +89,12 @@ public fun rememberNavigationContainer(
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     filter: NavigationInstructionFilter = acceptAll(),
+    registrationStrategy: ContainerRegistrationStrategy = remember(key) {
+        when(key) {
+            is NavigationContainerKey.Dynamic -> ContainerRegistrationStrategy.DisposeWithComposition
+            else -> ContainerRegistrationStrategy.DisposeWithLifecycle
+        }
+    }
 ): ComposableNavigationContainer {
     val localNavigationHandle = navigationHandle()
     val context = LocalContext.current
@@ -96,16 +116,8 @@ public fun rememberNavigationContainer(
             emptyBehavior = emptyBehavior,
             interceptor = interceptor,
             animations = animations,
-            initialBackstack = initialBackstack,
         )
     }
-
-    navigationContainer.registerWithContainerManager(
-        when(key) {
-            is NavigationContainerKey.Dynamic -> ContainerRegistrationStrategy.DisposeWithComposition
-            is NavigationContainerKey.FromId -> ContainerRegistrationStrategy.DisposeWithLifecycle
-            is NavigationContainerKey.FromName -> ContainerRegistrationStrategy.DisposeWithLifecycle
-        }
-    )
+    navigationContainer.registerWithContainerManager(registrationStrategy, initialBackstack)
     return navigationContainer
 }

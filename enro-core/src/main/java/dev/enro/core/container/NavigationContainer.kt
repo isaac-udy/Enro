@@ -34,6 +34,7 @@ import dev.enro.core.getNavigationHandle
 import dev.enro.core.leafContext
 import dev.enro.core.parentContainer
 import dev.enro.core.requestClose
+import dev.enro.core.result.EnroResult
 import dev.enro.core.rootContext
 import dev.enro.extensions.getParcelableListCompat
 import kotlinx.coroutines.Job
@@ -126,13 +127,14 @@ public abstract class NavigationContainer(
         if (Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
-        if (backstack == backstackFlow.value) return@synchronized
         renderJob?.cancel()
         val processedBackstack = Compatibility.NavigationContainer
             .processBackstackForDeprecatedInstructionTypes(backstack, instructionFilter)
+            .filterBackstackForForwardedResults()
             .ensureOpeningTypeIsSet(context)
             .processBackstackForPreviouslyActiveContainer()
 
+        if (processedBackstack == backstackFlow.value) return@synchronized
         if (handleEmptyBehaviour(processedBackstack)) return
         val lastBackstack = mutableBackstack
         mutableBackstack = processedBackstack
@@ -261,6 +263,16 @@ public abstract class NavigationContainer(
                 previouslyActiveContainer = context.rootContext().leafContext().parentContainer()?.key
             )
         }.toBackstack()
+    }
+
+    // When using result forwarding, a NavigationContainer can be restored (or otherwise have the backstack set) for
+    // instructions that have a pending result already applied in the EnroResult result manager. In these cases,
+    // we want to filter out the instructions that already have a result applied. This is to ensure that when result
+    // forwarding happens across multiple containers, all destinations providing the result are closed, even if those
+    // destinations aren't visible/active when the forwarded result is added to EnroResult.
+    private fun NavigationBackstack.filterBackstackForForwardedResults(): NavigationBackstack {
+        val enroResult = EnroResult.from(context.controller)
+        return filter { !enroResult.hasPendingResultFrom(it) }.toBackstack()
     }
 
     public sealed class ContextFilter {

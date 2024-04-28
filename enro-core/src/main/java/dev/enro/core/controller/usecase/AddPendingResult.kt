@@ -4,7 +4,6 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.readOpenInstruction
 import dev.enro.core.result.AdvancedResultExtensions
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.internal.PendingResult
@@ -18,7 +17,7 @@ internal class AddPendingResult(
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Close
     ) {
-        val openInstruction = navigationContext.arguments.readOpenInstruction() ?: return
+        val openInstruction = navigationContext.instruction
         val navigationKey = openInstruction.internal.resultKey
             ?: openInstruction.navigationKey
 

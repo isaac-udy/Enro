@@ -56,6 +56,7 @@ import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.getNavigationHandle
 import dev.enro.extensions.rememberLifecycleState
+import java.lang.ref.WeakReference
 
 internal class ComposableDestinationOwner(
     parentContainer: NavigationContainer,
@@ -76,7 +77,8 @@ internal class ComposableDestinationOwner(
     internal lateinit var transition: Transition<Boolean>
     internal var animationOverride by mutableStateOf<NavigationAnimation.Composable?>(null)
     private var _parentContainer: NavigationContainer? = parentContainer
-    internal val parentContainer get() = _parentContainer!!
+    private var weakParentContainerReference: WeakReference<NavigationContainer> = WeakReference(parentContainer)
+    internal val parentContainer get() = weakParentContainerReference.get() ?: _parentContainer!!
 
     @SuppressLint("StaticFieldLeak")
     @Suppress("LeakingThis")

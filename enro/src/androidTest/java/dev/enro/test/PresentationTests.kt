@@ -25,7 +25,6 @@ import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.acceptKey
 import dev.enro.core.container.doNotAccept
-import dev.enro.core.container.key
 import dev.enro.core.directParentContainer
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.getNavigationHandle

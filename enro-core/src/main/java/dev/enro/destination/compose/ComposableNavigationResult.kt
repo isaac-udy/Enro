@@ -5,10 +5,12 @@ import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.usecase.createResultChannel
 import dev.enro.core.result.NavigationResultChannel
-import java.util.*
+import java.util.UUID
 
 
 @Composable
@@ -38,8 +40,25 @@ public inline fun <reified T : Any> registerForNavigationResult(
     }
 
     DisposableEffect(true) {
-        resultChannel.attach()
+        // In some cases, particularly with navigation to Activities,
+        // Composables aren't actually called through to onDispose, meaning the
+        // result channel sticks around as being "active" even though the associated
+        // activity is not started. We're adding a lifecycle observer here to ensure this
+        // is managed correctly.
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_START) {
+                resultChannel.attach()
+            }
+            if (event == Lifecycle.Event.ON_STOP) {
+                resultChannel.detach()
+            }
+        }
+        navigationHandle.lifecycle.addObserver(observer)
+        if (navigationHandle.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            resultChannel.attach()
+        }
         onDispose {
+            navigationHandle.lifecycle.removeObserver(observer)
             resultChannel.detach()
         }
     }

@@ -4,6 +4,7 @@ import android.os.Parcelable
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
 import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
 import kotlinx.parcelize.Parcelize
 
@@ -11,6 +12,12 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 public value class NavigationBackstack(private val backstack: List<AnyOpenInstruction>) : List<AnyOpenInstruction> by backstack, Parcelable {
     public val active: AnyOpenInstruction? get() = lastOrNull()
+
+    public val activePushed: AnyOpenInstruction? get() = lastOrNull { it.navigationDirection == NavigationDirection.Push }
+
+    public val activePresented: AnyOpenInstruction? get() = takeWhile { it.navigationDirection != NavigationDirection.Push }
+        .lastOrNull { it.navigationDirection == NavigationDirection.Push }
+
     internal val identity get() = System.identityHashCode(backstack)
 }
 
