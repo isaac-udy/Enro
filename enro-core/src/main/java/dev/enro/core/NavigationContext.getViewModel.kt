@@ -23,7 +23,7 @@ private class NavigationContextViewModelFactory(
 }
 
 private fun viewModelNotFoundError(context: NavigationContext<*>, modelClass: Class<*>): Nothing {
-    val key = context.instruction?.navigationKey
+    val key = context.instruction.navigationKey
     error("ViewModel ${modelClass.simpleName} was not found in NavigationContext with navigation key $key")
 }
 
