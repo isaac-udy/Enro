@@ -6,7 +6,12 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroException
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationHandle
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.NavigationController
@@ -29,6 +34,10 @@ internal class PreviewNavigationHandle(
     }
 }
 
+/**
+ * Provides a [PreviewNavigationHandle] in the context of the [content] parameter. This is useful for writing @Preview functions
+ * for Composables which require a NavigationHandle to be present.
+ */
 @Composable
 public fun <T : NavigationKey> EnroPreview(
     navigationKey: T,
