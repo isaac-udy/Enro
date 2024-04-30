@@ -212,8 +212,10 @@ public class FragmentNavigationContainer internal constructor(
                     }
                 }
             }
-            val activeFragmentAndInstruction =
-                toPresent.lastOrNull() ?: activePushed ?: return@commitNow
+            val activeFragmentAndInstruction = toPresent.lastOrNull()
+                ?: activePushed
+                ?: return@commitNow
+
             val activeFragment = activeFragmentAndInstruction.fragment
             setPrimaryNavigationFragment(activeFragment)
         }
@@ -223,6 +225,7 @@ public class FragmentNavigationContainer internal constructor(
                 fragmentManager.findFragmentByTag(it.instructionId)
             }
             ?.let { primaryFragment ->
+                if (fragmentManager.primaryNavigationFragment != primaryFragment)
                 fragmentManager.commitNow {
                     setPrimaryNavigationFragment(primaryFragment)
                 }
