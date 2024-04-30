@@ -1,6 +1,7 @@
 package dev.enro
 
 import android.app.Application
+import android.os.Build
 import dev.enro.annotations.NavigationComponent
 import dev.enro.core.compose.composableDestination
 import dev.enro.core.controller.NavigationApplication
@@ -25,18 +26,29 @@ open class TestApplication : Application(), NavigationApplication {
         super.onCreate()
 
         // Ignoring library leak, see here: https://issuetracker.google.com/issues/277434271
-        LeakCanary.config = LeakCanary.config.copy(
-            referenceMatchers = AndroidReferenceMatchers.appDefaults +
-                    AndroidReferenceMatchers.instanceFieldLeak(
-                        className = "androidx.activity.ComponentActivity\$ReportFullyDrawnExecutorApi16Impl",
-                        fieldName = "this\$0",
-                        description = "The ComponentActivity's ReportFullyFullyDrawnExecutorAPI16Impl can sometimes " +
-                                "leak with ActivityScenarios if they are recreated quickly and contain composables. " +
-                                "To reproduce a leak that shows this, add a setContentView { ... } to EmptyActivity, " +
-                                "launch EmptyActivity as an ActivityScenario, and then recreate it. Particularly on API 27 " +
-                                "this will cause a DetectLeaksAfterTestSuccess to fail the test",
-                    )
+        val referenceMatchers = AndroidReferenceMatchers.appDefaults.toMutableList()
+        referenceMatchers += AndroidReferenceMatchers.instanceFieldLeak(
+            className = "androidx.activity.ComponentActivity\$ReportFullyDrawnExecutorApi16Impl",
+            fieldName = "this\$0",
+            description = "The ComponentActivity's ReportFullyFullyDrawnExecutorAPI16Impl can sometimes " +
+                    "leak with ActivityScenarios if they are recreated quickly and contain composables. " +
+                    "To reproduce a leak that shows this, add a setContentView { ... } to EmptyActivity, " +
+                    "launch EmptyActivity as an ActivityScenario, and then recreate it. Particularly on API 27 " +
+                    "this will cause a DetectLeaksAfterTestSuccess to fail the test",
         )
+        if (Build.VERSION.SDK_INT == 23) {
+            referenceMatchers += AndroidReferenceMatchers.instanceFieldLeak(
+                className = "dev.enro.core.hosts.AbstractFragmentHostForPresentableFragment\$\$ExternalSyntheticLambda1",
+                fieldName = "f\$0",
+                description = "This appears to be a flaky leak for tests running in API 23, but which can't be reproduced outside of CI",
+            )
+            referenceMatchers += AndroidReferenceMatchers.instanceFieldLeak(
+                className = "dev.enro.core.hosts.AbstractFragmentHostForPresentableFragment\$\$ExternalSyntheticLambda1",
+                fieldName = "f\$1",
+                description = "This appears to be a flaky leak for tests running in API 23, but which can't be reproduced outside of CI",
+            )
+        }
+        LeakCanary.config = LeakCanary.config.copy(referenceMatchers = referenceMatchers)
     }
 }
 
