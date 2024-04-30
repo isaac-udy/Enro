@@ -225,9 +225,10 @@ public class FragmentNavigationContainer internal constructor(
                 fragmentManager.findFragmentByTag(it.instructionId)
             }
             ?.let { primaryFragment ->
-                if (fragmentManager.primaryNavigationFragment != primaryFragment)
-                fragmentManager.commitNow {
-                    setPrimaryNavigationFragment(primaryFragment)
+                if (fragmentManager.primaryNavigationFragment != primaryFragment) {
+                    fragmentManager.commitNow {
+                        setPrimaryNavigationFragment(primaryFragment)
+                    }
                 }
             }
         return true
