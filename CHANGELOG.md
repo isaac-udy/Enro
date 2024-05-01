@@ -13,6 +13,7 @@
 * Added `navigationFlowReference` as a parcealble object which can be passed to NavigationKeys, and then later used to retrieve the parent navigation flow
 * Prevent more than one registerForNavigationResult from occurring within the context of a single NavigationHandle
 * Remove `next` from the public API of NavigationFlow, in favour of doing this automatically on creation of the flow
+* Added a new version of `OverrideNavigationAnimations`, which provides a way to override animations and receive an `AnimatedVisibilityScope` which is useful for shared element transitions.
 
 ## 2.3.0
 * Updated NavigationFlow to return from `next` after `onCompleted` is called, rather than continuing to set the backstack from the flow
