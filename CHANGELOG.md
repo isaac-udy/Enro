@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.4.0
 * Updated dependency versions
 * Added `instruction` property directly to `NavigationContext`, to provide easy access to the instruction
 * Added extensions `getViewModel` and `requireViewModel` to `NavigationContext` to access `ViewModels` directly from a context reference
