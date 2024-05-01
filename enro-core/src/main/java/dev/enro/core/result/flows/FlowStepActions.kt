@@ -20,21 +20,40 @@ public class FlowStepActions<T: NavigationKey.WithResult<*>>(
             .get(step)
     }
 
+    /**
+     * Clears the result for this step.
+     *
+     * This won't cause the NavigationFlow to update, but next time it does update, the user will be returned to this step.
+     */
     public fun clearResult() {
         resultManager
             .clear(step)
     }
 
+    /**
+     * Triggers editing of the step in the NavigationFlow. This clears the result, and immediately triggers an update on
+     * the flow.
+     *
+     * If you want to cause multiple steps to be cleared before editing, you should call [clearResult] on each step before
+     * calling [editStep] on the step that should be edited.
+     */
     public fun editStep() {
         clearResult()
         flow.update()
     }
 
     public companion object {
+        /**
+         * Sets a result for the step
+         */
         public fun <R : Any> FlowStepActions<out NavigationKey.WithResult<in R>>.setResult(result: R) {
             setResultUnsafe(result)
         }
 
+        /**
+         * Gets the current result for the step, which may be null if the result has been cleared or the step has not been
+         * executed yet.
+         */
         public fun <R : Any> FlowStepActions<out NavigationKey.WithResult<out R>>.getResult(): R? {
             val result = getResultUnsafe() ?: return null
             @Suppress("UNCHECKED_CAST")
