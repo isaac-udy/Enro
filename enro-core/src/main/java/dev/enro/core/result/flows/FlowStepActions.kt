@@ -5,6 +5,7 @@ import dev.enro.core.NavigationKey
 
 @AdvancedEnroApi
 public class FlowStepActions<T: NavigationKey.WithResult<*>>(
+    private val flow: NavigationFlow<*>,
     private val resultManager: FlowResultManager,
     private val step: FlowStep<out Any>
 ) {
@@ -22,6 +23,11 @@ public class FlowStepActions<T: NavigationKey.WithResult<*>>(
     public fun clearResult() {
         resultManager
             .clear(step)
+    }
+
+    public fun editStep() {
+        clearResult()
+        flow.update()
     }
 
     public companion object {
@@ -46,7 +52,7 @@ public inline fun <reified T : NavigationKey.WithResult<*>> NavigationFlow<*>.ge
             it.key is T && block(it.key)
         }
         ?.let {
-            FlowStepActions(getResultManager(), it)
+            FlowStepActions(this, getResultManager(), it)
         }
 }
 
@@ -66,7 +72,7 @@ public inline fun <reified T : NavigationKey.WithResult<*>> NavigationFlowScope.
             it.key is T && block(it.key)
         }
         ?.let {
-            FlowStepActions(resultManager, it)
+            FlowStepActions(flow, resultManager, it)
         }
 }
 

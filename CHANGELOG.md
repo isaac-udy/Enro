@@ -9,6 +9,10 @@
 * Added `instruction` property to `NavigationContext`, and marked `NavigationContext` as `@AdvancedEnroApi`
 * Updated `NavigationContext` and `NavigationHandle` to bind each other to allow for easier access to the other from either reference, and to ensure the lazy references are still available while the context is being referenced
 * Updated result handling for forwarding results to fix several bugs and improve behaviour (including correctly handling forwarded results through Activities)
+* Added `transient` configuration to NavigationFlow steps, which allows a step to only be re-executed if it's dependencies have changed
+* Added `navigationFlowReference` as a parcealble object which can be passed to NavigationKeys, and then later used to retrieve the parent navigation flow
+* Prevent more than one registerForNavigationResult from occurring within the context of a single NavigationHandle
+* Remove `next` from the public API of NavigationFlow, in favour of doing this automatically on creation of the flow
 
 ## 2.3.0
 * Updated NavigationFlow to return from `next` after `onCompleted` is called, rather than continuing to set the backstack from the flow

@@ -9,6 +9,7 @@ import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.toBackstack
+import dev.enro.core.controller.usecase.extras
 import dev.enro.core.onActiveContainer
 import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.internal.ResultChannelImpl
@@ -27,6 +28,7 @@ internal fun interface CreateResultChannel {
 
 @dev.enro.annotations.ExperimentalEnroApi
 public class NavigationFlow<T> internal constructor(
+    internal val reference: NavigationFlowReference,
     private val savedStateHandle: SavedStateHandle,
     private val navigation: NavigationHandle,
     private val resultManager: FlowResultManager,
@@ -42,15 +44,16 @@ public class NavigationFlow<T> internal constructor(
     private val resultChannel = registerForNavigationResult(
         onClosed = { key ->
             val step = key as? FlowStep<Any> ?: return@registerForNavigationResult
-            if (step.stepId == steps.lastOrNull()?.stepId) {
-                resultManager.clear(step)
-                steps = steps.dropLast(1)
-            }
+            resultManager.clear(step)
+            steps = steps
+                .dropLastWhile { step.stepId != it.stepId }
+                .dropLast(1)
+                .dropLastWhile { it.isTransient }
         },
         onResult = { key, result ->
             val step = key as? FlowStep<Any> ?: return@registerForNavigationResult
             resultManager.set(step, result)
-            next()
+            update()
         },
     )
 
@@ -60,11 +63,11 @@ public class NavigationFlow<T> internal constructor(
         }
     }
 
-    public fun next() {
-        val flowScope = NavigationFlowScope(resultManager)
-        runCatching { return@next onCompleted(flowScope.flow()) }
+    internal fun update() {
+        val flowScope = NavigationFlowScope(this, resultManager, reference)
+        runCatching { return@update onCompleted(flowScope.flow()) }
             .recover {
-                when(it) {
+                when (it) {
                     is NavigationFlowScope.NoResult -> {}
                     is NavigationFlowScope.Escape -> return
                     else -> throw it
@@ -72,7 +75,7 @@ public class NavigationFlow<T> internal constructor(
             }
             .getOrThrow()
 
-        val resultChannelId = (resultChannel as ResultChannelImpl<*,*>).id
+        val resultChannelId = (resultChannel as ResultChannelImpl<*, *>).id
         val oldSteps = steps
         steps = flowScope.steps
         navigation.onActiveContainer {
@@ -85,30 +88,28 @@ public class NavigationFlow<T> internal constructor(
                 .groupBy { it.first.stepId }
                 .mapValues { it.value.lastOrNull() }
 
-            val instructions = steps.map { step ->
-                val existingStep = existingInstructions[step.stepId]?.second?.takeIf {
-                    oldSteps
-                        .firstOrNull { it.stepId == step.stepId }
-                        ?.dependsOn == step.dependsOn
+            val instructions = steps
+                .filterIndexed { index, flowStep ->
+                    if (index == steps.lastIndex) return@filterIndexed true
+                    !flowStep.isTransient
                 }
-                existingStep ?: NavigationInstruction.Open.OpenInternal(
-                    navigationDirection = step.direction,
-                    navigationKey = step.key,
-                    resultKey = step,
-                    resultId = resultChannelId,
-                    extras = mutableMapOf(
-                        IS_PUSHED_IN_FLOW to (step.direction is NavigationDirection.Push)
+                .map { step ->
+                    val existingStep = existingInstructions[step.stepId]?.second?.takeIf {
+                        oldSteps
+                            .firstOrNull { it.stepId == step.stepId }
+                            ?.dependsOn == step.dependsOn
+                    }
+                    existingStep ?: NavigationInstruction.Open.OpenInternal(
+                        navigationDirection = step.direction,
+                        navigationKey = step.key,
+                        resultKey = step,
+                        resultId = resultChannelId,
+                        extras = mutableMapOf(
+                            IS_PUSHED_IN_FLOW to (step.direction is NavigationDirection.Push)
+                        )
                     )
-                )
-            }
-            val finalInstructions = instructions
-                .filter { it.navigationDirection == NavigationDirection.Push }
-                .plus(
-                    instructions.lastOrNull().takeIf { it?.navigationDirection == NavigationDirection.Present }
-                )
-                .filterNotNull()
-
-            setBackstack(finalInstructions.toBackstack())
+                }
+            setBackstack(instructions.toBackstack())
         }
     }
 
@@ -121,6 +122,8 @@ public class NavigationFlow<T> internal constructor(
     internal companion object {
         const val IS_PUSHED_IN_FLOW = "NavigationFlow.IS_PUSHED_IN_FLOW"
         const val STEPS_KEY = "NavigationFlow.STEPS_KEY"
+        const val RESULT_FLOW_ID = "NavigationFlow.RESULT_FLOW_ID"
+        const val RESULT_FLOW = "NavigationFlow.RESULT_FLOW"
     }
 }
 
@@ -131,9 +134,17 @@ public fun <T> ViewModel.registerForFlowResult(
 ): PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationFlow<T>>> {
     return PropertyDelegateProvider { thisRef, property ->
         val navigationHandle = getNavigationHandle()
-        val resultManager = FlowResultManager.create(navigationHandle, savedStateHandle)
 
+        val resultFlowId = property.name
+        val boundResultFlowId = navigationHandle.extras[NavigationFlow.RESULT_FLOW_ID]
+        require(boundResultFlowId == null || boundResultFlowId == resultFlowId) {
+            "Only one registerForFlowResult can be created per NavigationHandle. Found an existing result flow for $boundResultFlowId."
+        }
+        navigationHandle.extras[NavigationFlow.RESULT_FLOW_ID] = resultFlowId
+
+        val resultManager = FlowResultManager.create(navigationHandle, savedStateHandle)
         val navigationFlow = NavigationFlow(
+            reference = NavigationFlowReference(resultFlowId),
             savedStateHandle = savedStateHandle,
             navigation = navigationHandle,
             resultManager = resultManager,
@@ -146,6 +157,8 @@ public fun <T> ViewModel.registerForFlowResult(
             flow = flow,
             onCompleted = onCompleted,
         )
+        navigationHandle.extras[NavigationFlow.RESULT_FLOW] = navigationFlow
+        navigationFlow.update()
         ReadOnlyProperty { _, _ -> navigationFlow }
     }
 }

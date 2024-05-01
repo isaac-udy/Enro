@@ -5,7 +5,10 @@ import dev.enro.core.NavigationKey
 
 public class NavigationFlowScope internal constructor(
     @PublishedApi
-    internal val resultManager: FlowResultManager
+    internal val flow: NavigationFlow<*>,
+    @PublishedApi
+    internal val resultManager: FlowResultManager,
+    public val navigationFlowReference: NavigationFlowReference,
 ) {
     @PublishedApi
     internal val steps: MutableList<FlowStep<out Any>> = mutableListOf()

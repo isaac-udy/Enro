@@ -3,14 +3,21 @@ package dev.enro.test
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dev.enro.annotations.ExperimentalEnroApi
-import dev.enro.core.*
+import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationKey
+import dev.enro.core.close
+import dev.enro.core.closeWithResult
 import dev.enro.core.container.push
 import dev.enro.core.container.setBackstack
+import dev.enro.core.forward
+import dev.enro.core.onActiveContainer
+import dev.enro.core.onContainer
+import dev.enro.core.onParentContainer
 import dev.enro.core.result.flows.registerForFlowResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import java.util.UUID
 
 @Parcelize
 data class TestTestKeyWithData(
@@ -156,8 +163,4 @@ class FlowViewModel() : ViewModel() {
             navigation.closeWithResult(it)
         }
     )
-
-    init {
-        flow.next()
-    }
 }
