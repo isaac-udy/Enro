@@ -1,5 +1,9 @@
 package dev.enro.tests.application.compose.results
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +26,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.closeWithResult
+import dev.enro.core.compose.OverrideNavigationAnimations
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
@@ -72,10 +77,7 @@ class ComposeManagedResultViewModel(
         flow = {
             val firstResult = push { ComposeManagedResultFlow.FirstResult() }
             val presentedResult = present { ComposeManagedResultFlow.PresentedResult() }
-            val secondResult = push {
-                default("default")
-                ComposeManagedResultFlow.SecondResult()
-            }
+            val secondResult = push { ComposeManagedResultFlow.SecondResult() }
             val transientResult = push {
                 transient()
                 dependsOn(secondResult)
@@ -173,17 +175,24 @@ fun SecondResultScreen() {
 
 @NavigationDestination(ComposeManagedResultFlow.TransientResult::class)
 @Composable
-fun SkipOnBackResultScreen() {
+fun TransientResultScreen() {
     val navigation = navigationHandle<ComposeManagedResultFlow.TransientResult>()
-    TitledColumn(title = "Transient Result") {
-        Text(text = "This screen will only be displayed if the result from the second screen has changed")
+    OverrideNavigationAnimations(
+        enter = fadeIn() + slideInVertically { it / 4 },
+        exit = fadeOut() + slideOutVertically { it / 4 },
+    ) {
+        TitledColumn(title = "Transient Result") {
+            Text(
+                text = "This screen will only be displayed if the result from the second screen has changed"
+            )
 
-        Button(onClick = { navigation.closeWithResult("A") }) {
-            Text("Continue (A)")
-        }
+            Button(onClick = { navigation.closeWithResult("A") }) {
+                Text("Continue (A)")
+            }
 
-        Button(onClick = { navigation.closeWithResult("B") }) {
-            Text("Continue (B)")
+            Button(onClick = { navigation.closeWithResult("B") }) {
+                Text("Continue (B)")
+            }
         }
     }
 }

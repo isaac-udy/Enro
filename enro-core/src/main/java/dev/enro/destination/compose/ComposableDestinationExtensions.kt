@@ -1,9 +1,14 @@
 package dev.enro.core.compose
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -68,5 +73,42 @@ public fun OverrideNavigationAnimations(
             exit = exit,
         )
         onDispose {  }
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+@AdvancedEnroApi
+public fun OverrideNavigationAnimations(
+    enter: EnterTransition,
+    exit: ExitTransition,
+    content: @Composable AnimatedVisibilityScope.() -> Unit
+) {
+    // If we are in inspection mode, we need to ignore this call, as it relies on items like navigationContext
+    // which are only available in actual running applications
+    val isInspection = LocalInspectionMode.current
+    if (isInspection) return
+
+    val navigationContext = navigationContext
+    val destination = navigationContext.contextReference as ComposableDestination
+    DisposableEffect(Unit) {
+        destination.owner.animationOverride = NavigationAnimation.Composable(
+            enter = EnterTransition.None,
+            // We need a little fade out here to keep the animation active while the animated visibility below has a chance to run
+            // and attach child transitions. This is a bit of a hack, but it's the only way to ensure that child exit transitions
+            // are fully run.
+            exit = fadeOut(
+                targetAlpha = 0.99f,
+                animationSpec = tween(512),
+            ),
+        )
+        onDispose {  }
+    }
+    navigationTransition.AnimatedVisibility(
+        visible = {it},
+        enter = enter,
+        exit = exit,
+    ) {
+        content()
     }
 }
