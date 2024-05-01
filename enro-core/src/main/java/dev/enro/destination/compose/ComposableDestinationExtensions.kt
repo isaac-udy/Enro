@@ -76,6 +76,14 @@ public fun OverrideNavigationAnimations(
     }
 }
 
+/**
+ * Override the navigation animations for a particular destination, and also provide a content block that will be animated
+ * using AnimatedVisibility, providing a AnimatedVisibilityScope which can be used to animate different parts of the screen
+ * at different times, or to use in shared element transitions (when that is released in Compose).
+ *
+ * See also [OverrideNavigationAnimations] for a simpler version of this function that does not provide the AnimatedVisibilityScope,
+ * which can be used just to override the navigation animations as a side effect
+ */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 @AdvancedEnroApi
