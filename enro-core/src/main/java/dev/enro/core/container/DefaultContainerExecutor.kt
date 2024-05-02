@@ -1,6 +1,7 @@
 package dev.enro.core.container
 
 import androidx.activity.ComponentActivity
+import dev.enro.compatability.Compatibility
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.ExecutorArgs
 import dev.enro.core.NavigationContainerKey
@@ -10,7 +11,6 @@ import dev.enro.core.NavigationExecutor
 import dev.enro.core.NavigationKey
 import dev.enro.core.activity
 import dev.enro.core.activity.ActivityNavigationContainer
-import dev.enro.compatability.Compatibility
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.navigationContext
 import dev.enro.core.parentContainer
@@ -67,6 +67,7 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
     private fun findContainerFor(
         fromContext: NavigationContext<*>?,
         instruction: AnyOpenInstruction,
+        alreadyVisitedContainerKeys: Set<String> = emptySet()
     ): NavigationContainer? {
         if (fromContext == null) return null
         if (instruction.navigationDirection == NavigationDirection.ReplaceRoot) {
@@ -77,29 +78,85 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
             .containers
             .firstOrNull { it.key == NavigationContainerKey.FromId(android.R.id.content) }
 
-        val container = containerManager.activeContainer?.takeIf {
-            it.isVisible && it.accept(instruction) && it != defaultFragmentContainer
-        } ?: containerManager.containers
-            .filter { it.isVisible }
-            .filterNot { it == defaultFragmentContainer }
-            .firstOrNull { it.accept(instruction) }
-            .let {
-                val useDefaultFragmentContainer = it == null &&
-                        fromContext.parentContext == null &&
-                        defaultFragmentContainer != null &&
-                        defaultFragmentContainer.accept(instruction)
-
-                val useActivityContainer = it == null &&
-                        fromContext.parentContext == null &&
-                        instruction.navigationDirection != NavigationDirection.Push
-
-                when {
-                    useDefaultFragmentContainer -> defaultFragmentContainer
-                    useActivityContainer -> ActivityNavigationContainer(fromContext.activity.navigationContext)
-                    else -> it
-                }
+        val visited = alreadyVisitedContainerKeys.toMutableSet()
+        val container = containerManager
+            .getActiveChildContainers(exclude = visited)
+            .onEach { visited.add(it.key.name) }
+            .firstOrNull {
+                it.isVisible && it.accept(instruction) && it != defaultFragmentContainer
             }
+            ?: containerManager.getChildContainers(exclude = visited)
+                .onEach { visited.add(it.key.name) }
+                .filter { it.isVisible }
+                .filterNot { it == defaultFragmentContainer }
+                .firstOrNull { it.accept(instruction) }
+                .let {
+                    val useDefaultFragmentContainer = it == null &&
+                            fromContext.parentContext == null &&
+                            defaultFragmentContainer != null &&
+                            defaultFragmentContainer.accept(instruction)
 
-        return container ?: findContainerFor(fromContext.parentContext, instruction)
+                    val useActivityContainer = it == null &&
+                            fromContext.parentContext == null &&
+                            instruction.navigationDirection != NavigationDirection.Push
+
+                    when {
+                        useDefaultFragmentContainer -> defaultFragmentContainer
+                        useActivityContainer -> ActivityNavigationContainer(fromContext.activity.navigationContext)
+                        else -> it
+                    }
+                }
+
+        return container ?: findContainerFor(
+            fromContext = fromContext.parentContext,
+            instruction = instruction,
+            alreadyVisitedContainerKeys = visited,
+        )
     }
+}
+
+/**
+ * Returns a list of active child containers down from a particular NavigationContainerManager, the results in the list
+ * should be in descending distance from the container manager that this was invoked on. This means that the first result will
+ * be the active container for this container manager, and the next result will be the active container for that container manager,
+ * and so on. This method also takes an "exclude" parameter, which will exclude any containers with the given keys from the results,
+ * including their children.
+ */
+private fun NavigationContainerManager.getActiveChildContainers(
+    exclude: Set<String>,
+): List<NavigationContainer> {
+    var activeContainer = activeContainer
+    val result = mutableListOf<NavigationContainer>()
+    while (activeContainer != null) {
+        if (exclude.contains(activeContainer.key.name)) {
+            break
+        }
+        result.add(activeContainer)
+        activeContainer = activeContainer.childContext?.containerManager?.activeContainer
+    }
+    return result
+}
+
+/**
+ * Returns a list of all child containers down from a particular NavigationContainerManager, the results in the list
+ * should be in descending distance from the container manager that this was invoked on. This is a breadth first search,
+ * and doesn't take into account the active container. This method also takes an "exclude" parameter, which will exclude any
+ * results with the given keys from the results, including the children of containers which are excluded.
+ */
+private fun NavigationContainerManager.getChildContainers(
+    exclude: Set<String>,
+): List<NavigationContainer> {
+    val toVisit = mutableListOf<NavigationContainer>()
+    toVisit.addAll(containers)
+
+    val result = mutableListOf<NavigationContainer>()
+    while (toVisit.isNotEmpty()) {
+        val next = toVisit.removeAt(0)
+        if (exclude.contains(next.key.name)) {
+            continue
+        }
+        result.add(next)
+        toVisit.addAll(next.childContext?.containerManager?.containers.orEmpty())
+    }
+    return result
 }

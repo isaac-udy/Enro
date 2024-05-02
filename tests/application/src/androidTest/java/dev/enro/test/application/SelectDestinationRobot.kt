@@ -14,6 +14,7 @@ import dev.enro.test.application.compose.FindContextRobot
 import dev.enro.test.application.compose.LegacyBottomSheetsRobot
 import dev.enro.test.application.compose.SyntheticViewModelAccessRobot
 import dev.enro.test.application.compose.results.ComposeEmbeddedResultFlowRobot
+import dev.enro.test.application.compose.results.ComposeNestedResultsRobot
 import dev.enro.test.application.fragment.UnboundBottomSheetRobot
 import dev.enro.tests.application.SelectDestination
 
@@ -116,5 +117,15 @@ class SelectDestinationRobot(
             .performClick()
 
         return ComposeEmbeddedResultFlowRobot(composeRule)
+    }
+
+    fun openComposeNestedResults(): ComposeNestedResultsRobot {
+        composeRule.onNode(hasText("Compose Nested Results"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+
+        return ComposeNestedResultsRobot(composeRule)
     }
 }

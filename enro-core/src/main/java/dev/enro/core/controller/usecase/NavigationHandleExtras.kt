@@ -14,8 +14,7 @@ import java.io.Closeable
  * is recreated, they must be bound every time a NavigationHandle object is created. For example, in the `onOpened`
  * method of an EnroPlugin.
  *
- * Extras which extend java.io.Closeable will automatically have their close method called when the NavigationHandle is
- * destroyed.
+ * Extras which extend java.io.Closeable will automatically have their close method called when the NavigationHandle is destroyed.
  */
 public class NavigationHandleExtras : Closeable {
     internal val extras: SnapshotStateMap<String, Any> = mutableStateMapOf()
@@ -28,5 +27,15 @@ public class NavigationHandleExtras : Closeable {
     }
 }
 
+/**
+ * Access the extras map on a NavigationHandle.
+ *
+ * NavigationHandle.extras can be used for storing additional information or state with a NavigationHandle. Extras are not
+ * recreated when a NavigationHandle is recreated, and must be bound every time a NavigationHandle object is created.
+ *
+ * Extras which extend java.io.Closeable will automatically have their close method called when the NavigationHandle is destroyed.
+ *
+ * @see [NavigationHandleExtras]
+ */
 public val NavigationHandle.extras: MutableMap<String, Any>
     get() = dependencyScope.get<NavigationHandleExtras>().extras

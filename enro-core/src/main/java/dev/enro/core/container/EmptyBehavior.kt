@@ -36,6 +36,8 @@ public sealed class EmptyBehavior {
      * "true", then the action is considered to have consumed the request to become empty, and the container
      * will not close the last navigation destination. When the action function returns "false", the default
      * behaviour will happen, and the container will become empty.
+     *
+     * @returns true to keep the destination in the container, false to allow the container to become empty
      */
     public class Action(
         public val onEmpty: () -> Boolean
