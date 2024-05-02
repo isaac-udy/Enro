@@ -9,6 +9,7 @@ import androidx.annotation.Keep
  */
 public fun NavigationApplication.createNavigationController(
     strictMode: Boolean = false,
+    backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Predictive,
     block: NavigationModuleScope.() -> Unit = {}
 ): NavigationController {
     if (this !is Application)
@@ -18,7 +19,8 @@ public fun NavigationApplication.createNavigationController(
     navigationController.addModule(loadGeneratedNavigationModule())
     navigationController.addModule(createNavigationModule(block))
     return navigationController.apply {
-        isStrictMode = strictMode
+        this.isStrictMode = strictMode
+        this.backConfiguration = backConfiguration
         install(this@createNavigationController)
     }
 }
@@ -29,19 +31,22 @@ public fun NavigationApplication.createNavigationController(
 )
 public fun NavigationApplication.navigationController(
     strictMode: Boolean = false,
+    backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Predictive,
     block: NavigationModuleScope.() -> Unit = {}
-): NavigationController = createNavigationController(strictMode, block)
+): NavigationController = createNavigationController(strictMode, backConfiguration, block)
 
 
 @Keep // Used by EnroTest
 internal fun createUnattachedNavigationController(
     strictMode: Boolean = false,
+    backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Predictive,
     block: NavigationModuleScope.() -> Unit = {}
 ): NavigationController {
     val navigationController = NavigationController()
     navigationController.addModule(createNavigationModule(block))
     return navigationController.apply {
         isStrictMode = strictMode
+        this.backConfiguration = backConfiguration
     }
 }
 

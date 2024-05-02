@@ -28,6 +28,7 @@ import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.activity
+import dev.enro.core.allParentContexts
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
@@ -77,7 +78,9 @@ public class ComposableNavigationContainer internal constructor(
         if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
         destroy()
     }.also { observer ->
-        parentContext.lifecycle.addObserver(observer)
+        (listOf(context) + context.allParentContexts).forEach {
+            it.lifecycleOwner.lifecycle.addObserver(observer)
+        }
     }
 
     // When we've got a NavigationHost wrapping this ComposableNavigationContainer,
@@ -276,7 +279,9 @@ public class ComposableNavigationContainer internal constructor(
         destinationOwners = emptyList()
         context.containerManager.removeContainer(this)
         context.savedStateRegistryOwner.savedStateRegistry.unregisterSavedStateProvider(key.name)
-        context.lifecycleOwner.lifecycle.removeObserver(onDestroyLifecycleObserver)
+        (listOf(context) + context.allParentContexts).forEach {
+            it.lifecycleOwner.lifecycle.removeObserver(onDestroyLifecycleObserver)
+        }
         cancelJobs()
     }
 

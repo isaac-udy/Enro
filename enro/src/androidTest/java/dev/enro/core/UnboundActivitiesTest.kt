@@ -4,9 +4,19 @@ package dev.enro.core
 import android.app.Application
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.Espresso
 import androidx.test.platform.app.InstrumentationRegistry
-import dev.enro.*
+import dev.enro.DefaultActivity
+import dev.enro.GenericActivity
+import dev.enro.GenericActivityKey
+import dev.enro.GenericFragment
+import dev.enro.GenericFragmentKey
+import dev.enro.UnboundActivity
+import dev.enro.core.controller.EnroBackConfiguration
 import dev.enro.core.controller.navigationController
+import dev.enro.expectActivity
+import dev.enro.expectFragment
+import dev.enro.expectNoActivity
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertNotNull
 import junit.framework.TestCase
@@ -105,11 +115,16 @@ class UnboundActivitiesTest {
         }
         val navigationController = (InstrumentationRegistry.getInstrumentation().context.applicationContext as Application)
             .navigationController
+            .apply {
+                // This test specifically requires EnroBackConfiguration.Default
+                @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+                backConfiguration = EnroBackConfiguration.Default
+            }
 
         navigationController.addOverride(override)
         try {
-            val scenario = ActivityScenario.launch(UnboundActivity::class.java)
-            scenario.onActivity { it.onBackPressed() }
+            ActivityScenario.launch(UnboundActivity::class.java)
+            Espresso.pressBackUnconditionally()
             expectNoActivity()
         } finally {
             navigationController.removeOverride(override)

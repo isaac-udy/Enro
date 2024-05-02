@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.Espresso
 import dev.enro.GenericComposableKey
 import dev.enro.GenericFragment
 import dev.enro.GenericFragmentKey
@@ -74,20 +75,20 @@ class NavigationContainerTests {
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == thirdContext.context }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         expectActivity<MultipleFragmentContainerActivity>()
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContext.context }
         waitFor { activity.secondaryContainer.childContext?.contextReference == secondContext.context }
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         expectActivity<MultipleFragmentContainerActivity>()
         waitFor { activity.primaryContainer.childContext?.contextReference == null }
         waitFor { activity.secondaryContainer.childContext?.contextReference == secondContext.context }
         waitFor { !activity.primaryContainer.isActive }
         waitFor { !activity.secondaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         expectNoActivity()
     }
 
@@ -116,20 +117,20 @@ class NavigationContainerTests {
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == thirdContext.context }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         expectActivity<MultipleComposableContainerActivity>()
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContext.context }
         waitFor { activity.secondaryContainer.childContext?.contextReference == secondContext.context }
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         expectActivity<MultipleComposableContainerActivity>()
         waitFor { activity.primaryContainer.childContext?.contextReference == null }
         waitFor { activity.secondaryContainer.childContext?.contextReference == secondContext.context }
         assertFalse(activity.primaryContainer.isActive)
         assertFalse(activity.secondaryContainer.isActive)
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         expectNoActivity()
     }
 
@@ -157,16 +158,16 @@ class NavigationContainerTests {
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == secondContextRecreated.context }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         val firstContextRecreated = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "First"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContextRecreated.context }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         waitFor { activity.primaryContainer.childContext?.contextReference == null }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         expectNoActivity()
     }
 
@@ -205,7 +206,7 @@ class NavigationContainerTests {
         waitFor { activity.secondaryContainer.childContext?.contextReference == secondContextRecreated.context }
         waitFor { activity.secondaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         waitFor { activity.secondaryContainer.childContext?.contextReference == null }
 
         activity.primaryContainer.setActive()
@@ -216,22 +217,22 @@ class NavigationContainerTests {
         waitFor { activity.primaryContainer.childContext?.contextReference == fourthContext.context }
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         val thirdContextRecreated = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "Third"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == thirdContextRecreated.context }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         val firstContextRecreated = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "First"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContextRecreated.context }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         waitFor { (activity.primaryContainer.childContext?.contextReference == null) }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         expectNoActivity()
     }
 
@@ -259,16 +260,16 @@ class NavigationContainerTests {
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == secondContextRecreated.context }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         val firstContextRecreated = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "First"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContextRecreated.context }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         waitFor { activity.primaryContainer.childContext?.contextReference == null }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         expectNoActivity()
     }
 
@@ -307,7 +308,7 @@ class NavigationContainerTests {
         waitFor { activity.secondaryContainer.childContext?.contextReference == secondContextRecreated.context }
         waitFor { activity.secondaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         waitFor { activity.secondaryContainer.childContext?.contextReference == null }
 
         activity.primaryContainer.setActive()
@@ -318,22 +319,22 @@ class NavigationContainerTests {
         waitFor { activity.primaryContainer.childContext?.contextReference == fourthContext.context }
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         val thirdContextRecreated = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "Third"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == thirdContextRecreated.context }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         val firstContextRecreated = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "First"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContextRecreated.context }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         waitFor { (activity.primaryContainer.childContext?.contextReference == null) }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         expectNoActivity()
     }
 
@@ -368,28 +369,28 @@ class NavigationContainerTests {
         )
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Four" }.context,
             activity.secondaryContainer.childContext?.contextReference
         )
         waitFor { activity.secondaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Three" }.context,
             activity.primaryContainer.childContext?.contextReference
         )
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Two" }.context,
             activity.secondaryContainer.childContext?.contextReference
         )
         waitFor { activity.secondaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "One" }.context,
             activity.primaryContainer.childContext?.contextReference
@@ -430,28 +431,28 @@ class NavigationContainerTests {
         )
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Four" }.context,
             activity.secondaryContainer.childContext?.contextReference
         )
         waitFor { activity.secondaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Three" }.context,
             activity.primaryContainer.childContext?.contextReference
         )
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Two" }.context,
             activity.secondaryContainer.childContext?.contextReference
         )
         waitFor { activity.secondaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "One" }.context,
             activity.primaryContainer.childContext?.contextReference
@@ -491,28 +492,28 @@ class NavigationContainerTests {
         )
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Four" }.context,
             activity.secondaryContainer.childContext?.contextReference
         )
         waitFor { activity.secondaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Three" }.context,
             activity.primaryContainer.childContext?.contextReference
         )
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Two" }.context,
             activity.secondaryContainer.childContext?.contextReference
         )
         waitFor { activity.secondaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectComposableContext<GenericComposableKey> { it.navigation.key.id == "One" }.context,
             activity.primaryContainer.childContext?.contextReference
@@ -554,28 +555,28 @@ class NavigationContainerTests {
         )
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Four" }.context,
             activity.secondaryContainer.childContext?.contextReference
         )
         waitFor { activity.secondaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Three" }.context,
             activity.primaryContainer.childContext?.contextReference
         )
         waitFor { activity.primaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Two" }.context,
             activity.secondaryContainer.childContext?.contextReference
         )
         waitFor { activity.secondaryContainer.isActive }
 
-        activity.runOnUiThread { activity.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         assertEquals(
             expectComposableContext<GenericComposableKey> { it.navigation.key.id == "One" }.context,
             activity.primaryContainer.childContext?.contextReference

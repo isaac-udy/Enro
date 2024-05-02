@@ -8,6 +8,9 @@ import dev.enro.TestComposable
 import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
+import dev.enro.core.container.accept
+import dev.enro.core.container.acceptNone
+import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
@@ -16,11 +19,15 @@ data class ActivityWithFragmentsKey(val id: String) : NavigationKey
 
 @NavigationDestination(ActivityWithFragmentsKey::class)
 class ActivityWithFragments : TestActivity() {
+    private val primary by navigationContainer(
+        containerId = primaryFragmentContainer,
+        filter = accept {
+            key<ActivityChildFragmentKey>()
+            key<ActivityChildFragmentTwoKey>()
+        }
+    )
     val navigation by navigationHandle<ActivityWithFragmentsKey> {
         defaultKey(ActivityWithFragmentsKey("default"))
-        container(primaryFragmentContainer) {
-            it is ActivityChildFragmentKey || it is ActivityChildFragmentTwoKey
-        }
     }
 }
 
@@ -29,11 +36,11 @@ data class ActivityChildFragmentKey(val id: String) : NavigationKey
 
 @NavigationDestination(ActivityChildFragmentKey::class)
 class ActivityChildFragment : TestFragment() {
-    val navigation by navigationHandle<ActivityChildFragmentKey>{
-        container(primaryFragmentContainer) {
-            false
-        }
-    }
+    private val primary by navigationContainer(
+        containerId = TestActivity.primaryFragmentContainer,
+        filter = acceptNone()
+    )
+    val navigation by navigationHandle<ActivityChildFragmentKey>()
 }
 
 @Parcelize data class ActivityWithComposablesKey(

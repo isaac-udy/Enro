@@ -2,6 +2,7 @@ package dev.enro.core.container
 
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
+import kotlin.reflect.KClass
 
 /**
  * A NavigationContainerFilter is used to determine whether or not a given [NavigationInstruction.Open]
@@ -25,8 +26,11 @@ public class NavigationContainerFilterBuilder internal constructor() {
         key { it == key }
     }
 
-    public inline fun <reified T: NavigationKey> key() {
-        key { it is T }
+    public inline fun <reified T: NavigationKey> key(
+        type: KClass<T> = T::class, // can be ignored, required to disambiguate between the two key functions for the JVM
+        crossinline predicate: (T) -> Boolean = { true }
+    ) {
+        key { it is T && predicate(it) }
     }
 
     public fun instruction(predicate: (NavigationInstruction.Open<*>) -> Boolean) {

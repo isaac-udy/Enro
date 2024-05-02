@@ -18,6 +18,7 @@ public class NavigationController internal constructor() {
     internal var isAnimationsDisabled = false
 
     internal var isStrictMode: Boolean = false
+    internal var backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Default
 
     internal val dependencyScope = NavigationControllerScope(this)
 

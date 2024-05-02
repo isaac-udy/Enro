@@ -4,19 +4,14 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.addCallback
-import dev.enro.compatability.interceptBackPressForAndroidxNavigation
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
 import dev.enro.core.controller.get
 import dev.enro.core.controller.isInAndroidContext
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
-import dev.enro.core.getNavigationHandle
-import dev.enro.core.leafContext
 import dev.enro.core.navigationContext
 import dev.enro.core.plugins.EnroPlugin
-import dev.enro.core.requestClose
 
 internal object ActivityPlugin : EnroPlugin() {
 
@@ -53,16 +48,8 @@ private class ActivityLifecycleCallbacksForEnro(
         savedInstanceState: Bundle?
     ) {
         if (activity !is ComponentActivity) return
-
         val navigationContext = ActivityContext(activity)
-
         onNavigationContextCreated(navigationContext, savedInstanceState)
-
-        activity.onBackPressedDispatcher.addCallback(activity) {
-            val leafContext = navigationContext.leafContext()
-            if (interceptBackPressForAndroidxNavigation(this, leafContext)) return@addCallback
-            leafContext.getNavigationHandle().requestClose()
-        }
     }
 
     override fun onActivitySaveInstanceState(

@@ -20,7 +20,7 @@ import java.util.UUID
 internal const val CONTEXT_ID_ARG = "dev.enro.core.ContextController.CONTEXT_ID"
 
 internal class OnNavigationContextCreated(
-    private val configureNavigationHandleForPlugins: ConfigureNavigationHandleForPlugins,
+    private val activeNavigationHandleReference: ActiveNavigationHandleReference,
     private val getNavigationExecutor: GetNavigationExecutor,
 ) {
     operator fun invoke(
@@ -60,7 +60,7 @@ internal class OnNavigationContextCreated(
         handle.navigationContext = context
         config?.applyTo(context, handle)
         context.containerManager.restore(savedInstanceState)
-        configureNavigationHandleForPlugins(context, handle)
+        activeNavigationHandleReference.watchActiveNavigationHandleFrom(context, handle)
 
         if (savedInstanceState == null) {
             context.lifecycle.addObserver(object : LifecycleEventObserver {

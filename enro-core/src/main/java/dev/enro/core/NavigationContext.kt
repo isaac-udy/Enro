@@ -24,7 +24,12 @@ import dev.enro.core.compose.destination.activity
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.controller.get
+import dev.enro.core.controller.usecase.ActiveNavigationHandleReference
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 /**
  * NavigationContext represents a context in which navigation can occur. In Android, this may be a Fragment, Activity, or Composable.
@@ -42,9 +47,11 @@ public class NavigationContext<ContextType : Any> internal constructor(
     private val getViewModelStoreOwner: () -> ViewModelStoreOwner,
     private val getSavedStateRegistryOwner: () -> SavedStateRegistryOwner,
     private val getLifecycleOwner: () -> LifecycleOwner,
+    onBoundToNavigationHandle: NavigationContext<ContextType>.(NavigationHandle) -> Unit = {},
 ) {
     public val controller: NavigationController by lazy { getController() }
     public val parentContext: NavigationContext<*>? by lazy { getParentContext() }
+    private var onBoundToNavigationHandle: (NavigationContext<ContextType>.(NavigationHandle) -> Unit)? = onBoundToNavigationHandle
 
     /**
      * The arguments provided to this NavigationContext. It is possible to read the open instruction from these arguments,
@@ -82,6 +89,12 @@ public class NavigationContext<ContextType : Any> internal constructor(
         viewModelStoreOwner.hashCode()
         savedStateRegistryOwner.hashCode()
         lifecycleOwner.hashCode()
+
+        val callback = requireNotNull(onBoundToNavigationHandle) {
+            "This NavigationContext has already been bound to a NavigationHandle!"
+        }
+        onBoundToNavigationHandle = null
+        callback(navigationHandle)
     }
 }
 
@@ -291,3 +304,23 @@ internal val NavigationContext<*>.isHiltApplication
     get() = if (generatedComponentManagerClass != null) {
         activity.application is GeneratedComponentManager<*>
     } else false
+
+internal val NavigationContext<*>.allParentContexts: List<NavigationContext<*>>
+    get() {
+        val parents = mutableListOf<NavigationContext<*>>()
+        var parent: NavigationContext<*>? = parentContext
+        while (parent != null) {
+            parents.add(parent)
+            parent = parent.parentContext
+        }
+        return parents
+    }
+
+internal val NavigationContext<*>.isActive: Flow<Boolean>
+    get() {
+        val id = instruction.instructionId
+        return controller.dependencyScope.get<ActiveNavigationHandleReference>()
+            .activeNavigationIdFlow
+            .map { it == id }
+            .distinctUntilChanged()
+    }

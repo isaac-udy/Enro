@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+* Added `EnroBackConfiguration`, which can be set when creating a `NavigationController`. This controls how Enro handles back presses.
+  * EnroBackConfiguration.Default will use the behavior that has been standard in Enro until this point
+  * EnroBackConfiguration.Manual disables all back handling via Enro, and allows developers to set their own back pressed handling for individual destinations
+  * EnroBackConfiguration.Predictive is experimental, but adds support for predictive back gestures and animations. This is not yet fully implemented, and is not recommended for production use. Once this is stabilised, EnroBackNavigation.Default will be renamed to EnroBackNavigation.Legacy, and EnroBackNavigation.Predictive will become the default.
+
 ## 2.4.0
 * Updated dependency versions
 * Added `instruction` property directly to `NavigationContext`, to provide easy access to the instruction

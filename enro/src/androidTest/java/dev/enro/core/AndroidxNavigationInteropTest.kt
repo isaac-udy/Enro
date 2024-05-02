@@ -58,7 +58,7 @@ class AndroidxNavigationInteropTest {
         expectFragment<JetpackNavigationFragment> {
             it.navigationArgument == 0
         }
-        scenario.onActivity { it.onBackPressed() }
+        Espresso.pressBackUnconditionally()
         expectNoActivity()
     }
 

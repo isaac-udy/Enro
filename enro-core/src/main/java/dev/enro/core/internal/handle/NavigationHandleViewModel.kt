@@ -20,6 +20,7 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.usecase.ExecuteCloseInstruction
 import dev.enro.core.controller.usecase.ExecuteContainerOperationInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
+import dev.enro.core.controller.usecase.extras
 import kotlinx.coroutines.launch
 
 internal open class NavigationHandleViewModel(
@@ -37,6 +38,10 @@ internal open class NavigationHandleViewModel(
     final override val id: String get() = instruction.instructionId
 
     internal var internalOnCloseRequested: () -> Unit = { close() }
+        set(value) {
+            hasCustomOnRequestClose = true
+            field = value
+        }
 
     @Suppress("LeakingThis")
     @SuppressLint("StaticFieldLeak")
@@ -133,3 +138,13 @@ private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
         }
     }
 }
+
+private const val CUSTOM_REQUEST_CLOSE_KEY = "dev.enro.core.internal.handle.NavigationHandleViewModel.hasCustomOnRequestClose"
+internal var NavigationHandle.hasCustomOnRequestClose: Boolean
+    get() {
+        val extra = extras[CUSTOM_REQUEST_CLOSE_KEY] as? Boolean
+        return extra == true
+    }
+    private set(value) {
+        extras[CUSTOM_REQUEST_CLOSE_KEY] = value
+    }
