@@ -121,9 +121,6 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
  * be the active container for this container manager, and the next result will be the active container for that container manager,
  * and so on. This method also takes an "exclude" parameter, which will exclude any containers in the set from the results,
  * including their children.
- *
- * This will always include the active child of the navigation container that this was invoked on, regardless of whether the
- * key of that container is in the exclude set or not.
  */
 private fun NavigationContainerManager.getActiveChildContainers(
     exclude: Set<NavigationContainer>,
