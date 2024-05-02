@@ -67,7 +67,7 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
     private fun findContainerFor(
         fromContext: NavigationContext<*>?,
         instruction: AnyOpenInstruction,
-        alreadyVisitedContainerKeys: Set<String> = emptySet()
+        alreadyVisitedContainer: Set<NavigationContainer> = emptySet()
     ): NavigationContainer? {
         if (fromContext == null) return null
         if (instruction.navigationDirection == NavigationDirection.ReplaceRoot) {
@@ -78,15 +78,15 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
             .containers
             .firstOrNull { it.key == NavigationContainerKey.FromId(android.R.id.content) }
 
-        val visited = alreadyVisitedContainerKeys.toMutableSet()
+        val visited = alreadyVisitedContainer.toMutableSet()
         val container = containerManager
             .getActiveChildContainers(exclude = visited)
-            .onEach { visited.add(it.key.name) }
+            .onEach { visited.add(it) }
             .firstOrNull {
                 it.isVisible && it.accept(instruction) && it != defaultFragmentContainer
             }
             ?: containerManager.getChildContainers(exclude = visited)
-                .onEach { visited.add(it.key.name) }
+                .onEach { visited.add(it) }
                 .filter { it.isVisible }
                 .filterNot { it == defaultFragmentContainer }
                 .firstOrNull { it.accept(instruction) }
@@ -110,7 +110,7 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
         return container ?: findContainerFor(
             fromContext = fromContext.parentContext,
             instruction = instruction,
-            alreadyVisitedContainerKeys = visited,
+            alreadyVisitedContainer = visited,
         )
     }
 }
@@ -119,24 +119,22 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
  * Returns a list of active child containers down from a particular NavigationContainerManager, the results in the list
  * should be in descending distance from the container manager that this was invoked on. This means that the first result will
  * be the active container for this container manager, and the next result will be the active container for that container manager,
- * and so on. This method also takes an "exclude" parameter, which will exclude any containers with the given keys from the results,
+ * and so on. This method also takes an "exclude" parameter, which will exclude any containers in the set from the results,
  * including their children.
  *
  * This will always include the active child of the navigation container that this was invoked on, regardless of whether the
  * key of that container is in the exclude set or not.
  */
 private fun NavigationContainerManager.getActiveChildContainers(
-    exclude: Set<String>,
+    exclude: Set<NavigationContainer>,
 ): List<NavigationContainer> {
+    var activeContainer = activeContainer
     val result = mutableListOf<NavigationContainer>()
-    activeContainer?.let { result.add(it) }
-
-    var activeContainer = activeContainer?.childContext?.containerManager?.activeContainer
     while (activeContainer != null) {
-        result.add(activeContainer)
-        if (exclude.contains(activeContainer.key.name)) {
+        if (exclude.contains(activeContainer)) {
             break
         }
+        result.add(activeContainer)
         activeContainer = activeContainer.childContext?.containerManager?.activeContainer
     }
     return result
@@ -146,10 +144,10 @@ private fun NavigationContainerManager.getActiveChildContainers(
  * Returns a list of all child containers down from a particular NavigationContainerManager, the results in the list
  * should be in descending distance from the container manager that this was invoked on. This is a breadth first search,
  * and doesn't take into account the active container. This method also takes an "exclude" parameter, which will exclude any
- * results with the given keys from the results, including the children of containers which are excluded.
+ * containers in the exclude set from the results, including the children of containers which are excluded.
  */
 private fun NavigationContainerManager.getChildContainers(
-    exclude: Set<String>,
+    exclude: Set<NavigationContainer>,
 ): List<NavigationContainer> {
     val toVisit = mutableListOf<NavigationContainer>()
     toVisit.addAll(containers)
@@ -157,7 +155,7 @@ private fun NavigationContainerManager.getChildContainers(
     val result = mutableListOf<NavigationContainer>()
     while (toVisit.isNotEmpty()) {
         val next = toVisit.removeAt(0)
-        if (exclude.contains(next.key.name)) {
+        if (exclude.contains(next)) {
             continue
         }
         result.add(next)
