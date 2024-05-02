@@ -9,7 +9,7 @@ import androidx.annotation.Keep
  */
 public fun NavigationApplication.createNavigationController(
     strictMode: Boolean = false,
-    backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Predictive,
+    backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Default,
     block: NavigationModuleScope.() -> Unit = {}
 ): NavigationController {
     if (this !is Application)
@@ -31,7 +31,7 @@ public fun NavigationApplication.createNavigationController(
 )
 public fun NavigationApplication.navigationController(
     strictMode: Boolean = false,
-    backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Predictive,
+    backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Default,
     block: NavigationModuleScope.() -> Unit = {}
 ): NavigationController = createNavigationController(strictMode, backConfiguration, block)
 
@@ -39,7 +39,7 @@ public fun NavigationApplication.navigationController(
 @Keep // Used by EnroTest
 internal fun createUnattachedNavigationController(
     strictMode: Boolean = false,
-    backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Predictive,
+    backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Default,
     block: NavigationModuleScope.() -> Unit = {}
 ): NavigationController {
     val navigationController = NavigationController()
