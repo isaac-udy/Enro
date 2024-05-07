@@ -30,12 +30,6 @@ public fun rememberNavigationContainer(
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     filter: NavigationInstructionFilter = acceptAll(),
-    registrationStrategy: ContainerRegistrationStrategy = remember(key) {
-        when(key) {
-            is NavigationContainerKey.Dynamic -> ContainerRegistrationStrategy.DisposeWithComposition
-            else -> ContainerRegistrationStrategy.DisposeWithLifecycle
-        }
-    }
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
         key = key,
@@ -46,29 +40,22 @@ public fun rememberNavigationContainer(
         interceptor = interceptor,
         animations = animations,
         filter = filter,
-        registrationStrategy = registrationStrategy,
     )
 }
 
 @Composable
 public fun rememberNavigationContainer(
     key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
-    initialState: List<NavigationKey.SupportsPush> = emptyList(),
+    initialBackstack: List<NavigationKey.SupportsPush> = emptyList(),
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     filter: NavigationInstructionFilter = acceptAll(),
-    registrationStrategy: ContainerRegistrationStrategy = remember(key) {
-        when(key) {
-            is NavigationContainerKey.Dynamic -> ContainerRegistrationStrategy.DisposeWithComposition
-            else -> ContainerRegistrationStrategy.DisposeWithLifecycle
-        }
-    }
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
         key = key,
         initialBackstack = rememberSaveable {
-            initialState.map {
+            initialBackstack.map {
                 NavigationInstruction.Push(it)
             }.toBackstack()
         },
@@ -76,7 +63,6 @@ public fun rememberNavigationContainer(
         interceptor = interceptor,
         animations = animations,
         filter = filter,
-        registrationStrategy = registrationStrategy,
     )
 }
 

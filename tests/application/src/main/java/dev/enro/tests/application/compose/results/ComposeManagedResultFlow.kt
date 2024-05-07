@@ -1,3 +1,5 @@
+@file:OptIn(AdvancedEnroApi::class, ExperimentalEnroApi::class)
+
 package dev.enro.tests.application.compose.results
 
 import androidx.compose.animation.fadeIn
@@ -22,6 +24,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.enro.annotations.AdvancedEnroApi
+import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
