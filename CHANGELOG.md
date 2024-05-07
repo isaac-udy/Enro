@@ -6,6 +6,7 @@
   * EnroBackConfiguration.Manual disables all back handling via Enro, and allows developers to set their own back pressed handling for individual destinations
   * EnroBackConfiguration.Predictive is experimental, but adds support for predictive back gestures and animations. This is not yet fully implemented, and is not recommended for production use. Once this is stabilised, EnroBackNavigation.Default will be renamed to EnroBackNavigation.Legacy, and EnroBackNavigation.Predictive will become the default.
 * Removed `ContainerRegistrationStrategy` from the "core" `rememberNavigationContainer` methods, to stop the requirement to opt-in for `AdvancedEnroApi` when using the standard `rememberNavigationContainer` APIs. This was introduced accidentally with 2.4.0.
+* Added `EmbeddedNavigationDestination` as an experimental API, which allows a `NavigationKey.SupportsPush` to be rendered as an embedded destination within another Composable.
 
 ## 2.4.0
 * Updated dependency versions
