@@ -12,8 +12,9 @@ import dev.enro.core.container.toBackstack
 import dev.enro.core.controller.usecase.extras
 import dev.enro.core.onActiveContainer
 import dev.enro.core.result.NavigationResultChannel
+import dev.enro.core.result.NavigationResultScope
 import dev.enro.core.result.internal.ResultChannelImpl
-import dev.enro.core.result.registerForNavigationResultWithKey
+import dev.enro.core.result.registerForNavigationResult
 import dev.enro.extensions.getParcelableListCompat
 import dev.enro.viewmodel.getNavigationHandle
 import kotlin.properties.PropertyDelegateProvider
@@ -21,8 +22,8 @@ import kotlin.properties.ReadOnlyProperty
 
 internal fun interface CreateResultChannel {
     operator fun invoke(
-        onClosed: (Any) -> Unit,
-        onResult: (NavigationKey.WithResult<*>, Any) -> Unit
+        onClosed: NavigationResultScope<*, *>.() -> Unit,
+        onResult: NavigationResultScope<*, *>.(Any) -> Unit
     ): NavigationResultChannel<Any, NavigationKey.WithResult<Any>>
 }
 
@@ -42,7 +43,7 @@ public class NavigationFlow<T> internal constructor(
 
     @Suppress("UNCHECKED_CAST")
     private val resultChannel = registerForNavigationResult(
-        onClosed = { key ->
+        onClosed = {
             val step = key as? FlowStep<Any> ?: return@registerForNavigationResult
             resultManager.clear(step)
             steps = steps
@@ -50,7 +51,7 @@ public class NavigationFlow<T> internal constructor(
                 .dropLast(1)
                 .dropLastWhile { it.isTransient }
         },
-        onResult = { key, result ->
+        onResult = { result ->
             val step = key as? FlowStep<Any> ?: return@registerForNavigationResult
             resultManager.set(step, result)
             update()
@@ -200,7 +201,7 @@ public fun <T> ViewModel.registerForFlowResult(
             navigation = navigationHandle,
             resultManager = resultManager,
             registerForNavigationResult = { onClosed, onResult ->
-                registerForNavigationResultWithKey(
+                registerForNavigationResult(
                     onClosed = onClosed,
                     onResult = onResult,
                 ).getValue(thisRef, property)

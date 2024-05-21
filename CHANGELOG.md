@@ -3,6 +3,7 @@
 ## 2.5.0
 * Added `update` to the public API for `NavigationFlow`, as this is required for some use cases where the flow needs to be updated after changes in external state which may affect the logic of the flow. This function was previously named `next`, and removed from the public API in 2.4.0.
 * Moved `NavigationContext.getViewModel` and `requireViewModel` extensions to the `dev.enro.viewmodel` package.
+* Added `NavigationResultScope<Result, Key>` as a receiver for all registerForNavigationResult calls, to allow for more advanced handling of results and inspection of the instruction and navigation key that was used to open the result request.
 
 ## 2.4.1
 * Added `EnroBackConfiguration`, which can be set when creating a `NavigationController`. This controls how Enro handles back presses.

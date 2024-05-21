@@ -8,23 +8,24 @@ import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.result.EnroResult
+import dev.enro.core.result.NavigationResultScope
 import dev.enro.core.result.UnmanagedNavigationResultChannel
 import dev.enro.core.runWhenHandleActive
 
 private class ResultChannelProperties<Result : Any, Key : NavigationKey.WithResult<Result>>(
     val navigationHandle: NavigationHandle,
     val resultType: Class<Result>,
-    val onClosed: (Key) -> Unit,
-    val onResult: (Key, Result) -> Unit,
+    val onClosed: NavigationResultScope<Result, Key>.() -> Unit,
+    val onResult: NavigationResultScope<Result, Key>.(Result) -> Unit,
 )
 
 @PublishedApi
-internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Result>>(
+internal class ResultChannelImpl<Result : Any, Key : NavigationKey.WithResult<Result>>(
     private val enroResult: EnroResult,
     navigationHandle: NavigationHandle,
     resultType: Class<Result>,
-    onClosed: @DisallowComposableCalls (Key) -> Unit,
-    onResult: @DisallowComposableCalls (Key, Result) -> Unit,
+    onClosed: @DisallowComposableCalls NavigationResultScope<Result, Key>.() -> Unit,
+    onResult: @DisallowComposableCalls NavigationResultScope<Result, Key>.(Result) -> Unit,
     resultId: String,
     additionalResultId: String = "",
 ) : UnmanagedNavigationResultChannel<Result, Key> {
@@ -53,7 +54,7 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
     )
 
     private val lifecycleObserver = LifecycleEventObserver { _, event ->
-        if(event == Lifecycle.Event.ON_DESTROY) {
+        if (event == Lifecycle.Event.ON_DESTROY) {
             destroy()
         }
     }.apply { navigationHandle.lifecycle.addObserver(this) }
@@ -88,14 +89,15 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
     @Suppress("UNCHECKED_CAST")
     internal fun consumeResult(pendingResult: PendingResult) {
         val properties = arguments ?: return
-        when(pendingResult) {
+        when (pendingResult) {
             is PendingResult.Closed -> {
                 val key = pendingResult.navigationKey
                 key as Key
                 properties.navigationHandle.runWhenHandleActive {
-                    properties.onClosed(key)
+                    properties.onClosed(NavigationResultScope(pendingResult.instruction, key))
                 }
             }
+
             is PendingResult.Result -> {
                 val result = pendingResult.result
                 val key = pendingResult.navigationKey
@@ -104,7 +106,7 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
                 result as Result
                 key as Key
                 properties.navigationHandle.runWhenHandleActive {
-                    properties.onResult(key, result)
+                    properties.onResult(NavigationResultScope(pendingResult.instruction, key), result)
                 }
             }
         }
@@ -112,7 +114,7 @@ internal class ResultChannelImpl<Result: Any, Key : NavigationKey.WithResult<Res
 
     override fun attach() {
         val properties = arguments ?: return
-        if(properties.navigationHandle.lifecycle.currentState == Lifecycle.State.DESTROYED) return
+        if (properties.navigationHandle.lifecycle.currentState == Lifecycle.State.DESTROYED) return
         enroResult.registerChannel(this)
     }
 

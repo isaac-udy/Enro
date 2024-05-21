@@ -10,7 +10,7 @@ import dev.enro.core.result.internal.PendingResult
 @AdvancedEnroApi
 public object AdvancedResultExtensions {
 
-    public fun getForwardingInstructionId(instruction: NavigationInstruction.Open<*>) : String? {
+    public fun getForwardingInstructionId(instruction: NavigationInstruction.Open<*>): String? {
         return instruction.extras[FORWARDING_RESULT_FROM_EXTRA] as? String
     }
 
@@ -18,7 +18,7 @@ public object AdvancedResultExtensions {
         originalInstruction: NavigationInstruction.Open<*>,
         direction: T,
         navigationKey: NavigationKey.WithResult<*>,
-    ) : NavigationInstruction.Open<T> {
+    ): NavigationInstruction.Open<T> {
         return NavigationInstruction.Open.OpenInternal(
             navigationDirection = direction,
             navigationKey = navigationKey,
@@ -46,6 +46,7 @@ public object AdvancedResultExtensions {
             EnroResult.from(navigationController).addPendingResult(
                 PendingResult.Result(
                     resultChannelId = resultId,
+                    instruction = instruction,
                     navigationKey = keyForResult,
                     resultType = result::class,
                     result = result
@@ -68,6 +69,7 @@ public object AdvancedResultExtensions {
             EnroResult.from(navigationController).addPendingResult(
                 PendingResult.Closed(
                     resultChannelId = resultId,
+                    instruction = instruction,
                     navigationKey = keyForResult,
                 )
             )

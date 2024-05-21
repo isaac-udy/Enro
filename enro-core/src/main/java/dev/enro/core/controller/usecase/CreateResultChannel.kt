@@ -4,6 +4,7 @@ import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.get
 import dev.enro.core.result.EnroResult
+import dev.enro.core.result.NavigationResultScope
 import dev.enro.core.result.UnmanagedNavigationResultChannel
 import dev.enro.core.result.internal.ResultChannelImpl
 import kotlin.reflect.KClass
@@ -17,9 +18,6 @@ internal class CreateResultChannel(
     @PublishedApi internal val navigationHandle: NavigationHandle,
     @PublishedApi internal val enroResult: EnroResult,
 ) {
-
-
-
     /**
      * The resultId being set here to the JVM class name of the onResult lambda is a key part of
      * being able to make result channels work without providing an explicit id. The JVM will treat
@@ -49,21 +47,22 @@ internal class CreateResultChannel(
      * fall back to explicit identification of the channels in the case that the Kotlin/JVM behaviour
      * changes in the future.
      */
-    fun Any.createResultId() : String {
+    fun Any.createResultId(): String {
         return this::class.java.name
     }
 
     // It is important that these functions are inlined, so that the empty lambda can be used
     // as a part of the result id, which is helpful for providing uniqueness related to location in
     // the code
+    @Deprecated("Use the other overload of invoke, as key is provided through the NavigationResultScope and doesn't need to be passed as a parameter")
     inline operator fun <Result : Any, Key : NavigationKey.WithResult<Result>> invoke(
         resultType: KClass<Result>,
-        crossinline onClosed: () -> Unit,
-        noinline onResult: (Result) -> Unit,
+        crossinline onClosed: NavigationResultScope<Result, Key>.(Key) -> Unit,
+        noinline onResult: NavigationResultScope<Result, Key>.(Key, Result) -> Unit,
         additionalResultId: String = "",
     ): UnmanagedNavigationResultChannel<Result, Key> {
-        val internalOnClosed: (Key) -> Unit = { _ -> onClosed() }
-        val internalOnResult: (Key, Result) -> Unit = { _, result -> onResult(result) }
+        val internalOnClosed: NavigationResultScope<Result, Key>.() -> Unit = { onClosed(key) }
+        val internalOnResult: NavigationResultScope<Result, Key>.(Result) -> Unit = { result -> onResult(key, result) }
         val resultId = onResult.createResultId() + "@" + internalOnResult.createResultId().hashCode()
         return create(
             resultType = resultType,
@@ -79,12 +78,12 @@ internal class CreateResultChannel(
     // the code
     inline operator fun <Result : Any, Key : NavigationKey.WithResult<Result>> invoke(
         resultType: KClass<Result>,
-        crossinline onClosed: (Key) -> Unit,
-        noinline onResult: (Key, Result) -> Unit,
+        crossinline onClosed: NavigationResultScope<Result, Key>.() -> Unit,
+        noinline onResult: NavigationResultScope<Result, Key>.(Result) -> Unit,
         additionalResultId: String = "",
     ): UnmanagedNavigationResultChannel<Result, Key> {
-        val internalOnClosed: (Key) -> Unit = { key -> onClosed(key) }
-        val internalOnResult: (Key, Result) -> Unit = { key, result -> onResult(key, result) }
+        val internalOnClosed: NavigationResultScope<Result, Key>.() -> Unit = { onClosed(this) }
+        val internalOnResult: NavigationResultScope<Result, Key>.(Result) -> Unit = { result -> onResult(this, result) }
         val resultId = onResult.createResultId() + "@" + internalOnResult.createResultId().hashCode()
         return create(
             resultType = resultType,
@@ -99,8 +98,8 @@ internal class CreateResultChannel(
     internal fun <Result : Any, Key : NavigationKey.WithResult<Result>> create(
         resultType: KClass<Result>,
         resultId: String,
-        onClosed: (Key) -> Unit,
-        onResult: (Key, Result) -> Unit,
+        onClosed: NavigationResultScope<Result, Key>.() -> Unit,
+        onResult: NavigationResultScope<Result, Key>.(Result) -> Unit,
         additionalResultId: String = "",
     ): UnmanagedNavigationResultChannel<Result, Key> {
         return ResultChannelImpl(

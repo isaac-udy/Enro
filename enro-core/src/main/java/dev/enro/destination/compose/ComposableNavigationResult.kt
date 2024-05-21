@@ -10,6 +10,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.usecase.createResultChannel
 import dev.enro.core.result.NavigationResultChannel
+import dev.enro.core.result.NavigationResultScope
 import java.util.UUID
 
 
@@ -25,8 +26,8 @@ public inline fun <reified T : Any> registerForNavigationResult(
     id: String = rememberSaveable {
         UUID.randomUUID().toString()
     },
-    noinline onClosed: @DisallowComposableCalls () -> Unit = {},
-    noinline onResult: @DisallowComposableCalls (T) -> Unit
+    noinline onClosed: @DisallowComposableCalls NavigationResultScope<T, NavigationKey.WithResult<T>>.() -> Unit = {},
+    noinline onResult: @DisallowComposableCalls NavigationResultScope<T, NavigationKey.WithResult<T>>.(T) -> Unit
 ): NavigationResultChannel<T, NavigationKey.WithResult<T>> {
     val navigationHandle = navigationHandle()
 

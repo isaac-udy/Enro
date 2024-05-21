@@ -27,9 +27,10 @@ internal class AddPendingResult(
                 ownerId = openInstruction.instructionId,
                 resultId = openInstruction.instructionId
             )
+
             else -> return
         }
-        when(instruction) {
+        when (instruction) {
             NavigationInstruction.Close -> {
                 // If this instruction is forwarding a result from another instruction,
                 // we don't want this instruction to actually deliver the close result, as only
@@ -38,13 +39,16 @@ internal class AddPendingResult(
                 enroResult.addPendingResult(
                     PendingResult.Closed(
                         resultChannelId = resultId,
+                        instruction = navigationContext.instruction,
                         navigationKey = navigationKey,
                     )
                 )
             }
+
             is NavigationInstruction.Close.WithResult -> enroResult.addPendingResult(
                 PendingResult.Result(
                     resultChannelId = resultId,
+                    instruction = navigationContext.instruction,
                     navigationKey = navigationKey,
                     resultType = instruction.result::class,
                     result = instruction.result,

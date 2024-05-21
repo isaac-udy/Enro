@@ -11,13 +11,14 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.controller.usecase.createResultChannel
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.result.NavigationResultChannel
+import dev.enro.core.result.NavigationResultScope
 import dev.enro.core.result.managedByLifecycle
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 @PublishedApi
-internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithResult<Result>> private constructor (
+internal class LazyResultChannelProperty<Result : Any, Key : NavigationKey.WithResult<Result>> private constructor(
     owner: Any,
     resultType: KClass<Result>,
     params: LambdaParams<Result, Key>
@@ -26,8 +27,8 @@ internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithRes
     constructor(
         owner: Any,
         resultType: KClass<Result>,
-        onClosed: (Key) -> Unit = {},
-        onResult: (Key, Result) -> Unit
+        onClosed: NavigationResultScope<Result, Key>.(Key) -> Unit = {},
+        onResult: NavigationResultScope<Result, Key>.(Key, Result) -> Unit
     ) : this(
         owner = owner,
         resultType = resultType,
@@ -40,8 +41,8 @@ internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithRes
     constructor(
         owner: Any,
         resultType: KClass<Result>,
-        onClosed: () -> Unit = {},
-        onResult: (Result) -> Unit
+        onClosed: NavigationResultScope<Result, Key>.() -> Unit = {},
+        onResult: NavigationResultScope<Result, Key>.(Result) -> Unit
     ) : this(
         owner = owner,
         resultType = resultType,
@@ -66,12 +67,13 @@ internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithRes
         lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 if (event != Lifecycle.Event.ON_CREATE) return;
-                resultChannel = when(params) {
+                resultChannel = when (params) {
                     is LambdaParams.WithKey -> handle.value.createResultChannel<Result, Key>(
                         resultType = resultType,
                         onClosed = params.onClosed,
                         onResult = params.onResult,
                     )
+
                     is LambdaParams.WithoutKey -> handle.value.createResultChannel<Result, Key>(
                         resultType = resultType,
                         onClosed = params.onClosed,
@@ -91,15 +93,15 @@ internal class LazyResultChannelProperty<Result: Any, Key: NavigationKey.WithRes
     )
 
 
-    private sealed class LambdaParams<Result: Any, Key: NavigationKey.WithResult<Result>> {
-        class WithKey<Result: Any, Key: NavigationKey.WithResult<Result>>(
-            val onClosed: (Key) -> Unit,
-            val onResult: (Key, Result) -> Unit,
+    private sealed class LambdaParams<Result : Any, Key : NavigationKey.WithResult<Result>> {
+        class WithKey<Result : Any, Key : NavigationKey.WithResult<Result>>(
+            val onClosed: NavigationResultScope<Result, Key>.(Key) -> Unit,
+            val onResult: NavigationResultScope<Result, Key>.(Key, Result) -> Unit,
         ) : LambdaParams<Result, Key>()
 
-        class WithoutKey<Result: Any, Key: NavigationKey.WithResult<Result>>(
-            val onClosed: () -> Unit,
-            val onResult: (Result) -> Unit,
-        ): LambdaParams<Result, Key>()
+        class WithoutKey<Result : Any, Key : NavigationKey.WithResult<Result>>(
+            val onClosed: NavigationResultScope<Result, Key>.() -> Unit,
+            val onResult: NavigationResultScope<Result, Key>.(Result) -> Unit,
+        ) : LambdaParams<Result, Key>()
     }
 }
