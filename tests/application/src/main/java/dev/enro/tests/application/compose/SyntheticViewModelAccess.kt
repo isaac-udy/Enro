@@ -11,9 +11,9 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.present
-import dev.enro.core.requireViewModel
 import dev.enro.core.synthetic.syntheticDestination
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.viewmodel.requireViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

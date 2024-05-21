@@ -1,8 +1,9 @@
-package dev.enro.core
+package dev.enro.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
+import dev.enro.core.NavigationContext
 import kotlin.reflect.KClass
 
 /**
