@@ -31,7 +31,7 @@ public class FlowStepActions<T: NavigationKey.WithResult<*>>(
     }
 
     /**
-     * Triggers editing of the step in the NavigationFlow. This clears the result, and immediately triggers an update on
+     * Triggers editing of the step in the NavigationFlow. This clears the result, and immediately triggers an [update] on
      * the flow.
      *
      * If you want to cause multiple steps to be cleared before editing, you should call [clearResult] on each step before

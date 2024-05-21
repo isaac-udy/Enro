@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.4.2
+* Added `update` to the public API for `NavigationFlow`, as this is required for some use cases where the flow needs to be updated after changes in external state which may affect the logic of the flow. This function was previously named `next`, and removed from the public API in 2.4.0.
+
 ## 2.4.1
 * Added `EnroBackConfiguration`, which can be set when creating a `NavigationController`. This controls how Enro handles back presses.
   * EnroBackConfiguration.Default will use the behavior that has been standard in Enro until this point

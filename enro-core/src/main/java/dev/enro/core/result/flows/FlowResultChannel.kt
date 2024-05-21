@@ -63,7 +63,49 @@ public class NavigationFlow<T> internal constructor(
         }
     }
 
-    internal fun update() {
+    /**
+     * This method is used to cause the flow to re-evaluate it's current state. This happens once automatically when the flow
+     * is created, and then once every time a step returns a result, or a step is edited using [FlowStepActions]. However, you
+     * may want to call this method yourself if there is external state that may have changed that would affect the flow.
+     *
+     * An example of where this is useful is if you wanted to call a suspending function, and then update external state
+     * based on the result of the suspending function before resuming the flow. An example of how this would work:
+     * ```
+     * class ExampleViewModel(
+     *     savedStateHandle: SavedStateHandle,
+     * ) : ViewModel() {
+     *     private var suspendingFunctionInvoked = false
+     *
+     *     private val resultFlow by registerForFlowResult(
+     *         savedStateHandle = savedStateHandle,
+     *         flow = {
+     *             // ...
+     *             if (!suspendingFunctionInvoked) {
+     *                 performSuspendingAction()
+     *                 escape()
+     *             }
+     *             // ...
+     *         },
+     *         onCompleted = { /*...*/ }
+     *     )
+     *
+     *     private fun performSuspendingAction() {
+     *         viewModelScope.launch {
+     *             delay(1000)
+     *             suspendingFunctionInvoked = true
+     *             resultFlow.update()
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * In the example above, when the if statement is reached, and "suspendingFunctionInvoked" is not true, the flow will call
+     * "performSuspendingAction" and then immediately call "escape". The call to "escape" will cause the flow to stop evaluating
+     * which steps should occur. The call to [update] inside "performSuspendingAction" will cause the flow to re-evaluate
+     * the state, and continue the flow from where it left off. Because "suspendingFunctionInvoked" will have been set to true,
+     * the flow won't execute that if statement, and will instead continue on to whatever logic is next.
+     */
+    public fun update() {
         val flowScope = NavigationFlowScope(this, resultManager, reference)
         runCatching { return@update onCompleted(flowScope.flow()) }
             .recover {
@@ -127,6 +169,15 @@ public class NavigationFlow<T> internal constructor(
     }
 }
 
+/**
+ * This method creates a NavigationFlow in the scope of a ViewModel. There can only be one NavigationFlow created within each
+ * NavigationDestination. The [flow] lambda will be invoked multiple times over the lifecycle of the NavigationFlow, and should
+ * generally not cause external side effects. The [onCompleted] lambda will be invoked when the flow completes and returns a
+ * result.
+ *
+ * [NavigationFlow.update] is triggered automatically as part of this function, you do not need to manually call update to
+ * begin the flow.
+ */
 public fun <T> ViewModel.registerForFlowResult(
     savedStateHandle: SavedStateHandle,
     flow: NavigationFlowScope.() -> T,
