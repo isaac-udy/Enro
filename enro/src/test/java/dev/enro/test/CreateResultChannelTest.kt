@@ -8,6 +8,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.CreateResultChannel
 import dev.enro.core.result.NavigationResultChannel
+import dev.enro.core.result.NavigationResultScope
 import dev.enro.core.result.internal.ResultChannelId
 import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.result.registerForNavigationResult
@@ -109,7 +110,7 @@ class CreateResultChannelTest {
             .dependencyScope
             .get<CreateResultChannel>()
 
-        val result: (NavigationKey, String) -> Unit = { _, _ -> }
+        val result: NavigationResultScope<String, NavigationKey.WithResult<String>>.(NavigationKey, String) -> Unit = { _, _ -> }
         val channelOne = createResultChannel.invoke(
             resultType = String::class,
             onClosed = { },
@@ -133,7 +134,7 @@ class CreateResultChannelTest {
             .dependencyScope
             .get<CreateResultChannel>()
 
-        val result: (String) -> Unit = {}
+        val result: NavigationResultScope<String, NavigationKey.WithResult<String>>.(String) -> Unit = {}
         val channelOne = createResultChannel.invoke(
             resultType = String::class,
             onClosed = { },
@@ -157,7 +158,7 @@ class CreateResultChannelTest {
             .dependencyScope
             .get<CreateResultChannel>()
 
-        val result: (String) -> Unit = {}
+        val result: NavigationResultScope<String, NavigationKey.WithResult<String>>.(String) -> Unit = {}
         val channels = (0..2).map {
             createResultChannel.invoke(
                 resultType = String::class,
@@ -175,7 +176,7 @@ class CreateResultChannelTest {
             .dependencyScope
             .get<CreateResultChannel>()
 
-        val result: (String) -> Unit = {}
+        val result: NavigationResultScope<String, NavigationKey.WithResult<String>>.(String) -> Unit = {}
         val channels = (0..2).map {
             createResultChannel.invoke(
                 resultType = String::class,
