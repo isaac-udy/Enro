@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+* Added `isManuallyStarted` to the `registerForFlowResult` API, which allows for the flow to be started manually with a call to `update` rather than performing this automatically when the flow is created. 
+
 ## 2.5.0
 * Added `update` to the public API for `NavigationFlow`, as this is required for some use cases where the flow needs to be updated after changes in external state which may affect the logic of the flow. This function was previously named `next`, and removed from the public API in 2.4.0.
 * Moved `NavigationContext.getViewModel` and `requireViewModel` extensions to the `dev.enro.viewmodel` package.

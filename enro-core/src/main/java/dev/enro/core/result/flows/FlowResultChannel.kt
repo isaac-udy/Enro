@@ -176,11 +176,15 @@ public class NavigationFlow<T> internal constructor(
  * generally not cause external side effects. The [onCompleted] lambda will be invoked when the flow completes and returns a
  * result.
  *
- * [NavigationFlow.update] is triggered automatically as part of this function, you do not need to manually call update to
- * begin the flow.
+ * If [isManuallyStarted] is false, [NavigationFlow.update] is triggered automatically as part of this function,
+ * and you do not need to manually call update to begin the flow. This is the default behavior.
+ *
+ * If [isManuallyStarted] is true, you will need to call [NavigationFlow.update] to trigger the initial update of the flow,
+ * which will then trigger the flow to continue.
  */
 public fun <T> ViewModel.registerForFlowResult(
     savedStateHandle: SavedStateHandle,
+    isManuallyStarted: Boolean = false,
     flow: NavigationFlowScope.() -> T,
     onCompleted: (T) -> Unit,
 ): PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationFlow<T>>> {
@@ -210,7 +214,9 @@ public fun <T> ViewModel.registerForFlowResult(
             onCompleted = onCompleted,
         )
         navigationHandle.extras[NavigationFlow.RESULT_FLOW] = navigationFlow
-        navigationFlow.update()
+        if (!isManuallyStarted) {
+            navigationFlow.update()
+        }
         ReadOnlyProperty { _, _ -> navigationFlow }
     }
 }
