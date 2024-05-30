@@ -46,7 +46,7 @@ hilt-androidCompiler = "com.google.dagger:hilt-android-compiler:2.48.1"
 hilt-testing = "com.google.dagger:hilt-android-testing:2.48.1"
 hilt-compiler = "androidx.hilt:hilt-compiler:1.2.0"
 
-leakcanary = "com.squareup.leakcanary:leakcanary-android:2.10"
+leakcanary = "com.squareup.leakcanary:leakcanary-android:2.14"
 
 testing-junit = "junit:junit:4.13.2"
 testing-robolectric = "org.robolectric:robolectric:4.8.1"
