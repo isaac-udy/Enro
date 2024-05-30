@@ -10,6 +10,7 @@ import dev.enro.core.destinations.ComposableDestinations
 import dev.enro.core.destinations.ManuallyBoundComposableScreen
 import dev.enro.core.plugins.EnroLogger
 import dev.enro.test.EnroTest
+import leakcanary.AppWatcher
 import leakcanary.LeakCanary
 import shark.AndroidReferenceMatchers
 
@@ -46,6 +47,15 @@ open class TestApplication : Application(), NavigationApplication {
                 className = "dev.enro.core.hosts.AbstractFragmentHostForPresentableFragment\$\$ExternalSyntheticLambda1",
                 fieldName = "f\$1",
                 description = "This appears to be a flaky leak for tests running in API 23, but which can't be reproduced outside of CI",
+            )
+        }
+        // Temporarily remove app watchers for SDK versions less than 33, due to bug with androidx viewmodel
+        // https://issuetracker.google.com/issues/341792251
+        // https://github.com/square/leakcanary/issues/2677
+        if (Build.VERSION.SDK_INT <= 33) {
+            AppWatcher.manualInstall(
+                application = this,
+                watchersToInstall = emptyList()
             )
         }
         LeakCanary.config = LeakCanary.config.copy(referenceMatchers = referenceMatchers)
