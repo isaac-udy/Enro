@@ -13,6 +13,7 @@ import dev.enro.test.application.compose.BottomSheetCloseAndPresentRobot
 import dev.enro.test.application.compose.FindContextRobot
 import dev.enro.test.application.compose.LegacyBottomSheetsRobot
 import dev.enro.test.application.compose.SyntheticViewModelAccessRobot
+import dev.enro.test.application.compose.results.ComposeAsyncManagedResultFlowRobot
 import dev.enro.test.application.compose.results.ComposeEmbeddedResultFlowRobot
 import dev.enro.test.application.compose.results.ComposeNestedResultsRobot
 import dev.enro.test.application.fragment.UnboundBottomSheetRobot
@@ -117,6 +118,16 @@ class SelectDestinationRobot(
             .performClick()
 
         return ComposeEmbeddedResultFlowRobot(composeRule)
+    }
+
+    fun openComposeAsyncManagedResultFlow(): ComposeAsyncManagedResultFlowRobot {
+        composeRule.onNode(hasText("Compose Async Managed Result Flow"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+
+        return ComposeAsyncManagedResultFlowRobot(composeRule)
     }
 
     fun openComposeNestedResults(): ComposeNestedResultsRobot {
