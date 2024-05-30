@@ -17,7 +17,18 @@ import kotlin.reflect.KClass
 fun ComposeTestRule.waitForNavigationHandle(
     block: (NavigationHandle) -> Boolean
 ): NavigationHandle {
-    var navigationHandle: NavigationHandle? = null
+    val context = waitForNavigationContext {
+        runCatching { it.getNavigationHandle()
+            .let(block) }
+            .getOrNull() == true
+    }
+    return context.getNavigationHandle()
+}
+
+fun ComposeTestRule.waitForNavigationContext(
+    block: (NavigationContext<*>) -> Boolean
+): NavigationContext<*> {
+    var navigationContext: NavigationContext<*>? = null
     waitUntil(5_000) {
         val activity = runOnIdle {
             runOnUiThread {
@@ -28,16 +39,15 @@ fun ComposeTestRule.waitForNavigationHandle(
 
         var activeContext: NavigationContext<*>? = activity.navigationContext
         while (activeContext != null) {
-            navigationHandle = runCatching { activeContext!!.getNavigationHandle() }.getOrNull()
-                ?: return@waitUntil false
-            if (block(navigationHandle!!)) {
+            if (block(activeContext)) {
+                navigationContext = activeContext
                 return@waitUntil true
             }
             activeContext = activeContext.activeChildContext()
         }
         false
     }
-    return navigationHandle!!
+    return navigationContext!!
 }
 
 inline fun <reified T: Fragment> ComposeTestRule.waitForFragment(
