@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.7.0
+* ⚠️ Updated to androidx.lifecycle 2.8.1 ⚠️
+  * There are breaking changes introduced in androidx.lifecycle 2.8.0; if you use Enro 2.7.0, you must upgrade your project to androidx.lifecycle 2.8+, otherwise you are likely to encounter runtime errors 
+
 ## 2.6.0
 * Added `isManuallyStarted` to the `registerForFlowResult` API, which allows for the flow to be started manually with a call to `update` rather than performing this automatically when the flow is created.
 * Added `async` to `NavigationFlowScope`, which allows the execution of suspending lambdas as part of the steps in a flow.
