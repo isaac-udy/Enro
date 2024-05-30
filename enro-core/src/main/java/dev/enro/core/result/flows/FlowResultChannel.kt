@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
@@ -17,6 +18,7 @@ import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.extensions.getParcelableListCompat
 import dev.enro.viewmodel.getNavigationHandle
+import kotlinx.coroutines.CoroutineScope
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 
@@ -33,6 +35,7 @@ public class NavigationFlow<T> internal constructor(
     private val savedStateHandle: SavedStateHandle,
     private val navigation: NavigationHandle,
     private val resultManager: FlowResultManager,
+    private val coroutineScope: CoroutineScope,
     private val registerForNavigationResult: CreateResultChannel,
     private val flow: NavigationFlowScope.() -> T,
     private val onCompleted: (T) -> Unit,
@@ -107,7 +110,12 @@ public class NavigationFlow<T> internal constructor(
      * the flow won't execute that if statement, and will instead continue on to whatever logic is next.
      */
     public fun update() {
-        val flowScope = NavigationFlowScope(this, resultManager, reference)
+        val flowScope = NavigationFlowScope(
+            coroutineScope = coroutineScope,
+            flow = this,
+            resultManager = resultManager,
+            navigationFlowReference = reference
+        )
         runCatching { return@update onCompleted(flowScope.flow()) }
             .recover {
                 when (it) {
@@ -204,6 +212,7 @@ public fun <T> ViewModel.registerForFlowResult(
             savedStateHandle = savedStateHandle,
             navigation = navigationHandle,
             resultManager = resultManager,
+            coroutineScope = viewModelScope,
             registerForNavigationResult = { onClosed, onResult ->
                 registerForNavigationResult(
                     onClosed = onClosed,

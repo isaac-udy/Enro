@@ -5,13 +5,13 @@ import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
 import kotlinx.parcelize.Parcelize
 
-public sealed interface FlowStepConfiguration : Parcelable{
+public sealed interface FlowStepConfiguration : Parcelable {
     @Parcelize
     public data object Transient : FlowStepConfiguration
 }
 
 @Parcelize
-public class FlowStep<Result: Any> private constructor(
+public class FlowStep<Result : Any> private constructor(
     @PublishedApi internal val stepId: String,
     @PublishedApi internal val key: NavigationKey,
     @PublishedApi internal val dependsOn: Long,
@@ -29,7 +29,7 @@ public class FlowStep<Result: Any> private constructor(
     ) : this(
         stepId = stepId,
         key = key,
-        dependsOn = dependsOn.contentHash(),
+        dependsOn = dependsOn.hashForDependsOn(),
         direction = direction,
         configuration = configuration,
     )
@@ -58,8 +58,6 @@ public class FlowStep<Result: Any> private constructor(
         return result
     }
 }
-
-private fun List<Any?>.contentHash(): Long = fold(0L) { result, it -> 31L * result + it.hashCode() }
 
 internal val FlowStep<*>.isTransient: Boolean
     get() = configuration.contains(FlowStepConfiguration.Transient)

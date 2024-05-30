@@ -5,6 +5,7 @@ import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
 import androidx.lifecycle.SavedStateHandle
 import dev.enro.core.NavigationHandle
@@ -14,14 +15,10 @@ import dev.enro.core.controller.usecase.extras
 import dev.enro.core.getParentNavigationHandle
 import dev.enro.extensions.getParcelableListCompat
 import dev.enro.extensions.isSaveableInBundle
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Job
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
-import kotlin.collections.ArrayList
-import kotlin.collections.associateBy
-import kotlin.collections.filter
-import kotlin.collections.getOrPut
-import kotlin.collections.mutableSetOf
-import kotlin.collections.orEmpty
 import kotlin.collections.set
 
 public class FlowResultManager private constructor(
@@ -34,6 +31,9 @@ public class FlowResultManager private constructor(
         val savedMap = savedList.associateBy { it.stepId }
         putAll(savedMap)
     }
+
+    @PublishedApi
+    internal val suspendingResults: SnapshotStateMap<String, SuspendingStepResult> = mutableStateMapOf()
 
     private val defaultsInitialised = mutableSetOf<String>().apply {
         savedStateHandle ?: return@apply
@@ -88,6 +88,14 @@ public class FlowResultManager private constructor(
         val result: @RawValue Any,
         val dependsOn: Long,
     ) : Parcelable
+
+    @PublishedApi
+    internal class SuspendingStepResult(
+        val stepId: String,
+        val result: Deferred<Any?>,
+        val job: Job,
+        val dependsOn: Long,
+    )
 
     public companion object {
         private const val SAVED_BUNDLE_KEY = "FlowResultManager.RESULTS_KEY"
