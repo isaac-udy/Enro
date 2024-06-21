@@ -4,6 +4,7 @@ plugins {
     id("kotlin-android")
     id("kotlin-parcelize")
     id("kotlin-kapt")
+    alias(libs.plugins.compose.compiler)
 }
 configureAndroidLibrary("dev.enro.hilt.test")
 configureCompose()

@@ -4,11 +4,13 @@ import java.util.Properties
 buildscript {
     repositories {
         mavenLocal()
+        gradlePluginPortal()
         google()
         mavenCentral()
     }
     dependencies {
         classpath(libs.android.gradle)
+        classpath(libs.kotlin.compose.gradle)
         classpath(libs.kotlin.gradle)
         classpath(libs.processing.ksp.gradle)
         classpath(libs.hilt.gradle)

@@ -5,6 +5,7 @@ plugins {
     id("kotlin-android")
     id("kotlin-parcelize")
     id("wtf.emulator.gradle")
+    alias(libs.plugins.compose.compiler)
 }
 configureAndroidLibrary("dev.enro")
 configureCompose()

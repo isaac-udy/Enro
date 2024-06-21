@@ -5,6 +5,7 @@ plugins {
     id("kotlin-android")
     id("kotlin-parcelize")
     id("kotlin-kapt")
+    alias(libs.plugins.compose.compiler)
 }
 configureAndroidApp("dev.enro.test.application")
 configureCompose()
