@@ -1,1 +1,11 @@
 # Navigation Containers
+This documentation is incomplete.
+
+A `NavigationContainer` in Enro is an object that is responsible for managing a backstack of `NavigationInstruction.Open` instances. Each `NavigationInstruction.Open` represents a destination/screen associated with a `NavigationKey` that has been pushed or presented (for more information on the difference between push and present, see [frequently-asked-questions](./frequently-asked-questions.md)).
+
+A `NavigationContainer` can be thought of as a "window" to a backstack that the NavigationContainer is responsible for. A NavigationContainer will take up part of the screen, and will render its backstack within the space that it occupies. When a new destination is pushed or presented, the NavigationContainer will update to display the new destination. NavigationContainers can be nested, and any destination can define zero-to-many child NavigationContainers. 
+
+Applications generally have a single root level NavigationContainer that takes up the entire window allocated to the application. The destinations/screens displayed within the root NavigationContainer might then have their own child NavigationContainers. For example, there might be a NavigationKey called "ListAndDetailKey" pushed into the root NavigationContainer, and the destination associated with that NavigationKey might have two child NavigationContainers, one for the list and one for the detail. On small devices, the list and detail containers might be displayed one-at-a-time, but on larger devices, they might be displayed side-by-side. 
+
+`NavigationContainers` can define a "filter" which is used to decide whether or not a NavigationInstruction/NavigationKey is able to be added to that NavigationContainer's backstack. For example, the root NavigationContainer for an application should generally not have any filter, but in the list/detail example above, the NavigationContainer used for the detail destination should likely use a filter that only allows NavigationInstructions that are associated with the detail NavigationKey to be added to its backstack. When a NavigationHandle executes a NavigationInstruction, Enro will search for the closest NavigationContainer that accepts the NavigationInstruction/NavigationKey in it's filter, and then add the NavigationInstruction to that NavigationContainer's backstack.
+ 

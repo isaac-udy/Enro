@@ -2,6 +2,8 @@
 
 Enro allows ViewModels to access the `NavigationHandle` for the screen that they are being used by, which allows navigation logic to be managed from within a ViewModel. This is functionality is optional, and some people prefer to leave the navigation logic within the View layer of their applications.
 
+One of the main advantages of using ViewModels for navigation logic is that ViewModels can be tested with Unit tests. This allows you to test the navigation logic of your application without needing to run an emulator or device. For more information on testing, see [Testing](./testing.md).
+
 ## Getting a NavigationHandle inside a ViewModel
 To get a NavigationHandle from inside of a ViewModel, use the `by navigationHandle<T>()` property delegate. This will return a `TypedNavigationHandle<T>`. For more information on what a NavigationHandle is, see [Navigation Handles](./navigation-handles.md).
 
