@@ -1,10 +1,14 @@
 package dev.enro.core.controller.usecase
 
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.NavigationHostFactoryRepository
 
+// The following @OptIn shouldn't be required due to buildSrc/src/main/kotlin/configureAndroid.kt adding an -Xopt-in arg
+// to the Kotlin freeCompilerArgs, but for some reason, lint checks will fail if the @OptIn annotation is not explicitly added.
+@OptIn(AdvancedEnroApi::class)
 internal class HostInstructionAs(
     private val navigationHostFactoryRepository: NavigationHostFactoryRepository,
     private val navigationBindingRepository: NavigationBindingRepository,
