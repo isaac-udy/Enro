@@ -40,6 +40,7 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.result.flows.registerForFlowResult
+import dev.enro.core.withExtra
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.coroutines.delay
@@ -105,7 +106,12 @@ class ComposeAsyncManagedResultViewModel(
                 return@async data
             }
 
-            val secondStep = push { ComposeAsyncManagedResultFlow.StepResult("Two") }
+            val secondStep = pushWithExtras {
+                // We're using extras here as a simple way to test that pushWithExtras/NavigationKey.withExtra work within
+                // managed flows - this extra is verified by the associated tests, but has no real impact on the flow itself
+                ComposeAsyncManagedResultFlow.StepResult("Two")
+                    .withExtra("flowResultExtra", ComposeAsyncManagedResultFlow.hashCode())
+            }
             val secondStepAsync = async(firstStep, secondStep) {
                 state.update { it.copy(dataAfterStepTwo = AsyncData.Loading()) }
                 val data = loadSuspendingData(secondStep)
@@ -225,6 +231,14 @@ fun ComposeAsyncManagedResultFlowStepResultScreen() {
 
         Button(onClick = { navigation.closeWithResult("B") }) {
             Text("Continue (B)")
+        }
+
+        val extra = navigation.instruction.extras["flowResultExtra"]
+        if (extra != null) {
+            Text(
+                text = "Extra: ${navigation.instruction.extras["flowResultExtra"]}",
+                style = MaterialTheme.typography.caption
+            )
         }
     }
 }

@@ -39,6 +39,8 @@ class ComposeAsyncManagedResultFlowRobot(
         assertTrue(viewModel.state.value.dataAfterStepOne is AsyncData.Loaded)
         composeRule.onNodeWithText("Step: Two")
             .assertExists()
+        composeRule.onNodeWithText("Extra: ${ComposeAsyncManagedResultFlow.hashCode()}")
+            .assertExists()
         return this
     }
 

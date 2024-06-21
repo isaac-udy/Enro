@@ -6,7 +6,9 @@ public interface NavigationResultChannel<Result: Any, Key : NavigationKey.WithRe
     @Deprecated("Please use push or present")
     public fun open(key: Key)
     public fun push(key: NavigationKey.SupportsPush.WithResult<out Result>)
+    public fun push(key: NavigationKey.WithExtras<out NavigationKey.SupportsPush.WithResult<out Result>>)
     public fun present(key: NavigationKey.SupportsPresent.WithResult<out Result>)
+    public fun present(key: NavigationKey.WithExtras<out NavigationKey.SupportsPresent.WithResult<out Result>>)
 }
 
 /**

@@ -155,9 +155,11 @@ public class NavigationFlow<T> internal constructor(
                         navigationKey = step.key,
                         resultKey = step,
                         resultId = resultChannelId,
-                        extras = mutableMapOf(
+                        extras = mutableMapOf<String, Any>(
                             IS_PUSHED_IN_FLOW to (step.direction is NavigationDirection.Push)
-                        )
+                        ).apply {
+                            putAll(step.extras)
+                        },
                     )
                 }
             setBackstack(instructions.toBackstack())

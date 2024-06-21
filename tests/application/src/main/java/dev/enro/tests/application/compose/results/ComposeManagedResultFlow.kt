@@ -18,6 +18,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -39,6 +40,7 @@ import dev.enro.core.result.flows.NavigationFlowReference
 import dev.enro.core.result.flows.registerForFlowResult
 import dev.enro.core.result.flows.rememberNavigationFlowReference
 import dev.enro.core.result.flows.requireStep
+import dev.enro.core.withExtra
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
@@ -81,7 +83,12 @@ class ComposeManagedResultViewModel(
         flow = {
             val firstResult = push { ComposeManagedResultFlow.FirstResult() }
             val presentedResult = present { ComposeManagedResultFlow.PresentedResult() }
-            val secondResult = push { ComposeManagedResultFlow.SecondResult() }
+            val secondResult = pushWithExtras {
+                // We're using extras here as a simple way to test that pushWithExtras/NavigationKey.withExtra work within
+                // managed flows - this extra is verified by the associated tests, but has no real impact on the flow itself
+                ComposeManagedResultFlow.SecondResult()
+                    .withExtra("secondResultExtra", ComposeManagedResultFlow.hashCode())
+            }
             val transientResult = push {
                 transient()
                 dependsOn(secondResult)
@@ -94,10 +101,10 @@ class ComposeManagedResultViewModel(
                     navigationFlowReference = navigationFlowReference,
                     text = """
                         First Result: $firstResult
+                        Presented Result: $presentedResult
                         Second Result: $secondResult
                         Transient Result: $transientResult
                         Third Result: $thirdResult
-                        Presented Result: $presentedResult
                     """.trimIndent()
                 )
             }
@@ -174,6 +181,11 @@ fun SecondResultScreen() {
         Button(onClick = { navigation.closeWithResult("B") }) {
             Text("Continue (B)")
         }
+
+        Text(
+            style = MaterialTheme.typography.caption,
+            text = "Has extra: ${navigation.instruction.extras["secondResultExtra"]}"
+        )
     }
 }
 
@@ -221,8 +233,13 @@ fun ThirdResultScreen() {
 fun FinalScreenScreen() {
     val navigation = navigationHandle<ComposeManagedResultFlow.FinalScreen>()
     val flowReference = rememberNavigationFlowReference(navigation.key.navigationFlowReference)
+    val linesOfText = remember(navigation.key.text) {
+        navigation.key.text.lines()
+    }
     TitledColumn(title = "Final Screen") {
-        Text(text = navigation.key.text)
+        linesOfText.forEach {
+            Text(it)
+        }
 
         Button(onClick = {
             flowReference.requireStep<ComposeManagedResultFlow.FirstResult>()

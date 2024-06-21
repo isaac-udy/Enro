@@ -77,7 +77,25 @@ internal class ResultChannelImpl<Result : Any, Key : NavigationKey.WithResult<Re
         )
     }
 
+    override fun push(key: NavigationKey.WithExtras<out NavigationKey.SupportsPush.WithResult<out Result>>) {
+        val properties = arguments ?: return
+        properties.navigationHandle.executeInstruction(
+            NavigationInstruction.Push(key).internal.copy(
+                resultId = id
+            )
+        )
+    }
+
     override fun present(key: NavigationKey.SupportsPresent.WithResult<out Result>) {
+        val properties = arguments ?: return
+        properties.navigationHandle.executeInstruction(
+            NavigationInstruction.Present(key).internal.copy(
+                resultId = id
+            )
+        )
+    }
+
+    override fun present(key: NavigationKey.WithExtras<out NavigationKey.SupportsPresent.WithResult<out Result>>) {
         val properties = arguments ?: return
         properties.navigationHandle.executeInstruction(
             NavigationInstruction.Present(key).internal.copy(

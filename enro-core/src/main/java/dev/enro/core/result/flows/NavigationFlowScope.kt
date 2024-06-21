@@ -31,8 +31,22 @@ public class NavigationFlowScope internal constructor(
         block = block,
     )
 
+    public inline fun <reified T : Any> pushWithExtras(
+        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithExtras<NavigationKey.SupportsPush.WithResult<T>>,
+    ): T = step(
+        direction = NavigationDirection.Push,
+        block = block,
+    )
+
     public inline fun <reified T : Any> present(
         noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.SupportsPresent.WithResult<T>,
+    ): T = step(
+        direction = NavigationDirection.Present,
+        block = block,
+    )
+
+    public inline fun <reified T : Any> presentWithExtras(
+        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithExtras<NavigationKey.SupportsPresent.WithResult<T>>,
     ): T = step(
         direction = NavigationDirection.Present,
         block = block,
@@ -123,6 +137,30 @@ public class NavigationFlowScope internal constructor(
     internal inline fun <reified T: Any> step(
         direction: NavigationDirection,
         noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithResult<T>,
+    ) : T {
+        val baseId = block::class.java.name
+        val count = steps.count { it.stepId.startsWith(baseId) }
+        val builder = FlowStepBuilder<T>()
+        val key = builder.scope.run(block)
+        val step = builder.build(
+            stepId = "$baseId@$count",
+            navigationKey = key,
+            navigationDirection = direction,
+        )
+        val defaultResult = builder.getDefaultResult()
+        if (defaultResult != null) {
+            resultManager.setDefault(step, defaultResult)
+        }
+        steps.add(step)
+        val result = resultManager.get(step)
+        return result ?: throw NoResult(step)
+    }
+
+    @PublishedApi
+    @JvmName("stepWithExtras")
+    internal inline fun <reified T: Any> step(
+        direction: NavigationDirection,
+        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithExtras<out NavigationKey.WithResult<T>>,
     ) : T {
         val baseId = block::class.java.name
         val count = steps.count { it.stepId.startsWith(baseId) }

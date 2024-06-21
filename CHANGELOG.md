@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.8.0
+* Added support for NavigationKey.WithExtras to `NavigationResultChannel` and `NavigationFlowScope`
+
 ## 2.7.0
 * ⚠️ Updated to androidx.lifecycle 2.8.1 ⚠️
   * There are breaking changes introduced in androidx.lifecycle 2.8.0; if you use Enro 2.7.0, you must upgrade your project to androidx.lifecycle 2.8+, otherwise you are likely to encounter runtime errors 

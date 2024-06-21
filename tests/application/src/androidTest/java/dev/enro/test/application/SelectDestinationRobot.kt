@@ -15,7 +15,9 @@ import dev.enro.test.application.compose.LegacyBottomSheetsRobot
 import dev.enro.test.application.compose.SyntheticViewModelAccessRobot
 import dev.enro.test.application.compose.results.ComposeAsyncManagedResultFlowRobot
 import dev.enro.test.application.compose.results.ComposeEmbeddedResultFlowRobot
+import dev.enro.test.application.compose.results.ComposeManagedResultFlowRobot
 import dev.enro.test.application.compose.results.ComposeNestedResultsRobot
+import dev.enro.test.application.compose.results.ResultsWithExtraRobot
 import dev.enro.test.application.fragment.UnboundBottomSheetRobot
 import dev.enro.tests.application.SelectDestination
 
@@ -120,6 +122,16 @@ class SelectDestinationRobot(
         return ComposeEmbeddedResultFlowRobot(composeRule)
     }
 
+    fun openComposeManagedResultFlow(): ComposeManagedResultFlowRobot {
+        composeRule.onNode(hasText("Compose Managed Result Flow"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+
+        return ComposeManagedResultFlowRobot(composeRule)
+    }
+
     fun openComposeAsyncManagedResultFlow(): ComposeAsyncManagedResultFlowRobot {
         composeRule.onNode(hasText("Compose Async Managed Result Flow"))
             .performScrollTo()
@@ -138,5 +150,15 @@ class SelectDestinationRobot(
             .performClick()
 
         return ComposeNestedResultsRobot(composeRule)
+    }
+
+    fun openResultsWithExtra(): ResultsWithExtraRobot {
+        composeRule.onNode(hasText("Results With Extra"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+
+        return ResultsWithExtraRobot(composeRule)
     }
 }

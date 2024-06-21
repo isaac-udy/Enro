@@ -99,6 +99,19 @@ public class FlowStepBuilder<T: Any> @PublishedApi internal constructor(
     )
 
     @PublishedApi
+    internal fun build(
+        stepId: String,
+        navigationDirection: NavigationDirection,
+        navigationKey: NavigationKey.WithExtras<out NavigationKey>,
+    ) : FlowStep<T> = FlowStep(
+        stepId = stepId,
+        key = navigationKey,
+        dependsOn = dependencies.toList(),
+        direction = navigationDirection,
+        configuration = configuration.toSet(),
+    )
+
+    @PublishedApi
     internal fun getDefaultResult(): T? = defaultValue
 
     internal fun copy(): FlowStepBuilder<T> {

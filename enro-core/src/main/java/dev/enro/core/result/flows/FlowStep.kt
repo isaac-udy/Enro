@@ -4,6 +4,7 @@ import android.os.Parcelable
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 
 public sealed interface FlowStepConfiguration : Parcelable {
     @Parcelize
@@ -14,6 +15,7 @@ public sealed interface FlowStepConfiguration : Parcelable {
 public class FlowStep<Result : Any> private constructor(
     @PublishedApi internal val stepId: String,
     @PublishedApi internal val key: NavigationKey,
+    @PublishedApi internal val extras: @RawValue Map<String, Any>,
     @PublishedApi internal val dependsOn: Long,
     @PublishedApi internal val direction: NavigationDirection,
     @PublishedApi internal val configuration: Set<FlowStepConfiguration>,
@@ -29,6 +31,22 @@ public class FlowStep<Result : Any> private constructor(
     ) : this(
         stepId = stepId,
         key = key,
+        extras = emptyMap(),
+        dependsOn = dependsOn.hashForDependsOn(),
+        direction = direction,
+        configuration = configuration,
+    )
+
+    internal constructor(
+        stepId: String,
+        key: NavigationKey.WithExtras<out NavigationKey>,
+        dependsOn: List<Any?>,
+        direction: NavigationDirection,
+        configuration: Set<FlowStepConfiguration>,
+    ) : this(
+        stepId = stepId,
+        key = key.navigationKey,
+        extras = key.extras,
         dependsOn = dependsOn.hashForDependsOn(),
         direction = direction,
         configuration = configuration,
