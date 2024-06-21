@@ -1,13 +1,12 @@
 package dev.enro.test
 
 import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
 import kotlin.reflect.KClass
 
 /**
  * Asserts that the NavigationHandle has executed a Close.WithResult instruction, and that the result matches the provided predicate
  */
-fun <T : Any> TestNavigationHandle<out NavigationKey.WithResult<out T>>.assertClosedWithResult(
+fun <T : Any> TestNavigationHandle<*>.assertClosedWithResult(
     type: KClass<T>,
     predicate: (T) -> Boolean = { true },
 ) {
@@ -35,7 +34,7 @@ fun <T : Any> TestNavigationHandle<out NavigationKey.WithResult<out T>>.assertCl
 /**
  * Asserts that the NavigationHandle has executed a Close.WithResult instruction, and that the result matches the provided predicate
  */
-inline fun <reified T : Any> TestNavigationHandle<out NavigationKey.WithResult<out T>>.assertClosedWithResult(
+inline fun <reified T : Any> TestNavigationHandle<*>.assertClosedWithResult(
     predicate: (T) -> Boolean = { true },
 ) {
     val instruction = instructions.filterIsInstance<NavigationInstruction.Close.WithResult>()
@@ -62,7 +61,7 @@ inline fun <reified T : Any> TestNavigationHandle<out NavigationKey.WithResult<o
 /**
  * Asserts that the NavigationHandle has executed a Close.WithResult instruction, and that the result is equal to [expected]
  */
-fun <T : Any> TestNavigationHandle<out NavigationKey.WithResult<out T>>.assertClosedWithResult(
+fun <T : Any> TestNavigationHandle<*>.assertClosedWithResult(
     expected: T,
 ) {
     val instruction = instructions.filterIsInstance<NavigationInstruction.Close.WithResult>()
@@ -82,7 +81,7 @@ fun <T : Any> TestNavigationHandle<out NavigationKey.WithResult<out T>>.assertCl
 /**
  * Asserts that the NavigationHandle has not executed a Close.WithResult instruction
  */
-fun TestNavigationHandle<out NavigationKey.WithResult<*>>.assertNotClosedWithResult() {
+fun TestNavigationHandle<*>.assertNotClosedWithResult() {
     val instruction = instructions.filterIsInstance<NavigationInstruction.Close.WithResult>()
         .lastOrNull()
 
