@@ -77,6 +77,23 @@ public sealed class NavigationInstruction {
                 result = 31 * result + (resultId?.hashCode() ?: 0)
                 return result
             }
+
+            override fun toString(): String {
+                val directionName = when(navigationDirection) {
+                    NavigationDirection.Forward -> "Forward"
+                    NavigationDirection.Replace -> "Replace"
+                    NavigationDirection.Push -> "Push"
+                    NavigationDirection.Present -> "Present"
+                    NavigationDirection.ReplaceRoot -> "ReplaceRoot"
+                    else -> "Unknown"
+                }
+                val id = instructionId
+                val key = navigationKey
+                val extras = extras.takeIf { it.isNotEmpty() }?.let {
+                    ", extras=$it"
+                } ?: ""
+                return "NavigationInstruction.Open<$directionName>(instructionId=$id, navigationKey=$key$extras)"
+            }
         }
     }
 
@@ -85,9 +102,13 @@ public sealed class NavigationInstruction {
         internal val operation: (container: NavigationContainerContext) -> Unit
     ) : NavigationInstruction() {
         internal sealed class Target {
-            object ParentContainer : Target()
-            object ActiveContainer : Target()
-            class TargetContainer(val key: NavigationContainerKey) : Target()
+            data object ParentContainer : Target()
+            data object ActiveContainer : Target()
+            data class TargetContainer(val key: NavigationContainerKey) : Target()
+        }
+
+        override fun toString(): String {
+            return "NavigationInstruction.ContainerOperation(target=$target, operation=${operation::class.java})"
         }
     }
 
@@ -109,9 +130,16 @@ public sealed class NavigationInstruction {
                 return result.hashCode()
             }
         }
+
+        override fun toString(): String {
+            return when(this) {
+                is WithResult -> "NavigationInstruction.Close.WithResult(result=$result)"
+                else -> "NavigationInstruction.Close"
+            }
+        }
     }
 
-    public object RequestClose : NavigationInstruction()
+    public data object RequestClose : NavigationInstruction()
 
     public companion object {
         @Suppress("FunctionName") // mimicking constructor

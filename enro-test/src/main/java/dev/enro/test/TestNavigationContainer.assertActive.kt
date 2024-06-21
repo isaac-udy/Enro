@@ -3,28 +3,51 @@ package dev.enro.test
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.NavigationContainerContext
-import org.junit.Assert
 
+/**
+ * Asserts that the active NavigationInstruction in the NavigationContainerContext is equal to the provided
+ * NavigationInstruction [instruction]
+ */
 fun NavigationContainerContext.assertActive(
     instruction: NavigationInstruction.Open<*>
 ) {
-    Assert.assertEquals(instruction, backstack.active)
+    backstack.active.shouldBeEqualTo(instruction) {
+        "Active NavigationInstruction does not match expected value.\n\tExpected: $expected\n\tActual: $actual"
+    }
 }
 
+/**
+ * Asserts that the active NavigationInstruction in the NavigationContainerContext has a NavigationKey that is equal to
+ * the provided NavigationKey [key]
+ */
 fun NavigationContainerContext.assertActive(
     key: NavigationKey
 ) {
-    Assert.assertEquals(key, backstack.active?.navigationKey)
+    backstack.active?.navigationKey.shouldBeEqualTo(key) {
+        "Active NavigationInstruction's NavigationKey does not match expected value.\n\tExpected: $expected\n\tActual: $actual"
+    }
 }
 
+/**
+ * Asserts that the active NavigationInstruction in the NavigationContainerContext is not equal to the
+ * provided NavigationInstruction [instruction]
+ */
 fun NavigationContainerContext.assertNotActive(
     instruction: NavigationInstruction.Open<*>
 ) {
-    Assert.assertNotEquals(instruction, backstack.active)
+    backstack.active.shouldNotBeEqualTo(instruction) {
+        "Active NavigationInstruction should not be active.\n\tActive: $expected"
+    }
 }
 
+/**
+ * Asserts that the active NavigationInstruction in the NavigationContainerContext has a NavigationKey that is not equal
+ * to the provided NavigationKey [key]
+ */
 fun NavigationContainerContext.assertNotActive(
     key: NavigationKey
 ) {
-    Assert.assertNotEquals(key, backstack.active?.navigationKey)
+    backstack.active?.navigationKey.shouldNotBeEqualTo(key) {
+        "Active NavigationInstruction's NavigationKey should not be active.\n\tActive: $expected"
+    }
 }

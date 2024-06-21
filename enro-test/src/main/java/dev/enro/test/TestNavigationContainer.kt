@@ -8,7 +8,6 @@ import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.container.emptyBackstack
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.junit.Assert.assertEquals
 
 public class TestNavigationContainer(
     val key: NavigationContainerKey,
