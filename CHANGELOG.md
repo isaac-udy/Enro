@@ -1,8 +1,10 @@
 # Changelog
 
 ## 2.8.0
+* Updated Compose to 1.7.0
 * Added support for NavigationKey.WithExtras to `NavigationResultChannel` and `NavigationFlowScope`
 * Updated `enro-test` methods to provide more descriptive error messages when assert/expect methods fail, and added kdoc comments to many of the functions
+* Updated Composable navigation animations to use SeekableTransitionState, as a step towards supporting predictive back navigation animations
 
 ## 2.7.0
 * ⚠️ Updated to androidx.lifecycle 2.8.1 ⚠️
