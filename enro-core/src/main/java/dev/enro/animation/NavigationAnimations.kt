@@ -7,7 +7,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
@@ -15,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationDirection
 import dev.enro.core.container.originalNavigationDirection
-import dev.enro.extensions.KeepVisibleWith
 import dev.enro.extensions.ResourceAnimatedVisibility
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
@@ -51,9 +49,9 @@ public sealed interface NavigationAnimation {
         internal abstract val forView: ForView
 
         @androidx.compose.runtime.Composable
-        public abstract fun Animate(
+        internal abstract fun Animate(
             visible: Transition<Boolean>,
-            content: @androidx.compose.runtime.Composable () -> Unit
+            content: @androidx.compose.runtime.Composable (Transition<EnterExitState>) -> Unit,
         )
 
         public companion object {
@@ -84,9 +82,11 @@ public sealed interface NavigationAnimation {
             val exit: ExitTransition = ExitTransition.None,
             override val forView: ForView = DefaultAnimations.ForView.noneEnter,
         ) : Composable(), Enter, Exit {
-            @OptIn(ExperimentalAnimationApi::class)
             @androidx.compose.runtime.Composable
-            override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
+            override fun Animate(
+                visible: Transition<Boolean>,
+                content: @androidx.compose.runtime.Composable (Transition<EnterExitState>) -> Unit,
+            ) {
                 val context = LocalContext.current
                 val resourceAnimation = remember(this, forView) { forView.asResource(context.theme) }
                 visible.AnimatedVisibility(
@@ -99,9 +99,8 @@ public sealed interface NavigationAnimation {
                         enter = resourceAnimation.id,
                         exit = resourceAnimation.id,
                     ) {
-                        content()
+                        content(transition)
                     }
-                    KeepVisibleWith(visible)
                 }
             }
         }

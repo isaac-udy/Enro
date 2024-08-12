@@ -2,10 +2,10 @@ package dev.enro.core.compose
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
@@ -15,24 +15,22 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import dev.enro.animation.NavigationAnimation
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.navigationContext
+import dev.enro.destination.compose.destination.AnimationEvent
 
 /**
  * Causes the ComposableDestination's transition to immediately finish
  */
 @AdvancedEnroApi
 public fun ComposableDestination.finishTransition() {
-    val transition = owner.transitionState
-    if (!transition.isIdle) {
-        owner.transitionState = MutableTransitionState(transition.targetState)
-    }
+    owner.animations.setAnimationEvent(AnimationEvent.SnapTo(false))
 }
 
 /**
  * Gets the transition for the ComposableDestination
  */
 @AdvancedEnroApi
-public fun ComposableDestination.getTransition() : Transition<Boolean> {
-    return owner.transition
+public fun ComposableDestination.getTransition(): Transition<EnterExitState> {
+    return owner.animations.enterExitTransition
 }
 
 /**
@@ -40,7 +38,7 @@ public fun ComposableDestination.getTransition() : Transition<Boolean> {
  * and will otherwise throw an exception.
  */
 @AdvancedEnroApi
-public val navigationTransition: Transition<Boolean>
+public val navigationTransition: Transition<EnterExitState>
     @Composable
     get() {
         val destination = navigationContext.contextReference as ComposableDestination
@@ -68,11 +66,11 @@ public fun OverrideNavigationAnimations(
     val navigationContext = navigationContext
     val destination = navigationContext.contextReference as ComposableDestination
     DisposableEffect(enter, exit) {
-        destination.owner.animationOverride = NavigationAnimation.Composable(
+        destination.owner.animations.animationOverride = NavigationAnimation.Composable(
             enter = enter,
             exit = exit,
         )
-        onDispose {  }
+        onDispose { }
     }
 }
 
@@ -100,7 +98,7 @@ public fun OverrideNavigationAnimations(
     val navigationContext = navigationContext
     val destination = navigationContext.contextReference as ComposableDestination
     DisposableEffect(Unit) {
-        destination.owner.animationOverride = NavigationAnimation.Composable(
+        destination.owner.animations.animationOverride = NavigationAnimation.Composable(
             enter = EnterTransition.None,
             // We need a little fade out here to keep the animation active while the animated visibility below has a chance to run
             // and attach child transitions. This is a bit of a hack, but it's the only way to ensure that child exit transitions
@@ -110,10 +108,10 @@ public fun OverrideNavigationAnimations(
                 animationSpec = tween(512),
             ),
         )
-        onDispose {  }
+        onDispose { }
     }
     navigationTransition.AnimatedVisibility(
-        visible = {it},
+        visible = { it == EnterExitState.Visible },
         enter = enter,
         exit = exit,
     ) {

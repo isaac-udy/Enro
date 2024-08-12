@@ -42,6 +42,7 @@ import dev.enro.core.container.NavigationInstructionFilter
 import dev.enro.core.container.merge
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.destination.compose.destination.AnimationEvent
 import java.io.Closeable
 import kotlin.collections.set
 
@@ -71,7 +72,7 @@ public class ComposableNavigationContainer internal constructor(
         get() = true
 
     public val isAnimating: Boolean by derivedStateOf {
-        destinationOwners.any { !it.transitionState.isIdle }
+        destinationOwners.any { it.animations.isAnimating }
     }
 
     private val onDestroyLifecycleObserver = LifecycleEventObserver { _, event ->
@@ -198,7 +199,7 @@ public class ComposableNavigationContainer internal constructor(
 
         destinationOwners.forEach {
             if (activeDestinations[it.instruction] == null) {
-                it.transitionState.targetState = false
+                it.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
             }
         }
         destinationOwners = merge(transition.previousBackstack, transition.activeBackstack)
@@ -251,11 +252,13 @@ public class ComposableNavigationContainer internal constructor(
             val isPushedDialogOrBottomSheet =
                 ((destinationOwner.destination is DialogDestination || destinationOwner.destination is BottomSheetDestination) && activePresented != null)
 
-            destinationOwner.transitionState.targetState = when (instruction) {
+
+            val target = when (instruction) {
                 activePresented -> !isParentBeingRemoved
                 activePush -> !isParentBeingRemoved && !isPushedDialogOrBottomSheet
                 else -> false
             }
+            destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(target))
         }
     }
 
