@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.NonSkippableComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,9 +25,11 @@ import dev.enro.core.container.getAnimationsForEntering
 import dev.enro.core.container.getAnimationsForExiting
 
 internal sealed class AnimationEvent {
-    data class AnimateTo(val visible: Boolean) : AnimationEvent()
-    data class SnapTo(val visible: Boolean) : AnimationEvent()
-    data class Seek(val progress: Float, val visible: Boolean) : AnimationEvent()
+    abstract val visible: Boolean
+
+    data class AnimateTo(override val visible: Boolean) : AnimationEvent()
+    data class SnapTo(override val visible: Boolean) : AnimationEvent()
+    data class Seek(val progress: Float, override val visible: Boolean) : AnimationEvent()
 }
 
 internal class ComposableDestinationAnimations(
@@ -53,6 +56,7 @@ internal class ComposableDestinationAnimations(
 
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
+    @NonSkippableComposable
     fun Animate(content: @Composable () -> Unit) {
         val targetState = visibilityState.targetState
         val instruction = owner.instruction
@@ -90,7 +94,9 @@ internal class ComposableDestinationAnimations(
                     is AnimationEvent.Seek -> visibilityState.seekTo(event.progress, event.visible)
                 }
             }
-            currentAnimationEvent = AnimationEvent.SnapTo(visibilityState.targetState)
+            if (currentAnimationEvent == event) {
+                currentAnimationEvent = AnimationEvent.SnapTo(event.visible)
+            }
         }
 
         animation.Animate(

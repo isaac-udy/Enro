@@ -43,6 +43,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.parcelize.Parcelize
 import java.util.UUID
 
+// TODO - this could have additional tests added to match those in ComposableDestinationContainerGroups.kt and/or ComposableContainerStabilityTests.kt
+// generally, some tests that flick quickly between the containers and ensure that they are stable and are rendered correctly. Due to those other
+// tests in the core enro suite, it's not a high priority to add these (as those will catch bugs), but it is easier to debug tests which are
+// written against the test application (as compared to the core suite).
 @Parcelize
 object ComposeStability : NavigationKey.SupportsPush {
 
@@ -68,9 +72,19 @@ class ComposeStabilityActivity : AppCompatActivity() {
         setContent {
             val navigation = navigationHandle<ComposeStability>()
             val containerGroup = rememberNavigationContainerGroup(
-                rememberNavigationContainer(ComposeStability.primaryContainer, emptyBehavior = EmptyBehavior.AllowEmpty),
-                rememberNavigationContainer(ComposeStability.secondaryContainer, emptyBehavior = EmptyBehavior.AllowEmpty),
-                rememberNavigationContainer(ComposeStability.tertiaryContainer, emptyBehavior = EmptyBehavior.AllowEmpty),
+                rememberNavigationContainer(
+                    key= ComposeStability.primaryContainer,
+                    emptyBehavior = EmptyBehavior.AllowEmpty,
+                    root = ComposeStability.Content(),
+                ),
+                rememberNavigationContainer(
+                    key = ComposeStability.secondaryContainer,
+                    emptyBehavior = EmptyBehavior.AllowEmpty
+                ),
+                rememberNavigationContainer(
+                    key = ComposeStability.tertiaryContainer,
+                    emptyBehavior = EmptyBehavior.AllowEmpty
+                ),
             )
             TitledColumn("Compose Stability") {
                 Row(
