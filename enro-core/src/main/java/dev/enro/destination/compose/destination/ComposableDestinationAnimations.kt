@@ -40,7 +40,7 @@ internal class ComposableDestinationAnimations(
     internal lateinit var enterExitTransition: Transition<EnterExitState>
 
     val isAnimating by derivedStateOf {
-        when(currentAnimationEvent) {
+        when (currentAnimationEvent) {
             is AnimationEvent.AnimateTo -> visibilityState.targetState != visibilityState.currentState
             is AnimationEvent.SnapTo -> false
             is AnimationEvent.Seek -> true
@@ -70,8 +70,12 @@ internal class ComposableDestinationAnimations(
                     enter = EnterTransition.None,
                     exit = fadeOut(tween(75, 150)),
                 )
+
                 else -> when {
-                    visibilityState.targetState >= visibilityState.currentState -> parentContainer.getAnimationsForEntering(instruction).asComposable()
+                    visibilityState.targetState >= visibilityState.currentState -> parentContainer.getAnimationsForEntering(
+                        instruction
+                    ).asComposable()
+
                     else -> parentContainer.getAnimationsForExiting(instruction).asComposable()
                 }
             }
@@ -79,11 +83,14 @@ internal class ComposableDestinationAnimations(
 
         LaunchedEffect(currentAnimationEvent) {
             val event = currentAnimationEvent
-            when(event) {
-                is AnimationEvent.AnimateTo -> visibilityState.animateTo(event.visible)
-                is AnimationEvent.SnapTo -> visibilityState.snapTo(event.visible)
-                is AnimationEvent.Seek -> visibilityState.seekTo(event.progress, event.visible)
+            runCatching {
+                when (event) {
+                    is AnimationEvent.AnimateTo -> visibilityState.animateTo(event.visible)
+                    is AnimationEvent.SnapTo -> visibilityState.snapTo(event.visible)
+                    is AnimationEvent.Seek -> visibilityState.seekTo(event.progress, event.visible)
+                }
             }
+            currentAnimationEvent = AnimationEvent.SnapTo(visibilityState.targetState)
         }
 
         animation.Animate(

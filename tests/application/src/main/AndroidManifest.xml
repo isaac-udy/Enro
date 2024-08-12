@@ -25,6 +25,7 @@
         <activity android:name="dev.enro.tests.application.compose.CloseRootAndPresentActivity" />
         <activity android:name="dev.enro.tests.application.activity.SimpleActivityImpl" />
         <activity android:name="dev.enro.tests.application.compose.results.ComposeEmbeddedResultFlowActivity" />
+        <activity android:name="dev.enro.tests.application.compose.ComposeStabilityActivity"/>
     </application>
 
 </manifest>
