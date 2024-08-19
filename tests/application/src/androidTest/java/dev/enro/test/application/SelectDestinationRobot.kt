@@ -16,6 +16,7 @@ import dev.enro.test.application.compose.SyntheticViewModelAccessRobot
 import dev.enro.test.application.compose.results.ComposeAsyncManagedResultFlowRobot
 import dev.enro.test.application.compose.results.ComposeEmbeddedResultFlowRobot
 import dev.enro.test.application.compose.results.ComposeManagedResultFlowRobot
+import dev.enro.test.application.compose.results.ComposeManagedResultsWithNestedFlowAndEmptyRootRobot
 import dev.enro.test.application.compose.results.ComposeNestedResultsRobot
 import dev.enro.test.application.compose.results.ResultsWithExtraRobot
 import dev.enro.test.application.fragment.UnboundBottomSheetRobot
@@ -160,5 +161,15 @@ class SelectDestinationRobot(
             .performClick()
 
         return ResultsWithExtraRobot(composeRule)
+    }
+
+    fun openComposeManagedResultsWithNestedFlowAndEmptyRoot() : ComposeManagedResultsWithNestedFlowAndEmptyRootRobot {
+        composeRule.onNode(hasText("Compose Managed Results With Nested Flow And Empty Root"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+
+        return ComposeManagedResultsWithNestedFlowAndEmptyRootRobot(composeRule)
     }
 }

@@ -11,6 +11,7 @@ import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.usecase.AddPendingResult
 import dev.enro.core.navigationContext
 import dev.enro.core.readOpenInstruction
+import dev.enro.core.result.flows.FlowStep
 import dev.enro.core.rootContext
 
 internal object ForwardingResultInterceptor  : NavigationInstructionInterceptor {
@@ -37,7 +38,7 @@ internal object ForwardingResultInterceptor  : NavigationInstructionInterceptor 
             val next = containers.removeAt(0)
             val filteredBackstack = next.backstack
                 .filterNot {
-                    it.instructionId == forwardingResultId ||
+                    (it.instructionId == forwardingResultId && it.internal.resultKey !is FlowStep<*>) ||
                         AdvancedResultExtensions.getForwardingInstructionId(it) == forwardingResultId
                 }
                 .toBackstack()

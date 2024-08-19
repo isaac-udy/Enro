@@ -5,6 +5,7 @@
 * Added support for NavigationKey.WithExtras to `NavigationResultChannel` and `NavigationFlowScope`
 * Updated `enro-test` methods to provide more descriptive error messages when assert/expect methods fail, and added kdoc comments to many of the functions
 * Updated Composable navigation animations to use SeekableTransitionState, as a step towards supporting predictive back navigation animations
+* Fixed a bug where managed flows (`registerForFlowResult`) that launch embedded flows (`deliverResultFromPush/Present`) were not correctly handling the result of the embedded flow
 
 ## 2.7.0
 * ⚠️ Updated to androidx.lifecycle 2.8.1 ⚠️
