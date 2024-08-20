@@ -3,4 +3,5 @@
     <item type="id" name="enro_internal_single_fragment_frame_layout" />
     <item type="id" name="enro_internal_compose_dialog_fragment_view_id" />
     <item type="id" name="enro_internal_compose_fragment_view_id" />
+    <item type="id" name="enro_internal_shared_element_container_id" />
 </resources>
