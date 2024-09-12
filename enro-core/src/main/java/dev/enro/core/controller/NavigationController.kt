@@ -23,7 +23,7 @@ public class NavigationController internal constructor() {
     private val executorRepository: ExecutorRepository = dependencyScope.get()
     private val addModuleToController: AddModuleToController = dependencyScope.get()
 
-    public var config: EnroConfig = EnroConfig()
+    internal var config: EnroConfig = EnroConfig()
         private set
 
     init {

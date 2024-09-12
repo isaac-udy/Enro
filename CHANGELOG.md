@@ -11,6 +11,11 @@
 * ⚠️ Updated result channel identifiers in preparation for Kotlin 2.0 ⚠️
   * Kotlin 2.0 changes the way that lambdas are compiled, which has implications for `registerForNavigationResult` and how result channels are uniquely identified. Activites, Fragments, Composables and ViewModels that use `by registerForNavigationResult` directly will not be affected by this change. However, if you are creating result channels inside of other objects, such as delegates, helper objects, or extension functions, you should verify that these cases continue to work as expected. It is not expected that there will be issues, but if this does result in bugs in your application, please raise them on the Enro GitHub repository. 
 
+* ⚠️ Updated NavigationContainer handling of NavigationInstructionFilter ⚠️
+  * In versions of Enro before 2.8.0, NavigationContainers would always accept destinations that were presented (`NavigationInstruction.Present(...)`, `navigationHandle.present(...)`, etc), and would only enforce their instructionFilter for pushed instructions (`NavigationInstruction.Push(...)`, `navigationHandle.push(...)`, etc). This is no longer the default behavior, and NavigationContainers will apply their instructionFilter to all instructions. 
+  * This behavior can be reverted to the previous behavior by setting `useLegacyContainerPresentBehavior` when creating a NavigationController for your application using `createNavigationController`. 
+  * `useLegacyContainerPresentBehavior` will be removed in a future version of Enro, and it is recommended that you update your NavigationContainers to explicitly declare their instructionFilter for all instructions, not just pushed instructions.
+
 ## 2.7.0
 * ⚠️ Updated to androidx.lifecycle 2.8.1 ⚠️
   * There are breaking changes introduced in androidx.lifecycle 2.8.0; if you use Enro 2.7.0, you must upgrade your project to androidx.lifecycle 2.8+, otherwise you are likely to encounter runtime errors 
