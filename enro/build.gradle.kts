@@ -65,6 +65,7 @@ dependencies {
     androidTestImplementation(libs.testing.androidx.runner)
 
     androidTestImplementation(libs.testing.androidx.compose)
+    androidTestImplementation(libs.compose.materialIcons)
 
     androidTestImplementation(libs.androidx.navigation.fragment)
     androidTestImplementation(libs.androidx.navigation.ui)
