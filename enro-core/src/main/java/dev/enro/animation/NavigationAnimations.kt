@@ -8,12 +8,15 @@ import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroConfig
 import dev.enro.core.NavigationDirection
 import dev.enro.core.container.originalNavigationDirection
+import dev.enro.core.controller.NavigationApplication
 import dev.enro.extensions.ResourceAnimatedVisibility
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
@@ -88,18 +91,33 @@ public sealed interface NavigationAnimation {
                 content: @androidx.compose.runtime.Composable (Transition<EnterExitState>) -> Unit,
             ) {
                 val context = LocalContext.current
-                val resourceAnimation = remember(this, forView) { forView.asResource(context.theme) }
-                visible.AnimatedVisibility(
-                    visible = { it },
-                    enter = enter,
-                    exit = exit,
-                ) {
-                    transition.ResourceAnimatedVisibility(
-                        visible = { it == EnterExitState.Visible },
-                        enter = resourceAnimation.id,
-                        exit = resourceAnimation.id,
+                val config = remember(context) {
+                    val navigationApplication = (context.applicationContext as? NavigationApplication)
+                    navigationApplication?.navigationController?.config ?: EnroConfig()
+                }
+
+                if (config.isAnimationsDisabled) {
+                    val transition = updateTransition(EnterExitState.Visible, "NavigationAnimation.Composable")
+                    content(transition)
+                }
+                else {
+                    val resourceAnimation = remember(this, forView) { forView.asResource(context.theme) }
+                    visible.AnimatedVisibility(
+                        visible = { it },
+                        enter = enter,
+                        exit = exit,
                     ) {
-                        content(transition)
+                        if (config.enableViewAnimationsForCompose) {
+                            transition.ResourceAnimatedVisibility(
+                                visible = { it == EnterExitState.Visible },
+                                enter = resourceAnimation.id,
+                                exit = resourceAnimation.id,
+                            ) {
+                                content(transition)
+                            }
+                        } else {
+                            content(transition)
+                        }
                     }
                 }
             }

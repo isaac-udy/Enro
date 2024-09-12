@@ -6,7 +6,7 @@ import dev.enro.animation.DefaultAnimations
 import dev.enro.animation.NavigationAnimationOverride
 import dev.enro.animation.NavigationAnimationTransition
 import dev.enro.animation.OpeningTransition
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
 
@@ -73,6 +73,6 @@ internal class GetNavigationAnimations(
             )
         }.getOrDefault(1.0f)
 
-        return animationScale < 0.01f || controller.isAnimationsDisabled
+        return animationScale < 0.01f || controller.config.isAnimationsDisabled
     }
 }

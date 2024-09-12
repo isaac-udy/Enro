@@ -66,7 +66,7 @@ public abstract class EnroException(
 
                 val message =
                     "Opened ${args.key::class.java.simpleName} as a ${args.instruction.navigationDirection::class.java.simpleName} instruction. Forward and Replace type instructions are deprecated, please replace these with Push and Present instructions."
-                if (navigationController.isStrictMode) {
+                if (navigationController.config.isStrictMode) {
                     throw LegacyNavigationDirectionUsedInStrictMode(message)
                 } else {
                     Log.w("Enro", "$message Enro would have thrown in strict mode.")
@@ -84,7 +84,7 @@ public abstract class EnroException(
             ) {
                 val message =
                     "Attempted to Push to ${navigationKey::class.java.simpleName}, but could not find a valid container."
-                if (navigationController.isStrictMode) {
+                if (navigationController.config.isStrictMode) {
                     throw MissingContainerForPushInstruction(message)
                 } else {
                     Log.w(

@@ -2,6 +2,7 @@ package dev.enro.core.controller
 
 import android.app.Application
 import androidx.annotation.Keep
+import dev.enro.core.EnroConfig
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationExecutor
@@ -14,12 +15,6 @@ import dev.enro.core.result.EnroResult
 import kotlin.reflect.KClass
 
 public class NavigationController internal constructor() {
-    internal var isInTest = false
-    internal var isAnimationsDisabled = false
-
-    internal var isStrictMode: Boolean = false
-    internal var backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Default
-
     internal val dependencyScope = NavigationControllerScope(this)
 
     private val enroResult: EnroResult = dependencyScope.get()
@@ -27,6 +22,9 @@ public class NavigationController internal constructor() {
     private val navigationBindingRepository: NavigationBindingRepository = dependencyScope.get()
     private val executorRepository: ExecutorRepository = dependencyScope.get()
     private val addModuleToController: AddModuleToController = dependencyScope.get()
+
+    public var config: EnroConfig = EnroConfig()
+        private set
 
     init {
         pluginRepository.addPlugins(listOf(enroResult))
@@ -67,6 +65,16 @@ public class NavigationController internal constructor() {
     internal fun uninstall(application: Application) {
         pluginRepository.onDetached(this)
         navigationControllerBindings.remove(application)
+    }
+
+    /**
+     * This method is used to set the config, instead of using "internal set" on the config variable, because we
+     * want to be able to use this method from inside the test module, which needs to use @Suppress for
+     * "INVISIBLE_REFERENCE" and "INVISIBLE_MEMBER" to access internal functionality, and it appears that this does not
+     * allow access to set variables declared as "internal set"
+     */
+    internal fun setConfig(config: EnroConfig) {
+        this.config = config
     }
 
     public companion object {

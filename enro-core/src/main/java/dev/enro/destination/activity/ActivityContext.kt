@@ -36,7 +36,7 @@ internal fun <ContextType : ComponentActivity> ActivityContext(
 }
 
 private fun bindBackHandling(navigationContext: NavigationContext<out ComponentActivity>, navigationHandle: NavigationHandle) {
-    val backConfiguration = navigationContext.controller.backConfiguration
+    val backConfiguration = navigationContext.controller.config.backConfiguration
 
     when (backConfiguration) {
         is EnroBackConfiguration.Default -> configureDefaultBackHandling(navigationContext)

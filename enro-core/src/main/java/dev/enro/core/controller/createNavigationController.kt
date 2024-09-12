@@ -19,8 +19,12 @@ public fun NavigationApplication.createNavigationController(
     navigationController.addModule(loadGeneratedNavigationModule())
     navigationController.addModule(createNavigationModule(block))
     return navigationController.apply {
-        this.isStrictMode = strictMode
-        this.backConfiguration = backConfiguration
+        setConfig(
+            config.copy(
+                isStrictMode = strictMode,
+                backConfiguration = backConfiguration,
+            )
+        )
         install(this@createNavigationController)
     }
 }
@@ -45,8 +49,12 @@ internal fun createUnattachedNavigationController(
     val navigationController = NavigationController()
     navigationController.addModule(createNavigationModule(block))
     return navigationController.apply {
-        isStrictMode = strictMode
-        this.backConfiguration = backConfiguration
+        setConfig(
+            config.copy(
+                isStrictMode = strictMode,
+                backConfiguration = backConfiguration,
+            )
+        )
     }
 }
 

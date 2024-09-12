@@ -125,7 +125,7 @@ public fun NavigationHandle.requestClose() {
 internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
     val isMainThread = runCatching {
         Looper.getMainLooper() == Looper.myLooper()
-    }.getOrElse { dependencyScope.get<NavigationController>().isInTest } // if the controller is in a Jvm only test, the block above may fail to run
+    }.getOrElse { dependencyScope.get<NavigationController>().config.isInTest } // if the controller is in a Jvm only test, the block above may fail to run
 
     if(isMainThread && lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
         block()

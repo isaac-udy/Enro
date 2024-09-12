@@ -23,7 +23,7 @@ internal class AddPendingResult(
 
         if (navigationKey !is NavigationKey.WithResult<*>) return
         val resultId = openInstruction.internal.resultId ?: when {
-            controller.isInTest -> ResultChannelId(
+            controller.config.isInTest -> ResultChannelId(
                 ownerId = openInstruction.instructionId,
                 resultId = openInstruction.instructionId
             )

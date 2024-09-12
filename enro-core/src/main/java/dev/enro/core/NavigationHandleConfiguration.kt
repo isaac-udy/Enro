@@ -49,7 +49,7 @@ public class LazyNavigationHandleConfiguration<T : NavigationKey>(
         if (handle is NavigationHandleViewModel) {
             handle.internalOnCloseRequested =
                 { onCloseRequested(navigationHandle.asTyped(keyType)) }
-        } else if (handle.dependencyScope.get<NavigationController>().isInTest) {
+        } else if (handle.dependencyScope.get<NavigationController>().config.isInTest) {
             val field = handle::class.java.declaredFields
                 .firstOrNull { it.name.startsWith("internalOnCloseRequested") }
                 ?: return

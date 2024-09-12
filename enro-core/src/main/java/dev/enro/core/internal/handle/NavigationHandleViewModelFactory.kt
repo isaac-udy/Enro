@@ -19,7 +19,7 @@ internal class NavigationHandleViewModelFactory(
     }
 
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-        if(navigationController.isInTest) {
+        if(navigationController.config.isInTest) {
             return TestNavigationHandleViewModel(
                 navigationController,
                 instruction

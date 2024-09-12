@@ -30,7 +30,11 @@ object EnroTest {
             is NavigationApplication -> application.navigationController
             else -> createUnattachedNavigationController()
         }.apply {
-            isInTest = true
+            setConfig(
+                config.copy(
+                    isInTest = true
+                )
+            )
             when (val application = application) {
                 is NavigationApplication -> return@apply
                 null -> installForJvmTests()
@@ -42,11 +46,19 @@ object EnroTest {
     fun uninstallNavigationController() {
         EnroViewModelNavigationHandleProvider.clearAllForTest()
         navigationController?.apply {
-            isInTest = false
+            setConfig(
+                config.copy(
+                    isInTest = false
+                )
+            )
         }
 
         navigationController?.apply {
-            isInTest = false
+            setConfig(
+                config.copy(
+                    isInTest = false
+                )
+            )
             if (application is NavigationApplication) return@apply
             uninstall(application ?: return@apply)
         }
@@ -58,11 +70,19 @@ object EnroTest {
     }
 
     fun disableAnimations(controller: NavigationController) {
-        controller.isAnimationsDisabled = true
+        controller.setConfig(
+            controller.config.copy(
+                isAnimationsDisabled = true
+            )
+        )
     }
 
     fun enableAnimations(controller: NavigationController) {
-        controller.isAnimationsDisabled = false
+        controller.setConfig(
+            controller.config.copy(
+                isAnimationsDisabled = false
+            )
+        )
     }
 }
 
