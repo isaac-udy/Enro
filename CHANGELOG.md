@@ -1,12 +1,15 @@
 # Changelog
 
 ## 2.8.0
-* Updated Compose to 1.7.0
+* Updated Compose to 1.7.1
 * Added support for NavigationKey.WithExtras to `NavigationResultChannel` and `NavigationFlowScope`
 * Updated `enro-test` methods to provide more descriptive error messages when assert/expect methods fail, and added kdoc comments to many of the functions
 * Updated Composable navigation animations to use SeekableTransitionState, as a step towards supporting predictive back navigation animations
 * Fixed a bug where managed flows (`registerForFlowResult`) that launch embedded flows (`deliverResultFromPush/Present`) were not correctly handling the result of the embedded flow
 * Added `FragmentSharedElements` to provide a way to define shared elements for Fragment navigation, including a compatibility layer for Composable NavigationDestinations that want to use AndroidViews as shared elements with Fragments. See `FragmentsWithSharedElements.kt` in the test application for examples of how to use `FragmentSharedElements`
+
+* ⚠️ Updated result channel identifiers in preparation for Kotlin 2.0 ⚠️
+  * Kotlin 2.0 changes the way that lambdas are compiled, which has implications for `registerForNavigationResult` and how result channels are uniquely identified. Activites, Fragments, Composables and ViewModels that use `by registerForNavigationResult` directly will not be affected by this change. However, if you are creating result channels inside of other objects, such as delegates, helper objects, or extension functions, you should verify that these cases continue to work as expected. It is not expected that there will be issues, but if this does result in bugs in your application, please raise them on the Enro GitHub repository. 
 
 ## 2.7.0
 * ⚠️ Updated to androidx.lifecycle 2.8.1 ⚠️
