@@ -30,10 +30,13 @@ public inline fun <reified T : Any> registerForNavigationResult(
     noinline onResult: @DisallowComposableCalls NavigationResultScope<T, NavigationKey.WithResult<T>>.(T) -> Unit
 ): NavigationResultChannel<T, NavigationKey.WithResult<T>> {
     val navigationHandle = navigationHandle()
-
+    val internalId = rememberSaveable {
+        UUID.randomUUID().toString()
+    }
     val resultChannel = remember(onResult) {
         navigationHandle.createResultChannel(
             resultType = T::class,
+            resultId = internalId,
             onClosed = onClosed,
             onResult = onResult,
             additionalResultId = id

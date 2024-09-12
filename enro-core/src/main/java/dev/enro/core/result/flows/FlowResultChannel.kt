@@ -219,7 +219,7 @@ public fun <T> ViewModel.registerForFlowResult(
                 registerForNavigationResult(
                     onClosed = onClosed,
                     onResult = onResult,
-                ).getValue(thisRef, property)
+                ).provideDelegate(thisRef, property).getValue(thisRef, property)
             },
             flow = flow,
             onCompleted = onCompleted,
