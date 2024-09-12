@@ -8,7 +8,6 @@ import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Transition
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -96,28 +95,22 @@ public sealed interface NavigationAnimation {
                     navigationApplication?.navigationController?.config ?: EnroConfig()
                 }
 
-                if (config.isAnimationsDisabled) {
-                    val transition = updateTransition(EnterExitState.Visible, "NavigationAnimation.Composable")
-                    content(transition)
-                }
-                else {
-                    val resourceAnimation = remember(this, forView) { forView.asResource(context.theme) }
-                    visible.AnimatedVisibility(
-                        visible = { it },
-                        enter = enter,
-                        exit = exit,
-                    ) {
-                        if (config.enableViewAnimationsForCompose) {
-                            transition.ResourceAnimatedVisibility(
-                                visible = { it == EnterExitState.Visible },
-                                enter = resourceAnimation.id,
-                                exit = resourceAnimation.id,
-                            ) {
-                                content(transition)
-                            }
-                        } else {
+                val resourceAnimation = remember(this, forView) { forView.asResource(context.theme) }
+                visible.AnimatedVisibility(
+                    visible = { it },
+                    enter = enter,
+                    exit = exit,
+                ) {
+                    if (config.enableViewAnimationsForCompose) {
+                        transition.ResourceAnimatedVisibility(
+                            visible = { it == EnterExitState.Visible },
+                            enter = resourceAnimation.id,
+                            exit = resourceAnimation.id,
+                        ) {
                             content(transition)
                         }
+                    } else {
+                        content(transition)
                     }
                 }
             }
@@ -129,9 +122,11 @@ public sealed interface NavigationAnimation {
         is Attr -> Resource(
             theme.getAttributeResourceId(attr),
         )
+
         is Theme -> Resource(
             id(theme),
         )
+
         is Composable -> forView.asResource(theme)
     }
 
@@ -199,6 +194,7 @@ public object DefaultAnimations {
                 NavigationDirection.Present -> ForView.presentCloseEnter
                 else -> ForView.pushCloseEnter
             }
+
             NavigationDirection.Push, NavigationDirection.Forward -> ForView.pushCloseEnter
             else -> ForView.presentCloseEnter
         }
