@@ -12,9 +12,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonSkippableComposable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,19 +35,10 @@ internal class ComposableDestinationAnimations(
     private val owner: ComposableDestinationOwner,
 ) {
     private var currentAnimationEvent by mutableStateOf<AnimationEvent>(AnimationEvent.SnapTo(false))
-    private val visibilityState = SeekableTransitionState(false)
 
     internal var animationOverride by mutableStateOf<NavigationAnimation.Composable?>(null)
 
     internal lateinit var enterExitTransition: Transition<EnterExitState>
-
-    val isAnimating by derivedStateOf {
-        when (currentAnimationEvent) {
-            is AnimationEvent.AnimateTo -> visibilityState.targetState != visibilityState.currentState
-            is AnimationEvent.SnapTo -> false
-            is AnimationEvent.Seek -> true
-        }
-    }
 
     internal fun setAnimationEvent(event: AnimationEvent) {
         currentAnimationEvent = event
@@ -59,9 +48,11 @@ internal class ComposableDestinationAnimations(
     @Composable
     @NonSkippableComposable
     fun Animate(content: @Composable () -> Unit) {
-        val targetState = visibilityState.targetState
         val instruction = owner.instruction
         val parentContainer = owner.parentContainer
+
+        val visibilityState = remember(instruction.instructionId) { SeekableTransitionState(false) }
+        val targetState = visibilityState.targetState
 
         val animation = remember(
             instruction,
@@ -99,9 +90,7 @@ internal class ComposableDestinationAnimations(
                 currentAnimationEvent = AnimationEvent.SnapTo(event.visible)
             }
         }
-        val visibleTransition = key(instruction.instructionId) {
-            rememberTransition(visibilityState, "ComposableDestination Visibility")
-        }
+        val visibleTransition = rememberTransition(visibilityState, "ComposableDestination Visibility")
         animation.Animate(
             visible = visibleTransition,
         ) {

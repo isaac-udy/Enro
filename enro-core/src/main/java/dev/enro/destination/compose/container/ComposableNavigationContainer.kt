@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.movableContentOf
@@ -70,10 +69,6 @@ public class ComposableNavigationContainer internal constructor(
 
     override val isVisible: Boolean
         get() = true
-
-    public val isAnimating: Boolean by derivedStateOf {
-        destinationOwners.any { it.animations.isAnimating }
-    }
 
     private val onDestroyLifecycleObserver = LifecycleEventObserver { _, event ->
         if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
