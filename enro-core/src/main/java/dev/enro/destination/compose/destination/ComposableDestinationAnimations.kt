@@ -14,6 +14,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonSkippableComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -98,9 +99,11 @@ internal class ComposableDestinationAnimations(
                 currentAnimationEvent = AnimationEvent.SnapTo(event.visible)
             }
         }
-
+        val visibleTransition = key(instruction.instructionId) {
+            rememberTransition(visibilityState, "ComposableDestination Visibility")
+        }
         animation.Animate(
-            visible = rememberTransition(visibilityState, "ComposableDestination Visibility"),
+            visible = visibleTransition,
         ) {
             enterExitTransition = it
             content()
