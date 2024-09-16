@@ -3,6 +3,7 @@ package dev.enro.core.container
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
+import dev.enro.core.result.flows.FlowStep
 
 /**
  * A NavigationContainerFilter is used to determine whether or not a given [NavigationInstruction.Open]
@@ -74,6 +75,14 @@ public class NavigationContainerFilterBuilder internal constructor() {
  * A [NavigationInstructionFilter] that accepts all [NavigationInstruction.Open] instructions.
  */
 public fun acceptAll(): NavigationInstructionFilter = NavigationInstructionFilter { true }
+
+/**
+ * A [NavigationInstructionFilter] that accepts only [NavigationInstruction.Open] instructions which have been added to the container
+ * by a [dev.enro.core.result.flows.NavigationFlow].
+ */
+public fun acceptFromFlow(): NavigationInstructionFilter = NavigationInstructionFilter {
+    it.internal.resultKey is FlowStep<*>
+}
 
 /**
  * A [NavigationInstructionFilter] that accepts no [NavigationInstruction.Open] instructions.
