@@ -42,6 +42,8 @@ import dev.enro.core.container.merge
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.destination.compose.destination.AnimationEvent
+import dev.enro.destination.flow.ManagedFlowNavigationBinding
+import dev.enro.destination.flow.host.ComposableHostForManagedFlowDestination
 import java.io.Closeable
 import kotlin.collections.set
 
@@ -211,10 +213,18 @@ public class ComposableNavigationContainer internal constructor(
         val rawBinding = controller.bindingForKeyType(composeKey::class)
             ?: throw EnroException.MissingNavigationBinding(composeKey)
 
-        if (rawBinding !is ComposableNavigationBinding<*, *>) {
+        if (rawBinding !is ComposableNavigationBinding<*, *> && rawBinding !is ManagedFlowNavigationBinding<*, *>) {
             throw IllegalStateException("Expected ${composeKey::class.java.simpleName} to be bound to a Composable, but was instead bound to a ${rawBinding.baseType.java.simpleName}")
         }
-        val destination = rawBinding.constructDestination()
+        val destination = when (rawBinding) {
+            is ComposableNavigationBinding<*, *> -> {
+                rawBinding.constructDestination()
+            }
+            is ManagedFlowNavigationBinding<*, *> -> {
+                ComposableHostForManagedFlowDestination()
+            }
+            else -> error("")
+        }
 
         val restoredState = restoredDestinationState.remove(instruction.instructionId)
         return ComposableDestinationOwner(

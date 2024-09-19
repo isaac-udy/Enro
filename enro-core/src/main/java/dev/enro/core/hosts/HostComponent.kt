@@ -8,6 +8,7 @@ internal val hostNavigationModule = createNavigationModule {
     navigationHostFactory(ActivityHost())
     navigationHostFactory(FragmentHost())
     navigationHostFactory(DialogFragmentHost())
+    navigationHostFactory(ComposableHost())
 
     binding(createActivityNavigationBinding<OpenInstructionInActivity, ActivityHostForAnyInstruction>())
     binding(createFragmentNavigationBinding<OpenComposableInFragment, FragmentHostForComposable>())

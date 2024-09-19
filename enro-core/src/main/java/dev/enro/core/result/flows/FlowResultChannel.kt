@@ -38,8 +38,8 @@ public class NavigationFlow<T> internal constructor(
     private val resultManager: FlowResultManager,
     private val coroutineScope: CoroutineScope,
     private val registerForNavigationResult: CreateResultChannel,
-    private val flow: NavigationFlowScope.() -> T,
-    private val onCompleted: (T) -> Unit,
+    internal var flow: NavigationFlowScope.() -> T,
+    internal var onCompleted: (T) -> Unit,
 ) {
     private var steps: List<FlowStep<out Any>> = savedStateHandle.get<Bundle>(STEPS_KEY)
         ?.getParcelableListCompat<FlowStep<out Any>>(STEPS_KEY)

@@ -9,7 +9,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
-public class NavigationFlowScope internal constructor(
+public open class NavigationFlowScope internal constructor(
     @PublishedApi
     internal val flow: NavigationFlow<*>,
     @PublishedApi
@@ -17,12 +17,11 @@ public class NavigationFlowScope internal constructor(
     @PublishedApi
     internal val resultManager: FlowResultManager,
     public val navigationFlowReference: NavigationFlowReference,
+    @PublishedApi
+    internal val steps: MutableList<FlowStep<out Any>> = mutableListOf(),
+    @PublishedApi
+    internal val suspendingSteps: MutableList<String> = mutableListOf(),
 ) {
-    @PublishedApi
-    internal val steps: MutableList<FlowStep<out Any>> = mutableListOf()
-
-    @PublishedApi
-    internal val suspendingSteps: MutableList<String> = mutableListOf()
 
     public inline fun <reified T : Any> push(
         noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.SupportsPush.WithResult<T>,

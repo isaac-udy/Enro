@@ -1,14 +1,22 @@
 package dev.enro.core.hosts
 
 import android.app.Activity
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import dev.enro.core.*
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationHostFactory
+import dev.enro.core.NavigationInstruction
 import dev.enro.core.activity.ActivityNavigationBinding
+import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.fragment.FragmentNavigationBinding
+import dev.enro.core.isHiltApplication
+import dev.enro.core.isHiltContext
+import dev.enro.destination.flow.ManagedFlowNavigationBinding
+import dev.enro.destination.flow.host.OpenManagedFlowInFragment
+import dev.enro.destination.flow.host.OpenManagedFlowInHiltFragment
 
 internal class ActivityHost : NavigationHostFactory<Activity>(Activity::class.java) {
     override fun supports(
@@ -34,7 +42,6 @@ internal class ActivityHost : NavigationHostFactory<Activity>(Activity::class.ja
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 internal class DialogFragmentHost : NavigationHostFactory<DialogFragment>(DialogFragment::class.java) {
 
     override fun supports(
@@ -42,7 +49,10 @@ internal class DialogFragmentHost : NavigationHostFactory<DialogFragment>(Dialog
         instruction: NavigationInstruction.Open<*>,
     ): Boolean {
         val binding = requireNavigationBinding(instruction)
-        val isSupportedBinding = binding is FragmentNavigationBinding || binding is ComposableNavigationBinding
+        val isSupportedBinding = binding is FragmentNavigationBinding ||
+                binding is ComposableNavigationBinding ||
+                binding is ManagedFlowNavigationBinding<*, *>
+
         return isSupportedBinding && instruction.navigationDirection == NavigationDirection.Present
     }
 
@@ -67,6 +77,10 @@ internal class DialogFragmentHost : NavigationHostFactory<DialogFragment>(Dialog
                 navigationContext.isHiltContext -> OpenPresentableFragmentInHiltFragment(instruction.asPresentInstruction())
                 else -> OpenPresentableFragmentInFragment(instruction.asPresentInstruction())
             }
+            is ManagedFlowNavigationBinding<*, *> ->  when {
+                navigationContext.isHiltContext -> OpenPresentableFragmentInHiltFragment(instruction.asPresentInstruction())
+                else -> OpenPresentableFragmentInFragment(instruction.asPresentInstruction())
+            }
             else -> cannotCreateHost(instruction)
         }
         return instruction.internal.copy(navigationKey = key)
@@ -80,7 +94,9 @@ internal class FragmentHost : NavigationHostFactory<Fragment>(Fragment::class.ja
         instruction: NavigationInstruction.Open<*>,
     ): Boolean {
         val binding = requireNavigationBinding(instruction)
-        return binding is FragmentNavigationBinding || binding is ComposableNavigationBinding
+        return binding is FragmentNavigationBinding ||
+                binding is ComposableNavigationBinding ||
+                binding is ManagedFlowNavigationBinding<*, *>
     }
 
     override fun wrap(
@@ -97,7 +113,32 @@ internal class FragmentHost : NavigationHostFactory<Fragment>(Fragment::class.ja
                     else -> OpenComposableInFragment(instruction)
                 }
             )
+            is ManagedFlowNavigationBinding<*, *> -> instruction.internal.copy(
+                navigationKey = when {
+                    navigationContext.isHiltContext -> OpenManagedFlowInHiltFragment(instruction)
+                    else -> OpenManagedFlowInFragment(instruction)
+                }
+            )
             else -> cannotCreateHost(instruction)
         }
+    }
+}
+
+internal class ComposableHost : NavigationHostFactory<ComposableDestination>(ComposableDestination::class.java) {
+    override fun supports(
+        navigationContext: NavigationContext<*>,
+        instruction: NavigationInstruction.Open<*>,
+    ): Boolean {
+        val binding = requireNavigationBinding(instruction)
+        return binding is ComposableNavigationBinding ||
+                binding is ManagedFlowNavigationBinding<*, *>
+    }
+
+    override fun wrap(
+        navigationContext: NavigationContext<*>,
+        instruction: NavigationInstruction.Open<*>
+    ): NavigationInstruction.Open<*> {
+        if (!supports(navigationContext, instruction)) cannotCreateHost(instruction)
+        return instruction
     }
 }

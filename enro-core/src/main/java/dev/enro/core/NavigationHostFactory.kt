@@ -5,6 +5,12 @@ import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.GetNavigationBinding
 
+/**
+ * A NavigationHostFactory allows for destinations of different types to be interoperable with each other. For example,
+ * a Fragment destination can host a Composable destination. There are two important functions to register here:
+ * - supports: This function should return true if the NavigationHostFactory can host the provided NavigationInstruction.Open
+ * - wrap: This function should return a new NavigationInstruction.Open that is compatible with the HostType
+ */
 @AdvancedEnroApi
 public abstract class NavigationHostFactory<HostType: Any>(
     public val hostType: Class<HostType>,
