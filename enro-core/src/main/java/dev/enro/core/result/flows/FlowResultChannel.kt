@@ -11,6 +11,7 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.toBackstack
 import dev.enro.core.controller.usecase.extras
+import dev.enro.core.internal.handle.savedStateHandle
 import dev.enro.core.onActiveContainer
 import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.NavigationResultScope
@@ -180,6 +181,22 @@ public class NavigationFlow<T> internal constructor(
     }
 }
 
+
+@Deprecated("It is no longer required to provide a SavedStateHandle to a registerForFlowResult, please use the registerForFlowResult without the SavedStateHandle parameter.")
+public fun <T> ViewModel.registerForFlowResult(
+    savedStateHandle: SavedStateHandle,
+    isManuallyStarted: Boolean = false,
+    flow: NavigationFlowScope.() -> T,
+    onCompleted: (T) -> Unit,
+): PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationFlow<T>>> {
+    return registerForFlowResultInternal(
+        savedStateHandle = savedStateHandle,
+        isManuallyStarted = isManuallyStarted,
+        flow = flow,
+        onCompleted = onCompleted
+    )
+}
+
 /**
  * This method creates a NavigationFlow in the scope of a ViewModel. There can only be one NavigationFlow created within each
  * NavigationDestination. The [flow] lambda will be invoked multiple times over the lifecycle of the NavigationFlow, and should
@@ -193,6 +210,19 @@ public class NavigationFlow<T> internal constructor(
  * which will then trigger the flow to continue.
  */
 public fun <T> ViewModel.registerForFlowResult(
+    isManuallyStarted: Boolean = false,
+    flow: NavigationFlowScope.() -> T,
+    onCompleted: (T) -> Unit,
+): PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationFlow<T>>> {
+    return registerForFlowResultInternal(
+        savedStateHandle = getNavigationHandle().savedStateHandle(),
+        isManuallyStarted = isManuallyStarted,
+        flow = flow,
+        onCompleted = onCompleted
+    )
+}
+
+private fun <T> ViewModel.registerForFlowResultInternal(
     savedStateHandle: SavedStateHandle,
     isManuallyStarted: Boolean = false,
     flow: NavigationFlowScope.() -> T,

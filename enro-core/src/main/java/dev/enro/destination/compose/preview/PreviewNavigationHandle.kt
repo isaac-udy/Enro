@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.SavedStateHandle
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationDirection
@@ -23,7 +24,10 @@ internal class PreviewNavigationHandle(
 ) : NavigationHandle {
     override val id: String = instruction.instructionId
     override val key: NavigationKey = instruction.navigationKey
-    override val dependencyScope: EnroDependencyScope = NavigationHandleScope(NavigationController()).bind(this)
+    override val dependencyScope: EnroDependencyScope = NavigationHandleScope(
+        navigationController = NavigationController(),
+        savedStateHandle = SavedStateHandle(),
+    ).bind(this)
 
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {
 

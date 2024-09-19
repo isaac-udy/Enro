@@ -52,9 +52,11 @@ internal class OnNavigationContextCreated(
             .copy(instructionId = contextId)
 
         val viewModelStoreOwner = context.contextReference as ViewModelStoreOwner
-        val handle = viewModelStoreOwner.createNavigationHandleViewModel(
-            context.controller,
-            instruction ?: defaultInstruction
+        val handle = createNavigationHandleViewModel(
+            viewModelStoreOwner = viewModelStoreOwner,
+            savedStateRegistryOwner = context.savedStateRegistryOwner,
+            navigationController = context.controller,
+            instruction = instruction ?: defaultInstruction
         )
 
         handle.navigationContext = context

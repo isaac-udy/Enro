@@ -1,5 +1,6 @@
 package dev.enro.core.internal.handle
 
+import androidx.lifecycle.SavedStateHandle
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
@@ -21,7 +22,10 @@ internal class TestNavigationHandleViewModel(
     instruction: AnyOpenInstruction
 ) : NavigationHandleViewModel(
     instruction = instruction,
-    dependencyScope = NavigationHandleScope(controller),
+    dependencyScope = NavigationHandleScope(
+        navigationController = controller,
+        savedStateHandle = SavedStateHandle(),
+    ),
     executeOpenInstruction = object: ExecuteOpenInstruction {
         override fun invoke(
             navigationContext: NavigationContext<out Any>,

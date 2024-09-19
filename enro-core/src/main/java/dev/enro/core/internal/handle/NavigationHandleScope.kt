@@ -2,6 +2,7 @@ package dev.enro.core.internal.handle
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.SavedStateHandle
 import dev.enro.core.NavigationHandle
 import dev.enro.core.controller.EnroDependencyContainer
 import dev.enro.core.controller.EnroDependencyScope
@@ -14,6 +15,7 @@ import java.io.Closeable
 
 internal class NavigationHandleScope(
     navigationController: NavigationController,
+    savedStateHandle: SavedStateHandle,
 ) : EnroDependencyScope, Closeable {
 
     private var boundNavigationHandle: NavigationHandle? = null
@@ -28,6 +30,7 @@ internal class NavigationHandleScope(
             }
             register { CreateResultChannel(get(), get()) }
             register { NavigationHandleExtras() }
+            register { savedStateHandle }
         }
     )
 
