@@ -4,17 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroInternalNavigationKey
+import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationKey
 import dev.enro.core.R
+import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.asPushInstruction
-import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.container.acceptNone
+import dev.enro.core.container.backstackOf
 import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
@@ -39,19 +45,29 @@ internal data class OpenManagedFlowInHiltFragment(
 internal abstract class AbstractFragmentHostForManagedFlow : Fragment(), NavigationHost {
 
     private val navigation by navigationHandle<AbstractOpenManagedFlowInFragmentKey>()
-    private val container by navigationContainer(
-        containerId = R.id.enro_internal_single_fragment_frame_layout,
-        rootInstruction = { navigation.key.instruction.asPushInstruction() },
-        emptyBehavior = EmptyBehavior.CloseParent,
-    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return FrameLayout(requireContext()).apply {
-            id = R.id.enro_internal_single_fragment_frame_layout
+        val initialBackstack = navigation.key.instruction
+        return ComposeView(requireContext()).apply {
+            id = R.id.enro_internal_compose_fragment_view_id
+            setContent {
+                val composableContainer = rememberNavigationContainer(
+                    key = NavigationContainerKey.FromName("FragmentHostForManagedFlow"),
+                    initialBackstack = backstackOf(initialBackstack),
+                    filter = acceptNone(),
+                    emptyBehavior = EmptyBehavior.CloseParent,
+                )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    composableContainer.Render()
+                }
+                SideEffect {
+                    composableContainer.setActive()
+                }
+            }
         }
     }
 }
