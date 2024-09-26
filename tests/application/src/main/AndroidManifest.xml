@@ -27,6 +27,7 @@
         <activity android:name="dev.enro.tests.application.compose.results.ComposeEmbeddedResultFlowActivity" />
         <activity android:name="dev.enro.tests.application.fragment.FragmentSharedElementActivity" />
         <activity android:name="dev.enro.tests.application.compose.ComposeStabilityActivity"/>
+        <activity android:name="dev.enro.tests.application.managedflow.ManagedFlowInFragmentActivity" />
     </application>
 
 </manifest>

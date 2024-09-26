@@ -21,6 +21,8 @@ import dev.enro.test.application.compose.results.ComposeMixedResultTypesRobot
 import dev.enro.test.application.compose.results.ComposeNestedResultsRobot
 import dev.enro.test.application.compose.results.ResultsWithExtraRobot
 import dev.enro.test.application.fragment.UnboundBottomSheetRobot
+import dev.enro.test.application.managedflow.ManagedFlowInComposableRobot
+import dev.enro.test.application.managedflow.ManagedFlowInFragmentRobot
 import dev.enro.tests.application.SelectDestination
 
 class SelectDestinationRobot(
@@ -181,5 +183,23 @@ class SelectDestinationRobot(
             .filterToOne(hasText("Push"))
             .performClick()
         return ComposeMixedResultTypesRobot(composeRule)
+    }
+
+    fun openManagedFlowInComposable(): ManagedFlowInComposableRobot {
+        composeRule.onNode(hasText("Managed Flow In Composable"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+        return ManagedFlowInComposableRobot(composeRule)
+    }
+
+    fun openManagedFlowInFragment(): ManagedFlowInFragmentRobot {
+        composeRule.onNode(hasText("Managed Flow In Fragment"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Present"))
+            .performClick()
+        return ManagedFlowInFragmentRobot(composeRule)
     }
 }
