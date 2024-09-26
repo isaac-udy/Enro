@@ -75,7 +75,7 @@ internal val accessValidViewModel = syntheticDestination<SyntheticViewModelAcces
 class InvalidViewModel : ViewModel()
 
 // This destination should throw an exception for attempting to access an invalid ViewModel
-@NavigationDestination(SyntheticViewModelAccess.AccessValidViewModel::class)
+@NavigationDestination(SyntheticViewModelAccess.AccessInvalidViewModel::class)
 internal val accessInvalidViewModel = syntheticDestination<SyntheticViewModelAccess.AccessInvalidViewModel> {
     require(navigationContext.instruction?.navigationKey is SyntheticViewModelAccess)
 
