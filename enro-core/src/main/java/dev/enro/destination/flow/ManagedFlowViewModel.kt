@@ -22,6 +22,9 @@ internal class ManagedFlowViewModel : ViewModel() {
         flow.onCompleted = {
             destination.onCompleted(it)
         }
+    }
+
+    internal fun updateFlow() {
         flow.update()
     }
 }

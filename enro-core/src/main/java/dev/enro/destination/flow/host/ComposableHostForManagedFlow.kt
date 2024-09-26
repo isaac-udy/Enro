@@ -18,6 +18,10 @@ internal class ComposableHostForManagedFlowDestination : ComposableDestination()
     @Composable
     override fun Render() {
         val viewModel = viewModel<ManagedFlowViewModel>()
+        val container = rememberNavigationContainer(
+            emptyBehavior = EmptyBehavior.CloseParent,
+            filter = acceptFromFlow(),
+        )
         LaunchedEffect(viewModel) {
             val key = owner.instruction.navigationKey
             val binding = owner.navigationController.bindingForKeyType(key::class)
@@ -26,11 +30,11 @@ internal class ComposableHostForManagedFlowDestination : ComposableDestination()
             binding as ManagedFlowNavigationBinding<NavigationKey, *>
 
             viewModel.bind(binding.destination(viewModel.getNavigationHandle().asTyped<NavigationKey>()))
+            // If the backstack is empty, we manually update the flow to start it, because we don't always want to
+            // update the flow when this destination is rendered, because that can cause a completed flow to
+            // immediately re-deliver its result.
+            if (container.backstack.isEmpty()) viewModel.updateFlow()
         }
-        val container = rememberNavigationContainer(
-            emptyBehavior = EmptyBehavior.CloseParent,
-            filter = acceptFromFlow(),
-        )
         container.Render()
     }
 }
