@@ -20,8 +20,11 @@ internal class ComposableHostForManagedFlowDestination : ComposableDestination()
         val viewModel = viewModel<ManagedFlowViewModel>()
         LaunchedEffect(viewModel) {
             val key = owner.instruction.navigationKey
-            val binding =
-                owner.navigationController.bindingForKeyType(key::class) as ManagedFlowNavigationBinding<NavigationKey, *>
+            val binding = owner.navigationController.bindingForKeyType(key::class)
+
+            @Suppress("UNCHECKED_CAST")
+            binding as ManagedFlowNavigationBinding<NavigationKey, *>
+
             viewModel.bind(binding.destination(viewModel.getNavigationHandle().asTyped<NavigationKey>()))
         }
         val container = rememberNavigationContainer(

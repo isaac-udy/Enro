@@ -3,6 +3,7 @@ package dev.enro.destination.flow
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
 import dev.enro.core.TypedNavigationHandle
+import dev.enro.core.controller.NavigationModuleScope
 import kotlin.reflect.KClass
 
 public class ManagedFlowNavigationBinding<KeyType : NavigationKey, Result> @PublishedApi internal constructor(
@@ -29,3 +30,9 @@ public inline fun <reified KeyType : NavigationKey, Result> createManagedFlowNav
         keyType = KeyType::class,
         destination = provider::create
     )
+
+public inline fun <reified KeyType : NavigationKey, Result> NavigationModuleScope.managedFlowDestination(
+    provider: ManagedFlowDestinationProvider<KeyType, Result>,
+) {
+    binding(createManagedFlowNavigationBinding(provider))
+}

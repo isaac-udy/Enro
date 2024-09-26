@@ -42,6 +42,9 @@ sealed class DestinationReference {
         val isSyntheticProvider = declaration is KSPropertyDeclaration &&
                 declaration.type.resolve().declaration.qualifiedName?.asString() == "dev.enro.core.synthetic.SyntheticDestinationProvider"
 
+        val isManagedFlowProvider = declaration is KSPropertyDeclaration &&
+                declaration.type.resolve().declaration.qualifiedName?.asString() == "dev.enro.destination.flow.ManagedFlowDestinationProvider"
+
         val isComposable = declaration is KSFunctionDeclaration && declaration.annotations
             .any { it.shortName.asString() == "Composable" }
 
@@ -98,6 +101,24 @@ sealed class DestinationReference {
             }
         }.getOrNull() != null
 
+        val isManagedFlowProvider = element is ExecutableElement && runCatching {
+            val parent = (element.enclosingElement as TypeElement)
+            val actualName = element.simpleName.removeSuffix("\$annotations")
+            val managedFlowElement = parent.enclosedElements
+                .filterIsInstance<ExecutableElement>()
+                .firstOrNull { actualName == it.simpleName.toString() && it != element }
+
+            val managedFlowProviderMirror = processingEnv.elementUtils
+                .getTypeElement("dev.enro.destination.flow.ManagedFlowDestinationProvider")
+                .asType()
+            val erasedManagedFlowProvider = processingEnv.typeUtils.erasure(managedFlowProviderMirror)
+            val erasedReturnType = processingEnv.typeUtils.erasure(managedFlowElement!!.returnType)
+
+            managedFlowElement.takeIf {
+                processingEnv.typeUtils.isSameType(erasedReturnType, erasedManagedFlowProvider)
+            }
+        }.getOrNull() != null
+
         val isComposable = element is ExecutableElement &&
                 element.annotationMirrors
                     .firstOrNull {
@@ -116,10 +137,12 @@ sealed class DestinationReference {
             .let { "_${it}_GeneratedNavigationBinding" }
 
         val originalElement = element
-        val element = element.enclosingElement.takeIf { isSyntheticProvider } ?: element
+        val element = element.enclosingElement.takeIf {
+            isSyntheticProvider || isManagedFlowProvider
+        } ?: element
 
         init {
-            if (isComposable || isSyntheticProvider) {
+            if (isComposable || isSyntheticProvider || isManagedFlowProvider) {
                 val isStatic = element.modifiers.contains(Modifier.STATIC)
                 val parentIsObject = element.enclosingElement.enclosedElements
                     .any { it.simpleName.toString() == "INSTANCE" }

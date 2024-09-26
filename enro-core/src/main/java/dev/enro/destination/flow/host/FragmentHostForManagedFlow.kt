@@ -36,7 +36,7 @@ internal data class OpenManagedFlowInHiltFragment(
     override val instruction: AnyOpenInstruction,
 ) : AbstractOpenManagedFlowInFragmentKey()
 
-public abstract class AbstractFragmentHostForManagedFlow : Fragment(), NavigationHost {
+internal abstract class AbstractFragmentHostForManagedFlow : Fragment(), NavigationHost {
 
     private val navigation by navigationHandle<AbstractOpenManagedFlowInFragmentKey>()
     private val container by navigationContainer(

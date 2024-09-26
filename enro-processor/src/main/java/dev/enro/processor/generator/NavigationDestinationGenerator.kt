@@ -117,6 +117,10 @@ object NavigationDestinationGenerator {
                 "navigationModuleScope.syntheticDestination(%L)",
                 requireNotNull(destination.declaration.simpleName).asString(),
             )
+            destination.isManagedFlowProvider -> addCode(
+                "navigationModuleScope.managedFlowDestination(%L)",
+                requireNotNull(destination.declaration.simpleName).asString(),
+            )
             destination.isComposable -> when {
                 destination.isLegacyDialog -> addCode(
                     "navigationModuleScope.legacyComposableDialogDestination<%T> { %L() }",
@@ -259,6 +263,18 @@ object NavigationDestinationGenerator {
                     JavaClassName.get(destination.keyType),
                     JavaClassName.get(destination.element as TypeElement)
                 )
+                destination.isManagedFlowProvider -> JavaCodeBlock.of(
+                    """
+                        navigationModuleScope.binding(
+                            createManagedFlowNavigationBinding(
+                                $1T.class,
+                                $2T.${destination.originalElement.simpleName.removeSuffix("\$annotations")}()
+                            )
+                        )
+                    """.trimIndent(),
+                    JavaClassName.get(destination.keyType),
+                    JavaClassName.get(destination.element as TypeElement)
+                )
                 destination.isComposable -> {
                     val composableWrapper = ComposableWrapperGenerator.generate(
                         processingEnv = processingEnv,
@@ -310,6 +326,10 @@ fun JavaFile.Builder.addImportsForBinding(): JavaFile.Builder {
             "createSyntheticNavigationBinding"
         )
         .addStaticImport(
+            ClassNames.Java.managedFlowNavigationBindingKt,
+            "createManagedFlowNavigationBinding"
+        )
+        .addStaticImport(
             ClassNames.Java.composeNavigationBindingKt,
             "createComposableNavigationBinding"
         )
@@ -332,6 +352,10 @@ fun FileSpec.Builder.addImportsForBinding(): FileSpec.Builder {
         .addImport(
             "dev.enro.core.synthetic",
             "syntheticDestination"
+        )
+        .addImport(
+            "dev.enro.destination.flow",
+            "managedFlowDestination"
         )
         .addImport(
             "dev.enro.core.compose",

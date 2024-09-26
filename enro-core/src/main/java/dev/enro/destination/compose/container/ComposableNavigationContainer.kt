@@ -216,6 +216,12 @@ public class ComposableNavigationContainer internal constructor(
         if (rawBinding !is ComposableNavigationBinding<*, *> && rawBinding !is ManagedFlowNavigationBinding<*, *>) {
             throw IllegalStateException("Expected ${composeKey::class.java.simpleName} to be bound to a Composable, but was instead bound to a ${rawBinding.baseType.java.simpleName}")
         }
+        // TODO:
+        //  Instead of managing destination construction here, we should move this to the NavigationHostFactory,
+        //  and let the NavigationHostFactory manage the destination construction. This means more significant changes
+        //  to the way that the NavigationHostFactory works, so this is a future improvement.
+        //  The cost of delaying this improvement is small at the moment, as the ComposableNavigationContainer is the only
+        //  container that needs to manage destination construction in this way.
         val destination = when (rawBinding) {
             is ComposableNavigationBinding<*, *> -> {
                 rawBinding.constructDestination()
@@ -250,15 +256,15 @@ public class ComposableNavigationContainer internal constructor(
         }
         val presented =
             transition.activeBackstack.takeLastWhile { it.navigationDirection is NavigationDirection.Present }.toSet()
-        val activePush = transition.activeBackstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }
-        val activePresented = presented.lastOrNull()
+        val activePush = transition.activeBackstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }?.instructionId
+        val activePresented = presented.lastOrNull()?.instructionId
         destinationOwners.forEach { destinationOwner ->
             val instruction = destinationOwner.instruction
             val isPushedDialogOrBottomSheet =
                 ((destinationOwner.destination is DialogDestination || destinationOwner.destination is BottomSheetDestination) && activePresented != null)
 
 
-            val target = when (instruction) {
+            val target = when (instruction.instructionId) {
                 activePresented -> !isParentBeingRemoved
                 activePush -> !isParentBeingRemoved && !isPushedDialogOrBottomSheet
                 else -> false

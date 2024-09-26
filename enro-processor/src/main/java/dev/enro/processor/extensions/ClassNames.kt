@@ -48,6 +48,11 @@ object ClassNames {
             "SyntheticNavigationBindingKt"
         )
 
+        val managedFlowNavigationBindingKt = JavaClassName.get(
+            "dev.enro.destination.flow",
+            "ManagedFlowNavigationBindingKt"
+        )
+
         val composableDestination = JavaClassName.get(
             "dev.enro.core.compose",
             "ComposableDestination"
