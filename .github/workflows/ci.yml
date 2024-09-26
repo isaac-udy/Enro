@@ -49,6 +49,27 @@ jobs:
       - name: Compile example (KAPT)
         run: ./gradlew :example:assembleDebug -PenroExampleUseKapt
 
+  # Compile test application with KAPT; we don't need to compile :tests:application with KSP,
+  # because it will be compiled with KSP as part of the "Run tests" job.
+  compile-test-application-kapt:
+    name: Compile test application (KAPT)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3.9.0
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Setup gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Compile test application (KAPT)
+        run: ./gradlew :tests:application:assembleDebug -PenroExampleUseKapt
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
