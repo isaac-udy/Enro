@@ -13,7 +13,9 @@ internal class ManagedFlowViewModel : ViewModel() {
     internal fun bind(
         destination: ManagedFlowDestination<*, *>,
     ) {
+        @Suppress("UNCHECKED_CAST")
         destination as ManagedFlowDestination<*, Any?>
+
         flow.flow = {
             destination.run { flow() }
         }
