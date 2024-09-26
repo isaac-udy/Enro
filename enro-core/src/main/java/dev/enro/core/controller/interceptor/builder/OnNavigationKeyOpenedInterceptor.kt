@@ -7,12 +7,21 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 
 public sealed class OnNavigationKeyOpenedScope {
+    /**
+     * Cancel the open instruction, preventing the destination from being opened.
+     */
     public fun cancelNavigation(): InterceptorBehavior.Cancel =
         InterceptorBehavior.Cancel()
 
+    /**
+     * Allow the open instruction to continue as normal.
+     */
     public fun continueWithNavigation(): InterceptorBehavior.Continue =
         InterceptorBehavior.Continue()
 
+    /**
+     * Cancel the open instruction and instead execute the provided NavigationInstruction.Open
+     */
     public fun replaceNavigationWith(instruction: AnyOpenInstruction): InterceptorBehavior.ReplaceWith =
         InterceptorBehavior.ReplaceWith(instruction)
 }

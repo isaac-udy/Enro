@@ -59,7 +59,7 @@ public inline fun <reified T: Any> EmbeddedNavigationDestination(
             onResult<NavigationKey.WithResult<T>, T> { key, result ->
                 if (key != navigationKey) return@onResult continueWithClose()
                 rememberedOnResult.value.invoke(result)
-                cancelResult()
+                cancelCloseAndResult()
             }
         }
     )
