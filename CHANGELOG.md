@@ -11,6 +11,10 @@
 * Removed `isAnimating` from `ComposableNavigationContainer`, as it was unused internally, did not appear to be useful for external use cases, and was complicating Compose animation code. If this functionality *was* important to your use case, please create a Github issue to discuss your use case.
 * Removed the requirement to provide a SavedStateHandle to `registerForFlowResult`. This should not affect any existing code, but if you were passing a SavedStateHandle to `registerForFlowResult`, you can now remove this parameter.
   * NavigationHandles now have access to a SavedStateHandle internally, which removes the requirement to pass this through to `registerForFlowResult`
+* Added `managedFlowDestination` as a way to create a managed flow as a standalone destination
+  * `managedFlowDestination` works in the same way you'd use `registerForFlowResult` to create a managed flow, but allows you to define the flow as a standalone destination that can be pushed or presented from other destinations, without the need to define a ViewModel and regular destination for the flow.
+  * `managedFlowDestination` is currently marked as an `@ExperimentalEnroApi`, and may be subject to change in future versions of Enro.
+  * For an example of a `managedFlowDestination`, see `dev.enro.tests.application.managedflow.UserInformationFlow` in the test application
 
 * ⚠️ Updated result channel identifiers in preparation for Kotlin 2.0 ⚠️
   * Kotlin 2.0 changes the way that lambdas are compiled, which has implications for `registerForNavigationResult` and how result channels are uniquely identified. Activites, Fragments, Composables and ViewModels that use `by registerForNavigationResult` directly will not be affected by this change. However, if you are creating result channels inside of other objects, such as delegates, helper objects, or extension functions, you should verify that these cases continue to work as expected. It is not expected that there will be issues, but if this does result in bugs in your application, please raise them on the Enro GitHub repository. 
