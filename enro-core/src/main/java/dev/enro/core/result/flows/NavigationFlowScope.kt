@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.io.Serializable
 
 public open class NavigationFlowScope internal constructor(
     @PublishedApi
@@ -27,7 +28,11 @@ public open class NavigationFlowScope internal constructor(
         noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.SupportsPush.WithResult<T>,
     ): T = step(
         direction = NavigationDirection.Push,
-        block = block,
+        block = object : FlowStepLambda<T> {
+            override fun FlowStepBuilderScope<T>.invoke(): NavigationKey.WithResult<T> {
+                return block()
+            }
+        },
     )
 
     public inline fun <reified T : Any> pushWithExtras(
@@ -41,7 +46,11 @@ public open class NavigationFlowScope internal constructor(
         noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.SupportsPresent.WithResult<T>,
     ): T = step(
         direction = NavigationDirection.Present,
-        block = block,
+        block = object : FlowStepLambda<T> {
+            override fun FlowStepBuilderScope<T>.invoke(): NavigationKey.WithResult<T> {
+                return block()
+            }
+        },
     )
 
     public inline fun <reified T : Any> presentWithExtras(
@@ -135,12 +144,12 @@ public open class NavigationFlowScope internal constructor(
     @PublishedApi
     internal inline fun <reified T: Any> step(
         direction: NavigationDirection,
-        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithResult<T>,
+        block: FlowStepLambda<T>,
     ) : T {
         val baseId = block::class.java.name
         val count = steps.count { it.stepId.startsWith(baseId) }
         val builder = FlowStepBuilder<T>()
-        val key = builder.scope.run(block)
+        val key = block.run { builder.scope.invoke() }
         val step = builder.build(
             stepId = "$baseId@$count",
             navigationKey = key,
@@ -189,3 +198,12 @@ public open class NavigationFlowScope internal constructor(
     @PublishedApi
     internal class Escape : RuntimeException()
 }
+
+
+// TODO create a re-usable identifiable lambda class for more than just flow steps
+@PublishedApi
+internal interface FlowStepLambda<T: Any> : Serializable {
+    fun FlowStepBuilderScope<T>.invoke(): NavigationKey.WithResult<T>
+}
+
+
