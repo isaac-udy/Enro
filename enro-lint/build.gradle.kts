@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("java-library")
     id("kotlin")
@@ -16,4 +18,8 @@ java {
         attributes("Lint-Registry-v2" to "dev.enro.lint.EnroIssueRegistry")
     }
 }
-
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
+}
