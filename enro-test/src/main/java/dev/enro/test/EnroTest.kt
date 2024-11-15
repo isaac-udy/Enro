@@ -45,6 +45,7 @@ object EnroTest {
 
     fun uninstallNavigationController() {
         EnroViewModelNavigationHandleProvider.clearAllForTest()
+        TestNavigationHandle.allInstructions.clear()
         navigationController?.apply {
             setConfig(
                 config.copy(

@@ -10,8 +10,7 @@ import dev.enro.core.onParentContainer
  * Asserts that the NavigationHandle has a parent container, and then returns the NavigationContainerContext associated
  * with that container, which can be used for further assertions.
  */
-@Deprecated("Use assertParentContainerExists instead")
-fun TestNavigationHandle<*>.expectParentContainer(): NavigationContainerContext {
+fun TestNavigationHandle<*>.assertParentContainerExists(): NavigationContainerContext {
     var container: NavigationContainerContext? = null
     onParentContainer { container = this@onParentContainer }
     container.shouldNotBeEqualTo(null) {
@@ -24,8 +23,7 @@ fun TestNavigationHandle<*>.expectParentContainer(): NavigationContainerContext 
  * Asserts that the NavigationHandle has an active container, and then returns the NavigationContainerContext associated
  * with that container, which can be used for further assertions.
  */
-@Deprecated("Use assertActiveContainerExists instead")
-fun TestNavigationHandle<*>.expectActiveContainer(): NavigationContainerContext {
+fun TestNavigationHandle<*>.assertActiveContainerExists(): NavigationContainerContext {
     var container: NavigationContainerContext? = null
     onActiveContainer { container = this@onActiveContainer }
     container.shouldNotBeEqualTo(null) {
@@ -38,8 +36,7 @@ fun TestNavigationHandle<*>.expectActiveContainer(): NavigationContainerContext 
  * Asserts that the NavigationHandle has a container with the provided NavigationContainerKey [key], and then returns
  * the NavigationContainerContext associated with that container, which can be used for further assertions.
  */
-@Deprecated("Use assertActiveContainerExists instead")
-fun TestNavigationHandle<*>.expectContainer(key: NavigationContainerKey): NavigationContainerContext {
+fun TestNavigationHandle<*>.assertContainerExists(key: NavigationContainerKey): NavigationContainerContext {
     var container: NavigationContainerContext? = null
     onContainer(key) { container = this@onContainer }
     container.shouldNotBeEqualTo(null) {

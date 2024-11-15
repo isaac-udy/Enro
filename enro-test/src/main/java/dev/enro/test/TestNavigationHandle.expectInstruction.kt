@@ -11,6 +11,7 @@ fun TestNavigationHandle<*>.expectCloseInstruction() {
  * Asserts that the NavigationHandle has received a NavigationInstruction with a NavigationKey that is assignable to type [T] and
  * which matches the provided filter, and then returns that NavigationInstruction.
  */
+@Deprecated("Use assertAnyInstructionOpened instead")
 fun <T : Any> TestNavigationHandle<*>.expectOpenInstruction(
     type: Class<T>,
     filter: (T) -> Boolean = { true }
@@ -41,6 +42,7 @@ fun <T : Any> TestNavigationHandle<*>.expectOpenInstruction(
  * Asserts that the NavigationHandle has received a NavigationInstruction with a NavigationKey that is assignable to type [T] and
  * which matches the provided filter, and then returns that NavigationInstruction.
  */
+@Deprecated("Use assertAnyInstructionOpened instead")
 inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(noinline filter: (T) -> Boolean = { true }): NavigationInstruction.Open<*> {
     return expectOpenInstruction(T::class.java, filter)
 }
@@ -49,6 +51,7 @@ inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(noinl
  * Asserts that the NavigationHandle has received a NavigationInstruction with a NavigationKey that is equal to the provided
  * NavigationKey [key], and then returns that NavigationInstruction.
  */
+@Deprecated("Use assertAnyInstructionOpened instead")
 inline fun <reified T : Any> TestNavigationHandle<*>.expectOpenInstruction(key: T): NavigationInstruction.Open<*> {
     return expectOpenInstruction(T::class.java) { it == key }
 }

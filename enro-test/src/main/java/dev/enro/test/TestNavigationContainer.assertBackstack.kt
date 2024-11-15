@@ -22,3 +22,16 @@ fun NavigationContainerContext.assertBackstackEquals(
             }
         }
 }
+
+/**
+ * Asserts that the NavigationContainerContext's backstack matches the provided predicate
+ */
+fun NavigationContainerContext.assertBackstackMatches(
+    predicate: (NavigationBackstack) -> Boolean
+) {
+    val actualBackstack = this.backstack
+
+    actualBackstack.shouldMatchPredicateNotNull(predicate) {
+        "NavigationContainer's backstack did not match predicate\n\tActual backstack: $actualBackstack"
+    }
+}

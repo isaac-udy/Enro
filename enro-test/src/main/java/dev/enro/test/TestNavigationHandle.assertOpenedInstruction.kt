@@ -9,13 +9,13 @@ import dev.enro.core.NavigationKey
  * with a NavigationKey of the provided type [T] and direction (if the direction parameter was not null).
  *
  * If you want to assert that any NavigationInstruction.Open was executed, and don't care whether the instruction was the
- * last instruction or not, use [assertAnyOpened].
+ * last instruction or not, use [assertAnyInstructionOpened].
  */
-fun <T : NavigationKey> TestNavigationHandle<*>.assertOpened(
+fun <T : NavigationKey> TestNavigationHandle<*>.assertInstructionOpened(
     type: Class<T>,
     direction: NavigationDirection? = null,
     predicate: (T) -> Boolean = { true }
-): T {
+): NavigationInstruction.Open<*> {
     val openInstructions = instructions.filterIsInstance<NavigationInstruction.Open<*>>()
     if (openInstructions.isEmpty()) {
         enroAssertionError("NavigationHandle has not executed any NavigationInstruction.Open")
@@ -35,7 +35,7 @@ fun <T : NavigationKey> TestNavigationHandle<*>.assertOpened(
         .shouldMatchPredicate(predicate) {
             "NavigationHandle was expected to have executed a NavigationInstruction.Open with a NavigationKey that matched the provided predicate, but the NavigationKey did not match the predicate"
         }
-    return instruction.navigationKey as T
+    return instruction
 }
 
 /**
@@ -43,10 +43,12 @@ fun <T : NavigationKey> TestNavigationHandle<*>.assertOpened(
  * with a NavigationKey of the provided type [T] and direction (if the direction parameter was not null).
  *
  * If you want to assert that any NavigationInstruction.Open was executed, and don't care whether the instruction was the
- * last instruction or not, use [assertAnyOpened].
+ * last instruction or not, use [assertAnyInstructionOpened].
  */
-inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(direction: NavigationDirection? = null): T {
-    return assertOpened(T::class.java, direction)
+inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertInstructionOpened(
+    direction: NavigationDirection? = null
+): NavigationInstruction.Open<*> {
+    return assertInstructionOpened(T::class.java, direction)
 }
 
 /**
@@ -54,13 +56,13 @@ inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(dire
  * provided type [T] and direction (if the direction parameter was not null). This method does not care about the order
  * of the instructions executed by the NavigationHandle.
  *
- * If you care about ordering, and you want to assert on the last NavigationInstruction.Open executed, use [assertOpened].
+ * If you care about ordering, and you want to assert on the last NavigationInstruction.Open executed, use [assertInstructionOpened].
  */
-fun <T : NavigationKey> TestNavigationHandle<*>.assertAnyOpened(
+fun <T : NavigationKey> TestNavigationHandle<*>.assertAnyInstructionOpened(
     type: Class<T>,
     direction: NavigationDirection? = null,
     predicate: (T) -> Boolean = { true }
-): T {
+): NavigationInstruction.Open<*> {
     val openInstructions = instructions.filterIsInstance<NavigationInstruction.Open<*>>()
 
     if (openInstructions.isEmpty()) {
@@ -81,7 +83,7 @@ fun <T : NavigationKey> TestNavigationHandle<*>.assertAnyOpened(
             "NavigationHandle was expected to have executed a NavigationInstruction.Open with a NavigationDirection of $direction, but the NavigationDirection was ${instruction.navigationDirection}"
         }
     }
-    return instruction.navigationKey as T
+    return instruction
 }
 
 /**
@@ -89,25 +91,15 @@ fun <T : NavigationKey> TestNavigationHandle<*>.assertAnyOpened(
  * provided type [T] and direction (if the direction parameter was not null). This method does not care about the order
  * of the instructions executed by the NavigationHandle.
  *
- * If you care about ordering, and you want to assert on the last NavigationInstruction.Open executed, use [assertOpened].
+ * If you care about ordering, and you want to assert on the last NavigationInstruction.Open executed, use [assertInstructionOpened].
  */
-inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertAnyOpened(
+inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertAnyInstructionOpened(
     direction: NavigationDirection? = null,
     noinline predicate: (T) -> Boolean = { true }
-): T {
-    return assertAnyOpened(
+): NavigationInstruction.Open<*> {
+    return assertAnyInstructionOpened(
         type = T::class.java,
         direction = direction,
         predicate = predicate
     )
-}
-
-/**
- * This method asserts that the NavigationHandle has not executed any NavigationInstruction.Open instructions.
- */
-fun TestNavigationHandle<*>.assertNoneOpened() {
-    val openInstructions = instructions.filterIsInstance<NavigationInstruction.Open<*>>()
-    if (openInstructions.isNotEmpty()) {
-        enroAssertionError("NavigationHandle should not have executed any NavigationInstruction.Open, but NavigationInstruction.Open instructions were found")
-    }
 }

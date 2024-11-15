@@ -1,19 +1,16 @@
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-
-package dev.enro.test.extensions
+package dev.enro.test
 
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.result.EnroResult
 import dev.enro.core.result.internal.PendingResult
-import dev.enro.test.EnroTest
 
 /**
  * Given a NavigationInstruction.Open, this function will deliver a result to the instruction. This is useful for testing
  * the behavior of a screen/ViewModel that expects a result.
  */
-@Deprecated("Use deliverResultForTest instead")
-fun <T : Any> NavigationInstruction.Open<*>.sendResultForTest(type: Class<T>, result: T) {
+fun <T : Any> NavigationInstruction.Open<*>.deliverResultForTest(type: Class<T>, result: T) {
     val navigationController = EnroTest.getCurrentNavigationController()
     val resultId = internal.resultId!!
 
@@ -35,7 +32,6 @@ fun <T : Any> NavigationInstruction.Open<*>.sendResultForTest(type: Class<T>, re
  * Given a NavigationInstruction.Open, this function will deliver a result to the instruction. This is useful for testing
  * the behavior of a screen/ViewModel that expects a result.
  */
-@Deprecated("Use deliverResultForTest instead")
-inline fun <reified T : Any> NavigationInstruction.Open<*>.sendResultForTest(result: T) {
-    sendResultForTest(T::class.java, result)
+inline fun <reified T : Any> NavigationInstruction.Open<*>.deliverResultForTest(result: T) {
+    deliverResultForTest(T::class.java, result)
 }

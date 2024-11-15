@@ -7,12 +7,14 @@ import dev.enro.core.onContainer
 import dev.enro.core.onParentContainer
 import dev.enro.core.requestClose
 import dev.enro.test.extensions.putNavigationHandleForViewModel
-import dev.enro.test.extensions.sendResultForTest
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.*
+import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class EnroTestTest {
@@ -33,7 +35,7 @@ class EnroTestTest {
 
     @Test
     fun whenPutNavigationHandleForTesting_andViewModelIsCreated_theViewModelIsCreatedSuccessfully() {
-        val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
+        putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
         val viewModel = factory.create(TestTestViewModel::class.java)
         assertNotNull(viewModel)
     }
@@ -56,9 +58,9 @@ class EnroTestTest {
         assertNotNull(viewModel)
 
         viewModel.openStringOne()
-        val instruction = navigationHandle.expectOpenInstruction<TestResultStringKey>()
+        val instruction = navigationHandle.assertAnyInstructionOpened<TestResultStringKey>()
         navigationHandle.assertOpened<TestResultStringKey>()
-        instruction.sendResultForTest("wow")
+        instruction.deliverResultForTest("wow")
 
         assertEquals("wow", viewModel.stringOneResult)
     }
@@ -87,17 +89,17 @@ class EnroTestTest {
 
         viewModel.openStringOne()
 
-        navigationHandle.expectOpenInstruction<TestResultStringKey>()
-            .sendResultForTest("first")
+        navigationHandle.assertAnyInstructionOpened<TestResultStringKey>()
+            .deliverResultForTest("first")
 
-        navigationHandle.expectOpenInstruction<TestResultStringKey>()
-            .sendResultForTest("second")
+        navigationHandle.assertAnyInstructionOpened<TestResultStringKey>()
+            .deliverResultForTest("second")
 
-        navigationHandle.expectOpenInstruction<TestResultIntKey>()
-            .sendResultForTest(1)
+        navigationHandle.assertAnyInstructionOpened<TestResultIntKey>()
+            .deliverResultForTest(1)
 
-        navigationHandle.expectOpenInstruction<TestResultIntKey>()
-            .sendResultForTest(2)
+        navigationHandle.assertAnyInstructionOpened<TestResultIntKey>()
+            .deliverResultForTest(2)
 
         assertEquals("first", viewModel.stringOneResult)
         assertEquals("second", viewModel.stringTwoResult)
@@ -110,7 +112,6 @@ class EnroTestTest {
         navigationHandle.assertAnyOpened<TestResultIntKey>()
         navigationHandle.assertAnyOpened<TestResultStringKey>()
 
-        navigationHandle.expectCloseInstruction()
         navigationHandle.assertClosed()
         runCatching {
             navigationHandle.assertNotClosed()
@@ -127,11 +128,11 @@ class EnroTestTest {
         viewModel.sendResult(expectedResult)
 
         runCatching {
-            navigationHandle.assertNoResultDelivered()
+            navigationHandle.assertNotClosed()
         }.onSuccess { fail() }
-        navigationHandle.assertResultDelivered(expectedResult)
-        navigationHandle.assertResultDelivered<String> { it == expectedResult }
-        val result = navigationHandle.assertResultDelivered<String>()
+        navigationHandle.assertClosedWithResult(expectedResult)
+        navigationHandle.assertClosedWithResult<String> { it == expectedResult }
+        val result = navigationHandle.assertClosedWithResult<String>()
         assertEquals(expectedResult, result)
     }
 
@@ -143,12 +144,12 @@ class EnroTestTest {
 
         val expectedResult = UUID.randomUUID().toString()
         runCatching {
-            navigationHandle.assertResultDelivered(expectedResult)
+            navigationHandle.assertClosedWithResult(expectedResult)
         }.onSuccess { fail() }
         runCatching {
-            navigationHandle.assertResultDelivered<String>()
+            navigationHandle.assertClosedWithResult<String>()
         }.onSuccess { fail() }
-        navigationHandle.assertNoResultDelivered()
+        navigationHandle.assertNotClosed()
     }
 
     @Test
@@ -161,8 +162,8 @@ class EnroTestTest {
         val expectedKey = TestTestKeyWithData(expectedId)
         viewModel.parentContainerOperation(expectedId)
 
-        navigationHandle.expectParentContainer().assertContains(expectedKey)
-        navigationHandle.expectParentContainer().assertActive(expectedKey)
+        navigationHandle.assertParentContainerExists().assertContains(expectedKey)
+        navigationHandle.assertParentContainerExists().assertActive(expectedKey)
 
         assertEquals(expectedKey, parentContainer.backstack.last().navigationKey)
         navigationHandle.onParentContainer {
@@ -180,8 +181,8 @@ class EnroTestTest {
         val expectedKey = TestTestKeyWithData(expectedId)
         viewModel.activeContainerOperation(expectedId)
 
-        navigationHandle.expectActiveContainer().assertContains(expectedKey)
-        navigationHandle.expectActiveContainer().assertActive(expectedKey)
+        navigationHandle.assertActiveContainerExists().assertContains(expectedKey)
+        navigationHandle.assertActiveContainerExists().assertActive(expectedKey)
 
         assertEquals(expectedKey, activeContainer.backstack.last().navigationKey)
         navigationHandle.onActiveContainer {
@@ -199,8 +200,8 @@ class EnroTestTest {
         val expectedKey = TestTestKeyWithData(expectedId)
         viewModel.specificContainerOperation(expectedId)
 
-        navigationHandle.expectContainer(testContainerKey).assertContains(expectedKey)
-        navigationHandle.expectContainer(testContainerKey).assertActive(expectedKey)
+        navigationHandle.assertContainerExists(testContainerKey).assertContains(expectedKey)
+        navigationHandle.assertContainerExists(testContainerKey).assertActive(expectedKey)
 
         assertEquals(expectedKey, childContainer.backstack.last().navigationKey)
         navigationHandle.onContainer(testContainerKey) {
@@ -211,7 +212,8 @@ class EnroTestTest {
     @Test
     fun givenFlowViewModel_whenFlowIsExecuted_thenFlowCompletesAsExpected() {
         val navigationHandle = putNavigationHandleForViewModel<FlowViewModel>(FlowTestKey)
-        val viewModel = factory.create(FlowViewModel::class.java)
+        factory.create(FlowViewModel::class.java)
+
         val expected = FlowData(
             first = UUID.randomUUID().toString(),
             second = UUID.randomUUID().toString(),
@@ -220,26 +222,26 @@ class EnroTestTest {
         )
 
         navigationHandle
-            .expectActiveContainer()
-            .expectOpenInstruction<TestResultStringKey> { it.id == "first" }
-            .sendResultForTest(expected.first)
+            .assertActiveContainerExists()
+            .assertContains<TestResultStringKey> { it.id == "first" }
+            .deliverResultForTest(expected.first)
 
         navigationHandle
-            .expectActiveContainer()
-            .expectOpenInstruction<TestResultStringKey> { it.id == "second" }
-            .sendResultForTest(expected.second)
+            .assertActiveContainerExists()
+            .assertContains<TestResultStringKey> { it.id == "second" }
+            .deliverResultForTest(expected.second)
 
         navigationHandle
-            .expectActiveContainer()
-            .expectOpenInstruction<TestResultStringKey> { it.id == "bottomSheet" }
-            .sendResultForTest(expected.bottomSheet)
+            .assertActiveContainerExists()
+            .assertContains<TestResultStringKey> { it.id == "bottomSheet" }
+            .deliverResultForTest(expected.bottomSheet)
 
         navigationHandle
-            .expectActiveContainer()
-            .expectOpenInstruction<TestResultStringKey> { it.id == "third" }
-            .sendResultForTest(expected.third)
+            .assertActiveContainerExists()
+            .assertContains<TestResultStringKey> { it.id == "third" }
+            .deliverResultForTest(expected.third)
 
-        val result = navigationHandle.assertResultDelivered<FlowData>()
+        val result = navigationHandle.assertClosedWithResult<FlowData>()
         assertEquals(expected, result)
     }
 }

@@ -7,6 +7,7 @@ import dev.enro.core.container.NavigationContainerContext
  * Asserts that the NavigationContainerContext's backstack contains a NavigationInstruction with a NavigationKey of type [T]
  * that matches the provided filter, and then returns that NavigationInstruction
  */
+@Deprecated("Use assertContains instead")
 fun <T : Any> NavigationContainerContext.expectOpenInstruction(
     type: Class<T>,
     filter: (T) -> Boolean = { true }
@@ -33,6 +34,7 @@ fun <T : Any> NavigationContainerContext.expectOpenInstruction(
  * Asserts that the NavigationContainerContext's backstack contains a NavigationInstruction with a NavigationKey of type [T]
  * that matches the provided filter, and then returns that NavigationInstruction
  */
+@Deprecated("Use assertContains instead")
 inline fun <reified T : Any> NavigationContainerContext.expectOpenInstruction(noinline filter: (T) -> Boolean = { true }): NavigationInstruction.Open<*> {
     return expectOpenInstruction(T::class.java, filter)
 }
@@ -41,6 +43,7 @@ inline fun <reified T : Any> NavigationContainerContext.expectOpenInstruction(no
  * Asserts that the NavigationContainerContext's backstack contains a NavigationInstruction with a NavigationKey
  * that is equal to the provided key, and then returns that NavigationInstruction
  */
+@Deprecated("Use assertContains instead")
 inline fun <reified T : Any> NavigationContainerContext.expectOpenInstruction(key: T): NavigationInstruction.Open<*> {
     return expectOpenInstruction(T::class.java) { it == key }
 }

@@ -42,7 +42,15 @@ class TestNavigationHandle<T : NavigationKey>(
         }
 
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {
+        if (instructions.lastOrNull() is NavigationInstruction.Close) {
+            throw IllegalStateException("TestNavigationHandle has received a close instruction and can no longer execute instructions")
+        }
+        allInstructions.add(navigationInstruction)
         navigationHandle.executeInstruction(navigationInstruction)
+    }
+
+    companion object {
+        internal val allInstructions = mutableListOf<NavigationInstruction>()
     }
 }
 

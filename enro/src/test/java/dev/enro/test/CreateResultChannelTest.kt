@@ -41,7 +41,7 @@ class CreateResultChannelTest {
 
     @Test
     fun resultChannelsAreUniquelyIdentifiableWithinViewModel_keyWithRepeatedLambda() {
-        val createResultChannel = createTestNavigationHandle(ResultChannelTestKey())
+        createTestNavigationHandle(ResultChannelTestKey())
             .dependencyScope
             .get<CreateResultChannel>()
 

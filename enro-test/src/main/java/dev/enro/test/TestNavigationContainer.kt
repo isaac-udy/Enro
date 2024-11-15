@@ -3,6 +3,7 @@ package dev.enro.test
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationInstruction
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.container.emptyBackstack
@@ -18,6 +19,17 @@ public class TestNavigationContainer(
     override val backstack: NavigationBackstack get() = backstackFlow.value
 
     override fun setBackstack(backstack: NavigationBackstack) {
+        val backstackIds = backstack
+            .map { it.instructionId }
+            .toSet()
+
+        TestNavigationHandle.allInstructions.apply {
+            removeAll {
+                it is NavigationInstruction.Open<*> && it.instructionId in backstackIds
+            }
+            addAll(backstack)
+        }
+
         mutableBackstackFlow.value = backstack
     }
 

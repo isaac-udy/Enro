@@ -5,11 +5,13 @@ import kotlin.reflect.KClass
 
 /**
  * Asserts that the NavigationHandle has executed a Close.WithResult instruction, and that the result matches the provided predicate
+ *
+ * @return the result of the Close.WithResult instruction
  */
 fun <T : Any> TestNavigationHandle<*>.assertClosedWithResult(
     type: KClass<T>,
     predicate: (T) -> Boolean = { true },
-) {
+) : T {
     val instruction = instructions.filterIsInstance<NavigationInstruction.Close.WithResult>()
         .lastOrNull()
 
@@ -29,14 +31,17 @@ fun <T : Any> TestNavigationHandle<*>.assertClosedWithResult(
     predicate(result).shouldBeEqualTo(true) {
         "NavigationHandle's Close.WithResult did not match the provided predicate\n\tResult: $result"
     }
+    return result
 }
 
 /**
  * Asserts that the NavigationHandle has executed a Close.WithResult instruction, and that the result matches the provided predicate
+ *
+ * @return the result of the Close.WithResult instruction
  */
 inline fun <reified T : Any> TestNavigationHandle<*>.assertClosedWithResult(
     predicate: (T) -> Boolean = { true },
-) {
+) : T {
     val instruction = instructions.filterIsInstance<NavigationInstruction.Close.WithResult>()
         .lastOrNull()
 
@@ -56,6 +61,7 @@ inline fun <reified T : Any> TestNavigationHandle<*>.assertClosedWithResult(
     predicate(result).shouldBeEqualTo(true) {
         "NavigationHandle's Close.WithResult did not match the provided predicate\n\tResult: $result"
     }
+    return result
 }
 
 /**
@@ -81,11 +87,22 @@ fun <T : Any> TestNavigationHandle<*>.assertClosedWithResult(
 /**
  * Asserts that the NavigationHandle has not executed a Close.WithResult instruction
  */
+@Deprecated("Use assertNotClosed or assertClosedWithNoResult")
 fun TestNavigationHandle<*>.assertNotClosedWithResult() {
     val instruction = instructions.filterIsInstance<NavigationInstruction.Close.WithResult>()
         .lastOrNull()
 
     instruction.shouldBeEqualTo(null) {
         "NavigationHandle should not have executed a Close.WithResult instruction, but a Close.WithResult instruction was found"
+    }
+}
+
+/**
+ * Asserts that the NavigationHandle has executed a Close instruction, but not a Close.WithResult instruction
+ */
+fun TestNavigationHandle<*>.assertClosedWithNoResult() {
+    val closeInstruction = assertClosed()
+    if (closeInstruction is NavigationInstruction.Close.WithResult) {
+        enroAssertionError("NavigationHandle was closed with result:\n\t${closeInstruction.result}")
     }
 }
