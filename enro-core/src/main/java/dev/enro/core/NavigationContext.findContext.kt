@@ -46,7 +46,7 @@ public fun NavigationContext<*>.requireContext(predicate: (NavigationContext<*>)
  */
 public fun NavigationContext<*>.findContextWithKey(keyType: KClass<*>): NavigationContext<*>? {
     return findContext {
-        val key = it.instruction?.navigationKey ?: return@findContext false
+        val key = it.instruction.navigationKey
         key::class == keyType
     }
 }
@@ -58,7 +58,7 @@ public fun NavigationContext<*>.findContextWithKey(keyType: KClass<*>): Navigati
  */
 public fun NavigationContext<*>.requireContextWithKey(keyType: KClass<*>): NavigationContext<*> {
     return requireContext {
-        val key = it.instruction?.navigationKey ?: return@requireContext false
+        val key = it.instruction.navigationKey
         key::class == keyType
     }
 }
@@ -69,7 +69,7 @@ public fun NavigationContext<*>.requireContextWithKey(keyType: KClass<*>): Navig
  * @see [findContext]
  */
 public inline fun <reified T> NavigationContext<*>.findContextWithKey(): NavigationContext<*>? {
-    return findContext { it.instruction?.navigationKey is T }
+    return findContext { it.instruction.navigationKey is T }
 }
 
 /**
@@ -78,7 +78,7 @@ public inline fun <reified T> NavigationContext<*>.findContextWithKey(): Navigat
  * @see [findContext]
  */
 public inline fun <reified T> NavigationContext<*>.requireContextWithKey(): NavigationContext<*> {
-    return requireContext { it.instruction?.navigationKey is T }
+    return requireContext { it.instruction.navigationKey is T }
 }
 
 /**
@@ -86,8 +86,11 @@ public inline fun <reified T> NavigationContext<*>.requireContextWithKey(): Navi
  *
  * @see [findContext]
  */
-public inline fun <reified T> NavigationContext<*>.findContextWithKey(crossinline predicate: (NavigationKey) -> Boolean): NavigationContext<*>? {
-    return findContext { it.instruction?.navigationKey?.let(predicate) ?: false }
+public inline fun <reified T> NavigationContext<*>.findContextWithKey(crossinline predicate: (T) -> Boolean): NavigationContext<*>? {
+    return findContext {
+        val key = it.instruction.navigationKey as? T ?: return@findContext false
+        predicate(key)
+    }
 }
 
 /**
@@ -95,6 +98,9 @@ public inline fun <reified T> NavigationContext<*>.findContextWithKey(crossinlin
  *
  * @see [findContext]
  */
-public inline fun <reified T> NavigationContext<*>.requireContextWithKey(crossinline predicate: (NavigationKey) -> Boolean): NavigationContext<*> {
-    return requireContext { it.instruction?.navigationKey?.let(predicate) ?: false }
+public inline fun <reified T> NavigationContext<*>.requireContextWithKey(crossinline predicate: (T) -> Boolean): NavigationContext<*> {
+    return requireContext {
+        val key = it.instruction.navigationKey as? T ?: return@requireContext false
+        predicate(key)
+    }
 }
