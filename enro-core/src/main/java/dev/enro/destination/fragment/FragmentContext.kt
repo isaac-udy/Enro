@@ -51,7 +51,7 @@ internal fun <ContextType : Fragment> FragmentContext(
 }
 
 private fun bindBackHandling(navigationContext: NavigationContext<out Fragment>, navigationHandle: NavigationHandle) {
-    val backConfiguration = navigationContext.controller.backConfiguration
+    val backConfiguration = navigationContext.controller.config.backConfiguration
 
     when(backConfiguration) {
         is EnroBackConfiguration.Default -> configureDefaultBackHandling(navigationContext)
@@ -134,7 +134,7 @@ private fun earlyExitForUnboundFragmentsInTesting(
     fragment: Fragment
 ) : Boolean {
     val hasKey = fragment.getNavigationHandle().hasKey
-    val isInTest = fragment.requireActivity().application.navigationController.isInTest
+    val isInTest = fragment.requireActivity().application.navigationController.config.isInTest
     return isInTest && !hasKey
 }
 

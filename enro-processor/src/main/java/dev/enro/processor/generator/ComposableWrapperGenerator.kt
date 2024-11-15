@@ -69,6 +69,8 @@ object ComposableWrapperGenerator {
             }
         }.joinToString(separator = "") { "\n                    $it" }
 
+        val elementImportName = element.getElementName(processingEnv)
+        val keyImportName = keyType.getElementName(processingEnv)
         processingEnv.filer
             .createResource(
                 StandardLocation.SOURCE_OUTPUT,
@@ -85,9 +87,15 @@ object ComposableWrapperGenerator {
                 import dev.enro.annotations.NavigationDestination
                 $additionalImports
                 
-                import ${element.getElementName(processingEnv)}
+                import $elementImportName
                 import ${ClassNames.Java.composableDestination}
-                import ${keyType.getElementName(processingEnv)}
+                ${
+                    if(keyImportName != elementImportName) {
+                        "import $keyImportName"
+                    } else {
+                        ""
+                    }
+                }
                 
                 $additionalAnnotations
                 public class $composableWrapperName : ComposableDestination()$additionalInterfaces {

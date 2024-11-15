@@ -172,7 +172,10 @@ public abstract class NavigationContainer(
     public fun accept(
         instruction: AnyOpenInstruction
     ): Boolean {
-        return (instructionFilter.accept(instruction) || instruction.navigationDirection == NavigationDirection.Present)
+        val isPresentedWithLegacyBehavior = context.controller.config.useLegacyContainerPresentBehavior
+                && instruction.navigationDirection == NavigationDirection.Present
+
+        return (instructionFilter.accept(instruction) || isPresentedWithLegacyBehavior)
                 && acceptedByContext(instruction)
                 && canInstructionBeHostedAs(
             hostType = contextType,

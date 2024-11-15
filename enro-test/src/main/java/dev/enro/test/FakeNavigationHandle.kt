@@ -5,6 +5,7 @@ package dev.enro.test
 import android.annotation.SuppressLint
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.SavedStateHandle
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHandle
@@ -52,7 +53,8 @@ internal class FakeNavigationHandle(
     override val id: String = instruction.instructionId
     override val key: NavigationKey = key
     override val dependencyScope: EnroDependencyScope = NavigationHandleScope(
-        EnroTest.getCurrentNavigationController()
+        navigationController = EnroTest.getCurrentNavigationController(),
+        savedStateHandle = SavedStateHandle(),
     ).bind(this)
 
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {

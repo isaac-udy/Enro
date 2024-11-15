@@ -118,7 +118,9 @@ class UnboundActivitiesTest {
             .apply {
                 // This test specifically requires EnroBackConfiguration.Default
                 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-                backConfiguration = EnroBackConfiguration.Default
+                setConfig (
+                    config.copy(backConfiguration = EnroBackConfiguration.Default)
+                )
             }
 
         navigationController.addOverride(override)

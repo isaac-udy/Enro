@@ -1,9 +1,28 @@
 # Changelog
 
 ## 2.8.0
+* Updated Compose to 1.7.1
 * Added support for NavigationKey.WithExtras to `NavigationResultChannel` and `NavigationFlowScope`
 * Updated `enro-test` methods to provide more descriptive error messages when assert/expect methods fail, and added kdoc comments to many of the functions
+* Updated Composable navigation animations to use SeekableTransitionState, as a step towards supporting predictive back navigation animations
 * Fixed a bug where managed flows (`registerForFlowResult`) that launch embedded flows (`deliverResultFromPush/Present`) were not correctly handling the result of the embedded flow
+* Added `FragmentSharedElements` to provide a way to define shared elements for Fragment navigation, including a compatibility layer for Composable NavigationDestinations that want to use AndroidViews as shared elements with Fragments. See `FragmentsWithSharedElements.kt` in the test application for examples of how to use `FragmentSharedElements`
+* Added `acceptFromFlow` as a `NavigationContainerFilter` for use on screens that build managed flows using `registerForFlowResult`. This filter will cause the `NavigationContainer` to only accept instructions that have been created as part a managed flow, and will reject instructions that are not part of a managed flow.
+* Removed `isAnimating` from `ComposableNavigationContainer`, as it was unused internally, did not appear to be useful for external use cases, and was complicating Compose animation code. If this functionality *was* important to your use case, please create a Github issue to discuss your use case.
+* Removed the requirement to provide a SavedStateHandle to `registerForFlowResult`. This should not affect any existing code, but if you were passing a SavedStateHandle to `registerForFlowResult`, you can now remove this parameter.
+  * NavigationHandles now have access to a SavedStateHandle internally, which removes the requirement to pass this through to `registerForFlowResult`
+* Added `managedFlowDestination` as a way to create a managed flow as a standalone destination
+  * `managedFlowDestination` works in the same way you'd use `registerForFlowResult` to create a managed flow, but allows you to define the flow as a standalone destination that can be pushed or presented from other destinations, without the need to define a ViewModel and regular destination for the flow.
+  * `managedFlowDestination` is currently marked as an `@ExperimentalEnroApi`, and may be subject to change in future versions of Enro.
+  * For an example of a `managedFlowDestination`, see `dev.enro.tests.application.managedflow.UserInformationFlow` in the test application
+
+* ⚠️ Updated result channel identifiers in preparation for Kotlin 2.0 ⚠️
+  * Kotlin 2.0 changes the way that lambdas are compiled, which has implications for `registerForNavigationResult` and how result channels are uniquely identified. Activites, Fragments, Composables and ViewModels that use `by registerForNavigationResult` directly will not be affected by this change. However, if you are creating result channels inside of other objects, such as delegates, helper objects, or extension functions, you should verify that these cases continue to work as expected. It is not expected that there will be issues, but if this does result in bugs in your application, please raise them on the Enro GitHub repository. 
+
+* ⚠️ Updated NavigationContainer handling of NavigationInstructionFilter ⚠️
+  * In versions of Enro before 2.8.0, NavigationContainers would always accept destinations that were presented (`NavigationInstruction.Present(...)`, `navigationHandle.present(...)`, etc), and would only enforce their instructionFilter for pushed instructions (`NavigationInstruction.Push(...)`, `navigationHandle.push(...)`, etc). This is no longer the default behavior, and NavigationContainers will apply their instructionFilter to all instructions. 
+  * This behavior can be reverted to the previous behavior by setting `useLegacyContainerPresentBehavior` when creating a NavigationController for your application using `createNavigationController`. 
+  * `useLegacyContainerPresentBehavior` will be removed in a future version of Enro, and it is recommended that you update your NavigationContainers to explicitly declare their instructionFilter for all instructions, not just pushed instructions.
 
 ## 2.7.0
 * ⚠️ Updated to androidx.lifecycle 2.8.1 ⚠️

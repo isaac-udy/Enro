@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
-import dev.enro.core.container.acceptNone
+import dev.enro.core.container.accept
 import dev.enro.core.container.emptyBackstack
 import dev.enro.core.containerManager
 import dev.enro.core.controller.NavigationController
@@ -60,7 +60,7 @@ private class FragmentLifecycleCallbacksForEnro(
                 FragmentNavigationContainer(
                     containerId = android.R.id.content,
                     parentContext = activity.navigationContext,
-                    filter = acceptNone(),
+                    filter = accept { anyPresented() },
                     emptyBehavior = EmptyBehavior.AllowEmpty,
                     interceptor = {},
                     animations = {},

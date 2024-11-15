@@ -11,20 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.enro.core.*
 import dev.enro.core.controller.usecase.createResultChannel
 import dev.enro.core.result.internal.LazyResultChannelProperty
-import dev.enro.viewmodel.getNavigationHandle
+import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
-import dev.enro.core.closeWithResult as nonDeprecatedCloseWithResult
-
-@Deprecated(
-    message = "Please use closeWithResult from dev.enro.core",
-    level = DeprecationLevel.WARNING,
-    replaceWith =
-    ReplaceWith("closeWithResult(result)", "dev.enro.core.closeWithResult"),
-)
-public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
-    nonDeprecatedCloseWithResult(result)
-}
 
 public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.deliverResultFromPush(
     navigationKey: NavigationKey.SupportsPush.WithResult<out T>
@@ -50,163 +39,129 @@ public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.deli
     )
 }
 
-@Deprecated("It is no longer required to provide a navigationHandle")
-public inline fun <reified T : Any> ViewModel.registerForNavigationResult(
-    navigationHandle: NavigationHandle,
-    noinline onClosed: NavigationResultScope<T, NavigationKey.WithResult<T>>.() -> Unit = {},
-    noinline onResult: NavigationResultScope<T, NavigationKey.WithResult<T>>.(T) -> Unit
-): ReadOnlyProperty<Any, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
-    LazyResultChannelProperty(
-        owner = navigationHandle,
-        resultType = T::class,
-        onClosed = onClosed,
-        onResult = onResult
-    )
-
+@Suppress("UnusedReceiverParameter") // provided to ensure the method is executed on the correct object
 public inline fun <reified T : Any> ViewModel.registerForNavigationResult(
     noinline onClosed: NavigationResultScope<T, NavigationKey.WithResult<T>>.() -> Unit = {},
     noinline onResult: NavigationResultScope<T, NavigationKey.WithResult<T>>.(T) -> Unit
-): ReadOnlyProperty<Any, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
-    LazyResultChannelProperty(
-        owner = getNavigationHandle(),
-        resultType = T::class,
+): PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationResultChannel<T, NavigationKey.WithResult<T>>>> {
+    return createResultChannelProperty(
         onClosed = onClosed,
         onResult = onResult,
     )
+}
 
-@Deprecated("Please use registerForNavigationResult, as the key is provided through the NavigationResultScope")
-public inline fun <reified T : Any> ViewModel.registerForNavigationResultWithKey(
-    noinline onClosed: NavigationResultScope<T, NavigationKey.WithResult<T>>.(NavigationKey.WithResult<T>) -> Unit = {},
-    noinline onResult: NavigationResultScope<T, NavigationKey.WithResult<T>>.(NavigationKey.WithResult<T>, T) -> Unit
-): ReadOnlyProperty<Any, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
-    LazyResultChannelProperty(
-        owner = getNavigationHandle(),
-        resultType = T::class,
-        onClosed = onClosed,
-        onResult = onResult
-    )
-
+@Suppress("UnusedReceiverParameter") // provided to ensure the method is executed on the correct object
 public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> ViewModel.registerForNavigationResult(
+    @Suppress("UNUSED_PARAMETER") // provided to allow better type inference
     key: KClass<Key>,
     noinline onClosed: NavigationResultScope<T, Key>.() -> Unit = {},
     noinline onResult: NavigationResultScope<T, Key>.(T) -> Unit
-): ReadOnlyProperty<Any, NavigationResultChannel<T, Key>> =
-    LazyResultChannelProperty(
-        owner = getNavigationHandle(),
-        resultType = T::class,
+): PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationResultChannel<T, Key>>> {
+    return createResultChannelProperty(
         onClosed = onClosed,
-        onResult = onResult
+        onResult = onResult,
     )
+}
 
-@Deprecated("Please use registerForNavigationResult, as the key is provided through the NavigationResultScope")
-public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> ViewModel.registerForNavigationResultWithKey(
+@JvmName("registerForNavigationResultDelegated")
+public inline fun <reified T : Any> registerForNavigationResult(
+    owner: ViewModel,
+    additionalResultId: String = "",
+    noinline onClosed: NavigationResultScope<T, NavigationKey.WithResult<T>>.() -> Unit = {},
+    noinline onResult: NavigationResultScope<T, NavigationKey.WithResult<T>>.(T) -> Unit
+): PropertyDelegateProvider<Any, ReadOnlyProperty<Any, NavigationResultChannel<T, NavigationKey.WithResult<T>>>> {
+    return createResultChannelProperty(
+        owner = owner,
+        additionalResultId = additionalResultId,
+        onClosed = onClosed,
+        onResult = onResult,
+    )
+}
+
+@JvmName("registerForNavigationResultDelegated")
+public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> registerForNavigationResult(
+    @Suppress("UNUSED_PARAMETER") // provided to allow better type inference
     key: KClass<Key>,
-    noinline onClosed: NavigationResultScope<T, Key>.(Key) -> Unit = {},
-    noinline onResult: NavigationResultScope<T, Key>.(Key, T) -> Unit
-): ReadOnlyProperty<Any, NavigationResultChannel<T, Key>> =
-    LazyResultChannelProperty(
-        owner = getNavigationHandle(),
-        resultType = T::class,
+    owner: ViewModel,
+    additionalResultId: String = "",
+    noinline onClosed: NavigationResultScope<T, Key>.() -> Unit = {},
+    noinline onResult: NavigationResultScope<T, Key>.(T) -> Unit
+): PropertyDelegateProvider<Any, ReadOnlyProperty<Any, NavigationResultChannel<T, Key>>> {
+    return createResultChannelProperty(
+        owner = owner,
+        additionalResultId = additionalResultId,
         onClosed = onClosed,
-        onResult = onResult
+        onResult = onResult,
     )
+}
 
+@Suppress("UnusedReceiverParameter") // provided to ensure the method is executed on the correct object
 public inline fun <reified T : Any> ComponentActivity.registerForNavigationResult(
     noinline onClosed: NavigationResultScope<T, NavigationKey.WithResult<T>>.() -> Unit = {},
     noinline onResult: NavigationResultScope<T, NavigationKey.WithResult<T>>.(T) -> Unit
-): ReadOnlyProperty<ComponentActivity, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
-    LazyResultChannelProperty(
-        owner = this,
-        resultType = T::class,
+): PropertyDelegateProvider<ComponentActivity, ReadOnlyProperty<ComponentActivity, NavigationResultChannel<T, NavigationKey.WithResult<T>>>> {
+    return createResultChannelProperty(
         onClosed = onClosed,
-        onResult = onResult
+        onResult = onResult,
     )
+}
 
-@Deprecated("Please use registerForNavigationResult, as the key is provided through the NavigationResultScope")
-public inline fun <reified T : Any> ComponentActivity.registerForNavigationResultWithKey(
-    noinline onClosed: NavigationResultScope<T, NavigationKey.WithResult<T>>.(NavigationKey.WithResult<T>) -> Unit = {},
-    noinline onResult: NavigationResultScope<T, NavigationKey.WithResult<T>>.(NavigationKey.WithResult<T>, T) -> Unit
-): ReadOnlyProperty<ComponentActivity, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
-    LazyResultChannelProperty(
-        owner = this,
-        resultType = T::class,
-        onClosed = onClosed,
-        onResult = onResult
-    )
-
-
+@Suppress("UnusedReceiverParameter") // provided to ensure the method is executed on the correct object
 public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> ComponentActivity.registerForNavigationResult(
+    @Suppress("UNUSED_PARAMETER") // provided to allow better type inference
     key: KClass<Key>,
     noinline onClosed: NavigationResultScope<T, Key>.() -> Unit = {},
     noinline onResult: NavigationResultScope<T, Key>.(T) -> Unit
-): ReadOnlyProperty<ComponentActivity, NavigationResultChannel<T, Key>> =
-    LazyResultChannelProperty(
-        owner = this,
-        resultType = T::class,
+): PropertyDelegateProvider<ComponentActivity, ReadOnlyProperty<ComponentActivity, NavigationResultChannel<T, Key>>> {
+    return createResultChannelProperty(
         onClosed = onClosed,
-        onResult = onResult
+        onResult = onResult,
     )
+}
 
-@Deprecated("Please use registerForNavigationResult, as the key is provided through the NavigationResultScope")
-public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> ComponentActivity.registerForNavigationResultWithKey(
-    key: KClass<Key>,
-    noinline onClosed: NavigationResultScope<T, Key>.(Key) -> Unit = {},
-    noinline onResult: NavigationResultScope<T, Key>.(Key, T) -> Unit
-): ReadOnlyProperty<ComponentActivity, NavigationResultChannel<T, Key>> =
-    LazyResultChannelProperty(
-        owner = this,
-        resultType = T::class,
-        onClosed = onClosed,
-        onResult = onResult
-    )
-
+@Suppress("UnusedReceiverParameter") // provided to ensure the method is executed on the correct object
 public inline fun <reified T : Any> Fragment.registerForNavigationResult(
     noinline onClosed: NavigationResultScope<T, NavigationKey.WithResult<T>>.() -> Unit = {},
     noinline onResult: NavigationResultScope<T, NavigationKey.WithResult<T>>.(T) -> Unit
-): ReadOnlyProperty<Fragment, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
-    LazyResultChannelProperty(
-        owner = this,
-        resultType = T::class,
+): PropertyDelegateProvider<Fragment, ReadOnlyProperty<Fragment, NavigationResultChannel<T, NavigationKey.WithResult<T>>>> {
+    return createResultChannelProperty(
         onClosed = onClosed,
-        onResult = onResult
+        onResult = onResult,
     )
+}
 
-@Deprecated("Please use registerForNavigationResult, as the key is provided through the NavigationResultScope")
-public inline fun <reified T : Any> Fragment.registerForNavigationResultWithKey(
-    noinline onClosed: NavigationResultScope<T, NavigationKey.WithResult<T>>.(NavigationKey.WithResult<T>) -> Unit = {},
-    noinline onResult: NavigationResultScope<T, NavigationKey.WithResult<T>>.(NavigationKey.WithResult<T>, T) -> Unit
-): ReadOnlyProperty<Fragment, NavigationResultChannel<T, NavigationKey.WithResult<T>>> =
-    LazyResultChannelProperty(
-        owner = this,
-        resultType = T::class,
-        onClosed = onClosed,
-        onResult = onResult
-    )
-
+@Suppress("UnusedReceiverParameter") // provided to ensure the method is executed on the correct object
 public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Fragment.registerForNavigationResult(
+    @Suppress("UNUSED_PARAMETER") // provided to allow better type inference
     key: KClass<Key>,
     noinline onClosed: NavigationResultScope<T, Key>.() -> Unit = {},
     noinline onResult: NavigationResultScope<T, Key>.(T) -> Unit
-): ReadOnlyProperty<Fragment, NavigationResultChannel<T, Key>> =
-    LazyResultChannelProperty(
-        owner = this,
-        resultType = T::class,
+): PropertyDelegateProvider<Fragment, ReadOnlyProperty<Fragment, NavigationResultChannel<T, Key>>> {
+    return createResultChannelProperty(
         onClosed = onClosed,
-        onResult = onResult
+        onResult = onResult,
     )
+}
 
-@Deprecated("Please use registerForNavigationResult, as the key is provided through the NavigationResultScope")
-public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Fragment.registerForNavigationResultWithKey(
-    key: KClass<Key>,
-    noinline onClosed: NavigationResultScope<T, Key>.(Key) -> Unit = {},
-    noinline onResult: NavigationResultScope<T, Key>.(Key, T) -> Unit
-): ReadOnlyProperty<Fragment, NavigationResultChannel<T, Key>> =
-    LazyResultChannelProperty(
-        owner = this,
-        resultType = T::class,
-        onClosed = onClosed,
-        onResult = onResult
-    )
+@PublishedApi
+internal inline fun <Owner : Any, reified Result : Any, Key : NavigationKey.WithResult<Result>> createResultChannelProperty(
+    owner: Any? = null,
+    additionalResultId: String = "",
+    noinline onClosed: NavigationResultScope<Result, Key>.() -> Unit,
+    noinline onResult: NavigationResultScope<Result, Key>.(Result) -> Unit,
+): PropertyDelegateProvider<Owner, ReadOnlyProperty<Owner, NavigationResultChannel<Result, Key>>> {
+    return PropertyDelegateProvider { thisRef, property ->
+        val resultId = "${thisRef::class.java.name}.${property.name}"
+        LazyResultChannelProperty(
+            owner = owner ?: thisRef,
+            resultType = Result::class,
+            resultId = resultId,
+            onClosed = onClosed,
+            onResult = onResult,
+            additionalResultId = additionalResultId,
+        )
+    }
+}
 
 /**
  * Register for an UnmanagedEnroResultChannel.
@@ -225,33 +180,9 @@ public inline fun <reified T : Any> NavigationHandle.registerForNavigationResult
 ): UnmanagedNavigationResultChannel<T, NavigationKey.WithResult<T>> {
     return createResultChannel(
         resultType = T::class,
+        resultId = id,
         onClosed = onClosed,
         onResult = onResult,
-        additionalResultId = id
-    )
-}
-
-/**
- * Register for an UnmanagedEnroResultChannel.
- *
- * Be aware that you need to manage the attach/detach/destroy lifecycle events of this result channel
- * yourself, including the initial attach.
- *
- * @see UnmanagedNavigationResultChannel
- * @see managedByLifecycle
- * @see managedByView
- */
-@Deprecated("Please use registerForNavigationResult, as the key is provided through the NavigationResultScope")
-public inline fun <reified T : Any> NavigationHandle.registerForNavigationResultWithKey(
-    id: String,
-    noinline onClosed: NavigationResultScope<T, NavigationKey.WithResult<T>>.(NavigationKey.WithResult<T>) -> Unit = {},
-    noinline onResult: NavigationResultScope<T, NavigationKey.WithResult<T>>.(NavigationKey.WithResult<T>, T) -> Unit
-): UnmanagedNavigationResultChannel<T, NavigationKey.WithResult<T>> {
-    return createResultChannel(
-        resultType = T::class,
-        onClosed = onClosed,
-        onResult = onResult,
-        additionalResultId = id
     )
 }
 
@@ -273,34 +204,9 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Navigatio
 ): UnmanagedNavigationResultChannel<T, Key> {
     return createResultChannel(
         resultType = T::class,
+        resultId = id,
         onClosed = onClosed,
         onResult = onResult,
-        additionalResultId = id
-    )
-}
-
-/**
- * Register for an UnmanagedEnroResultChannel.
- *
- * Be aware that you need to manage the attach/detach/destroy lifecycle events of this result channel
- * yourself, including the initial attach.
- *
- * @see UnmanagedNavigationResultChannel
- * @see managedByLifecycle
- * @see managedByView
- */
-@Deprecated("Please use registerForNavigationResult, as the key is provided through the NavigationResultScope")
-public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> NavigationHandle.registerForNavigationResultWithKey(
-    id: String,
-    key: KClass<Key>,
-    noinline onClosed: NavigationResultScope<T, Key>.(Key) -> Unit = {},
-    noinline onResult: NavigationResultScope<T, Key>.(Key, T) -> Unit
-): UnmanagedNavigationResultChannel<T, Key> {
-    return createResultChannel(
-        resultType = T::class,
-        onClosed = onClosed,
-        onResult = onResult,
-        additionalResultId = id
     )
 }
 

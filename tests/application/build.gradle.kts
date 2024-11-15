@@ -10,6 +10,25 @@ configureAndroidApp("dev.enro.test.application")
 configureCompose()
 configureEmulatorWtf()
 
+android {
+    buildTypes {
+        getByName("debug") {
+            // Set isTestingProguard to true to test proguard rules
+            // this is useful when testing bugs that are related to minification
+            val isTestingProguard = false
+
+            if (isTestingProguard) {
+                isDebuggable = false
+                isMinifyEnabled = true
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+                )
+            }
+        }
+    }
+}
+
 dependencies {
     implementation(project(":tests:module-one"))
 

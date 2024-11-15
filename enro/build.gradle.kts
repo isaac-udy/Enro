@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("com.google.devtools.ksp")
     id("com.android.library")
@@ -24,8 +26,9 @@ android {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
-    kotlinOptions {
-        freeCompilerArgs += "-Xfriend-paths=../enro-core/src/main"
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+        freeCompilerArgs.add("-Xfriend-paths=../enro-core/src/main")
     }
 }
 
@@ -65,6 +68,7 @@ dependencies {
     androidTestImplementation(libs.testing.androidx.runner)
 
     androidTestImplementation(libs.testing.androidx.compose)
+    androidTestImplementation(libs.compose.materialIcons)
 
     androidTestImplementation(libs.androidx.navigation.fragment)
     androidTestImplementation(libs.androidx.navigation.ui)

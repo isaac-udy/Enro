@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.movableContentOf
@@ -42,6 +41,9 @@ import dev.enro.core.container.NavigationInstructionFilter
 import dev.enro.core.container.merge
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.destination.compose.destination.AnimationEvent
+import dev.enro.destination.flow.ManagedFlowNavigationBinding
+import dev.enro.destination.flow.host.ComposableHostForManagedFlowDestination
 import java.io.Closeable
 import kotlin.collections.set
 
@@ -69,10 +71,6 @@ public class ComposableNavigationContainer internal constructor(
 
     override val isVisible: Boolean
         get() = true
-
-    public val isAnimating: Boolean by derivedStateOf {
-        destinationOwners.any { !it.transitionState.isIdle }
-    }
 
     private val onDestroyLifecycleObserver = LifecycleEventObserver { _, event ->
         if (event != Lifecycle.Event.ON_DESTROY) return@LifecycleEventObserver
@@ -198,7 +196,7 @@ public class ComposableNavigationContainer internal constructor(
 
         destinationOwners.forEach {
             if (activeDestinations[it.instruction] == null) {
-                it.transitionState.targetState = false
+                it.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
             }
         }
         destinationOwners = merge(transition.previousBackstack, transition.activeBackstack)
@@ -215,10 +213,24 @@ public class ComposableNavigationContainer internal constructor(
         val rawBinding = controller.bindingForKeyType(composeKey::class)
             ?: throw EnroException.MissingNavigationBinding(composeKey)
 
-        if (rawBinding !is ComposableNavigationBinding<*, *>) {
+        if (rawBinding !is ComposableNavigationBinding<*, *> && rawBinding !is ManagedFlowNavigationBinding<*, *>) {
             throw IllegalStateException("Expected ${composeKey::class.java.simpleName} to be bound to a Composable, but was instead bound to a ${rawBinding.baseType.java.simpleName}")
         }
-        val destination = rawBinding.constructDestination()
+        // TODO:
+        //  Instead of managing destination construction here, we should move this to the NavigationHostFactory,
+        //  and let the NavigationHostFactory manage the destination construction. This means more significant changes
+        //  to the way that the NavigationHostFactory works, so this is a future improvement.
+        //  The cost of delaying this improvement is small at the moment, as the ComposableNavigationContainer is the only
+        //  container that needs to manage destination construction in this way.
+        val destination = when (rawBinding) {
+            is ComposableNavigationBinding<*, *> -> {
+                rawBinding.constructDestination()
+            }
+            is ManagedFlowNavigationBinding<*, *> -> {
+                ComposableHostForManagedFlowDestination()
+            }
+            else -> error("")
+        }
 
         val restoredState = restoredDestinationState.remove(instruction.instructionId)
         return ComposableDestinationOwner(
@@ -244,18 +256,20 @@ public class ComposableNavigationContainer internal constructor(
         }
         val presented =
             transition.activeBackstack.takeLastWhile { it.navigationDirection is NavigationDirection.Present }.toSet()
-        val activePush = transition.activeBackstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }
-        val activePresented = presented.lastOrNull()
+        val activePush = transition.activeBackstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }?.instructionId
+        val activePresented = presented.lastOrNull()?.instructionId
         destinationOwners.forEach { destinationOwner ->
             val instruction = destinationOwner.instruction
             val isPushedDialogOrBottomSheet =
                 ((destinationOwner.destination is DialogDestination || destinationOwner.destination is BottomSheetDestination) && activePresented != null)
 
-            destinationOwner.transitionState.targetState = when (instruction) {
+
+            val target = when (instruction.instructionId) {
                 activePresented -> !isParentBeingRemoved
                 activePush -> !isParentBeingRemoved && !isPushedDialogOrBottomSheet
                 else -> false
             }
+            destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(target))
         }
     }
 

@@ -37,7 +37,7 @@ private fun bindBackHandling(
     navigationContext: NavigationContext<out ComposableDestination>,
     navigationHandle: NavigationHandle
 ) {
-    val backConfiguration = navigationContext.controller.backConfiguration
+    val backConfiguration = navigationContext.controller.config.backConfiguration
 
     when (backConfiguration) {
         is EnroBackConfiguration.Default -> {

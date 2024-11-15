@@ -7,15 +7,15 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroConfig
 import dev.enro.core.NavigationDirection
 import dev.enro.core.container.originalNavigationDirection
-import dev.enro.extensions.KeepVisibleWith
+import dev.enro.core.controller.NavigationApplication
 import dev.enro.extensions.ResourceAnimatedVisibility
 import dev.enro.extensions.getAttributeResourceId
 import dev.enro.extensions.getNestedAttributeResourceId
@@ -51,9 +51,9 @@ public sealed interface NavigationAnimation {
         internal abstract val forView: ForView
 
         @androidx.compose.runtime.Composable
-        public abstract fun Animate(
+        internal abstract fun Animate(
             visible: Transition<Boolean>,
-            content: @androidx.compose.runtime.Composable () -> Unit
+            content: @androidx.compose.runtime.Composable (Transition<EnterExitState>) -> Unit,
         )
 
         public companion object {
@@ -84,24 +84,34 @@ public sealed interface NavigationAnimation {
             val exit: ExitTransition = ExitTransition.None,
             override val forView: ForView = DefaultAnimations.ForView.noneEnter,
         ) : Composable(), Enter, Exit {
-            @OptIn(ExperimentalAnimationApi::class)
             @androidx.compose.runtime.Composable
-            override fun Animate(visible: Transition<Boolean>, content: @androidx.compose.runtime.Composable () -> Unit) {
+            override fun Animate(
+                visible: Transition<Boolean>,
+                content: @androidx.compose.runtime.Composable (Transition<EnterExitState>) -> Unit,
+            ) {
                 val context = LocalContext.current
+                val config = remember(context) {
+                    val navigationApplication = (context.applicationContext as? NavigationApplication)
+                    navigationApplication?.navigationController?.config ?: EnroConfig()
+                }
+
                 val resourceAnimation = remember(this, forView) { forView.asResource(context.theme) }
                 visible.AnimatedVisibility(
                     visible = { it },
                     enter = enter,
                     exit = exit,
                 ) {
-                    transition.ResourceAnimatedVisibility(
-                        visible = { it == EnterExitState.Visible },
-                        enter = resourceAnimation.id,
-                        exit = resourceAnimation.id,
-                    ) {
-                        content()
+                    if (config.enableViewAnimationsForCompose) {
+                        transition.ResourceAnimatedVisibility(
+                            visible = { it == EnterExitState.Visible },
+                            enter = resourceAnimation.id,
+                            exit = resourceAnimation.id,
+                        ) {
+                            content(transition)
+                        }
+                    } else {
+                        content(transition)
                     }
-                    KeepVisibleWith(visible)
                 }
             }
         }
@@ -112,9 +122,11 @@ public sealed interface NavigationAnimation {
         is Attr -> Resource(
             theme.getAttributeResourceId(attr),
         )
+
         is Theme -> Resource(
             id(theme),
         )
+
         is Composable -> forView.asResource(theme)
     }
 
@@ -182,6 +194,7 @@ public object DefaultAnimations {
                 NavigationDirection.Present -> ForView.presentCloseEnter
                 else -> ForView.pushCloseEnter
             }
+
             NavigationDirection.Push, NavigationDirection.Forward -> ForView.pushCloseEnter
             else -> ForView.presentCloseEnter
         }

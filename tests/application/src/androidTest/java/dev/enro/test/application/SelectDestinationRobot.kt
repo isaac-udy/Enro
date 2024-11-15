@@ -17,9 +17,12 @@ import dev.enro.test.application.compose.results.ComposeAsyncManagedResultFlowRo
 import dev.enro.test.application.compose.results.ComposeEmbeddedResultFlowRobot
 import dev.enro.test.application.compose.results.ComposeManagedResultFlowRobot
 import dev.enro.test.application.compose.results.ComposeManagedResultsWithNestedFlowAndEmptyRootRobot
+import dev.enro.test.application.compose.results.ComposeMixedResultTypesRobot
 import dev.enro.test.application.compose.results.ComposeNestedResultsRobot
 import dev.enro.test.application.compose.results.ResultsWithExtraRobot
 import dev.enro.test.application.fragment.UnboundBottomSheetRobot
+import dev.enro.test.application.managedflow.ManagedFlowInComposableRobot
+import dev.enro.test.application.managedflow.ManagedFlowInFragmentRobot
 import dev.enro.tests.application.SelectDestination
 
 class SelectDestinationRobot(
@@ -32,7 +35,7 @@ class SelectDestinationRobot(
         }
     }
 
-    fun openBottomSheetCloseAndPresent() : BottomSheetCloseAndPresentRobot {
+    fun openBottomSheetCloseAndPresent(): BottomSheetCloseAndPresentRobot {
         composeRule.onNode(hasText("Bottom Sheet Close And Present"))
             .performScrollTo()
             .onSiblings()
@@ -42,7 +45,7 @@ class SelectDestinationRobot(
         return BottomSheetCloseAndPresentRobot(composeRule)
     }
 
-    fun openBottomSheetChangeSize() : BottomSheetChangeSizeRobot {
+    fun openBottomSheetChangeSize(): BottomSheetChangeSizeRobot {
         composeRule.onNode(hasText("Bottom Sheet Change Size"))
             .performScrollTo()
             .onSiblings()
@@ -52,7 +55,7 @@ class SelectDestinationRobot(
         return BottomSheetChangeSizeRobot(composeRule)
     }
 
-    fun openLegacyBottomSheets() : LegacyBottomSheetsRobot {
+    fun openLegacyBottomSheets(): LegacyBottomSheetsRobot {
         composeRule.onNode(hasText("Legacy Bottom Sheets"))
             .performScrollTo()
             .onSiblings()
@@ -62,7 +65,7 @@ class SelectDestinationRobot(
         return LegacyBottomSheetsRobot(composeRule)
     }
 
-    fun openSimpleActivity() : SimpleActivityRobot {
+    fun openSimpleActivity(): SimpleActivityRobot {
         composeRule.onNode(hasText("Simple Activity"))
             .performScrollTo()
             .onSiblings()
@@ -72,7 +75,7 @@ class SelectDestinationRobot(
         return SimpleActivityRobot(composeRule)
     }
 
-    fun openUnboundBottomSheet() : UnboundBottomSheetRobot {
+    fun openUnboundBottomSheet(): UnboundBottomSheetRobot {
         composeRule
             .onNode(hasText("Unbound Bottom Sheet"))
             .performScrollTo()
@@ -83,7 +86,7 @@ class SelectDestinationRobot(
         return UnboundBottomSheetRobot(composeRule)
     }
 
-    fun openBottomNavigation() : BottomNavigationRobot {
+    fun openBottomNavigation(): BottomNavigationRobot {
         composeRule.onNode(hasText("Bottom Navigation"))
             .performScrollTo()
             .onSiblings()
@@ -93,7 +96,7 @@ class SelectDestinationRobot(
         return BottomNavigationRobot(composeRule)
     }
 
-    fun openSyntheticViewModelAccess() : SyntheticViewModelAccessRobot {
+    fun openSyntheticViewModelAccess(): SyntheticViewModelAccessRobot {
         composeRule.onNode(hasText("Synthetic View Model Access"))
             .performScrollTo()
             .onSiblings()
@@ -103,7 +106,7 @@ class SelectDestinationRobot(
         return SyntheticViewModelAccessRobot(composeRule)
     }
 
-    fun openFindContext() : FindContextRobot {
+    fun openFindContext(): FindContextRobot {
         composeRule.onNode(hasText("Find Context"))
             .performScrollTo()
             .onSiblings()
@@ -163,7 +166,7 @@ class SelectDestinationRobot(
         return ResultsWithExtraRobot(composeRule)
     }
 
-    fun openComposeManagedResultsWithNestedFlowAndEmptyRoot() : ComposeManagedResultsWithNestedFlowAndEmptyRootRobot {
+    fun openComposeManagedResultsWithNestedFlowAndEmptyRoot(): ComposeManagedResultsWithNestedFlowAndEmptyRootRobot {
         composeRule.onNode(hasText("Compose Managed Results With Nested Flow And Empty Root"))
             .performScrollTo()
             .onSiblings()
@@ -171,5 +174,32 @@ class SelectDestinationRobot(
             .performClick()
 
         return ComposeManagedResultsWithNestedFlowAndEmptyRootRobot(composeRule)
+    }
+
+    fun openComposeMixedResultTypes(): ComposeMixedResultTypesRobot {
+        composeRule.onNode(hasText("Compose Mixed Result Types"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+        return ComposeMixedResultTypesRobot(composeRule)
+    }
+
+    fun openManagedFlowInComposable(): ManagedFlowInComposableRobot {
+        composeRule.onNode(hasText("Managed Flow In Composable"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+        return ManagedFlowInComposableRobot(composeRule)
+    }
+
+    fun openManagedFlowInFragment(): ManagedFlowInFragmentRobot {
+        composeRule.onNode(hasText("Managed Flow In Fragment"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Present"))
+            .performClick()
+        return ManagedFlowInFragmentRobot(composeRule)
     }
 }

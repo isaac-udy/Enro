@@ -28,18 +28,20 @@ public interface TypedNavigationHandle<T : NavigationKey> : NavigationHandle {
 internal class TypedNavigationHandleImpl<T : NavigationKey>(
     internal val navigationHandle: NavigationHandle,
     private val type: Class<T>
-): TypedNavigationHandle<T> {
+) : TypedNavigationHandle<T> {
     override val id: String get() = navigationHandle.id
     override val instruction: NavigationInstruction.Open<*> = navigationHandle.instruction
     override val dependencyScope: EnroDependencyScope get() = navigationHandle.dependencyScope
 
     @Suppress("UNCHECKED_CAST")
-    override val key: T get() = navigationHandle.key as? T
-        ?: throw EnroException.IncorrectlyTypedNavigationHandle("TypedNavigationHandle failed to cast key of type ${navigationHandle.key::class.java.simpleName} to ${type.simpleName}")
+    override val key: T
+        get() = navigationHandle.key as? T
+            ?: throw EnroException.IncorrectlyTypedNavigationHandle("TypedNavigationHandle failed to cast key of type ${navigationHandle.key::class.java.simpleName} to ${type.simpleName}")
 
     override val lifecycle: Lifecycle get() = navigationHandle.lifecycle
 
-    override fun executeInstruction(navigationInstruction: NavigationInstruction) = navigationHandle.executeInstruction(navigationInstruction)
+    override fun executeInstruction(navigationInstruction: NavigationInstruction) =
+        navigationHandle.executeInstruction(navigationInstruction)
 }
 
 public fun <T : NavigationKey> NavigationHandle.asTyped(type: KClass<T>): TypedNavigationHandle<T> {
@@ -125,9 +127,9 @@ public fun NavigationHandle.requestClose() {
 internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
     val isMainThread = runCatching {
         Looper.getMainLooper() == Looper.myLooper()
-    }.getOrElse { dependencyScope.get<NavigationController>().isInTest } // if the controller is in a Jvm only test, the block above may fail to run
+    }.getOrElse { dependencyScope.get<NavigationController>().config.isInTest } // if the controller is in a Jvm only test, the block above may fail to run
 
-    if(isMainThread && lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+    if (isMainThread && lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
         block()
     } else {
         lifecycleScope.launch {
@@ -137,3 +139,8 @@ internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
         }
     }
 }
+
+internal val NavigationHandle.enroConfig: EnroConfig
+    get() = runCatching {
+        dependencyScope.get<NavigationController>().config
+    }.getOrElse { EnroConfig() }

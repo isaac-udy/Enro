@@ -8,6 +8,7 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.the
 import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileInputStream
 import java.util.Properties
@@ -72,17 +73,17 @@ private fun Project.commonAndroidConfig(
     }
 
     tasks.withType<KotlinCompile>() {
-        kotlinOptions {
-            jvmTarget = JavaVersion.VERSION_17.toString()
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
 
             // We want to disable the automatic inclusion of the `dev.enro.annotations.AdvancedEnroApi` and `dev.enro.annotations.ExperimentalEnroApi`
             // opt-ins when we're compiling the test application, so that we're not accidentally making changes that might break the public API by
             // requiring the opt-ins.
             if (path.startsWith(":tests:application")) {
-                return@kotlinOptions
+                return@compilerOptions
             }
-            freeCompilerArgs += "-Xopt-in=dev.enro.annotations.AdvancedEnroApi"
-            freeCompilerArgs += "-Xopt-in=dev.enro.annotations.ExperimentalEnroApi"
+            freeCompilerArgs.add("-Xopt-in=dev.enro.annotations.AdvancedEnroApi")
+            freeCompilerArgs.add("-Xopt-in=dev.enro.annotations.ExperimentalEnroApi")
         }
     }
 

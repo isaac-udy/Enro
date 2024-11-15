@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("com.android.library")
     id("kotlin-android")
@@ -6,8 +8,9 @@ configureAndroidLibrary("dev.enro.test")
 configureAndroidPublishing("dev.enro:enro-test")
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
-    kotlinOptions {
-        freeCompilerArgs += "-Xfriend-paths=../enro-core/src/main"
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+        freeCompilerArgs.add("-Xfriend-paths=../enro-core/src/main")
     }
 }
 

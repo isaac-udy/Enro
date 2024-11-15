@@ -3,24 +3,14 @@ package dev.enro.core.compose.destination
 import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.Transition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ReusableContent
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -39,7 +29,6 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
-import dev.enro.animation.NavigationAnimation
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.activity
 import dev.enro.core.compose.ComposableDestination
@@ -49,12 +38,11 @@ import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.dialog.EnroBottomSheetContainer
 import dev.enro.core.compose.dialog.EnroDialogContainer
 import dev.enro.core.container.NavigationContainer
-import dev.enro.core.container.getAnimationsForEntering
-import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.getNavigationHandle
+import dev.enro.destination.compose.destination.ComposableDestinationAnimations
 import dev.enro.extensions.rememberLifecycleState
 import java.lang.ref.WeakReference
 
@@ -73,25 +61,23 @@ internal class ComposableDestinationOwner(
     SavedStateRegistryOwner,
     HasDefaultViewModelProviderFactory {
 
-    internal var transitionState by mutableStateOf(MutableTransitionState(false))
-    internal lateinit var transition: Transition<Boolean>
-    internal var animationOverride by mutableStateOf<NavigationAnimation.Composable?>(null)
     private var _parentContainer: NavigationContainer? = parentContainer
     private var weakParentContainerReference: WeakReference<NavigationContainer> = WeakReference(parentContainer)
     internal val parentContainer get() = weakParentContainerReference.get() ?: _parentContainer!!
 
     @SuppressLint("StaticFieldLeak")
-    @Suppress("LeakingThis")
     private val lifecycleRegistry = LifecycleRegistry(this)
 
-    @Suppress("LeakingThis")
     private val savedStateRegistryOwner = ComposableDestinationSavedStateRegistryOwner(this, savedInstanceState)
 
-    @Suppress("LeakingThis")
     private val viewModelStoreOwner = ComposableDestinationViewModelStoreOwner(
         owner = this,
         savedState = savedStateRegistryOwner.savedState,
         viewModelStore = viewModelStore
+    )
+
+    internal val animations = ComposableDestinationAnimations(
+        owner = this,
     )
 
     override val savedStateRegistry: SavedStateRegistry
@@ -145,7 +131,6 @@ internal class ComposableDestinationOwner(
         _parentContainer = null
     }
 
-    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     internal fun Render(
         backstackState: List<AnyOpenInstruction>,
@@ -163,30 +148,9 @@ internal class ComposableDestinationOwner(
                 }
             }
         }
-
-        val animation = remember(instruction.instructionId, transitionState.targetState, parentContainer, animationOverride) {
-            animationOverride ?: when (destination) {
-                is DialogDestination -> NavigationAnimation.Composable(EnterTransition.None, ExitTransition.None)
-                is BottomSheetDestination -> NavigationAnimation.Composable(
-                    enter = EnterTransition.None,
-                    exit = fadeOut(tween(75, 150)),
-                )
-                else -> when (transitionState.targetState) {
-                    true -> parentContainer.getAnimationsForEntering(instruction).asComposable()
-                    else -> parentContainer.getAnimationsForExiting(instruction).asComposable()
-                }
-            }
-        }
-        transition = updateTransition(transitionState, "ComposableDestination Visibility")
-
-        if (!lifecycleState.isAtLeast(Lifecycle.State.STARTED)
-            && !transition.currentState
-            && !transition.targetState
-        ) return
-
         ReusableContent(instruction.instructionId) {
             ProvideRenderingWindow(backstackState) {
-                animation.Animate(transition) {
+                animations.Animate {
                     renderDestination()
                     RegisterComposableLifecycleState(backstackState, parentContainer)
                 }

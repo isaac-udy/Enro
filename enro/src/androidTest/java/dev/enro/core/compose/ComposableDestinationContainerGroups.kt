@@ -5,7 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.*
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable
@@ -44,6 +48,7 @@ class ComposableDestinationContainerGroups {
     @Test
     fun whenComposableDestinationIsLaunchedWithContainerGroup_thenContainerGroupsAreSelectable() {
         val root = launchComposable(Destinations.RootDestination)
+        runBlocking { composeContentRule.awaitIdle() }
         expectComposableContext<Destinations.FirstTab>()
         composeContentRule.onNodeWithText("First Tab Screen").assertExists()
         composeContentRule.onNodeWithText("Second Tab Screen").assertDoesNotExist()
@@ -80,6 +85,7 @@ class ComposableDestinationContainerGroups {
     @Test
     fun whenComposableDestinationIsLaunchedWithContainerGroup_andBackButtonIsPressed_thenContainerEmptyBehaviorIsRespected() {
         val root = launchComposable(Destinations.RootDestination)
+        runBlocking { composeContentRule.awaitIdle() }
         expectComposableContext<Destinations.FirstTab>()
         composeContentRule.onNodeWithText("First Tab Screen").assertExists()
         composeContentRule.onNodeWithText("Second Tab Screen").assertDoesNotExist()
@@ -106,6 +112,7 @@ class ComposableDestinationContainerGroups {
     @Test
     fun whenComposableDestinationIsLaunchedWithContainerGroup_andSecondaryContainerSelected_andActivityIsRecreated_thenActiveContainerRemainsActive() {
         val root = launchComposable(Destinations.RootDestination)
+        runBlocking { composeContentRule.awaitIdle() }
         expectComposableContext<Destinations.FirstTab>()
         composeContentRule.onNodeWithText("First Tab Screen").assertExists()
         composeContentRule.onNodeWithText("Second Tab Screen").assertDoesNotExist()

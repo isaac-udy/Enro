@@ -34,6 +34,7 @@ import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
 import dev.enro.core.navigationContext
+import dev.enro.destination.fragment.FragmentSharedElements
 import dev.enro.extensions.animate
 import dev.enro.extensions.getParcelableCompat
 
@@ -172,6 +173,9 @@ public class FragmentNavigationContainer internal constructor(
             )
             toRemoveDirect.forEach {
                 remove(it)
+                FragmentSharedElements.getSharedElements(it).forEach { sharedElement ->
+                    addSharedElement(sharedElement.view, sharedElement.name)
+                }
                 ownedFragments.remove(it.tag)
             }
             runOnCommit {
@@ -181,6 +185,9 @@ public class FragmentNavigationContainer internal constructor(
                 }
             }
             toDetach.forEach {
+                FragmentSharedElements.getSharedElements(it.fragment).forEach { sharedElement ->
+                    addSharedElement(sharedElement.view, sharedElement.name)
+                }
                 detach(it.fragment)
             }
             if (activePushed != null) {

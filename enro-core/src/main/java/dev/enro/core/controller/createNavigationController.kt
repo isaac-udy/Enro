@@ -2,13 +2,17 @@ package dev.enro.core.controller
 
 import android.app.Application
 import androidx.annotation.Keep
+import dev.enro.core.EnroConfig
 
 /**
  * Create a NavigationController from the NavigationControllerDefinition/DSL, and immediately attach it
  * to the NavigationApplication from which this function was called.
+ *
+ * @param useLegacyContainerPresentBehavior see [EnroConfig.useLegacyContainerPresentBehavior]
  */
 public fun NavigationApplication.createNavigationController(
     strictMode: Boolean = false,
+    useLegacyContainerPresentBehavior: Boolean = false,
     backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Default,
     block: NavigationModuleScope.() -> Unit = {}
 ): NavigationController {
@@ -19,8 +23,13 @@ public fun NavigationApplication.createNavigationController(
     navigationController.addModule(loadGeneratedNavigationModule())
     navigationController.addModule(createNavigationModule(block))
     return navigationController.apply {
-        this.isStrictMode = strictMode
-        this.backConfiguration = backConfiguration
+        setConfig(
+            config.copy(
+                isStrictMode = strictMode,
+                useLegacyContainerPresentBehavior = useLegacyContainerPresentBehavior,
+                backConfiguration = backConfiguration,
+            )
+        )
         install(this@createNavigationController)
     }
 }
@@ -31,22 +40,34 @@ public fun NavigationApplication.createNavigationController(
 )
 public fun NavigationApplication.navigationController(
     strictMode: Boolean = false,
+    useLegacyContainerPresentBehavior: Boolean = false,
     backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Default,
     block: NavigationModuleScope.() -> Unit = {}
-): NavigationController = createNavigationController(strictMode, backConfiguration, block)
+): NavigationController = createNavigationController(
+    strictMode = strictMode,
+    useLegacyContainerPresentBehavior = useLegacyContainerPresentBehavior,
+    backConfiguration = backConfiguration,
+    block = block
+)
 
 
 @Keep // Used by EnroTest
 internal fun createUnattachedNavigationController(
     strictMode: Boolean = false,
+    useLegacyContainerPresentBehavior: Boolean = false,
     backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Default,
     block: NavigationModuleScope.() -> Unit = {}
 ): NavigationController {
     val navigationController = NavigationController()
     navigationController.addModule(createNavigationModule(block))
     return navigationController.apply {
-        isStrictMode = strictMode
-        this.backConfiguration = backConfiguration
+        setConfig(
+            config.copy(
+                isStrictMode = strictMode,
+                useLegacyContainerPresentBehavior = useLegacyContainerPresentBehavior,
+                backConfiguration = backConfiguration,
+            )
+        )
     }
 }
 

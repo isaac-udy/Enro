@@ -21,3 +21,6 @@
 #-renamesourcefileattribute SourceFile
 -keep public class kotlin.**
 -keep class kotlin.Metadata { *; }
+-keep public class *.** { *;}
+-dontobfuscate
+-dontwarn javax.lang.model.element.Modifier

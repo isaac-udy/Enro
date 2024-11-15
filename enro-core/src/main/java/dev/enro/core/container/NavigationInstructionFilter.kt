@@ -1,8 +1,9 @@
 package dev.enro.core.container
 
+import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import kotlin.reflect.KClass
+import dev.enro.core.result.flows.FlowStep
 
 /**
  * A NavigationContainerFilter is used to determine whether or not a given [NavigationInstruction.Open]
@@ -18,23 +19,49 @@ public class NavigationInstructionFilter internal constructor(
 public class NavigationContainerFilterBuilder internal constructor() {
     private val filters: MutableList<NavigationInstructionFilter> = mutableListOf()
 
+    /**
+     * Matches any instructions that have a NavigationKey that returns true for the provided predicate
+     */
     public fun key(predicate: (NavigationKey) -> Boolean) {
         filters.add(NavigationInstructionFilter { predicate(it.navigationKey) })
     }
 
+    /**
+     * Matches any instructions that have a NavigationKey that is equal to the provided key
+     */
     public fun key(key: NavigationKey) {
         key { it == key }
     }
 
+    /**
+     * Matches any instructions that match the provided predicate
+     */
+    @JvmName("keyWithType")
     public inline fun <reified T: NavigationKey> key(
-        type: KClass<T> = T::class, // can be ignored, required to disambiguate between the two key functions for the JVM
         crossinline predicate: (T) -> Boolean = { true }
     ) {
         key { it is T && predicate(it) }
     }
 
+    /**
+     * Matches any instructions that match the provided predicate
+     */
     public fun instruction(predicate: (NavigationInstruction.Open<*>) -> Boolean) {
         filters.add(NavigationInstructionFilter(predicate))
+    }
+
+    /**
+     * Matches any instructions that are presented (i.e. navigationDirection is NavigationDirection.Present)
+     */
+    public fun anyPresented() {
+        instruction { it.navigationDirection == NavigationDirection.Present }
+    }
+
+    /**
+     * Matches any instructions that are pushed (i.e. navigationDirection is NavigationDirection.Pushed)
+     */
+    public fun anyPushed() {
+        instruction { it.navigationDirection == NavigationDirection.Push }
     }
 
     internal fun build(): NavigationInstructionFilter {
@@ -48,6 +75,14 @@ public class NavigationContainerFilterBuilder internal constructor() {
  * A [NavigationInstructionFilter] that accepts all [NavigationInstruction.Open] instructions.
  */
 public fun acceptAll(): NavigationInstructionFilter = NavigationInstructionFilter { true }
+
+/**
+ * A [NavigationInstructionFilter] that accepts only [NavigationInstruction.Open] instructions which have been added to the container
+ * by a [dev.enro.core.result.flows.NavigationFlow].
+ */
+public fun acceptFromFlow(): NavigationInstructionFilter = NavigationInstructionFilter {
+    it.internal.resultKey is FlowStep<*>
+}
 
 /**
  * A [NavigationInstructionFilter] that accepts no [NavigationInstruction.Open] instructions.
