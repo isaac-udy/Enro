@@ -33,10 +33,6 @@ import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.activity
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.LocalNavigationHandle
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.dialog.EnroBottomSheetContainer
-import dev.enro.core.compose.dialog.EnroDialogContainer
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.usecase.ComposeEnvironment
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
@@ -204,21 +200,7 @@ internal class ComposableDestinationOwner(
                 }
             }
         ) {
-            when {
-                destination is DialogDestination -> EnroDialogContainer(
-                    navigationHandle = destination.getNavigationHandle(),
-                    destination = destination,
-                    content = content
-                )
-
-                destination is BottomSheetDestination -> EnroBottomSheetContainer(
-                    navigationHandle = destination.getNavigationHandle(),
-                    destination = destination,
-                    content = content
-                )
-
-                else -> content()
-            }
+            content()
         }
     }
 

@@ -48,14 +48,6 @@ sealed class DestinationReference {
         val isComposable = declaration is KSFunctionDeclaration && declaration.annotations
             .any { it.shortName.asString() == "Composable" }
 
-        val isLegacyDialog = declaration is KSFunctionDeclaration
-                && declaration.extensionReceiver != null
-                && declaration.extensionReceiver?.resolve()?.toClassName() == ClassNames.Kotlin.legacyDialogDestination
-
-        val isLegacyBottomSheet = declaration is KSFunctionDeclaration
-                && declaration.extensionReceiver != null
-                && declaration.extensionReceiver?.resolve()?.toClassName() == ClassNames.Kotlin.legacyBottomSheetDestination
-
         val annotation = declaration.getAnnotationsByType(NavigationDestination::class)
             .firstOrNull()
             ?: error("${declaration.simpleName} is not annotated with @NavigationDestination")

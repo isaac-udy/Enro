@@ -31,8 +31,6 @@ import dev.enro.core.allParentContexts
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.compose.destination.ComposableDestinationOwner
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition
@@ -171,15 +169,6 @@ public class ComposableNavigationContainer internal constructor(
             .associateBy { it.instruction }
             .toMutableMap()
 
-        transition.removed
-            .mapNotNull { activeDestinations[it]?.destination }
-            .forEach {
-                when (it) {
-                    is DialogDestination -> it.dialogConfiguration.isDismissed.value = true
-                    is BottomSheetDestination -> it.bottomSheetConfiguration.isDismissed.value = true
-                }
-            }
-
         backstack.forEach { instruction ->
             if (activeDestinations[instruction] == null) {
                 activeDestinations[instruction] = createDestinationOwner(instruction)
@@ -260,13 +249,10 @@ public class ComposableNavigationContainer internal constructor(
         val activePresented = presented.lastOrNull()?.instructionId
         destinationOwners.forEach { destinationOwner ->
             val instruction = destinationOwner.instruction
-            val isPushedDialogOrBottomSheet =
-                ((destinationOwner.destination is DialogDestination || destinationOwner.destination is BottomSheetDestination) && activePresented != null)
-
 
             val target = when (instruction.instructionId) {
                 activePresented -> !isParentBeingRemoved
-                activePush -> !isParentBeingRemoved && !isPushedDialogOrBottomSheet
+                activePush -> !isParentBeingRemoved
                 else -> false
             }
             destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(target))

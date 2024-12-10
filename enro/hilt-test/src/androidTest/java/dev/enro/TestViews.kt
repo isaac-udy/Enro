@@ -34,6 +34,7 @@ import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.acceptKey
 import dev.enro.core.getNavigationHandle
 
 abstract class TestActivity : AppCompatActivity() {
@@ -236,12 +237,12 @@ fun TestComposable(
     secondaryContainerAccepts: (NavigationKey) -> Boolean = { false }
 ) {
     val primaryContainer = rememberNavigationContainer(
-        filter = primaryContainerAccepts,
+        filter = acceptKey(primaryContainerAccepts),
         emptyBehavior = EmptyBehavior.AllowEmpty,
     )
 
     val secondaryContainer = rememberNavigationContainer(
-        filter = secondaryContainerAccepts,
+        filter = acceptKey(secondaryContainerAccepts),
         emptyBehavior = EmptyBehavior.AllowEmpty,
     )
 

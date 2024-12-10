@@ -11,7 +11,6 @@ import dev.enro.test.application.compose.BottomNavigationRobot
 import dev.enro.test.application.compose.BottomSheetChangeSizeRobot
 import dev.enro.test.application.compose.BottomSheetCloseAndPresentRobot
 import dev.enro.test.application.compose.FindContextRobot
-import dev.enro.test.application.compose.LegacyBottomSheetsRobot
 import dev.enro.test.application.compose.SyntheticViewModelAccessRobot
 import dev.enro.test.application.compose.results.ComposeAsyncManagedResultFlowRobot
 import dev.enro.test.application.compose.results.ComposeEmbeddedResultFlowRobot
@@ -53,16 +52,6 @@ class SelectDestinationRobot(
             .performClick()
 
         return BottomSheetChangeSizeRobot(composeRule)
-    }
-
-    fun openLegacyBottomSheets(): LegacyBottomSheetsRobot {
-        composeRule.onNode(hasText("Legacy Bottom Sheets"))
-            .performScrollTo()
-            .onSiblings()
-            .filterToOne(hasText("Push"))
-            .performClick()
-
-        return LegacyBottomSheetsRobot(composeRule)
     }
 
     fun openSimpleActivity(): SimpleActivityRobot {

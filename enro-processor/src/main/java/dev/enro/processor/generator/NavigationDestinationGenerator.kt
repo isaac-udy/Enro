@@ -121,27 +121,11 @@ object NavigationDestinationGenerator {
                 "navigationModuleScope.managedFlowDestination(%L)",
                 requireNotNull(destination.declaration.simpleName).asString(),
             )
-            destination.isComposable -> when {
-                destination.isLegacyDialog -> addCode(
-                    "navigationModuleScope.legacyComposableDialogDestination<%T> { %L() }",
-                    destination.keyType.asStarProjectedType().toTypeName(),
-                    requireNotNull(destination.declaration.simpleName).asString(),
-                )
-                destination.isLegacyBottomSheet -> addCode(
-                    "navigationModuleScope.legacyComposableBottomSheetDestination<%T> { %L() }",
-                    destination.keyType.asStarProjectedType().toTypeName(),
-                    requireNotNull(destination.declaration.simpleName).asString(),
-                ).addAnnotation(
-                    AnnotationSpec.builder(ClassNames.Kotlin.optIn)
-                        .addMember("%T::class", ClassNames.Kotlin.experimentalMaterialApi)
-                        .build()
-                )
-                else -> addCode(
-                    "navigationModuleScope.composableDestination<%T> { %L() }",
-                    destination.keyType.asStarProjectedType().toTypeName(),
-                    requireNotNull(destination.declaration.simpleName).asString(),
-                )
-            }
+            destination.isComposable -> addCode(
+                "navigationModuleScope.composableDestination<%T> { %L() }",
+                destination.keyType.asStarProjectedType().toTypeName(),
+                requireNotNull(destination.declaration.simpleName).asString(),
+            )
             else -> error("${destination.declaration.qualifiedName?.asString()}")
         }
     }
@@ -360,13 +344,5 @@ fun FileSpec.Builder.addImportsForBinding(): FileSpec.Builder {
         .addImport(
             "dev.enro.core.compose",
             "composableDestination"
-        )
-        .addImport(
-            "dev.enro.core.compose",
-            "legacyComposableDialogDestination",
-        )
-        .addImport(
-            "dev.enro.core.compose",
-            "legacyComposableBottomSheetDestination",
         )
 }

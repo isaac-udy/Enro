@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.9.0 (Unreleased)
+* Removed deprecated DialogDestination and BottomSheetDestination interfaces, and associated functions. Please use the Composable `DialogDestination` and `BottomSheetDestination` functions instead. Example usage can be found in the test application.
+
 ## 2.8.0
 * Updated Compose to 1.7.1
 * Added support for NavigationKey.WithExtras to `NavigationResultChannel` and `NavigationFlowScope`

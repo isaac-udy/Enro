@@ -1,13 +1,9 @@
 package dev.enro.destination.compose.destination
 
 import androidx.compose.animation.EnterExitState
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.rememberTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,8 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import dev.enro.animation.NavigationAnimation
 import dev.enro.core.compose.destination.ComposableDestinationOwner
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.getAnimationsForEntering
 import dev.enro.core.container.getAnimationsForExiting
 
@@ -60,20 +54,12 @@ internal class ComposableDestinationAnimations(
             parentContainer,
             animationOverride
         ) {
-            animationOverride ?: when (owner.destination) {
-                is DialogDestination -> NavigationAnimation.Composable(EnterTransition.None, ExitTransition.None)
-                is BottomSheetDestination -> NavigationAnimation.Composable(
-                    enter = EnterTransition.None,
-                    exit = fadeOut(tween(75, 150)),
-                )
+            animationOverride ?: when {
+                visibilityState.targetState >= visibilityState.currentState -> parentContainer.getAnimationsForEntering(
+                    instruction
+                ).asComposable()
 
-                else -> when {
-                    visibilityState.targetState >= visibilityState.currentState -> parentContainer.getAnimationsForEntering(
-                        instruction
-                    ).asComposable()
-
-                    else -> parentContainer.getAnimationsForExiting(instruction).asComposable()
-                }
+                else -> parentContainer.getAnimationsForExiting(instruction).asComposable()
             }
         }
 

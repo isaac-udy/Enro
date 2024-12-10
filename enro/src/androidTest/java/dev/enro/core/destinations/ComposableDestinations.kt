@@ -19,7 +19,7 @@ import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import java.util.UUID
 
 object ComposableDestinations {
     @Parcelize
@@ -129,7 +129,7 @@ fun ComposableDestinationPresentable() {
 
 @Composable
 @NavigationDestination(ComposableDestinations.PresentableDialog::class)
-fun DialogDestination.ComposableDestinationPresentableDialog() {
+fun ComposableDestinationPresentableDialog() = DialogDestination {
     val navigation = navigationHandle()
     viewModel<ComposableDestinations.TestViewModel>()
     Dialog(onDismissRequest = { navigation.requestClose() }) {

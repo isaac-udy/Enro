@@ -23,8 +23,13 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dev.enro.DefaultActivity
 import dev.enro.TestActivity
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.*
+import dev.enro.core.NavigationKey
 import dev.enro.core.compose.EnroContainer
+import dev.enro.core.containerManager
+import dev.enro.core.forward
+import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.navigationHandle
 import dev.enro.expectContext
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
@@ -84,11 +89,8 @@ class HiltViewModelCreationTests {
     class ContainerActivity : TestActivity() {
 
         val viewModel by enroViewModels<TestViewModel>()
-        private val navigation by navigationHandle<Key> {
-            container(primaryFragmentContainer) {
-                it is ContainerFragment.Key
-            }
-        }
+        private val container by navigationContainer(primaryFragmentContainer)
+        private val navigation by navigationHandle<Key>()
 
         @Parcelize
         class Key : NavigationKey

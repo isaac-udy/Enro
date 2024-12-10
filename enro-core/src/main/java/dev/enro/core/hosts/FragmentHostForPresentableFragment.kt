@@ -17,8 +17,6 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.OpenPresentInstruction
 import dev.enro.core.R
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.acceptNone
 import dev.enro.core.container.asPushInstruction
@@ -157,8 +155,6 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
                     ?.childContext
                     ?.contextReference
             ) {
-                is DialogDestination -> activeContextReference.dialogConfiguration.isDismissed.value = true
-                is BottomSheetDestination -> activeContextReference.bottomSheetConfiguration.isDismissed.value = true
                 is ComposableDestination -> activeContainer.setBackstack { emptyList() }
                 else -> {}
             }

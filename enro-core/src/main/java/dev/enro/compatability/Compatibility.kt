@@ -1,7 +1,6 @@
 package dev.enro.compatability
 
 import android.app.Activity
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
@@ -16,8 +15,6 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.activity
 import dev.enro.core.activity.ActivityNavigationContainer
 import dev.enro.core.close
-import dev.enro.core.compose.dialog.BottomSheetDestination
-import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationInstructionFilter
 import dev.enro.core.container.asDirection
@@ -204,10 +201,6 @@ private fun openInstructionAsActivity(
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 private fun isDialog(args: ExecutorArgs<*, *, *>): Boolean {
-    return DialogFragment::class.java.isAssignableFrom(args.binding.destinationType.java) ||
-            DialogDestination::class.java.isAssignableFrom(args.binding.destinationType.java)
-            || BottomSheetDestination::class.java.isAssignableFrom(args.binding.destinationType.java)
-
+    return DialogFragment::class.java.isAssignableFrom(args.binding.destinationType.java)
 }
