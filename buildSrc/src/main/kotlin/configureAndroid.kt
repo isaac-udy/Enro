@@ -45,7 +45,7 @@ private fun Project.commonAndroidConfig(
 
     extensions.configure<BaseExtension> {
         this@configure.namespace = namespace
-        compileSdkVersion(34)
+        compileSdkVersion(35)
         defaultConfig {
             minSdk = 21
             targetSdk = 34
