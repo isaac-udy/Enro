@@ -38,9 +38,13 @@ import dev.enro.core.result.EnroResult
 import dev.enro.core.rootContext
 import dev.enro.extensions.getParcelableListCompat
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -93,6 +97,21 @@ public abstract class NavigationContainer(
             if (currentTransition === initialTransition) return@repeatOnLifecycle
             performBackstackUpdate(NavigationBackstackTransition(initialBackstack to backstack))
         }
+    }
+
+    internal val backEvents = MutableSharedFlow<NavigationContainerBackEvent>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+
+    init {
+        backEvents
+            .onEach {
+                if (it == NavigationContainerBackEvent.Confirmed) {
+                    childContext?.getNavigationHandle()?.requestClose()
+                }
+            }
+            .launchIn(context.lifecycleOwner.lifecycleScope)
     }
 
     @CallSuper

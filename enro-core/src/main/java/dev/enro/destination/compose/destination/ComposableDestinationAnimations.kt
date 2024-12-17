@@ -3,8 +3,6 @@ package dev.enro.destination.compose.destination
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.Transition
-import androidx.compose.animation.core.rememberTransition
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonSkippableComposable
@@ -38,7 +36,6 @@ internal class ComposableDestinationAnimations(
         currentAnimationEvent = event
     }
 
-    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     @NonSkippableComposable
     fun Animate(content: @Composable () -> Unit) {
@@ -72,13 +69,15 @@ internal class ComposableDestinationAnimations(
                     is AnimationEvent.Seek -> visibilityState.seekTo(event.progress, event.visible)
                 }
             }
-            if (currentAnimationEvent == event) {
+            // If we're not seeking, we should snap to the target state as the final task, to make
+            // sure we're in the correct state.
+            if (currentAnimationEvent == event && event !is AnimationEvent.Seek) {
                 currentAnimationEvent = AnimationEvent.SnapTo(event.visible)
             }
         }
-        val visibleTransition = rememberTransition(visibilityState, "ComposableDestination Visibility")
         animation.Animate(
-            visible = visibleTransition,
+            state = visibilityState,
+            isSeeking = currentAnimationEvent is AnimationEvent.Seek
         ) {
             enterExitTransition = it
             content()

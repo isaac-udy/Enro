@@ -7,7 +7,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -52,7 +54,8 @@ public sealed interface NavigationAnimation {
 
         @androidx.compose.runtime.Composable
         internal abstract fun Animate(
-            visible: Transition<Boolean>,
+            state: SeekableTransitionState<Boolean>,
+            isSeeking: Boolean,
             content: @androidx.compose.runtime.Composable (Transition<EnterExitState>) -> Unit,
         )
 
@@ -86,9 +89,11 @@ public sealed interface NavigationAnimation {
         ) : Composable(), Enter, Exit {
             @androidx.compose.runtime.Composable
             override fun Animate(
-                visible: Transition<Boolean>,
+                state: SeekableTransitionState<Boolean>,
+                isSeeking: Boolean,
                 content: @androidx.compose.runtime.Composable (Transition<EnterExitState>) -> Unit,
             ) {
+                val visible = rememberTransition(state, "ComposableDestination Visibility")
                 val context = LocalContext.current
                 val config = remember(context) {
                     val navigationApplication = (context.applicationContext as? NavigationApplication)
@@ -106,6 +111,8 @@ public sealed interface NavigationAnimation {
                             visible = { it == EnterExitState.Visible },
                             enter = resourceAnimation.id,
                             exit = resourceAnimation.id,
+                            progress = state.fraction,
+                            isSeeking = isSeeking,
                         ) {
                             content(transition)
                         }
