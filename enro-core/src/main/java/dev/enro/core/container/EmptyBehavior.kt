@@ -40,6 +40,12 @@ public sealed class EmptyBehavior {
      * @returns true to keep the destination in the container, false to allow the container to become empty
      */
     public class Action(
-        public val onEmpty: () -> Boolean
-    ) : EmptyBehavior()
+        public val onEmpty: () -> Boolean,
+        public val onProgressToEmpty: (progress: Float) -> Unit,
+        public val onEmptyCancelled: () -> Unit,
+    ) : EmptyBehavior() {
+        public constructor(
+            onEmpty: () -> Boolean,
+        ) : this(onEmpty, { }, { })
+    }
 }

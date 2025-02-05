@@ -1,6 +1,8 @@
 package dev.enro.tests.application.compose
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.SeekableTransitionState
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
@@ -13,9 +15,11 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -36,6 +40,8 @@ import dev.enro.core.container.backstackOf
 import dev.enro.core.container.setBackstack
 import dev.enro.core.push
 import dev.enro.tests.application.compose.common.TitledColumn
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -99,6 +105,10 @@ fun RootScreen() {
 @Composable
 @NavigationDestination(BottomNavigation.MutliContainer::class)
 fun MultiContainerBottomNavigationScreen() {
+    val animationState = remember { SeekableTransitionState<String>("FirstTab") }
+    val coroutineScope = rememberCoroutineScope()
+    val animationJob = remember { mutableStateOf<Job?>(null) }
+
     val firstContainer = rememberNavigationContainer(
         key = NavigationContainerKey.FromName("FirstTab"),
         root = BottomNavigation.FirstTab,
@@ -110,20 +120,52 @@ fun MultiContainerBottomNavigationScreen() {
         key = NavigationContainerKey.FromName("SecondTab"),
         root = BottomNavigation.SecondTab,
         filter = acceptNone(),
-        emptyBehavior = remember { EmptyBehavior.Action {
-            firstContainer.setActive()
-            true
-        } } ,
+        emptyBehavior = remember {
+            EmptyBehavior.Action(
+                onEmpty = {
+                    firstContainer.setActive()
+                    true
+                },
+                onProgressToEmpty = { progress ->
+                    animationJob.value?.cancel()
+                    animationJob.value = coroutineScope.launch {
+                        animationState.seekTo(progress, "FirstTab")
+                    }
+                },
+                onEmptyCancelled = {
+                    animationJob.value?.cancel()
+                    animationJob.value = coroutineScope.launch {
+                        animationState.snapTo("SecondTab")
+                    }
+                }
+            )
+        },
     )
 
     val thirdContainer = rememberNavigationContainer(
         key = NavigationContainerKey.FromName("ThirdTab"),
         root = BottomNavigation.ThirdTab,
         filter = acceptNone(),
-        emptyBehavior = remember { EmptyBehavior.Action {
-            firstContainer.setActive()
-            true
-        } },
+        emptyBehavior = remember {
+            EmptyBehavior.Action(
+                onEmpty = {
+                    firstContainer.setActive()
+                    true
+                },
+                onProgressToEmpty = { progress ->
+                    animationJob.value?.cancel()
+                    animationJob.value = coroutineScope.launch {
+                        animationState.seekTo(progress, "FirstTab")
+                    }
+                },
+                onEmptyCancelled = {
+                    animationJob.value?.cancel()
+                    animationJob.value = coroutineScope.launch {
+                        animationState.snapTo("ThirdTab")
+                    }
+                }
+            )
+        },
     )
 
     val group = rememberNavigationContainerGroup(
@@ -133,14 +175,21 @@ fun MultiContainerBottomNavigationScreen() {
     )
 
     Column {
-        AnimatedContent(
+        val transition = rememberTransition(animationState)
+        LaunchedEffect(group.activeContainer) {
+            animationJob.value?.cancel()
+            animationJob.value = coroutineScope.launch {
+                animationState.animateTo(group.activeContainer.key.name)
+            }
+        }
+        transition.AnimatedContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            targetState = group.activeContainer,
-            label = "",
-        ) {
-            it.Render()
+        ) { activeContainerName ->
+            val activeContainer = group.containers.firstOrNull { it.key.name == activeContainerName }
+            if (activeContainer == null) return@AnimatedContent
+            activeContainer.Render()
         }
         BottomNavigation {
             group.containers.forEach {
@@ -224,8 +273,9 @@ fun SingleContainerBackstackManipulationBottomNavigation() {
                 BottomNavigationItem(
                     selected = activeKey == tabKey,
                     onClick = {
-                        val matchingInstruction = container.backstack.firstOrNull { it.navigationKey == tabKey }
-                            ?: tabKey.asPush()
+                        val matchingInstruction =
+                            container.backstack.firstOrNull { it.navigationKey == tabKey }
+                                ?: tabKey.asPush()
 
                         container.setBackstack {
                             it

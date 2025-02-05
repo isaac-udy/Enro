@@ -13,8 +13,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withCreated
-import dev.enro.animation.DefaultAnimations
-import dev.enro.animation.NavigationAnimation
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.compatability.Compatibility
 import dev.enro.core.AnyOpenInstruction
@@ -43,8 +41,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -103,16 +99,6 @@ public abstract class NavigationContainer(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
-
-    init {
-        backEvents
-            .onEach {
-                if (it == NavigationContainerBackEvent.Confirmed) {
-                    childContext?.getNavigationHandle()?.requestClose()
-                }
-            }
-            .launchIn(context.lifecycleOwner.lifecycleScope)
-    }
 
     @CallSuper
     public override fun save(): Bundle {
@@ -310,84 +296,4 @@ public abstract class NavigationContainer(
         internal val initialTransition =
             NavigationBackstackTransition(initialBackstack to initialBackstack)
     }
-}
-
-private fun NavigationContainer.getTransitionForInstruction(instruction: AnyOpenInstruction): NavigationBackstackTransition {
-    val isHosted = context.contextReference is NavigationHost
-    if (!isHosted) return currentTransition
-
-    val parentContainer = context.parentContainer() ?: return currentTransition
-    val parentRoot = parentContainer.currentTransition.activeBackstack.getOrNull(0)
-    val parentActive = parentContainer.currentTransition.activeBackstack.active
-    val thisRoot = currentTransition.activeBackstack.getOrNull(0)
-    if (parentRoot == thisRoot && parentRoot == parentActive) {
-        val mergedPreviousBackstack = merge(
-            currentTransition.previousBackstack,
-            parentContainer.currentTransition.previousBackstack
-        ).toBackstack()
-
-        val mergedActiveBackstack = merge(
-            currentTransition.activeBackstack.orEmpty(),
-            parentContainer.currentTransition.activeBackstack.orEmpty()
-        ).toBackstack()
-
-        return NavigationBackstackTransition(mergedPreviousBackstack to mergedActiveBackstack)
-    }
-
-    val isRootInstruction =
-        backstack.size <= 1 || backstack.firstOrNull()?.instructionId == instruction.instructionId
-    if (!isRootInstruction) return currentTransition
-
-    val isLastInstruction = parentContainer.currentTransition.lastInstruction == instruction
-    val isExitingInstruction =
-        parentContainer.currentTransition.exitingInstruction?.instructionId == instruction.instructionId
-    val isEnteringInstruction =
-        parentContainer.currentTransition.activeBackstack.active?.instructionId == instruction.instructionId
-
-    if (isLastInstruction ||
-        isExitingInstruction ||
-        isEnteringInstruction
-    ) return parentContainer.currentTransition
-
-    return currentTransition
-}
-
-public fun NavigationContainer.getAnimationsForEntering(instruction: AnyOpenInstruction): NavigationAnimation {
-    val animations = dependencyScope.get<GetNavigationAnimations>()
-    val currentTransition = getTransitionForInstruction(instruction)
-
-    val isInitialInstruction =
-        currentTransition.previousBackstack.identity == NavigationContainer.initialBackstack.identity
-    if (isInitialInstruction) {
-        return DefaultAnimations.noOp.entering
-    }
-
-    val exitingInstruction = currentTransition.exitingInstruction
-        ?: return animations.opening(null, instruction).entering
-
-    if (currentTransition.lastInstruction is NavigationInstruction.Close) {
-        return animations.closing(exitingInstruction, instruction).entering
-    }
-    return animations.opening(exitingInstruction, instruction).entering
-}
-
-public fun NavigationContainer.getAnimationsForExiting(instruction: AnyOpenInstruction): NavigationAnimation {
-    val animations = dependencyScope.get<GetNavigationAnimations>()
-    val currentTransition = getTransitionForInstruction(instruction)
-
-    val activeInstruction = currentTransition.activeBackstack.active
-        ?: return animations.closing(instruction, null).exiting
-
-    val closingNonActiveInstruction = !currentTransition.activeBackstack.contains(instruction)
-            && currentTransition.previousBackstack.contains(instruction)
-            && currentTransition.previousBackstack.indexOf(instruction) < currentTransition.previousBackstack.lastIndex
-
-    if (
-        currentTransition.lastInstruction is NavigationInstruction.Close ||
-        backstack.isEmpty() ||
-        (!currentTransition.activeBackstack.contains(instruction) && !closingNonActiveInstruction)
-    ) {
-        return animations.closing(instruction, activeInstruction).exiting
-    }
-    return animations.opening(instruction, activeInstruction).exiting
 }

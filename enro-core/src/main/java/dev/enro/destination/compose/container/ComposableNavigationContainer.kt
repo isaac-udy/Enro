@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.lifecycleScope
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.AnyOpenInstruction
@@ -35,13 +36,24 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.NavigationContainerBackEvent
 import dev.enro.core.container.NavigationInstructionFilter
+import dev.enro.core.container.close
+import dev.enro.core.container.getAnimationsForEntering
+import dev.enro.core.container.getAnimationsForExiting
+import dev.enro.core.container.getAnimationsForPredictiveBackEnter
+import dev.enro.core.container.getAnimationsForPredictiveBackExit
 import dev.enro.core.container.merge
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.core.directParentContainer
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.requestClose
 import dev.enro.destination.compose.destination.AnimationEvent
 import dev.enro.destination.flow.ManagedFlowNavigationBinding
 import dev.enro.destination.flow.host.ComposableHostForManagedFlowDestination
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import java.io.Closeable
 import kotlin.collections.set
 
@@ -86,6 +98,97 @@ public class ComposableNavigationContainer internal constructor(
         get() = context.contextReference is NavigationHost
                 && backstack.size <= 1
                 && currentTransition.lastInstruction != NavigationInstruction.Close
+    init {
+        backEvents
+            .onEach { backEvent ->
+                val predictiveBackstack = backstack.close(backEvent.context.instruction.instructionId)
+                if (predictiveBackstack.isEmpty() &&
+                    (emptyBehavior is EmptyBehavior.CloseParent || emptyBehavior is EmptyBehavior.ForceCloseParent)
+                ) {
+                    context.directParentContainer()?.backEvents?.tryEmit(
+                        backEvent.copy(context = context)
+                    )
+                    return@onEach
+                }
+                if (predictiveBackstack.isEmpty() && emptyBehavior is EmptyBehavior.Action) {
+                    when (backEvent) {
+                        is NavigationContainerBackEvent.Confirmed -> {
+                            val shouldCancel = emptyBehavior.onEmpty()
+                            if (shouldCancel) {
+                                backEvent.context.getNavigationHandle().requestClose()
+                            }
+                        }
+                        is NavigationContainerBackEvent.Progressed -> {
+                            emptyBehavior.onProgressToEmpty(backEvent.backEvent.progress)
+                        }
+                        is NavigationContainerBackEvent.Cancelled -> {
+                            emptyBehavior.onEmptyCancelled()
+                        }
+                        else -> return@onEach
+                    }
+                    return@onEach
+                }
+
+                when (backEvent) {
+                    is NavigationContainerBackEvent.Progressed -> {
+                        if (backstack.contains(backEvent.context.instruction)) {
+                            val closingContext = destinationOwners.lastOrNull { it.instruction.instructionId == backEvent.context.instruction.instructionId }
+                            if (closingContext != null) {
+                                closingContext.animations.setAnimation(
+                                    getAnimationsForPredictiveBackExit(
+                                        predictiveClosing = backEvent.context.instruction,
+                                        predictiveActive = predictiveBackstack.activePushed,
+                                    ).asComposable()
+                                )
+                                closingContext.animations.setAnimationEvent(
+                                    AnimationEvent.Seek(backEvent.backEvent.progress * .33f, false)
+                                )
+                            }
+                        }
+                        val nextActiveInstruction = predictiveBackstack.activePushed
+                        if (nextActiveInstruction != null) {
+                            val activeContext = destinationOwners.lastOrNull { it.instruction == nextActiveInstruction }
+                            if (activeContext != null) {
+                                activeContext.animations.setAnimation(
+                                    getAnimationsForPredictiveBackEnter(
+                                        predictiveClosing = backEvent.context.instruction,
+                                        predictiveActive = nextActiveInstruction,
+                                    ).asComposable()
+                                )
+                                activeContext.animations.setAnimationEvent(
+                                    AnimationEvent.Seek(backEvent.backEvent.progress * .33f, true)
+                                )
+                            }
+                        }
+                    }
+                    is NavigationContainerBackEvent.Confirmed -> {
+                        backEvent.context.getNavigationHandle().requestClose()
+                        if (backstack.contains(backEvent.context.instruction)) {
+                            val closingContext = destinationOwners.lastOrNull { it.instruction.instructionId == backEvent.context.instruction.instructionId }
+                            if (closingContext != null) {
+                                closingContext.animations.setAnimationEvent(
+                                    AnimationEvent.AnimateTo(true)
+                                )
+                            }
+                            val nextActiveInstruction = predictiveBackstack.activePushed
+                            if (nextActiveInstruction != null) {
+                                val activeContext = destinationOwners.lastOrNull { it.instruction == nextActiveInstruction }
+                                if (activeContext != null) {
+                                    activeContext.animations.setAnimationEvent(
+                                        AnimationEvent.AnimateTo(false)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    is NavigationContainerBackEvent.Cancelled -> {
+                        setVisibilityForBackstack(currentTransition)
+                    }
+                    else -> return@onEach
+                }
+            }
+            .launchIn(context.lifecycleOwner.lifecycleScope)
+    }
 
     // We want "Render" to look like it's a Composable function (it's a Composable lambda), so
     // we are uppercasing the first letter of the property name, which triggers a PropertyName lint warning
@@ -185,6 +288,7 @@ public class ComposableNavigationContainer internal constructor(
 
         destinationOwners.forEach {
             if (activeDestinations[it.instruction] == null) {
+                it.animations.setAnimation(getAnimationsForExiting(it.instruction).asComposable())
                 it.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
             }
         }
@@ -247,15 +351,42 @@ public class ComposableNavigationContainer internal constructor(
             transition.activeBackstack.takeLastWhile { it.navigationDirection is NavigationDirection.Present }.toSet()
         val activePush = transition.activeBackstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }?.instructionId
         val activePresented = presented.lastOrNull()?.instructionId
+
         destinationOwners.forEach { destinationOwner ->
             val instruction = destinationOwner.instruction
 
-            val target = when (instruction.instructionId) {
+            val isActive = when (instruction.instructionId) {
                 activePresented -> !isParentBeingRemoved
                 activePush -> !isParentBeingRemoved
                 else -> false
             }
-            destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(target))
+            val isClosing = transition.lastInstruction is NavigationInstruction.Close
+            when {
+                isActive && isClosing -> {
+                    destinationOwner.animations.setAnimation(
+                        getAnimationsForEntering(destinationOwner.instruction).asComposable()
+                    )
+                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(true))
+                }
+                !isActive && isClosing -> {
+                    destinationOwner.animations.setAnimation(
+                        getAnimationsForExiting(destinationOwner.instruction).asComposable()
+                    )
+                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
+                }
+                isActive && !isClosing -> {
+                    destinationOwner.animations.setAnimation(
+                        getAnimationsForEntering(destinationOwner.instruction).asComposable()
+                    )
+                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(true))
+                }
+                !isActive && !isClosing -> {
+                    destinationOwner.animations.setAnimation(
+                        getAnimationsForExiting(destinationOwner.instruction).asComposable()
+                    )
+                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
+                }
+            }
         }
     }
 

@@ -180,7 +180,7 @@ fun PushWithAnimatedSquareDestination() {
 fun ComposeAnimationsDialogDestination() = DialogDestination {
     val navigationHandle = navigationHandle()
     Dialog(onDismissRequest = { navigationHandle.requestClose() }) {
-        navigationTransition.AnimatedVisibility(
+        transition.AnimatedVisibility(
             visible = { it == EnterExitState.Visible },
             enter = fadeIn(defaultSpec()) + slideInVertically(defaultSpec()) { it / 2 },
             exit = fadeOut(defaultSpec()) + slideOutVertically(defaultSpec()) { it / 2 },

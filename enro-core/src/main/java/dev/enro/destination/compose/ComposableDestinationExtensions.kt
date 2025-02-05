@@ -7,10 +7,15 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Transition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalInspectionMode
 import dev.enro.animation.NavigationAnimation
 import dev.enro.annotations.AdvancedEnroApi
@@ -66,10 +71,10 @@ public fun OverrideNavigationAnimations(
     val navigationContext = navigationContext
     val destination = navigationContext.contextReference as ComposableDestination
     DisposableEffect(enter, exit) {
-        destination.owner.animations.animationOverride = NavigationAnimation.Composable(
+        destination.owner.animations.setAnimationOverride(NavigationAnimation.Composable(
             enter = enter,
             exit = exit,
-        )
+        ))
         onDispose { }
     }
 }
@@ -97,19 +102,28 @@ public fun OverrideNavigationAnimations(
 
     val navigationContext = navigationContext
     val destination = navigationContext.contextReference as ComposableDestination
+
+    var isOverrideSet by remember { mutableStateOf(false) }
     DisposableEffect(Unit) {
-        destination.owner.animations.animationOverride = NavigationAnimation.Composable(
-            enter = EnterTransition.None,
+        val overrideAnimation = NavigationAnimation.Composable(
+            enter = fadeIn(
+                initialAlpha = 0.99999f,
+                animationSpec = snap(64),
+            ),
             // We need a little fade out here to keep the animation active while the animated visibility below has a chance to run
             // and attach child transitions. This is a bit of a hack, but it's the only way to ensure that child exit transitions
             // are fully run.
             exit = fadeOut(
-                targetAlpha = 0.99f,
-                animationSpec = tween(512),
+                targetAlpha = 0.99999f,
+                animationSpec = snap(64),
             ),
         )
+        destination.owner.animations.setAnimationOverride(overrideAnimation)
+        isOverrideSet = true
         onDispose { }
     }
+
+    if (!isOverrideSet) return
     navigationTransition.AnimatedVisibility(
         visible = { it == EnterExitState.Visible },
         enter = enter,
