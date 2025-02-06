@@ -82,6 +82,9 @@ private fun configurePredictiveBackHandling(
         }
 
         override fun handleOnBackPressed() {
+            if (parentContainer == null) {
+                parentContainer = navigationContext.parentContainer()
+            }
             parentContainer?.backEvents?.tryEmit(NavigationContainerBackEvent.Confirmed(navigationContext))
             parentContainer = null
         }
