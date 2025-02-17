@@ -41,11 +41,15 @@ public sealed class EmptyBehavior {
      */
     public class Action(
         public val onEmpty: () -> Boolean,
-        public val onProgressToEmpty: (progress: Float) -> Unit,
-        public val onEmptyCancelled: () -> Unit,
+        // These progress to empty callbacks are used to allow the container to animate the emptying of the container
+        // but this is a temporary work around until a more complete solution is implemented, where
+        // the container is able to animate the emptying of the container more precisely. If these values are
+        // not provided, the container will animate by using the default animation functionality, which works for some cases.
+        public val onProgressToEmpty: ((progress: Float) -> Unit)?,
+        public val onEmptyCancelled: (() -> Unit)?,
     ) : EmptyBehavior() {
         public constructor(
             onEmpty: () -> Boolean,
-        ) : this(onEmpty, { }, { })
+        ) : this(onEmpty, null, null)
     }
 }

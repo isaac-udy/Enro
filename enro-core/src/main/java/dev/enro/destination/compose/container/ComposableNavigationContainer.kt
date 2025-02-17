@@ -103,6 +103,7 @@ public class ComposableNavigationContainer internal constructor(
             .onEach { backEvent ->
                 val predictiveBackstack = backstack.close(backEvent.context.instruction.instructionId)
                 if (predictiveBackstack.isEmpty() &&
+                    backEvent !is NavigationContainerBackEvent.Confirmed &&
                     (emptyBehavior is EmptyBehavior.CloseParent || emptyBehavior is EmptyBehavior.ForceCloseParent)
                 ) {
                     context.directParentContainer()?.backEvents?.tryEmit(
@@ -110,7 +111,9 @@ public class ComposableNavigationContainer internal constructor(
                     )
                     return@onEach
                 }
-                if (predictiveBackstack.isEmpty() && emptyBehavior is EmptyBehavior.Action) {
+                if (predictiveBackstack.isEmpty()
+                    && emptyBehavior is EmptyBehavior.Action
+                    && emptyBehavior.onProgressToEmpty != null) {
                     when (backEvent) {
                         is NavigationContainerBackEvent.Confirmed -> {
                             val shouldCancel = emptyBehavior.onEmpty()
@@ -119,10 +122,10 @@ public class ComposableNavigationContainer internal constructor(
                             }
                         }
                         is NavigationContainerBackEvent.Progressed -> {
-                            emptyBehavior.onProgressToEmpty(backEvent.backEvent.progress)
+                            emptyBehavior.onProgressToEmpty.invoke(backEvent.backEvent.progress)
                         }
                         is NavigationContainerBackEvent.Cancelled -> {
-                            emptyBehavior.onEmptyCancelled()
+                            emptyBehavior.onEmptyCancelled?.invoke()
                         }
                         else -> return@onEach
                     }
