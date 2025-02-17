@@ -1,6 +1,7 @@
 package dev.enro.core.compose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
@@ -103,6 +104,9 @@ public fun rememberNavigationContainer(
             interceptor = interceptor,
             animations = animations,
         )
+    }
+    LaunchedEffect(emptyBehavior) {
+        navigationContainer.emptyBehavior = emptyBehavior
     }
     navigationContainer.registerWithContainerManager(registrationStrategy, initialBackstack)
     return navigationContainer

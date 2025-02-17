@@ -48,7 +48,7 @@ public abstract class NavigationContainer(
     public val key: NavigationContainerKey,
     public val contextType: Class<out Any>,
     public val context: NavigationContext<*>,
-    public val emptyBehavior: EmptyBehavior,
+    emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,
     animations: NavigationAnimationOverrideBuilder.() -> Unit,
     public val instructionFilter: NavigationInstructionFilter,
@@ -59,6 +59,10 @@ public abstract class NavigationContainer(
             animations = animations
         )
     }
+
+    public var emptyBehavior: EmptyBehavior = emptyBehavior
+        internal set
+
     internal val getNavigationAnimations = dependencyScope.get<GetNavigationAnimations>()
     private val canInstructionBeHostedAs = dependencyScope.get<CanInstructionBeHostedAs>()
 

@@ -101,10 +101,12 @@ public class ComposableNavigationContainer internal constructor(
     init {
         backEvents
             .onEach { backEvent ->
+                val currentEmptyBehavior = this.emptyBehavior
+
                 val predictiveBackstack = backstack.close(backEvent.context.instruction.instructionId)
                 if (predictiveBackstack.isEmpty() &&
                     backEvent !is NavigationContainerBackEvent.Confirmed &&
-                    (emptyBehavior is EmptyBehavior.CloseParent || emptyBehavior is EmptyBehavior.ForceCloseParent)
+                    (currentEmptyBehavior is EmptyBehavior.CloseParent || currentEmptyBehavior is EmptyBehavior.ForceCloseParent)
                 ) {
                     context.directParentContainer()?.backEvents?.tryEmit(
                         backEvent.copy(context = context)
@@ -112,20 +114,20 @@ public class ComposableNavigationContainer internal constructor(
                     return@onEach
                 }
                 if (predictiveBackstack.isEmpty()
-                    && emptyBehavior is EmptyBehavior.Action
-                    && emptyBehavior.onProgressToEmpty != null) {
+                    && currentEmptyBehavior is EmptyBehavior.Action
+                    && currentEmptyBehavior.onProgressToEmpty != null) {
                     when (backEvent) {
                         is NavigationContainerBackEvent.Confirmed -> {
-                            val shouldCancel = emptyBehavior.onEmpty()
+                            val shouldCancel = currentEmptyBehavior.onEmpty()
                             if (shouldCancel) {
                                 backEvent.context.getNavigationHandle().requestClose()
                             }
                         }
                         is NavigationContainerBackEvent.Progressed -> {
-                            emptyBehavior.onProgressToEmpty.invoke(backEvent.backEvent.progress)
+                            currentEmptyBehavior.onProgressToEmpty.invoke(backEvent.backEvent.progress)
                         }
                         is NavigationContainerBackEvent.Cancelled -> {
-                            emptyBehavior.onEmptyCancelled?.invoke()
+                            currentEmptyBehavior.onEmptyCancelled?.invoke()
                         }
                         else -> return@onEach
                     }
