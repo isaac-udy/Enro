@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.fadeIn
@@ -59,6 +58,7 @@ public val navigationTransition: Transition<EnterExitState>
  */
 @Composable
 @AdvancedEnroApi
+@Deprecated("Use the OverrideNavigationAnimations function that takes a content block instead; this function does not work correctly in some situations")
 public fun OverrideNavigationAnimations(
     enter: EnterTransition,
     exit: ExitTransition,
@@ -83,11 +83,7 @@ public fun OverrideNavigationAnimations(
  * Override the navigation animations for a particular destination, and also provide a content block that will be animated
  * using AnimatedVisibility, providing a AnimatedVisibilityScope which can be used to animate different parts of the screen
  * at different times, or to use in shared element transitions (when that is released in Compose).
- *
- * See also [OverrideNavigationAnimations] for a simpler version of this function that does not provide the AnimatedVisibilityScope,
- * which can be used just to override the navigation animations as a side effect
  */
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 @AdvancedEnroApi
 public fun OverrideNavigationAnimations(

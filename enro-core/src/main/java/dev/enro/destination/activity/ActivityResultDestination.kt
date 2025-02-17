@@ -137,5 +137,7 @@ internal fun ActivityResultBridge() {
     OverrideNavigationAnimations(
         enter = EnterTransition.None,
         exit = ExitTransition.None,
-    )
+    ) {
+        // No content
+    }
 }

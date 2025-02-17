@@ -230,7 +230,6 @@ fun FragmentSharedElementDetailComposable() {
     // In this case, we're also calling OverrideNavigationAnimations() to override the default navigation animations, so
     // that the other elements on the screen fade in and out, which puts a focus on the shared element animation.
     FragmentSharedElements.ConfigureComposable()
-    OverrideNavigationAnimations(fadeIn(), fadeOut())
 
     // We're also going to configure a delayed transition, so that the shared element transition can be delayed until we're
     // ready to draw the View associated with the shared element. This is important for shared elements that are not
@@ -239,40 +238,46 @@ fun FragmentSharedElementDetailComposable() {
 
     val navigation = navigationHandle<FragmentSharedElementDestination.DetailViewComposable>()
 
-    BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        val constraints = constraints
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    OverrideNavigationAnimations(fadeIn(), fadeOut()) {
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
         ) {
-            val imageSize = maxOf(constraints.maxWidth, constraints.maxHeight) / 2
-            val imageSizeDp = LocalDensity.current.run { imageSize.toDp() }
-
-            AndroidView(
-                modifier = Modifier.size(imageSizeDp),
-                factory = { context ->
-                    ImageView(context).apply {
-                        setImageResource(R.drawable.ic_launcher_foreground)
-                        imageTintList = ColorStateList.valueOf(imageTints[navigation.key.imageId].toInt())
-                        transitionName = "sharedElementImage"
-                        FragmentSharedElements.addSharedElement(this, "image_${navigation.key.imageId}")
-
-                        // Wait until the view is ready to draw before starting the transition
-                        doOnPreDraw { delayedTransition.start() }
-                    }
-                },
-            )
-
-            Button(
-                onClick = {
-                    navigation.requestClose()
-                }
+            val constraints = constraints
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("Close")
+                val imageSize = maxOf(constraints.maxWidth, constraints.maxHeight) / 2
+                val imageSizeDp = LocalDensity.current.run { imageSize.toDp() }
+
+                AndroidView(
+                    modifier = Modifier.size(imageSizeDp),
+                    factory = { context ->
+                        ImageView(context).apply {
+                            setImageResource(R.drawable.ic_launcher_foreground)
+                            imageTintList =
+                                ColorStateList.valueOf(imageTints[navigation.key.imageId].toInt())
+                            transitionName = "sharedElementImage"
+                            FragmentSharedElements.addSharedElement(
+                                this,
+                                "image_${navigation.key.imageId}"
+                            )
+
+                            // Wait until the view is ready to draw before starting the transition
+                            doOnPreDraw { delayedTransition.start() }
+                        }
+                    },
+                )
+
+                Button(
+                    onClick = {
+                        navigation.requestClose()
+                    }
+                ) {
+                    Text("Close")
+                }
             }
         }
     }

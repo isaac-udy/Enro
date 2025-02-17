@@ -4,9 +4,20 @@ import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.SwipeableDefaults
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.compose.OverrideNavigationAnimations
 import dev.enro.core.compose.navigationHandle
@@ -17,14 +28,8 @@ import kotlinx.coroutines.isActive
 
 @Composable
 @AdvancedEnroApi
-@OptIn(ExperimentalMaterialApi::class)
 public fun ModalBottomSheetState.bindToNavigationHandle(): ModalBottomSheetState {
     val navigationHandle = navigationHandle()
-
-    OverrideNavigationAnimations(
-        enter = fadeIn(tween(100)),
-        exit = fadeOut(tween(durationMillis = 125, delayMillis = 225))
-    )
 
     val parent = requireNotNull(parentContainer) {
         "Failed to bind ModalBottomSheetState to NavigationHandle: parentContainer was not found"
@@ -98,5 +103,10 @@ public fun BottomSheetDestination(
         hasBeenDisplayed = hasBeenDisplayed || bottomSheetState.isVisible
     }
 
-    content(bottomSheetState)
+    OverrideNavigationAnimations(
+        enter = fadeIn(tween(100)),
+        exit = fadeOut(tween(durationMillis = 125, delayMillis = 225))
+    ) {
+        content(bottomSheetState)
+    }
 }
