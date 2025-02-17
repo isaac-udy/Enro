@@ -78,9 +78,9 @@ public class FragmentNavigationContainer internal constructor(
 
     init {
         backEvents
-            .onEach {
-                if (it is NavigationContainerBackEvent.Confirmed) {
-                    it.context.getNavigationHandle().requestClose()
+            .onEach { backEvent ->
+                if (backEvent is NavigationContainerBackEvent.Confirmed) {
+                    backEvent.context.getNavigationHandle().requestClose()
                 }
             }
             .launchIn(context.lifecycleOwner.lifecycleScope)
