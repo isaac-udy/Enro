@@ -14,10 +14,21 @@ import android.view.animation.AnimationUtils
 import android.view.animation.Transformation
 import androidx.annotation.AnimRes
 import androidx.annotation.AnimatorRes
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.ExperimentalTransitionApi
+import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.createChildTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
@@ -69,7 +80,9 @@ internal fun <T> Transition<T>.ResourceAnimatedVisibility(
     modifier: Modifier = Modifier,
     @AnimRes @AnimatorRes enter: Int,
     @AnimRes @AnimatorRes exit: Int,
-    content: @Composable () -> Unit
+    progress: Float,
+    isSeeking: Boolean,
+    content: @Composable () -> Unit,
 ) = BoxWithConstraints(modifier = modifier) {
     val transition = createChildTransition(
         label = "ResourceAnimatedVisibility",
@@ -97,8 +110,8 @@ internal fun <T> Transition<T>.ResourceAnimatedVisibility(
     }
 
     val animationState by when {
-        isAnim -> transition.animateAnimResource(animationId, size)
-        isAnimator -> transition.animateAnimatorResource(animationId, size)
+        isAnim -> transition.animateAnimResource(animationId, size, progress)
+        isAnimator && !isSeeking -> transition.animateAnimatorResource(animationId, size, progress)
         else -> remember {
             derivedStateOf { ResourceAnimationState.forAnimationEnd(true) }
         }
@@ -129,6 +142,7 @@ internal fun <T> Transition<T>.ResourceAnimatedVisibility(
 private fun Transition<Boolean>.animateAnimResource(
     @AnimRes resourceId: Int,
     size: IntSize,
+    progress: Float,
 ): State<ResourceAnimationState> {
     val context = LocalContext.current
     val state = remember(targetState, resourceId) {
@@ -154,38 +168,24 @@ private fun Transition<Boolean>.animateAnimResource(
         label = "animateAnimResource",
         targetValueByState = { if (it) 1.0f else 0.0f },
     )
-
-    LaunchedEffect(anim) {
-        if (isCompleted) {
-            state.value = ResourceAnimationState.forAnimationEnd(targetState)
-            return@LaunchedEffect
-        }
-        withContext(Dispatchers.IO) {
-            val startTime = System.currentTimeMillis()
-            val transformation = Transformation()
-            val v = FloatArray(9)
-
-            while (isActive && state.value.isActive) {
-                anim.getTransformation(System.currentTimeMillis(), transformation)
-                transformation.matrix.getValues(v)
-                state.value = state.value.copy(
-                    alpha = transformation.alpha,
-                    scaleX = v[Matrix.MSCALE_X],
-                    scaleY = v[Matrix.MSCALE_Y],
-                    translationX = v[Matrix.MTRANS_X],
-                    translationY = v[Matrix.MTRANS_Y],
-                    rotationX = 0.0f,
-                    rotationY = 0.0f,
-                    transformOrigin = TransformOrigin(0f, 0f),
-                    isActive = state.value.playTime < anim.duration,
-                    playTime = System.currentTimeMillis() - startTime
-                )
-                delay(16)
-            }
-            state.value = ResourceAnimationState.forAnimationEnd(targetState)
-        }
-    }
-
+    val startTime = remember(anim) { System.currentTimeMillis() }
+    val transformation = Transformation()
+    val v = FloatArray(9)
+    val durationProgress = anim.duration * progress
+    anim.getTransformation(startTime + durationProgress.toLong(), transformation)
+    transformation.matrix.getValues(v)
+    state.value = state.value.copy(
+        alpha = transformation.alpha,
+        scaleX = v[Matrix.MSCALE_X],
+        scaleY = v[Matrix.MSCALE_Y],
+        translationX = v[Matrix.MTRANS_X],
+        translationY = v[Matrix.MTRANS_Y],
+        rotationX = 0.0f,
+        rotationY = 0.0f,
+        transformOrigin = TransformOrigin(0f, 0f),
+        isActive = state.value.playTime < anim.duration,
+        playTime = System.currentTimeMillis() - startTime
+    )
     return state
 }
 
@@ -201,6 +201,7 @@ private class AnimatorView @JvmOverloads constructor(
 private fun Transition<Boolean>.animateAnimatorResource(
     @AnimatorRes resourceId: Int,
     size: IntSize,
+    progress: Float,
 ): State<ResourceAnimationState> {
     val context = LocalContext.current
     val state = remember(targetState, resourceId) {

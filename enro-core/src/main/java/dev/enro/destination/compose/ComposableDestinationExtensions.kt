@@ -5,12 +5,16 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Transition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalInspectionMode
 import dev.enro.animation.NavigationAnimation
 import dev.enro.annotations.AdvancedEnroApi
@@ -54,6 +58,7 @@ public val navigationTransition: Transition<EnterExitState>
  */
 @Composable
 @AdvancedEnroApi
+@Deprecated("Use the OverrideNavigationAnimations function that takes a content block instead; this function does not work correctly in some situations")
 public fun OverrideNavigationAnimations(
     enter: EnterTransition,
     exit: ExitTransition,
@@ -66,10 +71,10 @@ public fun OverrideNavigationAnimations(
     val navigationContext = navigationContext
     val destination = navigationContext.contextReference as ComposableDestination
     DisposableEffect(enter, exit) {
-        destination.owner.animations.animationOverride = NavigationAnimation.Composable(
+        destination.owner.animations.setAnimationOverride(NavigationAnimation.Composable(
             enter = enter,
             exit = exit,
-        )
+        ))
         onDispose { }
     }
 }
@@ -78,11 +83,7 @@ public fun OverrideNavigationAnimations(
  * Override the navigation animations for a particular destination, and also provide a content block that will be animated
  * using AnimatedVisibility, providing a AnimatedVisibilityScope which can be used to animate different parts of the screen
  * at different times, or to use in shared element transitions (when that is released in Compose).
- *
- * See also [OverrideNavigationAnimations] for a simpler version of this function that does not provide the AnimatedVisibilityScope,
- * which can be used just to override the navigation animations as a side effect
  */
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 @AdvancedEnroApi
 public fun OverrideNavigationAnimations(
@@ -97,19 +98,28 @@ public fun OverrideNavigationAnimations(
 
     val navigationContext = navigationContext
     val destination = navigationContext.contextReference as ComposableDestination
+
+    var isOverrideSet by remember { mutableStateOf(false) }
     DisposableEffect(Unit) {
-        destination.owner.animations.animationOverride = NavigationAnimation.Composable(
-            enter = EnterTransition.None,
+        val overrideAnimation = NavigationAnimation.Composable(
+            enter = fadeIn(
+                initialAlpha = 0.99999f,
+                animationSpec = snap(64),
+            ),
             // We need a little fade out here to keep the animation active while the animated visibility below has a chance to run
             // and attach child transitions. This is a bit of a hack, but it's the only way to ensure that child exit transitions
             // are fully run.
             exit = fadeOut(
-                targetAlpha = 0.99f,
-                animationSpec = tween(512),
+                targetAlpha = 0.99999f,
+                animationSpec = snap(64),
             ),
         )
+        destination.owner.animations.setAnimationOverride(overrideAnimation)
+        isOverrideSet = true
         onDispose { }
     }
+
+    if (!isOverrideSet) return
     navigationTransition.AnimatedVisibility(
         visible = { it == EnterExitState.Visible },
         enter = enter,

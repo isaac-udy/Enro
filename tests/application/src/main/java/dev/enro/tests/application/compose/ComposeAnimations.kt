@@ -146,30 +146,30 @@ fun PushWithAnimatedSquareDestination() {
     OverrideNavigationAnimations(
         enter = fadeIn(),
         exit = fadeOut(defaultSpecDelay()),
-    )
-
-    TitledColumn(
-        title = "Push (with animated square)",
     ) {
-        Button(onClick = {
-            navigationHandle.requestClose()
-        }) {
-            Text(text = "Close")
-        }
-
-        val size = navigationTransition.animateDp(
-            label = "",
-            transitionSpec = { defaultSpec() }
+        TitledColumn(
+            title = "Push (with animated square)",
         ) {
-            if (it == EnterExitState.Visible) 100.dp else 0.dp
-        }
+            Button(onClick = {
+                navigationHandle.requestClose()
+            }) {
+                Text(text = "Close")
+            }
 
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .size(size.value)
-                .background(Color.Red),
-        )
+            val size = transition.animateDp(
+                label = "",
+                transitionSpec = { defaultSpec() }
+            ) {
+                if (it == EnterExitState.Visible) 100.dp else 0.dp
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .size(size.value)
+                    .background(Color.Red),
+            )
+        }
     }
 }
 
@@ -180,7 +180,7 @@ fun PushWithAnimatedSquareDestination() {
 fun ComposeAnimationsDialogDestination() = DialogDestination {
     val navigationHandle = navigationHandle()
     Dialog(onDismissRequest = { navigationHandle.requestClose() }) {
-        navigationTransition.AnimatedVisibility(
+        transition.AnimatedVisibility(
             visible = { it == EnterExitState.Visible },
             enter = fadeIn(defaultSpec()) + slideInVertically(defaultSpec()) { it / 2 },
             exit = fadeOut(defaultSpec()) + slideOutVertically(defaultSpec()) { it / 2 },

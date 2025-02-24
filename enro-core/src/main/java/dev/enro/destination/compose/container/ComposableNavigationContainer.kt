@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.lifecycleScope
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.AnyOpenInstruction
@@ -35,13 +36,20 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.NavigationContainerBackEvent
 import dev.enro.core.container.NavigationInstructionFilter
+import dev.enro.core.container.getAnimationsForEntering
+import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.container.merge
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.requestClose
 import dev.enro.destination.compose.destination.AnimationEvent
 import dev.enro.destination.flow.ManagedFlowNavigationBinding
 import dev.enro.destination.flow.host.ComposableHostForManagedFlowDestination
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import java.io.Closeable
 import kotlin.collections.set
 
@@ -99,6 +107,16 @@ public class ComposableNavigationContainer internal constructor(
                     }
                 }
         }
+    }
+
+    init {
+        backEvents
+            .onEach { backEvent ->
+                if (backEvent is NavigationContainerBackEvent.Confirmed) {
+                    backEvent.context.getNavigationHandle().requestClose()
+                }
+            }
+            .launchIn(context.lifecycleOwner.lifecycleScope)
     }
 
     public override fun save(): Bundle {
@@ -185,6 +203,7 @@ public class ComposableNavigationContainer internal constructor(
 
         destinationOwners.forEach {
             if (activeDestinations[it.instruction] == null) {
+                it.animations.setAnimation(getAnimationsForExiting(it.instruction).asComposable())
                 it.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
             }
         }
@@ -250,12 +269,38 @@ public class ComposableNavigationContainer internal constructor(
         destinationOwners.forEach { destinationOwner ->
             val instruction = destinationOwner.instruction
 
-            val target = when (instruction.instructionId) {
+            val isActive = when (instruction.instructionId) {
                 activePresented -> !isParentBeingRemoved
                 activePush -> !isParentBeingRemoved
                 else -> false
             }
-            destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(target))
+            val isClosing = transition.lastInstruction is NavigationInstruction.Close
+            when {
+                isActive && isClosing -> {
+                    destinationOwner.animations.setAnimation(
+                        getAnimationsForEntering(destinationOwner.instruction).asComposable()
+                    )
+                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(true))
+                }
+                !isActive && isClosing -> {
+                    destinationOwner.animations.setAnimation(
+                        getAnimationsForExiting(destinationOwner.instruction).asComposable()
+                    )
+                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
+                }
+                isActive && !isClosing -> {
+                    destinationOwner.animations.setAnimation(
+                        getAnimationsForEntering(destinationOwner.instruction).asComposable()
+                    )
+                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(true))
+                }
+                !isActive && !isClosing -> {
+                    destinationOwner.animations.setAnimation(
+                        getAnimationsForExiting(destinationOwner.instruction).asComposable()
+                    )
+                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
+                }
+            }
         }
     }
 

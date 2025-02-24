@@ -3,8 +3,6 @@ package dev.enro.destination.compose.destination
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.Transition
-import androidx.compose.animation.core.rememberTransition
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonSkippableComposable
@@ -14,8 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import dev.enro.animation.NavigationAnimation
 import dev.enro.core.compose.destination.ComposableDestinationOwner
-import dev.enro.core.container.getAnimationsForEntering
-import dev.enro.core.container.getAnimationsForExiting
 
 internal sealed class AnimationEvent {
     abstract val visible: Boolean
@@ -29,41 +25,50 @@ internal class ComposableDestinationAnimations(
     private val owner: ComposableDestinationOwner,
 ) {
     private var currentAnimationEvent by mutableStateOf<AnimationEvent>(AnimationEvent.SnapTo(false))
+    private var containerAnimation by mutableStateOf<NavigationAnimation.Composable?>(null)
 
-    internal var animationOverride by mutableStateOf<NavigationAnimation.Composable?>(null)
+    private var animationOverride by mutableStateOf<NavigationAnimation.Composable?>(null)
 
     internal lateinit var enterExitTransition: Transition<EnterExitState>
+
+    internal fun setAnimation(animation: NavigationAnimation.Composable) {
+        containerAnimation = animation
+    }
+
+    internal fun setAnimationOverride(animation: NavigationAnimation.Composable) {
+        animationOverride = animation
+    }
 
     internal fun setAnimationEvent(event: AnimationEvent) {
         currentAnimationEvent = event
     }
 
-    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     @NonSkippableComposable
     fun Animate(content: @Composable () -> Unit) {
         val instruction = owner.instruction
-        val parentContainer = owner.parentContainer
-
-        val visibilityState = remember(instruction.instructionId) { SeekableTransitionState(false) }
-        val targetState = visibilityState.targetState
-
+        val visibilityState = remember(instruction.instructionId, animationOverride.hashCode()) {
+            SeekableTransitionState(false)
+        }
         val animation = remember(
-            instruction,
-            targetState,
-            parentContainer,
+            containerAnimation,
             animationOverride
         ) {
-            animationOverride ?: when {
-                visibilityState.targetState >= visibilityState.currentState -> parentContainer.getAnimationsForEntering(
-                    instruction
-                ).asComposable()
+           animationOverride
+                ?: containerAnimation
+                ?: return@remember null
+        }
+        if (animation == null) return
 
-                else -> parentContainer.getAnimationsForExiting(instruction).asComposable()
-            }
+        animation.Animate(
+            state = visibilityState,
+            isSeeking = currentAnimationEvent is AnimationEvent.Seek
+        ) {
+            enterExitTransition = it
+            content()
         }
 
-        LaunchedEffect(currentAnimationEvent) {
+        LaunchedEffect(currentAnimationEvent, visibilityState) {
             val event = currentAnimationEvent
             runCatching {
                 when (event) {
@@ -72,16 +77,6 @@ internal class ComposableDestinationAnimations(
                     is AnimationEvent.Seek -> visibilityState.seekTo(event.progress, event.visible)
                 }
             }
-            if (currentAnimationEvent == event) {
-                currentAnimationEvent = AnimationEvent.SnapTo(event.visible)
-            }
-        }
-        val visibleTransition = rememberTransition(visibilityState, "ComposableDestination Visibility")
-        animation.Animate(
-            visible = visibleTransition,
-        ) {
-            enterExitTransition = it
-            content()
         }
     }
 }

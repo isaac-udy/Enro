@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -13,7 +12,6 @@ import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.invisibleToUser
@@ -25,6 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
@@ -181,7 +180,7 @@ internal class ComposableDestinationOwner(
         }
     }
 
-    @OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
+    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     private fun ProvideRenderingWindow(
         backstackState: List<AnyOpenInstruction>,

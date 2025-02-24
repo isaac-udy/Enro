@@ -1,5 +1,6 @@
 package dev.enro.destination.compose
 
+import androidx.activity.BackEventCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
@@ -9,10 +10,12 @@ import dev.enro.core.OPEN_ARG
 import dev.enro.core.activity
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.compose.destination.activity
+import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.NavigationContainerBackEvent
 import dev.enro.core.controller.EnroBackConfiguration
 import dev.enro.core.controller.navigationController
 import dev.enro.core.isActive
-import dev.enro.core.requestClose
+import dev.enro.core.parentContainer
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -48,7 +51,10 @@ private fun bindBackHandling(
             // Do nothing
         }
 
-        is EnroBackConfiguration.Predictive -> configurePredictiveBackHandling(navigationContext, navigationHandle)
+        is EnroBackConfiguration.Predictive -> configurePredictiveBackHandling(
+            navigationContext,
+            navigationHandle
+        )
     }
 }
 
@@ -57,9 +63,30 @@ private fun configurePredictiveBackHandling(
     navigationHandle: NavigationHandle
 ) {
     val activity = navigationContext.activity
+
     val callback = object : OnBackPressedCallback(false) {
+        private var parentContainer: NavigationContainer? = null
+
+        override fun handleOnBackStarted(backEvent: BackEventCompat) {
+            parentContainer = navigationContext.parentContainer()
+            parentContainer?.backEvents?.tryEmit(NavigationContainerBackEvent.Started(navigationContext))
+        }
+
+        override fun handleOnBackProgressed(backEvent: BackEventCompat) {
+            parentContainer?.backEvents?.tryEmit(NavigationContainerBackEvent.Progressed(navigationContext, backEvent))
+        }
+
         override fun handleOnBackPressed() {
-            navigationHandle.requestClose()
+            if (parentContainer == null) {
+                parentContainer = navigationContext.parentContainer()
+            }
+            parentContainer?.backEvents?.tryEmit(NavigationContainerBackEvent.Confirmed(navigationContext))
+            parentContainer = null
+        }
+
+        override fun handleOnBackCancelled() {
+            parentContainer?.backEvents?.tryEmit(NavigationContainerBackEvent.Cancelled(navigationContext))
+            parentContainer = null
         }
     }
     activity.onBackPressedDispatcher.addCallback(navigationContext.lifecycleOwner, callback)

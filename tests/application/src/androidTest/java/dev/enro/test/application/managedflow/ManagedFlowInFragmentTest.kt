@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dev.enro.test.application.OnlyPassesLocally
 import dev.enro.test.application.SelectDestinationRobot
 import dev.enro.tests.application.TestActivity
 import org.junit.Rule
@@ -17,8 +18,14 @@ class ManagedFlowInFragmentTest {
     val composeRule = createAndroidComposeRule<TestActivity>()
 
     @Test
+    @OnlyPassesLocally(
+        description = """
+           This test appears flaky on SDK 30, but passes locally, so it will be skipped if the SDK 
+           is 30 to allow CI to pass, but it should be run locally from time to time to 
+           ensure it still works.
+        """
+    )
     fun test() {
-        // This test appears flaky on SDK 30, but passes locally
         if (Build.VERSION.SDK_INT == 30) {
             return
         }

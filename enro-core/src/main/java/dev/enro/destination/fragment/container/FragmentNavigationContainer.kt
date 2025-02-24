@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.lifecycleScope
 import dev.enro.animation.DefaultAnimations
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.animation.NavigationAnimationTransition
@@ -26,6 +27,7 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.container.NavigationContainerBackEvent
 import dev.enro.core.container.NavigationInstructionFilter
 import dev.enro.core.container.close
 import dev.enro.core.container.getAnimationsForEntering
@@ -33,10 +35,14 @@ import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.core.getNavigationHandle
 import dev.enro.core.navigationContext
+import dev.enro.core.requestClose
 import dev.enro.destination.fragment.FragmentSharedElements
 import dev.enro.extensions.animate
 import dev.enro.extensions.getParcelableCompat
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 public class FragmentNavigationContainer internal constructor(
     @IdRes public val containerId: Int,
@@ -71,6 +77,14 @@ public class FragmentNavigationContainer internal constructor(
     private val restoredFragmentStates = mutableMapOf<String, Fragment.SavedState>()
 
     init {
+        backEvents
+            .onEach { backEvent ->
+                if (backEvent is NavigationContainerBackEvent.Confirmed) {
+                    backEvent.context.getNavigationHandle().requestClose()
+                }
+            }
+            .launchIn(context.lifecycleOwner.lifecycleScope)
+
         fragmentManager.registerFragmentLifecycleCallbacks(object : FragmentLifecycleCallbacks() {
             override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
                 if (f !is DialogFragment) return

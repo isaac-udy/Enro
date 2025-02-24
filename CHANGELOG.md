@@ -2,6 +2,8 @@
 
 ## 2.9.0 (Unreleased)
 * Removed deprecated DialogDestination and BottomSheetDestination interfaces, and associated functions. Please use the Composable `DialogDestination` and `BottomSheetDestination` functions instead. Example usage can be found in the test application.
+* Deprecated the `OverrideNavigationAnimations` function that does not take a content lambda, in favour of the version that does take a content lambda.
+* `ModalBottomSheetState.bindToNavigationHandle` no longer overrides navigation animations.
 
 ## 2.8.1
 * Fixed a bug with ComposableDestinationSavedStateOwner that was causing lists of primitives (such as List<Int>) to not get saved/restored correctly

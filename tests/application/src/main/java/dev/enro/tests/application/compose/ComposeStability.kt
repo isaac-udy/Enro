@@ -15,18 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationKey
@@ -38,8 +33,8 @@ import dev.enro.core.container.push
 import dev.enro.core.container.setBackstack
 import dev.enro.core.onContainer
 import dev.enro.core.push
+import dev.enro.tests.application.compose.common.Stability
 import dev.enro.tests.application.compose.common.TitledColumn
-import kotlinx.coroutines.isActive
 import kotlinx.parcelize.Parcelize
 import java.util.UUID
 
@@ -138,24 +133,7 @@ class ComposeStabilityContentViewModel(
 @Composable
 @NavigationDestination(ComposeStability.Content::class)
 fun ComposeStabilityContentScreen() {
-    val rawNavigationHandle = navigationHandle()
     val typedNavigationHandle = navigationHandle<ComposeStability.Content>()
-    val rememberSaveable = rememberSaveable { UUID.randomUUID().toString() }
-    val viewModel = viewModel<ComposeStabilityContentViewModel>()
-    val viewModelStore = LocalViewModelStoreOwner.current?.viewModelStore
-
-    val stabilityContent = buildString {
-        appendLine("navigationId: ${rawNavigationHandle.id}")
-        appendLine("navigationKeyId: ${typedNavigationHandle.key.id}")
-        appendLine("navigationHashCode: ${rawNavigationHandle.hashCode()}")
-        appendLine("viewModelId: ${viewModel.id}")
-        appendLine("viewModelHashCode: ${viewModel.hashCode()}")
-        appendLine("viewModelSavedStateId: ${viewModel.saveStateHandleId.value}")
-        appendLine("viewModelStoreHashCode: ${viewModelStore.hashCode()}")
-        appendLine("viewModelScopeActive: ${viewModel.viewModelScope.isActive}")
-        appendLine("rememberSaveableId: $rememberSaveable")
-    }
-
     val childContainer = rememberNavigationContainer(
         key = typedNavigationHandle.key.childContainerKey,
         emptyBehavior = EmptyBehavior.AllowEmpty,
@@ -166,10 +144,10 @@ fun ComposeStabilityContentScreen() {
             .background(Color.Black.copy(alpha = 0.05f))
             .padding(8.dp)
     ) {
-        Text(
-            text = stabilityContent,
-            fontSize = 11.sp,
-            lineHeight = 13.sp,
+        Stability(
+            additionalStabilityContent = listOf(
+                "navigationKeyId: ${typedNavigationHandle.key.id}",
+            ),
             modifier = Modifier.semantics {
                 testTag = typedNavigationHandle.key.testTag
             }
