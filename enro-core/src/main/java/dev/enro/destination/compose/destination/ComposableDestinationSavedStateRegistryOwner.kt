@@ -79,7 +79,7 @@ internal class ComposableDestinationSavedStateRegistryOwner(
 private fun Bundle.toMap(): Map<String, List<Any?>>? {
     val map = mutableMapOf<String, List<Any?>>()
     this.keySet().forEach { key ->
-        val list = getParcelableListCompat<Parcelable?>(key).orEmpty()
+        val list = getParcelableListCompat<Any?>(key).orEmpty()
         map[key] = list
     }
     return map
