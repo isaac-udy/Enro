@@ -15,6 +15,12 @@ fun Project.configureEmulatorWtf() {
         devices.set(
             listOf(
                 mapOf(
+                    "model" to "Pixel2", "version" to 35
+                ),
+                mapOf(
+                    "model" to "Pixel2", "version" to 34
+                ),
+                mapOf(
                     "model" to "Pixel2", "version" to 33
                 ),
                 mapOf(
