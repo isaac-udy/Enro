@@ -10,6 +10,7 @@ import dev.enro.test.application.activity.SimpleActivityRobot
 import dev.enro.test.application.compose.BottomNavigationRobot
 import dev.enro.test.application.compose.BottomSheetChangeSizeRobot
 import dev.enro.test.application.compose.BottomSheetCloseAndPresentRobot
+import dev.enro.test.application.compose.ComposeSavePrimitivesRobot
 import dev.enro.test.application.compose.FindContextRobot
 import dev.enro.test.application.compose.SyntheticViewModelAccessRobot
 import dev.enro.test.application.compose.results.ComposeAsyncManagedResultFlowRobot
@@ -190,5 +191,14 @@ class SelectDestinationRobot(
             .filterToOne(hasText("Present"))
             .performClick()
         return ManagedFlowInFragmentRobot(composeRule)
+    }
+
+    fun openComposeSavePrimitives(): ComposeSavePrimitivesRobot {
+        composeRule.onNode(hasText("Compose Save Primitives"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+        return ComposeSavePrimitivesRobot(composeRule)
     }
 }
