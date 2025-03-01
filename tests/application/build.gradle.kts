@@ -42,6 +42,9 @@ dependencies {
 
     lintChecks(project(":enro-lint"))
 
+//     Uncomment the following line to enable leakcanary
+//    debugImplementation(libs.leakcanary)
+
     implementation(libs.compose.material)
     implementation(libs.compose.accompanist.systemUiController)
 

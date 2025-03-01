@@ -44,7 +44,7 @@ import java.lang.ref.WeakReference
 internal class ComposableDestinationOwner(
     parentContainer: NavigationContainer,
     val instruction: AnyOpenInstruction,
-    val destination: ComposableDestination,
+    destination: ComposableDestination,
     onNavigationContextCreated: OnNavigationContextCreated,
     private val onNavigationContextSaved: OnNavigationContextSaved,
     private val composeEnvironment: ComposeEnvironment,
@@ -57,8 +57,12 @@ internal class ComposableDestinationOwner(
     HasDefaultViewModelProviderFactory {
 
     private var _parentContainer: NavigationContainer? = parentContainer
-    private var weakParentContainerReference: WeakReference<NavigationContainer> = WeakReference(parentContainer)
+    private val weakParentContainerReference: WeakReference<NavigationContainer> = WeakReference(parentContainer)
     internal val parentContainer get() = weakParentContainerReference.get() ?: _parentContainer!!
+
+    private var _destination: ComposableDestination? = destination
+    private val weakDestinationReference: WeakReference<ComposableDestination> = WeakReference(destination)
+    internal val destination get() = weakDestinationReference.get() ?: _destination!!
 
     @SuppressLint("StaticFieldLeak")
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -124,6 +128,7 @@ internal class ComposableDestinationOwner(
             !parentContainer.backstack.contains(instruction) -> viewModelStore.clear()
         }
         _parentContainer = null
+//        _destination = null
     }
 
     @Composable
@@ -131,6 +136,7 @@ internal class ComposableDestinationOwner(
         backstackState: List<AnyOpenInstruction>,
     ) {
         val parentContainer = _parentContainer ?: return
+        val destination = _destination ?: return
         val lifecycleState = rememberLifecycleState()
         if (!lifecycleState.isAtLeast(Lifecycle.State.CREATED)) return
 
