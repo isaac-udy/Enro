@@ -75,3 +75,4 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 private.properties
+/.kotlin/
