@@ -1,3 +1,7 @@
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
@@ -5,9 +9,32 @@ plugins {
     id("kotlin-android")
     id("kotlin-parcelize")
     id("kotlin-kapt")
+    id("configure-compose")
 }
 configureAndroidApp("dev.enro.example")
-configureCompose()
+
+kotlin {
+    explicitApi = ExplicitApiMode.Disabled
+}
+
+android {
+    buildFeatures {
+        buildConfig = false
+        viewBinding = true
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+tasks.withType<KotlinCompile> {
+    compilerOptions {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+}
 
 dependencies {
     implementation(project(":enro"))

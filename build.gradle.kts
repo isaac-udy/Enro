@@ -25,10 +25,6 @@ allprojects {
     }
 }
 
-tasks.register<Delete>("clean") {
-    delete(rootProject.buildDir)
-}
-
 tasks.register("updateVersion") {
     doLast {
         if (!project.hasProperty("versionName")) {

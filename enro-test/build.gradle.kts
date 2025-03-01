@@ -3,9 +3,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id("com.android.library")
     id("kotlin-android")
+    id("configure-publishing")
 }
 configureAndroidLibrary("dev.enro.test")
-configureAndroidPublishing("dev.enro:enro-test")
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
     compilerOptions {

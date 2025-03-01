@@ -4,9 +4,9 @@ plugins {
     id("kotlin-android")
     id("kotlin-parcelize")
     id("kotlin-kapt")
+    id("configure-compose")
 }
 configureAndroidLibrary("dev.enro.hilt.test")
-configureCompose()
 
 android {
     defaultConfig {

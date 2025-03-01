@@ -4,8 +4,8 @@ plugins {
     id("java-library")
     id("kotlin")
     id("kotlin-kapt")
+    id("configure-publishing")
 }
-configureJavaPublishing("dev.enro:enro-processor")
 
 dependencies {
     implementation(libs.kotlin.stdLib)

@@ -7,10 +7,10 @@ plugins {
     id("kotlin-android")
     id("kotlin-parcelize")
     id("wtf.emulator.gradle")
+    id("configure-publishing")
+    id("configure-compose")
 }
 configureAndroidLibrary("dev.enro")
-configureCompose()
-configureAndroidPublishing("dev.enro:enro")
 configureEmulatorWtf()
 
 android {

@@ -11,7 +11,7 @@ import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileInputStream
-import java.util.Properties
+import java.util.*
 
 fun Project.configureAndroidLibrary(
     namespace: String
@@ -20,7 +20,7 @@ fun Project.configureAndroidLibrary(
     extensions.configure<LibraryExtension> {
         buildFeatures {
             buildConfig = false
-            viewBinding = true
+            viewBinding = false
         }
     }
 }
@@ -32,7 +32,7 @@ fun Project.configureAndroidApp(
     extensions.configure<ApplicationExtension> {
         buildFeatures {
             buildConfig = false
-            viewBinding = true
+            viewBinding = false
         }
     }
 }

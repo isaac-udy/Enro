@@ -1,12 +1,18 @@
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+
 plugins {
     id("com.google.devtools.ksp")
     id("com.android.library")
     id("kotlin-android")
     id("kotlin-parcelize")
     id("kotlin-kapt")
+    id("configure-compose")
 }
 configureAndroidLibrary("dev.enro.tests.moduleone")
-configureCompose()
+
+kotlin {
+    explicitApi = ExplicitApiMode.Disabled
+}
 
 dependencies {
     implementation(project(":enro"))

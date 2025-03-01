@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+
 plugins {
     id("com.google.devtools.ksp")
     id("wtf.emulator.gradle")
@@ -5,10 +7,14 @@ plugins {
     id("kotlin-android")
     id("kotlin-parcelize")
     id("kotlin-kapt")
+    id("configure-compose")
 }
 configureAndroidApp("dev.enro.test.application")
-configureCompose()
 configureEmulatorWtf()
+
+kotlin {
+    explicitApi = ExplicitApiMode.Disabled
+}
 
 android {
     buildTypes {
