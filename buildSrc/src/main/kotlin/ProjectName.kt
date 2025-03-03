@@ -35,8 +35,8 @@ class ProjectName(projectPath: String) {
         .dropWhile { it == '.' }
         .let {
             when {
-                it.startsWith("dev.enro.") -> it
-                it.startsWith("enro.") -> "dev.$it"
+                it.startsWith("dev.enro") -> it
+                it.startsWith("enro") -> "dev.$it"
                 else -> "dev.enro.$it"
             }
         }
