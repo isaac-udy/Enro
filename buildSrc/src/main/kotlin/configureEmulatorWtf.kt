@@ -1,16 +1,32 @@
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.konan.properties.hasProperty
 import wtf.emulator.EwExtension
+import java.io.FileInputStream
+import java.util.*
 
-fun Project.configureEmulatorWtf() {
+fun Project.configureEmulatorWtf(numShards: Int = 2) {
     extensions.configure<EwExtension> {
-        if(project.hasProperty("ewApiToken")) {
-            token.set(project.properties["ewApiToken"].toString())
-        } else {
-            token.set(java.lang.System.getenv()["EW_API_TOKEN"])
+
+        val privateProperties = Properties()
+        val privatePropertiesFile = rootProject.file("private.properties")
+        if (privatePropertiesFile.exists()) {
+            privateProperties.load(FileInputStream(rootProject.file("private.properties")))
         }
 
-        numShards.set(2)
+        when {
+            project.hasProperty("ewApiToken") -> {
+                token.set(project.properties["ewApiToken"].toString())
+            }
+            privateProperties.hasProperty("ewApiToken") -> {
+                token.set(privateProperties["ewApiToken"].toString())
+            }
+            else -> {
+                token.set(java.lang.System.getenv()["EW_API_TOKEN"])
+            }
+        }
+
+        this.numShards.set(numShards)
 
         devices.set(
             listOf(

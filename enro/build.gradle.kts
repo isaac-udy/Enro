@@ -11,7 +11,7 @@ plugins {
     id("configure-compose")
 }
 configureAndroidLibrary("dev.enro")
-configureEmulatorWtf()
+configureEmulatorWtf(numShards = 4)
 
 android {
     lint {
