@@ -18,7 +18,7 @@ import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.core.push
 import dev.enro.core.result.registerForNavigationResult
-import dev.enro.test.application.R
+import dev.enro.tests.application.R
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 

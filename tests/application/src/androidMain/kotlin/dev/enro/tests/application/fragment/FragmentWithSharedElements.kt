@@ -42,7 +42,7 @@ import dev.enro.core.navigationHandle
 import dev.enro.core.push
 import dev.enro.core.requestClose
 import dev.enro.destination.fragment.FragmentSharedElements
-import dev.enro.test.application.R
+import dev.enro.tests.application.R
 import kotlinx.parcelize.Parcelize
 
 /**
