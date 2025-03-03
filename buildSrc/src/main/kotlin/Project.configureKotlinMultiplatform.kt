@@ -18,7 +18,6 @@ internal fun Project.configureKotlinMultiplatform(
 
     project.plugins.apply("org.jetbrains.kotlin.multiplatform")
     if (android) {
-
         project.plugins.apply("org.jetbrains.kotlin.plugin.parcelize")
     }
 

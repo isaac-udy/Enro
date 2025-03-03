@@ -18,6 +18,7 @@ internal fun Project.configureMultiplatformApplication() {
     val libs = project.the<LibrariesForLibs>()
     project.plugins.apply("com.android.application")
     project.configureKotlinMultiplatform()
+    project.plugins.apply("configure-compose")
 
     val compose = project.extensions.getByType(ComposeExtension::class.java)
     compose as ExtensionAware

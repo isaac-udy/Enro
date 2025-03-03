@@ -27,12 +27,19 @@ class ProjectName(projectPath: String) {
      * Examples:
      * `:enro-core` -> `dev.enro.core`
      * `:enro:platforms:android-fragment` -> `dev.enro.platforms.android.fragment`
+     * `:tests:application` -> `dev.enro.tests.application`
      */
     val packageName = projectPath
         .replace(":", ".")
         .replace("-", ".")
         .dropWhile { it == '.' }
-        .let { "dev.$it" }
+        .let {
+            when {
+                it.startsWith("dev.enro.") -> it
+                it.startsWith("enro.") -> "dev.$it"
+                else -> "dev.enro.$it"
+            }
+        }
 
     /**
      * This is a camelCase version of the project's package name; it is the package name with underscores and dots
