@@ -123,11 +123,12 @@ internal fun Project.configureKotlinMultiplatform(
             project.extensions.getByType(CommonExtension::class) as CommonExtension<BuildFeatures, BuildType, DefaultConfig, ProductFlavor, AndroidResources, Installation>
 
         androidExtension.apply {
-            namespace = when(project.projectName.packageName) {
-                "enro.core" -> "dev.enro.core"
-                else -> project.projectName.packageName
-            }
+            namespace = project.projectName.packageName
             compileSdk = libs.versions.android.compileSdk.get().toInt()
+            defaultConfig {
+                minSdk = libs.versions.android.minSdk.get().toInt()
+                testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+            }
 
             sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
             sourceSets["main"].res.srcDirs("src/androidMain/res")

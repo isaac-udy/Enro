@@ -39,13 +39,11 @@ kotlin {
             
         }
         commonMain.dependencies {
-
+            implementation("dev.enro:enro:${project.enroVersionName}")
         }
 
         androidMain.dependencies {
             implementation(project(":tests:module-one"))
-
-            implementation("dev.enro:enro:${project.enroVersionName}")
 
             implementation(libs.compose.material)
             implementation(libs.compose.accompanist.systemUiController)
