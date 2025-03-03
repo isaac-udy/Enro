@@ -23,6 +23,29 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute(module("dev.enro:enro-core"))
+                .using(project(":enro-core"))
+        }
+        resolutionStrategy.dependencySubstitution {
+            substitute(module("dev.enro:enro-test"))
+                .using(project(":enro-test"))
+        }
+        resolutionStrategy.dependencySubstitution {
+            substitute(module("dev.enro:enro-annotations"))
+                .using(project(":enro-annotations"))
+        }
+        resolutionStrategy.dependencySubstitution {
+            substitute(module("dev.enro:enro-processor"))
+                .using(project(":enro-processor"))
+        }
+        resolutionStrategy.dependencySubstitution {
+            substitute(module("dev.enro:enro"))
+                .using(project(":enro"))
+        }
+    }
 }
 
 tasks.register("updateVersion") {

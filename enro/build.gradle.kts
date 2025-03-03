@@ -33,23 +33,20 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
 }
 
 dependencies {
-    releaseApi("dev.enro:enro-core:${android.defaultConfig.versionName}")
-    debugApi(project(":enro-core"))
+    api("dev.enro:enro-core:${project.enroVersionName}")
 
-    releaseApi("dev.enro:enro-annotations:${android.defaultConfig.versionName}")
-    debugApi(project(":enro-annotations"))
-
+    api("dev.enro:enro-annotations:${project.enroVersionName}")
     lintPublish(project(":enro-lint"))
 
-    kaptAndroidTest(project(":enro-processor"))
+    kaptAndroidTest("dev.enro:enro-processor:${project.enroVersionName}")
 
     testImplementation(libs.testing.junit)
     testImplementation(libs.testing.androidx.junit)
     testImplementation(libs.testing.androidx.runner)
     testImplementation(libs.testing.robolectric)
-    testImplementation(project(":enro-test"))
+    testImplementation("dev.enro:enro-test:${project.enroVersionName}")
 
-    androidTestImplementation(project(":enro-test"))
+    androidTestImplementation("dev.enro:enro-test:${project.enroVersionName}")
 
     androidTestImplementation(libs.testing.junit)
 

@@ -12,7 +12,7 @@ kotlin {
             implementation(libs.kotlin.reflect)
         }
         commonMain.dependencies {
-            api(project(":enro-annotations"))
+            api("dev.enro:enro-annotations:${project.enroVersionName}")
             implementation(libs.compose.viewmodel)
             implementation(libs.benasher.uuid)
             implementation(libs.kotlinx.serialization)

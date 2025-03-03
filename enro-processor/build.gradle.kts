@@ -18,7 +18,7 @@ dependencies {
     implementation(libs.processing.autoService)
     kapt(libs.processing.autoService)
 
-    implementation(project(":enro-annotations"))
+    implementation("dev.enro:enro-annotations:${project.enroVersionName}")
     implementation(libs.processing.javaPoet)
     implementation(libs.processing.kotlinPoet)
     implementation(libs.processing.kotlinPoet.ksp)

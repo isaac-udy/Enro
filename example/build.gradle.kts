@@ -37,12 +37,12 @@ tasks.withType<KotlinCompile> {
 }
 
 dependencies {
-    implementation(project(":enro"))
+    implementation("dev.enro:enro:${project.enroVersionName}")
     if (project.hasProperty("enroExampleUseKapt")) {
-        kapt(project(":enro-processor"))
+        kapt("dev.enro:enro-processor:${project.enroVersionName}")
     }
     else {
-        ksp(project(":enro-processor"))
+        ksp("dev.enro:enro-processor:${project.enroVersionName}")
     }
 
     lintChecks(project(":enro-lint"))

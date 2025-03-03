@@ -45,7 +45,7 @@ kotlin {
         androidMain.dependencies {
             implementation(project(":tests:module-one"))
 
-            implementation(project(":enro"))
+            implementation("dev.enro:enro:${project.enroVersionName}")
 
             implementation(libs.compose.material)
             implementation(libs.compose.accompanist.systemUiController)
@@ -67,7 +67,7 @@ kotlin {
             implementation(libs.testing.junit)
         }
         androidInstrumentedTest.dependencies {
-            implementation(project(":enro-test"))
+            implementation("dev.enro:enro-test:${project.enroVersionName}")
             implementation(libs.testing.junit)
             implementation(libs.kotlin.reflect)
             implementation(libs.androidx.core)
@@ -94,10 +94,10 @@ dependencies {
 //    debugImplementation(libs.leakcanary)
 
     if (project.hasProperty("enroExampleUseKapt")) {
-        kapt(project(":enro-processor"))
+        kapt("dev.enro:enro-processor:${project.enroVersionName}")
     }
     else {
-        ksp(project(":enro-processor"))
+        ksp("dev.enro:enro-processor:${project.enroVersionName}")
     }
 
     lintChecks(project(":enro-lint"))

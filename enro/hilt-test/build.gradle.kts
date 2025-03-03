@@ -18,11 +18,11 @@ android {
 }
 
 dependencies {
-    implementation(project(":enro"))
+    implementation("dev.enro:enro:${project.enroVersionName}")
 
-    kaptAndroidTest(project(":enro-processor"))
+    kaptAndroidTest("dev.enro:enro-processor:${project.enroVersionName}")
 
-    androidTestImplementation(project(":enro-test"))
+    androidTestImplementation("dev.enro:enro-test:${project.enroVersionName}")
     androidTestImplementation(libs.testing.junit)
     androidTestImplementation(libs.androidx.core)
     androidTestImplementation(libs.androidx.appcompat)

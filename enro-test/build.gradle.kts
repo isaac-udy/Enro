@@ -15,8 +15,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
 }
 
 dependencies {
-    releaseApi("dev.enro:enro-core:${android.defaultConfig.versionName}")
-    debugApi(project(":enro-core"))
+    api("dev.enro:enro-core:${project.enroVersionName}")
 
     implementation(libs.androidx.core)
     implementation(libs.androidx.appcompat)
