@@ -34,9 +34,6 @@ internal fun Project.configureComposeAndroid() {
     val libs = the<LibrariesForLibs>()
     extensions.configure<BaseExtension> {
         buildFeatures.compose = true
-        composeOptions {
-            kotlinCompilerExtensionVersion = "1.5.10"
-        }
     }
 
     dependencies {

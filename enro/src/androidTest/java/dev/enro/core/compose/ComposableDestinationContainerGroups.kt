@@ -110,7 +110,7 @@ class ComposableDestinationContainerGroups {
     }
 
     @Test
-    fun whenComposableDestinationIsLaunchedWithContainerGroup_andSecondaryContainerSelected_andActivityIsRecreated_thenActiveContainerRemainsActive() {
+    fun whenContainerGroupLaunched_andSecondaryContainerSelected_andActivityIsRecreated_thenActiveContainerRemainsActive() {
         val root = launchComposable(Destinations.RootDestination)
         runBlocking { composeContentRule.awaitIdle() }
         expectComposableContext<Destinations.FirstTab>()
