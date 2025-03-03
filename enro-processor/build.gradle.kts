@@ -24,11 +24,6 @@ dependencies {
     implementation(libs.processing.kotlinPoet.ksp)
 }
 
-afterEvaluate {
-    tasks.findByName("compileKotlin")
-            ?.dependsOn(":enro-annotations:publishToMavenLocal")
-}
-
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17

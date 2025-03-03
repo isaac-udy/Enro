@@ -27,8 +27,3 @@ dependencies {
     //noinspection FragmentGradleConfiguration
     implementation(libs.testing.androidx.fragment)
 }
-
-afterEvaluate {
-    tasks.findByName("preReleaseBuild")
-            ?.dependsOn(":enro-core:publishToMavenLocal")
-}
