@@ -3,10 +3,12 @@ package dev.enro.result
 
 import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.setPadding
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -16,9 +18,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
-import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.matcher.ViewMatchers.*
 import dev.enro.annotations.NavigationDestination
 import dev.enro.clearAllEnroResultChannels
 import dev.enro.core.NavigationHandle
@@ -36,7 +36,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
-import java.util.UUID
+import java.util.*
 
 
 class RecyclerViewResultTests {
@@ -182,6 +182,15 @@ class RecyclerViewResultActivity : AppCompatActivity() {
             adapter = this@RecyclerViewResultActivity.adapter
             layoutManager = LinearLayoutManager(this@RecyclerViewResultActivity)
             itemAnimator = null
+
+            val dip = 32f
+            val r = resources
+            val px = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dip,
+                r.displayMetrics
+            ).toInt()
+            setPadding(px)
         }
     }
 
