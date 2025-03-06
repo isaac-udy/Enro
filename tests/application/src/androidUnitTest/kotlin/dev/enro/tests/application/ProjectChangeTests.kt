@@ -29,7 +29,7 @@ class ProjectChangeTests {
     @Test
     fun givenFileInApp_whenDestinationFileContentsUpdated_thenBuildSucceeds() {
         execAssembleDebug()
-        val editableFile = File("src/main/java/dev/enro/tests/application/TestApplicationEditableDestination.kt")
+        val editableFile = File("src/androidMain/kotlin/dev/enro/tests/application/TestApplicationEditableDestination.kt")
         val editedContent = editableFile.readText()
             .replace("TestApplicationEditableDestination", "TestApplicationEditableDestination_Edited_1")
             .replace("TestApplicationEditableScreen", "TestApplicationEditableScreen_Edited_1")
@@ -40,8 +40,8 @@ class ProjectChangeTests {
     @Test
     fun givenFileInApp_whenDestinationFileRenamed_thenBuildSucceeds() {
         execAssembleDebug()
-        val editableFile = File("src/main/java/dev/enro/tests/application/TestApplicationEditableDestination.kt")
-        val renamedFile = File("src/main/java/dev/enro/tests/application/TestApplicationEditableDestination_Edited_2.kt")
+        val editableFile = File("src/androidMain/kotlin/dev/enro/tests/application/TestApplicationEditableDestination.kt")
+        val renamedFile = File("src/androidMain/kotlin/dev/enro/tests/application/TestApplicationEditableDestination_Edited_2.kt")
         editableFile.renameTo(renamedFile)
         execAssembleDebug()
     }
@@ -49,7 +49,7 @@ class ProjectChangeTests {
     @Test
     fun givenFileInApp_whenDestinationFileDeleted_thenBuildSucceeds() {
         execAssembleDebug()
-        val editableFile = File("src/main/java/dev/enro/tests/application/TestApplicationEditableDestination.kt")
+        val editableFile = File("src/androidMain/kotlin/dev/enro/tests/application/TestApplicationEditableDestination.kt")
         editableFile.delete()
         execAssembleDebug()
     }
@@ -57,12 +57,12 @@ class ProjectChangeTests {
     @Test
     fun givenFileInApp_whenFileIsRenamedAndContentsUpdated_thenBuildSucceeds() {
         execAssembleDebug()
-        val editableFile = File("src/main/java/dev/enro/tests/application/TestApplicationEditableDestination.kt")
+        val editableFile = File("src/androidMain/kotlin/dev/enro/tests/application/TestApplicationEditableDestination.kt")
         val editedContent = editableFile.readText()
             .replace("TestApplicationEditableDestination", "TestApplicationEditableDestination_Edited_4")
             .replace("TestApplicationEditableScreen", "TestApplicationEditableScreen_Edited_4")
         editableFile.writeText(editedContent)
-        val renamedFile = File("src/main/java/dev/enro/tests/application/TestApplicationEditableDestination_Edited_4.kt")
+        val renamedFile = File("src/androidMain/kotlin/dev/enro/tests/application/TestApplicationEditableDestination_Edited_4.kt")
         editableFile.renameTo(renamedFile)
         execAssembleDebug()
     }
