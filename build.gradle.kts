@@ -14,6 +14,7 @@ buildscript {
         classpath(libs.hilt.gradle)
         classpath(libs.emulator.wtf.gradle)
         classpath(libs.processing.javaPoet) // https://github.com/google/dagger/issues/3068
+        classpath(libs.maven.publish.gradle)
     }
 }
 

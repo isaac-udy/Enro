@@ -11,12 +11,12 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.compose.compiler.gradle)
     implementation(libs.compose.gradle)
     implementation(libs.emulator.wtf.gradle)
+    implementation(libs.maven.publish.gradle)
     implementation(libs.processing.javaPoet) // https://github.com/google/dagger/issues/3068
 }
 

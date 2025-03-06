@@ -67,14 +67,14 @@ private fun Project.commonAndroidConfig(
         }
 
         compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_17
-            targetCompatibility = JavaVersion.VERSION_17
+            sourceCompatibility = JavaVersion.VERSION_21
+            targetCompatibility = JavaVersion.VERSION_21
         }
     }
 
     tasks.withType<KotlinCompile>() {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
+            jvmTarget.set(JvmTarget.JVM_21)
 
             // We want to disable the automatic inclusion of the `dev.enro.annotations.AdvancedEnroApi` and `dev.enro.annotations.ExperimentalEnroApi`
             // opt-ins when we're compiling the test application, so that we're not accidentally making changes that might break the public API by

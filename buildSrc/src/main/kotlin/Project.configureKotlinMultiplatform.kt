@@ -30,7 +30,7 @@ internal fun Project.configureKotlinMultiplatform(
         if (android) {
             androidTarget {
                 compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_17)
+                    jvmTarget.set(JvmTarget.JVM_21)
                     freeCompilerArgs.addAll(
                         "-P",
                         "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=dev.enro.annotations.Parcelize"
@@ -47,7 +47,7 @@ internal fun Project.configureKotlinMultiplatform(
             jvm("desktop") {
                 @OptIn(ExperimentalKotlinGradlePluginApi::class)
                 compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_17)
+                    jvmTarget.set(JvmTarget.JVM_21)
                     optIn.addAll(
                         "dev.enro.annotations.AdvancedEnroApi",
                         "dev.enro.annotations.ExperimentalEnroApi",
@@ -145,8 +145,8 @@ internal fun Project.configureKotlinMultiplatform(
                 }
             }
             compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_17
-                targetCompatibility = JavaVersion.VERSION_17
+                sourceCompatibility = JavaVersion.VERSION_21
+                targetCompatibility = JavaVersion.VERSION_21
             }
         }
     }
