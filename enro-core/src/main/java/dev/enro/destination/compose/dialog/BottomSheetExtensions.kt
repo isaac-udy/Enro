@@ -79,34 +79,34 @@ public fun BottomSheetDestination(
     val isActive = remember { derivedStateOf { container.backstack.active?.instructionId == navigationHandle.id } }
     var hasBeenDisplayed by rememberSaveable { mutableStateOf(false) }
 
-    val bottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        animationSpec = animationSpec,
-        confirmValueChange = remember(Unit) {
-            fun(it: ModalBottomSheetValue): Boolean {
-                val isHiding = it == ModalBottomSheetValue.Hidden
-                if (isHiding && !hasBeenDisplayed) return false
-                return when {
-                    !confirmValueChange(it) -> false
-                    isHiding && isActive.value -> {
-                        navigationHandle.requestClose()
-                        !isActive.value
-                    }
-                    else -> true
-                }
-            }
-        },
-        skipHalfExpanded = skipHalfExpanded,
-    ).bindToNavigationHandle()
-
-    SideEffect {
-        hasBeenDisplayed = hasBeenDisplayed || bottomSheetState.isVisible
-    }
-
     OverrideNavigationAnimations(
         enter = fadeIn(tween(100)),
         exit = fadeOut(tween(durationMillis = 125, delayMillis = 225))
     ) {
+        val bottomSheetState = rememberModalBottomSheetState(
+            initialValue = ModalBottomSheetValue.Hidden,
+            animationSpec = animationSpec,
+            confirmValueChange = remember(Unit) {
+                fun(it: ModalBottomSheetValue): Boolean {
+                    val isHiding = it == ModalBottomSheetValue.Hidden
+                    if (isHiding && !hasBeenDisplayed) return false
+                    return when {
+                        !confirmValueChange(it) -> false
+                        isHiding && isActive.value -> {
+                            navigationHandle.requestClose()
+                            !isActive.value
+                        }
+                        else -> true
+                    }
+                }
+            },
+            skipHalfExpanded = skipHalfExpanded,
+        ).bindToNavigationHandle()
+
+        SideEffect {
+            hasBeenDisplayed = hasBeenDisplayed || bottomSheetState.isVisible
+        }
+
         content(bottomSheetState)
     }
 }
