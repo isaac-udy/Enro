@@ -2,16 +2,13 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.google.devtools.ksp")
-    id("com.android.library")
+    id("configure-library")
     id("kotlin-kapt")
-    id("kotlin-android")
-    id("kotlin-parcelize")
     id("wtf.emulator.gradle")
+    id("configure-publishing")
+    id("configure-compose")
 }
-configureAndroidLibrary("dev.enro")
-configureCompose()
-configureAndroidPublishing("dev.enro:enro")
-configureEmulatorWtf()
+configureEmulatorWtf(numShards = 4)
 
 android {
     lint {
@@ -27,61 +24,65 @@ android {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(JvmTarget.JVM_21)
         freeCompilerArgs.add("-Xfriend-paths=../enro-core/src/main")
     }
 }
 
-dependencies {
-    releaseApi("dev.enro:enro-core:${android.defaultConfig.versionName}")
-    debugApi(project(":enro-core"))
+kotlin {
+    sourceSets {
+        desktopMain.dependencies {
 
-    releaseApi("dev.enro:enro-annotations:${android.defaultConfig.versionName}")
-    debugApi(project(":enro-annotations"))
+        }
+        commonMain.dependencies {
+            api("dev.enro:enro-core:${project.enroVersionName}")
+            api("dev.enro:enro-annotations:${project.enroVersionName}")
+        }
 
-    lintPublish(project(":enro-lint"))
+        androidMain.dependencies {
 
-    kaptAndroidTest(project(":enro-processor"))
+        }
+        androidUnitTest.dependencies {
+            implementation(libs.testing.junit)
+            implementation(libs.testing.androidx.junit)
+            implementation(libs.testing.androidx.runner)
+            implementation(libs.testing.robolectric)
+            implementation("dev.enro:enro-test:${project.enroVersionName}")
+        }
+        androidInstrumentedTest.dependencies {
+            implementation("dev.enro:enro-test:${project.enroVersionName}")
 
-    testImplementation(libs.testing.junit)
-    testImplementation(libs.testing.androidx.junit)
-    testImplementation(libs.testing.androidx.runner)
-    testImplementation(libs.testing.robolectric)
-    testImplementation(project(":enro-test"))
+            implementation(libs.testing.junit)
 
-    androidTestImplementation(project(":enro-test"))
+            implementation(libs.kotlin.reflect)
+            implementation(libs.androidx.core)
+            implementation(libs.androidx.appcompat)
+            implementation(libs.androidx.fragment)
+            implementation(libs.androidx.activity)
+            implementation(libs.androidx.recyclerview)
 
-    androidTestImplementation(libs.testing.junit)
+            implementation(libs.testing.androidx.fragment)
+            implementation(libs.testing.androidx.junit)
+            implementation(libs.testing.androidx.espresso)
+            implementation(libs.testing.androidx.espressoRecyclerView)
+            implementation(libs.testing.androidx.espressoIntents)
+            implementation(libs.testing.androidx.runner)
 
-    androidTestImplementation(libs.kotlin.reflect)
-    androidTestImplementation(libs.androidx.core)
-    androidTestImplementation(libs.androidx.appcompat)
-    androidTestImplementation(libs.androidx.fragment)
-    androidTestImplementation(libs.androidx.activity)
-    androidTestImplementation(libs.androidx.recyclerview)
+            implementation(libs.testing.androidx.compose)
+            implementation(libs.compose.materialIcons)
 
-    androidTestImplementation(libs.testing.androidx.fragment)
-    androidTestImplementation(libs.testing.androidx.junit)
-    androidTestImplementation(libs.testing.androidx.espresso)
-    androidTestImplementation(libs.testing.androidx.espressoRecyclerView)
-    androidTestImplementation(libs.testing.androidx.espressoIntents)
-    androidTestImplementation(libs.testing.androidx.runner)
+            implementation(libs.androidx.navigation.fragment)
+            implementation(libs.androidx.navigation.ui)
 
-    androidTestImplementation(libs.testing.androidx.compose)
-    androidTestImplementation(libs.compose.materialIcons)
-
-    androidTestImplementation(libs.androidx.navigation.fragment)
-    androidTestImplementation(libs.androidx.navigation.ui)
-
-    androidTestImplementation(libs.leakcanary)
-    androidTestImplementation(libs.testing.leakcanary.instrumentation)
+            implementation(libs.leakcanary)
+            implementation(libs.testing.leakcanary.instrumentation)
+        }
+    }
 }
 
-afterEvaluate {
-    tasks.named("preReleaseBuild") {
-        dependsOn(
-            ":enro-core:publishToMavenLocal",
-            ":enro-annotations:publishToMavenLocal"
-        )
-    }
+// Some android dependencies need to be declared at the top level like this,
+// it's a bit gross but I can't figure out how to get it to work otherwise
+dependencies {
+    lintPublish(project(":enro-lint"))
+    kaptAndroidTest("dev.enro:enro-processor:${project.enroVersionName}")
 }

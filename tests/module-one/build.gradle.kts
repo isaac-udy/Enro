@@ -1,20 +1,26 @@
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+
 plugins {
     id("com.google.devtools.ksp")
     id("com.android.library")
     id("kotlin-android")
     id("kotlin-parcelize")
     id("kotlin-kapt")
+    id("configure-compose")
 }
 configureAndroidLibrary("dev.enro.tests.moduleone")
-configureCompose()
+
+kotlin {
+    explicitApi = ExplicitApiMode.Disabled
+}
 
 dependencies {
-    implementation(project(":enro"))
+    implementation("dev.enro:enro:${project.enroVersionName}")
     if (project.hasProperty("enroExampleUseKapt")) {
-        kapt(project(":enro-processor"))
+        kapt("dev.enro:enro-processor:${project.enroVersionName}")
     }
     else {
-        ksp(project(":enro-processor"))
+        ksp("dev.enro:enro-processor:${project.enroVersionName}")
     }
 
     lintChecks(project(":enro-lint"))

@@ -1,14 +1,17 @@
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+
 plugins {
+    id("configure-application")
     id("com.google.devtools.ksp")
     id("wtf.emulator.gradle")
-    id("com.android.application")
-    id("kotlin-android")
-    id("kotlin-parcelize")
     id("kotlin-kapt")
 }
-configureAndroidApp("dev.enro.test.application")
-configureCompose()
+
 configureEmulatorWtf()
+
+kotlin {
+    explicitApi = ExplicitApiMode.Disabled
+}
 
 android {
     buildTypes {
@@ -29,56 +32,71 @@ android {
     }
 }
 
-dependencies {
-    implementation(project(":tests:module-one"))
 
-    implementation(project(":enro"))
+kotlin {
+    sourceSets {
+        desktopMain.dependencies {
+            
+        }
+        commonMain.dependencies {
+            implementation("dev.enro:enro:${project.enroVersionName}")
+        }
+
+        androidMain.dependencies {
+            implementation(project(":tests:module-one"))
+
+            implementation(libs.compose.material)
+            implementation(libs.compose.accompanist.systemUiController)
+
+            implementation(libs.kotlin.reflect)
+
+            implementation(libs.kotlin.stdLib)
+            implementation(libs.androidx.core)
+            implementation(libs.androidx.splashscreen)
+            implementation(libs.androidx.appcompat)
+            implementation(libs.androidx.lifecycle)
+            implementation(libs.androidx.constraintlayout)
+            implementation(libs.androidx.fragment)
+            implementation(libs.androidx.activity)
+
+            implementation(libs.material)
+        }
+        androidUnitTest.dependencies {
+            implementation(libs.testing.junit)
+        }
+        androidInstrumentedTest.dependencies {
+            implementation("dev.enro:enro-test:${project.enroVersionName}")
+            implementation(libs.testing.junit)
+            implementation(libs.kotlin.reflect)
+            implementation(libs.androidx.core)
+            implementation(libs.androidx.appcompat)
+            implementation(libs.androidx.fragment)
+            implementation(libs.androidx.activity)
+            implementation(libs.androidx.recyclerview)
+            implementation(libs.testing.androidx.espresso)
+            implementation(libs.testing.androidx.fragment)
+            implementation(libs.testing.androidx.junit)
+            implementation(libs.testing.androidx.espresso)
+            implementation(libs.testing.androidx.espressoRecyclerView)
+            implementation(libs.testing.androidx.espressoIntents)
+            implementation(libs.testing.androidx.runner)
+            implementation(libs.testing.androidx.compose)
+        }
+    }
+}
+
+// Some android dependencies need to be declared at the top level like this,
+// it's a bit gross but I can't figure out how to get it to work otherwise
+dependencies {
+//     Uncomment the following line to enable leakcanary
+//    debugImplementation(libs.leakcanary)
+
     if (project.hasProperty("enroExampleUseKapt")) {
-        kapt(project(":enro-processor"))
+        kapt("dev.enro:enro-processor:${project.enroVersionName}")
     }
     else {
-        ksp(project(":enro-processor"))
+        ksp("dev.enro:enro-processor:${project.enroVersionName}")
     }
 
     lintChecks(project(":enro-lint"))
-
-    implementation(libs.compose.material)
-    implementation(libs.compose.accompanist.systemUiController)
-
-    implementation(libs.kotlin.reflect)
-
-    implementation(libs.kotlin.stdLib)
-    implementation(libs.androidx.core)
-    implementation(libs.androidx.splashscreen)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.lifecycle)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.fragment)
-    implementation(libs.androidx.activity)
-
-    implementation(libs.material)
-
-    testImplementation(libs.testing.junit)
-
-    androidTestImplementation(project(":enro-test"))
-
-    androidTestImplementation(libs.testing.junit)
-
-    androidTestImplementation(libs.kotlin.reflect)
-    androidTestImplementation(libs.androidx.core)
-    androidTestImplementation(libs.androidx.appcompat)
-    androidTestImplementation(libs.androidx.fragment)
-    androidTestImplementation(libs.androidx.activity)
-    androidTestImplementation(libs.androidx.recyclerview)
-
-    androidTestImplementation(libs.testing.androidx.espresso)
-
-    androidTestImplementation(libs.testing.androidx.fragment)
-    androidTestImplementation(libs.testing.androidx.junit)
-    androidTestImplementation(libs.testing.androidx.espresso)
-    androidTestImplementation(libs.testing.androidx.espressoRecyclerView)
-    androidTestImplementation(libs.testing.androidx.espressoIntents)
-    androidTestImplementation(libs.testing.androidx.runner)
-
-    androidTestImplementation(libs.testing.androidx.compose)
 }

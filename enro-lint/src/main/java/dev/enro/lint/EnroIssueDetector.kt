@@ -3,17 +3,19 @@ package dev.enro.lint
 import com.android.tools.lint.client.api.UElementHandler
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.JavaContext
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiJvmModifiersOwner
 import com.intellij.psi.PsiType
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.PsiUtil
 import com.intellij.psi.util.TypeConversionUtil
 import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UClassLiteralExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.getContainingUFile
+import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.toUElementOfType
 
 @Suppress("UnstableApiUsage")
@@ -30,6 +32,18 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
                 ?.type
         }
 
+        // UCallExpression.receiverType is not always correct, so we need to manually resolve the receiver type,
+        // because "receiver" may be null when "receiverType" is not null, which likely indicates a "this.method()" call,
+        // which we need to resolve to be the containing class of the UCallExpression
+        fun UCallExpression.getActualReceiver(): PsiClass? {
+            return when (val receiver = receiver) {
+                // This is likely a static method call or a call on 'this'
+                null -> getParentOfType<UClass>()?.javaPsi
+                // This is likely a qualified call (e.g. object.method())
+                else -> context.evaluator.getTypeClass(receiver.getExpressionType());
+            }
+        }
+
 
         val navigationHandlePropertyType = PsiType.getTypeByName(
             "dev.enro.core.NavigationHandleProperty",
@@ -43,7 +57,7 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
 
             val navigationHandleGenericType = returnType.parameters.first()
 
-            val receiverClass = PsiUtil.resolveClassInType(node.receiverType) ?: return
+            val receiverClass = node.getActualReceiver() ?: return
             val navigationDestinationType = receiverClass.getNavigationDestinationType()
 
             if (navigationDestinationType == null) {

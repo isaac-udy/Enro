@@ -4,8 +4,8 @@ plugins {
     id("java-library")
     id("kotlin")
     id("kotlin-kapt")
+    id("configure-publishing")
 }
-configureJavaPublishing("dev.enro:enro-processor")
 
 dependencies {
     implementation(libs.kotlin.stdLib)
@@ -18,24 +18,19 @@ dependencies {
     implementation(libs.processing.autoService)
     kapt(libs.processing.autoService)
 
-    implementation(project(":enro-annotations"))
+    implementation("dev.enro:enro-annotations:${project.enroVersionName}")
     implementation(libs.processing.javaPoet)
     implementation(libs.processing.kotlinPoet)
     implementation(libs.processing.kotlinPoet.ksp)
 }
 
-afterEvaluate {
-    tasks.findByName("compileKotlin")
-            ?.dependsOn(":enro-annotations:publishToMavenLocal")
-}
-
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
