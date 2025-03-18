@@ -1,49 +1,70 @@
 [versions]
+agp = "8.7.3"
+android-compileSdk = "35"
+android-minSdk = "21"
+android-targetSdk = "35"
+kotlin = "2.1.10"
+compose-plugin = "1.7.3"
+androidx-viewmodel-compose = "2.8.0"
+kotlinx-serialization = "1.7.0-RC"
+maven-publish = "0.29.0"
+ksp = "2.1.10-1.0.31"
+
 [libraries]
-android-gradle = "com.android.tools.build:gradle:8.5.2"
+android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+compose-compiler-gradle = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+compose-gradle = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "compose-plugin" }
+maven-publish-gradle = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "maven-publish" }
 
 emulator-wtf-gradle = "wtf.emulator:gradle-plugin:0.0.11"
 
 androidx-core = "androidx.core:core-ktx:1.15.0"
 androidx-appcompat = "androidx.appcompat:appcompat:1.7.0"
-androidx-constraintlayout = "androidx.constraintlayout:constraintlayout:2.2.0"
-androidx-fragment = "androidx.fragment:fragment-ktx:1.8.5"
+androidx-constraintlayout = "androidx.constraintlayout:constraintlayout:2.2.1"
+androidx-fragment = "androidx.fragment:fragment-ktx:1.8.6"
 androidx-recyclerview = "androidx.recyclerview:recyclerview:1.4.0"
 androidx-splashscreen = "androidx.core:core-splashscreen:1.0.1"
 
 # Used for interoperability testing in the main Enro test suite
-androidx-navigation-fragment = "androidx.navigation:navigation-fragment-ktx:2.8.6"
-androidx-navigation-ui = "androidx.navigation:navigation-ui-ktx:2.8.6"
+androidx-navigation-fragment = "androidx.navigation:navigation-fragment-ktx:2.8.8"
+androidx-navigation-ui = "androidx.navigation:navigation-ui-ktx:2.8.8"
 
-androidx-activity = "androidx.activity:activity-ktx:1.10.0"
-compose-activity = "androidx.activity:activity-compose:1.10.0"
+androidx-activity = "androidx.activity:activity-ktx:1.10.1"
+compose-activity = "androidx.activity:activity-compose:1.10.1"
 
 androidx-lifecycle = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7"
 androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.8.7"
-compose-viewmodel = "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7"
+
+benasher-uuid = { module = "com.benasher44:uuid", version = "0.8.4" }
 
 compose-compiler = "androidx.compose.compiler:compiler:1.5.15"
-compose-foundation = "androidx.compose.foundation:foundation:1.7.7"
-compose-foundationLayout = "androidx.compose.foundation:foundation-layout:1.7.7"
-compose-ui = "androidx.compose.ui:ui:1.7.7"
-compose-uiTooling = "androidx.compose.ui:ui-tooling:1.7.7"
-compose-runtime = "androidx.compose.runtime:runtime:1.7.7"
-compose-livedata = "androidx.compose.runtime:runtime-livedata:1.7.7"
-compose-material = "androidx.compose.material:material:1.7.7"
+compose-foundation = "androidx.compose.foundation:foundation:1.7.8"
+compose-foundationLayout = "androidx.compose.foundation:foundation-layout:1.7.8"
+compose-ui = "androidx.compose.ui:ui:1.7.8"
+compose-uiTooling = "androidx.compose.ui:ui-tooling:1.7.8"
+compose-preview = "androidx.compose.ui:ui-tooling-preview:1.7.8"
+compose-runtime = "androidx.compose.runtime:runtime:1.7.8"
+compose-livedata = "androidx.compose.runtime:runtime-livedata:1.7.8"
+compose-material = "androidx.compose.material:material:1.7.8"
+compose-material3 = "androidx.compose.material:material3:1.7.8"
+compose-lifecycle = "androidx.lifecycle:lifecycle-runtime-compose:2.8.7"
+compose-bundle = "org.jetbrains.androidx.core:core-bundle:1.0.1"
+compose-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-viewmodel-compose" }
 
 compose-accompanist-systemUiController = "com.google.accompanist:accompanist-systemuicontroller:0.27.0"
 
 compose-materialIcons = "androidx.compose.material:material-icons-core:1.7.7"
-compose-materialIconsExtended = "androidx.compose.material:material-icons-extended:1.7.7"
+compose-materialIconsExtended = "androidx.compose.material:material-icons-extended:1.7.8"
 
-kotlin-gradle = "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22"
-kotlin-stdLib = "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
-kotlin-reflect = "org.jetbrains.kotlin:kotlin-reflect:1.9.22"
+kotlin-stdLib = "org.jetbrains.kotlin:kotlin-stdlib:2.1.0"
+kotlin-reflect = "org.jetbrains.kotlin:kotlin-reflect:2.1.0"
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
-hilt-gradle = "com.google.dagger:hilt-android-gradle-plugin:2.48.1"
-hilt-android = "com.google.dagger:hilt-android:2.48.1"
-hilt-androidCompiler = "com.google.dagger:hilt-android-compiler:2.48.1"
-hilt-testing = "com.google.dagger:hilt-android-testing:2.48.1"
+hilt-gradle = "com.google.dagger:hilt-android-gradle-plugin:2.55"
+hilt-android = "com.google.dagger:hilt-android:2.55"
+hilt-androidCompiler = "com.google.dagger:hilt-android-compiler:2.55"
+hilt-testing = "com.google.dagger:hilt-android-testing:2.55"
 hilt-compiler = "androidx.hilt:hilt-compiler:1.2.0"
 
 leakcanary = "com.squareup.leakcanary:leakcanary-android:2.14"
@@ -58,15 +79,15 @@ testing-androidx-orchestrator = "androidx.test:orchestrator:1.5.1"
 testing-androidx-espresso = "androidx.test.espresso:espresso-core:3.6.1"
 testing-androidx-espressoRecyclerView = "androidx.test.espresso:espresso-contrib:3.6.1"
 testing-androidx-espressoIntents = "androidx.test.espresso:espresso-intents:3.6.1"
-testing-androidx-fragment = "androidx.fragment:fragment-testing:1.8.5"
+testing-androidx-fragment = "androidx.fragment:fragment-testing:1.8.6"
 testing-androidx-compose = "androidx.compose.ui:ui-test-junit4:1.7.5"
 
 testing-leakcanary-instrumentation = "com.squareup.leakcanary:leakcanary-android-instrumentation:2.10"
 
 testing-archunit = "com.tngtech.archunit:archunit:1.1.0"
 
-processing-ksp-gradle = "com.google.devtools.ksp:symbol-processing-gradle-plugin:1.9.22-1.0.17"
-processing-ksp = "com.google.devtools.ksp:symbol-processing-api:1.9.22-1.0.17"
+processing-ksp-gradle = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
+processing-ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 processing-incremental = "net.ltgt.gradle.incap:incap:0.3"
 processing-incrementalProcessor = "net.ltgt.gradle.incap:incap-processor:0.3"
 processing-autoService = "com.google.auto.service:auto-service:1.0.1"
@@ -76,5 +97,14 @@ processing-kotlinPoet-ksp = "com.squareup:kotlinpoet-ksp:1.13.2"
 
 material = "com.google.android.material:material:1.12.0"
 
-lint-checks = "com.android.tools.lint:lint-checks:31.8.0"
-lint-api = "com.android.tools.lint:lint-api:31.8.0"
+lint-checks = "com.android.tools.lint:lint-checks:31.9.0"
+lint-api = "com.android.tools.lint:lint-api:31.9.0"
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinParcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }

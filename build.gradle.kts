@@ -14,6 +14,7 @@ buildscript {
         classpath(libs.hilt.gradle)
         classpath(libs.emulator.wtf.gradle)
         classpath(libs.processing.javaPoet) // https://github.com/google/dagger/issues/3068
+        classpath(libs.maven.publish.gradle)
     }
 }
 
@@ -23,10 +24,25 @@ allprojects {
         google()
         mavenCentral()
     }
-}
 
-tasks.register<Delete>("clean") {
-    delete(rootProject.buildDir)
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute(module("dev.enro:enro-core"))
+                .using(project(":enro-core"))
+
+            substitute(module("dev.enro:enro-test"))
+                .using(project(":enro-test"))
+
+            substitute(module("dev.enro:enro-annotations"))
+                .using(project(":enro-annotations"))
+
+            substitute(module("dev.enro:enro-processor"))
+                .using(project(":enro-processor"))
+
+            substitute(module("dev.enro:enro"))
+                .using(project(":enro"))
+        }
+    }
 }
 
 tasks.register("updateVersion") {
