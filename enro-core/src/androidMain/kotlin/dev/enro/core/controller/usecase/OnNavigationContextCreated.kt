@@ -21,7 +21,6 @@ internal const val CONTEXT_ID_ARG = "dev.enro.core.ContextController.CONTEXT_ID"
 
 internal class OnNavigationContextCreated(
     private val activeNavigationHandleReference: ActiveNavigationHandleReference,
-    private val getNavigationExecutor: GetNavigationExecutor,
 ) {
     operator fun invoke(
         context: NavigationContext<*>,
@@ -68,9 +67,6 @@ internal class OnNavigationContextCreated(
             context.lifecycle.addObserver(object : LifecycleEventObserver {
                 override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                     if (event == Lifecycle.Event.ON_START) {
-                        getNavigationExecutor
-                            .forClosing(context)
-                            .postOpened(context)
                         context.lifecycle.removeObserver(this)
                     }
                 }

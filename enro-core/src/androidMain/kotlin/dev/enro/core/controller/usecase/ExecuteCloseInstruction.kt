@@ -1,9 +1,8 @@
 package dev.enro.core.controller.usecase
 
 import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationExecutor
 import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
+import dev.enro.core.container.DefaultContainerExecutor
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.getNavigationHandle
 
@@ -16,7 +15,6 @@ internal interface ExecuteCloseInstruction {
 
 internal class ExecuteCloseInstructionImpl(
     private val addPendingResult: AddPendingResult,
-    private val getNavigationExecutor: GetNavigationExecutor,
     private val interceptorRepository: InstructionInterceptorRepository
 ): ExecuteCloseInstruction {
 
@@ -33,10 +31,7 @@ internal class ExecuteCloseInstructionImpl(
             return
         }
 
-        val executor: NavigationExecutor<Any, Any, NavigationKey> = getNavigationExecutor(
-            navigationContext.getNavigationHandle().instruction.internal.openedByType to navigationContext.contextReference::class.java
-        )
-        executor.preClosed(navigationContext)
+        val executor = DefaultContainerExecutor
         executor.close(navigationContext)
         addPendingResult(navigationContext, processedInstruction)
     }

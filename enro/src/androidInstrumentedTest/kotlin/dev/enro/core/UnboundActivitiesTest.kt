@@ -13,6 +13,8 @@ import dev.enro.GenericFragment
 import dev.enro.GenericFragmentKey
 import dev.enro.UnboundActivity
 import dev.enro.core.controller.EnroBackConfiguration
+import dev.enro.core.controller.createNavigationModule
+import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.navigationController
 import dev.enro.expectActivity
 import dev.enro.expectFragment
@@ -105,13 +107,19 @@ class UnboundActivitiesTest {
 
 
     @Test
-    fun givenUnboundActivity_andActivityExecutorOverrideForUnboundActivity_whenBackButtonIsPressed_thenActivityIsClosed() {
-        var overrideWasCalled = false
-        val override = createOverride<Any, UnboundActivity> {
-            closed {
-                overrideWasCalled = true
-                defaultClosed(it)
-            }
+    fun givenUnboundActivity_andInterceptorForUnboundActivity_whenBackButtonIsPressed_thenActivityIsClosed() {
+        var interceptorWasCalled = false
+        val interceptorModule = createNavigationModule {
+            interceptor(object : NavigationInstructionInterceptor {
+                override fun intercept(
+                    instruction: NavigationInstruction.Close,
+                    context: NavigationContext<*>
+                ): NavigationInstruction {
+                    if (context.contextReference !is UnboundActivity) return instruction
+                    interceptorWasCalled = true
+                    return instruction
+                }
+            })
         }
         val navigationController = (InstrumentationRegistry.getInstrumentation().context.applicationContext as Application)
             .navigationController
@@ -123,14 +131,10 @@ class UnboundActivitiesTest {
                 )
             }
 
-        navigationController.addOverride(override)
-        try {
-            ActivityScenario.launch(UnboundActivity::class.java)
-            Espresso.pressBackUnconditionally()
-            expectNoActivity()
-        } finally {
-            navigationController.removeOverride(override)
-        }
-        TestCase.assertTrue(overrideWasCalled)
+        navigationController.addModule(interceptorModule)
+        ActivityScenario.launch(UnboundActivity::class.java)
+        Espresso.pressBackUnconditionally()
+        expectNoActivity()
+        TestCase.assertTrue(interceptorWasCalled)
     }
 }

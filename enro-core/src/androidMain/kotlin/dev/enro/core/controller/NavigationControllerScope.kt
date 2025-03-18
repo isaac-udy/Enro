@@ -1,8 +1,6 @@
 package dev.enro.core.controller
 
-import dev.enro.core.controller.repository.ClassHierarchyRepository
 import dev.enro.core.controller.repository.ComposeEnvironmentRepository
-import dev.enro.core.controller.repository.ExecutorRepository
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.controller.repository.NavigationAnimationRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
@@ -21,7 +19,6 @@ import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstructionImpl
 import dev.enro.core.controller.usecase.GetNavigationAnimations
 import dev.enro.core.controller.usecase.GetNavigationBinding
-import dev.enro.core.controller.usecase.GetNavigationExecutor
 import dev.enro.core.controller.usecase.HostInstructionAs
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
@@ -39,24 +36,21 @@ internal class NavigationControllerScope(
 
             // Repositories
             register { PluginRepository() }
-            register { ClassHierarchyRepository() }
             register { NavigationBindingRepository() }
-            register { ExecutorRepository(get()) }
             register { ComposeEnvironmentRepository() }
             register { InstructionInterceptorRepository() }
             register { NavigationAnimationRepository() }
             register { NavigationHostFactoryRepository(this) }
 
             // Usecases
-            register { AddModuleToController(get(), get(), get(), get(), get(), get(), get()) }
-            register { GetNavigationExecutor(get(), get()) }
+            register { AddModuleToController(get(), get(), get(), get(), get(), get()) }
             register { AddPendingResult(get(), get()) }
-            register<ExecuteOpenInstruction> { ExecuteOpenInstructionImpl(get(), get(), get()) }
-            register<ExecuteCloseInstruction> { ExecuteCloseInstructionImpl(get(), get(), get()) }
+            register<ExecuteOpenInstruction> { ExecuteOpenInstructionImpl(get(), get()) }
+            register<ExecuteCloseInstruction> { ExecuteCloseInstructionImpl(get(), get()) }
             register<ExecuteContainerOperationInstruction> { ExecuteContainerOperationInstructionImpl() }
 
             register { ActiveNavigationHandleReference(get()) }
-            register { OnNavigationContextCreated(get(), get()) }
+            register { OnNavigationContextCreated(get()) }
             register { OnNavigationContextSaved() }
             register { ComposeEnvironment(get()) }
 

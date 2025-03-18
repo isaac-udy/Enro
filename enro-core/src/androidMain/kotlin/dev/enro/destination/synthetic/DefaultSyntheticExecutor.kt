@@ -2,24 +2,17 @@ package dev.enro.core.synthetic
 
 import dev.enro.core.*
 
-public object DefaultSyntheticExecutor :
-    NavigationExecutor<Any, SyntheticDestination<*>, NavigationKey>(
-        fromType = Any::class,
-        opensType = SyntheticDestination::class,
-        keyType = NavigationKey::class
+public object DefaultSyntheticExecutor  {
+    internal fun open(
+        fromContext: NavigationContext<*>,
+        instruction: NavigationInstruction.Open<*>,
+        binding: SyntheticNavigationBinding<out NavigationKey>
     ) {
-    override fun open(args: ExecutorArgs<out Any, out SyntheticDestination<*>, out NavigationKey>) {
-        args.binding as SyntheticNavigationBinding<out NavigationKey>
-
-        val destination = args.binding.destination.invoke()
+        val destination = binding.destination.invoke()
         destination.bind(
-            args.fromContext,
-            args.instruction
+            fromContext,
+            instruction,
         )
         destination.process()
-    }
-
-    override fun close(context: NavigationContext<out SyntheticDestination<*>>) {
-        throw EnroException.UnreachableState()
     }
 }

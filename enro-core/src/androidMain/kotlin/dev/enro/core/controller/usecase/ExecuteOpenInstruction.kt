@@ -1,6 +1,8 @@
 package dev.enro.core.controller.usecase
 
 import dev.enro.core.*
+import dev.enro.core.container.DefaultContainerExecutor
+import dev.enro.core.container.ExecutorArgs
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 
@@ -12,7 +14,6 @@ internal interface ExecuteOpenInstruction {
 }
 
 internal class ExecuteOpenInstructionImpl(
-    private val getNavigationExecutor: GetNavigationExecutor,
     private val bindingRepository: NavigationBindingRepository,
     private val interceptorRepository: InstructionInterceptorRepository
 ): ExecuteOpenInstruction {
@@ -31,9 +32,7 @@ internal class ExecuteOpenInstructionImpl(
             navigationContext.getNavigationHandle().executeInstruction(processedInstruction)
             return
         }
-        val executor = getNavigationExecutor(
-            processedInstruction.internal.openedByType to processedInstruction.internal.openingType
-        )
+        val executor = DefaultContainerExecutor
 
         val args = ExecutorArgs(
             navigationContext,
@@ -42,7 +41,6 @@ internal class ExecuteOpenInstructionImpl(
             processedInstruction
         )
 
-        executor.preOpened(navigationContext)
         executor.open(args)
     }
 }

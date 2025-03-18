@@ -12,11 +12,13 @@ import dev.enro.core.hosts.hostNavigationModule
 import dev.enro.core.internal.NoKeyNavigationBinding
 import dev.enro.core.result.ForwardingResultInterceptor
 import dev.enro.core.result.flows.NavigationFlowInterceptor
+import dev.enro.destination.synthetic.SyntheticExecutionInterceptor
 
 internal val defaultNavigationModule = createNavigationModule {
     plugin(ActivityPlugin)
     plugin(FragmentPlugin)
 
+    interceptor(SyntheticExecutionInterceptor)
     interceptor(NavigationContainerDelegateInterceptor)
     interceptor(InstructionOpenedByInterceptor)
     interceptor(HiltInstructionInterceptor)

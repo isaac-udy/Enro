@@ -14,9 +14,6 @@ public class NavigationModule {
     internal val bindings: MutableList<NavigationBinding<*, *>> = mutableListOf()
 
     @PublishedApi
-    internal val overrides: MutableList<NavigationExecutor<*, *, *>> = mutableListOf()
-
-    @PublishedApi
     internal val plugins: MutableList<EnroPlugin> = mutableListOf()
 
     @PublishedApi
@@ -37,16 +34,6 @@ public class NavigationModuleScope internal constructor(
 ) {
     public fun binding(binding: NavigationBinding<*, *>) {
         module.bindings.add(binding)
-    }
-
-    public fun override(override: NavigationExecutor<*, *, *>) {
-        module.overrides.add(override)
-    }
-
-    public inline fun <reified From : Any, reified Opens : Any> override(
-        noinline block: NavigationExecutorBuilder<From, Opens, NavigationKey>.() -> Unit
-    ) {
-        override(createOverride(From::class, Opens::class, block))
     }
 
     public fun plugin(enroPlugin: EnroPlugin) {
@@ -76,7 +63,6 @@ public class NavigationModuleScope internal constructor(
 
     public fun module(other: NavigationModule) {
         module.bindings.addAll(other.bindings)
-        module.overrides.addAll(other.overrides)
         module.plugins.addAll(other.plugins)
         module.interceptors.addAll(other.interceptors)
         module.hostFactories.addAll(other.hostFactories)

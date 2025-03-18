@@ -3,7 +3,6 @@ package dev.enro.core.controller.usecase
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.controller.NavigationModule
 import dev.enro.core.controller.repository.ComposeEnvironmentRepository
-import dev.enro.core.controller.repository.ExecutorRepository
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.controller.repository.NavigationAnimationRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
@@ -16,7 +15,6 @@ import dev.enro.core.controller.repository.PluginRepository
 internal class AddModuleToController(
     private val pluginRepository: PluginRepository,
     private val navigationBindingRepository: NavigationBindingRepository,
-    private val executorRepository: ExecutorRepository,
     private val interceptorRepository: InstructionInterceptorRepository,
     private val animationRepository: NavigationAnimationRepository,
     private val composeEnvironmentRepository: ComposeEnvironmentRepository,
@@ -26,7 +24,6 @@ internal class AddModuleToController(
     operator fun invoke(module: NavigationModule) {
         pluginRepository.addPlugins(module.plugins)
         navigationBindingRepository.addNavigationBindings(module.bindings)
-        executorRepository.addExecutors(module.overrides)
         interceptorRepository.addInterceptors(module.interceptors)
         module.animations.forEach { animationRepository.addAnimations(it) }
         module.hostFactories.forEach { navigationHostFactoryRepository.addFactory(it) }

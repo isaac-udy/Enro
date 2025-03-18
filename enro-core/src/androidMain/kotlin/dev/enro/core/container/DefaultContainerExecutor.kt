@@ -2,26 +2,18 @@ package dev.enro.core.container
 
 import androidx.activity.ComponentActivity
 import dev.enro.compatability.Compatibility
-import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.ExecutorArgs
-import dev.enro.core.NavigationContainerKey
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationDirection
-import dev.enro.core.NavigationExecutor
-import dev.enro.core.NavigationKey
-import dev.enro.core.activity
+import dev.enro.core.*
 import dev.enro.core.activity.ActivityNavigationContainer
-import dev.enro.core.getNavigationHandle
-import dev.enro.core.navigationContext
-import dev.enro.core.parentContainer
-import dev.enro.core.readOpenInstruction
 
-internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, NavigationKey>(
-    fromType = Any::class,
-    opensType = Any::class,
-    keyType = NavigationKey::class
-) {
-    override fun open(args: ExecutorArgs<out Any, out Any, out NavigationKey>) {
+public class ExecutorArgs<FromContext : Any, OpensContext : Any, KeyType : NavigationKey>(
+    public val fromContext: NavigationContext<out FromContext>,
+    public val binding: NavigationBinding<out KeyType, out OpensContext>,
+    public val key: KeyType,
+    public val instruction: AnyOpenInstruction
+)
+
+internal object DefaultContainerExecutor {
+    fun open(args: ExecutorArgs<out Any, out Any, out NavigationKey>) {
         if (Compatibility.DefaultContainerExecutor.earlyExitForFragments(args)) return
         if (Compatibility.DefaultContainerExecutor.earlyExitForReplace(args)) return
 
@@ -39,7 +31,7 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
         ) return
 
         requireNotNull(container) {
-            "Failed to execute instruction from context with NavigationKey ${fromContext.arguments.readOpenInstruction()!!.navigationKey::class.java.simpleName}: Could not find valid container for NavigationKey of type ${keyType.java.simpleName}"
+            "Failed to execute instruction from context with NavigationKey ${fromContext.arguments.readOpenInstruction()!!.navigationKey::class.simpleName}: Could not find valid container for NavigationKey of type ${args.key::class.simpleName}"
         }
         container.setBackstack { backstack ->
             backstack
@@ -48,7 +40,7 @@ internal object DefaultContainerExecutor : NavigationExecutor<Any, Any, Navigati
         }
     }
 
-    override fun close(context: NavigationContext<out Any>) {
+    fun close(context: NavigationContext<out Any>) {
         if (Compatibility.DefaultContainerExecutor.earlyExitForNoContainer(context)) return
 
         val container = context.parentContainer()

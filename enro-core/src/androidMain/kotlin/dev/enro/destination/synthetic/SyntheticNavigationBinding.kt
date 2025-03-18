@@ -1,10 +1,11 @@
 package dev.enro.core.synthetic
 
 import dev.enro.core.NavigationBinding
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationModuleScope
 import kotlin.reflect.KClass
-
 
 public class SyntheticNavigationBinding<KeyType : NavigationKey> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
@@ -12,6 +13,19 @@ public class SyntheticNavigationBinding<KeyType : NavigationKey> @PublishedApi i
 ) : NavigationBinding<KeyType, SyntheticDestination<*>> {
     override val destinationType: KClass<SyntheticDestination<*>> = SyntheticDestination::class
     override val baseType: KClass<in SyntheticDestination<*>> = SyntheticDestination::class
+
+    public fun execute(
+        fromContext: NavigationContext<*>,
+        instruction: NavigationInstruction.Open<*>,
+    ) {
+        require(keyType == instruction.navigationKey::class)
+        val instance = destination.invoke()
+        instance.bind(
+            navigationContext = fromContext,
+            instruction = instruction,
+        )
+        instance.process()
+    }
 }
 
 public fun <T : NavigationKey> createSyntheticNavigationBinding(

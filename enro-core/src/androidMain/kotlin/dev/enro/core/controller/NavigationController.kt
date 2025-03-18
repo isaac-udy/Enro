@@ -5,9 +5,7 @@ import androidx.annotation.Keep
 import dev.enro.core.EnroConfig
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationBinding
-import dev.enro.core.NavigationExecutor
 import dev.enro.core.NavigationKey
-import dev.enro.core.controller.repository.ExecutorRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.controller.usecase.AddModuleToController
@@ -20,7 +18,6 @@ public class NavigationController internal constructor() {
     private val enroResult: EnroResult = dependencyScope.get()
     private val pluginRepository: PluginRepository = dependencyScope.get()
     private val navigationBindingRepository: NavigationBindingRepository = dependencyScope.get()
-    private val executorRepository: ExecutorRepository = dependencyScope.get()
     private val addModuleToController: AddModuleToController = dependencyScope.get()
 
     internal var config: EnroConfig = EnroConfig()
@@ -39,14 +36,6 @@ public class NavigationController internal constructor() {
         keyType: KClass<out NavigationKey>
     ): NavigationBinding<*, *>? {
         return navigationBindingRepository.bindingForKeyType(keyType)
-    }
-
-    public fun addOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
-        executorRepository.addExecutorOverride(navigationExecutor)
-    }
-
-    public fun removeOverride(navigationExecutor: NavigationExecutor<*, *, *>) {
-        executorRepository.removeExecutorOverride(navigationExecutor)
     }
 
     public fun install(application: Application) {
