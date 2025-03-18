@@ -52,7 +52,8 @@ public sealed class NavigationInstruction {
         ) : Open<T>() {
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
-                if (javaClass != other?.javaClass) return false
+                if (other == null) return false
+                if (this::class != other::class) return false
 
                 other as OpenInternal<*>
 
@@ -104,7 +105,7 @@ public sealed class NavigationInstruction {
         }
 
         override fun toString(): String {
-            return "NavigationInstruction.ContainerOperation(target=$target, operation=${operation::class.java})"
+            return "NavigationInstruction.ContainerOperation(target=$target, operation=${operation::class})"
         }
     }
 
@@ -113,7 +114,8 @@ public sealed class NavigationInstruction {
         public class WithResult(public val result: Any) : Close() {
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
-                if (javaClass != other?.javaClass) return false
+                if (other == null) return false
+                if (this::class != other::class) return false
 
                 other as WithResult
 
