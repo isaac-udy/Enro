@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import dev.enro.animation.direction
 import dev.enro.annotations.NavigationComponent
 import dev.enro.core.NavigationDirection
+import dev.enro.core.controller.EnroBackConfiguration
 import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.createNavigationController
 import dev.enro.core.navigationContext
@@ -25,7 +26,9 @@ import dev.enro.destination.fragment.FragmentSharedElements
 
 @NavigationComponent
 class TestApplication : Application(), NavigationApplication {
-    override val navigationController = createNavigationController {
+    override val navigationController = createNavigationController(
+        backConfiguration = EnroBackConfiguration.Predictive,
+    ) {
         plugin(TestApplicationPlugin)
         composeEnvironment { content ->
             val navigationContext = navigationContext
