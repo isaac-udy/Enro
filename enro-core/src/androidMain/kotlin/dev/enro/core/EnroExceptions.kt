@@ -9,7 +9,7 @@ public abstract class EnroException(
     override val message: String?
         get() = "${
             inputMessage.trim().removeSuffix(".")
-        }. See https://github.com/isaac-udy/Enro/blob/main/docs/troubleshooting.md#${this::class.java.simpleName} for troubleshooting help"
+        }. See https://github.com/isaac-udy/Enro/blob/main/docs/troubleshooting.md#${this::class.simpleName} for troubleshooting help"
 
     public class NoAttachedNavigationHandle(message: String, cause: Throwable? = null) :
         EnroException(message, cause)
@@ -21,7 +21,7 @@ public abstract class EnroException(
         EnroException(message, cause)
 
     public class MissingNavigationBinding(navigationKey: NavigationKey) :
-        EnroException("Could not find a valid navigation binding for ${navigationKey::class.java.simpleName}")
+        EnroException("Could not find a valid navigation binding for ${navigationKey::class.simpleName}")
 
     public class IncorrectlyTypedNavigationHandle(message: String, cause: Throwable? = null) :
         EnroException(message, cause)
@@ -65,7 +65,7 @@ public abstract class EnroException(
                 }
 
                 val message =
-                    "Opened ${args.key::class.java.simpleName} as a ${args.instruction.navigationDirection::class.java.simpleName} instruction. Forward and Replace type instructions are deprecated, please replace these with Push and Present instructions."
+                    "Opened ${args.key::class.simpleName} as a ${args.instruction.navigationDirection::class.simpleName} instruction. Forward and Replace type instructions are deprecated, please replace these with Push and Present instructions."
                 if (navigationController.config.isStrictMode) {
                     throw LegacyNavigationDirectionUsedInStrictMode(message)
                 } else {
@@ -83,7 +83,7 @@ public abstract class EnroException(
                 navigationKey: NavigationKey
             ) {
                 val message =
-                    "Attempted to Push to ${navigationKey::class.java.simpleName}, but could not find a valid container."
+                    "Attempted to Push to ${navigationKey::class.simpleName}, but could not find a valid container."
                 if (navigationController.config.isStrictMode) {
                     throw MissingContainerForPushInstruction(message)
                 } else {
