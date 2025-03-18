@@ -5,15 +5,8 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.lifecycleScope
-import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.EnroException
-import dev.enro.core.NavigationContainerKey
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationDirection
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.activity
+import dev.enro.core.*
 import dev.enro.core.activity.ActivityNavigationContainer
-import dev.enro.core.close
 import dev.enro.core.container.*
 import dev.enro.core.container.asDirection
 import dev.enro.core.container.asPresentInstruction
@@ -21,10 +14,6 @@ import dev.enro.core.container.asPushInstruction
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.HostInstructionAs
-import dev.enro.core.getNavigationHandle
-import dev.enro.core.navigationContext
-import dev.enro.core.parentContainer
-import dev.enro.core.rootContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import dev.enro.core.container.NavigationContainer as RealNavigationContainer
@@ -34,35 +23,42 @@ internal object Compatibility {
     object DefaultContainerExecutor {
         private const val COMPATIBILITY_NAVIGATION_DIRECTION = "Compatibility.DefaultContainerExecutor.COMPATIBILITY_NAVIGATION_DIRECTION"
 
-        fun earlyExitForFragments(args: ExecutorArgs<*, *, *>): Boolean {
-            return args.fromContext.contextReference is Fragment && !args.fromContext.contextReference.isAdded
+        fun earlyExitForFragments(fromContext: NavigationContext<*>): Boolean {
+            return fromContext.contextReference is Fragment && !fromContext.contextReference.isAdded
         }
 
-        fun earlyExitForReplace(args: ExecutorArgs<*, *, *>): Boolean {
-            val isReplace = args.instruction.navigationDirection is NavigationDirection.Replace
+        fun earlyExitForReplace(
+            fromContext: NavigationContext<*>,
+            instruction: AnyOpenInstruction,
+        ): Boolean {
+            val isReplace = instruction.navigationDirection is NavigationDirection.Replace
 
-            val isReplaceActivity = args.fromContext.contextReference is Activity && isReplace
+            val isReplaceActivity = fromContext.contextReference is Activity && isReplace
             if (!isReplaceActivity) return false
 
-            openInstructionAsActivity(args.fromContext, NavigationDirection.Present, args.instruction)
-            args.fromContext.activity.finish()
+            openInstructionAsActivity(fromContext, NavigationDirection.Present, instruction)
+            fromContext.activity.finish()
             return true
         }
 
-        internal fun getInstructionForCompatibility(args: ExecutorArgs<*, *, *>): NavigationInstruction.Open<*> {
-            EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(args.fromContext.controller, args)
-            val isDialog = isDialog(args)
-            return when (args.instruction.navigationDirection) {
+        internal fun getInstructionForCompatibility(
+            binding: NavigationBinding<*, *>,
+            fromContext: NavigationContext<*>,
+            instruction: AnyOpenInstruction,
+        ): NavigationInstruction.Open<*> {
+            EnroException.LegacyNavigationDirectionUsedInStrictMode.logForStrictMode(fromContext.controller, instruction)
+            val isDialog = isDialog(binding)
+            return when (instruction.navigationDirection) {
                 is NavigationDirection.Replace,
                 is NavigationDirection.Forward -> {
                     when {
-                        isDialog -> args.instruction.asPresentInstruction()
-                        else -> args.instruction.asPushInstruction()
+                        isDialog -> instruction.asPresentInstruction()
+                        else -> instruction.asPushInstruction()
                     }.apply {
-                        extras[COMPATIBILITY_NAVIGATION_DIRECTION] = args.instruction.navigationDirection
+                        extras[COMPATIBILITY_NAVIGATION_DIRECTION] = instruction.navigationDirection
                     }
                 }
-                else -> args.instruction
+                else -> instruction
             }
         }
 
@@ -196,6 +192,8 @@ private fun openInstructionAsActivity(
     )
 }
 
-private fun isDialog(args: ExecutorArgs<*, *, *>): Boolean {
-    return DialogFragment::class.java.isAssignableFrom(args.binding.destinationType.java)
+private fun isDialog(
+    binding: NavigationBinding<*, *>,
+): Boolean {
+    return DialogFragment::class.java.isAssignableFrom(binding.destinationType.java)
 }

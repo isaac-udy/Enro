@@ -1,7 +1,6 @@
 package dev.enro.core
 
 import android.util.Log
-import dev.enro.core.container.ExecutorArgs
 import dev.enro.core.controller.NavigationController
 
 public abstract class EnroException(
@@ -55,9 +54,9 @@ public abstract class EnroException(
         internal companion object {
             fun logForStrictMode(
                 navigationController: NavigationController,
-                args: ExecutorArgs<*, *, *>
+                instruction: AnyOpenInstruction,
             ) {
-                when (args.instruction.navigationDirection) {
+                when (instruction.navigationDirection) {
                     NavigationDirection.Present,
                     NavigationDirection.Push,
                     NavigationDirection.ReplaceRoot -> return
@@ -66,7 +65,7 @@ public abstract class EnroException(
                 }
 
                 val message =
-                    "Opened ${args.key::class.simpleName} as a ${args.instruction.navigationDirection::class.simpleName} instruction. Forward and Replace type instructions are deprecated, please replace these with Push and Present instructions."
+                    "Opened ${instruction.navigationKey::class.simpleName} as a ${instruction.navigationDirection::class.simpleName} instruction. Forward and Replace type instructions are deprecated, please replace these with Push and Present instructions."
                 if (navigationController.config.isStrictMode) {
                     throw LegacyNavigationDirectionUsedInStrictMode(message)
                 } else {

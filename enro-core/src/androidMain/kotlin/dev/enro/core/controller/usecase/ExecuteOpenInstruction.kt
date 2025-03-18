@@ -2,7 +2,6 @@ package dev.enro.core.controller.usecase
 
 import dev.enro.core.*
 import dev.enro.core.container.DefaultContainerExecutor
-import dev.enro.core.container.ExecutorArgs
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 
@@ -32,15 +31,11 @@ internal class ExecuteOpenInstructionImpl(
             navigationContext.getNavigationHandle().executeInstruction(processedInstruction)
             return
         }
-        val executor = DefaultContainerExecutor
 
-        val args = ExecutorArgs(
-            navigationContext,
-            binding,
-            processedInstruction.navigationKey,
-            processedInstruction
+        DefaultContainerExecutor.open(
+            fromContext = navigationContext,
+            binding = binding,
+            instruction = processedInstruction,
         )
-
-        executor.open(args)
     }
 }

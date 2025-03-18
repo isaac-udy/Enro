@@ -5,21 +5,26 @@ import dev.enro.compatability.Compatibility
 import dev.enro.core.*
 import dev.enro.core.activity.ActivityNavigationContainer
 
-public class ExecutorArgs<FromContext : Any, OpensContext : Any, KeyType : NavigationKey>(
-    public val fromContext: NavigationContext<out FromContext>,
-    public val binding: NavigationBinding<out KeyType, out OpensContext>,
-    public val key: KeyType,
-    public val instruction: AnyOpenInstruction
-)
-
 internal object DefaultContainerExecutor {
-    fun open(args: ExecutorArgs<out Any, out Any, out NavigationKey>) {
-        if (Compatibility.DefaultContainerExecutor.earlyExitForFragments(args)) return
-        if (Compatibility.DefaultContainerExecutor.earlyExitForReplace(args)) return
+    fun open(
+        fromContext: NavigationContext<*>,
+        binding: NavigationBinding<*,*>,
+        instruction: AnyOpenInstruction,
+    ) {
+        if (Compatibility.DefaultContainerExecutor.earlyExitForFragments(fromContext)) return
+        if (
+            Compatibility.DefaultContainerExecutor.earlyExitForReplace(
+                fromContext = fromContext,
+                instruction = instruction,
+            )
+        ) return
 
-        val isReplace = args.instruction.navigationDirection == NavigationDirection.Replace
-        val fromContext = args.fromContext
-        val instruction = Compatibility.DefaultContainerExecutor.getInstructionForCompatibility(args)
+        val isReplace = instruction.navigationDirection == NavigationDirection.Replace
+        val instruction = Compatibility.DefaultContainerExecutor.getInstructionForCompatibility(
+            binding = binding,
+            fromContext = fromContext,
+            instruction = instruction,
+        )
 
         val container = findContainerFor(fromContext, instruction)
         if (
@@ -31,7 +36,7 @@ internal object DefaultContainerExecutor {
         ) return
 
         requireNotNull(container) {
-            "Failed to execute instruction from context with NavigationKey ${fromContext.arguments.readOpenInstruction()!!.navigationKey::class.simpleName}: Could not find valid container for NavigationKey of type ${args.key::class.simpleName}"
+            "Failed to execute instruction from context with NavigationKey ${fromContext.arguments.readOpenInstruction()!!.navigationKey::class.simpleName}: Could not find valid container for NavigationKey of type ${instruction.navigationKey::class.simpleName}"
         }
         container.setBackstack { backstack ->
             backstack
