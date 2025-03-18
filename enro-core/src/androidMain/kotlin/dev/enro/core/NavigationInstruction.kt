@@ -1,14 +1,10 @@
 package dev.enro.core
 
-import android.content.Intent
-import android.os.Bundle
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.fragment.app.Fragment
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.result.internal.ResultChannelId
-import dev.enro.extensions.getParcelableCompat
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 import java.util.UUID
@@ -258,27 +254,6 @@ public sealed class NavigationInstruction {
             operation = block,
         )
     }
-}
-
-public fun Intent.addOpenInstruction(instruction: AnyOpenInstruction): Intent {
-    putExtra(OPEN_ARG, instruction.internal)
-    return this
-}
-
-public fun Bundle.addOpenInstruction(instruction: AnyOpenInstruction): Bundle {
-    putParcelable(OPEN_ARG, instruction.internal)
-    return this
-}
-
-public fun Fragment.addOpenInstruction(instruction: AnyOpenInstruction): Fragment {
-    arguments = (arguments ?: Bundle()).apply {
-        putParcelable(OPEN_ARG, instruction.internal)
-    }
-    return this
-}
-
-public fun Bundle.readOpenInstruction(): AnyOpenInstruction? {
-    return getParcelableCompat<NavigationInstruction.Open.OpenInternal<*>>(OPEN_ARG)
 }
 
 public fun NavigationKey.SupportsPush.asPush(): OpenPushInstruction =
