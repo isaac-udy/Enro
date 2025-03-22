@@ -1,3 +1,4 @@
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 package dev.enro.tests.application
 
 import android.app.Application
@@ -30,16 +31,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Popup
 import dev.enro.annotations.NavigationDestination
+import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
+import dev.enro.core.controller.get
 import dev.enro.core.controller.navigationController
+import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.present
 import dev.enro.core.push
 import kotlinx.parcelize.Parcelize
+import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.jvm.isAccessible
 
 @Parcelize
 internal object SelectDestination : NavigationKey.SupportsPush, NavigationKey.SupportsPresent
@@ -212,13 +219,17 @@ data class ReflectedDestination(
 // This is a hacky method of loading all NavigationKeys available,
 // so that we can render a destination picker easily in the test application
 // this uses slow reflection to work, and should not be used in a production application
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 private fun loadNavigationDestinations(
     application: Application
 ): List<ReflectedDestination> {
     val controller = application.navigationController
-    val bindingRepository = controller.navigationBindingRepository
-    val bindingsByKeyType = bindingRepository.bindingsByKeyType
+    val bindingRepository = controller.dependencyScope.get<NavigationBindingRepository>()
+
+    @Suppress("UNCHECKED_CAST")
+    val bindingsByKeyType = NavigationBindingRepository::class.declaredMemberProperties
+        .first { it.name == "bindingsByKeyType" }
+        .apply { isAccessible = true }
+        .call(bindingRepository) as Map<KClass<*>, NavigationBinding<*, *>>
 
     return bindingsByKeyType.keys
         .filter {
