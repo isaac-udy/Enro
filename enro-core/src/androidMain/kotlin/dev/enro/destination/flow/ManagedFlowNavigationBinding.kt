@@ -15,12 +15,22 @@ public class ManagedFlowNavigationBinding<KeyType : NavigationKey, Result> @Publ
 }
 
 public fun <T : NavigationKey, Result> createManagedFlowNavigationBinding(
-    navigationKeyType: Class<T>,
+    navigationKeyType: KClass<T>,
     provider: ManagedFlowDestinationProvider<T, Result>,
 ): NavigationBinding<T, ManagedFlowDestination<*, *>> =
     ManagedFlowNavigationBinding(
-        keyType = navigationKeyType.kotlin,
+        keyType = navigationKeyType,
         destination = provider::create
+    )
+
+// Already has Class-based overload for Java compatibility
+public fun <T : NavigationKey, Result> createManagedFlowNavigationBinding(
+    navigationKeyType: Class<T>,
+    provider: ManagedFlowDestinationProvider<T, Result>,
+): NavigationBinding<T, ManagedFlowDestination<*, *>> =
+    createManagedFlowNavigationBinding(
+        navigationKeyType = navigationKeyType.kotlin,
+        provider = provider
     )
 
 public inline fun <reified KeyType : NavigationKey, Result> createManagedFlowNavigationBinding(

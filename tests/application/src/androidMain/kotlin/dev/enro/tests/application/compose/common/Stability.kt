@@ -11,7 +11,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.core.compose.navigationHandle
 import dev.enro.tests.application.compose.ComposeStabilityContentViewModel
 import kotlinx.coroutines.isActive
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 @Composable
 fun Stability(
@@ -19,7 +19,7 @@ fun Stability(
     additionalStabilityContent: List<String> = emptyList(),
 ) {
     val rawNavigationHandle = navigationHandle()
-    val rememberSaveable = rememberSaveable { UUID.randomUUID().toString() }
+    val rememberSaveable = rememberSaveable { Uuid.random().toString() }
     val viewModel = viewModel<ComposeStabilityContentViewModel>()
     val viewModelStore = LocalViewModelStoreOwner.current?.viewModelStore
 

@@ -29,11 +29,11 @@ public class SyntheticNavigationBinding<KeyType : NavigationKey> @PublishedApi i
 }
 
 public fun <T : NavigationKey> createSyntheticNavigationBinding(
-    navigationKeyType: Class<T>,
+    navigationKeyType: KClass<T>,
     destination: () -> SyntheticDestination<T>
 ): NavigationBinding<T, SyntheticDestination<*>> =
     SyntheticNavigationBinding(
-        keyType = navigationKeyType.kotlin,
+        keyType = navigationKeyType,
         destination = destination
     )
 
@@ -46,11 +46,11 @@ public inline fun <reified KeyType : NavigationKey> createSyntheticNavigationBin
     )
 
 public fun <T : NavigationKey> createSyntheticNavigationBinding(
-    navigationKeyType: Class<T>,
+    navigationKeyType: KClass<T>,
     provider: SyntheticDestinationProvider<T>,
 ): NavigationBinding<T, SyntheticDestination<*>> =
     SyntheticNavigationBinding(
-        keyType = navigationKeyType.kotlin,
+        keyType = navigationKeyType,
         destination = provider::create
     )
 
@@ -63,11 +63,13 @@ public inline fun <reified KeyType : NavigationKey> createSyntheticNavigationBin
     )
 
 
-public inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> createSyntheticNavigationBinding(): NavigationBinding<KeyType, SyntheticDestination<*>> =
-    SyntheticNavigationBinding(
+public inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> createSyntheticNavigationBinding(): NavigationBinding<KeyType, SyntheticDestination<*>> {
+    val constructor = DestinationType::class.constructors.first { it.parameters.isEmpty() }
+    return SyntheticNavigationBinding(
         keyType = KeyType::class,
-        destination = { DestinationType::class.java.newInstance() }
+        destination = { constructor.call() }
     )
+}
 
 public inline fun <reified KeyType : NavigationKey, reified DestinationType : SyntheticDestination<KeyType>> NavigationModuleScope.syntheticDestination() {
     binding(createSyntheticNavigationBinding<KeyType, DestinationType>())
@@ -85,3 +87,23 @@ public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.synthe
 public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.syntheticDestination(provider: SyntheticDestinationProvider<KeyType>) {
     binding(createSyntheticNavigationBinding(provider))
 }
+
+// Class-based overload for Java compatibility
+public fun <T : NavigationKey> createSyntheticNavigationBinding(
+    navigationKeyType: Class<T>,
+    provider: SyntheticDestinationProvider<T>,
+): NavigationBinding<T, SyntheticDestination<*>> =
+    createSyntheticNavigationBinding(
+        navigationKeyType = navigationKeyType.kotlin,
+        provider = provider
+    )
+
+// Class-based overload for Java compatibility
+public fun <T : NavigationKey> createSyntheticNavigationBinding(
+    navigationKeyType: Class<T>,
+    destination: () -> SyntheticDestination<T>
+): NavigationBinding<T, SyntheticDestination<*>> =
+    createSyntheticNavigationBinding(
+        navigationKeyType = navigationKeyType.kotlin,
+        destination = destination
+    )

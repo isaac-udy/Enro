@@ -4,13 +4,14 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.NavigationHostFactoryRepository
+import kotlin.reflect.KClass
 
 internal class CanInstructionBeHostedAs(
     private val navigationHostFactoryRepository: NavigationHostFactoryRepository,
     private val navigationBindingRepository: NavigationBindingRepository,
 ) {
     operator fun <HostType: Any> invoke(
-        hostType: Class<HostType>,
+        hostType: KClass<HostType>,
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>
     ): Boolean {

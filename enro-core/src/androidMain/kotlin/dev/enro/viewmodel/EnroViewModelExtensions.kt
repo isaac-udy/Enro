@@ -25,7 +25,7 @@ public class ViewModelNavigationHandleProperty<T : NavigationKey> @PublishedApi 
     block: LazyNavigationHandleConfiguration<T>.() -> Unit
 ) : ReadOnlyProperty<ViewModel, TypedNavigationHandle<T>> {
 
-    private val navigationHandle = EnroViewModelNavigationHandleProvider.get(viewModelType.java)
+    private val navigationHandle = EnroViewModelNavigationHandleProvider.get(viewModelType)
         .asTyped(type)
         .apply {
             LazyNavigationHandleConfiguration(type)
@@ -50,7 +50,7 @@ public inline fun <reified T : NavigationKey> ViewModel.navigationHandle(
 
 @PublishedApi
 internal fun ViewModel.getNavigationHandle(): NavigationHandle {
-    return getNavigationHandleTag() ?: EnroViewModelNavigationHandleProvider.get(this::class.java)
+    return getNavigationHandleTag() ?: EnroViewModelNavigationHandleProvider.get(this::class)
 }
 
 @MainThread

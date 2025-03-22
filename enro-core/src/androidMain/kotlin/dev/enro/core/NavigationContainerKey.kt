@@ -3,7 +3,7 @@ package dev.enro.core
 import android.os.Parcelable
 import androidx.annotation.IdRes
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import kotlin.uuid.Uuid
 
 public sealed class NavigationContainerKey : Parcelable  {
     public abstract val name: String
@@ -30,7 +30,7 @@ public sealed class NavigationContainerKey : Parcelable  {
     public class Dynamic private constructor(
         override val name: String
     ) : NavigationContainerKey() {
-        public constructor() : this("DynamicContainerKey(${UUID.randomUUID()})")
+        public constructor() : this("DynamicContainerKey(${Uuid.random()})")
     }
 
     @Parcelize

@@ -14,7 +14,7 @@ internal class NavigationBindingRepository {
 
         binding.forEach {
             require(bindingsByKeyType[it.keyType] == it) {
-                "Found duplicated navigation binding! ${it.keyType.java.name} has been bound to multiple destinations."
+                "Found duplicated navigation binding! ${it.keyType.qualifiedName} has been bound to multiple destinations."
             }
         }
     }

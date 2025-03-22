@@ -15,18 +15,32 @@ public class ActivityNavigationBinding<KeyType : NavigationKey, ActivityType : C
 }
 
 public fun <KeyType : NavigationKey, ActivityType : ComponentActivity> createActivityNavigationBinding(
+    keyType: KClass<KeyType>,
+    activityType: KClass<ActivityType>
+): NavigationBinding<KeyType, ActivityType> {
+    return ActivityNavigationBinding(
+        keyType = keyType,
+        destinationType = activityType,
+    )
+}
+
+// Class-based overload for Java compatibility
+public fun <KeyType : NavigationKey, ActivityType : ComponentActivity> createActivityNavigationBinding(
     keyType: Class<KeyType>,
     activityType: Class<ActivityType>
-): NavigationBinding<KeyType, ActivityType> = ActivityNavigationBinding(
-    keyType = keyType.kotlin,
-    destinationType = activityType.kotlin,
-)
-
-public inline fun <reified KeyType : NavigationKey, reified ActivityType : ComponentActivity> createActivityNavigationBinding(): NavigationBinding<KeyType, ActivityType> =
-    createActivityNavigationBinding(
-        keyType = KeyType::class.java,
-        activityType = ActivityType::class.java,
+): NavigationBinding<KeyType, ActivityType> {
+    return createActivityNavigationBinding(
+        keyType = keyType.kotlin,
+        activityType = activityType.kotlin,
     )
+}
+
+public inline fun <reified KeyType : NavigationKey, reified ActivityType : ComponentActivity> createActivityNavigationBinding(): NavigationBinding<KeyType, ActivityType> {
+    return createActivityNavigationBinding(
+        keyType = KeyType::class,
+        activityType = ActivityType::class,
+    )
+}
 
 public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComponentActivity> NavigationModuleScope.activityDestination() {
     binding(createActivityNavigationBinding<KeyType, DestinationType>())

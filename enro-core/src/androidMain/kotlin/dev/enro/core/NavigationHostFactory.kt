@@ -4,6 +4,7 @@ import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.GetNavigationBinding
+import kotlin.reflect.KClass
 
 /**
  * A NavigationHostFactory allows for destinations of different types to be interoperable with each other. For example,
@@ -13,7 +14,7 @@ import dev.enro.core.controller.usecase.GetNavigationBinding
  */
 @AdvancedEnroApi
 public abstract class NavigationHostFactory<HostType: Any>(
-    public val hostType: Class<HostType>,
+    public val hostType: KClass<HostType>,
 ) {
     internal lateinit var dependencyScope: EnroDependencyScope
 

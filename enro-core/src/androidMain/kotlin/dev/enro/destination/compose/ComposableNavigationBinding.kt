@@ -9,19 +9,9 @@ import kotlin.reflect.KClass
 public class ComposableNavigationBinding<KeyType : NavigationKey, ComposableType : ComposableDestination> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
     override val destinationType: KClass<ComposableType>,
-    internal val constructDestination: () -> ComposableType = { destinationType.java.newInstance() }
+    internal val constructDestination: () -> ComposableType,
 ) : NavigationBinding<KeyType, ComposableType> {
     override val baseType: KClass<in ComposableType> = ComposableDestination::class
-}
-
-public fun <KeyType : NavigationKey, ComposableType : ComposableDestination> createComposableNavigationBinding(
-    keyType: Class<KeyType>,
-    composableType: Class<ComposableType>
-): NavigationBinding<KeyType, ComposableType> {
-    return ComposableNavigationBinding(
-        keyType = keyType.kotlin,
-        destinationType = composableType.kotlin
-    )
 }
 
 @PublishedApi
@@ -42,6 +32,19 @@ internal fun <KeyType : NavigationKey> createComposableNavigationBinding(
     )
 }
 
+@PublishedApi
+internal fun <KeyType : NavigationKey, DestinationType: ComposableDestination> createComposableNavigationBinding(
+    keyType: KClass<KeyType>,
+    destinationType: KClass<DestinationType>,
+): NavigationBinding<KeyType, DestinationType> {
+    val constructor = destinationType.constructors.first { it.parameters.isEmpty() }
+    return ComposableNavigationBinding(
+        keyType = keyType,
+        destinationType = destinationType,
+        constructDestination = { constructor.call() }
+    )
+}
+
 public inline fun <reified KeyType : NavigationKey> createComposableNavigationBinding(
     noinline content: @Composable () -> Unit
 ): NavigationBinding<KeyType, ComposableDestination> {
@@ -51,26 +54,10 @@ public inline fun <reified KeyType : NavigationKey> createComposableNavigationBi
     )
 }
 
-public fun <KeyType : NavigationKey> createComposableNavigationBinding(
-    keyType: Class<KeyType>,
-    content: @Composable () -> Unit
-): NavigationBinding<KeyType, ComposableDestination> {
-    val destination = object : ComposableDestination() {
-        @Composable
-        override fun Render() {
-            content()
-        }
-    }
-    return ComposableNavigationBinding(
-        keyType = keyType.kotlin,
-        destinationType = destination::class
-    ) as NavigationBinding<KeyType, ComposableDestination>
-}
-
-public inline fun <reified KeyType : NavigationKey, reified ComposableType : ComposableDestination> createComposableNavigationBinding(): NavigationBinding<KeyType, ComposableType> {
+public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComposableDestination> createComposableNavigationBinding(): NavigationBinding<KeyType, DestinationType> {
     return createComposableNavigationBinding(
-        KeyType::class.java,
-        ComposableType::class.java
+        keyType = KeyType::class,
+        destinationType = DestinationType::class,
     )
 }
 
@@ -80,4 +67,26 @@ public inline fun <reified KeyType : NavigationKey, reified DestinationType : Co
 
 public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.composableDestination(noinline content: @Composable () -> Unit) {
     binding(createComposableNavigationBinding<KeyType>(content))
+}
+
+// Class-based overload for Java compatibility
+public fun <KeyType : NavigationKey> createComposableNavigationBinding(
+    keyType: Class<KeyType>,
+    content: @Composable () -> Unit
+): NavigationBinding<KeyType, ComposableDestination> {
+    return createComposableNavigationBinding(
+        keyType = keyType.kotlin,
+        content = content
+    )
+}
+
+// Class-based overload for Java compatibility
+public fun <KeyType : NavigationKey, ComposableType : ComposableDestination> createComposableNavigationBinding(
+    keyType: Class<KeyType>,
+    composableType: Class<ComposableType>
+): NavigationBinding<KeyType, ComposableType> {
+    return createComposableNavigationBinding(
+        keyType = keyType.kotlin,
+        destinationType = composableType.kotlin
+    )
 }

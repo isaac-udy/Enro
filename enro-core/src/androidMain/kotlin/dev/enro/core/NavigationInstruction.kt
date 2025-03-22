@@ -3,11 +3,14 @@ package dev.enro.core
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import dev.enro.KClassParceler
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.result.internal.ResultChannelId
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
-import java.util.UUID
+import kotlinx.parcelize.WriteWith
+import kotlin.reflect.KClass
+import kotlin.uuid.Uuid
 
 internal const val OPEN_ARG = "dev.enro.core.OPEN_ARG"
 
@@ -28,7 +31,7 @@ public sealed class NavigationInstruction {
 
         @Suppress("UNCHECKED_CAST")
         public fun copy(
-            instructionId: String = UUID.randomUUID().toString()
+            instructionId: String = Uuid.random().toString()
         ): Open<T> = internal.copy(
             navigationDirection = navigationDirection,
             instructionId = instructionId,
@@ -42,10 +45,10 @@ public sealed class NavigationInstruction {
             override val navigationDirection: T,
             override val navigationKey: NavigationKey,
             override val extras: @RawValue MutableMap<String, Any> = mutableMapOf(),
-            override val instructionId: String = UUID.randomUUID().toString(),
+            override val instructionId: String = Uuid.random().toString(),
             val previouslyActiveContainer: NavigationContainerKey? = null,
-            val openingType: Class<out Any> = Any::class.java,
-            val openedByType: Class<out Any> = Any::class.java, // the type of context that requested this open instruction was executed
+            val openingType: @WriteWith<KClassParceler> KClass<out Any> = Any::class,
+            val openedByType: @WriteWith<KClassParceler> KClass<out Any> = Any::class, // the type of context that requested this open instruction was executed
             val openedById: String? = null,
             val resultKey: NavigationKey? = null,
             val resultId: ResultChannelId? = null,

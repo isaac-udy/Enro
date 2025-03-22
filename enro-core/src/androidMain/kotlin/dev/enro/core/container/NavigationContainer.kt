@@ -43,10 +43,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
 
 public abstract class NavigationContainer(
     public val key: NavigationContainerKey,
-    public val contextType: Class<out Any>,
+    public val contextType: KClass<out Any>,
     public val context: NavigationContext<*>,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit,

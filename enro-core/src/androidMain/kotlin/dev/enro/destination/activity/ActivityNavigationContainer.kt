@@ -27,7 +27,7 @@ internal class ActivityNavigationContainer internal constructor(
 ) : NavigationContainer(
     key = NavigationContainerKey.FromName("ActivityNavigationContainer"),
     context = activityContext,
-    contextType = Activity::class.java,
+    contextType = Activity::class,
     emptyBehavior = EmptyBehavior.AllowEmpty,
     interceptor = { },
     animations = { },

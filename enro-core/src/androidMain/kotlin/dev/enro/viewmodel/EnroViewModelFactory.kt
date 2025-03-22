@@ -16,7 +16,7 @@ internal class EnroViewModelFactory(
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
         val mutableCreationExtras = MutableCreationExtras(extras)
-        EnroViewModelNavigationHandleProvider.put(modelClass, navigationHandle)
+        EnroViewModelNavigationHandleProvider.put(modelClass.kotlin, navigationHandle)
         val viewModel = try {
             if (mutableCreationExtras[ViewModelProvider.NewInstanceFactory.VIEW_MODEL_KEY] == null) {
                 mutableCreationExtras[ViewModelProvider.NewInstanceFactory.VIEW_MODEL_KEY] = getDefaultKey(modelClass.kotlin)
@@ -25,12 +25,12 @@ internal class EnroViewModelFactory(
         } catch (ex: RuntimeException) {
             if (ex is EnroException) throw ex
             throw EnroException.CouldNotCreateEnroViewModel(
-                "Failed to created ${modelClass.name} using factory ${delegate::class.java.name}.\n",
+                "Failed to created ${modelClass.name} using factory ${delegate::class.qualifiedName}.\n",
                 ex
             )
         }
         viewModel.setNavigationHandleTag(navigationHandle)
-        EnroViewModelNavigationHandleProvider.clear(modelClass)
+        EnroViewModelNavigationHandleProvider.clear(modelClass.kotlin)
         return viewModel
     }
 

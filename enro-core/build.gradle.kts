@@ -9,13 +9,12 @@ plugins {
 kotlin {
     sourceSets {
         desktopMain.dependencies {
-            implementation(libs.kotlin.reflect)
         }
         commonMain.dependencies {
             api("dev.enro:enro-annotations:${project.enroVersionName}")
             implementation(libs.compose.viewmodel)
-            implementation(libs.benasher.uuid)
             implementation(libs.kotlinx.serialization)
+            implementation(libs.kotlin.reflect)
         }
         androidMain.dependencies {
             implementation(libs.androidx.core)

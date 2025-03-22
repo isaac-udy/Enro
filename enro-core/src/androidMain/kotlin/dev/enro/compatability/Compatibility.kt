@@ -16,6 +16,7 @@ import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.HostInstructionAs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.reflect.full.isSubclassOf
 import dev.enro.core.container.NavigationContainer as RealNavigationContainer
 
 internal object Compatibility {
@@ -195,5 +196,5 @@ private fun openInstructionAsActivity(
 private fun isDialog(
     binding: NavigationBinding<*, *>,
 ): Boolean {
-    return DialogFragment::class.java.isAssignableFrom(binding.destinationType.java)
+    return binding.destinationType.isSubclassOf(DialogFragment::class)
 }

@@ -84,6 +84,7 @@ private fun Project.commonAndroidConfig(
             }
             freeCompilerArgs.add("-Xopt-in=dev.enro.annotations.AdvancedEnroApi")
             freeCompilerArgs.add("-Xopt-in=dev.enro.annotations.ExperimentalEnroApi")
+            freeCompilerArgs.add("-Xopt-in=kotlin.uuid.ExperimentalUuidApi")
         }
     }
 

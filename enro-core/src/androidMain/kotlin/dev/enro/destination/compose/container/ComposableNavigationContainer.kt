@@ -63,7 +63,7 @@ public class ComposableNavigationContainer internal constructor(
 ) : NavigationContainer(
     key = key,
     context = parentContext,
-    contextType = ComposableDestination::class.java,
+    contextType = ComposableDestination::class,
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
     animations = animations,

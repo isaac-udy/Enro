@@ -15,7 +15,7 @@ import dev.enro.core.activity
 import dev.enro.core.internal.NoNavigationKey
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
 import dev.enro.core.readOpenInstruction
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 internal const val CONTEXT_ID_ARG = "dev.enro.core.ContextController.CONTEXT_ID"
 
@@ -33,11 +33,11 @@ internal class OnNavigationContextCreated(
         val instruction = context.arguments.readOpenInstruction()
         val contextId = instruction?.internal?.instructionId
             ?: savedInstanceState?.getString(CONTEXT_ID_ARG)
-            ?: UUID.randomUUID().toString()
+            ?: Uuid.random().toString()
 
         val config = NavigationHandleProperty.getPendingConfig(context)
         val defaultKey = config?.defaultKey
-            ?: NoNavigationKey(context.contextReference::class.java, context.arguments)
+            ?: NoNavigationKey(context.contextReference::class, context.arguments)
         val defaultInstruction = NavigationInstruction
             .Open.OpenInternal(
                 navigationKey = defaultKey,

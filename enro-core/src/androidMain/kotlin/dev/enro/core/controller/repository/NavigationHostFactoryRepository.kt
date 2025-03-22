@@ -5,6 +5,7 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationHostFactory
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.EnroDependencyScope
+import kotlin.reflect.KClass
 
 // The following @OptIn shouldn't be required due to buildSrc/src/main/kotlin/configureAndroid.kt adding an -Xopt-in arg
 // to the Kotlin freeCompilerArgs, but for some reason, lint checks will fail if the @OptIn annotation is not explicitly added.
@@ -12,22 +13,20 @@ import dev.enro.core.controller.EnroDependencyScope
 internal class NavigationHostFactoryRepository(
     private val dependencyScope: EnroDependencyScope
 ) {
-    private val producers = mutableMapOf<Class<*>, MutableList<NavigationHostFactory<*>>>()
+    private val producers = mutableMapOf<KClass<*>, MutableList<NavigationHostFactory<*>>>()
 
     internal fun addFactory(factory: NavigationHostFactory<*>) {
         factory.dependencyScope = dependencyScope
-        producers.getOrPut(factory.hostType) { mutableListOf() }
-            .add(factory)
+        producers.getOrPut(factory.hostType) { mutableListOf() }.add(factory)
     }
 
     internal fun remove(factory: NavigationHostFactory<*>) {
-        producers.getOrPut(factory.hostType) { mutableListOf() }
-            .remove(factory)
+        producers.getOrPut(factory.hostType) { mutableListOf() }.remove(factory)
     }
 
     @Suppress("UNCHECKED_CAST")
     fun <HostType: Any> getNavigationHost(
-        hostType: Class<HostType>,
+        hostType: KClass<HostType>,
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>,
     ): NavigationHostFactory<HostType>? {

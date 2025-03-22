@@ -15,15 +15,15 @@ private class NavigationContextViewModelFactory(
     private val context: NavigationContext<*>,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        viewModelNotFoundError(context, modelClass)
+        viewModelNotFoundError(context, modelClass.kotlin)
     }
 
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-        viewModelNotFoundError(context, modelClass)
+        viewModelNotFoundError(context, modelClass.kotlin)
     }
 }
 
-private fun viewModelNotFoundError(context: NavigationContext<*>, modelClass: Class<*>): Nothing {
+private fun viewModelNotFoundError(context: NavigationContext<*>, modelClass: KClass<*>): Nothing {
     val key = context.instruction.navigationKey
     error("ViewModel ${modelClass.simpleName} was not found in NavigationContext with navigation key $key")
 }
@@ -62,7 +62,7 @@ public fun <T : ViewModel> NavigationContext<*>.requireViewModel(
     key: String? = null,
 ): T {
     return getViewModel(cls, key)
-        ?: viewModelNotFoundError(this, cls)
+        ?: viewModelNotFoundError(this, cls.kotlin)
 }
 
 /**
@@ -74,7 +74,17 @@ public fun <T : ViewModel> NavigationContext<*>.getViewModel(
     cls: KClass<T>,
     key: String? = null,
 ): T? {
-    return getViewModel(cls.java, key)
+    val provider = ViewModelProvider(
+        store = viewModelStoreOwner.viewModelStore,
+        factory = NavigationContextViewModelFactory(this)
+    )
+    val result = kotlin.runCatching {
+        when (key) {
+            null -> provider[cls.java]
+            else -> provider[key, cls.java]
+        }
+    }
+    return result.getOrNull()
 }
 
 /**
@@ -88,7 +98,8 @@ public fun <T : ViewModel> NavigationContext<*>.requireViewModel(
     cls: KClass<T>,
     key: String? = null,
 ): T {
-    return requireViewModel(cls.java, key)
+    return getViewModel(cls, key)
+        ?: viewModelNotFoundError(this, cls)
 }
 
 /**
@@ -99,7 +110,7 @@ public fun <T : ViewModel> NavigationContext<*>.requireViewModel(
 public inline fun <reified T : ViewModel> NavigationContext<*>.getViewModel(
     key: String? = null,
 ): T? {
-    return getViewModel(T::class.java, key)
+    return getViewModel(T::class, key)
 }
 
 /**
@@ -112,5 +123,5 @@ public inline fun <reified T : ViewModel> NavigationContext<*>.getViewModel(
 public inline fun <reified T : ViewModel> NavigationContext<*>.requireViewModel(
     key: String? = null,
 ): T {
-    return requireViewModel(T::class.java, key)
+    return requireViewModel(T::class, key)
 }

@@ -17,8 +17,9 @@ import dev.enro.core.isHiltContext
 import dev.enro.destination.flow.ManagedFlowNavigationBinding
 import dev.enro.destination.flow.host.OpenManagedFlowInFragment
 import dev.enro.destination.flow.host.OpenManagedFlowInHiltFragment
+import kotlin.reflect.full.isSubclassOf
 
-internal class ActivityHost : NavigationHostFactory<Activity>(Activity::class.java) {
+internal class ActivityHost : NavigationHostFactory<Activity>(Activity::class) {
     override fun supports(
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>,
@@ -42,7 +43,7 @@ internal class ActivityHost : NavigationHostFactory<Activity>(Activity::class.ja
     }
 }
 
-internal class DialogFragmentHost : NavigationHostFactory<DialogFragment>(DialogFragment::class.java) {
+internal class DialogFragmentHost : NavigationHostFactory<DialogFragment>(DialogFragment::class) {
 
     override fun supports(
         navigationContext: NavigationContext<*>,
@@ -65,7 +66,7 @@ internal class DialogFragmentHost : NavigationHostFactory<DialogFragment>(Dialog
 
         val binding = requireNavigationBinding(instruction)
 
-        val isDialog = DialogFragment::class.java.isAssignableFrom(binding.destinationType.java)
+        val isDialog = binding.destinationType.isSubclassOf(DialogFragment::class)
         if (isDialog) return instruction
 
         val key = when (binding) {
@@ -87,7 +88,7 @@ internal class DialogFragmentHost : NavigationHostFactory<DialogFragment>(Dialog
     }
 }
 
-internal class FragmentHost : NavigationHostFactory<Fragment>(Fragment::class.java) {
+internal class FragmentHost : NavigationHostFactory<Fragment>(Fragment::class) {
 
     override fun supports(
         navigationContext: NavigationContext<*>,
@@ -124,7 +125,7 @@ internal class FragmentHost : NavigationHostFactory<Fragment>(Fragment::class.ja
     }
 }
 
-internal class ComposableHost : NavigationHostFactory<ComposableDestination>(ComposableDestination::class.java) {
+internal class ComposableHost : NavigationHostFactory<ComposableDestination>(ComposableDestination::class) {
     override fun supports(
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>,

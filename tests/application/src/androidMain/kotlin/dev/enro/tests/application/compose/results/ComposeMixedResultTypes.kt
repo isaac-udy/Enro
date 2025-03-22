@@ -15,7 +15,7 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 @Parcelize
 object ComposeMixedResultTypes : NavigationKey.SupportsPush {
@@ -36,7 +36,7 @@ object ComposeMixedResultTypes : NavigationKey.SupportsPush {
 }
 
 data class AnotherObject(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = Uuid.random().toString(),
     val int: Int = id.hashCode(),
 )
 

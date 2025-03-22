@@ -5,6 +5,7 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.NavigationHostFactoryRepository
+import kotlin.reflect.KClass
 
 // The following @OptIn shouldn't be required due to buildSrc/src/main/kotlin/configureAndroid.kt adding an -Xopt-in arg
 // to the Kotlin freeCompilerArgs, but for some reason, lint checks will fail if the @OptIn annotation is not explicitly added.
@@ -14,13 +15,13 @@ internal class HostInstructionAs(
     private val navigationBindingRepository: NavigationBindingRepository,
 ) {
     operator fun <HostType: Any> invoke(
-        hostType: Class<HostType>,
+        hostType: KClass<HostType>,
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>
     ): NavigationInstruction.Open<*> {
         val binding = navigationBindingRepository.bindingForKeyType(instruction.navigationKey::class)
             ?: throw IllegalStateException()
-        val wrappedType = binding.baseType.java
+        val wrappedType = binding.baseType
         if (hostType == wrappedType) return instruction
 
         val host = navigationHostFactoryRepository.getNavigationHost(hostType, navigationContext, instruction)
@@ -38,7 +39,7 @@ internal class HostInstructionAs(
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>,
     ): NavigationInstruction.Open<*> = invoke(
-        hostType = HostType::class.java,
+        hostType = HostType::class,
         navigationContext = navigationContext,
         instruction = instruction
     )

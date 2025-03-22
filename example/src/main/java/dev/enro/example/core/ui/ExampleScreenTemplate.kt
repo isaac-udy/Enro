@@ -49,7 +49,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 
 class ExampleScreenViewModel : ViewModel() {
@@ -86,7 +86,7 @@ fun ExampleScreenTemplate(
     navigation.instruction.extras["example"] = navigation.sentenceId
 
     val ticks by viewModel.ticks.collectAsState()
-    val savedState = rememberSaveable { UUID.randomUUID().toString() }
+    val savedState = rememberSaveable { Uuid.random().toString() }
 
     DisposableEffect(backstack) {
         backstackItems = backstack

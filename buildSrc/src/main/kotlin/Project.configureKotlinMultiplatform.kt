@@ -1,9 +1,20 @@
-import com.android.build.api.dsl.*
+
+import com.android.build.api.dsl.AndroidResources
+import com.android.build.api.dsl.BuildFeatures
+import com.android.build.api.dsl.BuildType
+import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.DefaultConfig
+import com.android.build.api.dsl.Installation
+import com.android.build.api.dsl.ProductFlavor
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.*
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.getValue
+import org.gradle.kotlin.dsl.getting
+import org.gradle.kotlin.dsl.invoke
+import org.gradle.kotlin.dsl.the
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -38,6 +49,7 @@ internal fun Project.configureKotlinMultiplatform(
                     optIn.addAll(
                         "dev.enro.annotations.AdvancedEnroApi",
                         "dev.enro.annotations.ExperimentalEnroApi",
+                        "kotlin.uuid.ExperimentalUuidApi",
                     )
                 }
             }
@@ -45,12 +57,12 @@ internal fun Project.configureKotlinMultiplatform(
 
         if (desktop) {
             jvm("desktop") {
-                @OptIn(ExperimentalKotlinGradlePluginApi::class)
                 compilerOptions {
                     jvmTarget.set(JvmTarget.JVM_21)
                     optIn.addAll(
                         "dev.enro.annotations.AdvancedEnroApi",
                         "dev.enro.annotations.ExperimentalEnroApi",
+                        "kotlin.uuid.ExperimentalUuidApi",
                     )
                 }
             }
@@ -75,6 +87,7 @@ internal fun Project.configureKotlinMultiplatform(
                     optIn.addAll(
                         "dev.enro.annotations.AdvancedEnroApi",
                         "dev.enro.annotations.ExperimentalEnroApi",
+                        "kotlin.uuid.ExperimentalUuidApi",
                     )
                 }
             }
@@ -93,6 +106,7 @@ internal fun Project.configureKotlinMultiplatform(
                         optIn.addAll(
                             "dev.enro.annotations.AdvancedEnroApi",
                             "dev.enro.annotations.ExperimentalEnroApi",
+                            "kotlin.uuid.ExperimentalUuidApi",
                         )
                     }
                 }

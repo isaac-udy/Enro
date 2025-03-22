@@ -43,6 +43,7 @@ import dev.enro.extensions.animate
 import dev.enro.extensions.getParcelableCompat
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlin.reflect.KClass
 
 public class FragmentNavigationContainer internal constructor(
     @IdRes public val containerId: Int,
@@ -56,7 +57,7 @@ public class FragmentNavigationContainer internal constructor(
 ) : NavigationContainer(
     key = key,
     context = parentContext,
-    contextType = Fragment::class.java,
+    contextType = Fragment::class,
     instructionFilter = filter,
     emptyBehavior = emptyBehavior,
     interceptor = interceptor,
@@ -295,8 +296,8 @@ public class FragmentNavigationContainer internal constructor(
             }
             .map {
                 val cls = when (containerId) {
-                    android.R.id.content -> DialogFragment::class.java
-                    else -> Fragment::class.java
+                    android.R.id.content -> DialogFragment::class
+                    else -> Fragment::class
                 }
                 getOrCreateFragment(cls, it)
             }
@@ -308,11 +309,11 @@ public class FragmentNavigationContainer internal constructor(
             .lastOrNull {
                 it.navigationDirection is NavigationDirection.Push
             } ?: return null
-        return getOrCreateFragment(Fragment::class.java, activePushedFragment)
+        return getOrCreateFragment(Fragment::class, activePushedFragment)
     }
 
     private fun getOrCreateFragment(
-        type: Class<out Fragment>,
+        type: KClass<out Fragment>,
         instruction: AnyOpenInstruction
     ): FragmentAndInstruction {
         val existingFragment = fragmentManager.findFragmentByTag(instruction.instructionId)

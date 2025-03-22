@@ -11,6 +11,7 @@ import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 public interface NavigationHandle : LifecycleOwner {
     public val id: String
@@ -27,7 +28,7 @@ public interface TypedNavigationHandle<T : NavigationKey> : NavigationHandle {
 @PublishedApi
 internal class TypedNavigationHandleImpl<T : NavigationKey>(
     internal val navigationHandle: NavigationHandle,
-    private val type: Class<T>
+    private val type: KClass<T>
 ) : TypedNavigationHandle<T> {
     override val id: String get() = navigationHandle.id
     override val instruction: NavigationInstruction.Open<*> = navigationHandle.instruction
@@ -36,7 +37,7 @@ internal class TypedNavigationHandleImpl<T : NavigationKey>(
     @Suppress("UNCHECKED_CAST")
     override val key: T
         get() = navigationHandle.key as? T
-            ?: throw EnroException.IncorrectlyTypedNavigationHandle("TypedNavigationHandle failed to cast key of type ${navigationHandle.key::class.java.simpleName} to ${type.simpleName}")
+            ?: throw EnroException.IncorrectlyTypedNavigationHandle("TypedNavigationHandle failed to cast key of type ${navigationHandle.key::class.simpleName} to ${type.simpleName}")
 
     override val lifecycle: Lifecycle get() = navigationHandle.lifecycle
 
@@ -46,21 +47,21 @@ internal class TypedNavigationHandleImpl<T : NavigationKey>(
 
 public fun <T : NavigationKey> NavigationHandle.asTyped(type: KClass<T>): TypedNavigationHandle<T> {
     val keyType = key::class
-    val isValidType = type.java.isAssignableFrom(keyType.java)
+    val isValidType = keyType.isSubclassOf(type)
     if (!isValidType) {
-        throw EnroException.IncorrectlyTypedNavigationHandle("Failed to cast NavigationHandle with key of type ${keyType.java.simpleName} to TypedNavigationHandle<${type.simpleName}>")
+        throw EnroException.IncorrectlyTypedNavigationHandle("Failed to cast NavigationHandle with key of type ${keyType.simpleName} to TypedNavigationHandle<${type.simpleName}>")
     }
 
     @Suppress("UNCHECKED_CAST")
     if (this is TypedNavigationHandleImpl<*>) return this as TypedNavigationHandle<T>
-    return TypedNavigationHandleImpl(this, type.java)
+    return TypedNavigationHandleImpl(this, type)
 }
 
 public inline fun <reified T : NavigationKey> NavigationHandle.asTyped(): TypedNavigationHandle<T> {
     if (key !is T) {
-        throw EnroException.IncorrectlyTypedNavigationHandle("Failed to cast NavigationHandle with key of type ${key::class.java.simpleName} to TypedNavigationHandle<${T::class.java.simpleName}>")
+        throw EnroException.IncorrectlyTypedNavigationHandle("Failed to cast NavigationHandle with key of type ${key::class.simpleName} to TypedNavigationHandle<${T::class.simpleName}>")
     }
-    return TypedNavigationHandleImpl(this, T::class.java)
+    return TypedNavigationHandleImpl(this, T::class)
 }
 
 public fun NavigationHandle.push(key: NavigationKey.SupportsPush) {

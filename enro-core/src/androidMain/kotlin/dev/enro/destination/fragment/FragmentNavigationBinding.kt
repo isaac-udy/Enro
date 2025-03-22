@@ -14,17 +14,26 @@ public class FragmentNavigationBinding<KeyType : NavigationKey, FragmentType : F
 }
 
 public fun <KeyType : NavigationKey, FragmentType : Fragment> createFragmentNavigationBinding(
+    keyType: KClass<KeyType>,
+    fragmentType: KClass<FragmentType>
+): NavigationBinding<KeyType, FragmentType> = FragmentNavigationBinding(
+    keyType = keyType,
+    destinationType = fragmentType,
+)
+
+// Class-based overload for Java compatibility
+public fun <KeyType : NavigationKey, FragmentType : Fragment> createFragmentNavigationBinding(
     keyType: Class<KeyType>,
     fragmentType: Class<FragmentType>
-): NavigationBinding<KeyType, FragmentType> = FragmentNavigationBinding(
+): NavigationBinding<KeyType, FragmentType> = createFragmentNavigationBinding(
     keyType = keyType.kotlin,
-    destinationType = fragmentType.kotlin,
+    fragmentType = fragmentType.kotlin,
 )
 
 public inline fun <reified KeyType : NavigationKey, reified FragmentType : Fragment> createFragmentNavigationBinding(): NavigationBinding<KeyType, FragmentType> =
     createFragmentNavigationBinding(
-        keyType = KeyType::class.java,
-        fragmentType = FragmentType::class.java,
+        keyType = KeyType::class,
+        fragmentType = FragmentType::class,
     )
 
 

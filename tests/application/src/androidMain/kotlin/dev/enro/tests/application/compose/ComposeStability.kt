@@ -36,7 +36,7 @@ import dev.enro.core.push
 import dev.enro.tests.application.compose.common.Stability
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 // TODO - this could have additional tests added to match those in ComposableDestinationContainerGroups.kt and/or ComposableContainerStabilityTests.kt
 // generally, some tests that flick quickly between the containers and ensure that they are stable and are rendered correctly. Due to those other
@@ -51,7 +51,7 @@ object ComposeStability : NavigationKey.SupportsPush {
 
     @Parcelize
     internal data class Content(
-        val id: String = UUID.randomUUID().toString()
+        val id: String = Uuid.random().toString()
     ) : NavigationKey.SupportsPush {
         val childContainerKey get() = NavigationContainerKey.FromName(id)
         val testTag get() = "ComposeStabilityContent@$id"
@@ -125,8 +125,8 @@ class ComposeStabilityActivity : AppCompatActivity() {
 class ComposeStabilityContentViewModel(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    val id: String = UUID.randomUUID().toString()
-    val saveStateHandleId = savedStateHandle.getStateFlow("savedStateId", UUID.randomUUID().toString())
+    val id: String = Uuid.random().toString()
+    val saveStateHandleId = savedStateHandle.getStateFlow("savedStateId", Uuid.random().toString())
 }
 
 @SuppressLint("StateFlowValueCalledInComposition")
