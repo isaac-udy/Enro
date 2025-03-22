@@ -42,7 +42,7 @@ public sealed class NavigationInstruction {
         @Immutable
         @Parcelize
         internal data class OpenInternal<T : NavigationDirection> constructor(
-            override val navigationDirection: T,
+            override val navigationDirection: @WriteWith<NavigationDirectionParceler> T,
             override val navigationKey: NavigationKey,
             override val extras: @RawValue MutableMap<String, Any> = mutableMapOf(),
             override val instructionId: String = Uuid.random().toString(),

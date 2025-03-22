@@ -2,9 +2,11 @@ package dev.enro.core.result.flows
 
 import android.os.Parcelable
 import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationDirectionParceler
 import dev.enro.core.NavigationKey
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
+import kotlinx.parcelize.WriteWith
 
 public sealed interface FlowStepConfiguration : Parcelable {
     @Parcelize
@@ -17,7 +19,7 @@ public class FlowStep<Result : Any> private constructor(
     @PublishedApi internal val key: NavigationKey,
     @PublishedApi internal val extras: @RawValue Map<String, Any>,
     @PublishedApi internal val dependsOn: Long,
-    @PublishedApi internal val direction: NavigationDirection,
+    @PublishedApi internal val direction: @WriteWith<NavigationDirectionParceler> NavigationDirection,
     @PublishedApi internal val configuration: Set<FlowStepConfiguration>,
 ) : NavigationKey.SupportsPush.WithResult<Result>,
     NavigationKey.SupportsPresent.WithResult<Result> {
