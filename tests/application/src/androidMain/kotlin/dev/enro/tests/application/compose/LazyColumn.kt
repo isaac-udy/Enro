@@ -10,13 +10,16 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object LazyColumn : NavigationKey.SupportsPush
+object LazyColumn : NavigationKey.SupportsPush {
+    internal const val testTag = "LazyColumnTestTag"
+}
 
 @Composable
 @NavigationDestination(LazyColumn::class)
@@ -26,6 +29,7 @@ fun LazyColumnScreen() {
             .fillMaxSize()
             .background(MaterialTheme.colors.background)
             .padding(16.dp)
+            .testTag(LazyColumn.testTag)
     ) {
         item {
             Text(

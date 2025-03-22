@@ -10,8 +10,12 @@ import dev.enro.tests.application.activity.SimpleActivityRobot
 import dev.enro.tests.application.compose.BottomNavigationRobot
 import dev.enro.tests.application.compose.BottomSheetChangeSizeRobot
 import dev.enro.tests.application.compose.BottomSheetCloseAndPresentRobot
+import dev.enro.tests.application.compose.CloseLandingPageAndPresentRobot
+import dev.enro.tests.application.compose.ComposeAnimationsRobot
 import dev.enro.tests.application.compose.ComposeSavePrimitivesRobot
 import dev.enro.tests.application.compose.FindContextRobot
+import dev.enro.tests.application.compose.HorizontalPagerRobot
+import dev.enro.tests.application.compose.LazyColumnRobot
 import dev.enro.tests.application.compose.SyntheticViewModelAccessRobot
 import dev.enro.tests.application.compose.results.ComposeAsyncManagedResultFlowRobot
 import dev.enro.tests.application.compose.results.ComposeEmbeddedResultFlowRobot
@@ -23,7 +27,6 @@ import dev.enro.tests.application.compose.results.ResultsWithExtraRobot
 import dev.enro.tests.application.fragment.UnboundBottomSheetRobot
 import dev.enro.tests.application.managedflow.ManagedFlowInComposableRobot
 import dev.enro.tests.application.managedflow.ManagedFlowInFragmentRobot
-import dev.enro.tests.application.SelectDestination
 
 class SelectDestinationRobot(
     private val composeRule: ComposeTestRule
@@ -200,5 +203,41 @@ class SelectDestinationRobot(
             .filterToOne(hasText("Push"))
             .performClick()
         return ComposeSavePrimitivesRobot(composeRule)
+    }
+    
+    fun openCloseLandingPageAndPresent(): CloseLandingPageAndPresentRobot {
+        composeRule.onNode(hasText("Close Landing Page And Present"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Present"))
+            .performClick()
+        return CloseLandingPageAndPresentRobot(composeRule)
+    }
+    
+    fun openHorizontalPager(): HorizontalPagerRobot {
+        composeRule.onNode(hasText("Horizontal Pager"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+        return HorizontalPagerRobot(composeRule)
+    }
+    
+    fun openLazyColumn(): LazyColumnRobot {
+        composeRule.onNode(hasText("Lazy Column"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+        return LazyColumnRobot(composeRule)
+    }
+    
+    fun openComposeAnimations(): ComposeAnimationsRobot {
+        composeRule.onNode(hasText("Compose Animations"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+        return ComposeAnimationsRobot(composeRule)
     }
 }
