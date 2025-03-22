@@ -46,6 +46,7 @@ internal fun Project.configureKotlinMultiplatform(
                         "-P",
                         "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=dev.enro.annotations.Parcelize"
                     )
+                    freeCompilerArgs.addAll("-Xexpect-actual-classes")
                     optIn.addAll(
                         "dev.enro.annotations.AdvancedEnroApi",
                         "dev.enro.annotations.ExperimentalEnroApi",
@@ -59,6 +60,7 @@ internal fun Project.configureKotlinMultiplatform(
             jvm("desktop") {
                 compilerOptions {
                     jvmTarget.set(JvmTarget.JVM_21)
+                    freeCompilerArgs.addAll("-Xexpect-actual-classes")
                     optIn.addAll(
                         "dev.enro.annotations.AdvancedEnroApi",
                         "dev.enro.annotations.ExperimentalEnroApi",
@@ -84,6 +86,7 @@ internal fun Project.configureKotlinMultiplatform(
                 }
                 binaries.executable()
                 compilerOptions {
+                    freeCompilerArgs.addAll("-Xexpect-actual-classes")
                     optIn.addAll(
                         "dev.enro.annotations.AdvancedEnroApi",
                         "dev.enro.annotations.ExperimentalEnroApi",
@@ -103,6 +106,7 @@ internal fun Project.configureKotlinMultiplatform(
                     baseName = project.projectName.pascalCase
                     isStatic = true
                     compilerOptions {
+                        freeCompilerArgs.addAll("-Xexpect-actual-classes")
                         optIn.addAll(
                             "dev.enro.annotations.AdvancedEnroApi",
                             "dev.enro.annotations.ExperimentalEnroApi",

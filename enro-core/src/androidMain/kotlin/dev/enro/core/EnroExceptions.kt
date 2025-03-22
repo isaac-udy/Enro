@@ -1,7 +1,7 @@
 package dev.enro.core
 
-import android.util.Log
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.internal.EnroLog
 import kotlin.reflect.KClass
 
 public abstract class EnroException(
@@ -70,7 +70,7 @@ public abstract class EnroException(
                 if (navigationController.config.isStrictMode) {
                     throw LegacyNavigationDirectionUsedInStrictMode(message)
                 } else {
-                    Log.w("Enro", "$message Enro would have thrown in strict mode.")
+                    EnroLog.warn("$message Enro would have thrown in strict mode.")
                 }
             }
         }
@@ -88,8 +88,7 @@ public abstract class EnroException(
                 if (navigationController.config.isStrictMode) {
                     throw MissingContainerForPushInstruction(message)
                 } else {
-                    Log.w(
-                        "Enro",
+                    EnroLog.warn(
                         "$message Enro opened this NavigationKey as Present, but would have thrown in strict mode."
                     )
                 }
