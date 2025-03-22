@@ -19,5 +19,5 @@ public data class EnroConfig(
      * when there are no Composable Enter/ExitTransition animations provided. This is disabled by default for tests, based
      * on checking for the presence of the JUnit Test class, because these animations cause issues with ComposeTestRule tests.
      */
-    internal val enableViewAnimationsForCompose: Boolean = runCatching { Class.forName("org.junit.Test") }.isFailure,
+    internal val enableViewAnimationsForCompose: Boolean = !isInTest,
 )
