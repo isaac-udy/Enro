@@ -11,7 +11,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.controller.usecase.createResultChannel
 import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.NavigationResultScope
-import java.util.UUID
+import java.util.*
 
 
 @Composable
@@ -30,13 +30,11 @@ public inline fun <reified T : Any> registerForNavigationResult(
     noinline onResult: @DisallowComposableCalls NavigationResultScope<T, NavigationKey.WithResult<T>>.(T) -> Unit
 ): NavigationResultChannel<T, NavigationKey.WithResult<T>> {
     val navigationHandle = navigationHandle()
-    val internalId = rememberSaveable {
-        UUID.randomUUID().toString()
-    }
     val resultChannel = remember(onResult) {
+        val internalId = object {}
         navigationHandle.createResultChannel(
             resultType = T::class,
-            resultId = internalId,
+            resultId = internalId::class.java.name,
             onClosed = onClosed,
             onResult = onResult,
             additionalResultId = id

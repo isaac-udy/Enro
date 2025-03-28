@@ -178,11 +178,13 @@ public inline fun <reified T : Any> NavigationHandle.registerForNavigationResult
     noinline onClosed: NavigationResultScope<T, NavigationKey.WithResult<T>>.() -> Unit = {},
     noinline onResult: NavigationResultScope<T, NavigationKey.WithResult<T>>.(T) -> Unit
 ): UnmanagedNavigationResultChannel<T, NavigationKey.WithResult<T>> {
+    val resultId = object {}
     return createResultChannel(
         resultType = T::class,
-        resultId = id,
+        resultId = resultId::class.java.name,
         onClosed = onClosed,
         onResult = onResult,
+        additionalResultId = id,
     )
 }
 
@@ -202,11 +204,13 @@ public inline fun <reified T : Any, Key : NavigationKey.WithResult<T>> Navigatio
     noinline onClosed: NavigationResultScope<T, Key>.() -> Unit = {},
     noinline onResult: NavigationResultScope<T, Key>.(T) -> Unit
 ): UnmanagedNavigationResultChannel<T, Key> {
+    val resultId = object {}
     return createResultChannel(
         resultType = T::class,
-        resultId = id,
+        resultId = resultId::class.java.name,
         onClosed = onClosed,
         onResult = onResult,
+        additionalResultId = id,
     )
 }
 
