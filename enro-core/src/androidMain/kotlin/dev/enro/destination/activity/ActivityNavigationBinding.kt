@@ -4,12 +4,15 @@ import android.app.Activity
 import androidx.activity.ComponentActivity
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
+import dev.enro.core.NavigationKeySerializer
 import dev.enro.core.controller.NavigationModuleScope
+import dev.enro.core.default
 import kotlin.reflect.KClass
 
 public class ActivityNavigationBinding<KeyType : NavigationKey, ActivityType : ComponentActivity> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
     override val destinationType: KClass<ActivityType>,
+    override val keySerializer: NavigationKeySerializer<KeyType> = NavigationKeySerializer.default(keyType),
 ) : NavigationBinding<KeyType, ActivityType> {
     override val baseType: KClass<in ActivityType> = Activity::class
 }

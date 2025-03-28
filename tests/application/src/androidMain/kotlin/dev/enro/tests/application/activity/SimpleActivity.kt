@@ -1,6 +1,7 @@
 package dev.enro.tests.application.activity
 
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.Button
@@ -13,7 +14,7 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object SimpleActivity : NavigationKey.SupportsPresent
+object SimpleActivity : Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(SimpleActivity::class)
 class SimpleActivityImpl : ComponentActivity() {

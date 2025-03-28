@@ -15,19 +15,19 @@ object ActivityDestinations {
     @Parcelize
     data class Root(
         val id: String = UUID.randomUUID().toString()
-    ) : NavigationKey.SupportsPresent
+    ) : Parcelable, NavigationKey.SupportsPresent
 
     @Parcelize
     data class Presentable(
         val id: String = UUID.randomUUID().toString()
-    ) : NavigationKey.SupportsPresent.WithResult<TestResult>
+    ) : Parcelable, NavigationKey.SupportsPresent.WithResult<TestResult>
 
     // This type is not actually used in any tests at present, but just exists to prove
     // that generic navigation destinations will correctly generate code
     @Parcelize
     data class Generic<Type: Parcelable>(
         val item: Type
-    ) : NavigationKey.SupportsPush
+    ) : Parcelable, NavigationKey.SupportsPush
 
     abstract class Activity : TestActivity() {
         private val navigation by navigationHandle<NavigationKey>()

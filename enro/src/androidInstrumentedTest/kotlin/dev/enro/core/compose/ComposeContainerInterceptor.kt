@@ -1,5 +1,6 @@
 package dev.enro.core.compose
 
+import android.os.Parcelable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -340,7 +341,7 @@ class ComposeContainerInterceptor {
 }
 
 @Parcelize
-object ComposeScreenWithContainerInterceptor : NavigationKey.SupportsPresent
+object ComposeScreenWithContainerInterceptor : Parcelable, NavigationKey.SupportsPresent
 
 @Composable
 @NavigationDestination(ComposeScreenWithContainerInterceptor::class)

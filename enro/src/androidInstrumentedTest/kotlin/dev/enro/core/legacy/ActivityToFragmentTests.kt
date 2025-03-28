@@ -2,6 +2,7 @@
 package dev.enro.core.legacy
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.core.view.isVisible
@@ -471,7 +472,7 @@ class ActivityToFragmentTests {
 }
 
 @Parcelize
-class ImmediateOpenChildActivityKey : NavigationKey
+class ImmediateOpenChildActivityKey : Parcelable, NavigationKey
 
 @NavigationDestination(ImmediateOpenChildActivityKey::class)
 class ImmediateOpenChildActivity : TestActivity() {
@@ -499,7 +500,7 @@ class ImmediateOpenChildActivity : TestActivity() {
 }
 
 @Parcelize
-class ImmediateOpenFragmentChildActivityKey : NavigationKey
+class ImmediateOpenFragmentChildActivityKey : Parcelable, NavigationKey
 
 @NavigationDestination(ImmediateOpenFragmentChildActivityKey::class)
 class ImmediateOpenFragmentChildActivity : TestActivity() {
@@ -529,7 +530,7 @@ class ImmediateOpenFragmentChildActivity : TestActivity() {
 
 
 @Parcelize
-data class ImmediateOpenChildFragmentKey(val name: String) : NavigationKey
+data class ImmediateOpenChildFragmentKey(val name: String) : Parcelable, NavigationKey
 
 @NavigationDestination(ImmediateOpenChildFragmentKey::class)
 class ImmediateOpenChildFragment : TestFragment() {

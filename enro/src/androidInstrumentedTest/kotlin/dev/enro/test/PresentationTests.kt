@@ -1,6 +1,7 @@
 package dev.enro.test
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -260,25 +261,25 @@ class PresentationTests {
 
     // Keys
     @Parcelize
-    data class FragmentKey(val id: String = UUID.randomUUID().toString()) : NavigationKey.SupportsPresent
+    data class FragmentKey(val id: String = UUID.randomUUID().toString()) : Parcelable, NavigationKey.SupportsPresent
 
     @Parcelize
-    data class DialogFragmentKey(val id: String = UUID.randomUUID().toString()) : NavigationKey.SupportsPresent
+    data class DialogFragmentKey(val id: String = UUID.randomUUID().toString()) : Parcelable, NavigationKey.SupportsPresent
 
     @Parcelize
-    data class NotSupportedFragmentKey(val id: String = UUID.randomUUID().toString()) : NavigationKey.SupportsPresent
+    data class NotSupportedFragmentKey(val id: String = UUID.randomUUID().toString()) : Parcelable, NavigationKey.SupportsPresent
 
     @Parcelize
-    data class NotSupportedLegacyFragmentKey(val id: String = UUID.randomUUID().toString()) : NavigationKey
+    data class NotSupportedLegacyFragmentKey(val id: String = UUID.randomUUID().toString()) : Parcelable, NavigationKey
 
     @Parcelize
-    data class ComposeKey(val id: String = UUID.randomUUID().toString()) : NavigationKey.SupportsPresent
+    data class ComposeKey(val id: String = UUID.randomUUID().toString()) : Parcelable, NavigationKey.SupportsPresent
 
     @Parcelize
-    data class NotSupportedComposeKey(val id: String = UUID.randomUUID().toString()) : NavigationKey.SupportsPresent
+    data class NotSupportedComposeKey(val id: String = UUID.randomUUID().toString()) : Parcelable, NavigationKey.SupportsPresent
 
     @Parcelize
-    data class NotSupportedLegacyComposeKey(val id: String = UUID.randomUUID().toString()) : NavigationKey
+    data class NotSupportedLegacyComposeKey(val id: String = UUID.randomUUID().toString()) : Parcelable, NavigationKey
 
 }
 

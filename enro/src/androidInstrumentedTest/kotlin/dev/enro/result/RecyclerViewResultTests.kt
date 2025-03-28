@@ -3,6 +3,7 @@ package dev.enro.result
 
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
@@ -166,7 +167,7 @@ class RecyclerViewResultTests {
 }
 
 @Parcelize
-class RecyclerViewResultActivityKey : NavigationKey
+class RecyclerViewResultActivityKey : Parcelable, NavigationKey
 
 @NavigationDestination(RecyclerViewResultActivityKey::class)
 class RecyclerViewResultActivity : AppCompatActivity() {

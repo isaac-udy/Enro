@@ -1,6 +1,7 @@
 package dev.enro.tests.application.managedflow
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,11 +24,11 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object ManagedFlowInFragment : NavigationKey.SupportsPresent {
+object ManagedFlowInFragment : Parcelable, NavigationKey.SupportsPresent {
     @Parcelize
     internal class ResultFragment(
         val userInformation: UserInformation,
-    ) : NavigationKey.SupportsPush
+    ) : Parcelable, NavigationKey.SupportsPush
 }
 
 @NavigationDestination(ManagedFlowInFragment::class)

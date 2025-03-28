@@ -1,5 +1,6 @@
 package dev.enro.example.destinations.listdetail.compose
 
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +22,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 class DetailComposable(
     val word: Word
-) : NavigationKey.SupportsPush
+) : Parcelable, NavigationKey.SupportsPush
 
 @Composable
 @NavigationDestination(DetailComposable::class)

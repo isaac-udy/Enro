@@ -2,6 +2,7 @@
 
 package dev.enro.tests.application.compose.results
 
+import android.os.Parcelable
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -50,17 +51,17 @@ import kotlinx.parcelize.Parcelize
 import kotlin.random.Random
 
 @Parcelize
-object ComposeAsyncManagedResultFlow : NavigationKey.SupportsPush {
+object ComposeAsyncManagedResultFlow : Parcelable, NavigationKey.SupportsPush {
 
     @Parcelize
     internal class StepResult(
         val name: String,
-    ) : NavigationKey.SupportsPush.WithResult<String>
+    ) : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
     internal class FinalScreen(
         val data: String,
-    ) : NavigationKey.SupportsPush.WithResult<Unit>
+    ) : Parcelable, NavigationKey.SupportsPush.WithResult<Unit>
 
 }
 

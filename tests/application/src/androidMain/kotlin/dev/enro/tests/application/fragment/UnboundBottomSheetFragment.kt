@@ -1,6 +1,7 @@
 package dev.enro.tests.application.fragment
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +21,7 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object UnboundBottomSheet : NavigationKey.SupportsPresent
+object UnboundBottomSheet : Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(UnboundBottomSheet::class)
 val unboundBottomSheet = syntheticDestination<UnboundBottomSheet> {

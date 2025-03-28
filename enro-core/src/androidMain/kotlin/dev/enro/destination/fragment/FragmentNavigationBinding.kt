@@ -3,12 +3,15 @@ package dev.enro.core.fragment
 import androidx.fragment.app.Fragment
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
+import dev.enro.core.NavigationKeySerializer
 import dev.enro.core.controller.NavigationModuleScope
+import dev.enro.core.default
 import kotlin.reflect.KClass
 
 public class FragmentNavigationBinding<KeyType : NavigationKey, FragmentType : Fragment> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
     override val destinationType: KClass<FragmentType>,
+    override val keySerializer: NavigationKeySerializer<KeyType> = NavigationKeySerializer.default(keyType),
 ) : NavigationBinding<KeyType, FragmentType> {
     override val baseType: KClass<in FragmentType> = Fragment::class
 }

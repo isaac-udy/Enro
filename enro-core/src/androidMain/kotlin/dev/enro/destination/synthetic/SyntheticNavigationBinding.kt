@@ -4,12 +4,15 @@ import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
+import dev.enro.core.NavigationKeySerializer
 import dev.enro.core.controller.NavigationModuleScope
+import dev.enro.core.default
 import kotlin.reflect.KClass
 
 public class SyntheticNavigationBinding<KeyType : NavigationKey> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
-    internal val destination: () -> SyntheticDestination<KeyType>
+    internal val destination: () -> SyntheticDestination<KeyType>,
+    override val keySerializer: NavigationKeySerializer<KeyType> = NavigationKeySerializer.default(keyType),
 ) : NavigationBinding<KeyType, SyntheticDestination<*>> {
     override val destinationType: KClass<SyntheticDestination<*>> = SyntheticDestination::class
     override val baseType: KClass<in SyntheticDestination<*>> = SyntheticDestination::class

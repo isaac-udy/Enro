@@ -1,6 +1,7 @@
 package dev.enro.core.fragment
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -306,7 +307,7 @@ class FragmentContainerInterceptor {
 }
 
 @Parcelize
-object FragmentScreenWithContainerInterceptor: NavigationKey.SupportsPresent
+object FragmentScreenWithContainerInterceptor: Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(FragmentScreenWithContainerInterceptor::class)
 class FragmentWithContainerInterceptor : Fragment() {

@@ -1,6 +1,7 @@
 package dev.enro.example
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,7 +29,7 @@ import kotlinx.parcelize.Parcelize
 
 
 @Parcelize
-class Features : NavigationKey.SupportsPush
+class Features : Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(Features::class)
 class FeaturesFragment : Fragment() {

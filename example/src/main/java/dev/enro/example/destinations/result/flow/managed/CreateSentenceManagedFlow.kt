@@ -1,6 +1,7 @@
 package dev.enro.example.destinations.result.flow.managed
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +25,7 @@ import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class CreateSentenceManagedFlow : NavigationKey.SupportsPresent.WithResult<Sentence>, NavigationKey.SupportsPush.WithResult<Sentence>
+class CreateSentenceManagedFlow : Parcelable, NavigationKey.SupportsPresent.WithResult<Sentence>, NavigationKey.SupportsPush.WithResult<Sentence>
 
 @OptIn(ExperimentalEnroApi::class)
 class ManagedFlowViewModel(

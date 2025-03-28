@@ -8,6 +8,7 @@ import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.result.internal.ResultChannelId
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
+import kotlinx.parcelize.TypeParceler
 import kotlinx.parcelize.WriteWith
 import kotlin.reflect.KClass
 import kotlin.uuid.Uuid
@@ -41,16 +42,17 @@ public sealed class NavigationInstruction {
         @Stable
         @Immutable
         @Parcelize
+        @TypeParceler<NavigationDirection, NavigationDirectionParceler>()
         internal data class OpenInternal<T : NavigationDirection> constructor(
             override val navigationDirection: @WriteWith<NavigationDirectionParceler> T,
-            override val navigationKey: NavigationKey,
+            override val navigationKey: @WriteWith<NavigationKeyParceler> NavigationKey,
             override val extras: @RawValue MutableMap<String, Any> = mutableMapOf(),
             override val instructionId: String = Uuid.random().toString(),
             val previouslyActiveContainer: NavigationContainerKey? = null,
             val openingType: @WriteWith<KClassParceler> KClass<out Any> = Any::class,
             val openedByType: @WriteWith<KClassParceler> KClass<out Any> = Any::class, // the type of context that requested this open instruction was executed
             val openedById: String? = null,
-            val resultKey: NavigationKey? = null,
+            val resultKey: @WriteWith<NavigationKeyParceler.Nullable> NavigationKey? = null,
             val resultId: ResultChannelId? = null,
         ) : Open<T>() {
             override fun equals(other: Any?): Boolean {

@@ -51,6 +51,7 @@ internal fun Project.configureKotlinMultiplatform(
                         "dev.enro.annotations.AdvancedEnroApi",
                         "dev.enro.annotations.ExperimentalEnroApi",
                         "kotlin.uuid.ExperimentalUuidApi",
+                        "kotlin.io.encoding.ExperimentalEncodingApi",
                     )
                 }
             }
@@ -65,6 +66,7 @@ internal fun Project.configureKotlinMultiplatform(
                         "dev.enro.annotations.AdvancedEnroApi",
                         "dev.enro.annotations.ExperimentalEnroApi",
                         "kotlin.uuid.ExperimentalUuidApi",
+                        "kotlin.io.encoding.ExperimentalEncodingApi",
                     )
                 }
             }
@@ -91,6 +93,7 @@ internal fun Project.configureKotlinMultiplatform(
                         "dev.enro.annotations.AdvancedEnroApi",
                         "dev.enro.annotations.ExperimentalEnroApi",
                         "kotlin.uuid.ExperimentalUuidApi",
+                        "kotlin.io.encoding.ExperimentalEncodingApi",
                     )
                 }
             }
@@ -111,6 +114,7 @@ internal fun Project.configureKotlinMultiplatform(
                             "dev.enro.annotations.AdvancedEnroApi",
                             "dev.enro.annotations.ExperimentalEnroApi",
                             "kotlin.uuid.ExperimentalUuidApi",
+                            "kotlin.io.encoding.ExperimentalEncodingApi",
                         )
                     }
                 }

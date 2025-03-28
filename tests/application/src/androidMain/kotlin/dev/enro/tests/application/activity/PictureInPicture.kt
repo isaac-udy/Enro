@@ -3,6 +3,7 @@ package dev.enro.tests.application.activity
 import android.app.PictureInPictureParams
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -25,12 +26,12 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object PictureInPicture : NavigationKey.SupportsPresent {
+object PictureInPicture : Parcelable, NavigationKey.SupportsPresent {
     @Parcelize
-    class FirstChild : NavigationKey.SupportsPush
+    class FirstChild : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    class SecondChild : NavigationKey.SupportsPush
+    class SecondChild : Parcelable, NavigationKey.SupportsPush
 }
 
 @NavigationDestination(PictureInPicture::class)

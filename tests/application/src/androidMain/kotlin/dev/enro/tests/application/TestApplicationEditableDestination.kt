@@ -1,5 +1,6 @@
 package dev.enro.tests.application
 
+import android.os.Parcelable
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import dev.enro.annotations.NavigationDestination
@@ -14,7 +15,7 @@ import kotlinx.parcelize.Parcelize
  * correctly generates the associated binding files and compiles correctly.
  */
 @Parcelize
-internal class TestApplicationEditableDestination : NavigationKey.SupportsPush
+internal class TestApplicationEditableDestination : Parcelable, NavigationKey.SupportsPush
 
 @Composable
 @NavigationDestination(TestApplicationEditableDestination::class)

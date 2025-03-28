@@ -1,5 +1,6 @@
 package dev.enro.tests.application.compose
 
+import android.os.Parcelable
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -39,30 +40,30 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object BottomNavigation : NavigationKey.SupportsPush {
+object BottomNavigation : Parcelable, NavigationKey.SupportsPush {
     @Parcelize
-    internal object Root : NavigationKey.SupportsPush
+    internal object Root : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal object MutliContainer : NavigationKey.SupportsPush
+    internal object MutliContainer : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal object SingleContainerReplace : NavigationKey.SupportsPush
+    internal object SingleContainerReplace : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal object SingleContainerBackstackManipulation : NavigationKey.SupportsPush
+    internal object SingleContainerBackstackManipulation : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal object FirstTab : NavigationKey.SupportsPush
+    internal object FirstTab : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal object SecondTab : NavigationKey.SupportsPush
+    internal object SecondTab : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal object ThirdTab : NavigationKey.SupportsPush
+    internal object ThirdTab : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal object ResultScreen : NavigationKey.SupportsPush.WithResult<String>
+    internal object ResultScreen : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 }
 
 @Composable

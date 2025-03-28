@@ -25,55 +25,55 @@ object ComposableDestinations {
     @Parcelize
     data class Root(
         val id: String = UUID.randomUUID().toString()
-    ) : NavigationKey.SupportsPresent
+    ) : Parcelable, NavigationKey.SupportsPresent
 
     @Parcelize
     data class Pushable(
         val id: String = UUID.randomUUID().toString()
-    ) : NavigationKey.SupportsPush.WithResult<TestResult>
+    ) : Parcelable, NavigationKey.SupportsPush.WithResult<TestResult>
 
     @Parcelize
     data class Presentable(
         val id: String = UUID.randomUUID().toString()
-    ) : NavigationKey.SupportsPresent.WithResult<TestResult>
+    ) : Parcelable, NavigationKey.SupportsPresent.WithResult<TestResult>
 
     @Parcelize
     data class PresentableDialog(
         val id: String = UUID.randomUUID().toString()
-    ) : NavigationKey.SupportsPresent.WithResult<TestResult>
+    ) : Parcelable, NavigationKey.SupportsPresent.WithResult<TestResult>
 
     @Parcelize
     data class PushesToPrimary(
         val id: String = UUID.randomUUID().toString()
-    ) : NavigationKey.SupportsPush.WithResult<TestResult>, TestDestination.IntoPrimaryContainer
+    ) : Parcelable, NavigationKey.SupportsPush.WithResult<TestResult>, TestDestination.IntoPrimaryContainer
 
     @Parcelize
     data class PushesToSecondary(
         val id: String = UUID.randomUUID().toString()
-    ) : NavigationKey.SupportsPush.WithResult<TestResult>, TestDestination.IntoSecondaryContainer
+    ) : Parcelable, NavigationKey.SupportsPush.WithResult<TestResult>, TestDestination.IntoSecondaryContainer
 
     @Parcelize
     data class PushesToChildAsPrimary(
         val id: String = UUID.randomUUID().toString()
-    ) : NavigationKey.SupportsPush.WithResult<TestResult>, TestDestination.IntoPrimaryChildContainer
+    ) : Parcelable, NavigationKey.SupportsPush.WithResult<TestResult>, TestDestination.IntoPrimaryChildContainer
 
     @Parcelize
     data class PushesToChildAsSecondary(
         val id: String = UUID.randomUUID().toString()
-    ) : NavigationKey.SupportsPush.WithResult<TestResult>,
+    ) : Parcelable, NavigationKey.SupportsPush.WithResult<TestResult>,
         TestDestination.IntoSecondaryChildContainer
 
     @Parcelize
     data class ManuallyBound(
         val id: String = UUID.randomUUID().toString()
-    ) : NavigationKey.SupportsPush, TestDestination.IntoPrimaryContainer
+    ) : Parcelable, NavigationKey.SupportsPush, TestDestination.IntoPrimaryContainer
 
     // This type is not actually used in any tests at present, but just exists to prove
     // that generic navigation destinations will correctly generate code
     @Parcelize
     data class Generic<Type: Parcelable>(
         val item: Type
-    ) : NavigationKey.SupportsPresent
+    ) : Parcelable, NavigationKey.SupportsPresent
 
     class TestViewModel : ViewModel() {
         private val navigation by navigationHandle<NavigationKey>()

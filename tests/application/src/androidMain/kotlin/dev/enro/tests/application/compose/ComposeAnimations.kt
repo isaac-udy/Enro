@@ -1,5 +1,6 @@
 package dev.enro.tests.application.compose
 
+import android.os.Parcelable
 import android.view.Window
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterExitState
@@ -44,18 +45,18 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object ComposeAnimations : NavigationKey.SupportsPush {
+object ComposeAnimations : Parcelable, NavigationKey.SupportsPush {
     @Parcelize
-    internal data object Root : NavigationKey.SupportsPush
+    internal data object Root : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal data object PushWithSlide : NavigationKey.SupportsPush
+    internal data object PushWithSlide : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal data object PushWithAnimatedSquare : NavigationKey.SupportsPush
+    internal data object PushWithAnimatedSquare : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal data object Dialog : NavigationKey.SupportsPresent
+    internal data object Dialog : Parcelable, NavigationKey.SupportsPresent
 }
 
 private fun <T> defaultSpec() = tween<T>(1500)

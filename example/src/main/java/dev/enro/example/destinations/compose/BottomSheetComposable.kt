@@ -1,5 +1,6 @@
 package dev.enro.example.destinations.compose
 
+import android.os.Parcelable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +15,7 @@ import dev.enro.example.core.ui.ExampleScreenTemplate
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class BottomSheetComposable : NavigationKey.SupportsPresent
+class BottomSheetComposable : Parcelable, NavigationKey.SupportsPresent
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

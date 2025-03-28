@@ -2,6 +2,7 @@ package dev.enro.core.activity
 
 import android.content.Context
 import android.content.Intent
+import android.os.Parcelable
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -113,7 +114,7 @@ internal const val PENDING_ACTIVITY_RESULT: String = "dev.enro.core.activity.PEN
 internal class ActivityResultDestination(
     val wrapped: NavigationInstruction.Open<*>,
     val intent: Intent,
-) : NavigationKey.SupportsPresent
+) : Parcelable, NavigationKey.SupportsPresent
 
 @Composable
 internal fun ActivityResultBridge() {

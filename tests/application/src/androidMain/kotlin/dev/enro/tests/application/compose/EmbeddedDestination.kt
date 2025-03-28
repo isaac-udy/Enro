@@ -1,5 +1,6 @@
 package dev.enro.tests.application.compose
 
+import android.os.Parcelable
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Button
@@ -21,12 +22,12 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object EmbeddedDestination : NavigationKey.SupportsPush {
+object EmbeddedDestination : Parcelable, NavigationKey.SupportsPush {
     @Parcelize
-    internal data object NoResult: NavigationKey.SupportsPush
+    internal data object NoResult: Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal data object WithResult: NavigationKey.SupportsPush.WithResult<String>
+    internal data object WithResult: Parcelable, NavigationKey.SupportsPush.WithResult<String>
 }
 
 @OptIn(ExperimentalEnroApi::class)

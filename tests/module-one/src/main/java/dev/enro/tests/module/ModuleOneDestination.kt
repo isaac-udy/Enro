@@ -1,7 +1,8 @@
 package dev.enro.tests.module
 
+import android.os.Parcelable
 import dev.enro.core.NavigationKey
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object ModuleOneDestination : NavigationKey.SupportsPush
+object ModuleOneDestination : Parcelable, NavigationKey.SupportsPush

@@ -1,6 +1,7 @@
 package dev.enro.tests.application.compose.results
 
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
@@ -29,24 +30,24 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object ComposeEmbeddedResultFlow : NavigationKey.SupportsPush {
+object ComposeEmbeddedResultFlow : Parcelable, NavigationKey.SupportsPush {
     @Parcelize
-    internal object Root : NavigationKey.SupportsPush
+    internal object Root : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
     internal data class InsideContainer(
         val currentResult: String,
-    ) : NavigationKey.SupportsPush.WithResult<String>
+    ) : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
     internal data class OutsideContainer(
         val currentResult: String,
-    ) : NavigationKey.SupportsPush.WithResult<String>
+    ) : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
     internal data class Activity(
         val currentResult: String,
-    ) : NavigationKey.SupportsPresent.WithResult<String>
+    ) : Parcelable, NavigationKey.SupportsPresent.WithResult<String>
 }
 
 @NavigationDestination(ComposeEmbeddedResultFlow::class)

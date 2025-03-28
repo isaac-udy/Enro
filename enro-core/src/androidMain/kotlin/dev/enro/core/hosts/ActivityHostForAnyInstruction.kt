@@ -1,16 +1,23 @@
 package dev.enro.core.hosts
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.widget.FrameLayout
 import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
-import dev.enro.core.*
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroInternalNavigationKey
+import dev.enro.core.NavigationHost
+import dev.enro.core.NavigationKey
+import dev.enro.core.R
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractOpenInstructionInActivityKey :
+    Parcelable,
     NavigationKey,
     EnroInternalNavigationKey {
 

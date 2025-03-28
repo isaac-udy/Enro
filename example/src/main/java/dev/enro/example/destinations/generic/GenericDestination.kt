@@ -12,7 +12,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 class GenericDestination<T: Parcelable>(
     val instantResult: T
-) : NavigationKey.SupportsPresent.WithResult<T>
+) : Parcelable, NavigationKey.SupportsPresent.WithResult<T>
 
 @Composable
 @NavigationDestination(GenericDestination::class)

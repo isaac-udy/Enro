@@ -1,5 +1,6 @@
 package dev.enro
 
+import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.fragment.app.FragmentActivity
 import dev.enro.annotations.NavigationDestination
@@ -8,7 +9,7 @@ import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class DefaultActivityKey(val id: String) : NavigationKey
+data class DefaultActivityKey(val id: String) : Parcelable, NavigationKey
 
 @NavigationDestination(DefaultActivityKey::class)
 class DefaultActivity : TestActivity() {
@@ -22,19 +23,19 @@ class DefaultActivity : TestActivity() {
 }
 
 @Parcelize
-data class GenericActivityKey(val id: String) : NavigationKey
+data class GenericActivityKey(val id: String) : Parcelable, NavigationKey
 
 @NavigationDestination(GenericActivityKey::class)
 class GenericActivity : TestActivity()
 
 @Parcelize
-data class GenericFragmentKey(val id: String) : NavigationKey, NavigationKey.SupportsPush
+data class GenericFragmentKey(val id: String) : Parcelable, NavigationKey, NavigationKey.SupportsPush
 
 @NavigationDestination(GenericFragmentKey::class)
 class GenericFragment : TestFragment()
 
 @Parcelize
-data class GenericComposableKey(val id: String) : NavigationKey
+data class GenericComposableKey(val id: String) : Parcelable, NavigationKey
 
 @Composable
 @NavigationDestination(GenericComposableKey::class)

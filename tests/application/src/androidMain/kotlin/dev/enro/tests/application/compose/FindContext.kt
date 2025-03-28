@@ -1,5 +1,6 @@
 package dev.enro.tests.application.compose
 
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
+import dev.enro.core.NavigationKeyParceler
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
@@ -43,37 +45,38 @@ import dev.enro.core.push
 import dev.enro.core.requestClose
 import dev.enro.core.rootContext
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.WriteWith
 import kotlin.reflect.KClass
 
 @Parcelize
-object FindContext : NavigationKey.SupportsPush {
+object FindContext : Parcelable, NavigationKey.SupportsPush {
     interface HasId {
         val id: Int
     }
 
     @Parcelize
-    internal object Left : NavigationKey.SupportsPush {
+    internal object Left : Parcelable, NavigationKey.SupportsPush {
         @Parcelize
-        internal data class Top(override val id: Int) : NavigationKey.SupportsPush, HasId
+        internal data class Top(override val id: Int) : Parcelable, NavigationKey.SupportsPush, HasId
 
         @Parcelize
-        internal data class Bottom(override val id: Int) : NavigationKey.SupportsPush, HasId
+        internal data class Bottom(override val id: Int) : Parcelable, NavigationKey.SupportsPush, HasId
     }
 
     @Parcelize
-    internal object Right : NavigationKey.SupportsPush {
+    internal object Right : Parcelable, NavigationKey.SupportsPush {
         @Parcelize
-        internal data class Top(override val id: Int) : NavigationKey.SupportsPush, HasId
+        internal data class Top(override val id: Int) : Parcelable, NavigationKey.SupportsPush, HasId
 
         @Parcelize
-        internal data class Bottom(override val id: Int) : NavigationKey.SupportsPush, HasId
+        internal data class Bottom(override val id: Int) : Parcelable, NavigationKey.SupportsPush, HasId
     }
 
     @Parcelize
-    internal object Find : NavigationKey.SupportsPresent
+    internal object Find : Parcelable, NavigationKey.SupportsPresent
 
     @Parcelize
-    internal class FindResult(val found: NavigationKey?) : NavigationKey.SupportsPresent
+    internal class FindResult(val found: @WriteWith<NavigationKeyParceler.Nullable> NavigationKey?) : Parcelable, NavigationKey.SupportsPresent
 }
 
 @NavigationDestination(FindContext::class)

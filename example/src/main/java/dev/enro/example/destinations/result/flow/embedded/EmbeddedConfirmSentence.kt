@@ -1,5 +1,6 @@
 package dev.enro.example.destinations.result.flow.embedded
 
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,7 +35,7 @@ class EmbeddedConfirmSentence(
     val adverb: Adverb,
     val adjective: Adjective,
     val noun: Noun
-) : NavigationKey.SupportsPresent.WithResult<Sentence>
+) : Parcelable, NavigationKey.SupportsPresent.WithResult<Sentence>
 
 @Composable
 @NavigationDestination(EmbeddedConfirmSentence::class)

@@ -2,6 +2,7 @@ package dev.enro.tests.application.compose
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
@@ -43,7 +44,7 @@ import kotlin.uuid.Uuid
 // tests in the core enro suite, it's not a high priority to add these (as those will catch bugs), but it is easier to debug tests which are
 // written against the test application (as compared to the core suite).
 @Parcelize
-object ComposeStability : NavigationKey.SupportsPush {
+object ComposeStability : Parcelable, NavigationKey.SupportsPush {
 
     internal val primaryContainer = NavigationContainerKey.FromName("primaryContainer")
     internal val secondaryContainer = NavigationContainerKey.FromName("secondaryContainer")
@@ -52,7 +53,7 @@ object ComposeStability : NavigationKey.SupportsPush {
     @Parcelize
     internal data class Content(
         val id: String = Uuid.random().toString()
-    ) : NavigationKey.SupportsPush {
+    ) : Parcelable, NavigationKey.SupportsPush {
         val childContainerKey get() = NavigationContainerKey.FromName(id)
         val testTag get() = "ComposeStabilityContent@$id"
     }

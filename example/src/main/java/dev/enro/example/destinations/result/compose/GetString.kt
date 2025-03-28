@@ -1,5 +1,6 @@
 package dev.enro.example.destinations.result.compose
 
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,7 +35,7 @@ import kotlinx.parcelize.Parcelize
 class GetString(
     val title: String = "", // In a real application, you should prefer to pass a String resource
     val buttonTitle: String = "Confirm",
-) : NavigationKey.SupportsPresent.WithResult<String>, NavigationKey.SupportsPush.WithResult<String>
+) : Parcelable, NavigationKey.SupportsPresent.WithResult<String>, NavigationKey.SupportsPush.WithResult<String>
 
 @Composable
 @OptIn(ExperimentalMaterialApi::class)

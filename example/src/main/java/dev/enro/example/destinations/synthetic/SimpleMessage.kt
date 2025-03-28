@@ -1,6 +1,7 @@
 package dev.enro.example.destinations.synthetic
 
 import android.app.AlertDialog
+import android.os.Parcelable
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.*
 import dev.enro.core.synthetic.syntheticDestination
@@ -12,7 +13,7 @@ data class SimpleMessage(
     val title: String,
     val message: String,
     val positiveActionInstruction: @RawValue NavigationInstruction? = null
-) : NavigationKey.SupportsPresent
+) : Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(SimpleMessage::class)
 val simpleMessageDestination = syntheticDestination<SimpleMessage> {

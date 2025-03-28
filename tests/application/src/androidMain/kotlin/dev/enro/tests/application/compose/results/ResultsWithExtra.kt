@@ -1,5 +1,6 @@
 package dev.enro.tests.application.compose.results
 
+import android.os.Parcelable
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -15,9 +16,9 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object ResultsWithExtra : NavigationKey.SupportsPush {
+object ResultsWithExtra : Parcelable, NavigationKey.SupportsPush {
     @Parcelize
-    internal object Sender : NavigationKey.SupportsPush.WithResult<String>
+    internal object Sender : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 }
 
 

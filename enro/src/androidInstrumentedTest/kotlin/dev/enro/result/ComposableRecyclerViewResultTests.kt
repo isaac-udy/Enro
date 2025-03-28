@@ -2,6 +2,7 @@
 package dev.enro.result
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -149,7 +150,7 @@ class ComposableRecyclerViewResultTests {
 }
 
 @Parcelize
-class ComposeRecyclerViewResultActivityKey : NavigationKey
+class ComposeRecyclerViewResultActivityKey : Parcelable, NavigationKey
 
 @NavigationDestination(ComposeRecyclerViewResultActivityKey::class)
 class ComposeRecyclerViewResultActivity : AppCompatActivity() {

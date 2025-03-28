@@ -56,7 +56,7 @@ import kotlinx.parcelize.Parcelize
  * See [dev.enro.tests.application.TestApplication] where [FragmentSharedElements.composeCompatibilityPlugin] is installed.
  */
 @Parcelize
-object FragmentSharedElementDestination : NavigationKey.SupportsPresent {
+object FragmentSharedElementDestination : Parcelable, NavigationKey.SupportsPresent {
     @Parcelize
     internal object RecyclerViewFragment : Parcelable, NavigationKey.SupportsPush
 

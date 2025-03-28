@@ -1,5 +1,6 @@
 package dev.enro.tests.application.managedflow
 
+import android.os.Parcelable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
@@ -16,11 +17,11 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object ManagedFlowInComposable : NavigationKey.SupportsPush {
+object ManagedFlowInComposable : Parcelable, NavigationKey.SupportsPush {
     @Parcelize
     internal class DisplayUserInformation(
         val userInformation: UserInformation,
-    ) : NavigationKey.SupportsPush
+    ) : Parcelable, NavigationKey.SupportsPush
 }
 
 @Composable

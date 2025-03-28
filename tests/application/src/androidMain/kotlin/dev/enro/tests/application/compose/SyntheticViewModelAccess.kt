@@ -1,5 +1,6 @@
 package dev.enro.tests.application.compose
 
+import android.os.Parcelable
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -20,12 +21,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object SyntheticViewModelAccess : NavigationKey.SupportsPush {
+object SyntheticViewModelAccess : Parcelable, NavigationKey.SupportsPush {
     @Parcelize
-    internal object AccessValidViewModel : NavigationKey.SupportsPresent
+    internal object AccessValidViewModel : Parcelable, NavigationKey.SupportsPresent
 
     @Parcelize
-    internal object AccessInvalidViewModel : NavigationKey.SupportsPresent
+    internal object AccessInvalidViewModel : Parcelable, NavigationKey.SupportsPresent
 }
 
 class ViewModelForSyntheticViewModelAccess : ViewModel() {

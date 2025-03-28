@@ -1,6 +1,7 @@
 package dev.enro.tests.application.compose.results
 
 import android.content.res.Configuration
+import android.os.Parcelable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,15 +34,15 @@ import dev.enro.tests.application.compose.common.TitledRow
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object ComposeNestedResults : NavigationKey.SupportsPush {
+object ComposeNestedResults : Parcelable, NavigationKey.SupportsPush {
     @Parcelize
-    internal object Receiver : NavigationKey.SupportsPush
+    internal object Receiver : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal object NestedSenderContainer : NavigationKey.SupportsPush
+    internal object NestedSenderContainer : Parcelable, NavigationKey.SupportsPush
 
     @Parcelize
-    internal object Sender : NavigationKey.SupportsPush.WithResult<String>
+    internal object Sender : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 }
 
 @NavigationDestination(ComposeNestedResults::class)

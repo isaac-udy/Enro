@@ -1,5 +1,6 @@
 package dev.enro.test
 
+import android.os.Parcelable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dev.enro.annotations.ExperimentalEnroApi
@@ -22,7 +23,7 @@ import java.util.UUID
 @Parcelize
 data class TestTestKeyWithData(
     val id: String
-) : NavigationKey.SupportsPush, NavigationKey.SupportsPresent
+) : Parcelable, NavigationKey.SupportsPush, NavigationKey.SupportsPresent
 
 val testContainerKey = NavigationContainerKey.FromName("test container")
 

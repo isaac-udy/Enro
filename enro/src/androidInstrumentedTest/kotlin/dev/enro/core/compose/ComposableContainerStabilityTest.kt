@@ -2,6 +2,7 @@ package dev.enro.core.compose
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
@@ -383,7 +384,7 @@ class ComposableContainerStabilityTest {
 }
 
 @Parcelize
-object ComposeStabilityRootKey: NavigationKey.SupportsPresent
+object ComposeStabilityRootKey: Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(ComposeStabilityRootKey::class)
 class ComposeStabilityActivity : AppCompatActivity() {
@@ -408,7 +409,7 @@ class ComposeStabilityActivity : AppCompatActivity() {
 }
 
 @Parcelize
-object ComposeStabilityGroupsRootKey: NavigationKey.SupportsPresent
+object ComposeStabilityGroupsRootKey: Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(ComposeStabilityGroupsRootKey::class)
 class ComposeStabilityGroupsActivity : AppCompatActivity() {
@@ -476,7 +477,7 @@ data class ComposeStabilitySnapshot(
 @Parcelize
 data class ComposeStabilityContentKey(
     val id: String = UUID.randomUUID().toString()
-) : NavigationKey.SupportsPush {
+) : Parcelable, NavigationKey.SupportsPush {
     val childContainerKey get() = NavigationContainerKey.FromName(id)
 
     val testTag get() = "ComposeStabilityContent@$id"

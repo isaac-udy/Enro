@@ -1,8 +1,6 @@
 package dev.enro.core
 
-import android.os.Parcelable
-
-public interface NavigationKey : Parcelable {
+public interface NavigationKey {
     public interface WithResult<T: Any> : NavigationKey
 
     public interface SupportsPush : NavigationKey {
@@ -17,6 +15,8 @@ public interface NavigationKey : Parcelable {
         val navigationKey: T,
         val extras: Map<String, Any>,
     )
+
+    public companion object
 }
 
 public fun <T: NavigationKey> T.withExtra(

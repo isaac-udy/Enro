@@ -1,5 +1,6 @@
 package dev.enro.example.destinations.restoration
 
+import android.os.Parcelable
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.emptyBackstack
@@ -10,7 +11,7 @@ import dev.enro.core.synthetic.syntheticDestination
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class SaveRootState : NavigationKey.SupportsPresent
+class SaveRootState : Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(SaveRootState::class)
 val saveRootState = syntheticDestination<SaveRootState> {

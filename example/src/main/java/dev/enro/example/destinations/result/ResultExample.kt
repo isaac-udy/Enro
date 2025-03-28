@@ -2,6 +2,7 @@ package dev.enro.example.destinations.result
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +24,7 @@ import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ResultExampleKey : NavigationKey.SupportsPush
+class ResultExampleKey : Parcelable, NavigationKey.SupportsPush
 
 @SuppressLint("SetTextI18n")
 @NavigationDestination(ResultExampleKey::class)

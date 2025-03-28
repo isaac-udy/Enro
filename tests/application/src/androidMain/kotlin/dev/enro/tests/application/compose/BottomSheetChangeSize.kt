@@ -1,5 +1,6 @@
 package dev.enro.tests.application.compose
 
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -28,9 +29,9 @@ import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object BottomSheetChangeSize : NavigationKey.SupportsPush {
+object BottomSheetChangeSize : Parcelable, NavigationKey.SupportsPush {
     @Parcelize
-    internal object BottomSheet : NavigationKey.SupportsPresent
+    internal object BottomSheet : Parcelable, NavigationKey.SupportsPresent
 }
 
 @Composable

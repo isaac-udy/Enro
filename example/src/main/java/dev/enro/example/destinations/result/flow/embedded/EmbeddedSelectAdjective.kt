@@ -1,5 +1,6 @@
 package dev.enro.example.destinations.result.flow.embedded
 
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -31,7 +32,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 class EmbeddedSelectAdjective(
     val adverb: Adverb
-) : NavigationKey.SupportsPush.WithResult<Sentence>, NavigationKey.SupportsPresent.WithResult<Sentence>
+) : Parcelable, NavigationKey.SupportsPush.WithResult<Sentence>, NavigationKey.SupportsPresent.WithResult<Sentence>
 
 @Composable
 @NavigationDestination(EmbeddedSelectAdjective::class)

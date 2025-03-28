@@ -1,5 +1,6 @@
 package dev.enro.core.plugins
 
+import android.os.Parcelable
 import androidx.test.core.app.ActivityScenario
 import dev.enro.TestActivity
 import dev.enro.TestFragment
@@ -132,7 +133,7 @@ class PluginTests {
 }
 
 @Parcelize
-data class PluginTestActivityKey(val keyId: String = UUID.randomUUID().toString()) : NavigationKey
+data class PluginTestActivityKey(val keyId: String = UUID.randomUUID().toString()) : Parcelable, NavigationKey
 
 @NavigationDestination(PluginTestActivityKey::class)
 class PluginTestActivity : TestActivity() {
@@ -150,7 +151,7 @@ class PluginTestActivity : TestActivity() {
 
 @Parcelize
 data class PluginPrimaryTestFragmentKey(val keyId: String = UUID.randomUUID().toString()) :
-    NavigationKey
+    Parcelable, NavigationKey
 
 @NavigationDestination(PluginPrimaryTestFragmentKey::class)
 class PluginPrimaryTestFragment : TestFragment() {
@@ -166,7 +167,7 @@ class PluginPrimaryTestFragment : TestFragment() {
 
 @Parcelize
 data class PluginSecondaryTestFragmentKey(val keyId: String = UUID.randomUUID().toString()) :
-    NavigationKey
+    Parcelable, NavigationKey
 
 @NavigationDestination(PluginSecondaryTestFragmentKey::class)
 class PluginSecondaryTestFragment : TestFragment() {

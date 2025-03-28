@@ -36,20 +36,20 @@ internal data class UserInformation(
 ) : Parcelable
 
 @Parcelize
-internal class UserInformationFlow : NavigationKey.SupportsPush.WithResult<UserInformation> {
+internal class UserInformationFlow : Parcelable, NavigationKey.SupportsPush.WithResult<UserInformation> {
     @Parcelize
-    internal class GetName : NavigationKey.SupportsPush.WithResult<String>
+    internal class GetName : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
-    internal class GetEmail : NavigationKey.SupportsPush.WithResult<String>
+    internal class GetEmail : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
-    internal class GetAge : NavigationKey.SupportsPush.WithResult<Int>
+    internal class GetAge : Parcelable, NavigationKey.SupportsPush.WithResult<Int>
 
     @Parcelize
     internal class ErrorDialog(
         internal val message: String
-    ) : NavigationKey.SupportsPresent
+    ) : Parcelable, NavigationKey.SupportsPresent
 }
 
 @OptIn(ExperimentalEnroApi::class)

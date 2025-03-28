@@ -2,6 +2,7 @@
 package dev.enro.tests.application
 
 import android.app.Application
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,7 +50,7 @@ import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.isAccessible
 
 @Parcelize
-internal object SelectDestination : NavigationKey.SupportsPush, NavigationKey.SupportsPresent
+internal object SelectDestination : Parcelable, NavigationKey.SupportsPush, NavigationKey.SupportsPresent
 
 @Composable
 @NavigationDestination(SelectDestination::class)

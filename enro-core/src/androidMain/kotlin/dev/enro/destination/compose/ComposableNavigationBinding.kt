@@ -3,13 +3,16 @@ package dev.enro.core.compose
 import androidx.compose.runtime.Composable
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
+import dev.enro.core.NavigationKeySerializer
 import dev.enro.core.controller.NavigationModuleScope
+import dev.enro.core.default
 import kotlin.reflect.KClass
 
 public class ComposableNavigationBinding<KeyType : NavigationKey, ComposableType : ComposableDestination> @PublishedApi internal constructor(
     override val keyType: KClass<KeyType>,
     override val destinationType: KClass<ComposableType>,
     internal val constructDestination: () -> ComposableType,
+    override val keySerializer: NavigationKeySerializer<KeyType> = NavigationKeySerializer.default(keyType),
 ) : NavigationBinding<KeyType, ComposableType> {
     override val baseType: KClass<in ComposableType> = ComposableDestination::class
 }

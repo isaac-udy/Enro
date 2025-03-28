@@ -1,6 +1,7 @@
 package dev.enro.core.compose
 
 import android.annotation.SuppressLint
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -144,16 +145,16 @@ class ComposableDestinationContainerGroups {
 
     object Destinations {
         @Parcelize
-        object RootDestination : NavigationKey.SupportsPresent
+        object RootDestination : Parcelable, NavigationKey.SupportsPresent
 
         @Parcelize
-        object FirstTab : NavigationKey.SupportsPush
+        object FirstTab : Parcelable, NavigationKey.SupportsPush
 
         @Parcelize
-        object SecondTab : NavigationKey.SupportsPush
+        object SecondTab : Parcelable, NavigationKey.SupportsPush
 
         @Parcelize
-        object ThirdTab : NavigationKey.SupportsPush
+        object ThirdTab : Parcelable, NavigationKey.SupportsPush
     }
 }
 

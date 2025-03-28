@@ -1,5 +1,6 @@
 package dev.enro.example.destinations.listdetail.compose
 
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -22,7 +23,7 @@ import dev.enro.example.core.ui.WordCard
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ListComposable : NavigationKey.SupportsPush
+class ListComposable : Parcelable, NavigationKey.SupportsPush
 
 @Composable
 @NavigationDestination(ListComposable::class)

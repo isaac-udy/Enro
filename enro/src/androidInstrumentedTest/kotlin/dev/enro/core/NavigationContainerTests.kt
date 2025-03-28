@@ -2,6 +2,7 @@
 package dev.enro.core
 
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -587,7 +588,7 @@ class NavigationContainerTests {
 }
 
 @Parcelize
-object SingleFragmentContainerActivityKey: NavigationKey
+object SingleFragmentContainerActivityKey: Parcelable, NavigationKey
 
 @NavigationDestination(SingleFragmentContainerActivityKey::class)
 class SingleFragmentContainerActivity : TestActivity() {
@@ -598,7 +599,7 @@ class SingleFragmentContainerActivity : TestActivity() {
 }
 
 @Parcelize
-object MultipleFragmentContainerActivityKey: NavigationKey
+object MultipleFragmentContainerActivityKey: Parcelable, NavigationKey
 
 @NavigationDestination(MultipleFragmentContainerActivityKey::class)
 class MultipleFragmentContainerActivity : TestActivity() {
@@ -610,7 +611,7 @@ class MultipleFragmentContainerActivity : TestActivity() {
 }
 
 @Parcelize
-object MultipleFragmentContainerActivityWithAcceptKey: NavigationKey
+object MultipleFragmentContainerActivityWithAcceptKey: Parcelable, NavigationKey
 
 @NavigationDestination(MultipleFragmentContainerActivityWithAcceptKey::class)
 class MultipleFragmentContainerActivityWithAccept : TestActivity() {
@@ -630,7 +631,7 @@ class MultipleFragmentContainerActivityWithAccept : TestActivity() {
 }
 
 @Parcelize
-object SingleComposableContainerActivityKey: NavigationKey
+object SingleComposableContainerActivityKey: Parcelable, NavigationKey
 
 @NavigationDestination(SingleComposableContainerActivityKey::class)
 class SingleComposableContainerActivity : ComponentActivity() {
@@ -661,7 +662,7 @@ class SingleComposableContainerActivity : ComponentActivity() {
 }
 
 @Parcelize
-object MultipleComposableContainerActivityKey: NavigationKey
+object MultipleComposableContainerActivityKey: Parcelable, NavigationKey
 
 @NavigationDestination(MultipleComposableContainerActivityKey::class)
 class MultipleComposableContainerActivity : ComponentActivity() {
@@ -705,7 +706,7 @@ class MultipleComposableContainerActivity : ComponentActivity() {
 
 
 @Parcelize
-object MultipleComposableContainerActivityWithAcceptKey: NavigationKey
+object MultipleComposableContainerActivityWithAcceptKey: Parcelable, NavigationKey
 
 @NavigationDestination(MultipleComposableContainerActivityWithAcceptKey::class)
 class MultipleComposableContainerActivityWithAccept : ComponentActivity() {

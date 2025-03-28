@@ -2,6 +2,7 @@ package dev.enro.tests.application.compose
 
 import android.os.Bundle
 import android.os.Parcel
+import android.os.Parcelable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -40,9 +41,9 @@ import kotlin.random.Random
  * 4. The numbers should be the same as they were before the state was saved
  */
 @Parcelize
-object ComposeSavePrimitives : NavigationKey.SupportsPush {
+object ComposeSavePrimitives : Parcelable, NavigationKey.SupportsPush {
     @Parcelize
-    internal object Inner : NavigationKey.SupportsPush
+    internal object Inner : Parcelable, NavigationKey.SupportsPush
 }
 
 @NavigationDestination(ComposeSavePrimitives::class)

@@ -1,6 +1,7 @@
 package dev.enro.example.destinations.listdetail.compose
 
 import android.content.res.Configuration
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,7 +20,7 @@ import dev.enro.core.container.accept
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ListDetailComposable : NavigationKey.SupportsPush
+class ListDetailComposable : Parcelable, NavigationKey.SupportsPush
 
 val listContainerKey = NavigationContainerKey.FromName("listContainerKey")
 val detailContainerKey = NavigationContainerKey.FromName("detailContainerKey")

@@ -1,5 +1,6 @@
 package dev.enro.tests.application.compose.results
 
+import android.os.Parcelable
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -18,21 +19,21 @@ import kotlinx.parcelize.Parcelize
 import kotlin.uuid.Uuid
 
 @Parcelize
-object ComposeMixedResultTypes : NavigationKey.SupportsPush {
+object ComposeMixedResultTypes : Parcelable, NavigationKey.SupportsPush {
     @Parcelize
-    internal class StringResult : NavigationKey.SupportsPush.WithResult<String>
+    internal class StringResult : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
-    internal class IntResult : NavigationKey.SupportsPush.WithResult<Int>
+    internal class IntResult : Parcelable, NavigationKey.SupportsPush.WithResult<Int>
 
     @Parcelize
-    internal class ListOfStringResult : NavigationKey.SupportsPush.WithResult<List<String>>
+    internal class ListOfStringResult : Parcelable, NavigationKey.SupportsPush.WithResult<List<String>>
 
     @Parcelize
-    internal class BooleanResult : NavigationKey.SupportsPush.WithResult<Boolean>
+    internal class BooleanResult : Parcelable, NavigationKey.SupportsPush.WithResult<Boolean>
 
     @Parcelize
-    internal class AnotherObjectResult : NavigationKey.SupportsPush.WithResult<AnotherObject>
+    internal class AnotherObjectResult : Parcelable, NavigationKey.SupportsPush.WithResult<AnotherObject>
 }
 
 data class AnotherObject(

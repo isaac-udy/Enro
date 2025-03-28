@@ -1,6 +1,7 @@
 package dev.enro.example
 
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
@@ -13,7 +14,7 @@ import dev.enro.example.databinding.ActivityMainBinding
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class MainKey : NavigationKey.SupportsPresent
+class MainKey : Parcelable, NavigationKey.SupportsPresent
 
 @AndroidEntryPoint
 @NavigationDestination(MainKey::class)

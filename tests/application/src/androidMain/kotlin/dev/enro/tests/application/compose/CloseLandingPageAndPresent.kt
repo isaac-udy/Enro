@@ -1,6 +1,7 @@
 package dev.enro.tests.application.compose
 
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
@@ -29,7 +30,7 @@ import dev.enro.core.push
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object CloseLandingPageAndPresent : NavigationKey.SupportsPresent
+object CloseLandingPageAndPresent : Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(CloseLandingPageAndPresent::class)
 class CloseRootAndPresentActivity : AppCompatActivity() {
@@ -46,7 +47,7 @@ class CloseRootAndPresentActivity : AppCompatActivity() {
 }
 
 @Parcelize
-internal class LandingPageDestination : NavigationKey.SupportsPush
+internal class LandingPageDestination : Parcelable, NavigationKey.SupportsPush
 
 @Composable
 @NavigationDestination(LandingPageDestination::class)
@@ -70,7 +71,7 @@ fun LandingPageScreen() {
 }
 
 @Parcelize
-internal class InitialDestination : NavigationKey.SupportsPush
+internal class InitialDestination : Parcelable, NavigationKey.SupportsPush
 
 @Composable
 @NavigationDestination(InitialDestination::class)
@@ -91,7 +92,7 @@ fun InitialScreen() {
 }
 
 @Parcelize
-internal class PresentedBottomSheetDestination : NavigationKey.SupportsPresent
+internal class PresentedBottomSheetDestination : Parcelable, NavigationKey.SupportsPresent
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

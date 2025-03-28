@@ -1,6 +1,7 @@
 package dev.enro.example.destinations.fragment
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +15,7 @@ import dev.enro.example.core.ui.ExampleScreenTemplate
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class DialogFragmentKey : NavigationKey.SupportsPresent
+class DialogFragmentKey : Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(DialogFragmentKey::class)
 class DialogFragmentDestination : DialogFragment() {

@@ -1,5 +1,6 @@
 package dev.enro.example.destinations.compose
 
+import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
@@ -13,7 +14,7 @@ import kotlinx.parcelize.Parcelize
 import java.util.*
 
 @Parcelize
-class DialogComposable : NavigationKey.SupportsPresent
+class DialogComposable : Parcelable, NavigationKey.SupportsPresent
 
 @Composable
 @NavigationDestination(DialogComposable::class)

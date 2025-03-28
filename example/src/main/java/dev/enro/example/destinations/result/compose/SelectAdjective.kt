@@ -1,5 +1,6 @@
 package dev.enro.example.destinations.result.compose
 
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -26,7 +27,7 @@ import dev.enro.example.core.ui.WordCard
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object SelectAdjective : NavigationKey.SupportsPush.WithResult<Adjective>, NavigationKey.SupportsPresent.WithResult<Adjective>
+object SelectAdjective : Parcelable, NavigationKey.SupportsPush.WithResult<Adjective>, NavigationKey.SupportsPresent.WithResult<Adjective>
 
 @Composable
 @NavigationDestination(SelectAdjective::class)

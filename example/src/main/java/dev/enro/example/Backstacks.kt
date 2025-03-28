@@ -1,5 +1,6 @@
 package dev.enro.example
 
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -30,7 +31,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class Backstacks : NavigationKey.SupportsPush
+class Backstacks : Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(Backstacks::class)
 @Composable

@@ -1,5 +1,6 @@
 package dev.enro.core.container
 
+import android.os.Parcelable
 import dev.enro.core.NavigationKey
 import dev.enro.core.asPush
 import kotlinx.parcelize.Parcelize
@@ -146,10 +147,10 @@ class NavigationInstructionFilterBuilderTests {
             NavigationKey.SupportsPresent
 
         @Parcelize
-        data object ObjectKeyOne : NavigationKey.SupportsPush, NavigationKey.SupportsPresent
+        data object ObjectKeyOne : Parcelable, NavigationKey.SupportsPush, NavigationKey.SupportsPresent
 
         @Parcelize
-        data object ObjectKeyTwo : NavigationKey.SupportsPush, NavigationKey.SupportsPresent
+        data object ObjectKeyTwo : Parcelable, NavigationKey.SupportsPush, NavigationKey.SupportsPresent
     }
 }
 

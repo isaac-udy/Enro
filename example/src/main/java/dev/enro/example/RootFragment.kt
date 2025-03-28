@@ -1,6 +1,7 @@
 package dev.enro.example
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +26,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class RootFragment : NavigationKey.SupportsPush
+class RootFragment : Parcelable, NavigationKey.SupportsPush
 
 @AndroidEntryPoint
 @NavigationDestination(RootFragment::class)

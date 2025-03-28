@@ -1,6 +1,7 @@
 package dev.enro.example.destinations.restoration
 
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,7 +20,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class WaitForRestoration(
     val previousState: Bundle
-) : NavigationKey.SupportsPush
+) : Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(WaitForRestoration::class)
 @Composable

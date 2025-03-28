@@ -1,5 +1,6 @@
 package dev.enro.test
 
+import android.os.Parcelable
 import androidx.lifecycle.ViewModel
 import dev.enro.TestActivity
 import dev.enro.TestFragment
@@ -11,7 +12,7 @@ import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
-interface EnroTestTestKey : NavigationKey {
+interface EnroTestTestKey : Parcelable, NavigationKey {
     val name: String
 }
 

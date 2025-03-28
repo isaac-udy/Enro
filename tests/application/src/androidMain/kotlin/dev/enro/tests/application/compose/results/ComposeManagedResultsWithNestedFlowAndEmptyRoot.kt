@@ -1,5 +1,6 @@
 package dev.enro.tests.application.compose.results
 
+import android.os.Parcelable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Button
@@ -40,22 +41,22 @@ import kotlinx.parcelize.Parcelize
  * that called deliverResultForPush/Present if that destination was launched in a managed flow.
  */
 @Parcelize
-object ComposeManagedResultsWithNestedFlowAndEmptyRoot : NavigationKey.SupportsPush.WithResult<String> {
+object ComposeManagedResultsWithNestedFlowAndEmptyRoot : Parcelable, NavigationKey.SupportsPush.WithResult<String> {
 
     @Parcelize
-    internal class NestedFlow : NavigationKey.SupportsPush.WithResult<String> {
+    internal class NestedFlow : Parcelable, NavigationKey.SupportsPush.WithResult<String> {
         @Parcelize
-        internal class StepOne : NavigationKey.SupportsPush.WithResult<String>
+        internal class StepOne : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
         @Parcelize
-        internal class StepTwo : NavigationKey.SupportsPush.WithResult<String>
+        internal class StepTwo : Parcelable, NavigationKey.SupportsPush.WithResult<String>
     }
 
     @Parcelize
-    internal class StepTwo : NavigationKey.SupportsPush.WithResult<String>
+    internal class StepTwo : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
-    internal class FinalScreen : NavigationKey.SupportsPush.WithResult<String>
+    internal class FinalScreen : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @OptIn(ExperimentalEnroApi::class, AdvancedEnroApi::class)
     internal class FlowViewModel(

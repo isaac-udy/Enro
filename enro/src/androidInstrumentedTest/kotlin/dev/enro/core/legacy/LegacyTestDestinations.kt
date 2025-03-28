@@ -1,6 +1,7 @@
 @file:Suppress("DEPRECATION")
 package dev.enro.core.legacy
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import dev.enro.TestActivity
@@ -15,7 +16,7 @@ import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class ActivityWithFragmentsKey(val id: String) : NavigationKey
+data class ActivityWithFragmentsKey(val id: String) : Parcelable, NavigationKey
 
 @NavigationDestination(ActivityWithFragmentsKey::class)
 class ActivityWithFragments : TestActivity() {
@@ -32,7 +33,7 @@ class ActivityWithFragments : TestActivity() {
 }
 
 @Parcelize
-data class ActivityChildFragmentKey(val id: String) : NavigationKey
+data class ActivityChildFragmentKey(val id: String) : Parcelable, NavigationKey
 
 @NavigationDestination(ActivityChildFragmentKey::class)
 class ActivityChildFragment : TestFragment() {
@@ -47,7 +48,7 @@ class ActivityChildFragment : TestFragment() {
     val id: String,
     val primaryContainerAccepts: List<Class<out NavigationKey>>,
     val secondaryContainerAccepts: List<Class<out NavigationKey>>
-) : NavigationKey
+) : Parcelable, NavigationKey
 
 @NavigationDestination(ActivityWithComposablesKey::class)
 class ActivityWithComposables : AppCompatActivity() {
@@ -78,7 +79,7 @@ class ActivityWithComposables : AppCompatActivity() {
 }
 
 @Parcelize
-data class ActivityChildFragmentTwoKey(val id: String) : NavigationKey
+data class ActivityChildFragmentTwoKey(val id: String) : Parcelable, NavigationKey
 
 @NavigationDestination(ActivityChildFragmentTwoKey::class)
 class ActivityChildFragmentTwo : TestFragment()

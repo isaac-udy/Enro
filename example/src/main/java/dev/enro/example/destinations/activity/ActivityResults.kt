@@ -2,6 +2,7 @@ package dev.enro.example.destinations.activity
 
 import android.Manifest
 import android.os.Build
+import android.os.Parcelable
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -27,7 +28,7 @@ import dev.enro.example.destinations.synthetic.SimpleMessage
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ActivityResultExample : NavigationKey.SupportsPush
+class ActivityResultExample : Parcelable, NavigationKey.SupportsPush
 
 @Composable
 @NavigationDestination(ActivityResultExample::class)
@@ -92,7 +93,7 @@ fun ActivityResultExampleScreen() {
 @Parcelize
 class GetVisualMediaFileName(
     val imageOnly: Boolean
-) : NavigationKey.SupportsPresent.WithResult<String>
+) : Parcelable, NavigationKey.SupportsPresent.WithResult<String>
 
 @OptIn(ExperimentalEnroApi::class)
 @NavigationDestination(GetVisualMediaFileName::class)
@@ -113,7 +114,7 @@ val pickFileDestination = activityResultDestination(GetVisualMediaFileName::clas
 }
 
 @Parcelize
-class RequestCameraPermission : NavigationKey.SupportsPresent.WithResult<RequestCameraPermission.Result> {
+class RequestCameraPermission : Parcelable, NavigationKey.SupportsPresent.WithResult<RequestCameraPermission.Result> {
     enum class Result {
         GRANTED,
         DENIED,

@@ -1,6 +1,7 @@
 package dev.enro.core.hosts
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,6 +28,7 @@ import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 internal abstract class AbstractOpenComposableInFragmentKey :
+    Parcelable,
     NavigationKey.SupportsPush,
     NavigationKey.SupportsPresent,
     EnroInternalNavigationKey {

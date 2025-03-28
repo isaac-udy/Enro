@@ -2,6 +2,7 @@
 
 package dev.enro.tests.application.compose.results
 
+import android.os.Parcelable
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -46,28 +47,28 @@ import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object ComposeManagedResultFlow : NavigationKey.SupportsPush {
+object ComposeManagedResultFlow : Parcelable, NavigationKey.SupportsPush {
 
     @Parcelize
-    internal class FirstResult : NavigationKey.SupportsPush.WithResult<String>
+    internal class FirstResult : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
-    internal class PresentedResult : NavigationKey.SupportsPresent.WithResult<String>
+    internal class PresentedResult : Parcelable, NavigationKey.SupportsPresent.WithResult<String>
 
     @Parcelize
-    internal class SecondResult : NavigationKey.SupportsPush.WithResult<String>
+    internal class SecondResult : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
-    internal class TransientResult : NavigationKey.SupportsPush.WithResult<String>
+    internal class TransientResult : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
-    internal class ThirdResult : NavigationKey.SupportsPush.WithResult<String>
+    internal class ThirdResult : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
     internal class FinalScreen(
         val navigationFlowReference: NavigationFlowReference,
         val text: String,
-    ) : NavigationKey.SupportsPush.WithResult<Unit>
+    ) : Parcelable, NavigationKey.SupportsPush.WithResult<Unit>
 
 }
 

@@ -1,6 +1,8 @@
 package dev.enro.core
 
-public sealed class NavigationDirection {
+import dev.enro.core.internal.EnroSerializable
+
+public sealed class NavigationDirection : EnroSerializable {
     @Deprecated("Please use Push or Present")
     public data object Forward : NavigationDirection()
 

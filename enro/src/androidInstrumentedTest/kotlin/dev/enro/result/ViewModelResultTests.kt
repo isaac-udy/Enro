@@ -3,6 +3,7 @@ package dev.enro.result
 
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -51,7 +52,7 @@ class ViewModelResultTests {
 
 
 @Parcelize
-class OrchestratorKey : NavigationKey
+class OrchestratorKey : Parcelable, NavigationKey
 
 class OrchestratorViewModel : ViewModel() {
     var currentResult = ""
@@ -82,7 +83,7 @@ class OrchestratorFragment : TestFragment() {
 }
 
 @Parcelize
-class FirstStepKey : NavigationKey.WithResult<String>
+class FirstStepKey : Parcelable, NavigationKey.WithResult<String>
 
 class FirstStepViewModel : ViewModel() {
     private val navigation by navigationHandle<FirstStepKey>()
@@ -103,7 +104,7 @@ class FirstStepFragment : TestFragment() {
 }
 
 @Parcelize
-class SecondStepKey : NavigationKey.WithResult<String>
+class SecondStepKey : Parcelable, NavigationKey.WithResult<String>
 
 class SecondStepViewModel : ViewModel() {
     private val navigation by navigationHandle<SecondStepKey>()
@@ -128,7 +129,7 @@ class SecondStepFragment : TestFragment() {
 
 
 @Parcelize
-class SecondStepNestedKey : NavigationKey.WithResult<String>
+class SecondStepNestedKey : Parcelable, NavigationKey.WithResult<String>
 
 class SecondStepNestedViewModel : ViewModel() {
     private val navigation by navigationHandle<SecondStepNestedKey>()

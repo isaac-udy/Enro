@@ -1,5 +1,6 @@
 package dev.enro.tests.application.compose
 
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +18,7 @@ import dev.enro.core.NavigationKey
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-object LazyColumn : NavigationKey.SupportsPush {
+object LazyColumn : Parcelable, NavigationKey.SupportsPush {
     internal const val testTag = "LazyColumnTestTag"
 }
 

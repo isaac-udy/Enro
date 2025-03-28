@@ -1,6 +1,7 @@
 package dev.enro.core.fragment
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -330,7 +331,7 @@ class FragmentContainerStabilityTest {
 }
 
 @Parcelize
-object FragmentStabilityRootKey: NavigationKey.SupportsPresent
+object FragmentStabilityRootKey: Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(FragmentStabilityRootKey::class)
 class FragmentStabilityActivity : AppCompatActivity() {
@@ -357,7 +358,7 @@ class FragmentStabilityActivity : AppCompatActivity() {
 }
 
 @Parcelize
-object FragmentStabilityGroupsRootKey: NavigationKey.SupportsPresent
+object FragmentStabilityGroupsRootKey: Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(FragmentStabilityGroupsRootKey::class)
 class FragmentStabilityGroupsActivity : AppCompatActivity() {
@@ -441,7 +442,7 @@ data class FragmentStabilitySnapshot(
 @Parcelize
 data class FragmentStabilityContentKey(
     val id: String = UUID.randomUUID().toString()
-) : NavigationKey.SupportsPush
+) : Parcelable, NavigationKey.SupportsPush
 
 class FragmentStabilityContentViewModel(
     private val savedStateHandle: SavedStateHandle
