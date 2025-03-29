@@ -45,31 +45,31 @@ import dev.enro.core.withExtra
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
-object ComposeManagedResultFlow : Parcelable, NavigationKey.SupportsPush {
+@Serializable
+object ComposeManagedResultFlow : NavigationKey.SupportsPush {
 
-    @Parcelize
-    internal class FirstResult : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+    @Serializable
+    internal class FirstResult : NavigationKey.SupportsPush.WithResult<String>
 
-    @Parcelize
-    internal class PresentedResult : Parcelable, NavigationKey.SupportsPresent.WithResult<String>
+    @Serializable
+    internal class PresentedResult : NavigationKey.SupportsPresent.WithResult<String>
 
-    @Parcelize
-    internal class SecondResult : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+    @Serializable
+    internal class SecondResult : NavigationKey.SupportsPush.WithResult<String>
 
-    @Parcelize
-    internal class TransientResult : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+    @Serializable
+    internal class TransientResult : NavigationKey.SupportsPush.WithResult<String>
 
-    @Parcelize
-    internal class ThirdResult : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+    @Serializable
+    internal class ThirdResult : NavigationKey.SupportsPush.WithResult<String>
 
     @Parcelize
     internal class FinalScreen(
         val navigationFlowReference: NavigationFlowReference,
         val text: String,
     ) : Parcelable, NavigationKey.SupportsPush.WithResult<Unit>
-
 }
 
 

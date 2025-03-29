@@ -32,6 +32,7 @@ public abstract class NavigationKeySerializer<T : NavigationKey>(
                 ?: error("NavigationKeys must have a qualified name - local and anonymous classes are not supported")
 
             val serializer = serializers[qualifiedName]
+                ?: error("No NavigationKeySerializer found for key type $qualifiedName")
 
             @Suppress("UNCHECKED_CAST")
             serializer as NavigationKeySerializer<NavigationKey>

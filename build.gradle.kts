@@ -1,5 +1,5 @@
 import java.io.FileInputStream
-import java.util.Properties
+import java.util.*
 
 buildscript {
     repositories {
@@ -10,6 +10,7 @@ buildscript {
     dependencies {
         classpath(libs.android.gradle)
         classpath(libs.kotlin.gradle)
+        classpath(libs.kotlin.serialization.gradle)
         classpath(libs.processing.ksp.gradle)
         classpath(libs.hilt.gradle)
         classpath(libs.emulator.wtf.gradle)

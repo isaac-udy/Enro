@@ -5,6 +5,8 @@ import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationDirectionParceler
 import dev.enro.core.NavigationKey
 import dev.enro.core.NavigationKeyParceler
+import dev.enro.core.NavigationKeySerializer
+import dev.enro.core.forParcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 import kotlinx.parcelize.WriteWith
@@ -78,6 +80,10 @@ public class FlowStep<Result : Any> private constructor(
         result = 31 * result + direction.hashCode()
         result = 31 * result + configuration.hashCode()
         return result
+    }
+
+    public companion object {
+        private val serializer = NavigationKeySerializer.forParcelable(FlowStep::class)
     }
 }
 

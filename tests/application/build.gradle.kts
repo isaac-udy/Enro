@@ -5,6 +5,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("wtf.emulator.gradle")
     id("kotlin-kapt")
+    kotlin("plugin.serialization")
 }
 
 configureEmulatorWtf()
@@ -40,6 +41,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation("dev.enro:enro:${project.enroVersionName}")
+            implementation(libs.kotlinx.serialization)
         }
 
         androidMain.dependencies {
