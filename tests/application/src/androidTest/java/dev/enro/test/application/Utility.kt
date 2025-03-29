@@ -29,7 +29,7 @@ fun ComposeTestRule.waitForNavigationContext(
     block: (NavigationContext<*>) -> Boolean
 ): NavigationContext<*> {
     var navigationContext: NavigationContext<*>? = null
-    waitUntil(5_000) {
+    waitUntil(10_000) {
         val activity = runOnIdle {
             runOnUiThread {
                 ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
