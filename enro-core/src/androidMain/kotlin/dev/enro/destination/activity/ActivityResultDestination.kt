@@ -21,6 +21,7 @@ import dev.enro.core.result.AdvancedResultExtensions
 import dev.enro.core.synthetic.SyntheticDestinationProvider
 import dev.enro.core.synthetic.syntheticDestination
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.WriteWith
 import kotlin.reflect.KClass
 
 
@@ -112,7 +113,7 @@ internal const val PENDING_ACTIVITY_RESULT: String = "dev.enro.core.activity.PEN
 
 @Parcelize
 internal class ActivityResultDestination(
-    val wrapped: NavigationInstruction.Open<*>,
+    val wrapped: @WriteWith<NavigationInstructionOpenParceler> NavigationInstruction.Open<*>,
     val intent: Intent,
 ) : Parcelable, NavigationKey.SupportsPresent
 

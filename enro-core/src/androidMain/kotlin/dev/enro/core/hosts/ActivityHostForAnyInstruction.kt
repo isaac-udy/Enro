@@ -1,7 +1,6 @@
 package dev.enro.core.hosts
 
 import android.os.Bundle
-import android.os.Parcelable
 import android.widget.FrameLayout
 import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
@@ -14,22 +13,21 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 internal abstract class AbstractOpenInstructionInActivityKey :
-    Parcelable,
     NavigationKey,
     EnroInternalNavigationKey {
 
     abstract val instruction: AnyOpenInstruction
 }
 
-@Parcelize
+@Serializable
 internal data class OpenInstructionInActivity(
     override val instruction: AnyOpenInstruction
 ) : AbstractOpenInstructionInActivityKey()
 
-@Parcelize
+@Serializable
 internal data class OpenInstructionInHiltActivity(
     override val instruction: AnyOpenInstruction
 ) : AbstractOpenInstructionInActivityKey()

@@ -1,15 +1,16 @@
 package dev.enro.core
 
-import android.os.Parcelable
-import androidx.annotation.IdRes
-import kotlinx.parcelize.Parcelize
+import dev.enro.core.internal.EnroSerializable
+import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
-public sealed class NavigationContainerKey : Parcelable  {
+@Serializable
+public sealed class NavigationContainerKey {
     public abstract val name: String
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+        if (other == null) return false
+        if (this::class != other::class) return false
 
         other as NavigationContainerKey
 
@@ -26,27 +27,23 @@ public sealed class NavigationContainerKey : Parcelable  {
         return "NavigationContainerKey($name)"
     }
 
-    @Parcelize
     public class Dynamic private constructor(
         override val name: String
-    ) : NavigationContainerKey() {
+    ) : NavigationContainerKey(), EnroSerializable {
         public constructor() : this("DynamicContainerKey(${Uuid.random()})")
     }
 
-    @Parcelize
     public class FromName(
         override val name: String
     ) : NavigationContainerKey()
 
-    @Parcelize
     public class FromId private constructor(
-        @IdRes public val id: Int,
+        public val id: Int,
         override val name: String
-    ) : NavigationContainerKey() {
-        public constructor(@IdRes id: Int) : this(
+    ) : NavigationContainerKey(), EnroSerializable {
+        public constructor(id: Int) : this(
             id = id,
             name = "FromId($id)"
         )
     }
 }
-

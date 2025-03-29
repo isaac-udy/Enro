@@ -104,6 +104,6 @@ public abstract class EnroException(
     public class DuplicateFragmentNavigationContainer(message: String, cause: Throwable? = null) :
         EnroException(message, cause)
 
-    public class CannotCreateHostForType(targetContextType: KClass<*>, originalContextType: KClass<*>) : EnroException("Could not find a host that would host a ${originalContextType.simpleName} in a ${targetContextType.simpleName}. If you are seeing this exception and are using Composable, Activity or Fragment navigation, something has gone seriously wrong, and you should report an issue at https://github.com/isaac-udy/Enro/issues. If you are attempting to use custom navigation context types, this may be an issue with your implementation.")
+    public class CannotCreateHostForType(targetContextType: KClass<*>, originalContextType: String?) : EnroException("Could not find a host that would host a $originalContextType in a ${targetContextType.simpleName}. If you are seeing this exception and are using Composable, Activity or Fragment navigation, something has gone seriously wrong, and you should report an issue at https://github.com/isaac-udy/Enro/issues. If you are attempting to use custom navigation context types, this may be an issue with your implementation.")
 
 }

@@ -1,7 +1,6 @@
 package dev.enro.destination.flow.host
 
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,10 +22,9 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.acceptNone
 import dev.enro.core.container.backstackOf
 import dev.enro.core.navigationHandle
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 internal abstract class AbstractOpenManagedFlowInFragmentKey :
-    Parcelable,
     NavigationKey.SupportsPush,
     NavigationKey.SupportsPresent,
     EnroInternalNavigationKey {
@@ -34,12 +32,12 @@ internal abstract class AbstractOpenManagedFlowInFragmentKey :
     abstract val instruction: AnyOpenInstruction
 }
 
-@Parcelize
+@Serializable
 internal data class OpenManagedFlowInFragment(
     override val instruction: AnyOpenInstruction,
 ) : AbstractOpenManagedFlowInFragmentKey()
 
-@Parcelize
+@Serializable
 internal data class OpenManagedFlowInHiltFragment(
     override val instruction: AnyOpenInstruction,
 ) : AbstractOpenManagedFlowInFragmentKey()

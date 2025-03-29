@@ -5,11 +5,11 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationContainerKey
-import dev.enro.extensions.getParcelableCompat
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
 
 public class NavigationContainerManager {
     private val _containers: MutableSet<NavigationContainer> = mutableSetOf()
@@ -53,12 +53,15 @@ public class NavigationContainerManager {
     }
 
     internal fun save(outState: Bundle) {
-        outState.putParcelable(ACTIVE_CONTAINER_KEY, activeContainer?.key)
+        val container = activeContainer ?: return
+        outState.putString(ACTIVE_CONTAINER_KEY, Json.encodeToString(container.key))
     }
 
     internal fun restore(savedInstanceState: Bundle?) {
         if(savedInstanceState == null) return
-        val activeKey = savedInstanceState.getParcelableCompat<NavigationContainerKey>(ACTIVE_CONTAINER_KEY)
+        val activeKeyJson = savedInstanceState.getString(ACTIVE_CONTAINER_KEY)
+        if (activeKeyJson == null) return
+        val activeKey = Json.decodeFromString<NavigationContainerKey>(activeKeyJson)
         activeContainerState.value = activeKey
         mutableActiveContainerFlow.value = activeKey
     }

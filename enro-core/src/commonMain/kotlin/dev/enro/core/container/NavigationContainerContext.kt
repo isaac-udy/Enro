@@ -1,6 +1,6 @@
 package dev.enro.core.container
 
-import android.os.Bundle
+import androidx.core.bundle.Bundle
 import kotlinx.coroutines.flow.StateFlow
 
 /**

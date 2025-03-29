@@ -1,16 +1,12 @@
 package dev.enro.core.container
 
-import android.os.Parcelable
 import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.EnroException
-import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
-import dev.enro.core.controller.interceptor.InstructionOpenedByInterceptor
-import kotlinx.parcelize.Parcelize
+import dev.enro.core.internal.enroIdentityHashCode
+import kotlin.jvm.JvmInline
 
 @JvmInline
-@Parcelize
-public value class NavigationBackstack(private val backstack: List<AnyOpenInstruction>) : List<AnyOpenInstruction> by backstack, Parcelable {
+public value class NavigationBackstack(private val backstack: List<AnyOpenInstruction>) : List<AnyOpenInstruction> by backstack {
     public val active: AnyOpenInstruction? get() = lastOrNull()
 
     public val activePushed: AnyOpenInstruction? get() = lastOrNull { it.navigationDirection == NavigationDirection.Push }
@@ -18,7 +14,7 @@ public value class NavigationBackstack(private val backstack: List<AnyOpenInstru
     public val activePresented: AnyOpenInstruction? get() = takeWhile { it.navigationDirection != NavigationDirection.Push }
         .lastOrNull { it.navigationDirection == NavigationDirection.Push }
 
-    internal val identity get() = System.identityHashCode(backstack)
+    internal val identity get() = enroIdentityHashCode(backstack)
 }
 
 public fun emptyBackstack() : NavigationBackstack = NavigationBackstack(emptyList())
@@ -29,22 +25,6 @@ public fun List<AnyOpenInstruction>.toBackstack() : NavigationBackstack {
     if (this is NavigationBackstack) return this
     return NavigationBackstack(this)
 }
-
-internal fun NavigationBackstack.ensureOpeningTypeIsSet(
-    parentContext: NavigationContext<*>
-): NavigationBackstack {
-    return map {
-        if (it.internal.openingType != Any::class) return@map it
-
-        InstructionOpenedByInterceptor.intercept(
-            it,
-            parentContext,
-            parentContext.controller.bindingForKeyType(it.navigationKey::class)
-                ?: throw EnroException.MissingNavigationBinding(it.navigationKey),
-        )
-    }.toBackstack()
-}
-
 
 internal fun merge(
     oldBackstack: List<AnyOpenInstruction>,

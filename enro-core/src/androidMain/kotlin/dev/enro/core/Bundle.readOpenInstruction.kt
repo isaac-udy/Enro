@@ -1,8 +1,9 @@
 package dev.enro.core
 
 import android.os.Bundle
-import dev.enro.extensions.getParcelableCompat
+import kotlinx.serialization.json.Json
 
 public fun Bundle.readOpenInstruction(): AnyOpenInstruction? {
-    return getParcelableCompat<NavigationInstruction.Open.OpenInternal<*>>(OPEN_ARG)
+    val jsonString = getString(OPEN_ARG) ?: return null
+    return Json.decodeFromString<AnyOpenInstruction>(jsonString)
 }

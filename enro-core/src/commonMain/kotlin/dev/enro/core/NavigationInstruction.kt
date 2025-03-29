@@ -1,28 +1,25 @@
 package dev.enro.core
 
-import android.os.Parcelable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import dev.enro.KClassParceler
+import androidx.core.bundle.bundleOf
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.result.internal.ResultChannelId
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.RawValue
-import kotlinx.parcelize.TypeParceler
-import kotlinx.parcelize.WriteWith
-import kotlin.reflect.KClass
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
 internal const val OPEN_ARG = "dev.enro.core.OPEN_ARG"
 
-public typealias AnyOpenInstruction = NavigationInstruction.Open<*>
+public typealias AnyOpenInstruction = NavigationInstruction.Open<out NavigationDirection>
 public typealias OpenPushInstruction = NavigationInstruction.Open<NavigationDirection.Push>
 public typealias OpenPresentInstruction = NavigationInstruction.Open<NavigationDirection.Present>
 
 public sealed class NavigationInstruction {
     @Stable
     @Immutable
-    public sealed class Open<T : NavigationDirection> : NavigationInstruction(), Parcelable {
+    @Serializable
+    public sealed class Open<T : NavigationDirection> : NavigationInstruction() {
         public abstract val navigationDirection: T
         public abstract val navigationKey: NavigationKey
         public abstract val extras: MutableMap<String, Any>
@@ -41,18 +38,17 @@ public sealed class NavigationInstruction {
 
         @Stable
         @Immutable
-        @Parcelize
-        @TypeParceler<NavigationDirection, NavigationDirectionParceler>()
+        @Serializable
         internal data class OpenInternal<T : NavigationDirection> constructor(
-            override val navigationDirection: @WriteWith<NavigationDirectionParceler> T,
-            override val navigationKey: @WriteWith<NavigationKeyParceler> NavigationKey,
-            override val extras: @RawValue MutableMap<String, Any> = mutableMapOf(),
+            override val navigationDirection: @Serializable(with = NavigationDirection.Serializer::class) T,
+            override val navigationKey: @Serializable(with = NavigationKeySerializer.KSerializer::class) NavigationKey,
+            override val extras: MutableMap<String, @Contextual  Any> = mutableMapOf(),
             override val instructionId: String = Uuid.random().toString(),
             val previouslyActiveContainer: NavigationContainerKey? = null,
-            val openingType: @WriteWith<KClassParceler> KClass<out Any> = Any::class,
-            val openedByType: @WriteWith<KClassParceler> KClass<out Any> = Any::class, // the type of context that requested this open instruction was executed
+            val openingType: String? = null,
+            val openedByType: String? = null, // the type of context that requested this open instruction was executed
             val openedById: String? = null,
-            val resultKey: @WriteWith<NavigationKeyParceler.Nullable> NavigationKey? = null,
+            val resultKey: NavigationKey? = null,
             val resultId: ResultChannelId? = null,
         ) : Open<T>() {
             override fun equals(other: Any?): Boolean {
@@ -81,6 +77,7 @@ public sealed class NavigationInstruction {
             }
 
             override fun toString(): String {
+                bundleOf()
                 val directionName = when(navigationDirection) {
                     NavigationDirection.Forward -> "Forward"
                     NavigationDirection.Replace -> "Replace"

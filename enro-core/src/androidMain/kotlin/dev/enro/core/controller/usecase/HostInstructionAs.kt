@@ -30,7 +30,7 @@ internal class HostInstructionAs(
         val wrapped = host.wrap(navigationContext, instruction)
         if (wrapped == instruction) return instruction
         return wrapped.internal.copy(
-            openingType = hostType,
+            openingType = hostType.qualifiedName,
             resultId = null
         )
     }

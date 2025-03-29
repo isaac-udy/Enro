@@ -4,6 +4,7 @@ plugins {
     id("configure-library")
     id("configure-publishing")
     id("configure-compose")
+    kotlin("plugin.serialization")
 }
 
 kotlin {
@@ -13,6 +14,7 @@ kotlin {
         commonMain.dependencies {
             api("dev.enro:enro-annotations:${project.enroVersionName}")
             implementation(libs.compose.viewmodel)
+            implementation(libs.androidx.savedState)
             implementation(libs.kotlinx.serialization)
             implementation(libs.kotlin.reflect)
         }

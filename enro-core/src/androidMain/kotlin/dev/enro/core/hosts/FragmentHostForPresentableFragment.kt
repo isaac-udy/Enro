@@ -2,7 +2,6 @@ package dev.enro.core.hosts
 
 import android.app.Dialog
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,22 +30,21 @@ import dev.enro.core.navigationHandle
 import dev.enro.core.parentContainer
 import dev.enro.extensions.animate
 import dev.enro.extensions.createFullscreenDialog
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 internal abstract class AbstractOpenPresentableFragmentInFragmentKey :
-    Parcelable,
     NavigationKey,
     EnroInternalNavigationKey {
 
     abstract val instruction: OpenPresentInstruction
 }
 
-@Parcelize
+@Serializable
 internal data class OpenPresentableFragmentInFragment(
     override val instruction: OpenPresentInstruction
 ) : AbstractOpenPresentableFragmentInFragmentKey()
 
-@Parcelize
+@Serializable
 internal data class OpenPresentableFragmentInHiltFragment(
     override val instruction: OpenPresentInstruction
 ) : AbstractOpenPresentableFragmentInFragmentKey()
