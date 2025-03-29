@@ -21,6 +21,7 @@ import dev.enro.test.application.compose.results.ComposeMixedResultTypesRobot
 import dev.enro.test.application.compose.results.ComposeNestedResultsRobot
 import dev.enro.test.application.compose.results.ResultsWithExtraRobot
 import dev.enro.test.application.fragment.UnboundBottomSheetRobot
+import dev.enro.test.application.fragment.RecyclerViewResultsRobot
 import dev.enro.test.application.managedflow.ManagedFlowInComposableRobot
 import dev.enro.test.application.managedflow.ManagedFlowInFragmentRobot
 import dev.enro.tests.application.SelectDestination
@@ -200,5 +201,14 @@ class SelectDestinationRobot(
             .filterToOne(hasText("Push"))
             .performClick()
         return ComposeSavePrimitivesRobot(composeRule)
+    }
+    
+    fun openRecyclerViewResults(): RecyclerViewResultsRobot {
+        composeRule.onNode(hasText("Recycler View Results"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Present"))
+            .performClick()
+        return RecyclerViewResultsRobot(composeRule)
     }
 }

@@ -2,7 +2,6 @@ package dev.enro.tests.application.fragment
 
 import android.os.Bundle
 import android.os.Parcelable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -56,6 +55,9 @@ import dev.enro.test.application.R
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
+/**
+ * Navigation keys for RecyclerViewResults demonstration
+ */
 @Parcelize
 object RecyclerViewResults : NavigationKey.SupportsPresent {
     @Parcelize
@@ -65,6 +67,9 @@ object RecyclerViewResults : NavigationKey.SupportsPresent {
     class ResultFragment : NavigationKey.SupportsPush.WithResult<String>
 }
 
+/**
+ * Host activity for the RecyclerViewResults demo
+ */
 @NavigationDestination(RecyclerViewResults::class)
 class RecyclerViewResultsActivity : AppCompatActivity() {
 
@@ -80,11 +85,26 @@ class RecyclerViewResultsActivity : AppCompatActivity() {
     }
 }
 
+/**
+ * Different types of items to demonstrate result handling approaches in RecyclerView
+ */
 @Parcelize
 sealed class RecyclerViewItem : Parcelable {
+    /**
+     * Compose-based item with in-Composable result handling
+     */
     data class Compose(val index: Int, var result: String? = null) : RecyclerViewItem()
+    
+    /**
+     * Compose-based item using rememberSaveable for result persistence
+     * Note that rememberSaveable doesn't actually properly persist the state of ViewHolder items without
+     * some external saved state management, due to recycling of the ViewHolder
+     */
     data class ComposeWithRememberSaveableResult(val index: Int) : RecyclerViewItem()
-
+    
+    /**
+     * Compose-based item with result channel stored externally in the data model
+     */
     data class ComposeWithExternalResultChannel(val index: Int, var result: String? = null) : RecyclerViewItem() {
         @IgnoredOnParcel
         lateinit var resultChannel: NavigationResultChannel<String, *>
@@ -107,8 +127,15 @@ sealed class RecyclerViewItem : Parcelable {
             resultChannel.push(RecyclerViewResults.ResultFragment())
         }
     }
-
+    
+    /**
+     * View-based item with result channel managed inside the ViewHolder
+     */
     data class ViewWithInternalResultChannel(val index: Int, var result: String? = null) : RecyclerViewItem()
+    
+    /**
+     * View-based item with result channel stored externally in the data model
+     */
     data class ViewWithExternalResultChannel(val index: Int, var result: String? = null) : RecyclerViewItem() {
         @IgnoredOnParcel
         lateinit var resultChannel: NavigationResultChannel<String, *>
@@ -120,7 +147,7 @@ sealed class RecyclerViewItem : Parcelable {
         ) {
             resultChannel = navigationHandle
                 .registerForNavigationResult<String>(id = index.toString()) {
-                    result = "External($it)"
+                    result = it
                     invalidate(index)
                 }
                 .managedByViewHolderItem(viewHolder)
@@ -133,6 +160,9 @@ sealed class RecyclerViewItem : Parcelable {
     }
 
     companion object {
+        /**
+         * Creates a RecyclerViewItem of the appropriate type based on index
+         */
         fun fromIndex(index: Int): RecyclerViewItem {
             return when (index % 5) {
                 0 -> Compose(index)
@@ -144,6 +174,9 @@ sealed class RecyclerViewItem : Parcelable {
             }
         }
 
+        /**
+         * Returns the view type for a RecyclerViewItem
+         */
         fun itemTypeFor(item: RecyclerViewItem): Int {
             return when (item) {
                 is Compose -> 0
@@ -156,7 +189,9 @@ sealed class RecyclerViewItem : Parcelable {
     }
 }
 
-
+/**
+ * Root fragment that hosts the RecyclerView
+ */
 @NavigationDestination(RecyclerViewResults.RootFragment::class)
 class RecyclerViewResultsRootFragment : Fragment() {
 
@@ -193,12 +228,15 @@ class RecyclerViewResultsRootFragment : Fragment() {
     }
 }
 
-
+/**
+ * Adapter for the RecyclerView that demonstrates different ways to handle navigation results
+ */
 class RecyclerViewResultsAdapter(
     private val viewModelStoreOwner: ViewModelStoreOwner,
     private val savedStateRegistryOwner: SavedStateRegistryOwner,
     private val items: List<RecyclerViewItem>,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    
     init {
         setHasStableIds(true)
     }
@@ -207,35 +245,24 @@ class RecyclerViewResultsAdapter(
         fun invalidate(index: Int) {
             viewGroup.post { notifyItemChanged(index) }
         }
+        
         return when (viewType) {
-            0 -> ComposeViewHolder(
-                composeView = ComposeView(viewGroup.context),
-                invalidate = ::invalidate
-            )
-
-            1 -> ComposeWithRememberSaveableResult(
-                composeView = ComposeView(viewGroup.context),
-            )
-
-            2 -> ComposeWithExternalResultChannel(
-                composeView = ComposeView(viewGroup.context),
-                invalidate = ::invalidate
-            )
-
+            0 -> ComposeViewHolder(ComposeView(viewGroup.context))
+            1 -> ComposeWithRememberSaveableResult(ComposeView(viewGroup.context))
+            2 -> ComposeWithExternalResultChannel(ComposeView(viewGroup.context))
             3 -> ViewWithInternalResultChannel(
                 view = LayoutInflater.from(viewGroup.context)
                     .inflate(R.layout.viewholder_recycler_view_results, viewGroup, false),
                 invalidate = ::invalidate
             )
-
             4 -> ViewWithExternalResultChannel(
                 view = LayoutInflater.from(viewGroup.context)
                     .inflate(R.layout.viewholder_recycler_view_results, viewGroup, false),
                 invalidate = ::invalidate
             )
-
             else -> error("Invalid view type")
         }.apply {
+            // Set necessary owners for the ViewHolder's itemView
             itemView.setViewTreeViewModelStoreOwner(viewModelStoreOwner)
             itemView.setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
             itemView.setViewTreeLifecycleOwner(savedStateRegistryOwner)
@@ -243,68 +270,56 @@ class RecyclerViewResultsAdapter(
     }
 
     override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, index: Int) {
-        Log.e("RecyclerViewResults", "onBindViewHolder: ${items[index]}")
         when (viewHolder) {
-            is ComposeViewHolder -> {
+            is ComposeViewHolder -> 
                 viewHolder.bind(items[index] as RecyclerViewItem.Compose)
-            }
-
-            is ComposeWithRememberSaveableResult -> {
+            is ComposeWithRememberSaveableResult -> 
                 viewHolder.bind(items[index] as RecyclerViewItem.ComposeWithRememberSaveableResult)
-            }
-
-            is ComposeWithExternalResultChannel -> {
+            is ComposeWithExternalResultChannel -> 
                 viewHolder.bind(items[index] as RecyclerViewItem.ComposeWithExternalResultChannel)
-            }
-
-            is ViewWithInternalResultChannel -> {
+            is ViewWithInternalResultChannel -> 
                 viewHolder.bind(items[index] as RecyclerViewItem.ViewWithInternalResultChannel)
-            }
-
-            is ViewWithExternalResultChannel -> {
+            is ViewWithExternalResultChannel -> 
                 viewHolder.bind(items[index] as RecyclerViewItem.ViewWithExternalResultChannel)
-            }
-
             else -> error("Invalid view holder")
         }
     }
 
-    override fun getItemViewType(position: Int): Int {
-        return RecyclerViewItem.itemTypeFor(items[position])
-    }
+    override fun getItemViewType(position: Int): Int = 
+        RecyclerViewItem.itemTypeFor(items[position])
 
-    override fun getItemCount(): Int {
-        return items.size
-    }
+    override fun getItemCount(): Int = items.size
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
+    override fun getItemId(position: Int): Long = position.toLong()
 
+    /**
+     * ViewHolder for Compose-based items with internal result handling
+     */
     class ComposeViewHolder(
         private val composeView: ComposeView,
-        private val invalidate: (Int) -> Unit,
     ) : RecyclerView.ViewHolder(composeView) {
+        
         fun bind(item: RecyclerViewItem.Compose) {
             composeView.setContent {
                 key(item.index) {
                     val recomposer = currentRecomposeScope
+                    
+                    // Register for results based on whether the index is odd or even
                     val oddResultChannel = registerForNavigationResult<String>(
                         id = item.index.toString(),
                     ) {
                         item.result = "Odd($it)"
                         recomposer.invalidate()
                     }
+                    
                     val evenResultChannel = registerForNavigationResult<String>(
                         id = item.index.toString(),
                     ) {
                         item.result = "Even($it)"
                         recomposer.invalidate()
                     }
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(all = 2.dp)
-                    ) {
+                    
+                    Box(modifier = Modifier.fillMaxWidth().padding(all = 2.dp)) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -319,11 +334,7 @@ class RecyclerViewResultsAdapter(
                                 },
                         ) {
                             Text("Compose Item ${item.index}")
-                            if (item.result == null) {
-                                Text("Click to get result")
-                            } else {
-                                Text("Result: ${item.result}")
-                            }
+                            Text(item.result?.let { "Result: $it" } ?: "Click to get result")
                         }
                     }
                 }
@@ -331,27 +342,32 @@ class RecyclerViewResultsAdapter(
         }
     }
 
+    /**
+     * ViewHolder for Compose-based items using rememberSaveable for result persistence
+     */
     class ComposeWithRememberSaveableResult(
         private val composeView: ComposeView,
     ) : RecyclerView.ViewHolder(composeView) {
+        
         fun bind(item: RecyclerViewItem.ComposeWithRememberSaveableResult) {
             composeView.setContent {
                 key(item.index) {
                     val result = rememberSaveable { mutableStateOf<String?>(null) }
+                    
+                    // Register for results based on whether the index is odd or even
                     val oddResultChannel = registerForNavigationResult<String>(
                         id = item.index.toString(),
                     ) {
                         result.value = "Odd($it)"
                     }
+                    
                     val evenResultChannel = registerForNavigationResult<String>(
                         id = item.index.toString(),
                     ) {
                         result.value = "Even($it)"
                     }
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(all = 2.dp)
-                    ) {
+                    
+                    Box(modifier = Modifier.fillMaxWidth().padding(all = 2.dp)) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -366,11 +382,7 @@ class RecyclerViewResultsAdapter(
                                 },
                         ) {
                             Text("Compose Item (rememberSaveable) ${item.index}")
-                            if (result.value == null) {
-                                Text("Click to get result")
-                            } else {
-                                Text("Result: ${result.value}")
-                            }
+                            Text(result.value?.let { "Result: $it" } ?: "Click to get result")
                         }
                     }
                 }
@@ -378,15 +390,20 @@ class RecyclerViewResultsAdapter(
         }
     }
 
+    /**
+     * ViewHolder for Compose-based items using external result channel
+     */
     class ComposeWithExternalResultChannel(
         private val composeView: ComposeView,
-        private val invalidate: (Int) -> Unit,
     ) : RecyclerView.ViewHolder(composeView) {
+        
         fun bind(item: RecyclerViewItem.ComposeWithExternalResultChannel) {
             composeView.setContent {
                 key(item.index) {
                     val navigationHandle = navigationHandle()
                     val recomposer = currentRecomposeScope
+                    
+                    // Bind the external result channel
                     LaunchedEffect(item) {
                         item.bindResultChannel(
                             navigationHandle = navigationHandle,
@@ -394,26 +411,18 @@ class RecyclerViewResultsAdapter(
                             invalidate = { recomposer.invalidate() },
                         )
                     }
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(all = 2.dp)
-                    ) {
+                    
+                    Box(modifier = Modifier.fillMaxWidth().padding(all = 2.dp)) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(MaterialTheme.colors.surface)
                                 .shadow(1.dp)
                                 .padding(vertical = 8.dp, horizontal = 16.dp)
-                                .clickable {
-                                    item.launchResult()
-                                },
+                                .clickable { item.launchResult() },
                         ) {
                             Text("Compose Item (external result channel) ${item.index}")
-                            if (item.result == null) {
-                                Text("Click to get result")
-                            } else {
-                                Text("Result: ${item.result}")
-                            }
+                            Text(item.result?.let { "Result: $it" } ?: "Click to get result")
                         }
                     }
                 }
@@ -421,6 +430,9 @@ class RecyclerViewResultsAdapter(
         }
     }
 
+    /**
+     * ViewHolder for View-based items with internal result channel
+     */
     class ViewWithInternalResultChannel(
         view: View,
         private val invalidate: (Int) -> Unit,
@@ -430,6 +442,8 @@ class RecyclerViewResultsAdapter(
 
         fun bind(item: RecyclerViewItem.ViewWithInternalResultChannel) {
             val navigationHandle = itemView.findViewTreeViewModelStoreOwner()!!.getNavigationHandle()
+            
+            // Register for navigation results
             val resultChannel = navigationHandle.registerForNavigationResult<String>(
                 id = item.index.toString(),
             ) {
@@ -437,14 +451,19 @@ class RecyclerViewResultsAdapter(
                 invalidate(item.index)
             }.managedByViewHolderItem(this@ViewWithInternalResultChannel)
 
+            // Update UI
             title.text = "View Item (Internal) ${item.index}"
             description.text = item.result ?: "Click to get result"
+            
             itemView.setOnClickListener {
                 resultChannel.push(RecyclerViewResults.ResultFragment())
             }
         }
     }
 
+    /**
+     * ViewHolder for View-based items with external result channel
+     */
     class ViewWithExternalResultChannel(
         view: View,
         private val invalidate: (Int) -> Unit,
@@ -454,13 +473,18 @@ class RecyclerViewResultsAdapter(
 
         fun bind(item: RecyclerViewItem.ViewWithExternalResultChannel) {
             val navigationHandle = itemView.findViewTreeViewModelStoreOwner()!!.getNavigationHandle()
+            
+            // Bind the external result channel
             item.bindResultChannel(
                 navigationHandle = navigationHandle,
                 viewHolder = this@ViewWithExternalResultChannel,
                 invalidate = invalidate,
             )
+            
+            // Update UI
             title.text = "View Item (External) ${item.index}"
             description.text = item.result ?: "Click to get result"
+            
             itemView.setOnClickListener {
                 item.launchResult()
             }
@@ -468,6 +492,9 @@ class RecyclerViewResultsAdapter(
     }
 }
 
+/**
+ * Fragment that provides a result for the RecyclerViewResults
+ */
 @NavigationDestination(RecyclerViewResults.ResultFragment::class)
 class FragmentRecyclerViewResultsResultFragment : Fragment() {
     private val navigation by navigationHandle<RecyclerViewResults.ResultFragment>()
@@ -481,25 +508,21 @@ class FragmentRecyclerViewResultsResultFragment : Fragment() {
                     verticalArrangement = Arrangement.Center,
                 ) {
                     Button(
-                        onClick = {
-                            navigation.closeWithResult("A")
-                        },
+                        onClick = { navigation.closeWithResult("A") },
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text("Result: A")
                     }
+                    
                     Button(
-                        onClick = {
-                            navigation.closeWithResult("B")
-                        },
+                        onClick = { navigation.closeWithResult("B") },
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text("Result: B")
                     }
+                    
                     Button(
-                        onClick = {
-                            navigation.closeWithResult("C")
-                        },
+                        onClick = { navigation.closeWithResult("C") },
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text("Result: C")

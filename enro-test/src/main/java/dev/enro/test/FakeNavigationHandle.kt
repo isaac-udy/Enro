@@ -64,10 +64,10 @@ internal class FakeNavigationHandle(
                 onCloseRequested()
             }
             is NavigationInstruction.ContainerOperation -> {
-                val containerKey = when (navigationInstruction.target) {
+                val containerKey = when (val target = navigationInstruction.target) {
                     NavigationInstruction.ContainerOperation.Target.ParentContainer -> TestNavigationContainer.parentContainer
                     NavigationInstruction.ContainerOperation.Target.ActiveContainer -> TestNavigationContainer.activeContainer
-                    is NavigationInstruction.ContainerOperation.Target.TargetContainer -> navigationInstruction.target.key
+                    is NavigationInstruction.ContainerOperation.Target.TargetContainer -> target.key
                 }
                 val container = navigationContainers[containerKey]
                     ?: throw IllegalStateException("TestNavigationHandle was not configured to have container with key $containerKey")
