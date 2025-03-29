@@ -2,6 +2,8 @@
 
 ## 2.9.0 (Unreleased)
 
+## 2.8.4
+* Resolved a bug with `registerForNavigationResult` in Composables when the parent ComposeView is hosted in a RecyclerView ViewHolder, which was causing results to not be delivered
 
 ## 2.8.3
 * Resolved a bug with animation changes to `BottomSheetDestination` that caused animation snapping for these destinations
