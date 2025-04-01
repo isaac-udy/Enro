@@ -1,6 +1,5 @@
 package dev.enro.core.container
 
-import android.os.Bundle
 import android.os.Looper
 import androidx.annotation.CallSuper
 import androidx.annotation.MainThread
@@ -8,11 +7,15 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.withCreated
+import androidx.savedstate.SavedState
+import androidx.savedstate.read
+import androidx.savedstate.savedState
+import androidx.savedstate.serialization.decodeFromSavedState
+import androidx.savedstate.serialization.encodeToSavedState
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.compatability.Compatibility
 import dev.enro.core.AnyOpenInstruction
@@ -34,7 +37,6 @@ import dev.enro.core.parentContainer
 import dev.enro.core.requestClose
 import dev.enro.core.result.EnroResult
 import dev.enro.core.rootContext
-import dev.enro.extensions.getParcelableListCompat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
@@ -106,19 +108,21 @@ public abstract class NavigationContainer(
     )
 
     @CallSuper
-    public override fun save(): Bundle {
-        return bundleOf(
-            BACKSTACK_KEY to ArrayList(backstack)
-        )
+    public override fun save(): SavedState {
+        return savedState {
+            putSavedStateList(BACKSTACK_KEY, backstack.map { encodeToSavedState(it) })
+        }
     }
 
     @CallSuper
-    public override fun restore(bundle: Bundle) {
-        val restoredBackstack = bundle.getParcelableListCompat<AnyOpenInstruction>(BACKSTACK_KEY)
-            .orEmpty()
-            .toBackstack()
-
-        setBackstack(restoredBackstack)
+    public override fun restore(bundle: SavedState) {
+        val restoredBackstack = bundle.read {
+            getSavedStateListOrNull(BACKSTACK_KEY)
+                .orEmpty()
+                .map { decodeFromSavedState<AnyOpenInstruction>(it) }
+                .toBackstack()
+        }
+        setBackstack(restoredBackstack, ignoreContainerChanges = true)
     }
 
     /**
@@ -133,7 +137,14 @@ public abstract class NavigationContainer(
     }
 
     @MainThread
-    public override fun setBackstack(backstack: NavigationBackstack): Unit = synchronized(this) {
+    public override fun setBackstack(backstack: NavigationBackstack) {
+        setBackstack(
+            backstack = backstack,
+            ignoreContainerChanges = false
+        )
+    }
+
+    internal fun setBackstack(backstack: NavigationBackstack, ignoreContainerChanges: Boolean): Unit = synchronized(this) {
         if (Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
@@ -150,7 +161,9 @@ public abstract class NavigationContainer(
         mutableBackstack = processedBackstack
         mutableBackstackFlow.value = mutableBackstack
         val transition = NavigationBackstackTransition(lastBackstack to processedBackstack)
-        setActiveContainerFrom(transition)
+        if (!ignoreContainerChanges) {
+            setActiveContainerFrom(transition)
+        }
         performBackstackUpdate(transition)
     }
 

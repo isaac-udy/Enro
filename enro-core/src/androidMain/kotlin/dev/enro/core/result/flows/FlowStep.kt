@@ -1,14 +1,15 @@
 package dev.enro.core.result.flows
 
 import android.os.Parcelable
+import androidx.savedstate.SavedState
+import androidx.savedstate.savedState
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationDirectionParceler
 import dev.enro.core.NavigationKey
 import dev.enro.core.NavigationKeyParceler
 import dev.enro.core.NavigationKeySerializer
-import dev.enro.core.forParcelable
+import dev.enro.core.default
 import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.RawValue
 import kotlinx.parcelize.WriteWith
 
 public sealed interface FlowStepConfiguration : Parcelable {
@@ -20,7 +21,7 @@ public sealed interface FlowStepConfiguration : Parcelable {
 public class FlowStep<Result : Any> private constructor(
     @PublishedApi internal val stepId: String,
     @PublishedApi internal val key: @WriteWith<NavigationKeyParceler> NavigationKey,
-    @PublishedApi internal val extras: @RawValue Map<String, Any>,
+    @PublishedApi internal val extras: SavedState,
     @PublishedApi internal val dependsOn: Long,
     @PublishedApi internal val direction: @WriteWith<NavigationDirectionParceler> NavigationDirection,
     @PublishedApi internal val configuration: Set<FlowStepConfiguration>,
@@ -37,7 +38,7 @@ public class FlowStep<Result : Any> private constructor(
     ) : this(
         stepId = stepId,
         key = key,
-        extras = emptyMap(),
+        extras = savedState(),
         dependsOn = dependsOn.hashForDependsOn(),
         direction = direction,
         configuration = configuration,
@@ -83,7 +84,9 @@ public class FlowStep<Result : Any> private constructor(
     }
 
     public companion object {
-        private val serializer = NavigationKeySerializer.forParcelable(FlowStep::class)
+        @Suppress("unused")
+        // Call NavigationKeySerializer.default to instantiate and register a NavigationKeySerializer for FlowStep
+        private val flowStepSerializer = NavigationKeySerializer.default(FlowStep::class)
     }
 }
 

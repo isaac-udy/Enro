@@ -5,15 +5,35 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.lifecycleScope
-import dev.enro.core.*
+import androidx.savedstate.read
+import androidx.savedstate.serialization.decodeFromSavedState
+import androidx.savedstate.serialization.encodeToSavedState
+import androidx.savedstate.write
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroException
+import dev.enro.core.NavigationBinding
+import dev.enro.core.NavigationContainerKey
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.activity
 import dev.enro.core.activity.ActivityNavigationContainer
-import dev.enro.core.container.*
+import dev.enro.core.close
+import dev.enro.core.container.NavigationBackstack
+import dev.enro.core.container.NavigationInstructionFilter
 import dev.enro.core.container.asDirection
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.container.asPushInstruction
+import dev.enro.core.container.pop
+import dev.enro.core.container.setBackstack
+import dev.enro.core.container.toBackstack
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.navigationContext
+import dev.enro.core.parentContainer
+import dev.enro.core.rootContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.reflect.full.isSubclassOf
@@ -56,7 +76,9 @@ internal object Compatibility {
                         isDialog -> instruction.asPresentInstruction()
                         else -> instruction.asPushInstruction()
                     }.apply {
-                        extras[COMPATIBILITY_NAVIGATION_DIRECTION] = instruction.navigationDirection
+                        extras.write {
+                            putSavedState(COMPATIBILITY_NAVIGATION_DIRECTION, encodeToSavedState(instruction.navigationDirection))
+                        }
                     }
                 }
                 else -> instruction
@@ -81,7 +103,11 @@ internal object Compatibility {
                 presentInstruction
             )
 
-            val originalDirection = instruction.extras[COMPATIBILITY_NAVIGATION_DIRECTION] as? NavigationDirection
+            val originalDirection = instruction.extras.read {
+                decodeFromSavedState<NavigationDirection>(
+                    getSavedStateOrNull(COMPATIBILITY_NAVIGATION_DIRECTION) ?: return@read null
+                )
+            }
             val isReplace = originalDirection == NavigationDirection.Replace
 
             presentContainer.setBackstack { backstack ->

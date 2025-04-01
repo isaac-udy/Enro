@@ -15,6 +15,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.savedstate.SavedState
 import androidx.savedstate.SavedStateRegistryOwner
 import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
@@ -43,7 +44,7 @@ public class NavigationContext<ContextType : Any> internal constructor(
     public val contextReference: ContextType,
     private val getController: () -> NavigationController,
     private val getParentContext: () -> NavigationContext<*>?,
-    private val getArguments: () -> Bundle,
+    private val getArguments: () -> SavedState,
     private val getViewModelStoreOwner: () -> ViewModelStoreOwner,
     private val getSavedStateRegistryOwner: () -> SavedStateRegistryOwner,
     private val getLifecycleOwner: () -> LifecycleOwner,
@@ -62,7 +63,7 @@ public class NavigationContext<ContextType : Any> internal constructor(
      * Generally it should be preferred to read the instruction property, rather than read the instruction from the arguments.
      */
     @AdvancedEnroApi
-    public val arguments: Bundle by lazy { getArguments() }
+    public val arguments: SavedState by lazy { getArguments() }
 
     private lateinit var _instruction: NavigationInstruction.Open<*>
     public val instruction: NavigationInstruction.Open<*> get() = _instruction

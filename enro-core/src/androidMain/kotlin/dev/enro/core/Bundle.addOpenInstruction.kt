@@ -1,9 +1,9 @@
 package dev.enro.core
 
 import android.os.Bundle
-import kotlinx.serialization.json.Json
+import androidx.savedstate.serialization.encodeToSavedState
 
 public fun Bundle.addOpenInstruction(instruction: AnyOpenInstruction): Bundle {
-    putString(OPEN_ARG, Json.encodeToString(instruction))
+    putBundle(OPEN_ARG, encodeToSavedState(instruction))
     return this
 }

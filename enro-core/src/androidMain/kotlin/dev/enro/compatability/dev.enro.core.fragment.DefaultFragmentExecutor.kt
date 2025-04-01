@@ -2,9 +2,9 @@
 @file:Suppress("PackageDirectoryMismatch")
 package dev.enro.core.fragment
 
-import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.savedstate.SavedState
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationBinding
 import dev.enro.core.addOpenInstruction
@@ -22,7 +22,7 @@ public object DefaultFragmentExecutor {
             binding.destinationType.java.name
         )
 
-        fragment.arguments = Bundle()
+        fragment.arguments = SavedState()
             .addOpenInstruction(instruction)
 
         return fragment

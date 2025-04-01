@@ -20,7 +20,7 @@ internal class ComposableDestinationSavedStateRegistryOwner(
     savedInstanceState: Bundle?
 ) : SavedStateRegistryOwner {
 
-    private val savedStateController = SavedStateRegistryController.create(this)
+    internal val savedStateController = SavedStateRegistryController.create(this)
     internal val savedState: Bundle = run {
         savedInstanceState
             ?: owner.parentSavedStateRegistry.consumeRestoredStateForKey(owner.instruction.instructionId)

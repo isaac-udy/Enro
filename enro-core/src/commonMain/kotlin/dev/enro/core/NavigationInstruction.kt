@@ -2,10 +2,13 @@ package dev.enro.core
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.core.bundle.bundleOf
+import androidx.savedstate.SavedState
+import androidx.savedstate.read
+import androidx.savedstate.savedState
+import androidx.savedstate.serialization.serializers.SavedStateSerializer
+import androidx.savedstate.write
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.result.internal.ResultChannelId
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
@@ -18,11 +21,11 @@ public typealias OpenPresentInstruction = NavigationInstruction.Open<NavigationD
 public sealed class NavigationInstruction {
     @Stable
     @Immutable
-    @Serializable
+    @Serializable // TODO use a with = serializer that can handle the generic type and the internal object
     public sealed class Open<T : NavigationDirection> : NavigationInstruction() {
         public abstract val navigationDirection: T
         public abstract val navigationKey: NavigationKey
-        public abstract val extras: MutableMap<String, Any>
+        public abstract val extras: SavedState
         public abstract val instructionId: String
 
         internal val internal by lazy { this as OpenInternal<NavigationDirection> }
@@ -33,7 +36,7 @@ public sealed class NavigationInstruction {
         ): Open<T> = internal.copy(
             navigationDirection = navigationDirection,
             instructionId = instructionId,
-            extras = extras.toMutableMap()
+            extras = extras,
         ) as Open<T>
 
         @Stable
@@ -41,14 +44,14 @@ public sealed class NavigationInstruction {
         @Serializable
         internal data class OpenInternal<T : NavigationDirection> constructor(
             override val navigationDirection: @Serializable(with = NavigationDirection.Serializer::class) T,
-            override val navigationKey: @Serializable(with = NavigationKeySerializer.KSerializer::class) NavigationKey,
-            override val extras: MutableMap<String, @Contextual  Any> = mutableMapOf(),
+            override val navigationKey: @Serializable(with = NKSerializer::class) NavigationKey,
+            override val extras: @Serializable(with = SavedStateSerializer::class) SavedState = savedState(),
             override val instructionId: String = Uuid.random().toString(),
             val previouslyActiveContainer: NavigationContainerKey? = null,
             val openingType: String? = null,
             val openedByType: String? = null, // the type of context that requested this open instruction was executed
             val openedById: String? = null,
-            val resultKey: NavigationKey? = null,
+            val resultKey: @Serializable(with = NKSerializer::class) NavigationKey? = null,
             val resultId: ResultChannelId? = null,
         ) : Open<T>() {
             override fun equals(other: Any?): Boolean {
@@ -77,7 +80,6 @@ public sealed class NavigationInstruction {
             }
 
             override fun toString(): String {
-                bundleOf()
                 val directionName = when(navigationDirection) {
                     NavigationDirection.Forward -> "Forward"
                     NavigationDirection.Replace -> "Replace"
@@ -88,7 +90,7 @@ public sealed class NavigationInstruction {
                 }
                 val id = instructionId
                 val key = navigationKey
-                val extras = extras.takeIf { it.isNotEmpty() }?.let {
+                val extras = extras.takeIf { it.read { isEmpty() } }?.let {
                     ", extras=$it"
                 } ?: ""
                 return "NavigationInstruction.Open<$directionName>(instructionId=$id, navigationKey=$key$extras)"
@@ -185,7 +187,7 @@ public sealed class NavigationInstruction {
             navigationDirection = NavigationDirection.Push,
             navigationKey = navigationKey.navigationKey,
         ).apply {
-            extras.putAll(navigationKey.extras)
+            extras.write { putAll(navigationKey.extras) }
         }
 
         @Suppress("FunctionName") // mimicking constructor
@@ -203,7 +205,7 @@ public sealed class NavigationInstruction {
             navigationDirection = NavigationDirection.Present,
             navigationKey = navigationKey.navigationKey,
         ).apply {
-            extras.putAll(navigationKey.extras)
+            extras.write { putAll(navigationKey.extras) }
         }
 
         @Suppress("FunctionName") // mimicking constructor
@@ -221,7 +223,7 @@ public sealed class NavigationInstruction {
             navigationDirection = NavigationDirection.ReplaceRoot,
             navigationKey = navigationKey.navigationKey,
         ).apply {
-            extras.putAll(navigationKey.extras)
+            extras.write { putAll(navigationKey.extras) }
         }
 
         @Suppress("FunctionName") // mimicking constructor

@@ -1,26 +1,27 @@
 package dev.enro.core
 
 import android.os.Parcel
+import androidx.savedstate.serialization.decodeFromSavedState
+import androidx.savedstate.serialization.encodeToSavedState
 import kotlinx.parcelize.Parceler
 
 public object NavigationKeyParceler : Parceler<NavigationKey> {
     override fun NavigationKey.write(parcel: Parcel, flags: Int) {
-        parcel.writeString(NavigationKeySerializer.serialize(this))
+        parcel.writeBundle(encodeToSavedState(NKSerializer, this))
     }
 
     override fun create(parcel: Parcel): NavigationKey {
-        val data = parcel.readString() ?: error("Failed to read NavigationKey from Parcel - readString returned null")
-        return NavigationKeySerializer.deserialize(data)
+        return decodeFromSavedState(NKSerializer, parcel.readBundle(this::class.java.classLoader)!!)
     }
 
     public object Nullable : Parceler<NavigationKey?> {
         override fun NavigationKey?.write(parcel: Parcel, flags: Int) {
-            parcel.writeString(this?.let { NavigationKeySerializer.serialize(it) })
+            parcel.writeBundle(this?.let { encodeToSavedState(NKSerializer, it) })
         }
 
         override fun create(parcel: Parcel): NavigationKey? {
-            val data = parcel.readString()
-            return data?.let { NavigationKeySerializer.deserialize(it) }
+            val data = parcel.readBundle(this::class.java.classLoader) ?: return null
+            return decodeFromSavedState(NKSerializer, data)
         }
     }
 }

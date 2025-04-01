@@ -396,7 +396,7 @@ public class ComposableNavigationContainer internal constructor(
             val lifecycleObserver = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_RESUME || event == Lifecycle.Event.ON_PAUSE) {
                     setVisibilityForBackstack(NavigationBackstackTransition(backstack to backstack))
-                    setBackstack(backstack)
+                    setBackstack(backstack, ignoreContainerChanges = true)
                 }
             }
             context.lifecycle.addObserver(lifecycleObserver)

@@ -42,25 +42,23 @@ public fun rememberNavigationContainerGroup(
     setActiveInContainerManager: Boolean = true,
 ): NavigationContainerGroup {
     val containerManager = containerManager
-    val activeInGroup = rememberSaveable {
-        val firstContainer = containers.first()
-        if (setActiveInContainerManager) { containerManager.setActiveContainer(firstContainer) }
-
-        mutableStateOf(firstContainer.key)
+    val activeIndexInGroup = rememberSaveable {
+        if (setActiveInContainerManager) { containerManager.setActiveContainer(containers.first()) }
+        mutableStateOf(0)
     }
     val activeContainer = containerManager.activeContainer
     DisposableEffect(activeContainer) {
-        val activeId = containers.firstOrNull { it.key == activeContainer?.key }?.key
-        if(activeId != null && activeInGroup.value != activeId) {
-            activeInGroup.value = activeId
+        val activeIndexInContainer = containers.indexOfFirst { it.key == activeContainer?.key }
+        if(activeIndexInContainer >= 0 && activeIndexInGroup.value != activeIndexInContainer) {
+            activeIndexInGroup.value = activeIndexInContainer
         }
         onDispose {  }
     }
 
-    return remember(activeInGroup.value) {
+    return remember(activeIndexInGroup.value) {
         NavigationContainerGroup(
             containers = containers.toList(),
-            activeContainer = containers.first { it.key == activeInGroup.value }
+            activeContainer = containers[activeIndexInGroup.value]
         )
     }
 }

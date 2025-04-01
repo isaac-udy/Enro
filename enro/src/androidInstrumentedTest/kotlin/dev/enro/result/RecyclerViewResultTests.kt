@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.setPadding
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -19,7 +18,9 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import dev.enro.annotations.NavigationDestination
 import dev.enro.clearAllEnroResultChannels
 import dev.enro.core.NavigationHandle
@@ -191,7 +192,12 @@ class RecyclerViewResultActivity : AppCompatActivity() {
                 dip,
                 r.displayMetrics
             ).toInt()
-            setPadding(px)
+
+            // Vertical padding is increased slightly to make the test more reliable
+            // when running on edge-to-edge devices without actually adding proper edge-to-edge support
+            setPadding(
+                px, px * 2, px, px * 2
+            )
         }
     }
 

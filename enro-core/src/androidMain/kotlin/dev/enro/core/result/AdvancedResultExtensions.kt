@@ -1,5 +1,6 @@
 package dev.enro.core.result
 
+import androidx.savedstate.write
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
@@ -11,7 +12,7 @@ import dev.enro.core.result.internal.PendingResult
 public object AdvancedResultExtensions {
 
     public fun getForwardingInstructionId(instruction: NavigationInstruction.Open<*>): String? {
-        return instruction.extras[FORWARDING_RESULT_FROM_EXTRA] as? String
+        return instruction.extras.getString(FORWARDING_RESULT_FROM_EXTRA)
     }
 
     public fun <T : NavigationDirection> getInstructionToForwardResult(
@@ -26,8 +27,13 @@ public object AdvancedResultExtensions {
             resultKey = originalInstruction.internal.resultKey
                 ?: originalInstruction.navigationKey
         ).apply {
-            extras[FORWARDING_RESULT_FROM_EXTRA] = originalInstruction.extras[FORWARDING_RESULT_FROM_EXTRA]
-                ?: originalInstruction.instructionId
+            extras.write {
+                val originalForwardingInstructionId = originalInstruction.extras.getString(FORWARDING_RESULT_FROM_EXTRA)
+                putString(
+                    FORWARDING_RESULT_FROM_EXTRA,
+                    originalForwardingInstructionId ?: originalInstruction.instructionId,
+                )
+            }
         }
     }
 

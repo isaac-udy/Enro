@@ -23,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.annotations.AdvancedEnroApi
@@ -48,7 +47,7 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable
-object ComposeManagedResultFlow : NavigationKey.SupportsPush {
+data object ComposeManagedResultFlow : NavigationKey.SupportsPush {
 
     @Serializable
     internal class FirstResult : NavigationKey.SupportsPush.WithResult<String>
@@ -73,14 +72,11 @@ object ComposeManagedResultFlow : NavigationKey.SupportsPush {
 }
 
 
-class ComposeManagedResultViewModel(
-    savedStateHandle: SavedStateHandle,
-) : ViewModel() {
+class ComposeManagedResultViewModel : ViewModel() {
 
     private val navigation by navigationHandle<ComposeManagedResultFlow>()
 
     val resultFlow by registerForFlowResult(
-        savedStateHandle = savedStateHandle,
         flow = {
             val firstResult = push { ComposeManagedResultFlow.FirstResult() }
             val presentedResult = present { ComposeManagedResultFlow.PresentedResult() }

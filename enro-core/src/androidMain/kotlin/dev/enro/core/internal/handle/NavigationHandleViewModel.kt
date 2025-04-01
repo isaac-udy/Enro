@@ -71,6 +71,7 @@ internal open class NavigationHandleViewModel(
     private fun registerLifecycleObservers(context: NavigationContext<out Any>) {
         context.lifecycle.addObserver(LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_DESTROY || event == Lifecycle.Event.ON_CREATE) return@LifecycleEventObserver
+            if (lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) return@LifecycleEventObserver
             lifecycleRegistry.handleLifecycleEvent(event)
         })
         context.lifecycle.addObserver(LifecycleEventObserver { _, event ->

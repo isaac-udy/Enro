@@ -1,6 +1,14 @@
 package dev.enro.core.container
 
-import dev.enro.core.*
+import androidx.savedstate.read
+import androidx.savedstate.serialization.decodeFromSavedState
+import androidx.savedstate.serialization.encodeToSavedState
+import androidx.savedstate.write
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.OpenPresentInstruction
+import dev.enro.core.OpenPushInstruction
 
 private const val ORIGINAL_NAVIGATION_DIRECTION = "OpenInstructionExtensions.ORIGINAL_NAVIGATION_DIRECTION"
 
@@ -15,7 +23,7 @@ internal fun AnyOpenInstruction.asPresentInstruction(): OpenPresentInstruction =
 @PublishedApi
 internal fun AnyOpenInstruction.originalNavigationDirection(): NavigationDirection {
     if (extras.containsKey(ORIGINAL_NAVIGATION_DIRECTION))
-        return extras[ORIGINAL_NAVIGATION_DIRECTION] as NavigationDirection
+        return extras.read { decodeFromSavedState(getSavedState(ORIGINAL_NAVIGATION_DIRECTION)) }
     return navigationDirection
 }
 
@@ -26,7 +34,12 @@ internal fun <T: NavigationDirection> AnyOpenInstruction.asDirection(direction: 
         navigationDirection = direction,
         extras = extras.apply {
             if (containsKey(ORIGINAL_NAVIGATION_DIRECTION)) return@apply
-            put(ORIGINAL_NAVIGATION_DIRECTION, navigationDirection)
+            extras.write {
+                putSavedState(
+                    ORIGINAL_NAVIGATION_DIRECTION,
+                    encodeToSavedState(navigationDirection)
+                )
+            }
         }
     ) as NavigationInstruction.Open<T>
 }

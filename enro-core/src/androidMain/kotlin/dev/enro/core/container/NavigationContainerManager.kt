@@ -1,21 +1,24 @@
 package dev.enro.core.container
 
-import android.os.Bundle
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.savedstate.SavedState
+import androidx.savedstate.read
+import androidx.savedstate.serialization.decodeFromSavedState
+import androidx.savedstate.serialization.encodeToSavedState
+import androidx.savedstate.write
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationContainerKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.json.Json
 
 public class NavigationContainerManager {
     private val _containers: MutableSet<NavigationContainer> = mutableSetOf()
     public val containers: Set<NavigationContainer> = _containers
 
-    private val activeContainerState: MutableState<NavigationContainerKey?> = mutableStateOf(null)
+    public val activeContainerState: MutableState<NavigationContainerKey?> = mutableStateOf(null)
     public val activeContainer: NavigationContainer? get() = activeContainerState.value?.let { activeKey ->
         containers.firstOrNull { it.key == activeKey }
     }
@@ -52,16 +55,18 @@ public class NavigationContainerManager {
         _containers.remove(container)
     }
 
-    internal fun save(outState: Bundle) {
+    internal fun save(outState: SavedState) {
         val container = activeContainer ?: return
-        outState.putString(ACTIVE_CONTAINER_KEY, Json.encodeToString(container.key))
+        outState.write {
+            putSavedState(ACTIVE_CONTAINER_KEY, encodeToSavedState(container.key))
+        }
     }
 
-    internal fun restore(savedInstanceState: Bundle?) {
-        if(savedInstanceState == null) return
-        val activeKeyJson = savedInstanceState.getString(ACTIVE_CONTAINER_KEY)
-        if (activeKeyJson == null) return
-        val activeKey = Json.decodeFromString<NavigationContainerKey>(activeKeyJson)
+    internal fun restore(savedInstanceState: SavedState?) {
+        if (savedInstanceState == null) return
+        val activeKeySavedState = savedInstanceState.read { getSavedStateOrNull(ACTIVE_CONTAINER_KEY) }
+        if (activeKeySavedState == null) return
+        val activeKey = decodeFromSavedState(NavigationContainerKey.Serializer, activeKeySavedState)
         activeContainerState.value = activeKey
         mutableActiveContainerFlow.value = activeKey
     }

@@ -1,9 +1,9 @@
 package dev.enro.core
 
 import android.os.Bundle
-import kotlinx.serialization.json.Json
+import androidx.savedstate.serialization.decodeFromSavedState
 
 public fun Bundle.readOpenInstruction(): AnyOpenInstruction? {
-    val jsonString = getString(OPEN_ARG) ?: return null
-    return Json.decodeFromString<AnyOpenInstruction>(jsonString)
+    val bundle = getBundle(OPEN_ARG) ?: return null
+    return decodeFromSavedState<AnyOpenInstruction>(bundle)
 }

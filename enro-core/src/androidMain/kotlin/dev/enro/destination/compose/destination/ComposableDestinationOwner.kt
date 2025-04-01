@@ -26,6 +26,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.savedstate.SavedState
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.AnyOpenInstruction
@@ -91,10 +92,10 @@ internal class ComposableDestinationOwner(
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
     }
 
-    internal fun save(): Bundle {
-        if (lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) return Bundle()
-        return Bundle().also {
-            savedStateRegistry.performSave(it)
+    internal fun save(): SavedState {
+        if (lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) return SavedState()
+        return SavedState().also {
+            savedStateRegistryOwner.savedStateController.performSave(it)
             onNavigationContextSaved(
                 context = destination.context,
                 outState = it
@@ -177,6 +178,7 @@ internal class ComposableDestinationOwner(
             lifecycleRegistry.currentState = minOf(parentLifecycle, targetLifecycle)
 
             onDispose {
+                if (lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) return@onDispose
                 when {
                     isActive -> {}
                     isInBackstack -> lifecycleRegistry.currentState = Lifecycle.State.CREATED

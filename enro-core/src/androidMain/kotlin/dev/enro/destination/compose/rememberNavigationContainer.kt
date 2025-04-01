@@ -34,7 +34,7 @@ public fun rememberNavigationContainer(
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
         key = key,
-        initialBackstack = rememberSaveable {
+        initialBackstack = remember {
             backstackOf(NavigationInstruction.Push(root))
         },
         emptyBehavior = emptyBehavior,
@@ -55,7 +55,7 @@ public fun rememberNavigationContainer(
 ): ComposableNavigationContainer {
     return rememberNavigationContainer(
         key = key,
-        initialBackstack = rememberSaveable {
+        initialBackstack = remember {
             initialBackstack.map {
                 NavigationInstruction.Push(it)
             }.toBackstack()

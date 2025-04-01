@@ -3,9 +3,19 @@ package dev.enro.core.container
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationDirection
 import dev.enro.core.internal.enroIdentityHashCode
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.decodeStructure
+import kotlinx.serialization.encoding.encodeStructure
 import kotlin.jvm.JvmInline
 
 @JvmInline
+@Serializable(with = NavigationBackstackSerializer::class)
 public value class NavigationBackstack(private val backstack: List<AnyOpenInstruction>) : List<AnyOpenInstruction> by backstack {
     public val active: AnyOpenInstruction? get() = lastOrNull()
 
@@ -15,6 +25,28 @@ public value class NavigationBackstack(private val backstack: List<AnyOpenInstru
         .lastOrNull { it.navigationDirection == NavigationDirection.Push }
 
     internal val identity get() = enroIdentityHashCode(backstack)
+}
+
+public object NavigationBackstackSerializer : KSerializer<NavigationBackstack> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("NavigationBackstack") {
+        element("active", String.serializer().descriptor)
+    }
+
+    override fun deserialize(decoder: Decoder): NavigationBackstack {
+        decoder.decodeStructure(descriptor) {
+            val active = decodeStringElement(descriptor, 0)
+            if (active.isNotEmpty()) {
+                throw IllegalStateException("NavigationBackstack cannot be deserialized with an active instruction")
+            }
+        }
+        return emptyBackstack()
+    }
+
+    override fun serialize(encoder: Encoder, value: NavigationBackstack) {
+        encoder.encodeStructure(descriptor) {
+            encodeStringElement(descriptor, 0, value.active?.toString().orEmpty())
+        }
+    }
 }
 
 public fun emptyBackstack() : NavigationBackstack = NavigationBackstack(emptyList())

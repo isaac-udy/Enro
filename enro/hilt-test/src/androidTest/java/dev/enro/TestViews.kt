@@ -45,8 +45,6 @@ abstract class TestActivity : AppCompatActivity() {
         } catch (t: Throwable) {
         }
 
-        Log.e("TestActivity", "Opened $key")
-
         LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -113,8 +111,6 @@ abstract class TestFragment : Fragment() {
         "No Navigation Key"
         }
 
-        Log.e("TestFragment", "Opened $key")
-
         layout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -178,8 +174,6 @@ abstract class TestDialogFragment : DialogFragment() {
             getNavigationHandle().key
         } catch (t: Throwable) {
         }
-
-        Log.e("TestFragment", "Opened $key")
 
         layout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL

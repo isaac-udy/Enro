@@ -1,5 +1,9 @@
 package dev.enro.core
 
+import androidx.savedstate.SavedState
+import androidx.savedstate.savedState
+import androidx.savedstate.write
+
 public interface NavigationKey {
     public interface WithResult<T: Any> : NavigationKey
 
@@ -13,7 +17,7 @@ public interface NavigationKey {
 
     public data class WithExtras<T: NavigationKey> internal constructor(
         val navigationKey: T,
-        val extras: Map<String, Any>,
+        val extras: SavedState,
     )
 
     public companion object
@@ -25,7 +29,7 @@ public fun <T: NavigationKey> T.withExtra(
 ): NavigationKey.WithExtras<T> {
     return NavigationKey.WithExtras(
         navigationKey = this,
-        extras = mapOf(key to value)
+        extras = savedState(mapOf(key to value))
     )
 }
 
@@ -35,7 +39,9 @@ public fun <T: NavigationKey> NavigationKey.WithExtras<T>.withExtra(
 ): NavigationKey.WithExtras<T> {
     return NavigationKey.WithExtras(
         navigationKey = navigationKey,
-        extras = extras + (key to value)
+        extras = savedState(mapOf(key to value)).apply {
+            write { putAll(extras) }
+        }
     )
 }
 

@@ -5,6 +5,7 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.savedstate.savedState
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
@@ -156,9 +157,8 @@ public class NavigationFlow<T> internal constructor(
                         navigationKey = step.key,
                         resultKey = step,
                         resultId = resultChannelId,
-                        extras = mutableMapOf<String, Any>(
-                            IS_PUSHED_IN_FLOW to (step.direction is NavigationDirection.Push)
-                        ).apply {
+                        extras = savedState {
+                            putBoolean(IS_PUSHED_IN_FLOW, (step.direction is NavigationDirection.Push))
                             putAll(step.extras)
                         },
                     )

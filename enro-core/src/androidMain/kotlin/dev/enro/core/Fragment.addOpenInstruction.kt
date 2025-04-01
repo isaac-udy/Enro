@@ -2,11 +2,11 @@ package dev.enro.core
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import kotlinx.serialization.json.Json
+import androidx.savedstate.serialization.encodeToSavedState
 
 public fun Fragment.addOpenInstruction(instruction: AnyOpenInstruction): Fragment {
     arguments = (arguments ?: Bundle()).apply {
-        putString(OPEN_ARG, Json.encodeToString(instruction.internal))
+        putBundle(OPEN_ARG, encodeToSavedState(instruction))
     }
     return this
 }

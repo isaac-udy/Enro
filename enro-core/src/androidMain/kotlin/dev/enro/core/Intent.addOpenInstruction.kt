@@ -1,9 +1,9 @@
 package dev.enro.core
 
 import android.content.Intent
-import kotlinx.serialization.json.Json
+import androidx.savedstate.serialization.encodeToSavedState
 
 public fun Intent.addOpenInstruction(instruction: AnyOpenInstruction): Intent {
-    putExtra(OPEN_ARG, Json.encodeToString(instruction.internal))
+    putExtra(OPEN_ARG, encodeToSavedState(instruction))
     return this
 }

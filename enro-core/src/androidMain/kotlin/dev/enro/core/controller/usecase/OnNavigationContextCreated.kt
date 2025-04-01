@@ -37,7 +37,7 @@ internal class OnNavigationContextCreated(
 
         val config = NavigationHandleProperty.getPendingConfig(context)
         val defaultKey = config?.defaultKey
-            ?: NoNavigationKey(context.contextReference::class, context.arguments)
+            ?: NoNavigationKey(context.contextReference::class.java.name, context.arguments)
         val defaultInstruction = NavigationInstruction
             .Open.OpenInternal(
                 navigationKey = defaultKey,
