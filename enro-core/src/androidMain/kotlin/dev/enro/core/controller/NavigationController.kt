@@ -12,15 +12,15 @@ import dev.enro.core.controller.usecase.AddModuleToController
 import dev.enro.core.result.EnroResult
 import kotlin.reflect.KClass
 
-public class NavigationController internal constructor() {
-    internal val dependencyScope = NavigationControllerScope(this)
+public actual class NavigationController internal actual constructor() {
+    internal actual val dependencyScope: EnroDependencyScope = NavigationControllerScope(this)
 
     private val enroResult: EnroResult = dependencyScope.get()
     private val pluginRepository: PluginRepository = dependencyScope.get()
     private val navigationBindingRepository: NavigationBindingRepository = dependencyScope.get()
     private val addModuleToController: AddModuleToController = dependencyScope.get()
 
-    internal var config: EnroConfig = EnroConfig()
+    internal actual var config: EnroConfig = EnroConfig()
         private set
 
     init {

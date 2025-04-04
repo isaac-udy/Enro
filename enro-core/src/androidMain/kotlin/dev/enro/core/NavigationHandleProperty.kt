@@ -77,7 +77,7 @@ public fun ComponentActivity.getNavigationHandle(): NavigationHandle =
 
 public fun Fragment.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
 
-public fun ViewModelStoreOwner.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
+public actual fun ViewModelStoreOwner.getNavigationHandle(): NavigationHandle = getNavigationHandleViewModel()
 
 public fun View.getNavigationHandle(): NavigationHandle? =
     findViewTreeViewModelStoreOwner()?.getNavigationHandleViewModel()
@@ -104,7 +104,7 @@ internal fun NavigationHandle.getNavigationContext(): NavigationContext<*>? {
     }
 }
 
-internal fun NavigationHandle.getParentNavigationHandle() : NavigationHandle? {
+internal actual fun NavigationHandle.getParentNavigationHandle() : NavigationHandle? {
     var parentContext = getNavigationContext()?.parentContext
     if (parentContext?.contextReference is NavigationHost) {
         parentContext = parentContext.parentContext

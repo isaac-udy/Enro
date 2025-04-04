@@ -49,7 +49,7 @@ public inline fun <reified T : NavigationKey> ViewModel.navigationHandle(
 ): ViewModelNavigationHandleProperty<T> = navigationHandle(T::class, block)
 
 @PublishedApi
-internal fun ViewModel.getNavigationHandle(): NavigationHandle {
+internal actual fun ViewModel.getNavigationHandle(): NavigationHandle {
     return getNavigationHandleTag() ?: EnroViewModelNavigationHandleProvider.get(this::class)
 }
 
