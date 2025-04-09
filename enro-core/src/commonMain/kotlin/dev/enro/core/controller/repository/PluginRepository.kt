@@ -11,6 +11,7 @@ internal class PluginRepository {
     fun addPlugins(
         plugins: List<EnroPlugin>
     ) {
+        if (plugins.isEmpty()) return
         this.plugins += plugins
         attachedController?.let { attachedController ->
             plugins.forEach { it.onAttached(attachedController) }
