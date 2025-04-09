@@ -81,11 +81,8 @@ public sealed class NavigationInstruction {
 
             override fun toString(): String {
                 val directionName = when(navigationDirection) {
-                    NavigationDirection.Forward -> "Forward"
-                    NavigationDirection.Replace -> "Replace"
                     NavigationDirection.Push -> "Push"
                     NavigationDirection.Present -> "Present"
-                    NavigationDirection.ReplaceRoot -> "ReplaceRoot"
                     else -> "Unknown"
                 }
                 val id = instructionId
@@ -155,24 +152,6 @@ public sealed class NavigationInstruction {
         }
 
         @Suppress("FunctionName") // mimicking constructor
-        @Deprecated("Please use Push or Present")
-        public fun Forward(
-            navigationKey: NavigationKey,
-        ): Open<NavigationDirection.Forward> = Open.OpenInternal(
-            navigationDirection = NavigationDirection.Forward,
-            navigationKey = navigationKey,
-        )
-
-        @Suppress("FunctionName") // mimicking constructor
-        @Deprecated("Please use Push or Present")
-        public fun Replace(
-            navigationKey: NavigationKey,
-        ): Open<NavigationDirection.Replace> = Open.OpenInternal(
-            navigationDirection = NavigationDirection.Replace,
-            navigationKey = navigationKey,
-        )
-
-        @Suppress("FunctionName") // mimicking constructor
         public fun Push(
             navigationKey: NavigationKey.SupportsPush,
         ): Open<NavigationDirection.Push> = Open.OpenInternal(
@@ -207,33 +186,6 @@ public sealed class NavigationInstruction {
         ).apply {
             extras.write { putAll(navigationKey.extras) }
         }
-
-        @Suppress("FunctionName") // mimicking constructor
-        public fun ReplaceRoot(
-            navigationKey: NavigationKey.SupportsPresent,
-        ): Open<NavigationDirection.ReplaceRoot> = Open.OpenInternal(
-            navigationDirection = NavigationDirection.ReplaceRoot,
-            navigationKey = navigationKey,
-        )
-
-        @Suppress("FunctionName") // mimicking constructor
-        public fun ReplaceRoot(
-            navigationKey: NavigationKey.WithExtras<out NavigationKey.SupportsPresent>,
-        ): Open<NavigationDirection.ReplaceRoot> = Open.OpenInternal(
-            navigationDirection = NavigationDirection.ReplaceRoot,
-            navigationKey = navigationKey.navigationKey,
-        ).apply {
-            extras.write { putAll(navigationKey.extras) }
-        }
-
-        @Suppress("FunctionName") // mimicking constructor
-        @Deprecated("You should only use ReplaceRoot with a NavigationKey that extends SupportsPresent")
-        public fun ReplaceRoot(
-            navigationKey: NavigationKey,
-        ): Open<NavigationDirection.ReplaceRoot> = Open.OpenInternal(
-            navigationDirection = NavigationDirection.ReplaceRoot,
-            navigationKey = navigationKey,
-        )
 
         @Suppress("FunctionName") // mimicking constructor
         public fun OnContainer(

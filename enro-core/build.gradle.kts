@@ -14,6 +14,7 @@ kotlin {
         commonMain.dependencies {
             api("dev.enro:enro-annotations:${project.enroVersionName}")
             implementation(libs.compose.viewmodel)
+            implementation(libs.compose.lifecycle)
             implementation(libs.androidx.savedState)
             implementation(libs.kotlinx.serialization)
             implementation(libs.kotlin.reflect)
@@ -25,6 +26,7 @@ kotlin {
             implementation(libs.androidx.activity)
             implementation(libs.androidx.recyclerview)
             implementation(libs.androidx.lifecycle.process)
+            implementation(libs.kotlin.reflect)
 
             compileOnly(libs.hilt.android)
             compileOnly(libs.androidx.navigation.fragment)

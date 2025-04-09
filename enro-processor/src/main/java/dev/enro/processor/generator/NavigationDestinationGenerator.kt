@@ -342,7 +342,7 @@ fun FileSpec.Builder.addImportsForBinding(): FileSpec.Builder {
             "managedFlowDestination"
         )
         .addImport(
-            "dev.enro.core.compose",
+            "dev.enro.destination.compose",
             "composableDestination"
         )
 }

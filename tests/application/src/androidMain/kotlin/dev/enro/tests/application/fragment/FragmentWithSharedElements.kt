@@ -34,13 +34,13 @@ import androidx.transition.TransitionInflater
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.OverrideNavigationAnimations
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.core.push
 import dev.enro.core.requestClose
+import dev.enro.destination.compose.OverrideNavigationAnimations
 import dev.enro.destination.fragment.FragmentSharedElements
 import dev.enro.tests.application.R
 import kotlinx.parcelize.Parcelize

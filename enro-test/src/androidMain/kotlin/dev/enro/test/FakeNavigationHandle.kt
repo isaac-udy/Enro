@@ -28,7 +28,7 @@ internal class FakeNavigationHandle(
             navigationDirection = when (key) {
                 is NavigationKey.SupportsPush -> NavigationDirection.Push
                 is NavigationKey.SupportsPresent -> NavigationDirection.Present
-                else -> NavigationDirection.Forward
+                else -> NavigationDirection.Push
             },
             navigationKey = key
         )

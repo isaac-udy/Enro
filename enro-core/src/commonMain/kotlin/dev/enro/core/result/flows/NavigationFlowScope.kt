@@ -100,7 +100,8 @@ public open class NavigationFlowScope internal constructor(
         dependsOn: List<Any?> = emptyList(),
         noinline block: suspend () -> T,
     ): T {
-        val baseId = block::class.qualifiedName ?: TODO()
+        // TODO doesn't work for JS
+        val baseId = block::class.qualifiedName ?: block::class.toString()
         val count = suspendingSteps.count { it.startsWith(baseId) }
         val stepId = "$baseId@$count"
         suspendingSteps.add(stepId)
@@ -147,7 +148,8 @@ public open class NavigationFlowScope internal constructor(
         direction: NavigationDirection,
         block: FlowStepLambda<T>,
     ) : T {
-        val baseId = block::class.qualifiedName ?: TODO()
+        // TODO doesn't work for JS
+        val baseId = block::class.qualifiedName ?: block::class.toString()
         val count = steps.count { it.stepId.startsWith(baseId) }
         val builder = FlowStepBuilder<T>()
         val key = block.run { builder.scope.invoke() }
@@ -171,7 +173,8 @@ public open class NavigationFlowScope internal constructor(
         direction: NavigationDirection,
         noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithExtras<out NavigationKey.WithResult<T>>,
     ) : T {
-        val baseId = block::class.qualifiedName ?: TODO()
+        // TODO doesn't work for JS
+        val baseId = block::class.qualifiedName ?: block::class.toString()
         val count = steps.count { it.stepId.startsWith(baseId) }
         val builder = FlowStepBuilder<T>()
         val key = builder.scope.run(block)

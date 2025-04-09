@@ -3,13 +3,10 @@ package dev.enro.core.result
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.activity
-import dev.enro.core.activity.ActivityNavigationContainer
 import dev.enro.core.container.toBackstack
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.usecase.AddPendingResult
-import dev.enro.core.navigationContext
 import dev.enro.core.readOpenInstruction
 import dev.enro.core.result.flows.FlowStep
 import dev.enro.core.rootContext
@@ -31,7 +28,7 @@ internal object ForwardingResultInterceptor  : NavigationInstructionInterceptor 
         val containers = context.rootContext()
             .containerManager
             .containers
-            .plus(ActivityNavigationContainer(context.activity.navigationContext))
+//            .plus(ActivityNavigationContainer(context.activity.navigationContext))
             .toMutableList()
 
         while (containers.isNotEmpty()) {

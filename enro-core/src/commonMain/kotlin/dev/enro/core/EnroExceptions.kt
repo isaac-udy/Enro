@@ -48,34 +48,6 @@ public abstract class EnroException(
     public class NavigationContainerWrongThread(message: String, cause: Throwable? = null) :
         EnroException(message, cause)
 
-    public class LegacyNavigationDirectionUsedInStrictMode(
-        message: String,
-        cause: Throwable? = null
-    ) : EnroException(message, cause) {
-        internal companion object {
-            fun logForStrictMode(
-                navigationController: NavigationController,
-                instruction: AnyOpenInstruction,
-            ) {
-                when (instruction.navigationDirection) {
-                    NavigationDirection.Present,
-                    NavigationDirection.Push,
-                    NavigationDirection.ReplaceRoot -> return
-                    else -> { /* continue */
-                    }
-                }
-
-                val message =
-                    "Opened ${instruction.navigationKey::class.simpleName} as a ${instruction.navigationDirection::class.simpleName} instruction. Forward and Replace type instructions are deprecated, please replace these with Push and Present instructions."
-                if (navigationController.config.isStrictMode) {
-                    throw LegacyNavigationDirectionUsedInStrictMode(message)
-                } else {
-                    EnroLog.warn("$message Enro would have thrown in strict mode.")
-                }
-            }
-        }
-    }
-
     public class MissingContainerForPushInstruction(message: String, cause: Throwable? = null) :
         EnroException(message, cause) {
         internal companion object {

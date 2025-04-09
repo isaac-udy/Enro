@@ -49,6 +49,7 @@ private class ActivityLifecycleCallbacksForEnro(
     ) {
         if (activity !is ComponentActivity) return
         val navigationContext = ActivityContext(activity)
+        activity.theme.applyStyle(android.R.style.Animation_Activity, false)
         onNavigationContextCreated(navigationContext, savedInstanceState)
     }
 

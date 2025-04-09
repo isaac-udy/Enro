@@ -3,8 +3,6 @@ package dev.enro.core.result
 import dev.enro.core.NavigationKey
 
 public interface NavigationResultChannel<Result: Any, Key : NavigationKey.WithResult<Result>> {
-    @Deprecated("Please use push or present")
-    public fun open(key: Key)
     public fun push(key: NavigationKey.SupportsPush.WithResult<out Result>)
     public fun push(key: NavigationKey.WithExtras<out NavigationKey.SupportsPush.WithResult<out Result>>)
     public fun present(key: NavigationKey.SupportsPresent.WithResult<out Result>)

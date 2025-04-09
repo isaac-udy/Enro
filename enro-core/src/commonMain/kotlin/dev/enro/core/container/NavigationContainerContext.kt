@@ -1,6 +1,6 @@
 package dev.enro.core.container
 
-import androidx.core.bundle.Bundle
+import androidx.savedstate.SavedState
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -16,6 +16,6 @@ public interface NavigationContainerContext {
     public val isActive: Boolean
     public fun setActive()
 
-    public fun save(): Bundle
-    public fun restore(bundle: Bundle)
+    public fun save(): SavedState
+    public fun restore(bundle: SavedState)
 }

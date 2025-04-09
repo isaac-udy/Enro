@@ -1,6 +1,5 @@
 package dev.enro.core.container
 
-import android.os.Looper
 import androidx.annotation.CallSuper
 import androidx.annotation.MainThread
 import androidx.compose.runtime.derivedStateOf
@@ -17,7 +16,6 @@ import androidx.savedstate.savedState
 import androidx.savedstate.serialization.decodeFromSavedState
 import androidx.savedstate.serialization.encodeToSavedState
 import dev.enro.animation.NavigationAnimationOverrideBuilder
-import dev.enro.compatability.Compatibility
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationContainerKey
@@ -32,6 +30,7 @@ import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
 import dev.enro.core.controller.usecase.GetNavigationAnimations
 import dev.enro.core.findContainer
 import dev.enro.core.getNavigationHandle
+import dev.enro.core.internal.isMainThread
 import dev.enro.core.leafContext
 import dev.enro.core.parentContainer
 import dev.enro.core.requestClose
@@ -144,18 +143,17 @@ public abstract class NavigationContainer(
         )
     }
 
-    internal fun setBackstack(backstack: NavigationBackstack, ignoreContainerChanges: Boolean): Unit = synchronized(this) {
-        if (Looper.myLooper() != Looper.getMainLooper()) throw EnroException.NavigationContainerWrongThread(
+    internal fun setBackstack(backstack: NavigationBackstack, ignoreContainerChanges: Boolean) {
+        if (!isMainThread()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
         renderJob?.cancel()
-        val processedBackstack = Compatibility.NavigationContainer
-            .processBackstackForDeprecatedInstructionTypes(backstack, instructionFilter)
+        val processedBackstack = backstack
             .filterBackstackForForwardedResults()
             .ensureOpeningTypeIsSet(context)
             .processBackstackForPreviouslyActiveContainer()
 
-        if (processedBackstack == backstackFlow.value) return@synchronized
+        if (processedBackstack == backstackFlow.value) return
         if (handleEmptyBehaviour(processedBackstack)) return
         val lastBackstack = mutableBackstack
         mutableBackstack = processedBackstack

@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.get
+import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.core.internal.isMainThread
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -80,18 +81,6 @@ public fun NavigationHandle.present(key: NavigationKey.WithExtras<out Navigation
     executeInstruction(NavigationInstruction.Present(key))
 }
 
-public fun NavigationHandle.replaceRoot(
-    key: NavigationKey.SupportsPresent,
-) {
-    executeInstruction(NavigationInstruction.ReplaceRoot(key))
-}
-
-public fun NavigationHandle.replaceRoot(
-    key: NavigationKey.WithExtras<out NavigationKey.SupportsPresent>,
-) {
-    executeInstruction(NavigationInstruction.ReplaceRoot(key))
-}
-
 public fun NavigationHandle.close() {
     executeInstruction(NavigationInstruction.Close)
 }
@@ -144,7 +133,15 @@ internal val NavigationHandle.enroConfig: EnroConfig
     }.getOrElse { EnroConfig() }
 
 
-// TODO
-internal expect fun NavigationHandle.getParentNavigationHandle() : NavigationHandle?
-public expect fun ViewModelStoreOwner.getNavigationHandle(): NavigationHandle
+internal fun NavigationHandle.getParentNavigationHandle() : NavigationHandle? {
+    var parentContext = getNavigationContext()?.parentContext
+    if (parentContext?.contextReference is NavigationHost) {
+        parentContext = parentContext.parentContext
+    }
+    return parentContext?.getNavigationHandle()
+}
+
+public fun ViewModelStoreOwner.getNavigationHandle(): NavigationHandle {
+    return getNavigationHandleViewModel()
+}
 

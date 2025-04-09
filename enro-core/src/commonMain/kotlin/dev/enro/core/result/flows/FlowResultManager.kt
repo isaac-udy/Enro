@@ -1,24 +1,24 @@
 package dev.enro.core.result.flows
 
-import android.os.Bundle
-import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.core.os.bundleOf
 import androidx.lifecycle.SavedStateHandle
+import androidx.savedstate.SavedState
+import androidx.savedstate.read
+import androidx.savedstate.savedState
+import androidx.savedstate.serialization.decodeFromSavedState
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.core.TypedNavigationHandle
 import dev.enro.core.controller.usecase.extras
 import dev.enro.core.getParentNavigationHandle
-import dev.enro.extensions.getParcelableListCompat
-import dev.enro.extensions.isSaveableInBundle
+import dev.enro.extensions.isSaveable
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.RawValue
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import kotlin.collections.set
 
 public class FlowResultManager private constructor(
@@ -26,8 +26,13 @@ public class FlowResultManager private constructor(
 ) {
     private val results = mutableStateMapOf<String, FlowStepResult>().apply {
         savedStateHandle ?: return@apply
-        val bundle = savedStateHandle.get<Bundle>(SAVED_BUNDLE_KEY) ?: return@apply
-        val savedList = bundle.getParcelableListCompat<FlowStepResult>(RESULTS_KEY).orEmpty()
+        val savedState = savedStateHandle.get<SavedState>(SAVED_STATE_KEY) ?: return@apply
+        val savedList = savedState.read {
+
+            getSavedStateListOrNull(RESULTS_KEY)
+                .orEmpty()
+                .map { decodeFromSavedState<FlowStepResult>(it) }
+        }
         val savedMap = savedList.associateBy { it.stepId }
         putAll(savedMap)
     }
@@ -37,8 +42,10 @@ public class FlowResultManager private constructor(
 
     private val defaultsInitialised = mutableSetOf<String>().apply {
         savedStateHandle ?: return@apply
-        val bundle = savedStateHandle.get<Bundle>(SAVED_BUNDLE_KEY) ?: return@apply
-        val saved = bundle.getStringArrayList(DEFAULT_SET_KEY).orEmpty()
+        val savedState = savedStateHandle.get<SavedState>(SAVED_STATE_KEY) ?: return@apply
+        val saved = savedState.read {
+            getStringListOrNull(DEFAULT_SET_KEY).orEmpty()
+        }
         addAll(saved)
     }
 
@@ -71,23 +78,25 @@ public class FlowResultManager private constructor(
     }
 
     init {
-        savedStateHandle?.setSavedStateProvider(SAVED_BUNDLE_KEY) {
-            val resultsToSave = results.values.filter { it.result.isSaveableInBundle() }
+        savedStateHandle?.setSavedStateProvider(SAVED_STATE_KEY) {
+            val resultsToSave = results.values.filter { it.result.isSaveable() }
             val defaultsToSave = defaultsInitialised
-            bundleOf(
-                RESULTS_KEY to ArrayList(resultsToSave),
-                DEFAULT_SET_KEY to ArrayList(defaultsToSave),
+            savedState(
+                mapOf(
+                    RESULTS_KEY to ArrayList(resultsToSave),
+                    DEFAULT_SET_KEY to ArrayList(defaultsToSave),
+                )
             )
         }
     }
 
-    @Parcelize
+    @Serializable
     @PublishedApi
     internal class FlowStepResult (
         val stepId: String,
-        val result: @RawValue Any,
+        val result: @Contextual Any,
         val dependsOn: Long,
-    ) : Parcelable
+    )
 
     @PublishedApi
     internal class SuspendingStepResult(
@@ -98,7 +107,7 @@ public class FlowResultManager private constructor(
     )
 
     public companion object {
-        private const val SAVED_BUNDLE_KEY = "FlowResultManager.RESULTS_KEY"
+        private const val SAVED_STATE_KEY = "FlowResultManager.RESULTS_KEY"
         private const val RESULTS_KEY = "FlowResultManager.RESULTS_KEY"
         private const val DEFAULT_SET_KEY = "FlowResultManager.DEFAULT_SET_KEY"
 

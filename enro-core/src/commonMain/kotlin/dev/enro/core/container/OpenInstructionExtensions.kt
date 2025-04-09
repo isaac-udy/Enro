@@ -22,18 +22,21 @@ internal fun AnyOpenInstruction.asPresentInstruction(): OpenPresentInstruction =
 
 @PublishedApi
 internal fun AnyOpenInstruction.originalNavigationDirection(): NavigationDirection {
-    if (extras.containsKey(ORIGINAL_NAVIGATION_DIRECTION))
+    val originalDirection = extras.read { this.getSavedStateOrNull(ORIGINAL_NAVIGATION_DIRECTION) }
+    if (originalDirection != null) {
         return extras.read { decodeFromSavedState(getSavedState(ORIGINAL_NAVIGATION_DIRECTION)) }
+    }
     return navigationDirection
 }
 
 @Suppress("UNCHECKED_CAST")
-internal fun <T: NavigationDirection> AnyOpenInstruction.asDirection(direction: T): NavigationInstruction.Open<T> {
-    if(navigationDirection == direction) return this as NavigationInstruction.Open<T>
+internal fun <T : NavigationDirection> AnyOpenInstruction.asDirection(direction: T): NavigationInstruction.Open<T> {
+    if (navigationDirection == direction) return this as NavigationInstruction.Open<T>
     return internal.copy(
         navigationDirection = direction,
         extras = extras.apply {
-            if (containsKey(ORIGINAL_NAVIGATION_DIRECTION)) return@apply
+            val originalDirection = read { this.getSavedStateOrNull(ORIGINAL_NAVIGATION_DIRECTION) }
+            if (originalDirection != null) return@apply
             extras.write {
                 putSavedState(
                     ORIGINAL_NAVIGATION_DIRECTION,

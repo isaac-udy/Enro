@@ -7,7 +7,7 @@ import android.util.SizeF
 import android.util.SparseArray
 import java.io.Serializable
 
-internal fun Any.isSaveableInBundle(): Boolean {
+internal actual fun Any.isSaveable(): Boolean {
     return AcceptableClasses.any { it.isInstance(this) }
 }
 

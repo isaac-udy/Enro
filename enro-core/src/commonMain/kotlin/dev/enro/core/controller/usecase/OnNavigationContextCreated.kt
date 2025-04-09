@@ -1,17 +1,16 @@
 package dev.enro.core.controller.usecase
 
-import android.app.Activity
-import android.os.Bundle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.savedstate.SavedState
+import androidx.savedstate.read
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHandleProperty
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.activity
 import dev.enro.core.internal.NoNavigationKey
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
 import dev.enro.core.readOpenInstruction
@@ -24,20 +23,16 @@ internal class OnNavigationContextCreated(
 ) {
     operator fun invoke(
         context: NavigationContext<*>,
-        savedInstanceState: Bundle?
+        savedInstanceState: SavedState?
     ) {
-        if (context.contextReference is Activity) {
-            context.activity.theme.applyStyle(android.R.style.Animation_Activity, false)
-        }
-
         val instruction = context.arguments.readOpenInstruction()
         val contextId = instruction?.internal?.instructionId
-            ?: savedInstanceState?.getString(CONTEXT_ID_ARG)
+            ?: savedInstanceState?.read { getStringOrNull(CONTEXT_ID_ARG) }
             ?: Uuid.random().toString()
 
         val config = NavigationHandleProperty.getPendingConfig(context)
         val defaultKey = config?.defaultKey
-            ?: NoNavigationKey(context.contextReference::class.java.name, context.arguments)
+            ?: NoNavigationKey(context.contextReference::class.qualifiedName ?: "", context.arguments)
         val defaultInstruction = NavigationInstruction
             .Open.OpenInternal(
                 navigationKey = defaultKey,

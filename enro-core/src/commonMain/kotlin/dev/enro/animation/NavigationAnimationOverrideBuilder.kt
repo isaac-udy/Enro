@@ -1,7 +1,5 @@
 package dev.enro.animation
 
-import androidx.annotation.AnimRes
-import androidx.annotation.AnimatorRes
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import dev.enro.annotations.AdvancedEnroApi
@@ -221,72 +219,72 @@ public class NavigationAnimationOverrideBuilder {
     }
 }
 
-// Resource extensions
-/**
- * An overload of [NavigationAnimationOverrideBuilder.transitionBetween] that allows providing
- * Anim or Animator resources
- *
- * @see [NavigationAnimationOverrideBuilder.direction]
- */
-public fun NavigationAnimationOverrideBuilder.direction(
-    direction: NavigationDirection,
-    @AnimRes @AnimatorRes entering: Int,
-    @AnimRes @AnimatorRes exiting: Int,
-    @AnimRes @AnimatorRes returnEntering: Int? = entering,
-    @AnimRes @AnimatorRes returnExiting: Int? = exiting,
-) {
-    direction(
-        direction = direction,
-        entering = NavigationAnimation.Resource(entering),
-        exiting = NavigationAnimation.Resource(exiting),
-        returnEntering = returnEntering?.let { NavigationAnimation.Resource(it) },
-        returnExiting = returnExiting?.let { NavigationAnimation.Resource(it) },
-    )
-}
-
-/**
- * An overload of [NavigationAnimationOverrideBuilder.transitionBetween] that allows providing
- * Anim or Animator resources
- *
- * @see [NavigationAnimationOverrideBuilder.transitionTo]
- */
-public inline fun <reified Key : NavigationKey> NavigationAnimationOverrideBuilder.transitionTo(
-    direction: NavigationDirection? = null,
-    @AnimRes @AnimatorRes entering: Int,
-    @AnimRes @AnimatorRes exiting: Int,
-    @AnimRes @AnimatorRes returnEntering: Int? = entering,
-    @AnimRes @AnimatorRes returnExiting: Int? = exiting,
-) {
-    transitionTo<Key>(
-        direction = direction,
-        entering = NavigationAnimation.Resource(entering),
-        exiting = NavigationAnimation.Resource(exiting),
-        returnEntering = returnEntering?.let { NavigationAnimation.Resource(it) },
-        returnExiting = returnExiting?.let { NavigationAnimation.Resource(it) },
-    )
-}
-
-/**
- * An overload of [NavigationAnimationOverrideBuilder.transitionBetween] that allows providing
- * Anim or Animator resources
- *
- * @see [NavigationAnimationOverrideBuilder.transitionBetween]
- */
-public inline fun <reified Exit : NavigationKey, reified Enter : NavigationKey> NavigationAnimationOverrideBuilder.transitionBetween(
-    direction: NavigationDirection? = null,
-    @AnimRes @AnimatorRes entering: Int,
-    @AnimRes @AnimatorRes exiting: Int,
-    @AnimRes @AnimatorRes returnEntering: Int? = entering,
-    @AnimRes @AnimatorRes returnExiting: Int? = exiting,
-) {
-    transitionBetween<Exit, Enter>(
-        direction = direction,
-        entering = NavigationAnimation.Resource(entering),
-        exiting = NavigationAnimation.Resource(exiting),
-        returnEntering = returnEntering?.let { NavigationAnimation.Resource(it) },
-        returnExiting = returnExiting?.let { NavigationAnimation.Resource(it) },
-    )
-}
+//// Resource extensions
+///**
+// * An overload of [NavigationAnimationOverrideBuilder.transitionBetween] that allows providing
+// * Anim or Animator resources
+// *
+// * @see [NavigationAnimationOverrideBuilder.direction]
+// */
+//public fun NavigationAnimationOverrideBuilder.direction(
+//    direction: NavigationDirection,
+//    @AnimRes @AnimatorRes entering: Int,
+//    @AnimRes @AnimatorRes exiting: Int,
+//    @AnimRes @AnimatorRes returnEntering: Int? = entering,
+//    @AnimRes @AnimatorRes returnExiting: Int? = exiting,
+//) {
+//    direction(
+//        direction = direction,
+//        entering = NavigationAnimation.Resource(entering),
+//        exiting = NavigationAnimation.Resource(exiting),
+//        returnEntering = returnEntering?.let { NavigationAnimation.Resource(it) },
+//        returnExiting = returnExiting?.let { NavigationAnimation.Resource(it) },
+//    )
+//}
+//
+///**
+// * An overload of [NavigationAnimationOverrideBuilder.transitionBetween] that allows providing
+// * Anim or Animator resources
+// *
+// * @see [NavigationAnimationOverrideBuilder.transitionTo]
+// */
+//public inline fun <reified Key : NavigationKey> NavigationAnimationOverrideBuilder.transitionTo(
+//    direction: NavigationDirection? = null,
+//    @AnimRes @AnimatorRes entering: Int,
+//    @AnimRes @AnimatorRes exiting: Int,
+//    @AnimRes @AnimatorRes returnEntering: Int? = entering,
+//    @AnimRes @AnimatorRes returnExiting: Int? = exiting,
+//) {
+//    transitionTo<Key>(
+//        direction = direction,
+//        entering = NavigationAnimation.Resource(entering),
+//        exiting = NavigationAnimation.Resource(exiting),
+//        returnEntering = returnEntering?.let { NavigationAnimation.Resource(it) },
+//        returnExiting = returnExiting?.let { NavigationAnimation.Resource(it) },
+//    )
+//}
+//
+///**
+// * An overload of [NavigationAnimationOverrideBuilder.transitionBetween] that allows providing
+// * Anim or Animator resources
+// *
+// * @see [NavigationAnimationOverrideBuilder.transitionBetween]
+// */
+//public inline fun <reified Exit : NavigationKey, reified Enter : NavigationKey> NavigationAnimationOverrideBuilder.transitionBetween(
+//    direction: NavigationDirection? = null,
+//    @AnimRes @AnimatorRes entering: Int,
+//    @AnimRes @AnimatorRes exiting: Int,
+//    @AnimRes @AnimatorRes returnEntering: Int? = entering,
+//    @AnimRes @AnimatorRes returnExiting: Int? = exiting,
+//) {
+//    transitionBetween<Exit, Enter>(
+//        direction = direction,
+//        entering = NavigationAnimation.Resource(entering),
+//        exiting = NavigationAnimation.Resource(exiting),
+//        returnEntering = returnEntering?.let { NavigationAnimation.Resource(it) },
+//        returnExiting = returnExiting?.let { NavigationAnimation.Resource(it) },
+//    )
+//}
 
 // Composable transition extensions
 

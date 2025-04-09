@@ -9,7 +9,6 @@ import androidx.lifecycle.Lifecycle
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationDirection
 import dev.enro.core.activity
 import dev.enro.core.addOpenInstruction
 import dev.enro.core.container.EmptyBehavior
@@ -68,8 +67,9 @@ internal class ActivityNavigationContainer internal constructor(
                 entering = transition.activeBackstack.active,
             )
             childContext.activity.overridePendingTransition(
-                animations.entering.asResource(childContext.activity.theme).id,
-                animations.exiting.asResource(childContext.activity.theme).id
+                0,0
+//                animations.entering.asResource(childContext.activity.theme).id,
+//                animations.exiting.asResource(childContext.activity.theme).id
             )
         }
 
@@ -87,14 +87,10 @@ internal class ActivityNavigationContainer internal constructor(
         val binding = requireNotNull(
             childContext.controller.dependencyScope.get<GetNavigationBinding>()
                 .invoke(instructionToOpenHosted)
-        ) { "Could not open ${instructionToOpenHosted.navigationKey::class.java.simpleName}: No NavigationBinding was found" }
+        ) { "Could not open ${instructionToOpenHosted.navigationKey::class.simpleName}: No NavigationBinding was found" }
 
         val intent = Intent(childContext.activity, binding.destinationType.java)
             .addOpenInstruction(instructionToOpenHosted)
-
-        if (instructionToOpen.navigationDirection == NavigationDirection.ReplaceRoot) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        }
 
         val activity = childContext.activity
 
@@ -104,9 +100,9 @@ internal class ActivityNavigationContainer internal constructor(
         )
 
         val options = ActivityOptionsCompat.makeCustomAnimation(
-            activity,
-            animations.entering.asResource(childContext.activity.theme).id,
-            animations.exiting.asResource(childContext.activity.theme).id
+            activity, 0,0
+//            animations.entering.asResource(childContext.activity.theme).id,
+//            animations.exiting.asResource(childContext.activity.theme).id
         )
         activity.startActivity(intent, options.toBundle())
 

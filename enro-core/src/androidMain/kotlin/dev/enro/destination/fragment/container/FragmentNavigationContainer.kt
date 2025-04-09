@@ -2,7 +2,6 @@ package dev.enro.core.fragment.container
 
 import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
@@ -20,9 +19,7 @@ import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
-import dev.enro.core.NavigationHost
 import dev.enro.core.R
-import dev.enro.core.activity
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition
@@ -30,8 +27,6 @@ import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerBackEvent
 import dev.enro.core.container.NavigationInstructionFilter
 import dev.enro.core.container.close
-import dev.enro.core.container.getAnimationsForEntering
-import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.HostInstructionAs
@@ -356,13 +351,15 @@ public class FragmentNavigationContainer internal constructor(
         active: FragmentAndInstruction?
     ) {
         val previouslyActiveFragment = fragmentManager.findFragmentById(containerId)
-        val entering = (active?.let { getAnimationsForEntering(it.instruction) }
-            ?: DefaultAnimations.none.entering).asResource(context.activity.theme)
-        val exiting = (currentTransition.exitingInstruction?.let { getAnimationsForExiting(it) }
-            ?: DefaultAnimations.none.exiting).asResource(context.activity.theme)
+        val entering = 0
+//         (active?.let { getAnimationsForEntering(it.instruction) }
+//            ?: DefaultAnimations.none.entering).asResource(context.activity.theme)
+        val exiting = 0
+//            (currentTransition.exitingInstruction?.let { getAnimationsForExiting(it) }
+//            ?: DefaultAnimations.none.exiting).asResource(context.activity.theme)
 
         val noOpEntering = when {
-            exiting.isAnimator(context.activity) -> R.animator.animator_example_no
+//            exiting.isAnimator(context.activity) -> R.animator.animator_example_no
             else -> R.anim.enro_no_op_enter_animation
         }
 
@@ -370,37 +367,38 @@ public class FragmentNavigationContainer internal constructor(
         // the anim is disregarded, and the Fragment that would receive the anim does not receive any
         // animation. So, what we're doing here is falling back to a default anim or animator resource
         // for the exit animation, in the case that the enter/exit anim/animator types do not match.
-        val exitingId = when {
-            previouslyActiveFragment is NavigationHost -> when {
-                entering.isAnimator(context.activity) -> R.animator.animator_no_op_exit
-                else -> R.anim.enro_no_op_exit_animation
-            }
+//        val exitingId = when {
+//            previouslyActiveFragment is NavigationHost -> when {
+//                entering.isAnimator(context.activity) -> R.animator.animator_no_op_exit
+//                else -> R.anim.enro_no_op_exit_animation
+//            }
 
-            exiting.id == 0 -> 0
-            entering.isAnimator(context.activity)
-                    && !exiting.isAnimator(context.activity) -> {
-                Log.e(
-                    "Enro",
-                    "Fragment enter animation was 'animator' and exit was 'anim', falling back to default animator for exit animations"
-                )
-                R.animator.animator_enro_fallback_exit
-            }
+//            exiting.id == 0 -> 0
+//            entering.isAnimator(context.activity)
+//                    && !exiting.isAnimator(context.activity) -> {
+//                Log.e(
+//                    "Enro",
+//                    "Fragment enter animation was 'animator' and exit was 'anim', falling back to default animator for exit animations"
+//                )
+//                R.animator.animator_enro_fallback_exit
+//            }
 
-            entering.isAnim(context.activity)
-                    && !exiting.isAnim(context.activity) -> {
-                Log.e(
-                    "Enro",
-                    "Fragment enter animation was 'anim' and exit was 'animator', falling back to default anim for exit animations"
-                )
-                R.anim.enro_fallback_exit
-            }
-
-            else -> exiting.id
-        }
+//            entering.isAnim(context.activity)
+//                    && !exiting.isAnim(context.activity) -> {
+//                Log.e(
+//                    "Enro",
+//                    "Fragment enter animation was 'anim' and exit was 'animator', falling back to default anim for exit animations"
+//                )
+//                R.anim.enro_fallback_exit
+//            }
+//
+//            else -> exiting.id
+//        }
 
         setCustomAnimations(
-            if (active?.fragment is NavigationHost) noOpEntering else entering.id,
-            exitingId
+            0, 0
+//            if (active?.fragment is NavigationHost) noOpEntering else entering.id,
+//            exitingId
         )
     }
 
@@ -435,17 +433,17 @@ public fun FragmentNavigationContainer.setVisibilityAnimated(
     if (!view.isVisible && !isVisible) return
     if (view.isVisible && isVisible) return
 
-    view.animate(
-        animOrAnimator = when (isVisible) {
-            true -> animations.entering.asResource(view.context.theme).id
-            false -> animations.exiting.asResource(view.context.theme).id
-        },
-        onAnimationStart = {
-            view.translationZ = if (isVisible) 0f else -1f
-            view.isVisible = true
-        },
-        onAnimationEnd = {
-            view.isVisible = isVisible
-        }
+    view.animate(0
+//        animOrAnimator = when (isVisible) {
+//            true -> animations.entering.asResource(view.context.theme).id
+//            false -> animations.exiting.asResource(view.context.theme).id
+//        },
+//        onAnimationStart = {
+//            view.translationZ = if (isVisible) 0f else -1f
+//            view.isVisible = true
+//        },
+//        onAnimationEnd = {
+//            view.isVisible = isVisible
+//        }
     )
 }

@@ -38,7 +38,7 @@ object EnroTest {
             when (val application = application) {
                 is NavigationApplication -> return@apply
                 null -> installForJvmTests()
-                else -> install(application)
+                else -> installForAny(application)
             }
         }
     }

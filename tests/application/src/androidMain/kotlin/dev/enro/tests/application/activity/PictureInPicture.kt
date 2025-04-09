@@ -19,9 +19,9 @@ import dev.enro.core.activity
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.navigationContext
 import dev.enro.core.push
 import dev.enro.core.requestClose
+import dev.enro.destination.compose.navigationContext
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 

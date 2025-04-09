@@ -44,6 +44,7 @@ import dev.enro.core.present
 import dev.enro.core.push
 import dev.enro.core.requestClose
 import dev.enro.core.rootContext
+import dev.enro.destination.compose.navigationContext
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import kotlin.reflect.KClass

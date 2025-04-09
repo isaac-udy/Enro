@@ -31,16 +31,16 @@ import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
-import dev.enro.core.compose.OverrideNavigationAnimations
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.navigationTransition
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.accept
 import dev.enro.core.present
 import dev.enro.core.push
 import dev.enro.core.requestClose
+import dev.enro.destination.compose.OverrideNavigationAnimations
+import dev.enro.destination.compose.navigationTransition
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 

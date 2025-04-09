@@ -1,6 +1,5 @@
 package dev.enro.core.controller.usecase
 
-import android.provider.Settings
 import dev.enro.animation.ClosingTransition
 import dev.enro.animation.DefaultAnimations
 import dev.enro.animation.NavigationAnimationOverride
@@ -8,7 +7,6 @@ import dev.enro.animation.NavigationAnimationTransition
 import dev.enro.animation.OpeningTransition
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.controller.application
 
 internal class GetNavigationAnimations(
     private val controller: NavigationController,
@@ -66,13 +64,8 @@ internal class GetNavigationAnimations(
     }
 
     private fun earlyExitForNoAnimation() : Boolean {
-        val animationScale = runCatching {
-            Settings.Global.getFloat(
-                controller.application.contentResolver,
-                Settings.Global.ANIMATOR_DURATION_SCALE
-            )
-        }.getOrDefault(1.0f)
-
-        return animationScale < 0.01f || controller.config.isAnimationsDisabled
+        return isAnimationsDisabledForPlatform(controller) || controller.config.isAnimationsDisabled
     }
 }
+
+internal expect fun isAnimationsDisabledForPlatform(controller: NavigationController): Boolean

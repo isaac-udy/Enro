@@ -2,16 +2,18 @@ package dev.enro.core.result.flows
 
 import androidx.savedstate.SavedState
 import androidx.savedstate.savedState
+import androidx.savedstate.serialization.decodeFromSavedState
+import androidx.savedstate.serialization.encodeToSavedState
 import androidx.savedstate.serialization.serializers.SavedStateSerializer
 import dev.enro.core.NKSerializer
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
 import dev.enro.core.NavigationKeySerializer
-import dev.enro.core.default
 import kotlinx.serialization.Serializable
 
 @Serializable
 public sealed interface FlowStepConfiguration {
+    @Serializable
     public data object Transient : FlowStepConfiguration
 }
 
@@ -83,7 +85,17 @@ public class FlowStep<Result : Any> private constructor(
     public companion object {
         @Suppress("unused")
         // Call NavigationKeySerializer.default to instantiate and register a NavigationKeySerializer for FlowStep
-        private val flowStepSerializer = NavigationKeySerializer.default(FlowStep::class)
+        private val flowStepSerializer = object : NavigationKeySerializer<FlowStep<out Any>>(FlowStep::class) {
+            override fun serialize(key: FlowStep<out Any>): SavedState {
+                return encodeToSavedState(kotlinx.serialization.serializer<FlowStep<Unit>>(), key as FlowStep<Unit>)
+            }
+
+            override fun deserialize(data: SavedState): FlowStep<out Any> {
+                return decodeFromSavedState(kotlinx.serialization.serializer<FlowStep<Unit>>(), data)
+            }
+        }
+
+//            NavigationKeySerializer.default(FlowStep::class)
     }
 }
 

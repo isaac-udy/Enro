@@ -8,12 +8,12 @@ import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHostFactory
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.activity.ActivityNavigationBinding
-import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.compose.ComposableNavigationBinding
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.fragment.FragmentNavigationBinding
 import dev.enro.core.isHiltApplication
 import dev.enro.core.isHiltContext
+import dev.enro.destination.compose.ComposableDestination
+import dev.enro.destination.compose.ComposableNavigationBinding
 import dev.enro.destination.flow.ManagedFlowNavigationBinding
 import dev.enro.destination.flow.host.OpenManagedFlowInFragment
 import dev.enro.destination.flow.host.OpenManagedFlowInHiltFragment

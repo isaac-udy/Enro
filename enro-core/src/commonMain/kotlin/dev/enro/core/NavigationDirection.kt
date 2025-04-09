@@ -12,17 +12,11 @@ import kotlinx.serialization.encoding.encodeStructure
 
 @Serializable(with = NavigationDirection.Serializer::class)
 public sealed class NavigationDirection {
-    @Deprecated("Please use Push or Present")
-    public data object Forward : NavigationDirection()
-
-    @Deprecated("Please use a Push or Present followed by a close")
-    public data object Replace : NavigationDirection()
-
+    @Serializable(with = NavigationDirection.Serializer::class)
     public data object Push : NavigationDirection()
 
+    @Serializable(with = NavigationDirection.Serializer::class)
     public data object Present : NavigationDirection()
-
-    public data object ReplaceRoot : NavigationDirection()
 
     public companion object {}
 
@@ -43,24 +37,20 @@ public sealed class NavigationDirection {
                 }
             }
             return when (direction) {
-                "forward" -> Forward
-                "replace" -> Replace
                 "push" -> Push
                 "present" -> Present
-                "replaceRoot" -> ReplaceRoot
                 else -> error("Unknown NavigationDirection: $direction")
             }
         }
 
         override fun serialize(encoder: Encoder, value: NavigationDirection) {
             encoder.encodeStructure(descriptor) {
-                encodeStringElement(descriptor, 0, when (value) {
-                    is Forward -> "forward"
-                    is Replace -> "replace"
-                    is Push -> "push"
-                    is Present -> "present"
-                    is ReplaceRoot -> "replaceRoot"
-                })
+                encodeStringElement(
+                    descriptor, 0, when (value) {
+                        is Push -> "push"
+                        is Present -> "present"
+                    }
+                )
             }
         }
     }

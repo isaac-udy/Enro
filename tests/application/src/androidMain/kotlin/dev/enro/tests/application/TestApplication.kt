@@ -20,7 +20,7 @@ import dev.enro.annotations.NavigationComponent
 import dev.enro.core.NavigationDirection
 import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.createNavigationController
-import dev.enro.core.navigationContext
+import dev.enro.destination.compose.navigationContext
 import dev.enro.destination.fragment.FragmentSharedElements
 
 @NavigationComponent

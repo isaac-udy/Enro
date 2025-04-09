@@ -3,6 +3,7 @@ package dev.enro.core.container
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
+import dev.enro.core.result.flows.FlowStep
 import kotlin.jvm.JvmName
 
 /**
@@ -81,8 +82,7 @@ public fun acceptAll(): NavigationInstructionFilter = NavigationInstructionFilte
  * by a [dev.enro.core.result.flows.NavigationFlow].
  */
 public fun acceptFromFlow(): NavigationInstructionFilter = NavigationInstructionFilter {
-    TODO()
-//    it.internal.resultKey is FlowStep<*>
+    it.internal.resultKey is FlowStep<*>
 }
 
 /**

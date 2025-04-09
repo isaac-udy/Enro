@@ -16,18 +16,16 @@ import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationKey
 import dev.enro.core.OpenPresentInstruction
 import dev.enro.core.R
-import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.acceptNone
 import dev.enro.core.container.asPushInstruction
-import dev.enro.core.container.getAnimationsForEntering
-import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.container.setBackstack
 import dev.enro.core.containerManager
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationContext
 import dev.enro.core.navigationHandle
 import dev.enro.core.parentContainer
+import dev.enro.destination.compose.ComposableDestination
 import dev.enro.extensions.animate
 import dev.enro.extensions.createFullscreenDialog
 import kotlinx.serialization.Serializable
@@ -41,7 +39,7 @@ internal abstract class AbstractOpenPresentableFragmentInFragmentKey :
 
 @Serializable
 internal data class OpenPresentableFragmentInFragment(
-    override val instruction: OpenPresentInstruction
+    override val instruction: OpenPresentInstruction,
 ) : AbstractOpenPresentableFragmentInFragmentKey()
 
 @Serializable
@@ -109,12 +107,13 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
             if (fragment is AbstractFragmentHostForComposable) return
 
             val parentContainer = navigationContext.parentContainer() ?: return
-            val animations = parentContainer
-                .getAnimationsForEntering(navigationHandle.key.instruction)
-                .asResource(fragment.requireActivity().theme)
+
+//            val animations = parentContainer
+//                .getAnimationsForEntering(navigationHandle.key.instruction)
+//                .asResource(fragment.requireActivity().theme)
 
             view.animate(
-                animOrAnimator = animations.id
+                animOrAnimator = 0//animations.id
             )
         }
         view.post {
@@ -139,9 +138,10 @@ public abstract class AbstractFragmentHostForPresentableFragment : DialogFragmen
         val animationResource = when {
             fragment is AbstractFragmentHostForComposable -> R.anim.enro_no_op_exit_animation
             parentContainer != null -> {
-                parentContainer
-                    .getAnimationsForExiting(navigationHandle.key.instruction)
-                    .asResource(fragment.requireActivity().theme).id
+//                parentContainer
+//                    .getAnimationsForExiting(navigationHandle.key.instruction)
+//                    .asResource(fragment.requireActivity().theme).id
+                0
             }
             else -> R.anim.enro_fallback_exit
         }

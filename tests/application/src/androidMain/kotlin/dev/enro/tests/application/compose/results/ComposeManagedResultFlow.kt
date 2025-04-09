@@ -2,7 +2,6 @@
 
 package dev.enro.tests.application.compose.results
 
-import android.os.Parcelable
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -31,7 +30,6 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.closeWithResult
-import dev.enro.core.compose.OverrideNavigationAnimations
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
@@ -41,9 +39,9 @@ import dev.enro.core.result.flows.registerForFlowResult
 import dev.enro.core.result.flows.rememberNavigationFlowReference
 import dev.enro.core.result.flows.requireStep
 import dev.enro.core.withExtra
+import dev.enro.destination.compose.OverrideNavigationAnimations
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.viewmodel.navigationHandle
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -64,11 +62,11 @@ data object ComposeManagedResultFlow : NavigationKey.SupportsPush {
     @Serializable
     internal class ThirdResult : NavigationKey.SupportsPush.WithResult<String>
 
-    @Parcelize
+    @Serializable
     internal class FinalScreen(
         val navigationFlowReference: NavigationFlowReference,
         val text: String,
-    ) : Parcelable, NavigationKey.SupportsPush.WithResult<Unit>
+    ) : NavigationKey.SupportsPush.WithResult<Unit>
 }
 
 

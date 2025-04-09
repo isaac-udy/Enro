@@ -60,15 +60,6 @@ internal class ResultChannelImpl<Result : Any, Key : NavigationKey.WithResult<Re
         }
     }.apply { navigationHandle.lifecycle.addObserver(this) }
 
-    override fun open(key: Key) {
-        val properties = arguments ?: return
-        properties.navigationHandle.executeInstruction(
-            NavigationInstruction.Forward(key).internal.copy(
-                resultId = id
-            )
-        )
-    }
-
     override fun push(key: NavigationKey.SupportsPush.WithResult<out Result>) {
         val properties = arguments ?: return
         properties.navigationHandle.executeInstruction(
