@@ -3,7 +3,6 @@ package dev.enro.core.controller.usecase
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import dev.enro.core.NavigationContext
@@ -45,9 +44,8 @@ internal class OnNavigationContextCreated(
             .internal
             .copy(instructionId = contextId)
 
-        val viewModelStoreOwner = context.contextReference as ViewModelStoreOwner
         val handle = createNavigationHandleViewModel(
-            viewModelStoreOwner = viewModelStoreOwner,
+            viewModelStoreOwner = context.viewModelStoreOwner,
             savedStateRegistryOwner = context.savedStateRegistryOwner,
             navigationController = context.controller,
             instruction = instruction ?: defaultInstruction

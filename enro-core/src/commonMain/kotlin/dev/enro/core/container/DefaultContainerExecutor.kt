@@ -1,70 +1,37 @@
 package dev.enro.core.container
 
 import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationContext
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.parentContainer
-import dev.enro.core.readOpenInstruction
 
-internal object DefaultContainerExecutor {
-    fun open(
-        fromContext: NavigationContext<*>,
-        binding: NavigationBinding<*,*>,
-        instruction: AnyOpenInstruction,
-    ) {
-        val container = findContainerFor(fromContext, instruction)
+internal fun findContainerFor(
+    fromContext: NavigationContext<*>?,
+    instruction: AnyOpenInstruction,
+    alreadyVisitedContainer: Set<NavigationContainer> = emptySet()
+): NavigationContainer? {
+    if (fromContext == null) return null
+    val containerManager = fromContext.containerManager
 
-        requireNotNull(container) {
-            "Failed to execute instruction from context with NavigationKey ${fromContext.arguments.readOpenInstruction()!!.navigationKey::class.simpleName}: Could not find valid container for NavigationKey of type ${instruction.navigationKey::class.simpleName}"
+    val visited = alreadyVisitedContainer.toMutableSet()
+    val container = containerManager
+        .getActiveChildContainers(exclude = visited)
+        .onEach { visited.add(it) }
+        .firstOrNull {
+            it.isVisible && it.accept(instruction)
         }
-        container.setBackstack { backstack ->
-            backstack.plus(instruction)
-        }
-    }
-
-    fun close(context: NavigationContext<out Any>) {
-        val container = context.parentContainer()
-            ?: return
-
-        container.setBackstack {
-            it.close(
-                context.getNavigationHandle().id
-            )
-        }
-    }
-
-    internal fun findContainerFor(
-        fromContext: NavigationContext<*>?,
-        instruction: AnyOpenInstruction,
-        alreadyVisitedContainer: Set<NavigationContainer> = emptySet()
-    ): NavigationContainer? {
-        if (fromContext == null) return null
-        val containerManager = fromContext.containerManager
-
-        val visited = alreadyVisitedContainer.toMutableSet()
-        val container = containerManager
-            .getActiveChildContainers(exclude = visited)
+        ?: containerManager.getChildContainers(exclude = visited)
             .onEach { visited.add(it) }
-            .firstOrNull {
-                it.isVisible && it.accept(instruction)
-            }
-            ?: containerManager.getChildContainers(exclude = visited)
-                .onEach { visited.add(it) }
-                .filter { it.isVisible }
-                .firstOrNull { it.accept(instruction) }
+            .filter { it.isVisible }
+            .firstOrNull { it.accept(instruction) }
 
-        return container
-            ?: findContainerFor(
-                fromContext = fromContext.parentContext,
-                instruction = instruction,
-                alreadyVisitedContainer = visited,
-            )
-            ?: defaultContainer(fromContext)
-    }
+    return container
+        ?: findContainerFor(
+            fromContext = fromContext.parentContext,
+            instruction = instruction,
+            alreadyVisitedContainer = visited,
+        )
 }
-
-public expect fun defaultContainer(context: NavigationContext<*>): NavigationContainer?
 
 /**
  * Returns a list of active child containers down from a particular NavigationContainerManager, the results in the list

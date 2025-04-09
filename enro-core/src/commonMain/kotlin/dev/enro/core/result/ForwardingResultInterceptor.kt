@@ -11,6 +11,7 @@ import dev.enro.core.readOpenInstruction
 import dev.enro.core.result.flows.FlowStep
 import dev.enro.core.rootContext
 
+// TODO: This behaviour should be moved into the regular ExecuteCloseInstruction code
 internal object ForwardingResultInterceptor  : NavigationInstructionInterceptor {
     override fun intercept(
         instruction: NavigationInstruction.Close,
@@ -28,7 +29,6 @@ internal object ForwardingResultInterceptor  : NavigationInstructionInterceptor 
         val containers = context.rootContext()
             .containerManager
             .containers
-//            .plus(ActivityNavigationContainer(context.activity.navigationContext))
             .toMutableList()
 
         while (containers.isNotEmpty()) {

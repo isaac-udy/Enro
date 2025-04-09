@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import dev.enro.core.NavigationContext
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
 import dev.enro.core.controller.get
@@ -19,8 +20,9 @@ internal object ActivityPlugin : EnroPlugin() {
 
     override fun onAttached(navigationController: NavigationController) {
         if (!navigationController.isInAndroidContext) return
-
+        val applicationContext = ApplicationContext(navigationController.application, navigationController)
         callbacks = ActivityLifecycleCallbacksForEnro(
+            applicationContext,
             navigationController.dependencyScope.get(),
             navigationController.dependencyScope.get(),
         ).also { callbacks ->
@@ -39,16 +41,16 @@ internal object ActivityPlugin : EnroPlugin() {
 }
 
 private class ActivityLifecycleCallbacksForEnro(
+    private val applicationContext: NavigationContext<out Application>,
     private val onNavigationContextCreated: OnNavigationContextCreated,
     private val onNavigationContextSaved: OnNavigationContextSaved,
 ) : Application.ActivityLifecycleCallbacks {
-
     override fun onActivityCreated(
         activity: Activity,
         savedInstanceState: Bundle?
     ) {
         if (activity !is ComponentActivity) return
-        val navigationContext = ActivityContext(activity)
+        val navigationContext = ActivityContext(applicationContext, activity)
         activity.theme.applyStyle(android.R.style.Animation_Activity, false)
         onNavigationContextCreated(navigationContext, savedInstanceState)
     }

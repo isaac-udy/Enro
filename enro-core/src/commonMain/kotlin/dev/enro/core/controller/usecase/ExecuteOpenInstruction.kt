@@ -1,9 +1,14 @@
 package dev.enro.core.controller.usecase
 
-import dev.enro.core.*
-import dev.enro.core.container.DefaultContainerExecutor
+import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.EnroException
+import dev.enro.core.NavigationContext
+import dev.enro.core.container.findContainerFor
+import dev.enro.core.container.setBackstack
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.readOpenInstruction
 
 internal interface ExecuteOpenInstruction {
     operator fun invoke(
@@ -32,10 +37,12 @@ internal class ExecuteOpenInstructionImpl(
             return
         }
 
-        DefaultContainerExecutor.open(
-            fromContext = navigationContext,
-            binding = binding,
-            instruction = processedInstruction,
-        )
+        val container = findContainerFor(navigationContext, instruction)
+        requireNotNull(container) {
+            "Failed to execute instruction from context with NavigationKey ${navigationContext.arguments.readOpenInstruction()!!.navigationKey::class.simpleName}: Could not find valid container for NavigationKey of type ${instruction.navigationKey::class.simpleName}"
+        }
+        container.setBackstack { backstack ->
+            backstack.plus(instruction)
+        }
     }
 }
