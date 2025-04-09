@@ -5,10 +5,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
-import dev.enro.*
+import dev.enro.DefaultActivity
+import dev.enro.DefaultActivityKey
+import dev.enro.GenericComposableKey
 import dev.enro.core.close
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.forward
+import dev.enro.core.push
+import dev.enro.expectActivity
+import dev.enro.expectContext
+import dev.enro.expectFragmentHostForComposable
+import dev.enro.getNavigationHandle
+import dev.enro.waitFor
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -27,7 +34,7 @@ class ActivityToComposableTests {
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
 
         val id = UUID.randomUUID().toString()
-        handle.forward(GenericComposableKey(id))
+        handle.push(GenericComposableKey(id))
 
         // The Composable should be opened as an AbstractFragmentHostForComposable
         expectFragmentHostForComposable()
@@ -41,7 +48,7 @@ class ActivityToComposableTests {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
 
-        handle.forward(GenericComposableKey(id = "StandaloneComposable"))
+        handle.push(GenericComposableKey(id = "StandaloneComposable"))
 
         // The Composable should be opened as an AbstractFragmentHostForComposable
         expectFragmentHostForComposable()
@@ -68,7 +75,7 @@ class ActivityToComposableTests {
         val scenario = ActivityScenario.launch(ActivityWithComposables::class.java)
         val handle = scenario.getNavigationHandle<ActivityWithComposablesKey>()
 
-        handle.forward(GenericComposableKey(id = "ComposableViewModelExample"))
+        handle.push(GenericComposableKey(id = "ComposableViewModelExample"))
 
         val context = expectContext<ComposableDestination, GenericComposableKey>()
 

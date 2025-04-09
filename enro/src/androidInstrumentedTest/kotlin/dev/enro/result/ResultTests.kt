@@ -5,10 +5,16 @@ import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ActivityScenario
 import dev.enro.DefaultActivity
 import dev.enro.DefaultActivityKey
-import dev.enro.core.*
+import dev.enro.core.asTyped
+import dev.enro.core.close
+import dev.enro.core.closeWithResult
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.present
+import dev.enro.core.push
 import dev.enro.expectActivity
 import dev.enro.expectContext
-import junit.framework.Assert.*
+import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertFalse
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Assert.assertNotEquals
 import org.junit.Rule
@@ -25,7 +31,7 @@ class ResultTests {
         val scenario = ActivityScenario.launch(ResultReceiverActivity::class.java)
         val result = UUID.randomUUID().toString()
         scenario.onActivity {
-            it.resultChannel.open(FragmentResultKey())
+            it.resultChannel.push(FragmentResultKey())
         }
 
         expectContext<ResultFragment, FragmentResultKey>()
@@ -41,7 +47,7 @@ class ResultTests {
     fun whenActivityRequestsResult_andResultProviderIsStandaloneFragment_andResultProviderIsClosed_thenOnClosedIsCalled() {
         val scenario = ActivityScenario.launch(ResultReceiverActivity::class.java)
         scenario.onActivity {
-            it.resultChannel.open(FragmentResultKey())
+            it.resultChannel.push(FragmentResultKey())
         }
 
         expectContext<ResultFragment, FragmentResultKey>()
@@ -59,7 +65,7 @@ class ResultTests {
         val scenario = ActivityScenario.launch(ResultReceiverActivity::class.java)
         val result = UUID.randomUUID().toString()
         scenario.onActivity {
-            it.resultChannel.open(ActivityResultKey())
+            it.resultChannel.present(ActivityResultKey())
         }
 
         val resultActivity = expectActivity<ResultActivity>()
@@ -76,7 +82,7 @@ class ResultTests {
     fun whenActivityRequestsResult_andResultProviderIsActivity_andResultProviderIsClosed_thenOnClosedIsCalled() {
         val scenario = ActivityScenario.launch(ResultReceiverActivity::class.java)
         scenario.onActivity {
-            it.resultChannel.open(ActivityResultKey())
+            it.resultChannel.present(ActivityResultKey())
         }
 
         val resultActivity = expectActivity<ResultActivity>()
@@ -95,7 +101,7 @@ class ResultTests {
         val scenario = ActivityScenario.launch(ResultReceiverActivity::class.java)
         val result = UUID.randomUUID().toString()
         scenario.onActivity {
-            it.resultChannel.open(NestedResultFragmentKey())
+            it.resultChannel.push(NestedResultFragmentKey())
         }
 
         expectContext<NestedResultFragment, NestedResultFragmentKey>()
@@ -116,7 +122,7 @@ class ResultTests {
 
         expectActivity<ResultReceiverActivity>()
             .resultChannel
-            .open(FragmentResultKey())
+            .push(FragmentResultKey())
 
         expectContext<ResultFragment, FragmentResultKey>()
             .navigation
@@ -124,7 +130,7 @@ class ResultTests {
 
         expectActivity<ResultReceiverActivity>()
             .secondaryResultChannel
-            .open(FragmentResultKey())
+            .push(FragmentResultKey())
 
         expectContext<ResultFragment, FragmentResultKey>()
             .navigation
@@ -144,7 +150,7 @@ class ResultTests {
 
         expectActivity<ResultReceiverActivity>()
             .resultChannel
-            .open(ActivityResultKey())
+            .present(ActivityResultKey())
 
         expectActivity<ResultActivity>()
             .getNavigationHandle()
@@ -153,7 +159,7 @@ class ResultTests {
 
         expectActivity<ResultReceiverActivity>()
             .secondaryResultChannel
-            .open(ActivityResultKey())
+            .present(ActivityResultKey())
 
         expectActivity<ResultActivity>()
             .getNavigationHandle()
@@ -177,7 +183,7 @@ class ResultTests {
         scenario.recreate()
             .onActivity {
                 it.resultChannel
-                    .open(ActivityResultKey())
+                    .present(ActivityResultKey())
             }
 
         expectContext<ResultActivity, ActivityResultKey>()
@@ -197,7 +203,7 @@ class ResultTests {
 
         expectContext<DefaultActivity, DefaultActivityKey>()
             .navigation
-            .forward(ResultReceiverFragmentKey())
+            .push(ResultReceiverFragmentKey())
 
         val activity = expectActivity<FragmentActivity>()
         println(activity.toString())
@@ -205,7 +211,7 @@ class ResultTests {
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(FragmentResultKey())
+            .push(FragmentResultKey())
 
         val activity2 = expectActivity<FragmentActivity>()
         println(activity2.toString())
@@ -231,12 +237,12 @@ class ResultTests {
 
         expectContext<DefaultActivity, DefaultActivityKey>()
             .navigation
-            .forward(ResultReceiverFragmentKey())
+            .push(ResultReceiverFragmentKey())
 
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(ActivityResultKey())
+            .present(ActivityResultKey())
 
         expectContext<ResultActivity, ActivityResultKey>()
             .navigation
@@ -257,12 +263,12 @@ class ResultTests {
 
         expectContext<DefaultActivity, DefaultActivityKey>()
             .navigation
-            .forward(NestedResultReceiverFragmentKey())
+            .push(NestedResultReceiverFragmentKey())
 
         expectContext<NestedResultReceiverFragment, NestedResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(NestedResultFragmentKey())
+            .push(NestedResultFragmentKey())
 
         expectContext<NestedResultFragment, NestedResultFragmentKey>()
             .navigation
@@ -283,12 +289,12 @@ class ResultTests {
 
         expectContext<NestedResultReceiverActivity, NestedResultReceiverActivityKey>()
             .navigation
-            .forward(ResultReceiverFragmentKey())
+            .push(ResultReceiverFragmentKey())
 
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(FragmentResultKey())
+            .push(FragmentResultKey())
 
         expectContext<ResultFragment, FragmentResultKey>()
             .navigation
@@ -309,12 +315,12 @@ class ResultTests {
 
         expectContext<NestedResultReceiverActivity, NestedResultReceiverActivityKey>()
             .navigation
-            .forward(ResultReceiverFragmentKey())
+            .push(ResultReceiverFragmentKey())
 
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(ActivityResultKey())
+            .present(ActivityResultKey())
 
         expectContext<ResultActivity, ActivityResultKey>()
             .navigation
@@ -335,12 +341,12 @@ class ResultTests {
 
         expectContext<NestedResultReceiverActivity, NestedResultReceiverActivityKey>()
             .navigation
-            .forward(ResultReceiverFragmentKey())
+            .push(ResultReceiverFragmentKey())
 
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(NestedResultFragmentKey())
+            .push(NestedResultFragmentKey())
 
         expectContext<NestedResultFragment, NestedResultFragmentKey>()
             .navigation
@@ -361,12 +367,12 @@ class ResultTests {
 
         expectContext<SideBySideNestedResultReceiverActivity, SideBySideNestedResultReceiverActivityKey>()
             .navigation
-            .forward(ResultReceiverFragmentKey())
+            .push(ResultReceiverFragmentKey())
 
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(NestedResultFragmentKey())
+            .push(NestedResultFragmentKey())
 
         expectContext<NestedResultFragment, NestedResultFragmentKey>()
             .navigation
@@ -388,7 +394,7 @@ class ResultTests {
         expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
             .context
             .resultChannel
-            .open(
+            .present(
                 ImmediateSyntheticResultKey(
                     reversedResult = expectedResult.reversed()
                 )
@@ -409,12 +415,12 @@ class ResultTests {
 
         expectContext<DefaultActivity, DefaultActivityKey>()
             .navigation
-            .forward(ResultReceiverFragmentKey())
+            .push(ResultReceiverFragmentKey())
 
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(
+            .present(
                 ImmediateSyntheticResultKey(
                     reversedResult = expectedResult.reversed()
                 )
@@ -434,7 +440,7 @@ class ResultTests {
 
         expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
             .navigation
-            .forward(
+            .present(
                 ForwardingSyntheticActivityResultKey()
             )
 
@@ -447,7 +453,7 @@ class ResultTests {
 
         expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
             .navigation
-            .forward(
+            .present(
                 ForwardingSyntheticFragmentResultKey()
             )
 
@@ -463,7 +469,7 @@ class ResultTests {
         expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
             .context
             .resultChannel
-            .open(ForwardingSyntheticActivityResultKey())
+            .present(ForwardingSyntheticActivityResultKey())
 
         expectContext<ResultActivity, ActivityResultKey>()
             .navigation
@@ -485,7 +491,7 @@ class ResultTests {
         expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
             .context
             .resultChannel
-            .open(ForwardingSyntheticActivityResultKey())
+            .present(ForwardingSyntheticActivityResultKey())
 
         expectContext<ResultActivity, ActivityResultKey>()
             .navigation
@@ -503,12 +509,12 @@ class ResultTests {
 
         expectContext<DefaultActivity, DefaultActivityKey>()
             .navigation
-            .forward(ResultReceiverFragmentKey())
+            .push(ResultReceiverFragmentKey())
 
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(ForwardingSyntheticActivityResultKey())
+            .present(ForwardingSyntheticActivityResultKey())
 
         expectContext<ResultActivity, ActivityResultKey>()
             .navigation
@@ -530,7 +536,7 @@ class ResultTests {
         expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
             .context
             .resultChannel
-            .open(ForwardingSyntheticFragmentResultKey())
+            .present(ForwardingSyntheticFragmentResultKey())
 
         expectContext<ResultFragment, FragmentResultKey>()
             .navigation
@@ -551,12 +557,12 @@ class ResultTests {
 
         expectContext<DefaultActivity, DefaultActivityKey>()
             .navigation
-            .forward(ResultReceiverFragmentKey())
+            .push(ResultReceiverFragmentKey())
 
         expectContext<ResultReceiverFragment, ResultReceiverFragmentKey>()
             .context
             .resultChannel
-            .open(ForwardingSyntheticFragmentResultKey())
+            .present(ForwardingSyntheticFragmentResultKey())
 
         expectContext<ResultFragment, FragmentResultKey>()
             .navigation
@@ -578,7 +584,7 @@ class ResultTests {
         expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
             .context
             .resultChannel
-            .open(ViewModelForwardingResultActivityKey())
+            .present(ViewModelForwardingResultActivityKey())
 
         expectContext<ResultActivity, ActivityResultKey>()
             .navigation
@@ -600,7 +606,7 @@ class ResultTests {
         expectContext<ResultReceiverActivity, ResultReceiverActivityKey>()
             .context
             .resultChannel
-            .open(ViewModelForwardingResultFragmentKey())
+            .push(ViewModelForwardingResultFragmentKey())
 
         expectContext<ResultActivity, ActivityResultKey>()
             .navigation
@@ -619,7 +625,7 @@ class ResultTests {
         ActivityScenario.launch(DefaultActivity::class.java)
         expectContext<DefaultActivity, DefaultActivityKey>()
             .navigation
-            .forward(ResultFlowKey())
+            .push(ResultFlowKey())
 
         expectContext<ResultFlowActivity, ResultFlowKey>()
         expectContext<ResultFragment, FragmentResultKey>()
@@ -630,7 +636,7 @@ class ResultTests {
         ActivityScenario.launch(DefaultActivity::class.java)
         expectContext<DefaultActivity, DefaultActivityKey>()
             .navigation
-            .forward(ResultFlowKey())
+            .push(ResultFlowKey())
 
         expectContext<ResultFlowActivity, ResultFlowKey>()
         expectContext<ResultFragment, FragmentResultKey>()
@@ -645,7 +651,7 @@ class ResultTests {
         ActivityScenario.launch(DefaultActivity::class.java)
         expectContext<DefaultActivity, DefaultActivityKey>()
             .navigation
-            .forward(ResultFlowKey())
+            .push(ResultFlowKey())
 
         expectContext<ResultFlowActivity, ResultFlowKey>()
         val firstRequest = expectContext<ResultFragment, FragmentResultKey>()
@@ -664,7 +670,7 @@ class ResultTests {
         ActivityScenario.launch(DefaultActivity::class.java)
         expectContext<DefaultActivity, DefaultActivityKey>()
             .navigation
-            .forward(ResultFlowDialogFragmentRootKey())
+            .present(ResultFlowDialogFragmentRootKey())
 
         // This is not a good solution, but the crash that this test detects happens due to an async
         // action causing a bad fragment removal, so we need to give the test time to detect the

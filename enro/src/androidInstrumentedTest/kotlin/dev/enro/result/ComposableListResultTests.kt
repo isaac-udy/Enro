@@ -32,7 +32,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 
@@ -189,7 +189,7 @@ private fun ListItemWithResult(
     ) {
         Button(
             onClick = {
-                channel.open(ImmediateSyntheticResultKey(id))
+                channel.present(ImmediateSyntheticResultKey(id))
              },
             content = {
                 Text(text = "Get Result")

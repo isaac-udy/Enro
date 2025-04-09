@@ -56,21 +56,21 @@ class NavigationContainerTests {
         ActivityScenario.launch(MultipleFragmentContainerActivity::class.java)
         val activity = expectActivity<MultipleFragmentContainerActivity>()
 
-        activity.getNavigationHandle().forward(GenericFragmentKey("First"))
+        activity.getNavigationHandle().push(GenericFragmentKey("First"))
         val firstContext = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "First"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContext.context }
 
         activity.secondaryContainer.setActive()
-        activity.getNavigationHandle().forward(GenericFragmentKey("Second"))
+        activity.getNavigationHandle().push(GenericFragmentKey("Second"))
         val secondContext = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "Second"
         }
         waitFor { activity.secondaryContainer.childContext?.contextReference == secondContext.context }
 
         activity.primaryContainer.setActive()
-        activity.getNavigationHandle().forward(GenericFragmentKey("Third"))
+        activity.getNavigationHandle().push(GenericFragmentKey("Third"))
         val thirdContext = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "Third"
         }
@@ -98,21 +98,21 @@ class NavigationContainerTests {
         ActivityScenario.launch(MultipleComposableContainerActivity::class.java)
         val activity = expectActivity<MultipleComposableContainerActivity>()
 
-        activity.getNavigationHandle().forward(GenericComposableKey("First"))
+        activity.getNavigationHandle().push(GenericComposableKey("First"))
         val firstContext = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "First"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContext.context }
 
         activity.secondaryContainer.setActive()
-        activity.getNavigationHandle().forward(GenericComposableKey("Second"))
+        activity.getNavigationHandle().push(GenericComposableKey("Second"))
         val secondContext = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "Second"
         }
         waitFor { activity.secondaryContainer.childContext?.contextReference == secondContext.context }
 
         activity.primaryContainer.setActive()
-        activity.getNavigationHandle().forward(GenericComposableKey("Third"))
+        activity.getNavigationHandle().push(GenericComposableKey("Third"))
         val thirdContext = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "Third"
         }
@@ -140,13 +140,13 @@ class NavigationContainerTests {
         val scenario = ActivityScenario.launch(SingleFragmentContainerActivity::class.java)
         var activity = expectActivity<SingleFragmentContainerActivity>()
 
-        activity.getNavigationHandle().forward(GenericFragmentKey("First"))
+        activity.getNavigationHandle().push(GenericFragmentKey("First"))
         val firstContext = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "First"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContext.context }
 
-        activity.getNavigationHandle().forward(GenericFragmentKey("Second"))
+        activity.getNavigationHandle().push(GenericFragmentKey("Second"))
         val secondContext = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "Second"
         }
@@ -177,21 +177,21 @@ class NavigationContainerTests {
         val scenario = ActivityScenario.launch(MultipleFragmentContainerActivity::class.java)
         var activity = expectActivity<MultipleFragmentContainerActivity>()
 
-        activity.getNavigationHandle().forward(GenericFragmentKey("First"))
+        activity.getNavigationHandle().push(GenericFragmentKey("First"))
         val firstContext = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "First"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContext.context }
 
         activity.secondaryContainer.setActive()
-        activity.getNavigationHandle().forward(GenericFragmentKey("Second"))
+        activity.getNavigationHandle().push(GenericFragmentKey("Second"))
         val secondContext = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "Second"
         }
         waitFor { activity.secondaryContainer.childContext?.contextReference == secondContext.context }
 
         activity.primaryContainer.setActive()
-        activity.getNavigationHandle().forward(GenericFragmentKey("Third"))
+        activity.getNavigationHandle().push(GenericFragmentKey("Third"))
         val thirdContext = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "Third"
         }
@@ -211,7 +211,7 @@ class NavigationContainerTests {
         waitFor { activity.secondaryContainer.childContext?.contextReference == null }
 
         activity.primaryContainer.setActive()
-        activity.getNavigationHandle().forward(GenericFragmentKey("Fourth"))
+        activity.getNavigationHandle().push(GenericFragmentKey("Fourth"))
         val fourthContext = expectContext<GenericFragment, GenericFragmentKey> {
             it.navigation.key.id == "Fourth"
         }
@@ -242,13 +242,13 @@ class NavigationContainerTests {
         val scenario = ActivityScenario.launch(SingleComposableContainerActivity::class.java)
         var activity = expectActivity<SingleComposableContainerActivity>()
 
-        activity.getNavigationHandle().forward(GenericComposableKey("First"))
+        activity.getNavigationHandle().push(GenericComposableKey("First"))
         val firstContext = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "First"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContext.context }
 
-        activity.getNavigationHandle().forward(GenericComposableKey("Second"))
+        activity.getNavigationHandle().push(GenericComposableKey("Second"))
         val secondContext = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "Second"
         }
@@ -279,21 +279,21 @@ class NavigationContainerTests {
         val scenario = ActivityScenario.launch(MultipleComposableContainerActivity::class.java)
         var activity = expectActivity<MultipleComposableContainerActivity>()
 
-        activity.getNavigationHandle().forward(GenericComposableKey("First"))
+        activity.getNavigationHandle().push(GenericComposableKey("First"))
         val firstContext = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "First"
         }
         waitFor { activity.primaryContainer.childContext?.contextReference == firstContext.context }
 
         activity.secondaryContainer.setActive()
-        activity.getNavigationHandle().forward(GenericComposableKey("Second"))
+        activity.getNavigationHandle().push(GenericComposableKey("Second"))
         val secondContext = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "Second"
         }
         waitFor { activity.secondaryContainer.childContext?.contextReference == secondContext.context }
 
         activity.primaryContainer.setActive()
-        activity.getNavigationHandle().forward(GenericComposableKey("Third"))
+        activity.getNavigationHandle().push(GenericComposableKey("Third"))
         val thirdContext = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "Third"
         }
@@ -313,7 +313,7 @@ class NavigationContainerTests {
         waitFor { activity.secondaryContainer.childContext?.contextReference == null }
 
         activity.primaryContainer.setActive()
-        activity.getNavigationHandle().forward(GenericComposableKey("Fourth"))
+        activity.getNavigationHandle().push(GenericComposableKey("Fourth"))
         val fourthContext = expectContext<ComposableDestination, GenericComposableKey> {
             it.navigation.key.id == "Fourth"
         }
@@ -345,23 +345,23 @@ class NavigationContainerTests {
         val activity = expectActivity<MultipleFragmentContainerActivityWithAccept>()
 
         activity.getNavigationHandle()
-            .forward(GenericFragmentKey("One"))
+            .push(GenericFragmentKey("One"))
         expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "One" }
 
         activity.getNavigationHandle()
-            .forward(GenericFragmentKey("Two"))
+            .push(GenericFragmentKey("Two"))
         expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Two" }
 
         activity.getNavigationHandle()
-            .forward(GenericFragmentKey("Three"))
+            .push(GenericFragmentKey("Three"))
         expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Three" }
 
         activity.getNavigationHandle()
-            .forward(GenericFragmentKey("Four"))
+            .push(GenericFragmentKey("Four"))
         expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Four" }
 
         activity.getNavigationHandle()
-            .forward(GenericFragmentKey("Five"))
+            .push(GenericFragmentKey("Five"))
         expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Five" }
 
         assertEquals(
@@ -405,23 +405,23 @@ class NavigationContainerTests {
         var activity = expectActivity<MultipleFragmentContainerActivityWithAccept>()
 
         activity.getNavigationHandle()
-            .forward(GenericFragmentKey("One"))
+            .push(GenericFragmentKey("One"))
         expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "One" }
 
         activity.getNavigationHandle()
-            .forward(GenericFragmentKey("Two"))
+            .push(GenericFragmentKey("Two"))
         expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Two" }
 
         activity.getNavigationHandle()
-            .forward(GenericFragmentKey("Three"))
+            .push(GenericFragmentKey("Three"))
         expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Three" }
 
         activity.getNavigationHandle()
-            .forward(GenericFragmentKey("Four"))
+            .push(GenericFragmentKey("Four"))
         expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Four" }
 
         activity.getNavigationHandle()
-            .forward(GenericFragmentKey("Five"))
+            .push(GenericFragmentKey("Five"))
         expectFragmentContext<GenericFragmentKey> { it.navigation.key.id == "Five" }
 
         scenario.recreate()
@@ -468,23 +468,23 @@ class NavigationContainerTests {
         val activity = expectActivity<MultipleComposableContainerActivityWithAccept>()
 
         activity.getNavigationHandle()
-            .forward(GenericComposableKey("One"))
+            .push(GenericComposableKey("One"))
         expectComposableContext<GenericComposableKey> { it.navigation.key.id == "One" }
 
         activity.getNavigationHandle()
-            .forward(GenericComposableKey("Two"))
+            .push(GenericComposableKey("Two"))
         expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Two" }
 
         activity.getNavigationHandle()
-            .forward(GenericComposableKey("Three"))
+            .push(GenericComposableKey("Three"))
         expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Three" }
 
         activity.getNavigationHandle()
-            .forward(GenericComposableKey("Four"))
+            .push(GenericComposableKey("Four"))
         expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Four" }
 
         activity.getNavigationHandle()
-            .forward(GenericComposableKey("Five"))
+            .push(GenericComposableKey("Five"))
         expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Five" }
 
         assertEquals(
@@ -528,23 +528,23 @@ class NavigationContainerTests {
         var activity = expectActivity<MultipleComposableContainerActivityWithAccept>()
 
         activity.getNavigationHandle()
-            .forward(GenericComposableKey("One"))
+            .push(GenericComposableKey("One"))
         expectComposableContext<GenericComposableKey> { it.navigation.key.id == "One" }
 
         activity.getNavigationHandle()
-            .forward(GenericComposableKey("Two"))
+            .push(GenericComposableKey("Two"))
         expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Two" }
 
         activity.getNavigationHandle()
-            .forward(GenericComposableKey("Three"))
+            .push(GenericComposableKey("Three"))
         expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Three" }
 
         activity.getNavigationHandle()
-            .forward(GenericComposableKey("Four"))
+            .push(GenericComposableKey("Four"))
         expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Four" }
 
         activity.getNavigationHandle()
-            .forward(GenericComposableKey("Five"))
+            .push(GenericComposableKey("Five"))
         expectComposableContext<GenericComposableKey> { it.navigation.key.id == "Five" }
 
         waitFor { activity.primaryContainer.isActive }

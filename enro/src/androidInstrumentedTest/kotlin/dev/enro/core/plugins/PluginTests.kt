@@ -9,9 +9,9 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.container.acceptKey
-import dev.enro.core.forward
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
+import dev.enro.core.push
 import dev.enro.expectContext
 import dev.enro.waitFor
 import junit.framework.TestCase.assertEquals
@@ -19,7 +19,7 @@ import kotlinx.parcelize.Parcelize
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
-import java.util.UUID
+import java.util.*
 
 class PluginTests {
 
@@ -44,7 +44,7 @@ class PluginTests {
 
         expectContext<PluginTestActivity, PluginTestActivityKey>()
             .navigation
-            .forward(PluginPrimaryTestFragmentKey())
+            .push(PluginPrimaryTestFragmentKey())
 
         val context = expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
         waitFor { context.navigation.key == TestPlugin.activeKey }
@@ -56,7 +56,7 @@ class PluginTests {
 
         expectContext<PluginTestActivity, PluginTestActivityKey>()
             .navigation
-            .forward(PluginPrimaryTestFragmentKey())
+            .push(PluginPrimaryTestFragmentKey())
 
         expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
             .navigation
@@ -74,10 +74,10 @@ class PluginTests {
         val activityNavigation = expectContext<PluginTestActivity, PluginTestActivityKey>()
             .navigation
 
-        activityNavigation.forward(PluginPrimaryTestFragmentKey())
+        activityNavigation.push(PluginPrimaryTestFragmentKey())
         expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
 
-        activityNavigation.forward(PluginSecondaryTestFragmentKey())
+        activityNavigation.push(PluginSecondaryTestFragmentKey())
 
         val context = expectContext<PluginSecondaryTestFragment, PluginSecondaryTestFragmentKey>()
         waitFor {
@@ -92,10 +92,10 @@ class PluginTests {
         val activityNavigation = expectContext<PluginTestActivity, PluginTestActivityKey>()
             .navigation
 
-        activityNavigation.forward(PluginPrimaryTestFragmentKey())
+        activityNavigation.push(PluginPrimaryTestFragmentKey())
         expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
 
-        activityNavigation.forward(PluginSecondaryTestFragmentKey())
+        activityNavigation.push(PluginSecondaryTestFragmentKey())
         expectContext<PluginSecondaryTestFragment, PluginSecondaryTestFragmentKey>()
             .navigation
             .close()
@@ -113,12 +113,12 @@ class PluginTests {
         val activityNavigation = expectContext<PluginTestActivity, PluginTestActivityKey>()
             .navigation
 
-        activityNavigation.forward(PluginPrimaryTestFragmentKey())
+        activityNavigation.push(PluginPrimaryTestFragmentKey())
         expectContext<PluginPrimaryTestFragment, PluginPrimaryTestFragmentKey>()
             .navigation
-            .forward(PluginPrimaryTestFragmentKey("nested"))
+            .push(PluginPrimaryTestFragmentKey("nested"))
 
-        activityNavigation.forward(PluginSecondaryTestFragmentKey())
+        activityNavigation.push(PluginSecondaryTestFragmentKey())
         expectContext<PluginSecondaryTestFragment, PluginSecondaryTestFragmentKey>()
             .navigation
             .close()
@@ -151,7 +151,7 @@ class PluginTestActivity : TestActivity() {
 
 @Parcelize
 data class PluginPrimaryTestFragmentKey(val keyId: String = UUID.randomUUID().toString()) :
-    Parcelable, NavigationKey
+    Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(PluginPrimaryTestFragmentKey::class)
 class PluginPrimaryTestFragment : TestFragment() {
@@ -167,7 +167,7 @@ class PluginPrimaryTestFragment : TestFragment() {
 
 @Parcelize
 data class PluginSecondaryTestFragmentKey(val keyId: String = UUID.randomUUID().toString()) :
-    Parcelable, NavigationKey
+    Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(PluginSecondaryTestFragmentKey::class)
 class PluginSecondaryTestFragment : TestFragment() {

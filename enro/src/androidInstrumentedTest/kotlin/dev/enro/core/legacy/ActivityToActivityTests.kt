@@ -49,7 +49,7 @@ class ActivityToActivityTests {
 
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
-        handle.forward(GenericActivityKey(id))
+        handle.present(GenericActivityKey(id))
 
         val next = expectActivity<GenericActivity>()
         val nextHandle = next.getNavigationHandle().asTyped<GenericActivityKey>()
@@ -61,7 +61,7 @@ class ActivityToActivityTests {
     fun givenDefaultActivity_whenSpecificActivityIsOpened_andThenSpecificActivityIsClosed_thenDefaultActivityIsOpen() {
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
-        handle.forward(GenericActivityKey("close"))
+        handle.present(GenericActivityKey("close"))
 
         val next = expectActivity<GenericActivity>()
         val nextHandle = next.getNavigationHandle()
@@ -88,7 +88,7 @@ class ActivityToActivityTests {
                 GenericActivity::class.java
             )
                 .addOpenInstruction(
-                    NavigationInstruction.Replace(
+                    NavigationInstruction.Present(
                         navigationKey = GenericActivityKey(id)
                     )
                 )
@@ -121,7 +121,7 @@ class ActivityToActivityTests {
 
         val scenario = ActivityScenario.launch(DefaultActivity::class.java)
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
-        handle.forward(GenericActivityKey(first))
+        handle.present(GenericActivityKey(first))
 
         val firstActivity = expectActivity<GenericActivity> { it.getNavigationHandle().asTyped<GenericActivityKey>().key.id == first }
         firstActivity.getNavigationHandle().replace(GenericActivityKey(second))

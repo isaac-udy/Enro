@@ -71,25 +71,3 @@ public inline fun <reified KeyType : NavigationKey, reified DestinationType : Co
 public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.composableDestination(noinline content: @Composable () -> Unit) {
     binding(createComposableNavigationBinding<KeyType>(content))
 }
-
-//// Class-based overload for Java compatibility
-//public fun <KeyType : NavigationKey> createComposableNavigationBinding(
-//    keyType: Class<KeyType>,
-//    content: @Composable () -> Unit
-//): NavigationBinding<KeyType, ComposableDestination> {
-//    return createComposableNavigationBinding(
-//        keyType = keyType.kotlin,
-//        content = content
-//    )
-//}
-//
-//// Class-based overload for Java compatibility
-//public fun <KeyType : NavigationKey, ComposableType : ComposableDestination> createComposableNavigationBinding(
-//    keyType: Class<KeyType>,
-//    composableType: Class<ComposableType>
-//): NavigationBinding<KeyType, ComposableType> {
-//    return createComposableNavigationBinding(
-//        keyType = keyType.kotlin,
-//        destinationType = composableType.kotlin
-//    )
-//}

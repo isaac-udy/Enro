@@ -9,7 +9,7 @@ import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class DefaultActivityKey(val id: String) : Parcelable, NavigationKey
+data class DefaultActivityKey(val id: String) : Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(DefaultActivityKey::class)
 class DefaultActivity : TestActivity() {
@@ -23,19 +23,19 @@ class DefaultActivity : TestActivity() {
 }
 
 @Parcelize
-data class GenericActivityKey(val id: String) : Parcelable, NavigationKey
+data class GenericActivityKey(val id: String) : Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(GenericActivityKey::class)
 class GenericActivity : TestActivity()
 
 @Parcelize
-data class GenericFragmentKey(val id: String) : Parcelable, NavigationKey, NavigationKey.SupportsPush
+data class GenericFragmentKey(val id: String) : Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(GenericFragmentKey::class)
 class GenericFragment : TestFragment()
 
 @Parcelize
-data class GenericComposableKey(val id: String) : Parcelable, NavigationKey
+data class GenericComposableKey(val id: String) : Parcelable, NavigationKey.SupportsPush
 
 @Composable
 @NavigationDestination(GenericComposableKey::class)

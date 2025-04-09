@@ -86,7 +86,7 @@ class UnboundActivitiesTest {
             it.startActivity(Intent(it, UnboundActivity::class.java))
         }
         val unboundActivity = expectActivity<UnboundActivity>()
-        unboundActivity.getNavigationHandle().forward(GenericActivityKey("opened-from-unbound"))
+        unboundActivity.getNavigationHandle().present(GenericActivityKey("opened-from-unbound"))
 
         val genericActivity = expectActivity<GenericActivity>()
         assertEquals("opened-from-unbound", genericActivity.getNavigationHandle().asTyped<GenericActivityKey>().key.id)
@@ -99,7 +99,7 @@ class UnboundActivitiesTest {
             it.startActivity(Intent(it, UnboundActivity::class.java))
         }
         val unboundActivity = expectActivity<UnboundActivity>()
-        unboundActivity.getNavigationHandle().forward(GenericFragmentKey("opened-from-unbound"))
+        unboundActivity.getNavigationHandle().push(GenericFragmentKey("opened-from-unbound"))
 
         val genericActivity = expectFragment<GenericFragment>()
         assertEquals("opened-from-unbound", genericActivity.getNavigationHandle().asTyped<GenericFragmentKey>().key.id)

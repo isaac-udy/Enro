@@ -2,6 +2,8 @@ package dev.enro.tests.application
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.assertExists
+import androidx.compose.ui.test.onNodeWithText
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -82,5 +84,19 @@ fun <T: Fragment> FragmentManager.getFragment(
     if (found != null) return found
     return fragments.firstNotNullOfOrNull {
         it.childFragmentManager.getFragment(type, block)
+    }
+}
+
+fun ComposeTestRule.waitForText(
+    text: String,
+    timeoutMillis: Long = 5000
+) {
+    waitUntil(timeoutMillis) {
+        try {
+            onNodeWithText(text).assertExists()
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 }

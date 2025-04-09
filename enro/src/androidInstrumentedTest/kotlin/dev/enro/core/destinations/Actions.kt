@@ -5,12 +5,29 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
-import dev.enro.*
+import dev.enro.DefaultActivity
+import dev.enro.DefaultActivityKey
+import dev.enro.TestNavigationContext
 import dev.enro.annotations.AdvancedEnroApi
-import dev.enro.core.*
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationHost
+import dev.enro.core.NavigationKey
+import dev.enro.core.close
+import dev.enro.core.closeWithResult
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.NavigationContainer
+import dev.enro.core.containerManager
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
+import dev.enro.core.parentContainer
+import dev.enro.core.present
+import dev.enro.core.push
+import dev.enro.core.replaceRoot
+import dev.enro.expectContext
+import dev.enro.expectNoActivity
+import dev.enro.waitFor
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import java.util.*
@@ -238,7 +255,11 @@ inline fun <reified Context : Any, reified Key : NavigationKey> TestNavigationCo
     expected: Key
 ): TestNavigationContext<Context, Key> {
     val expectedResultId = UUID.randomUUID().toString()
-    navigation.closeWithResult(TestResult(expectedResultId))
+
+    // TODO Why does this need to run on the main thread now? It used to work on the background thread before KMP
+    CoroutineScope(Dispatchers.Main).launch {
+        navigation.closeWithResult(TestResult(expectedResultId))
+    }
 
     val expectedContext = expectContext<Context, Key> {
         it.navigation.key == expected && it.navigation.hasTestResult()

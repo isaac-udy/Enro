@@ -26,19 +26,19 @@ import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class ActivityResultKey : Parcelable, NavigationKey.WithResult<String>
+class ActivityResultKey : Parcelable, NavigationKey.SupportsPresent.WithResult<String>
 
 @NavigationDestination(ActivityResultKey::class)
 class ResultActivity : TestActivity()
 
 @Parcelize
-class FragmentResultKey : Parcelable, NavigationKey.WithResult<String>
+class FragmentResultKey : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
 @NavigationDestination(FragmentResultKey::class)
 class ResultFragment : TestFragment()
 
 @Parcelize
-class NestedResultFragmentKey : Parcelable, NavigationKey.WithResult<String>
+class NestedResultFragmentKey : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
 @NavigationDestination(NestedResultFragmentKey::class)
 class NestedResultFragment : TestFragment()
@@ -101,7 +101,7 @@ class SideBySideNestedResultReceiverActivity : TestActivity() {
 }
 
 @Parcelize
-class ResultReceiverFragmentKey : Parcelable, NavigationKey
+class ResultReceiverFragmentKey : Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(ResultReceiverFragmentKey::class)
 class ResultReceiverFragment : TestFragment() {
@@ -119,7 +119,7 @@ class ResultReceiverFragment : TestFragment() {
 }
 
 @Parcelize
-class NestedResultReceiverFragmentKey : Parcelable, NavigationKey
+class NestedResultReceiverFragmentKey : Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(NestedResultReceiverFragmentKey::class)
 class NestedResultReceiverFragment : TestFragment() {
@@ -144,7 +144,7 @@ class NestedResultReceiverFragment : TestFragment() {
 @Parcelize
 class ImmediateSyntheticResultKey(
     val reversedResult: String
-) : Parcelable, NavigationKey.WithResult<String>
+) : Parcelable, NavigationKey.SupportsPresent.WithResult<String>
 
 @NavigationDestination(ImmediateSyntheticResultKey::class)
 class ImmediateSyntheticResultDestination : SyntheticDestination<ImmediateSyntheticResultKey>() {
@@ -154,7 +154,7 @@ class ImmediateSyntheticResultDestination : SyntheticDestination<ImmediateSynthe
 }
 
 @Parcelize
-class ForwardingSyntheticActivityResultKey : Parcelable, NavigationKey.WithResult<String>
+class ForwardingSyntheticActivityResultKey : Parcelable, NavigationKey.SupportsPresent.WithResult<String>
 
 @NavigationDestination(ForwardingSyntheticActivityResultKey::class)
 class ForwardingSyntheticActivityResultDestination : SyntheticDestination<ForwardingSyntheticActivityResultKey>() {
@@ -164,7 +164,7 @@ class ForwardingSyntheticActivityResultDestination : SyntheticDestination<Forwar
 }
 
 @Parcelize
-class ForwardingSyntheticFragmentResultKey : Parcelable, NavigationKey.WithResult<String>
+class ForwardingSyntheticFragmentResultKey : Parcelable, NavigationKey.SupportsPresent.WithResult<String>
 
 @NavigationDestination(ForwardingSyntheticFragmentResultKey::class)
 class ForwardingSyntheticFragmentResultDestination : SyntheticDestination<ForwardingSyntheticFragmentResultKey>() {
@@ -180,13 +180,13 @@ class ViewModelForwardingResultViewModel : ViewModel() {
     }
 
     init {
-        forwardingChannel.open(ActivityResultKey())
+        forwardingChannel.present(ActivityResultKey())
     }
 
 }
 
 @Parcelize
-class ViewModelForwardingResultActivityKey : Parcelable, NavigationKey.WithResult<String>
+class ViewModelForwardingResultActivityKey : Parcelable, NavigationKey.SupportsPresent.WithResult<String>
 
 @NavigationDestination(ViewModelForwardingResultActivityKey::class)
 class ViewModelForwardingResultActivity : TestActivity() {
@@ -198,7 +198,7 @@ class ViewModelForwardingResultActivity : TestActivity() {
 }
 
 @Parcelize
-class ViewModelForwardingResultFragmentKey : Parcelable, NavigationKey.WithResult<String>
+class ViewModelForwardingResultFragmentKey : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
 @NavigationDestination(ViewModelForwardingResultFragmentKey::class)
 class ViewModelForwardingResultFragment : TestFragment() {
@@ -215,7 +215,7 @@ class ViewModelForwardingResultFragment : TestFragment() {
 }
 
 @Parcelize
-class ResultFlowKey : Parcelable, NavigationKey
+class ResultFlowKey : Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(ResultFlowKey::class)
 class ResultFlowActivity : TestActivity() {
@@ -237,7 +237,7 @@ class ResultFlowViewModel : ViewModel() {
             navigation.close()
         }
         else {
-            second.open(FragmentResultKey())
+            second.push(FragmentResultKey())
         }
     }
 
@@ -246,7 +246,7 @@ class ResultFlowViewModel : ViewModel() {
             navigation.close()
         }
         else {
-            third.open(FragmentResultKey())
+            third.push(FragmentResultKey())
         }
     }
 
@@ -255,13 +255,13 @@ class ResultFlowViewModel : ViewModel() {
     }
 
     init {
-        first.open(FragmentResultKey())
+        first.push(FragmentResultKey())
     }
 }
 
 
 @Parcelize
-class ResultFlowDialogFragmentRootKey : Parcelable, NavigationKey.WithResult<String>
+class ResultFlowDialogFragmentRootKey : Parcelable, NavigationKey.SupportsPresent.WithResult<String>
 
 @NavigationDestination(ResultFlowDialogFragmentRootKey::class)
 class ResultFlowFragmentRootActivity : TestActivity() {
@@ -279,12 +279,12 @@ class ResultFlowFragmentRootActivity : TestActivity() {
     override fun onResume() {
         super.onResume()
         nestedResult
-            .open(ResultFlowDialogFragmentKey())
+            .present(ResultFlowDialogFragmentKey())
     }
 }
 
 @Parcelize
-class ResultFlowDialogFragmentKey : Parcelable, NavigationKey.WithResult<String>
+class ResultFlowDialogFragmentKey : Parcelable, NavigationKey.SupportsPresent.WithResult<String>
 
 @NavigationDestination(ResultFlowDialogFragmentKey::class)
 class ResultFlowDialogFragment : TestDialogFragment() {
@@ -300,12 +300,12 @@ class ResultFlowDialogFragment : TestDialogFragment() {
     override fun onResume() {
         super.onResume()
         nestedResult
-            .open(NestedResultFlowFragmentKey())
+            .push(NestedResultFlowFragmentKey())
     }
 }
 
 @Parcelize
-class NestedResultFlowFragmentKey : Parcelable, NavigationKey.WithResult<Int>
+class NestedResultFlowFragmentKey : Parcelable, NavigationKey.SupportsPush.WithResult<Int>
 
 @NavigationDestination(NestedResultFlowFragmentKey::class)
 class NestedResultFlowFragment : TestFragment() {
@@ -321,12 +321,12 @@ class NestedResultFlowFragment : TestFragment() {
     override fun onResume() {
         super.onResume()
         nestedResult
-            .open(NestedNestedResultFlowFragmentKey())
+            .push(NestedNestedResultFlowFragmentKey())
     }
 }
 
 @Parcelize
-class NestedNestedResultFlowFragmentKey : Parcelable, NavigationKey.WithResult<Int>
+class NestedNestedResultFlowFragmentKey : Parcelable, NavigationKey.SupportsPush.WithResult<Int>
 
 @NavigationDestination(NestedNestedResultFlowFragmentKey::class)
 class NestedNestedResultFlowFragment : TestFragment() {

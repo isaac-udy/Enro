@@ -286,7 +286,7 @@ class ResultViewHolder(
         textView.contentDescription = item.id
         textView.text = "${item.id}@${item.result}"
         textView.setOnClickListener {
-            channel.open(ImmediateSyntheticResultKey(item.id))
+            channel.present(ImmediateSyntheticResultKey(item.id))
         }
     }
 

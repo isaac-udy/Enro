@@ -3,7 +3,13 @@ package dev.enro.test
 import androidx.test.core.app.ActivityScenario
 import dev.enro.GenericActivityKey
 import dev.enro.GenericFragmentKey
-import dev.enro.core.*
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.close
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.present
+import dev.enro.core.push
 import dev.enro.result.ActivityResultKey
 import dev.enro.result.FragmentResultKey
 import dev.enro.test.extensions.getTestNavigationHandle
@@ -75,14 +81,23 @@ class ActivityTestExtensionsTest {
         ).random()
 
         scenario.onActivity {
-            it.getNavigationHandle().forward(expectedKey)
+            when (expectedKey) {
+                is NavigationKey.SupportsPush -> it.getNavigationHandle().push(expectedKey)
+                is NavigationKey.SupportsPresent -> it.getNavigationHandle().present(expectedKey)
+                else -> error("Unexpected navigation key: $expectedKey")
+            }
+        }
+        val expectedDirection = when(expectedKey) {
+            is NavigationKey.SupportsPush -> NavigationDirection.Push
+            is NavigationKey.SupportsPresent -> NavigationDirection.Present
+            else -> error("Unexpected navigation key: $expectedKey")
         }
 
         val handle = scenario.getTestNavigationHandle<EnroTestTestActivityKey>()
 
         val instruction = handle.instructions.first()
         instruction as NavigationInstruction.Open<*>
-        TestCase.assertEquals(NavigationDirection.Forward, instruction.navigationDirection)
+        TestCase.assertEquals(expectedDirection, instruction.navigationDirection)
         TestCase.assertEquals(expectedKey, instruction.navigationKey)
     }
 
@@ -92,13 +107,13 @@ class ActivityTestExtensionsTest {
 
         val expectedKey = GenericFragmentKey(UUID.randomUUID().toString())
         scenario.onActivity {
-            it.getNavigationHandle().forward(expectedKey)
+            it.getNavigationHandle().push(expectedKey)
         }
 
         val handle = scenario.getTestNavigationHandle<EnroTestTestActivityKey>()
 
         val instruction = handle.expectOpenInstruction<GenericFragmentKey>()
-        TestCase.assertEquals(NavigationDirection.Forward, instruction.navigationDirection)
+        TestCase.assertEquals(NavigationDirection.Push, instruction.navigationDirection)
         TestCase.assertEquals(expectedKey, instruction.navigationKey)
     }
 
@@ -109,7 +124,11 @@ class ActivityTestExtensionsTest {
         val expectedKey = listOf(ActivityResultKey(), FragmentResultKey()).random()
 
         scenario.onActivity {
-            it.resultChannel.open(expectedKey)
+            when (expectedKey) {
+                is NavigationKey.SupportsPush -> it.getNavigationHandle().push(expectedKey)
+                is NavigationKey.SupportsPresent -> it.getNavigationHandle().present(expectedKey)
+                else -> error("Unexpected navigation key: $expectedKey")
+            }
         }
 
         val handle = scenario.getTestNavigationHandle<EnroTestTestActivityKey>()
@@ -130,7 +149,11 @@ class ActivityTestExtensionsTest {
         val expectedKey = listOf(ActivityResultKey(), FragmentResultKey()).random()
 
         scenario.onActivity {
-            it.resultChannel.open(expectedKey)
+            when (expectedKey) {
+                is NavigationKey.SupportsPush -> it.getNavigationHandle().push(expectedKey)
+                is NavigationKey.SupportsPresent -> it.getNavigationHandle().present(expectedKey)
+                else -> error("Unexpected navigation key: $expectedKey")
+            }
         }
 
         val handle = scenario.getTestNavigationHandle<EnroTestTestActivityKey>()

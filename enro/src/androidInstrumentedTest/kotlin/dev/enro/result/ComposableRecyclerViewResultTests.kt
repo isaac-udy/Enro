@@ -274,7 +274,7 @@ private fun ListItemWithResult(
     ) {
         Button(
             onClick = {
-                channel.open(ImmediateSyntheticResultKey(id))
+                channel.present(ImmediateSyntheticResultKey(id))
             },
             content = {
                 Text(text = "Get Result")

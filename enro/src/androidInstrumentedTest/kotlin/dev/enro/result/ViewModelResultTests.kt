@@ -13,7 +13,7 @@ import dev.enro.TestFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.closeWithResult
-import dev.enro.core.forward
+import dev.enro.core.push
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.expectFragment
 import dev.enro.getNavigationHandle
@@ -41,7 +41,7 @@ class ViewModelResultTests {
     fun givenOrchestratedResultFlowManagedByViewModels_whenOrchestratedResultFlowExecutes_thenResultsAreReceivedCorrectly() {
         ActivityScenario.launch(DefaultActivity::class.java)
             .getNavigationHandle<NavigationKey>()
-            .forward(OrchestratorKey())
+            .push(OrchestratorKey())
 
         val viewModel = expectFragment<OrchestratorFragment>()
             .viewModel
@@ -52,7 +52,7 @@ class ViewModelResultTests {
 
 
 @Parcelize
-class OrchestratorKey : Parcelable, NavigationKey
+class OrchestratorKey : Parcelable, NavigationKey.SupportsPush
 
 class OrchestratorViewModel : ViewModel() {
     var currentResult = ""
@@ -60,7 +60,7 @@ class OrchestratorViewModel : ViewModel() {
     val navigation by navigationHandle<NavigationKey>()
     val resultOne by registerForNavigationResult<String> {
         currentResult = it
-        resultTwo.open(SecondStepKey())
+        resultTwo.push(SecondStepKey())
     }
     val resultTwo by registerForNavigationResult<String> {
         currentResult = "$currentResult -> $it"
@@ -69,7 +69,7 @@ class OrchestratorViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             delay(100)
-            resultOne.open(FirstStepKey())
+            resultOne.push(FirstStepKey())
         }
     }
 }
@@ -83,7 +83,7 @@ class OrchestratorFragment : TestFragment() {
 }
 
 @Parcelize
-class FirstStepKey : Parcelable, NavigationKey.WithResult<String>
+class FirstStepKey : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
 class FirstStepViewModel : ViewModel() {
     private val navigation by navigationHandle<FirstStepKey>()
@@ -104,7 +104,7 @@ class FirstStepFragment : TestFragment() {
 }
 
 @Parcelize
-class SecondStepKey : Parcelable, NavigationKey.WithResult<String>
+class SecondStepKey : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
 class SecondStepViewModel : ViewModel() {
     private val navigation by navigationHandle<SecondStepKey>()
@@ -114,7 +114,7 @@ class SecondStepViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             delay(100)
-            nested.open(SecondStepNestedKey())
+            nested.push(SecondStepNestedKey())
         }
     }
 }
@@ -129,7 +129,7 @@ class SecondStepFragment : TestFragment() {
 
 
 @Parcelize
-class SecondStepNestedKey : Parcelable, NavigationKey.WithResult<String>
+class SecondStepNestedKey : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
 class SecondStepNestedViewModel : ViewModel() {
     private val navigation by navigationHandle<SecondStepNestedKey>()

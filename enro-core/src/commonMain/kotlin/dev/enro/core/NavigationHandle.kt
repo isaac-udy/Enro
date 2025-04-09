@@ -5,6 +5,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.container.NavigationContainerContext
+import dev.enro.core.container.backstackOf
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.get
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
@@ -102,6 +103,21 @@ public fun NavigationHandle.onParentContainer(
     block: NavigationContainerContext.() -> Unit
 ) {
     executeInstruction(NavigationInstruction.OnParentContainer(block))
+}
+
+@Deprecated("TODO don't ")
+public fun NavigationHandle.replaceRoot(navigationKey: NavigationKey) {
+    requireNavigationContext().rootContext().navigationHandle.onActiveContainer {
+        setBackstack(backstackOf(NavigationInstruction.DefaultDirection(navigationKey)))
+    }
+}
+
+@Deprecated("TODO don't ")
+public fun NavigationHandle.replace(
+    navigationKey: NavigationKey,
+) {
+    executeInstruction(NavigationInstruction.DefaultDirection(navigationKey))
+    close()
 }
 
 public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {

@@ -59,7 +59,7 @@ object ClassNames {
         )
         val composeNavigationBindingKt = JavaClassName.get(
             "dev.enro.destination.compose",
-            "ComposableNavigationBindingKt"
+            "ComposableNavigationBinding_androidKt"
         )
     }
 

@@ -7,7 +7,8 @@ import androidx.test.core.app.ActivityScenario
 import dev.enro.*
 import dev.enro.core.asTyped
 import dev.enro.core.close
-import dev.enro.core.forward
+import dev.enro.core.push
+import dev.enro.core.present
 import dev.enro.core.getNavigationHandle
 import junit.framework.TestCase
 import leakcanary.DetectLeaksAfterTestSuccess
@@ -28,11 +29,11 @@ class FragmentToFragmentTests {
         val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
 
         val id = UUID.randomUUID().toString()
-        handle.forward(ActivityChildFragmentKey(id))
+        handle.push(ActivityChildFragmentKey(id))
 
         val parentFragment = expectFragment<ActivityChildFragment>()
         val id2 = UUID.randomUUID().toString()
-        parentFragment.getNavigationHandle().forward(ActivityChildFragmentTwoKey(id2))
+        parentFragment.getNavigationHandle().push(ActivityChildFragmentTwoKey(id2))
 
         val childFragment = expectFragment<ActivityChildFragmentTwo>()
         val fragmentHandle = childFragment.getNavigationHandle().asTyped<ActivityChildFragmentTwoKey>()
@@ -45,12 +46,12 @@ class FragmentToFragmentTests {
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
 
         val id = UUID.randomUUID().toString()
-        handle.forward(ActivityChildFragmentKey(id))
+        handle.push(ActivityChildFragmentKey(id))
 
         val dialogFragment = expectFragmentHostForPresentableFragment()
         val parentFragment = dialogFragment.childFragmentManager.primaryNavigationFragment!!
         val id2 = UUID.randomUUID().toString()
-        parentFragment.getNavigationHandle().forward(ActivityChildFragmentTwoKey(id2))
+        parentFragment.getNavigationHandle().push(ActivityChildFragmentTwoKey(id2))
 
         val childFragment = expectContext<Fragment, ActivityChildFragmentTwoKey>().context
         val fragmentHandle = childFragment.getNavigationHandle().asTyped<ActivityChildFragmentTwoKey>()
@@ -65,11 +66,11 @@ class FragmentToFragmentTests {
         val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
 
         val id = "UUID.randomUUID().toString()"
-        handle.forward(ActivityChildFragmentKey(id))
+        handle.push(ActivityChildFragmentKey(id))
 
         val parentFragment = expectFragment<ActivityChildFragment>()
         val id2 = UUID.randomUUID().toString()
-        parentFragment.getNavigationHandle().forward(ActivityChildFragmentTwoKey(id2))
+        parentFragment.getNavigationHandle().push(ActivityChildFragmentTwoKey(id2))
 
         val parentFragmentManager = parentFragment.parentFragmentManager
 

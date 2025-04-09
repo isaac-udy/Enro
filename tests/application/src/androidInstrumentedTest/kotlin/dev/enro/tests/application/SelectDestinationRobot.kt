@@ -240,4 +240,13 @@ class SelectDestinationRobot(
             .performClick()
         return ComposeAnimationsRobot(composeRule)
     }
+    
+    fun openFragmentPresentation(): FragmentPresentationRobot {
+        composeRule.onNode(hasText("Fragment Presentation Root"))
+            .performScrollTo()
+            .onSiblings()
+            .filterToOne(hasText("Push"))
+            .performClick()
+        return FragmentPresentationRobot(composeRule)
+    }
 }

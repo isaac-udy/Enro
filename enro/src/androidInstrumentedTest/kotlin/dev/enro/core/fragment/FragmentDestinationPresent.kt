@@ -3,7 +3,14 @@ package dev.enro.core.fragment
 import android.os.Parcelable
 import androidx.fragment.app.Fragment
 import dev.enro.core.compose.ComposableDestination
-import dev.enro.core.destinations.*
+import dev.enro.core.destinations.ActivityDestinations
+import dev.enro.core.destinations.ComposableDestinations
+import dev.enro.core.destinations.FragmentDestinations
+import dev.enro.core.destinations.assertClosesTo
+import dev.enro.core.destinations.assertClosesWithResultTo
+import dev.enro.core.destinations.assertPresentsForResultTo
+import dev.enro.core.destinations.assertPresentsTo
+import dev.enro.core.destinations.launchFragmentRoot
 import junit.framework.TestCase
 import kotlinx.parcelize.Parcelize
 import leakcanary.DetectLeaksAfterTestSuccess
@@ -47,6 +54,8 @@ class FragmentDestinationPresent {
     fun givenFragmentDestination_whenExecutingPresent_andTargetIsComposableDestination_andDestinationDeliversResult_thenResultIsDelivered() {
         val root = launchFragmentRoot()
         root.assertPresentsForResultTo<ComposableDestination, ComposableDestinations.Presentable>()
+            // TODO: Why do we need to sleep now? It used to work before KMP
+            .apply { Thread.sleep(1000) }
             .assertClosesWithResultTo<FragmentDestinations.Fragment, FragmentDestinations.Root>(root.navigation.key)
     }
 

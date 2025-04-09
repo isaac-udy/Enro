@@ -33,7 +33,7 @@ class ActivityWithFragments : TestActivity() {
 }
 
 @Parcelize
-data class ActivityChildFragmentKey(val id: String) : Parcelable, NavigationKey
+data class ActivityChildFragmentKey(val id: String) : Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(ActivityChildFragmentKey::class)
 class ActivityChildFragment : TestFragment() {
@@ -79,7 +79,7 @@ class ActivityWithComposables : AppCompatActivity() {
 }
 
 @Parcelize
-data class ActivityChildFragmentTwoKey(val id: String) : Parcelable, NavigationKey
+data class ActivityChildFragmentTwoKey(val id: String) : Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(ActivityChildFragmentTwoKey::class)
 class ActivityChildFragmentTwo : TestFragment()

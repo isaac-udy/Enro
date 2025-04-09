@@ -19,10 +19,10 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.asTyped
 import dev.enro.core.close
 import dev.enro.core.container.accept
-import dev.enro.core.forward
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.navigationHandle
+import dev.enro.core.push
 import dev.enro.core.replace
 import dev.enro.expectActivity
 import dev.enro.expectActivityHostForAnyInstruction
@@ -40,7 +40,7 @@ import leakcanary.DetectLeaksAfterTestSuccess
 import leakcanary.SkipLeakDetection
 import org.junit.Rule
 import org.junit.Test
-import java.util.UUID
+import java.util.*
 
 class ActivityToFragmentTests {
 
@@ -51,7 +51,7 @@ class ActivityToFragmentTests {
     fun whenActivityIsNotAFragmentActivity_thenFragmentNavigationOpensSingleFragmentActivity() {
         val scenario = ActivityScenario.launch(ComponentActivity::class.java)
         scenario.onActivity {
-            it.getNavigationHandle().forward(GenericFragmentKey("fragment from component activity"))
+            it.getNavigationHandle().push(GenericFragmentKey("fragment from component activity"))
         }
         expectActivityHostForAnyInstruction()
         assertEquals(
@@ -70,7 +70,7 @@ class ActivityToFragmentTests {
         val handle = scenario.getNavigationHandle<DefaultActivityKey>()
 
         val id = UUID.randomUUID().toString()
-        handle.forward(GenericFragmentKey(id))
+        handle.push(GenericFragmentKey(id))
 
         val activity = expectFragmentHostForPresentableFragment()
         val activeFragment = activity.childFragmentManager.primaryNavigationFragment!!
@@ -84,7 +84,7 @@ class ActivityToFragmentTests {
         val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
 
         val id = UUID.randomUUID().toString()
-        handle.forward(ActivityChildFragmentKey(id))
+        handle.push(ActivityChildFragmentKey(id))
 
         expectActivity<ActivityWithFragments>()
         val activeFragment = expectFragment<ActivityChildFragment>()
@@ -104,7 +104,7 @@ class ActivityToFragmentTests {
         }
 
         val id = UUID.randomUUID().toString()
-        handle.forward(ActivityChildFragmentKey(id))
+        handle.push(ActivityChildFragmentKey(id))
 
         expectFragmentHostForPresentableFragment()
         val activeFragment = expectFragment<ActivityChildFragment>()
@@ -138,7 +138,7 @@ class ActivityToFragmentTests {
         val handle = scenario.getNavigationHandle<ActivityWithFragmentsKey>()
 
         val id = UUID.randomUUID().toString()
-        handle.forward(GenericFragmentKey(id))
+        handle.push(GenericFragmentKey(id))
 
         val activity = expectFragmentHostForPresentableFragment()
         val activeFragment = activity.childFragmentManager.primaryNavigationFragment!!
@@ -283,23 +283,23 @@ class ActivityToFragmentTests {
         val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
         expectActivity<ActivityWithFragments>()
             .getNavigationHandle()
-            .forward(ActivityChildFragmentKey(UUID.randomUUID().toString()))
+            .push(ActivityChildFragmentKey(UUID.randomUUID().toString()))
 
         val activityHandle = expectActivity<ActivityWithFragments>().getNavigationHandle()
         val fragmentHandle = expectFragment<ActivityChildFragment>().getNavigationHandle()
 
         scenario.onActivity {
             activityHandle
-                .forward(ActivityChildFragmentKey("one"))
+                .push(ActivityChildFragmentKey("one"))
 
             activityHandle
-                .forward(ActivityChildFragmentKey("two"))
+                .push(ActivityChildFragmentKey("two"))
 
             fragmentHandle
-                .forward(ActivityChildFragmentKey("three"))
+                .push(ActivityChildFragmentKey("three"))
 
             activityHandle
-                .forward(ActivityChildFragmentKey("four"))
+                .push(ActivityChildFragmentKey("four"))
         }
 
         val id = expectFragment<ActivityChildFragment>().getNavigationHandle().asTyped<ActivityChildFragmentKey>().key.id
@@ -311,7 +311,7 @@ class ActivityToFragmentTests {
         val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
         expectActivity<ActivityWithFragments>()
             .getNavigationHandle()
-            .forward(ActivityChildFragmentKey(UUID.randomUUID().toString()))
+            .push(ActivityChildFragmentKey(UUID.randomUUID().toString()))
 
         val fragment = expectFragment<ActivityChildFragment>()
         val fragmentHandle = fragment.getNavigationHandle()
@@ -321,7 +321,7 @@ class ActivityToFragmentTests {
                 .detach(fragment)
                 .commitNow()
 
-            fragmentHandle.forward(ActivityChildFragmentKey("should not appear"))
+            fragmentHandle.push(ActivityChildFragmentKey("should not appear"))
         }
 
         assertNull(expectActivity<ActivityWithFragments>().supportFragmentManager.primaryNavigationFragment)
@@ -332,7 +332,7 @@ class ActivityToFragmentTests {
         val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
         expectActivity<ActivityWithFragments>()
             .getNavigationHandle()
-            .forward(ActivityChildFragmentKey(UUID.randomUUID().toString()))
+            .push(ActivityChildFragmentKey(UUID.randomUUID().toString()))
 
         val fragment = expectFragment<ActivityChildFragment>()
         val fragmentHandle = fragment.getNavigationHandle()
@@ -356,7 +356,7 @@ class ActivityToFragmentTests {
         val scenario = ActivityScenario.launch(ActivityWithFragments::class.java)
         expectActivity<ActivityWithFragments>()
             .getNavigationHandle()
-            .forward(ActivityChildFragmentKey(UUID.randomUUID().toString()))
+            .push(ActivityChildFragmentKey(UUID.randomUUID().toString()))
 
         val fragment = expectFragment<ActivityChildFragment>()
         val fragmentHandle = fragment.getNavigationHandle()
@@ -380,11 +380,11 @@ class ActivityToFragmentTests {
 
         expectActivity<ActivityWithFragments>()
             .getNavigationHandle()
-            .forward(firstFragmentKey)
+            .push(firstFragmentKey)
 
         expectFragment<ActivityChildFragment> { it.getNavigationHandle().key == firstFragmentKey }
             .navigation
-            .forward(secondFragmentKey)
+            .push(secondFragmentKey)
 
         val fragment = expectFragment<ActivityChildFragment> { it.getNavigationHandle().key == secondFragmentKey }
         val fragmentHandle = fragment.getNavigationHandle()
@@ -407,11 +407,11 @@ class ActivityToFragmentTests {
 
         expectActivity<ActivityWithFragments>()
             .getNavigationHandle()
-            .forward(firstFragmentKey)
+            .push(firstFragmentKey)
 
         expectFragment<ActivityChildFragment> { it.getNavigationHandle().key == firstFragmentKey }
             .navigation
-            .forward(secondFragmentKey)
+            .push(secondFragmentKey)
 
         val fragment = expectFragment<ActivityChildFragment> { it.getNavigationHandle().key == secondFragmentKey }
         val fragmentHandle = fragment.getNavigationHandle()
@@ -448,20 +448,20 @@ class ActivityToFragmentTests {
 
         val activity = expectActivity<ActivityWithFragments>()
         activity.getNavigationHandle()
-            .forward(fragmentAKey)
+            .push(fragmentAKey)
 
         expectContext<ActivityChildFragment, ActivityChildFragmentKey> { it.navigation.key == fragmentAKey }
             .navigation
-            .forward(fragmentBKey)
+            .push(fragmentBKey)
 
         expectContext<ActivityChildFragment, ActivityChildFragmentKey> { it.navigation.key == fragmentBKey }
             .navigation
-            .forward(fragmentCKey)
+            .push(fragmentCKey)
 
         expectContext<ActivityChildFragment, ActivityChildFragmentKey> { it.navigation.key == fragmentCKey }
 
         activity.getNavigationHandle()
-            .forward(fragmentDKey)
+            .push(fragmentDKey)
 
         expectContext<ActivityChildFragment, ActivityChildFragmentKey> { it.navigation.key == fragmentDKey }
             .navigation
@@ -494,8 +494,8 @@ class ImmediateOpenChildActivity : TestActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        navigation.forward(GenericFragmentKey("one"))
-        navigation.forward(GenericFragmentKey("two"))
+        navigation.push(GenericFragmentKey("one"))
+        navigation.push(GenericFragmentKey("two"))
     }
 }
 
@@ -523,14 +523,14 @@ class ImmediateOpenFragmentChildActivity : TestActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        navigation.forward(ImmediateOpenChildFragmentKey("one"))
-        navigation.forward(ImmediateOpenChildFragmentKey("two"))
+        navigation.push(ImmediateOpenChildFragmentKey("one"))
+        navigation.push(ImmediateOpenChildFragmentKey("two"))
     }
 }
 
 
 @Parcelize
-data class ImmediateOpenChildFragmentKey(val name: String) : Parcelable, NavigationKey
+data class ImmediateOpenChildFragmentKey(val name: String) : Parcelable, NavigationKey.SupportsPush
 
 @NavigationDestination(ImmediateOpenChildFragmentKey::class)
 class ImmediateOpenChildFragment : TestFragment() {
@@ -550,7 +550,7 @@ class ImmediateOpenChildFragment : TestFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        navigation.forward(GenericFragmentKey("one"))
-        navigation.forward(GenericFragmentKey("two"))
+        navigation.push(GenericFragmentKey("one"))
+        navigation.push(GenericFragmentKey("two"))
     }
 }
