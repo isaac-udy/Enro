@@ -3,7 +3,6 @@ package dev.enro.tests.application.fragment
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.performClick
-import androidx.lifecycle.Lifecycle
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.matcher.RootMatchers.isDialog
@@ -16,11 +15,6 @@ class UnboundBottomSheetRobot(
     val composeRule: ComposeTestRule,
 ) {
     private val fragment = composeRule.waitForFragment<UnboundBottomSheetFragment>()
-        .also { fragment ->
-            composeRule.waitUntil(5_000) {
-                fragment.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
-            }
-        }
 
     fun closeWithEnro() {
         composeRule.onNode(hasText("Close with Enro"))

@@ -112,6 +112,11 @@ public sealed class NavigationInstruction {
 
     public sealed class Close : NavigationInstruction() {
         public companion object : Close()
+
+        public class AndThenOpen(
+            public val instruction: AnyOpenInstruction,
+        ) : Close()
+
         public class WithResult(public val result: Any) : Close() {
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true

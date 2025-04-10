@@ -9,6 +9,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
 import androidx.lifecycle.withStarted
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
@@ -20,8 +21,11 @@ import dev.enro.core.controller.usecase.ExecuteCloseInstruction
 import dev.enro.core.controller.usecase.ExecuteContainerOperationInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.extras
+import dev.enro.core.directParentContainer
 import dev.enro.destination.compose.ComposableDestination
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
 
 internal open class NavigationHandleViewModel(
     override val instruction: AnyOpenInstruction,
@@ -108,41 +112,17 @@ internal open class NavigationHandleViewModel(
 }
 
 private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
-    val isMainThread = Looper.getMainLooper() == Looper.myLooper()
-    when(val reference = contextReference) {
-        is Fragment -> {
-            if(isMainThread && !reference.isStateSaved && reference.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-                block()
-            } else {
-                lifecycleOwner.lifecycleScope.launch {
-                    lifecycle.withStarted(block)
-                }
+    lifecycleOwner.lifecycleScope.launch {
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+            block()
+            return@launch
+        }
+        withTimeout(1000) {
+            while (directParentContainer() == null) {
+                yield()
             }
         }
-        is ComponentActivity -> {
-            if(isMainThread && reference.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-                block()
-            } else {
-                lifecycleOwner.lifecycleScope.launch {
-                    lifecycle.withStarted(block)
-                }
-            }
-        }
-        is ComposableDestination -> {
-            if(isMainThread && reference.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-                block()
-            } else {
-                lifecycleOwner.lifecycleScope.launch {
-                    lifecycle.withStarted(block)
-                }
-            }
-        }
-        else -> {
-            // Default case - try to execute via lifecycle
-            lifecycleOwner.lifecycleScope.launch {
-                lifecycle.withStarted(block)
-            }
-        }
+        lifecycle.withStarted(block)
     }
 }
 

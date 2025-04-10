@@ -5,13 +5,20 @@ import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.container.close
+import dev.enro.core.container.toBackstack
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
+import dev.enro.core.controller.createNavigationModule
 import dev.enro.core.controller.get
+import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.isInAndroidContext
+import dev.enro.core.controller.usecase.AddPendingResult
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.navigationContext
+import dev.enro.core.parentContainer
 import dev.enro.core.plugins.EnroPlugin
 
 internal object ActivityPlugin : EnroPlugin() {
@@ -28,6 +35,33 @@ internal object ActivityPlugin : EnroPlugin() {
         ).also { callbacks ->
             navigationController.application.registerActivityLifecycleCallbacks(callbacks)
         }
+
+        navigationController.addModule(
+            createNavigationModule {
+                interceptor(object : NavigationInstructionInterceptor {
+                    override fun intercept(
+                        instruction: NavigationInstruction.Close,
+                        context: NavigationContext<*>
+                    ): NavigationInstruction? {
+                        if (instruction !is NavigationInstruction.Close.AndThenOpen) return instruction
+                        if (context.contextReference !is ComponentActivity) return instruction
+                        val container = requireNotNull(context.parentContainer()) {
+                            // TODO better error message
+                        }
+                        container.setBackstack(
+                            container.backstack
+                                .close(id = context.instruction.instructionId)
+                                .plus(instruction.instruction)
+                                .toBackstack()
+                        )
+
+                        navigationController.dependencyScope.get<AddPendingResult>()
+                            .invoke(context, instruction)
+                        return null
+                    }
+                })
+            }
+        )
     }
 
     override fun onDetached(navigationController: NavigationController) {

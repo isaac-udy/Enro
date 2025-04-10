@@ -3,6 +3,7 @@ package dev.enro.tests.application.compose.results
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +27,7 @@ import dev.enro.core.container.accept
 import dev.enro.core.navigationHandle
 import dev.enro.core.result.deliverResultFromPresent
 import dev.enro.core.result.deliverResultFromPush
+import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
@@ -212,12 +214,14 @@ class ComposeEmbeddedResultFlowActivity : AppCompatActivity() {
     private val navigation by navigationHandle<ComposeEmbeddedResultFlow.Activity>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
                 Content()
             }
         }
+        applyInsetsForContentView()
     }
 
     @Composable

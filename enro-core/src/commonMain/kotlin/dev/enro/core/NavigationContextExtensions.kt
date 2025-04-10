@@ -60,6 +60,16 @@ public fun NavigationContext<*>.parentContainer(): NavigationContainer? {
     return getParentContainerFrom(parentContext)
 }
 
+@AdvancedEnroApi
+public fun NavigationContext<*>.directParentContainer(): NavigationContainer? {
+    val parentContext = parentContext ?: return null
+    val instructionId = getNavigationHandle().id
+    return parentContext.containerManager.containers.firstOrNull { container ->
+        container.backstack.any { it.instructionId == instructionId }
+    }
+}
+
+
 public fun NavigationContainer.parentContainer(): NavigationContainer? = context.parentContainer()
 
 // Extension property for platform-specific ComposableDestination that implements ComposableDestinationReference

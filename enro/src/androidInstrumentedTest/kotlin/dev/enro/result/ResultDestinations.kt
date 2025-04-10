@@ -2,6 +2,7 @@ package dev.enro.result
 
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -176,6 +177,7 @@ class ForwardingSyntheticFragmentResultDestination : SyntheticDestination<Forwar
 class ViewModelForwardingResultViewModel : ViewModel() {
     val navigation by navigationHandle<NavigationKey.WithResult<String>>()
     val forwardingChannel by registerForNavigationResult<String> {
+        Log.e("Enro", "ViewModelForwardingResultViewModel received result ${navigation.lifecycle.currentState}")
         navigation.closeWithResult(it)
     }
 

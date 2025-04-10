@@ -29,7 +29,7 @@ data class GenericActivityKey(val id: String) : Parcelable, NavigationKey.Suppor
 class GenericActivity : TestActivity()
 
 @Parcelize
-data class GenericFragmentKey(val id: String) : Parcelable, NavigationKey.SupportsPush
+data class GenericFragmentKey(val id: String) : Parcelable, NavigationKey.SupportsPush, NavigationKey.SupportsPresent
 
 @NavigationDestination(GenericFragmentKey::class)
 class GenericFragment : TestFragment()

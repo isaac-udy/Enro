@@ -31,6 +31,9 @@
         <activity android:name="dev.enro.tests.application.activity.PictureInPictureActivity"
             android:supportsPictureInPicture="true"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation" />
+
+        <activity android:name="dev.enro.tests.application.fragment.FragmentPresentationActivity"/>
+        <activity android:name="dev.enro.tests.application.fragment.FragmentPresentationActivityPresentableActivity"/>
     </application>
 
 </manifest>

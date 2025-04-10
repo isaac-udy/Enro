@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import dev.enro.annotations.NavigationDestination
@@ -22,6 +23,7 @@ class SimpleActivityImpl : ComponentActivity() {
     private val navigation by navigationHandle<NavigationKey>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             TitledColumn(title = "Simple Activity") {
@@ -30,5 +32,6 @@ class SimpleActivityImpl : ComponentActivity() {
                 }
             }
         }
+        applyInsetsForContentView()
     }
 }

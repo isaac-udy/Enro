@@ -5,6 +5,7 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
@@ -20,6 +21,7 @@ import dev.enro.core.navigationHandle
 import dev.enro.core.push
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.tests.application.R
+import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
@@ -54,8 +56,10 @@ class ManagedFlowInFragmentActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.managed_flow_in_fragment_activity)
+        applyInsetsForContentView()
     }
 
     override fun onResume() {

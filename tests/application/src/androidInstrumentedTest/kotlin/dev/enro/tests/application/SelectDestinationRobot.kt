@@ -24,6 +24,7 @@ import dev.enro.tests.application.compose.results.ComposeManagedResultsWithNeste
 import dev.enro.tests.application.compose.results.ComposeMixedResultTypesRobot
 import dev.enro.tests.application.compose.results.ComposeNestedResultsRobot
 import dev.enro.tests.application.compose.results.ResultsWithExtraRobot
+import dev.enro.tests.application.fragment.FragmentPresentationRobot
 import dev.enro.tests.application.fragment.UnboundBottomSheetRobot
 import dev.enro.tests.application.managedflow.ManagedFlowInComposableRobot
 import dev.enro.tests.application.managedflow.ManagedFlowInFragmentRobot
@@ -242,10 +243,10 @@ class SelectDestinationRobot(
     }
     
     fun openFragmentPresentation(): FragmentPresentationRobot {
-        composeRule.onNode(hasText("Fragment Presentation Root"))
+        composeRule.onNode(hasText("Fragment Presentation"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Present"))
             .performClick()
         return FragmentPresentationRobot(composeRule)
     }

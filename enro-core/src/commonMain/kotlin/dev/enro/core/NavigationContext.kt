@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedState
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.annotations.AdvancedEnroApi
-import dev.enro.core.controller.NavigationController
 import dev.enro.core.container.NavigationContainerManager
+import dev.enro.core.controller.NavigationController
 
 
 /**
@@ -75,4 +75,10 @@ public class NavigationContext<ContextType : Any> internal constructor(
         onBoundToNavigationHandle = null
         callback(navigationHandle)
     }
+}
+
+public fun NavigationContext<*>.toDisplayString(): String {
+    val contextReferenceName = contextReference::class.qualifiedName ?: contextReference::class.toString()
+    val navigationKeyName = instruction.navigationKey::class.qualifiedName ?: instruction.navigationKey::class.toString()
+    return "NavigationContext<$contextReferenceName>($navigationKeyName)"
 }

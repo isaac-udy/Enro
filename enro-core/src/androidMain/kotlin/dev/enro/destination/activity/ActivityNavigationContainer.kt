@@ -20,6 +20,7 @@ import dev.enro.core.container.backstackOf
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.GetNavigationBinding
 import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.core.internal.EnroLog
 import dev.enro.core.navigationContext
 import dev.enro.core.result.EnroResult
 import java.lang.ref.WeakReference
@@ -45,16 +46,25 @@ internal class ActivityNavigationContainer internal constructor(
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
 
             override fun onActivityStarted(activity: Activity) {
+                EnroLog.error("onActivityStarted: ${activity::class.simpleName}")
                 if (activity !is ComponentActivity) return
                 weakActivity = WeakReference(activity)
                 setBackstack(backstackOf(activity.navigationContext.instruction))
             }
 
-            override fun onActivityResumed(activity: Activity) {}
+            override fun onActivityResumed(activity: Activity) {
+                EnroLog.error("onActivityResumed: ${activity::class.simpleName}")
+                if (activity !is ComponentActivity) return
+                weakActivity = WeakReference(activity)
+                setBackstack(backstackOf(activity.navigationContext.instruction))
+            }
 
-            override fun onActivityPaused(activity: Activity) {}
+            override fun onActivityPaused(activity: Activity) {
+                EnroLog.error("onActivityPaused: ${activity::class.simpleName}")
+            }
 
             override fun onActivityStopped(activity: Activity) {
+                EnroLog.error("onActivityStopped: ${activity::class.simpleName}")
                 if (activity !is ComponentActivity) return
                 if (weakActivity.get() == activity) {
                     weakActivity = WeakReference(null)
@@ -79,7 +89,9 @@ internal class ActivityNavigationContainer internal constructor(
             context.activity.finish()
             return true
         }
-        val activeInstruction = weakActivity.get()?.navigationContext?.instruction ?: return true
+
+        val activity = weakActivity.get() ?: return true
+        val activeInstruction = activity.navigationContext.instruction
         if (transition.activeBackstack.singleOrNull()?.instructionId == activeInstruction.instructionId) return true
         val childContext = requireNotNull(childContext)
         setBackstack(backstackOf(activeInstruction))
@@ -116,8 +128,6 @@ internal class ActivityNavigationContainer internal constructor(
 
         val intent = Intent(childContext.activity, binding.destinationType.java)
             .addOpenInstruction(instructionToOpenHosted)
-
-        val activity = childContext.activity
 
         val animations = getNavigationAnimations.opening(
             exiting = activeInstruction,

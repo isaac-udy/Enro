@@ -3,6 +3,7 @@ package dev.enro.tests.application.compose
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.present
 import dev.enro.core.push
+import dev.enro.tests.application.activity.applyInsetsForContentView
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -35,6 +37,7 @@ object CloseLandingPageAndPresent : Parcelable, NavigationKey.SupportsPresent
 @NavigationDestination(CloseLandingPageAndPresent::class)
 class CloseRootAndPresentActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             val container = rememberNavigationContainer(
@@ -43,6 +46,7 @@ class CloseRootAndPresentActivity : AppCompatActivity() {
             )
             container.Render()
         }
+        applyInsetsForContentView()
     }
 }
 

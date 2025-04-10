@@ -21,15 +21,6 @@ import dev.enro.destination.compose.ComposableDestination
 
 public val NavigationContext<out Fragment>.fragment: Fragment get() = contextReference
 
-@AdvancedEnroApi
-public fun NavigationContext<*>.directParentContainer(): NavigationContainer? {
-    val parentContext = parentContext ?: return null
-    val instructionId = getNavigationHandle().id
-    return parentContext.containerManager.containers.firstOrNull { container ->
-        container.backstack.any { it.instructionId == instructionId }
-    }
-}
-
 public fun NavigationContext<*>.activeChildContext(): NavigationContext<*>? {
     val fragmentManager = when (contextReference) {
         is FragmentActivity -> contextReference.supportFragmentManager

@@ -94,8 +94,8 @@ class FragmentTestExtensionsTest {
 
         scenario.onFragment {
             when (expectedKey) {
-                is NavigationKey.SupportsPush -> it.getNavigationHandle().push(expectedKey)
-                is NavigationKey.SupportsPresent -> it.getNavigationHandle().present(expectedKey)
+                is FragmentResultKey -> it.resultChannel.push(expectedKey)
+                is ActivityResultKey -> it.resultChannel.present(expectedKey)
                 else -> error("Unexpected navigation key: $expectedKey")
             }
         }
@@ -176,8 +176,8 @@ class FragmentTestExtensionsTest {
 
         scenario.onFragment {
             when (expectedKey) {
-                is NavigationKey.SupportsPush -> it.getNavigationHandle().push(expectedKey)
-                is NavigationKey.SupportsPresent -> it.getNavigationHandle().present(expectedKey)
+                is FragmentResultKey -> it.resultChannel.push(expectedKey)
+                is ActivityResultKey -> it.resultChannel.present(expectedKey)
                 else -> error("Unexpected navigation key: $expectedKey")
             }
         }

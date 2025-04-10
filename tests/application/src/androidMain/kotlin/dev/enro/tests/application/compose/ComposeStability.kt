@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +35,7 @@ import dev.enro.core.container.push
 import dev.enro.core.container.setBackstack
 import dev.enro.core.onContainer
 import dev.enro.core.push
+import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.tests.application.compose.common.Stability
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
@@ -64,6 +66,7 @@ object ComposeStability : Parcelable, NavigationKey.SupportsPush {
 class ComposeStabilityActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             val navigation = navigationHandle<ComposeStability>()
@@ -120,6 +123,7 @@ class ComposeStabilityActivity : AppCompatActivity() {
                 }
             }
         }
+        applyInsetsForContentView()
     }
 }
 

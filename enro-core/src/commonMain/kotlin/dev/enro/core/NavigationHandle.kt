@@ -8,6 +8,7 @@ import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.container.backstackOf
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.get
+import dev.enro.core.internal.EnroLog
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.core.internal.isMainThread
 import kotlinx.coroutines.flow.first
@@ -86,6 +87,24 @@ public fun NavigationHandle.close() {
     executeInstruction(NavigationInstruction.Close)
 }
 
+public fun NavigationHandle.closeAndPush(key: NavigationKey.SupportsPush) {
+    executeInstruction(NavigationInstruction.Close.AndThenOpen(NavigationInstruction.Push(key)))
+}
+
+public fun NavigationHandle.closeAndPush(key: NavigationKey.WithExtras<out NavigationKey.SupportsPush>) {
+    executeInstruction(NavigationInstruction.Close.AndThenOpen(NavigationInstruction.Push(key)))
+}
+
+public fun NavigationHandle.closeAndPresent(
+    key: NavigationKey.SupportsPresent,
+) {
+    executeInstruction(NavigationInstruction.Close.AndThenOpen(NavigationInstruction.Present(key)))
+}
+
+public fun NavigationHandle.closeAndPresent(key: NavigationKey.WithExtras<out NavigationKey.SupportsPresent>) {
+    executeInstruction(NavigationInstruction.Close.AndThenOpen(NavigationInstruction.Present(key)))
+}
+
 public fun NavigationHandle.onContainer(
     key: NavigationContainerKey,
     block: NavigationContainerContext.() -> Unit
@@ -116,11 +135,11 @@ public fun NavigationHandle.replaceRoot(navigationKey: NavigationKey) {
 public fun NavigationHandle.replace(
     navigationKey: NavigationKey,
 ) {
-    executeInstruction(NavigationInstruction.DefaultDirection(navigationKey))
-    close()
+    executeInstruction(NavigationInstruction.Close.AndThenOpen(NavigationInstruction.DefaultDirection(navigationKey)))
 }
 
 public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
+    EnroLog.error("Requesting close from ${getNavigationContext()?.toDisplayString()} with ${getNavigationContext()?.parentContainer()} ${getNavigationContext()?.lifecycle?.currentState}")
     executeInstruction(NavigationInstruction.Close.WithResult(result))
 }
 

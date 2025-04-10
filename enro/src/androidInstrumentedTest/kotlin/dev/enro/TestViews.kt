@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +36,7 @@ import dev.enro.core.compose.EnroContainer
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.accept
 import dev.enro.core.container.acceptKey
 import dev.enro.core.getNavigationHandle
 
@@ -227,12 +229,16 @@ fun TestComposable(
     secondaryContainerAccepts: (NavigationKey) -> Boolean = { false }
 ) {
     val primaryContainer = rememberNavigationContainer(
-        filter = acceptKey(primaryContainerAccepts),
+        filter = accept {
+            key(primaryContainerAccepts)
+        },
         emptyBehavior = EmptyBehavior.AllowEmpty,
     )
 
     val secondaryContainer = rememberNavigationContainer(
-        filter = acceptKey(secondaryContainerAccepts),
+        filter = accept {
+            key(secondaryContainerAccepts)
+        },
         emptyBehavior = EmptyBehavior.AllowEmpty,
     )
 
@@ -253,21 +259,19 @@ fun TestComposable(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(20.dp)
         )
-        EnroContainer(
-            container = primaryContainer,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)
                 .background(Color(0x22FF0000))
                 .padding(horizontal = 20.dp)
-        )
-        EnroContainer(
-            container = secondaryContainer,
+        ) { primaryContainer.Render() }
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)
                 .background(Color(0x220000FF))
                 .padding(20.dp)
-        )
+        ) { secondaryContainer.Render() }
     }
 }

@@ -31,7 +31,7 @@ internal class AddPendingResult(
             else -> return
         }
         when (instruction) {
-            NavigationInstruction.Close -> {
+            NavigationInstruction.Close, is NavigationInstruction.Close.AndThenOpen -> {
                 // If this instruction is forwarding a result from another instruction,
                 // we don't want this instruction to actually deliver the close result, as only
                 // the original instruction should deliver a close

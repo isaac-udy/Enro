@@ -33,7 +33,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.util.UUID
+import java.util.*
 
 class ComposeContainerInterceptor {
 
@@ -128,11 +128,9 @@ class ComposeContainerInterceptor {
             context.assertPushesTo<ComposableDestination, ComposableDestinations.PushesToPrimary>(
                 IntoChildContainer
             )
-
         // But once we attempt to execute an instruction on a context that inside of the container with the interceptor,
         // we should hit the interceptor and not open this instruction
         primary.navigation.push(ComposableDestinations.PushesToPrimary("NEVER_OPENED"))
-
         waitFor {
             interceptorCalled
         }

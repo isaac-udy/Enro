@@ -1,5 +1,6 @@
 package dev.enro.core.destinations
 
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -17,8 +18,8 @@ import dev.enro.core.closeWithResult
 import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.containerManager
+import dev.enro.core.directParentContainer
 import dev.enro.core.hosts.AbstractFragmentHostForComposable
-import dev.enro.core.parentContainer
 import dev.enro.core.present
 import dev.enro.core.push
 import dev.enro.core.replaceRoot
@@ -52,7 +53,7 @@ inline fun <reified NK: NavigationKey.SupportsPresent> launchComposable(navigati
         .navigation
         .replaceRoot(navigationKey)
 
-    return expectContext()
+    return expectContext { it.navigation.key == navigationKey}
 }
 
 fun launchFragmentRoot(): TestNavigationContext<FragmentDestinationRoot, FragmentDestinations.Root> {
@@ -88,8 +89,7 @@ inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPush> Tes
     containerType: ContainerType,
     expected: Key = Key::class.createFromDefaultConstructor(),
 ): TestNavigationContext<Context, Key> {
-    // TODO these waitFors aren't ideal, would like to remove if possible.
-    waitFor { navigationContext.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) }
+    waitFor { navigationContext.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) }
     navigation.push(expected)
     val expectedContext = expectContext<Context, Key> { it.navigation.key == expected }
     assertEquals(expected, expectedContext.navigation.key)
@@ -133,7 +133,7 @@ fun assertPushContainerType(
 
         fun getParentContainer(fromContext: NavigationContext<*>?, block: (navigationContainer: NavigationContainer) -> Boolean) : NavigationContainer? {
             if (fromContext == null) return null
-            val parentContainer = fromContext.parentContainer()
+            val parentContainer = fromContext.directParentContainer()
             if (parentContainer?.let(block) == true) return parentContainer
 
             val parentContext = fromContext.parentContext
@@ -208,6 +208,7 @@ inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPush.With
 inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPresent> TestNavigationContext<out Any, out NavigationKey>.assertPresentsTo(
     expected: Key = Key::class.createFromDefaultConstructor()
 ): TestNavigationContext<Context, Key> {
+    waitFor { navigationContext.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) }
     navigation.present(expected)
     val expectedContext = expectContext<Context, Key> { it.navigation.key == expected }
     assertEquals(expected, expectedContext.navigation.key)
@@ -217,6 +218,7 @@ inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPresent> 
 inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPresent.WithResult<TestResult>> TestNavigationContext<out Any, out NavigationKey>.assertPresentsForResultTo(
     expected: Key = Key::class.createFromDefaultConstructor()
 ): TestNavigationContext<Context, Key> {
+    waitFor { navigationContext.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) }
     when (context) {
         is ComposableDestination -> context.resultChannel.present(expected)
         is FragmentDestinations.Fragment -> context.resultChannel.present(expected)
@@ -231,6 +233,7 @@ inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPresent.W
 inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPresent> TestNavigationContext<out Any, out NavigationKey>.assertReplacesRootTo(
     expected: Key = Key::class.createFromDefaultConstructor()
 ): TestNavigationContext<Context, Key> {
+    waitFor { navigationContext.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) }
     navigation.replaceRoot(expected)
     val expectedContext = expectContext<Context, Key> { it.navigation.key == expected }
     assertEquals(expected, expectedContext.navigation.key)
@@ -240,8 +243,14 @@ inline fun <reified Context : Any, reified Key : NavigationKey.SupportsPresent> 
 inline fun <reified Context : Any, reified Key : NavigationKey> TestNavigationContext<out Any, out NavigationKey>.assertClosesTo(
     expected: Key
 ): TestNavigationContext<Context, Key> {
+    waitFor {
+        Log.e("ENROTEST", "Saw context with ${navigationContext.instruction.navigationKey} ${navigationContext.lifecycle.currentState}")
+        navigationContext.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
+    }
     navigation.close()
-    val expectedContext = expectContext<Context, Key> { it.navigation.key == expected }
+    val expectedContext = expectContext<Context, Key> {
+        it.navigation.key == expected
+    }
     assertEquals(expected, expectedContext.navigation.key)
     return expectedContext
 }
@@ -256,6 +265,7 @@ inline fun <reified Context : Any, reified Key : NavigationKey> TestNavigationCo
 ): TestNavigationContext<Context, Key> {
     val expectedResultId = UUID.randomUUID().toString()
 
+    waitFor { navigationContext.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) }
     // TODO Why does this need to run on the main thread now? It used to work on the background thread before KMP
     CoroutineScope(Dispatchers.Main).launch {
         navigation.closeWithResult(TestResult(expectedResultId))

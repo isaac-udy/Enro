@@ -25,7 +25,6 @@ class FragmentDestinationPresent {
     @Test
     fun givenFragmentDestination_whenExecutingPresent_andTargetIsComposableDestination_thenCorrectDestinationIsOpened() {
         val root = launchFragmentRoot()
-
         root.assertPresentsTo<ComposableDestination, ComposableDestinations.Presentable>()
     }
 
@@ -54,8 +53,6 @@ class FragmentDestinationPresent {
     fun givenFragmentDestination_whenExecutingPresent_andTargetIsComposableDestination_andDestinationDeliversResult_thenResultIsDelivered() {
         val root = launchFragmentRoot()
         root.assertPresentsForResultTo<ComposableDestination, ComposableDestinations.Presentable>()
-            // TODO: Why do we need to sleep now? It used to work before KMP
-            .apply { Thread.sleep(1000) }
             .assertClosesWithResultTo<FragmentDestinations.Fragment, FragmentDestinations.Root>(root.navigation.key)
     }
 

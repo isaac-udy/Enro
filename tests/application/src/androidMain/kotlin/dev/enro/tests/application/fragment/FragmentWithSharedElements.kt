@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -43,6 +44,7 @@ import dev.enro.core.requestClose
 import dev.enro.destination.compose.OverrideNavigationAnimations
 import dev.enro.destination.fragment.FragmentSharedElements
 import dev.enro.tests.application.R
+import dev.enro.tests.application.activity.applyInsetsForContentView
 import kotlinx.parcelize.Parcelize
 
 /**
@@ -83,8 +85,10 @@ class FragmentSharedElementActivity : AppCompatActivity() {
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.fragment_shared_element_activity)
+        applyInsetsForContentView()
     }
 }
 
