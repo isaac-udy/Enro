@@ -20,6 +20,6 @@ fun <T: ViewModel> putNavigationHandleForViewModel(
     key: NavigationKey,
 ) : TestNavigationHandle<NavigationKey> {
     val mockedNavigationHandle = createTestNavigationHandle(key)
-    EnroViewModelNavigationHandleProvider.put(viewModel.java, mockedNavigationHandle)
+    EnroViewModelNavigationHandleProvider.put(viewModel, mockedNavigationHandle)
     return mockedNavigationHandle
 }

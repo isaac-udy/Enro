@@ -2,8 +2,10 @@
 
 package dev.enro.test
 
+import android.os.Parcelable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.CreateResultChannel
@@ -20,7 +22,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @Parcelize
-private class ResultChannelTestKey : NavigationKey.SupportsPresent
+private class ResultChannelTestKey : Parcelable, NavigationKey.SupportsPresent
 
 
 class CreateResultChannelTest {
@@ -61,7 +63,7 @@ class CreateResultChannelTest {
         val nh = putNavigationHandleForViewModel<TestResultIdsViewModel>(TestResultIdsNavigationKey())
         val viewModel = ViewModelProvider.NewInstanceFactory()
             .withNavigationHandle(nh)
-            .create(TestResultIdsViewModel::class.java)
+            .create(TestResultIdsViewModel::class, CreationExtras.Empty)
 
         assertNotEquals(viewModel.stringOne.internalId, viewModel.stringTwo.internalId)
         assertNotEquals(viewModel.stringOne.internalId, viewModel.intOne.internalId)
@@ -78,7 +80,7 @@ class CreateResultChannelTest {
         val nh = putNavigationHandleForViewModel<TestResultIdsWithKeyViewModel>(TestResultIdsNavigationKey())
         val viewModel = ViewModelProvider.NewInstanceFactory()
             .withNavigationHandle(nh)
-            .create(TestResultIdsWithKeyViewModel::class.java)
+            .create(TestResultIdsWithKeyViewModel::class, CreationExtras.Empty)
 
         assertNotEquals(viewModel.stringOne.internalId, viewModel.stringTwo.internalId)
         assertNotEquals(viewModel.stringOne.internalId, viewModel.intOne.internalId)
@@ -92,7 +94,7 @@ class CreateResultChannelTest {
 }
 
 @Parcelize
-class TestResultIdsNavigationKey : NavigationKey.SupportsPresent
+class TestResultIdsNavigationKey : Parcelable, NavigationKey.SupportsPresent
 
 class TestResultIdsViewModel : ViewModel() {
     var stringOneResult: String? = null

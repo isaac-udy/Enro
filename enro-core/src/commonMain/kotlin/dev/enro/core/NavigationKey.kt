@@ -1,8 +1,8 @@
 package dev.enro.core
 
-import androidx.savedstate.SavedState
-import androidx.savedstate.savedState
-import androidx.savedstate.write
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.serializer
 
 public interface NavigationKey {
     public interface WithResult<T: Any> : NavigationKey
@@ -17,30 +17,35 @@ public interface NavigationKey {
 
     public data class WithExtras<T: NavigationKey> internal constructor(
         val navigationKey: T,
-        val extras: SavedState,
+        val extras: NavigationInstructionExtras,
     )
 
     public companion object
 }
 
+@OptIn(InternalSerializationApi::class)
 public fun <T: NavigationKey> T.withExtra(
     key: String,
     value: Any,
 ): NavigationKey.WithExtras<T> {
     return NavigationKey.WithExtras(
         navigationKey = this,
-        extras = savedState(mapOf(key to value))
+        extras = NavigationInstructionExtras().apply {
+            put(key, value::class.serializer() as KSerializer<Any>, value)
+        }
     )
 }
 
+@OptIn(InternalSerializationApi::class)
 public fun <T: NavigationKey> NavigationKey.WithExtras<T>.withExtra(
     key: String,
     value: Any,
 ): NavigationKey.WithExtras<T> {
     return NavigationKey.WithExtras(
         navigationKey = navigationKey,
-        extras = savedState(mapOf(key to value)).apply {
-            write { putAll(extras) }
+        extras = NavigationInstructionExtras().apply {
+            putAll(extras)
+            put(key, value::class.serializer() as KSerializer<Any>, value)
         }
     )
 }

@@ -1,6 +1,5 @@
 package dev.enro.core.result.flows
 
-import androidx.savedstate.read
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
@@ -20,10 +19,7 @@ internal object NavigationFlowInterceptor : NavigationInstructionInterceptor {
         val navigationKey = openInstruction.navigationKey
         if (navigationKey !is NavigationKey.WithResult<*>) return instruction
 
-        val isFlowResult = openInstruction.extras.read {
-            if (!contains(NavigationFlow.IS_PUSHED_IN_FLOW)) return@read false
-            getBoolean(NavigationFlow.IS_PUSHED_IN_FLOW)
-        }
+        val isFlowResult = openInstruction.extras.get(NavigationFlow.IS_PUSHED_IN_FLOW) ?: false
         if (!isFlowResult) return instruction
 
         val addPendingResult = context.controller.dependencyScope.get<AddPendingResult>()

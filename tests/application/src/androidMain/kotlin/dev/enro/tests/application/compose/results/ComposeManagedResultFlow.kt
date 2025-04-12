@@ -179,7 +179,7 @@ fun SecondResultScreen() {
 
         Text(
             style = MaterialTheme.typography.caption,
-            text = "Has extra: ${navigation.instruction.extras["secondResultExtra"]}"
+            text = "Has extra: ${navigation.instruction.extras.get<Int>("secondResultExtra")}"
         )
     }
 }

@@ -27,7 +27,7 @@ object ResultsWithExtra : Parcelable, NavigationKey.SupportsPush {
 fun ResultsWithExtraScreen() {
     val lastResult = rememberSaveable { mutableStateOf("<No Result>") }
     val resultChannel = registerForNavigationResult<String> {
-        require(instruction.extras["actualResult"] == it)
+        require(instruction.extras.get<String>("actualResult") == it)
         lastResult.value = it
     }
 
@@ -65,7 +65,7 @@ fun ResultsWithExtraScreen() {
 fun ResultsWithExtraSenderScreen() {
     val navigationHandle = navigationHandle<ResultsWithExtra.Sender>()
     val instruction = navigationHandle.instruction
-    val actualResultExtra = instruction.extras["actualResult"] as String
+    val actualResultExtra = instruction.extras.get<String>("actualResult")!!
 
     TitledColumn("Results With Extra") {
         Text("Extra for \"actualResult\" is \"$actualResultExtra\"")

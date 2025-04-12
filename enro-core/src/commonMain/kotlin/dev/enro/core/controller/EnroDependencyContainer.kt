@@ -34,7 +34,7 @@ public class EnroDependencyContainer internal constructor(
         @Suppress("UNCHECKED_CAST") // We know that the type is correct
         return bindings[type]?.value as? T
             ?: parentScope?.get(type)
-            ?: throw NullPointerException()
+            ?: error("There is no dependency registered for type $type")
     }
 
     @PublishedApi

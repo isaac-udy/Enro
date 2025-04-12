@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.container.backstackOf
 import dev.enro.core.controller.EnroDependencyScope
+import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
 import dev.enro.core.internal.EnroLog
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
@@ -150,7 +151,7 @@ public fun NavigationHandle.requestClose() {
 internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
     val isMainThread = runCatching {
         isMainThread()
-    }.getOrElse { dependencyScope.get<EnroConfig>().isInTest } // if the controller is in a Jvm only test, the block above may fail to run
+    }.getOrElse { enroConfig.isInTest } // if the controller is in a Jvm only test, the block above may fail to run
 
     if (isMainThread && lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
         block()
@@ -164,7 +165,7 @@ internal fun NavigationHandle.runWhenHandleActive(block: () -> Unit) {
 
 internal val NavigationHandle.enroConfig: EnroConfig
     get() = runCatching {
-        dependencyScope.get<EnroConfig>()
+        dependencyScope.get<NavigationController>().config
     }.getOrElse { EnroConfig() }
 
 

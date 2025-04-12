@@ -36,7 +36,7 @@ public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.forwa
                 // Synthetic destinations don't really "exist" in the graph, so we only want to pass-on the forwarding
                 // result id if the synthetic instruction itself had a forwarding result id, rather than
                 // begin a new forwarding chain like we would for a "normal" forwarding operation
-                if(extras[AdvancedResultExtensions.FORWARDING_RESULT_FROM_EXTRA] == instruction.instructionId) {
+                if(extras.get<String>(AdvancedResultExtensions.FORWARDING_RESULT_FROM_EXTRA) == instruction.instructionId) {
                     extras.remove(AdvancedResultExtensions.FORWARDING_RESULT_FROM_EXTRA)
                 }
             }

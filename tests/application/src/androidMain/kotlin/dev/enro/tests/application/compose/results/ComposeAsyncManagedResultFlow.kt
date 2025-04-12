@@ -234,10 +234,10 @@ fun ComposeAsyncManagedResultFlowStepResultScreen() {
             Text("Continue (B)")
         }
 
-        val extra = navigation.instruction.extras["flowResultExtra"]
+        val extra = navigation.instruction.extras.get<Int>("flowResultExtra")
         if (extra != null) {
             Text(
-                text = "Extra: ${navigation.instruction.extras["flowResultExtra"]}",
+                text = "Extra: $extra",
                 style = MaterialTheme.typography.caption
             )
         }

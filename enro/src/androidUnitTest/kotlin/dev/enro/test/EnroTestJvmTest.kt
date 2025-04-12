@@ -1,6 +1,7 @@
 package dev.enro.test
 
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.onActiveContainer
 import dev.enro.core.onContainer
 import dev.enro.core.onParentContainer
@@ -12,7 +13,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
-import java.util.UUID
+import java.util.*
 
 class EnroTestJvmTest {
 
@@ -51,7 +52,7 @@ class EnroTestJvmTest {
     @Test
     fun whenPutNavigationHandleForTesting_andViewModelRequestsResult_thenResultIsVerified() {
         val navigationHandle = putNavigationHandleForViewModel<TestTestViewModel>(TestTestNavigationKey())
-        val viewModel = factory.create(TestTestViewModel::class.java)
+        val viewModel = factory.create(TestTestViewModel::class, CreationExtras.Empty)
         assertNotNull(viewModel)
 
         viewModel.openStringOne()
@@ -118,7 +119,7 @@ class EnroTestJvmTest {
     @Test
     fun givenViewModelWithResult_whenViewModelSendsResult_thenResultIsVerified() {
         val navigationHandle = putNavigationHandleForViewModel<TestResultStringViewModel>(TestResultStringKey())
-        val viewModel = factory.create(TestResultStringViewModel::class.java)
+        val viewModel = factory.create(TestResultStringViewModel::class, CreationExtras.Empty)
         assertNotNull(viewModel)
 
         val expectedResult = UUID.randomUUID().toString()
@@ -209,7 +210,7 @@ class EnroTestJvmTest {
     @Test
     fun givenFlowViewModel_whenFlowIsExecuted_thenFlowCompletesAsExpected() {
         val navigationHandle = putNavigationHandleForViewModel<FlowViewModel>(FlowTestKey)
-        factory.create(FlowViewModel::class.java)
+        factory.create(FlowViewModel::class, CreationExtras.Empty)
 
         val expected = FlowData(
             first = UUID.randomUUID().toString(),

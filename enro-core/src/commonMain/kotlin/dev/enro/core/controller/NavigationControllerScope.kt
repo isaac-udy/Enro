@@ -1,5 +1,6 @@
 package dev.enro.core.controller
 
+import dev.enro.core.EnroConfig
 import dev.enro.core.controller.repository.ComposeEnvironmentRepository
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.controller.repository.NavigationAnimationRepository
@@ -31,6 +32,7 @@ internal class NavigationControllerScope(
         parentScope = null,
         registration = {
             register { navigationController }
+            register<EnroConfig> { navigationController.config }
 
             register { EnroResult() }
 

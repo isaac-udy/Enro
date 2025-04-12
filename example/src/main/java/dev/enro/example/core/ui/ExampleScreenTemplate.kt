@@ -28,6 +28,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.savedstate.write
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
@@ -83,7 +84,9 @@ fun ExampleScreenTemplate(
     val navigation = navigationHandle()
     val backstack = parentContainer?.backstack ?: emptyBackstack()
     var backstackItems by remember { mutableStateOf(listOf<String>()) }
-    navigation.instruction.extras["example"] = navigation.sentenceId
+    navigation.instruction.extras.write {
+        putString("example", navigation.sentenceId)
+    }
 
     val ticks by viewModel.ticks.collectAsState()
     val savedState = rememberSaveable { Uuid.random().toString() }
@@ -191,11 +194,13 @@ private fun defaultNavigationOverflow(): List<Pair<String, NavigationInstruction
     "Present (Compose)" to NavigationInstruction.Present(ExampleComposable()),
     "Present Dialog (Compose)" to NavigationInstruction.Present(DialogComposable()),
     "Present Bottom Sheet (Compose)" to NavigationInstruction.Present(BottomSheetComposable()),
-    "Replace Root (Compose)" to NavigationInstruction.ReplaceRoot(ExampleComposable()),
+    // TODO add replace root instruction?
+//    "Replace Root (Compose)" to NavigationInstruction.ReplaceRoot(ExampleComposable()),
     "Fragment" to null,
     "Present (Fragment)" to NavigationInstruction.Present(ExampleFragment()),
     "Present Dialog (Fragment)" to NavigationInstruction.Present(DialogFragmentKey()),
-    "Replace Root (Fragment)" to NavigationInstruction.ReplaceRoot(ExampleFragment()),
+    // TODO add replace root instruction?
+//    "Replace Root (Fragment)" to NavigationInstruction.ReplaceRoot(ExampleFragment()),
     "" to null,
     "Save/Restore State" to NavigationInstruction.Present(SaveRootState()),
     "Close" to NavigationInstruction.Close,

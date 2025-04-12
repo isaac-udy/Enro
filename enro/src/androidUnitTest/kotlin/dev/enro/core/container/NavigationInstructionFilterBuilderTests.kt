@@ -6,7 +6,7 @@ import dev.enro.core.asPush
 import kotlinx.parcelize.Parcelize
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.util.UUID
+import java.util.*
 
 class NavigationInstructionFilterBuilderTests {
 
@@ -123,26 +123,31 @@ class NavigationInstructionFilterBuilderTests {
     object TestKeys {
         @Parcelize
         data class One(val parameter: String = UUID.randomUUID().toString()) :
+            Parcelable,
             NavigationKey.SupportsPush,
             NavigationKey.SupportsPresent
 
         @Parcelize
         data class Two(val parameter: String = UUID.randomUUID().toString()) :
+            Parcelable,
             NavigationKey.SupportsPush,
             NavigationKey.SupportsPresent
 
         @Parcelize
         data class Three(val parameter: String = UUID.randomUUID().toString()) :
+            Parcelable,
             NavigationKey.SupportsPush,
             NavigationKey.SupportsPresent
 
         @Parcelize
         data class Four(val parameter: String = UUID.randomUUID().toString()) :
+            Parcelable,
             NavigationKey.SupportsPush,
             NavigationKey.SupportsPresent
 
         @Parcelize
         data class Five(val parameter: String = UUID.randomUUID().toString()) :
+            Parcelable,
             NavigationKey.SupportsPush,
             NavigationKey.SupportsPresent
 

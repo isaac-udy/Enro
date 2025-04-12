@@ -1,7 +1,6 @@
 package dev.enro.test
 
 import android.os.Parcelable
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.core.NavigationContainerKey
@@ -10,15 +9,15 @@ import dev.enro.core.close
 import dev.enro.core.closeWithResult
 import dev.enro.core.container.push
 import dev.enro.core.container.setBackstack
-import dev.enro.core.forward
 import dev.enro.core.onActiveContainer
 import dev.enro.core.onContainer
 import dev.enro.core.onParentContainer
+import dev.enro.core.push
 import dev.enro.core.result.flows.registerForFlowResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
-import java.util.UUID
+import java.util.*
 
 @Parcelize
 data class TestTestKeyWithData(
@@ -29,6 +28,7 @@ val testContainerKey = NavigationContainerKey.FromName("test container")
 
 @Parcelize
 class TestResultStringKey(val id: String = UUID.randomUUID().toString()) :
+    Parcelable,
     NavigationKey.SupportsPush.WithResult<String>,
     NavigationKey.SupportsPresent.WithResult<String>
 
@@ -41,14 +41,14 @@ class TestResultStringViewModel : ViewModel() {
 }
 
 @Parcelize
-class TestResultIntKey : NavigationKey.WithResult<Int>
+class TestResultIntKey : Parcelable, NavigationKey.SupportsPush.WithResult<Int>
 
 class TestResultIntViewModel : ViewModel() {
     private val navigation by navigationHandle<TestResultIntKey>()
 }
 
 @Parcelize
-class TestTestNavigationKey : NavigationKey
+class TestTestNavigationKey : Parcelable, NavigationKey
 
 class TestTestViewModel : ViewModel() {
     private val navigation by navigationHandle<TestTestNavigationKey> {
@@ -86,19 +86,19 @@ class TestTestViewModel : ViewModel() {
     }
 
     fun openStringOne() {
-        stringOne.open(TestResultStringKey())
+        stringOne.push(TestResultStringKey())
     }
 
     fun openStringTwo() {
-        stringTwo.open(TestResultStringKey())
+        stringTwo.push(TestResultStringKey())
     }
 
     fun openIntOne() {
-        intOne.open(TestResultIntKey())
+        intOne.push(TestResultIntKey())
     }
 
     fun openIntTwo() {
-        intTwo.open(TestResultIntKey())
+        intTwo.push(TestResultIntKey())
     }
 
     fun parentContainerOperation(id: String) {
@@ -126,12 +126,12 @@ class TestTestViewModel : ViewModel() {
     }
 
     fun forwardToTestWithData(id: String) {
-        navigation.forward(TestTestKeyWithData(id))
+        navigation.push(TestTestKeyWithData(id))
     }
 }
 
 @Parcelize
-object FlowTestKey : NavigationKey.SupportsPresent.WithResult<FlowData>
+object FlowTestKey : Parcelable, NavigationKey.SupportsPresent.WithResult<FlowData>
 
 data class FlowData(
     val first: String,
@@ -144,7 +144,6 @@ data class FlowData(
 class FlowViewModel() : ViewModel() {
     val navigation by navigationHandle<FlowTestKey>()
     val flow by registerForFlowResult(
-        savedStateHandle = SavedStateHandle(),
         flow = {
             val first = push { TestResultStringKey("first") }
             val second = push { TestResultStringKey("second") }

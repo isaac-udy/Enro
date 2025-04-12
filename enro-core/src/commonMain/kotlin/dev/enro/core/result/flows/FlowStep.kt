@@ -1,12 +1,11 @@
 package dev.enro.core.result.flows
 
 import androidx.savedstate.SavedState
-import androidx.savedstate.savedState
 import androidx.savedstate.serialization.decodeFromSavedState
 import androidx.savedstate.serialization.encodeToSavedState
-import androidx.savedstate.serialization.serializers.SavedStateSerializer
 import dev.enro.core.NKSerializer
 import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationInstructionExtras
 import dev.enro.core.NavigationKey
 import dev.enro.core.NavigationKeySerializer
 import kotlinx.serialization.Serializable
@@ -21,7 +20,7 @@ public sealed interface FlowStepConfiguration {
 public class FlowStep<Result : Any> private constructor(
     @PublishedApi internal val stepId: String,
     @PublishedApi internal val key: @Serializable(with = NKSerializer::class) NavigationKey,
-    @PublishedApi internal val extras: @Serializable(with = SavedStateSerializer::class) SavedState,
+    @PublishedApi internal val extras: NavigationInstructionExtras,
     @PublishedApi internal val dependsOn: Long,
     @PublishedApi internal val direction: NavigationDirection,
     @PublishedApi internal val configuration: Set<FlowStepConfiguration>,
@@ -37,7 +36,7 @@ public class FlowStep<Result : Any> private constructor(
     ) : this(
         stepId = stepId,
         key = key,
-        extras = savedState(),
+        extras = NavigationInstructionExtras(),
         dependsOn = dependsOn.hashForDependsOn(),
         direction = direction,
         configuration = configuration,

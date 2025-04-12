@@ -1,9 +1,5 @@
 package dev.enro.core.container
 
-import androidx.savedstate.read
-import androidx.savedstate.serialization.decodeFromSavedState
-import androidx.savedstate.serialization.encodeToSavedState
-import androidx.savedstate.write
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
@@ -22,9 +18,9 @@ internal fun AnyOpenInstruction.asPresentInstruction(): OpenPresentInstruction =
 
 @PublishedApi
 internal fun AnyOpenInstruction.originalNavigationDirection(): NavigationDirection {
-    val originalDirection = extras.read { this.getSavedStateOrNull(ORIGINAL_NAVIGATION_DIRECTION) }
+    val originalDirection = extras.get<NavigationDirection>(ORIGINAL_NAVIGATION_DIRECTION)
     if (originalDirection != null) {
-        return extras.read { decodeFromSavedState(getSavedState(ORIGINAL_NAVIGATION_DIRECTION)) }
+        return originalDirection
     }
     return navigationDirection
 }
@@ -35,14 +31,9 @@ internal fun <T : NavigationDirection> AnyOpenInstruction.asDirection(direction:
     return internal.copy(
         navigationDirection = direction,
         extras = extras.apply {
-            val originalDirection = read { this.getSavedStateOrNull(ORIGINAL_NAVIGATION_DIRECTION) }
+            val originalDirection = get<NavigationDirection>(ORIGINAL_NAVIGATION_DIRECTION)
             if (originalDirection != null) return@apply
-            extras.write {
-                putSavedState(
-                    ORIGINAL_NAVIGATION_DIRECTION,
-                    encodeToSavedState(navigationDirection)
-                )
-            }
+            put(ORIGINAL_NAVIGATION_DIRECTION, NavigationDirection.Serializer, navigationDirection)
         }
     ) as NavigationInstruction.Open<T>
 }

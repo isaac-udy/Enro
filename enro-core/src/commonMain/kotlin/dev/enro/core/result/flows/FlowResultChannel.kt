@@ -11,6 +11,7 @@ import dev.enro.core.NKSerializer
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationInstructionExtras
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.toBackstack
 import dev.enro.core.controller.usecase.extras
@@ -22,6 +23,7 @@ import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.getNavigationHandle
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.serialization.builtins.serializer
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 
@@ -160,8 +162,8 @@ public class NavigationFlow<T> internal constructor(
                         navigationKey = step.key,
                         resultKey = step,
                         resultId = resultChannelId,
-                        extras = savedState {
-                            putBoolean(IS_PUSHED_IN_FLOW, (step.direction is NavigationDirection.Push))
+                        extras = NavigationInstructionExtras().apply {
+                            put(IS_PUSHED_IN_FLOW, Boolean.serializer(), (step.direction is NavigationDirection.Push))
                             putAll(step.extras)
                         },
                     )

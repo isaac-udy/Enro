@@ -1,22 +1,18 @@
 package dev.enro.core.result
 
-import androidx.savedstate.read
-import androidx.savedstate.write
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.result.internal.PendingResult
+import kotlinx.serialization.builtins.serializer
 
 @AdvancedEnroApi
 public object AdvancedResultExtensions {
 
     public fun getForwardingInstructionId(instruction: NavigationInstruction.Open<*>): String? {
-        return instruction.extras.read {
-            if (!contains(FORWARDING_RESULT_FROM_EXTRA)) return null
-            getString(FORWARDING_RESULT_FROM_EXTRA)
-        }
+        return instruction.extras.get(FORWARDING_RESULT_FROM_EXTRA)
     }
 
     public fun <T : NavigationDirection> getInstructionToForwardResult(
@@ -31,16 +27,12 @@ public object AdvancedResultExtensions {
             resultKey = originalInstruction.internal.resultKey
                 ?: originalInstruction.navigationKey
         ).apply {
-            extras.write {
-                val originalForwardingInstructionId = originalInstruction.extras.read {
-                    if (!contains(FORWARDING_RESULT_FROM_EXTRA)) return@read null
-                    getString(FORWARDING_RESULT_FROM_EXTRA)
-                }
-                putString(
-                    FORWARDING_RESULT_FROM_EXTRA,
-                    originalForwardingInstructionId ?: originalInstruction.instructionId,
-                )
-            }
+            val originalForwardingInstructionId = originalInstruction.extras.get<String>(FORWARDING_RESULT_FROM_EXTRA)
+            extras.put(
+                FORWARDING_RESULT_FROM_EXTRA,
+                String.serializer(),
+                originalForwardingInstructionId ?: originalInstruction.instructionId,
+            )
         }
     }
 

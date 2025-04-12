@@ -2,11 +2,6 @@ package dev.enro.core
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.savedstate.SavedState
-import androidx.savedstate.read
-import androidx.savedstate.savedState
-import androidx.savedstate.serialization.serializers.SavedStateSerializer
-import androidx.savedstate.write
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.result.internal.ResultChannelId
 import kotlinx.serialization.Serializable
@@ -25,7 +20,7 @@ public sealed class NavigationInstruction {
     public sealed class Open<T : NavigationDirection> : NavigationInstruction() {
         public abstract val navigationDirection: T
         public abstract val navigationKey: NavigationKey
-        public abstract val extras: SavedState
+        public abstract val extras: NavigationInstructionExtras
         public abstract val instructionId: String
 
         internal val internal by lazy { this as OpenInternal<NavigationDirection> }
@@ -45,7 +40,7 @@ public sealed class NavigationInstruction {
         internal data class OpenInternal<T : NavigationDirection> constructor(
             override val navigationDirection: @Serializable(with = NavigationDirection.Serializer::class) T,
             override val navigationKey: @Serializable(with = NKSerializer::class) NavigationKey,
-            override val extras: @Serializable(with = SavedStateSerializer::class) SavedState = savedState(),
+            override val extras: NavigationInstructionExtras = NavigationInstructionExtras(),
             override val instructionId: String = Uuid.random().toString(),
             val previouslyActiveContainer: NavigationContainerKey? = null,
             val openingType: String? = null,
@@ -87,7 +82,7 @@ public sealed class NavigationInstruction {
                 }
                 val id = instructionId
                 val key = navigationKey
-                val extras = extras.takeIf { it.read { isEmpty() } }?.let {
+                val extras = extras.values.takeIf { it.isNotEmpty() }?.let {
                     ", extras=$it"
                 } ?: ""
                 return "NavigationInstruction.Open<$directionName>(instructionId=$id, navigationKey=$key$extras)"
@@ -171,7 +166,7 @@ public sealed class NavigationInstruction {
             navigationDirection = NavigationDirection.Push,
             navigationKey = navigationKey.navigationKey,
         ).apply {
-            extras.write { putAll(navigationKey.extras) }
+            extras.putAll(navigationKey.extras)
         }
 
         @Suppress("FunctionName") // mimicking constructor
@@ -189,7 +184,7 @@ public sealed class NavigationInstruction {
             navigationDirection = NavigationDirection.Present,
             navigationKey = navigationKey.navigationKey,
         ).apply {
-            extras.write { putAll(navigationKey.extras) }
+            extras.putAll(navigationKey.extras)
         }
 
         @Suppress("FunctionName") // mimicking constructor

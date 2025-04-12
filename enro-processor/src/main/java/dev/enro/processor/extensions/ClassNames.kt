@@ -50,7 +50,7 @@ object ClassNames {
 
         val managedFlowNavigationBindingKt = JavaClassName.get(
             "dev.enro.destination.flow",
-            "ManagedFlowNavigationBindingKt"
+            "ManagedFlowNavigationBinding_androidKt"
         )
 
         val composableDestination = JavaClassName.get(

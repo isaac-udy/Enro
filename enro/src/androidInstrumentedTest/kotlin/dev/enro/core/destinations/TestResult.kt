@@ -1,8 +1,7 @@
 package dev.enro.core.destinations
 
 import android.os.Parcelable
-import androidx.savedstate.read
-import androidx.savedstate.write
+import androidx.savedstate.serialization.serializers.ParcelableSerializer
 import dev.enro.core.NavigationHandle
 import kotlinx.parcelize.Parcelize
 
@@ -11,16 +10,17 @@ data class TestResult(
     val id: String
 ): Parcelable
 
+internal object TestResultSerializer : ParcelableSerializer<TestResult>()
 private const val REGISTERED_TEST_RESULT = "dev.enro.core.destinations.registeredTestResult"
 fun NavigationHandle.registerTestResult(result: TestResult) {
-    instruction.extras.write {
-        putParcelable(REGISTERED_TEST_RESULT, result)
-    }
+    instruction.extras.put(REGISTERED_TEST_RESULT, TestResultSerializer, result)
 }
 
 fun NavigationHandle.hasTestResult(): Boolean {
-    return instruction.extras.containsKey(REGISTERED_TEST_RESULT)
+    return instruction.extras.values.containsKey(REGISTERED_TEST_RESULT)
 }
 fun NavigationHandle.expectTestResult(): TestResult {
-    return instruction.extras.read { getParcelable(REGISTERED_TEST_RESULT) }
+    return instruction.extras.get(REGISTERED_TEST_RESULT) ?: throw IllegalStateException(
+        "Expected test result to be registered, but none was found"
+    )
 }

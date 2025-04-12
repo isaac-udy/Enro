@@ -13,9 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.savedstate.read
 import androidx.savedstate.serialization.serializers.ParcelableSerializer
-import androidx.savedstate.write
 import dev.enro.core.*
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.result.AdvancedResultExtensions
@@ -68,7 +66,7 @@ public fun <R: Any, Key: NavigationKey.SupportsPresent.WithResult<R>> activityRe
     )
     val parameters = scope.block() as ActivityResultParameters<Any, Any, Any>
 
-    val pendingResult = instruction.extras.read { getParcelable<ActivityResult>(PENDING_ACTIVITY_RESULT) }
+    val pendingResult = instruction.extras.get<ActivityResult>(PENDING_ACTIVITY_RESULT)
     if (pendingResult != null) {
         val parsedResult = parameters.contract.parseResult(pendingResult.resultCode, pendingResult.data)
         val mappedResult = parsedResult?.let { parameters.result(it) }
@@ -129,7 +127,7 @@ internal fun ActivityResultBridge() {
     ) { result ->
         navigation.executeInstruction(
             navigation.key.wrapped.apply {
-                extras.write { putParcelable(PENDING_ACTIVITY_RESULT, result) }
+                extras.put(PENDING_ACTIVITY_RESULT, result)
             }
         )
         navigation.close()
