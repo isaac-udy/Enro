@@ -121,4 +121,4 @@ jobs:
         if: steps.changes.outputs.isCodeChange == 'true'
         env:
           EW_API_TOKEN: ${{ secrets.EW_API_TOKEN }}
-        run: ./gradlew :enro:testDebugWithEmulatorWtf :enro:testDebugUnitTest :tests:application:testDebugWithEmulatorWtf :tests:application:testDebugUnitTest
+        run: ./gradlew :enro:testDebugWithEmulatorWtf :enro:testDebugUnitTest :tests:application:testDebugWithEmulatorWtf :tests:application:testDebugUnitTest --continue
