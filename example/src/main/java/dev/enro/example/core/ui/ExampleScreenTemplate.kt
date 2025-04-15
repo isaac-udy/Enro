@@ -28,7 +28,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.savedstate.write
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
@@ -84,9 +83,7 @@ fun ExampleScreenTemplate(
     val navigation = navigationHandle()
     val backstack = parentContainer?.backstack ?: emptyBackstack()
     var backstackItems by remember { mutableStateOf(listOf<String>()) }
-    navigation.instruction.extras.write {
-        putString("example", navigation.sentenceId)
-    }
+    navigation.instruction.extras.put("example", navigation.sentenceId)
 
     val ticks by viewModel.ticks.collectAsState()
     val savedState = rememberSaveable { Uuid.random().toString() }

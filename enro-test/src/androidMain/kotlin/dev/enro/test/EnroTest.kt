@@ -58,16 +58,8 @@ object EnroTest {
                     isInTest = false
                 )
             )
-        }
-
-        navigationController?.apply {
-            setConfig(
-                config.copy(
-                    isInTest = false
-                )
-            )
-            uninstall(Unit)
             if (application is NavigationApplication) return@apply
+            uninstall(Unit)
             uninstall(application ?: return@apply)
         }
         navigationController = null

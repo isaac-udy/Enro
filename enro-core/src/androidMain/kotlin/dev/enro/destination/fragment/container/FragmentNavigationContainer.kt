@@ -433,17 +433,21 @@ public fun FragmentNavigationContainer.setVisibilityAnimated(
     if (!view.isVisible && !isVisible) return
     if (view.isVisible && isVisible) return
 
-    view.animate(0
-//        animOrAnimator = when (isVisible) {
+    view.animate(
+        animOrAnimator = when (isVisible) {
+            true -> android.R.anim.fade_in
+            false -> android.R.anim.fade_out
+        },
+//        when (isVisible) {
 //            true -> animations.entering.asResource(view.context.theme).id
 //            false -> animations.exiting.asResource(view.context.theme).id
 //        },
-//        onAnimationStart = {
-//            view.translationZ = if (isVisible) 0f else -1f
-//            view.isVisible = true
-//        },
-//        onAnimationEnd = {
-//            view.isVisible = isVisible
-//        }
+        onAnimationStart = {
+            view.translationZ = if (isVisible) 0f else -1f
+            view.isVisible = true
+        },
+        onAnimationEnd = {
+            view.isVisible = isVisible
+        }
     )
 }
