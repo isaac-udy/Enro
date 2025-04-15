@@ -11,9 +11,10 @@ data class TestResult(
 ): Parcelable
 
 internal object TestResultSerializer : ParcelableSerializer<TestResult>()
+
 private const val REGISTERED_TEST_RESULT = "dev.enro.core.destinations.registeredTestResult"
 fun NavigationHandle.registerTestResult(result: TestResult) {
-    instruction.extras.put(REGISTERED_TEST_RESULT, TestResultSerializer, result)
+    instruction.extras.put(REGISTERED_TEST_RESULT, result)
 }
 
 fun NavigationHandle.hasTestResult(): Boolean {

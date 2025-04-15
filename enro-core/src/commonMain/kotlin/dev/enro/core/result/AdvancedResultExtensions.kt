@@ -6,7 +6,6 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.result.internal.PendingResult
-import kotlinx.serialization.builtins.serializer
 
 @AdvancedEnroApi
 public object AdvancedResultExtensions {
@@ -30,7 +29,6 @@ public object AdvancedResultExtensions {
             val originalForwardingInstructionId = originalInstruction.extras.get<String>(FORWARDING_RESULT_FROM_EXTRA)
             extras.put(
                 FORWARDING_RESULT_FROM_EXTRA,
-                String.serializer(),
                 originalForwardingInstructionId ?: originalInstruction.instructionId,
             )
         }

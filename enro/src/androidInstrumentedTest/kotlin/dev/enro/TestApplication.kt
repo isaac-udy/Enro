@@ -3,12 +3,13 @@ package dev.enro
 import android.app.Application
 import android.os.Build
 import dev.enro.annotations.NavigationComponent
-import dev.enro.core.compose.composableDestination
 import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.createNavigationController
 import dev.enro.core.destinations.ComposableDestinations
 import dev.enro.core.destinations.ManuallyBoundComposableScreen
+import dev.enro.core.destinations.TestResultSerializer
 import dev.enro.core.plugins.EnroLogger
+import dev.enro.destination.compose.composableDestination
 import dev.enro.test.EnroTest
 import leakcanary.AppWatcher
 import leakcanary.LeakCanary
@@ -19,6 +20,7 @@ open class TestApplication : Application(), NavigationApplication {
     override val navigationController = createNavigationController {
         plugin(EnroLogger())
         plugin(TestPlugin)
+        registerSerializer(TestResultSerializer)
 
         composableDestination<ComposableDestinations.ManuallyBound> { ManuallyBoundComposableScreen() }
     }.also { EnroTest.disableAnimations(it) }

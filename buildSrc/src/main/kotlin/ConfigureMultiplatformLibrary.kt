@@ -17,6 +17,9 @@ internal fun Project.configureMultiplatformLibrary() {
 
     val androidExtension = project.extensions.getByType(LibraryExtension::class.java)
     androidExtension.apply {
+        buildFeatures {
+            buildConfig = true
+        }
         defaultConfig {
             minSdk = libs.versions.android.minSdk.get().toInt()
         }

@@ -19,7 +19,7 @@ fun Project.configureAndroidLibrary(
     commonAndroidConfig(namespace = namespace)
     extensions.configure<LibraryExtension> {
         buildFeatures {
-            buildConfig = false
+            buildConfig = true
             viewBinding = false
         }
     }
@@ -31,7 +31,7 @@ fun Project.configureAndroidApp(
     commonAndroidConfig(namespace = namespace)
     extensions.configure<ApplicationExtension> {
         buildFeatures {
-            buildConfig = false
+            buildConfig = true
             viewBinding = false
         }
     }

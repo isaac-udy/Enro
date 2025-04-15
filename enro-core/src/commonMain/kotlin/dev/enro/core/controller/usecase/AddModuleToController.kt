@@ -8,6 +8,7 @@ import dev.enro.core.controller.repository.NavigationAnimationRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.NavigationHostFactoryRepository
 import dev.enro.core.controller.repository.PluginRepository
+import dev.enro.core.controller.repository.SerializerRepository
 
 // The following @OptIn shouldn't be required due to buildSrc/src/main/kotlin/configureAndroid.kt adding an -Xopt-in arg
 // to the Kotlin freeCompilerArgs, but for some reason, lint checks will fail if the @OptIn annotation is not explicitly added.
@@ -19,14 +20,15 @@ internal class AddModuleToController(
     private val animationRepository: NavigationAnimationRepository,
     private val composeEnvironmentRepository: ComposeEnvironmentRepository,
     private val navigationHostFactoryRepository: NavigationHostFactoryRepository,
+    private val serializerRepository: SerializerRepository,
 ) {
-
     operator fun invoke(module: NavigationModule) {
         pluginRepository.addPlugins(module.plugins)
         navigationBindingRepository.addNavigationBindings(module.bindings)
         interceptorRepository.addInterceptors(module.interceptors)
         module.animations.forEach { animationRepository.addAnimations(it) }
         module.hostFactories.forEach { navigationHostFactoryRepository.addFactory(it) }
+        serializerRepository.registerSerializersModule(module.serializersModule)
 
         module.composeEnvironment.let { environment ->
             if (environment == null) return@let

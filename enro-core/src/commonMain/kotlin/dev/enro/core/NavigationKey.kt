@@ -1,9 +1,5 @@
 package dev.enro.core
 
-import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.serializer
-
 public interface NavigationKey {
     public interface WithResult<T: Any> : NavigationKey
 
@@ -23,7 +19,6 @@ public interface NavigationKey {
     public companion object
 }
 
-@OptIn(InternalSerializationApi::class)
 public fun <T: NavigationKey> T.withExtra(
     key: String,
     value: Any,
@@ -31,12 +26,11 @@ public fun <T: NavigationKey> T.withExtra(
     return NavigationKey.WithExtras(
         navigationKey = this,
         extras = NavigationInstructionExtras().apply {
-            put(key, value::class.serializer() as KSerializer<Any>, value)
+            put(key, value)
         }
     )
 }
 
-@OptIn(InternalSerializationApi::class)
 public fun <T: NavigationKey> NavigationKey.WithExtras<T>.withExtra(
     key: String,
     value: Any,
@@ -45,7 +39,7 @@ public fun <T: NavigationKey> NavigationKey.WithExtras<T>.withExtra(
         navigationKey = navigationKey,
         extras = NavigationInstructionExtras().apply {
             putAll(extras)
-            put(key, value::class.serializer() as KSerializer<Any>, value)
+            put(key, value)
         }
     )
 }

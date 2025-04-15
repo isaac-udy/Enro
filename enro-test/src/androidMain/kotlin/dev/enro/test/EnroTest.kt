@@ -22,6 +22,7 @@ object EnroTest {
             return null
         }
 
+    // TODO: Would be nice to add functionality to temporarily install a NavigationModule for a particular test
     fun installNavigationController() {
         if (navigationController != null) {
             uninstallNavigationController()

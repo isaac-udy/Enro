@@ -4,10 +4,18 @@ import androidx.compose.runtime.Composable
 import dev.enro.animation.NavigationAnimationOverride
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
-import dev.enro.core.*
+import dev.enro.core.NavigationBinding
+import dev.enro.core.NavigationHostFactory
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.repository.ComposeEnvironment
 import dev.enro.core.plugins.EnroPlugin
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.modules.EmptySerializersModule
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
+import kotlinx.serialization.modules.plus
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 
 public class NavigationModule {
     @PublishedApi
@@ -26,11 +34,15 @@ public class NavigationModule {
     internal val hostFactories: MutableList<NavigationHostFactory<*>> = mutableListOf()
 
     @PublishedApi
+    internal var serializersModule: SerializersModule = EmptySerializersModule()
+
+    @PublishedApi
     internal var composeEnvironment: ComposeEnvironment? = null
 }
 
 public class NavigationModuleScope internal constructor(
-    private val module: NavigationModule,
+    @PublishedApi
+    internal val module: NavigationModule,
 ) {
     public fun binding(binding: NavigationBinding<*, *>) {
         module.bindings.add(binding)
@@ -50,6 +62,15 @@ public class NavigationModuleScope internal constructor(
                 .apply(block)
                 .build(null)
         )
+    }
+
+    public inline fun <reified T: Any> registerSerializer(serializer: KSerializer<T>) {
+        module.serializersModule += SerializersModule {
+            polymorphic(Any::class) {
+                subclass(serializer)
+            }
+            contextual(serializer)
+        }
     }
 
     @AdvancedEnroApi

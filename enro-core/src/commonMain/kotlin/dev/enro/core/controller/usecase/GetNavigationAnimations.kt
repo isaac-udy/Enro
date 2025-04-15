@@ -12,7 +12,6 @@ internal class GetNavigationAnimations(
     private val controller: NavigationController,
     internal val navigationAnimationOverride: NavigationAnimationOverride,
 ) {
-
     fun opening(exiting: AnyOpenInstruction?, entering: AnyOpenInstruction): NavigationAnimationTransition {
         if (earlyExitForNoAnimation()) return DefaultAnimations.noOp
         val override = overrideForOpening(exiting, entering)

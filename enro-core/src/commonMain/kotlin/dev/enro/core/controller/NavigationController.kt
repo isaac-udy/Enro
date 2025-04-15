@@ -5,12 +5,14 @@ import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.PluginRepository
+import dev.enro.core.controller.repository.SerializerRepository
 import dev.enro.core.controller.usecase.AddModuleToController
 import dev.enro.core.result.EnroResult
+import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
 
-public class NavigationController internal constructor()  {
-    internal val  dependencyScope: EnroDependencyScope = NavigationControllerScope(this)
+public class NavigationController internal constructor() {
+    internal val dependencyScope: EnroDependencyScope = NavigationControllerScope(this)
 
     private val enroResult: EnroResult = dependencyScope.get()
     private val pluginRepository: PluginRepository = dependencyScope.get()
@@ -69,6 +71,21 @@ public class NavigationController internal constructor()  {
     public companion object {
         internal val navigationControllerBindings =
             mutableMapOf<Any, NavigationController>()
+
+        @PublishedApi
+        internal val serializersModule: SerializersModule
+            get() {
+                return SerializersModule {
+                    navigationControllerBindings.values
+                        .map {
+                            it.dependencyScope.get<SerializerRepository>()
+                                .serializersModule
+                        }
+                        .forEach {
+                            include(it)
+                        }
+                }
+            }
     }
 }
 

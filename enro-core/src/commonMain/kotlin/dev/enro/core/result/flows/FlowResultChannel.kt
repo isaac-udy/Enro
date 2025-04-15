@@ -23,7 +23,6 @@ import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.viewmodel.getNavigationHandle
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.serialization.builtins.serializer
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 
@@ -163,7 +162,7 @@ public class NavigationFlow<T> internal constructor(
                         resultKey = step,
                         resultId = resultChannelId,
                         extras = NavigationInstructionExtras().apply {
-                            put(IS_PUSHED_IN_FLOW, Boolean.serializer(), (step.direction is NavigationDirection.Push))
+                            put(IS_PUSHED_IN_FLOW, (step.direction is NavigationDirection.Push))
                             putAll(step.extras)
                         },
                     )
