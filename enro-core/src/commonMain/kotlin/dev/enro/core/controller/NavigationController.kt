@@ -37,6 +37,8 @@ public class NavigationController internal constructor() {
         return navigationBindingRepository.bindingForKeyType(keyType)
     }
 
+    // TODO do we need to bother with the install/uninstall stuff, or should
+    // we only allow a single controller at a time and throw otherwise?
     public fun install(application: NavigationApplication) {
         navigationControllerBindings[application] = this
         pluginRepository.onAttached(this)
@@ -44,11 +46,13 @@ public class NavigationController internal constructor() {
 
     // This method is called by the test module to install/uninstall Enro from test applications
     internal fun installForJvmTests() {
+        navigationControllerBindings[Unit] = this
         pluginRepository.onAttached(this)
     }
 
     // This method is called by the test module to install/uninstall Enro from test applications
     internal fun installForAny(application: Any) {
+        navigationControllerBindings[application] = this
         pluginRepository.onAttached(this)
     }
 
@@ -56,6 +60,7 @@ public class NavigationController internal constructor() {
     internal fun uninstall(application: Any) {
         pluginRepository.onDetached(this)
         navigationControllerBindings.remove(application)
+        navigationControllerBindings.remove(Unit)
     }
 
     /**

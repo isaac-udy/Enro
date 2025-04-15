@@ -22,7 +22,8 @@ public val Application.navigationController: NavigationController
     }
 
 public val NavigationController.isInAndroidContext: Boolean
-    get() = NavigationController.navigationControllerBindings.isNotEmpty()
+    get() = NavigationController.navigationControllerBindings.isNotEmpty() &&
+        NavigationController.navigationControllerBindings.keys.any { it is Application }
 
 internal val NavigationController.application: Application
     get() {

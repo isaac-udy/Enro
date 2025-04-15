@@ -66,6 +66,7 @@ object EnroTest {
                     isInTest = false
                 )
             )
+            uninstall(Unit)
             if (application is NavigationApplication) return@apply
             uninstall(application ?: return@apply)
         }
