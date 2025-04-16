@@ -81,6 +81,42 @@ internal class ActivityNavigationContainer internal constructor(
         return weakActivity.get()?.navigationContext
     }
 
+    // TODO save and restore activity container state?
+//    override fun save(): SavedState {
+//        val activity = weakActivity.get()!!
+//        return savedState {
+//            putString("activityNavigationContainerType", weakActivity.get()!!::class.java.name)
+//            putSavedStateArray(
+//                "childStates",
+//                activity.containerManager.containers.map {
+//                    savedState {
+//                        putString("id", it.key.name)
+//                        putSavedState("state", it.save())
+//                    }
+//                }.toTypedArray()
+//            )
+//        }
+//    }
+//
+//    override fun restore(savedState: SavedState) {
+//        val activityNavigationContainerType = savedState.getString("activityNavigationContainerType")
+//        val activity = weakActivity.get()!!
+//        if (activity::class.java.name != activityNavigationContainerType) {
+//            error("ActivityNavigationContainer was restored in a different activity. Expected: $activityNavigationContainerType, actual: ${activity::class.java.name}")
+//        }
+//        val childStates = savedState.read { getSavedStateArray("childStates") }
+//        childStates?.forEach { childState ->
+//            val id = childState.read { getString("id") }
+//            val state = childState.read { getSavedState("state") }
+//            val container = activity.containerManager.containers.firstOrNull { it.key.name == id }
+//            if (container != null) {
+//                container.restore(state)
+//            } else {
+//                error("Could not restore child state for $id")
+//            }
+//        }
+//    }
+
     override fun onBackstackUpdated(transition: NavigationBackstackTransition): Boolean {
         // When the backstack is updated, we need to check if there are pending results and close
         // immediately to ensure forwarding results work correctly

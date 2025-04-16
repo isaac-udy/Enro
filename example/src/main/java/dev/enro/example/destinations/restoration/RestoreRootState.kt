@@ -15,5 +15,8 @@ data class RestoreRootState(val state: Bundle) : Parcelable, NavigationKey.Suppo
 val restoreRootState = syntheticDestination<RestoreRootState> {
     navigationContext
         .requireRootContainer()
-        .restore(key.state)
+        .childContext
+        ?.containerManager
+        ?.activeContainer
+        ?.restore(key.state)
 }

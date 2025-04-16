@@ -15,7 +15,8 @@ class SaveRootState : Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(SaveRootState::class)
 val saveRootState = syntheticDestination<SaveRootState> {
-    val root = navigationContext.requireRootContainer()
+    val root = navigationContext.requireRootContainer().childContext?.containerManager?.activeContainer
+        ?: return@syntheticDestination
     val savedState = root.save()
     root.setBackstack { emptyBackstack().push(WaitForRestoration(savedState)) }
 }
