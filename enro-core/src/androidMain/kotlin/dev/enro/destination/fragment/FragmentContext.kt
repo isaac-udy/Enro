@@ -78,7 +78,7 @@ private fun configurePredictiveBackHandling(
         }
 
         override fun handleOnBackProgressed(backEvent: BackEventCompat) {
-            parentContainer?.backEvents?.tryEmit(NavigationContainerBackEvent.Progressed(navigationContext, backEvent))
+            parentContainer?.backEvents?.tryEmit(NavigationContainerBackEvent.Progressed(navigationContext))
         }
 
         override fun handleOnBackPressed() {

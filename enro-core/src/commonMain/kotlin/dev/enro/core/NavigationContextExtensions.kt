@@ -147,6 +147,7 @@ public fun NavigationContext<*>.rootContext(): NavigationContext<*> {
     }
 }
 
+// TODO this should be able to live in common
 public expect fun NavigationContext<*>.leafContext(): NavigationContext<*>
 
 /**

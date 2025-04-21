@@ -1,6 +1,5 @@
 package dev.enro.tests.application.compose.results
 
-import android.os.Parcelable
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -15,25 +14,25 @@ import dev.enro.core.closeWithResult
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.tests.application.compose.common.TitledColumn
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
-@Parcelize
-object ComposeMixedResultTypes : Parcelable, NavigationKey.SupportsPush {
-    @Parcelize
-    internal class StringResult : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+@Serializable
+object ComposeMixedResultTypes : NavigationKey.SupportsPush {
+    @Serializable
+    internal class StringResult : NavigationKey.SupportsPush.WithResult<String>
 
-    @Parcelize
-    internal class IntResult : Parcelable, NavigationKey.SupportsPush.WithResult<Int>
+    @Serializable
+    internal class IntResult : NavigationKey.SupportsPush.WithResult<Int>
 
-    @Parcelize
-    internal class ListOfStringResult : Parcelable, NavigationKey.SupportsPush.WithResult<List<String>>
+    @Serializable
+    internal class ListOfStringResult : NavigationKey.SupportsPush.WithResult<List<String>>
 
-    @Parcelize
-    internal class BooleanResult : Parcelable, NavigationKey.SupportsPush.WithResult<Boolean>
+    @Serializable
+    internal class BooleanResult : NavigationKey.SupportsPush.WithResult<Boolean>
 
-    @Parcelize
-    internal class AnotherObjectResult : Parcelable, NavigationKey.SupportsPush.WithResult<AnotherObject>
+    @Serializable
+    internal class AnotherObjectResult : NavigationKey.SupportsPush.WithResult<AnotherObject>
 }
 
 data class AnotherObject(
@@ -46,19 +45,19 @@ class ComposeMixedResultViewModel : ViewModel() {
     var currentResult by mutableStateOf("No Result")
 
     val stringChannel by registerForNavigationResult<String> {
-        currentResult = "${it::class.java.name} $it"
+        currentResult = "${it::class.qualifiedName} $it"
     }
     val intChannel by registerForNavigationResult<Int> {
-        currentResult = "${it::class.java.name} $it"
+        currentResult = "${it::class.qualifiedName} $it"
     }
     val listOfStringChannel by registerForNavigationResult<List<String>> {
-        currentResult = "${it::class.java.name} $it"
+        currentResult = "${it::class.qualifiedName} $it"
     }
     val booleanChannel by registerForNavigationResult<Boolean> {
-        currentResult = "${it::class.java.name} $it"
+        currentResult = "${it::class.qualifiedName} $it"
     }
     val anotherObjectChannel by registerForNavigationResult<AnotherObject> {
-        currentResult = "${it::class.java.name} $it"
+        currentResult = "${it::class.qualifiedName} $it"
     }
 }
 

@@ -1,6 +1,5 @@
 package dev.enro.core.compose.container
 
-import android.os.Bundle
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -13,7 +12,6 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModelStore
@@ -262,7 +260,7 @@ public class ComposableNavigationContainer internal constructor(
         if (!isParentContextStarted && shouldTakeAnimationsFromParentContainer) return
 
         val isParentBeingRemoved = when {
-            context.contextReference is Fragment && !context.contextReference.isAdded -> true
+//            context.contextReference is Fragment && !context.contextReference.isAdded -> true
             else -> false
         }
         val presented =

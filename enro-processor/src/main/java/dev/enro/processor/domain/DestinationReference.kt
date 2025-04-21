@@ -37,10 +37,10 @@ sealed class DestinationReference {
             .any { it.declaration.qualifiedName?.asString() == "androidx.fragment.app.Fragment" }
 
         val isSyntheticClass = declaration is KSClassDeclaration && declaration.getAllSuperTypes()
-            .any { it.declaration.qualifiedName?.asString() == "dev.enro.core.synthetic.SyntheticDestination" }
+            .any { it.declaration.qualifiedName?.asString() == "dev.enro.destination.synthetic.SyntheticDestination" }
 
         val isSyntheticProvider = declaration is KSPropertyDeclaration &&
-                declaration.type.resolve().declaration.qualifiedName?.asString() == "dev.enro.core.synthetic.SyntheticDestinationProvider"
+                declaration.type.resolve().declaration.qualifiedName?.asString() == "dev.enro.destination.synthetic.SyntheticDestinationProvider"
 
         val isManagedFlowProvider = declaration is KSPropertyDeclaration &&
                 declaration.type.resolve().declaration.qualifiedName?.asString() == "dev.enro.destination.flow.ManagedFlowDestinationProvider"
@@ -83,7 +83,7 @@ sealed class DestinationReference {
                 .firstOrNull { actualName == it.simpleName.toString() && it != element }
 
             val syntheticProviderMirror = processingEnv.elementUtils
-                .getTypeElement("dev.enro.core.synthetic.SyntheticDestinationProvider")
+                .getTypeElement("dev.enro.destination.synthetic.SyntheticDestinationProvider")
                 .asType()
             val erasedSyntheticProvider = processingEnv.typeUtils.erasure(syntheticProviderMirror)
             val erasedReturnType = processingEnv.typeUtils.erasure(syntheticElement!!.returnType)

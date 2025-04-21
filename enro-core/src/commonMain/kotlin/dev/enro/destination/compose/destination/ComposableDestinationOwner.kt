@@ -230,4 +230,4 @@ internal class ComposableDestinationOwner(
 internal val ComposableDestinationOwner.navigationController get() = parentContainer.context.controller
 internal val ComposableDestinationOwner.parentSavedStateRegistry get() = parentContainer.context.savedStateRegistryOwner.savedStateRegistry
 
-internal expect val EnroLocalSavedStateRegistryOwner: ProvidableCompositionLocal<SavedStateRegistryOwner>
+public expect val EnroLocalSavedStateRegistryOwner: ProvidableCompositionLocal<SavedStateRegistryOwner>

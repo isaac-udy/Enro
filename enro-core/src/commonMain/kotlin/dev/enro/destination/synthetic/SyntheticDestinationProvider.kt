@@ -1,4 +1,4 @@
-package dev.enro.core.synthetic
+package dev.enro.destination.synthetic
 
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
@@ -26,6 +26,6 @@ public class SyntheticDestinationProvider<T : NavigationKey> internal constructo
     }
 }
 
-public fun <T : NavigationKey> syntheticDestination(block: SyntheticDestinationScope<T>.() -> Unit): SyntheticDestinationProvider<T> {
+public fun <T : NavigationKey> syntheticDestinationProvider(block: SyntheticDestinationScope<T>.() -> Unit): SyntheticDestinationProvider<T> {
     return SyntheticDestinationProvider(block)
 }

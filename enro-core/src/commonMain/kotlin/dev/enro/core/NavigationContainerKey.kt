@@ -1,6 +1,5 @@
 package dev.enro.core
 
-import dev.enro.core.internal.EnroSerializable
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -39,7 +38,7 @@ public sealed class NavigationContainerKey {
 
     public class Dynamic internal constructor(
         override val name: String
-    ) : NavigationContainerKey(), EnroSerializable {
+    ) : NavigationContainerKey() {
         public constructor() : this("DynamicContainerKey(${Uuid.random()})")
     }
 
@@ -50,7 +49,7 @@ public sealed class NavigationContainerKey {
     public class FromId private constructor(
         public val id: Int,
         override val name: String
-    ) : NavigationContainerKey(), EnroSerializable {
+    ) : NavigationContainerKey() {
         public constructor(id: Int) : this(
             id = id,
             name = "FromId($id)"

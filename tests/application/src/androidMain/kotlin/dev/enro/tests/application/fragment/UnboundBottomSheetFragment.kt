@@ -16,7 +16,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.activity
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.requestClose
-import dev.enro.core.synthetic.syntheticDestination
+import dev.enro.destination.synthetic.syntheticDestination
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 

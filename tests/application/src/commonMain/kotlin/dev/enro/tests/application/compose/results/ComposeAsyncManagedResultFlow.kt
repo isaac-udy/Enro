@@ -2,10 +2,10 @@
 
 package dev.enro.tests.application.compose.results
 
-import android.os.Parcelable
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,9 +26,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.annotations.AdvancedEnroApi
@@ -47,21 +45,21 @@ import dev.enro.viewmodel.navigationHandle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import kotlin.random.Random
 
-@Parcelize
-object ComposeAsyncManagedResultFlow : Parcelable, NavigationKey.SupportsPush {
+@Serializable
+object ComposeAsyncManagedResultFlow : NavigationKey.SupportsPush {
 
-    @Parcelize
+    @Serializable
     internal class StepResult(
         val name: String,
-    ) : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+    ) : NavigationKey.SupportsPush.WithResult<String>
 
-    @Parcelize
+    @Serializable
     internal class FinalScreen(
         val data: String,
-    ) : Parcelable, NavigationKey.SupportsPush.WithResult<Unit>
+    ) : NavigationKey.SupportsPush.WithResult<Unit>
 
 }
 
@@ -76,9 +74,7 @@ data class ComposeAsyncFlowState(
     val dataAfterStepTwo: AsyncData<String>?,
 )
 
-class ComposeAsyncManagedResultViewModel(
-    savedStateHandle: SavedStateHandle,
-) : ViewModel() {
+class ComposeAsyncManagedResultViewModel : ViewModel() {
 
     private val navigation by navigationHandle<ComposeAsyncManagedResultFlow>()
 
@@ -91,7 +87,6 @@ class ComposeAsyncManagedResultViewModel(
     )
 
     val resultFlow by registerForFlowResult(
-        savedStateHandle = savedStateHandle,
         flow = {
             val initialData = async {
                 state.update { it.copy(initialData = AsyncData.Loading()) }
@@ -211,7 +206,7 @@ fun ComposeAsyncManagedResultFlowScreen(viewModel: ComposeAsyncManagedResultView
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = ContentAlpha.disabled))
-                    .pointerInteropFilter { true },
+                    .clickable { /* prevent clicks through */ },
                 contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()

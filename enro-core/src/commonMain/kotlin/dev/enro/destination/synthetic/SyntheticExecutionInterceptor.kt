@@ -5,7 +5,6 @@ import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
-import dev.enro.core.synthetic.SyntheticNavigationBinding
 
 internal object SyntheticExecutionInterceptor : NavigationInstructionInterceptor {
     override fun intercept(

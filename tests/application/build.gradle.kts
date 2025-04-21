@@ -37,11 +37,15 @@ android {
 kotlin {
     sourceSets {
         desktopMain.dependencies {
-            
+            implementation(libs.kotlin.reflect)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.androidx.savedState)
         }
         commonMain.dependencies {
             implementation("dev.enro:enro:${project.enroVersionName}")
             implementation(libs.kotlinx.serialization)
+            implementation(libs.compose.lifecycle)
         }
 
         androidMain.dependencies {

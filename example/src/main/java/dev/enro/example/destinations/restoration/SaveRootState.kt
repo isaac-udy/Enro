@@ -7,7 +7,7 @@ import dev.enro.core.container.emptyBackstack
 import dev.enro.core.container.push
 import dev.enro.core.container.setBackstack
 import dev.enro.core.requireRootContainer
-import dev.enro.core.synthetic.syntheticDestination
+import dev.enro.destination.synthetic.syntheticDestination
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

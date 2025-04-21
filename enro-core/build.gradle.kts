@@ -10,6 +10,8 @@ plugins {
 kotlin {
     sourceSets {
         desktopMain.dependencies {
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.coroutines.swing)
         }
         commonMain.dependencies {
             api("dev.enro:enro-annotations:${project.enroVersionName}")

@@ -40,11 +40,11 @@ object ClassNames {
         )
 
         val syntheticDestination = JavaClassName.get(
-            "dev.enro.core.synthetic",
+            "dev.enro.destination.synthetic",
             "SyntheticDestination"
         )
         val syntheticNavigationBindingKt = JavaClassName.get(
-            "dev.enro.core.synthetic",
+            "dev.enro.destination.synthetic",
             "SyntheticNavigationBindingKt"
         )
 

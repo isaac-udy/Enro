@@ -3,7 +3,6 @@ package dev.enro.core.result.flows
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
-import dev.enro.core.internal.EnroSerializable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -206,7 +205,7 @@ public open class NavigationFlowScope internal constructor(
 
 // TODO create a re-usable identifiable lambda class for more than just flow steps
 @PublishedApi
-internal interface FlowStepLambda<T: Any> : EnroSerializable {
+internal interface FlowStepLambda<T: Any> {
     fun FlowStepBuilderScope<T>.invoke(): NavigationKey.WithResult<T>
 }
 

@@ -1,6 +1,8 @@
-package dev.enro.core.synthetic
+package dev.enro.destination.synthetic
 
-import dev.enro.core.*
+import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
 
 public object DefaultSyntheticExecutor  {
     internal fun open(

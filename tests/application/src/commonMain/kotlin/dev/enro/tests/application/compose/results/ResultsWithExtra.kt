@@ -1,6 +1,5 @@
 package dev.enro.tests.application.compose.results
 
-import android.os.Parcelable
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -13,12 +12,12 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.registerForNavigationResult
 import dev.enro.core.withExtra
 import dev.enro.tests.application.compose.common.TitledColumn
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
-object ResultsWithExtra : Parcelable, NavigationKey.SupportsPush {
-    @Parcelize
-    internal object Sender : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+@Serializable
+object ResultsWithExtra : NavigationKey.SupportsPush {
+    @Serializable
+    internal object Sender : NavigationKey.SupportsPush.WithResult<String>
 }
 
 

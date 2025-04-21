@@ -1,6 +1,5 @@
 package dev.enro.tests.application.compose
 
-import android.os.Parcelable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -17,15 +16,15 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.accept
 import dev.enro.core.push
 import dev.enro.tests.application.compose.common.TitledColumn
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
-object HorizontalPager : Parcelable, NavigationKey.SupportsPush {
-    @Parcelize
-    internal class PageOne(val name: String) : Parcelable, NavigationKey.SupportsPush
+@Serializable
+object HorizontalPager : NavigationKey.SupportsPush {
+    @Serializable
+    internal class PageOne(val name: String) : NavigationKey.SupportsPush
 
-    @Parcelize
-    internal class PageTwo(val name: String) : Parcelable, NavigationKey.SupportsPush
+    @Serializable
+    internal class PageTwo(val name: String) : NavigationKey.SupportsPush
 }
 
 @OptIn(ExperimentalFoundationApi::class)

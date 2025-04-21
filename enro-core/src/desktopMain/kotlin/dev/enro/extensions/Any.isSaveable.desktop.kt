@@ -1,10 +1,5 @@
 package dev.enro.extensions
 
-import android.os.Binder
-import android.os.Parcelable
-import android.util.Size
-import android.util.SizeF
-import android.util.SparseArray
 import androidx.savedstate.SavedState
 import java.io.Serializable
 
@@ -32,11 +27,7 @@ internal actual fun Any.isSaveable(): Boolean {
  */
 private val AcceptableClasses = arrayOf(
     Serializable::class,
-    Parcelable::class,
     String::class,
-    SparseArray::class,
-    Binder::class,
-    Size::class,
-    SizeF::class,
+    Number::class,
     SavedState::class,
 )

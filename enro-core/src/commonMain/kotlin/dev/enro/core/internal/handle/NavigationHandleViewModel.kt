@@ -1,15 +1,10 @@
 package dev.enro.core.internal.handle
 
-import android.annotation.SuppressLint
-import android.os.Looper
-import androidx.activity.ComponentActivity
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.withResumed
 import androidx.lifecycle.withStarted
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
@@ -22,7 +17,6 @@ import dev.enro.core.controller.usecase.ExecuteContainerOperationInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.extras
 import dev.enro.core.directParentContainer
-import dev.enro.destination.compose.ComposableDestination
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
@@ -47,8 +41,7 @@ internal open class NavigationHandleViewModel(
             field = value
         }
 
-    @Suppress("LeakingThis")
-    @SuppressLint("StaticFieldLeak")
+    @Suppress("LeakingThis", "StaticFieldLeak")
     private val lifecycleRegistry = LifecycleRegistry(this)
 
     @Suppress("LeakingThis")

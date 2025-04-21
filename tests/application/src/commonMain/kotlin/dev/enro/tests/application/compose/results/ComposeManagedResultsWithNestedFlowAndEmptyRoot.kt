@@ -1,6 +1,5 @@
 package dev.enro.tests.application.compose.results
 
-import android.os.Parcelable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Button
@@ -11,7 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
@@ -24,8 +25,9 @@ import dev.enro.core.result.deliverResultFromPush
 import dev.enro.core.result.flows.registerForFlowResult
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.viewmodel.navigationHandle
+import dev.enro.viewmodel.withNavigationHandle
 import kotlinx.coroutines.delay
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 /**
  * A bug in Enro was identified, where a managed flow that has no root would not correctly work when navigating to a nested flow
@@ -40,23 +42,23 @@ import kotlinx.parcelize.Parcelize
  * This bug was fixed by ensuring that the ForwardingResultInterceptor does not automatically close the original destination
  * that called deliverResultForPush/Present if that destination was launched in a managed flow.
  */
-@Parcelize
-object ComposeManagedResultsWithNestedFlowAndEmptyRoot : Parcelable, NavigationKey.SupportsPush.WithResult<String> {
+@Serializable
+object ComposeManagedResultsWithNestedFlowAndEmptyRoot : NavigationKey.SupportsPush.WithResult<String> {
 
-    @Parcelize
-    internal class NestedFlow : Parcelable, NavigationKey.SupportsPush.WithResult<String> {
-        @Parcelize
-        internal class StepOne : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+    @Serializable
+    internal class NestedFlow : NavigationKey.SupportsPush.WithResult<String> {
+        @Serializable
+        internal class StepOne : NavigationKey.SupportsPush.WithResult<String>
 
-        @Parcelize
-        internal class StepTwo : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+        @Serializable
+        internal class StepTwo : NavigationKey.SupportsPush.WithResult<String>
     }
 
-    @Parcelize
-    internal class StepTwo : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+    @Serializable
+    internal class StepTwo : NavigationKey.SupportsPush.WithResult<String>
 
-    @Parcelize
-    internal class FinalScreen : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+    @Serializable
+    internal class FinalScreen : NavigationKey.SupportsPush.WithResult<String>
 
     @OptIn(ExperimentalEnroApi::class, AdvancedEnroApi::class)
     internal class FlowViewModel(
@@ -87,7 +89,16 @@ object ComposeManagedResultsWithNestedFlowAndEmptyRoot : Parcelable, NavigationK
 @NavigationDestination(ComposeManagedResultsWithNestedFlowAndEmptyRoot::class)
 @Composable
 internal fun ComposeManagedResultsWithNestedFlowAndEmptyRootDestination(
-    viewModel: ComposeManagedResultsWithNestedFlowAndEmptyRoot.FlowViewModel = viewModel()
+    viewModel: ComposeManagedResultsWithNestedFlowAndEmptyRoot.FlowViewModel = viewModel(
+        // TODO: This is not good, need to resolve
+        factory = viewModelFactory {
+            addInitializer(ComposeManagedResultsWithNestedFlowAndEmptyRoot.FlowViewModel::class) {
+                ComposeManagedResultsWithNestedFlowAndEmptyRoot.FlowViewModel(
+                    savedStateHandle = createSavedStateHandle(),
+                )
+            }
+        }.withNavigationHandle()
+    )
 ) {
     val container = rememberNavigationContainer(
         emptyBehavior = EmptyBehavior.CloseParent,

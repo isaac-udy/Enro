@@ -1,12 +1,12 @@
 package dev.enro.core.internal.handle
 
 import androidx.lifecycle.SAVED_STATE_REGISTRY_OWNER_KEY
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.VIEW_MODEL_STORE_OWNER_KEY
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.savedstate.SavedStateRegistryOwner
@@ -14,16 +14,13 @@ import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroException
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
+import kotlin.reflect.KClass
 
 internal class NavigationHandleViewModelFactory(
     private val navigationController: NavigationController,
     private val instruction: AnyOpenInstruction
 ) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return create(modelClass, CreationExtras.Empty)
-    }
-
-    override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+    override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
         if (navigationController.config.isInTest) {
             return TestNavigationHandleViewModel(
                 navigationController,
@@ -33,7 +30,7 @@ internal class NavigationHandleViewModelFactory(
 
         val scope = NavigationHandleScope(
             navigationController = navigationController,
-            savedStateHandle = extras.createSavedStateHandle(),
+            savedStateHandle = SavedStateHandle(), //extras.createSavedStateHandle(),
         )
         return NavigationHandleViewModel(
             instruction = instruction,
@@ -67,15 +64,8 @@ internal fun createNavigationHandleViewModel(
 internal class ExpectExistingNavigationHandleViewModelFactory(
     private val viewModelStoreOwner: ViewModelStoreOwner
 ) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        val name = viewModelStoreOwner::class.java.simpleName
-        throw EnroException.NoAttachedNavigationHandle(
-            "Attempted to get the NavigationHandle for $name, but $name not have a NavigationHandle attached."
-        )
-    }
-
-    override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-        val name = viewModelStoreOwner::class.java.simpleName
+    override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
+        val name = viewModelStoreOwner::class.simpleName
         throw EnroException.NoAttachedNavigationHandle(
             "Attempted to get the NavigationHandle for $name, but $name not have a NavigationHandle attached."
         )

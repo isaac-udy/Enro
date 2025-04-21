@@ -1,7 +1,5 @@
 package dev.enro.tests.application.compose.results
 
-import android.content.res.Configuration
-import android.os.Parcelable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,7 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.closeWithResult
@@ -31,18 +29,18 @@ import dev.enro.core.push
 import dev.enro.core.requestClose
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.tests.application.compose.common.TitledRow
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
-object ComposeNestedResults : Parcelable, NavigationKey.SupportsPush {
-    @Parcelize
-    internal object Receiver : Parcelable, NavigationKey.SupportsPush
+@Serializable
+object ComposeNestedResults : NavigationKey.SupportsPush {
+    @Serializable
+    internal object Receiver : NavigationKey.SupportsPush
 
-    @Parcelize
-    internal object NestedSenderContainer : Parcelable, NavigationKey.SupportsPush
+    @Serializable
+    internal object NestedSenderContainer : NavigationKey.SupportsPush
 
-    @Parcelize
-    internal object Sender : Parcelable, NavigationKey.SupportsPush.WithResult<String>
+    @Serializable
+    internal object Sender : NavigationKey.SupportsPush.WithResult<String>
 }
 
 @NavigationDestination(ComposeNestedResults::class)
@@ -62,7 +60,9 @@ fun ComposeNestedResults() {
             key(ComposeNestedResults.NestedSenderContainer)
         }
     )
-    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isLandscape = LocalWindowInfo.current.let { windowInfo ->
+        windowInfo.containerSize.width > windowInfo.containerSize.height
+    }
     if (isLandscape) {
         TitledRow(title = "Compose Nested Results") {
             Box(modifier = Modifier

@@ -12,7 +12,6 @@ import dev.enro.core.result.flows.NavigationFlowInterceptor
 import dev.enro.destination.activity.ActivityPlugin
 import dev.enro.destination.compose.composableDestination
 import dev.enro.destination.fragment.FragmentPlugin
-import dev.enro.destination.synthetic.SyntheticExecutionInterceptor
 
 internal actual val defaultNavigationModule = createNavigationModule {
     plugin(ActivityPlugin)

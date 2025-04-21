@@ -1,4 +1,4 @@
-package dev.enro.core.synthetic
+package dev.enro.destination.synthetic
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver

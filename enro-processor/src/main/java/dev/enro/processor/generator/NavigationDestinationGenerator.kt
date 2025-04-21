@@ -7,8 +7,15 @@ import com.google.devtools.ksp.symbol.KSDeclaration
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationBinding
@@ -83,7 +90,7 @@ object NavigationDestinationGenerator {
                 requireNotNull(declaration.qualifiedName).asString()
                     .removePrefix(declaration.packageName.asString())
             )
-            .addImportsForBinding()
+            .addImportsForBinding(destination)
             .build()
             .writeTo(
                 codeGenerator = environment.codeGenerator,
@@ -323,18 +330,26 @@ fun JavaFile.Builder.addImportsForBinding(): JavaFile.Builder {
         )
 }
 
-fun FileSpec.Builder.addImportsForBinding(): FileSpec.Builder {
+fun FileSpec.Builder.addImportsForBinding(destination: DestinationReference.Kotlin): FileSpec.Builder {
     return this
+        .let {
+            if (destination.isActivity) {
+                it.addImport(
+                    "dev.enro.core.activity",
+                    "activityDestination"
+                )
+            } else it
+        }
+        .let {
+            if (destination.isActivity) {
+                it.addImport(
+                    "dev.enro.core.fragment",
+                    "fragmentDestination"
+                )
+            } else it
+        }
         .addImport(
-        "dev.enro.core.activity",
-            "activityDestination"
-        )
-        .addImport(
-            "dev.enro.core.fragment",
-            "fragmentDestination"
-        )
-        .addImport(
-            "dev.enro.core.synthetic",
+            "dev.enro.destination.synthetic",
             "syntheticDestination"
         )
         .addImport(

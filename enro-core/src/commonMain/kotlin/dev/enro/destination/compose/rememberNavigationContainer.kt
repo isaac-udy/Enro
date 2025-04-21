@@ -4,9 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.platform.LocalView
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationContainerKey
@@ -84,14 +82,12 @@ public fun rememberNavigationContainer(
     }
 ): ComposableNavigationContainer {
     val localNavigationHandle = navigationHandle()
-    val context = LocalContext.current
-    val view = LocalView.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
     // The navigation context attached to a NavigationHandle may change when the Context, View,
     // or LifecycleOwner changes, so we're going to re-query the navigation context whenever
     // any of these change, to ensure the container always has an up-to-date NavigationContext
-    val localNavigationContext = remember(context, view, lifecycleOwner) {
+    val localNavigationContext = remember(lifecycleOwner) {
         localNavigationHandle.requireNavigationContext()
     }
     val navigationContainer = remember(localNavigationContext.containerManager) {

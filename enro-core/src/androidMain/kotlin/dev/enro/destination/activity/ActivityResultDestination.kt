@@ -17,8 +17,8 @@ import androidx.savedstate.serialization.serializers.ParcelableSerializer
 import dev.enro.core.*
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.result.AdvancedResultExtensions
-import dev.enro.core.synthetic.SyntheticDestinationProvider
-import dev.enro.core.synthetic.syntheticDestination
+import dev.enro.destination.synthetic.SyntheticDestinationProvider
+import dev.enro.destination.synthetic.syntheticDestination
 import dev.enro.destination.compose.OverrideNavigationAnimations
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass

@@ -4,8 +4,8 @@ import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
 import dev.enro.core.defaultDirection
 import dev.enro.core.getNavigationHandle
-import dev.enro.core.synthetic.SyntheticDestination
-import dev.enro.core.synthetic.SyntheticDestinationScope
+import dev.enro.destination.synthetic.SyntheticDestination
+import dev.enro.destination.synthetic.SyntheticDestinationScope
 
 public fun <T : Any> SyntheticDestination<out NavigationKey.WithResult<T>>.sendResult(
     result: T

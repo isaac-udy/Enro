@@ -21,7 +21,7 @@ import dev.enro.core.navigationHandle
 import dev.enro.core.result.forwardResult
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.core.result.sendResult
-import dev.enro.core.synthetic.SyntheticDestination
+import dev.enro.destination.synthetic.SyntheticDestination
 import dev.enro.viewmodel.enroViewModels
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.parcelize.Parcelize
