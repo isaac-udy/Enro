@@ -8,8 +8,6 @@ import dev.enro.core.container.setBackstack
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.getNavigationHandle
-import dev.enro.core.internal.EnroLog
-import dev.enro.core.toDisplayString
 
 internal interface ExecuteOpenInstruction {
     operator fun invoke(
@@ -39,9 +37,7 @@ internal class ExecuteOpenInstructionImpl(
         }
 
         val container = findContainerFor(navigationContext, processedInstruction)
-        EnroLog.error("Open: $instruction, processed: $processedInstruction, container: $container, context: ${navigationContext.toDisplayString()}")
-        // TODO: Do we need warnings here for non-hosted instructions/instructions that are going to be opened in
-        // a new window?
+        // TODO: Do we need warnings here for non-hosted instructions/instructions that are going to be opened in a new window?
         if (container != null) {
             container.setBackstack { backstack ->
                 backstack.plus(processedInstruction)

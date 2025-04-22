@@ -44,6 +44,9 @@ internal fun <ContextType : Fragment> FragmentContext(
                 else -> parentFragment.navigationContext
             }
         },
+        getUnboundChildContext = {
+            runCatching { contextReference.childFragmentManager.primaryNavigationFragment?.navigationContext }.getOrNull()
+        },
         getArguments = { contextReference.arguments ?: Bundle() },
         getViewModelStoreOwner = { contextReference },
         getSavedStateRegistryOwner = { contextReference },

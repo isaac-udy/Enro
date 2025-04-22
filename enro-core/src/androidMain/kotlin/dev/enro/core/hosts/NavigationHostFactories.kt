@@ -5,7 +5,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
-import dev.enro.core.NavigationHostFactory
+import NavigationHostFactory
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.container.asPresentInstruction

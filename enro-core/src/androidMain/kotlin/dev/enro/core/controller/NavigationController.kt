@@ -5,32 +5,15 @@ import dev.enro.core.EnroException
 
 public val Application.navigationController: NavigationController
     get() {
-        synchronized(this) {
-            if (this is NavigationApplication) return navigationController
-            val bound = NavigationController.navigationControllerBindings[this]
-            if (bound == null) {
-                val navigationController = NavigationController()
-                NavigationController.navigationControllerBindings[this] = NavigationController()
-                navigationController.install(object : NavigationApplication {
-                    override val navigationController: NavigationController
-                        get() = navigationController
-                })
-                return navigationController
-            }
-            return bound
-        }
+        return NavigationController.navigationController
+            ?: error("NavigationController is null")
     }
 
 public val NavigationController.isInAndroidContext: Boolean
-    get() = NavigationController.navigationControllerBindings.isNotEmpty() &&
-        NavigationController.navigationControllerBindings.keys.any { it is Application }
+    get() = NavigationController.platformReference is Application
 
 internal val NavigationController.application: Application
     get() {
-        return NavigationController.navigationControllerBindings.entries
-            .firstOrNull {
-                it.value == this
-            }
-            ?.key as? Application
+        return NavigationController.platformReference as? Application
             ?: throw EnroException.NavigationControllerIsNotAttached("NavigationController is not attached to an Application")
     }

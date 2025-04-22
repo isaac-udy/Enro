@@ -29,11 +29,14 @@ import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
 import dev.enro.core.controller.usecase.GetNavigationAnimations
 import dev.enro.core.findContainer
+import dev.enro.core.findRootContainer
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.internal.isMainThread
 import dev.enro.core.leafContext
 import dev.enro.core.parentContainer
 import dev.enro.core.requestClose
+import dev.enro.core.requireContainer
+import dev.enro.core.requireRootContainer
 import dev.enro.core.result.EnroResult
 import dev.enro.core.rootContext
 import kotlinx.coroutines.Job
@@ -114,8 +117,8 @@ public abstract class NavigationContainer(
     }
 
     @CallSuper
-    public override fun restore(bundle: SavedState) {
-        val restoredBackstack = bundle.read {
+    public override fun restore(savedState: SavedState) {
+        val restoredBackstack = savedState.read {
             getSavedStateListOrNull(BACKSTACK_KEY)
                 .orEmpty()
                 .map { decodeFromSavedState<AnyOpenInstruction>(it) }
@@ -313,3 +316,9 @@ public abstract class NavigationContainer(
             NavigationBackstackTransition(initialBackstack to initialBackstack)
     }
 }
+
+public fun NavigationContainer.parentContainer(): NavigationContainer? = context.parentContainer()
+public fun NavigationContainer.findRootContainer(): NavigationContainer? = context.findRootContainer()
+public fun NavigationContainer.requireRootContainer(): NavigationContainer = context.requireRootContainer()
+public fun NavigationContainer.findContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer? = context.findContainer(navigationContainerKey)
+public fun NavigationContainer.requireContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer = context.requireContainer(navigationContainerKey)

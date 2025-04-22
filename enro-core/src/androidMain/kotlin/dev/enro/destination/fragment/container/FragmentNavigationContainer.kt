@@ -109,16 +109,16 @@ public class FragmentNavigationContainer internal constructor(
         return savedState
     }
 
-    public override fun restore(bundle: Bundle) {
-        bundle.keySet().forEach { key ->
+    public override fun restore(savedState: Bundle) {
+        savedState.keySet().forEach { key ->
             if (!key.startsWith(FRAGMENT_STATE_PREFIX_KEY)) return@forEach
             val fragmentState =
-                bundle.getParcelableCompat<Fragment.SavedState>(key) ?: return@forEach
+                savedState.getParcelableCompat<Fragment.SavedState>(key) ?: return@forEach
             val instructionId = key.removePrefix(FRAGMENT_STATE_PREFIX_KEY)
             restoredFragmentStates[instructionId] = fragmentState
         }
-        ownedFragments.addAll(bundle.getStringArrayList(OWNED_FRAGMENTS_KEY).orEmpty())
-        super.restore(bundle)
+        ownedFragments.addAll(savedState.getStringArrayList(OWNED_FRAGMENTS_KEY).orEmpty())
+        super.restore(savedState)
 
         // After the backstack has been set, we're going to remove the restored states which aren't in the backstack
         val instructionsInBackstack = backstack.map { it.instructionId }.toSet()

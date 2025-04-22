@@ -20,6 +20,6 @@ public fun ApplicationScope.createNavigationController(
                 backConfiguration = backConfiguration,
             )
         )
-        installForAny(this@createNavigationController)
+        install(this@createNavigationController)
     }
 }

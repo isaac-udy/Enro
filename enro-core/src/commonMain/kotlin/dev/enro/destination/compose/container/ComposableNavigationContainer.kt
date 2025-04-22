@@ -133,8 +133,8 @@ public class ComposableNavigationContainer internal constructor(
         return savedState
     }
 
-    public override fun restore(bundle: SavedState) {
-        bundle.read {
+    public override fun restore(savedState: SavedState) {
+        savedState.read {
             this.toMap().keys.forEach { key ->
                 if (!key.startsWith(DESTINATION_STATE_PREFIX_KEY)) return@forEach
                 val instructionId = key.removePrefix(DESTINATION_STATE_PREFIX_KEY)
@@ -142,7 +142,7 @@ public class ComposableNavigationContainer internal constructor(
                 restoredDestinationState[instructionId] = restoredState
             }
         }
-        super.restore(bundle)
+        super.restore(savedState)
 
         // After the backstack has been set, we're going to remove the restored states which aren't in the backstack
         val instructionsInBackstack = backstack.map { it.instructionId }.toSet()

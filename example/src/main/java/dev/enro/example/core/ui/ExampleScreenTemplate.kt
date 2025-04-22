@@ -42,6 +42,7 @@ import dev.enro.example.destinations.compose.ExampleComposable
 import dev.enro.example.destinations.fragment.DialogFragmentKey
 import dev.enro.example.destinations.fragment.ExampleFragment
 import dev.enro.example.destinations.restoration.SaveRootState
+import dev.enro.example.destinations.synthetic.ReplaceWindow
 import dev.enro.viewmodel.navigationHandle
 import dev.enro.viewmodel.withNavigationHandle
 import kotlinx.coroutines.delay
@@ -191,13 +192,11 @@ private fun defaultNavigationOverflow(): List<Pair<String, NavigationInstruction
     "Present (Compose)" to NavigationInstruction.Present(ExampleComposable()),
     "Present Dialog (Compose)" to NavigationInstruction.Present(DialogComposable()),
     "Present Bottom Sheet (Compose)" to NavigationInstruction.Present(BottomSheetComposable()),
-    // TODO add replace root instruction?
-//    "Replace Root (Compose)" to NavigationInstruction.ReplaceRoot(ExampleComposable()),
+    "Replace Window (Compose)" to NavigationInstruction.Present(ReplaceWindow(ExampleComposable())),
     "Fragment" to null,
     "Present (Fragment)" to NavigationInstruction.Present(ExampleFragment()),
     "Present Dialog (Fragment)" to NavigationInstruction.Present(DialogFragmentKey()),
-    // TODO add replace root instruction?
-//    "Replace Root (Fragment)" to NavigationInstruction.ReplaceRoot(ExampleFragment()),
+    "Replace Window (Fragment)" to NavigationInstruction.Present(ReplaceWindow(ExampleFragment())),
     "" to null,
     "Save/Restore State" to NavigationInstruction.Present(SaveRootState()),
     "Close" to NavigationInstruction.Close,

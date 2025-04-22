@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import dev.enro.compatability.interceptBackPressForAndroidxNavigation
 import dev.enro.core.NavigationContext
@@ -14,6 +15,7 @@ import dev.enro.core.getNavigationHandle
 import dev.enro.core.internal.handle.hasCustomOnRequestClose
 import dev.enro.core.isActive
 import dev.enro.core.leafContext
+import dev.enro.core.navigationContext
 import dev.enro.core.requestClose
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -25,6 +27,10 @@ internal fun <ContextType : ComponentActivity> ActivityContext(
         contextReference = contextReference,
         getController = { contextReference.application.navigationController },
         getParentContext = { null },
+        getUnboundChildContext = {
+            val fragmentManager = (contextReference as? FragmentActivity)?.supportFragmentManager
+            runCatching { fragmentManager?.primaryNavigationFragment?.navigationContext }.getOrNull()
+        },
         getArguments = { contextReference.intent.extras ?: Bundle() },
         getViewModelStoreOwner = { contextReference },
         getSavedStateRegistryOwner = { contextReference },

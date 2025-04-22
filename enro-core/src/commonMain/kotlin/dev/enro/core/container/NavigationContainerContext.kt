@@ -17,5 +17,5 @@ public interface NavigationContainerContext {
     public fun setActive()
 
     public fun save(): SavedState
-    public fun restore(bundle: SavedState)
+    public fun restore(savedState: SavedState)
 }

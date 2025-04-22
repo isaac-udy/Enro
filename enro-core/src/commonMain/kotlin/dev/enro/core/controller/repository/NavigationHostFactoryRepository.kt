@@ -2,7 +2,7 @@ package dev.enro.core.controller.repository
 
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationHostFactory
+import NavigationHostFactory
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.EnroDependencyScope
 import kotlin.reflect.KClass

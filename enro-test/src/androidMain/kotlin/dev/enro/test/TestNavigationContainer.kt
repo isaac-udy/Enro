@@ -1,12 +1,17 @@
 package dev.enro.test
 
-import android.os.Bundle
-import androidx.core.os.bundleOf
+import androidx.savedstate.SavedState
+import androidx.savedstate.read
+import androidx.savedstate.savedState
+import androidx.savedstate.serialization.decodeFromSavedState
+import androidx.savedstate.serialization.encodeToSavedState
+import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.container.emptyBackstack
+import dev.enro.core.container.toBackstack
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -36,14 +41,20 @@ public class TestNavigationContainer(
     override val isActive: Boolean = true
     override fun setActive() {}
 
-    override fun save(): Bundle {
-        return bundleOf(
-            BACKSTACK_KEY to ArrayList(backstack)
-        )
+    public override fun save(): SavedState {
+        return savedState {
+            putSavedStateList(BACKSTACK_KEY, backstack.map { encodeToSavedState(it) })
+        }
     }
 
-    override fun restore(bundle: Bundle) {
-        TODO("Not yet implemented")
+    public override fun restore(savedState: SavedState) {
+        val restoredBackstack = savedState.read {
+            getSavedStateListOrNull(BACKSTACK_KEY)
+                .orEmpty()
+                .map { decodeFromSavedState<AnyOpenInstruction>(it) }
+                .toBackstack()
+        }
+        setBackstack(restoredBackstack)
     }
 
     companion object {

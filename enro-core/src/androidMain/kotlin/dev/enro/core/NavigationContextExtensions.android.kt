@@ -1,19 +1,10 @@
 package dev.enro.core
 
-import android.app.Activity
 import androidx.activity.ComponentActivity
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
-import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
@@ -31,40 +22,9 @@ public fun NavigationContext<*>.activeChildContext(): NavigationContext<*>? {
         ?: fragmentManager?.primaryNavigationFragment?.navigationContext
 }
 
-public actual fun NavigationContext<*>.leafContext(): NavigationContext<*> {
-    // TODO This currently includes inactive contexts, should it only check for actual active contexts?
-    val fragmentManager = when (contextReference) {
-        is FragmentActivity -> contextReference.supportFragmentManager
-        is Fragment -> contextReference.childFragmentManager
-        else -> null
-    }
-    return containerManager.activeContainer?.childContext?.leafContext()
-        ?: runCatching { fragmentManager?.primaryNavigationFragment?.navigationContext }.getOrNull()?.leafContext()
-        ?: this
-}
-
 public val ComponentActivity.containerManager: NavigationContainerManager get() = navigationContext.containerManager
 public val Fragment.containerManager: NavigationContainerManager get() = navigationContext.containerManager
 public val ComposableDestinationReference.containerManager: NavigationContainerManager get() = navigationContext.containerManager
-
-public actual val containerManager: NavigationContainerManager
-    @Composable
-    get() {
-        val viewModelStoreOwner = LocalViewModelStoreOwner.current!!
-
-        val context = LocalContext.current
-        val view = LocalView.current
-        val lifecycleOwner = LocalLifecycleOwner.current
-
-        // The navigation context attached to a NavigationHandle may change when the Context, View,
-        // or LifecycleOwner changes, so we're going to re-query the navigation context whenever
-        // any of these change, to ensure the container always has an up-to-date NavigationContext
-        return remember(context, view, lifecycleOwner) {
-            viewModelStoreOwner
-                .navigationContext!!
-                .containerManager
-        }
-    }
 
 public val Fragment.parentContainer: NavigationContainer? get() = navigationContext.parentContainer()
 
@@ -107,9 +67,6 @@ public val <T : ComponentActivity> T.navigationContext: NavigationContext<T>
 @Suppress("UNCHECKED_CAST") // Higher level logic dictates this cast will pass
 public val <T : Fragment> T.navigationContext: NavigationContext<T>
     get() = getNavigationHandleViewModel().navigationContext as NavigationContext<T>
-
-internal actual val ViewModelStoreOwner.navigationContext: NavigationContext<*>?
-    get() = getNavigationHandleViewModel().navigationContext
 
 private val generatedComponentManagerHolderClass by lazy {
     runCatching {

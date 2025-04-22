@@ -39,30 +39,27 @@ public class NavigationController internal constructor() {
         return navigationBindingRepository.bindingForKeyType(keyType)
     }
 
-    // TODO do we need to bother with the install/uninstall stuff, or should
-    // we only allow a single controller at a time and throw otherwise?
-    public fun install(application: NavigationApplication) {
-        navigationControllerBindings[application] = this
-        pluginRepository.onAttached(this)
-    }
-
-    // This method is called by the test module to install/uninstall Enro from test applications
-    internal fun installForJvmTests() {
-        navigationControllerBindings[Unit] = this
-        pluginRepository.onAttached(this)
-    }
-
-    // This method is called by the test module to install/uninstall Enro from test applications
-    internal fun installForAny(application: Any) {
-        navigationControllerBindings[application] = this
+    // The reference parameter is used to pass the platform-specific reference to the NavigationController,
+    // for example, the Application instance in Android, or the ApplicationScope instance on Desktop
+    public fun install(reference: Any?) {
+        if (navigationController == this) return
+        if (navigationController != null) {
+            error("A NavigationController is already installed")
+        }
+        navigationController = this
+        platformReference = reference
         pluginRepository.onAttached(this)
     }
 
     // This method is called by the test module to install/uninstall Enro from test applications
     internal fun uninstall(application: Any) {
         pluginRepository.onDetached(this)
-        navigationControllerBindings.remove(application)
-        navigationControllerBindings.remove(Unit)
+        if (navigationController == null) return
+        require(navigationController == this) {
+            "The currently installed NavigationController is not the same as the one being uninstalled"
+        }
+        navigationController = null
+        platformReference = null
     }
 
     /**
@@ -76,22 +73,19 @@ public class NavigationController internal constructor() {
     }
 
     public companion object {
-        internal val navigationControllerBindings =
-            mutableMapOf<Any, NavigationController>()
+        internal var navigationController: NavigationController? = null
+            private set
+        internal var platformReference: Any? = null
+            private set
 
         @PublishedApi
         internal val serializersModule: SerializersModule
             get() {
-                return SerializersModule {
-                    navigationControllerBindings.values
-                        .map {
-                            it.dependencyScope.get<SerializerRepository>()
-                                .serializersModule
-                        }
-                        .forEach {
-                            include(it)
-                        }
+                val activeController = requireNotNull(navigationController) {
+                    "Could not find active NavigationController"
                 }
+                return activeController.dependencyScope.get<SerializerRepository>()
+                    .serializersModule
             }
     }
 }

@@ -22,6 +22,7 @@ public class NavigationContext<ContextType : Any> internal constructor(
     public val contextReference: ContextType,
     private val getController: () -> NavigationController,
     private val getParentContext: () -> NavigationContext<*>?,
+    private val getUnboundChildContext: () -> NavigationContext<*>? = { null },
     private val getArguments: () -> SavedState,
     private val getViewModelStoreOwner: () -> ViewModelStoreOwner,
     private val getSavedStateRegistryOwner: () -> SavedStateRegistryOwner,
@@ -30,6 +31,11 @@ public class NavigationContext<ContextType : Any> internal constructor(
 ) {
     public val controller: NavigationController by lazy { getController() }
     public val parentContext: NavigationContext<*>? by lazy { getParentContext() }
+
+    // TODO can we remove this or make it a strict mode thing?
+    // Exists primarily for supporting Fragments/Activities that haven't been bound to a NavigationHandle yet
+    internal val unboundChildContext: NavigationContext<*>? get() = getUnboundChildContext()
+
     private var onBoundToNavigationHandle: (NavigationContext<ContextType>.(NavigationHandle) -> Unit)? = onBoundToNavigationHandle
 
     /**

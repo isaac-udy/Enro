@@ -24,7 +24,6 @@ import dev.enro.core.R
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
 import dev.enro.core.plugins.EnroPlugin
-import dev.enro.destination.fragment.FragmentSharedElements.DelayedTransitionController
 import java.util.WeakHashMap
 
 /**

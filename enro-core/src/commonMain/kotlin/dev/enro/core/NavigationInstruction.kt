@@ -16,7 +16,7 @@ public typealias OpenPresentInstruction = NavigationInstruction.Open<NavigationD
 public sealed class NavigationInstruction {
     @Stable
     @Immutable
-    @Serializable // TODO use a with = serializer that can handle the generic type and the internal object
+    @Serializable
     public sealed class Open<T : NavigationDirection> : NavigationInstruction() {
         public abstract val navigationDirection: T
         public abstract val navigationKey: NavigationKey

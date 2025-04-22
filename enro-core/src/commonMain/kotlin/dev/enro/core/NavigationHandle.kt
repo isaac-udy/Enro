@@ -124,7 +124,7 @@ public fun NavigationHandle.onParentContainer(
     executeInstruction(NavigationInstruction.OnParentContainer(block))
 }
 
-@Deprecated("TODO don't ")
+@Deprecated("Use the NavigationController's WindowManager to close or open specific windows")
 public fun NavigationHandle.replaceRoot(navigationKey: NavigationKey) {
     val context =  requireNavigationContext()
     val rootContext = context.rootContext()
@@ -134,7 +134,7 @@ public fun NavigationHandle.replaceRoot(navigationKey: NavigationKey) {
     )
 }
 
-@Deprecated("TODO don't ")
+@Deprecated("Use closeAndPush or closeAndPresent instead")
 public fun NavigationHandle.replace(
     navigationKey: NavigationKey,
 ) {

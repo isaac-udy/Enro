@@ -25,7 +25,6 @@ public class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi inte
         onCloseRequested = block
     }
 
-    // TODO Store these properties ON the navigation handle? Rather than set individual fields?
     internal fun applyTo(context: NavigationContext<*>, navigationHandleViewModel: NavigationHandleViewModel) {
         val onCloseRequested = onCloseRequested ?: return
         navigationHandleViewModel.internalOnCloseRequested = { onCloseRequested(navigationHandleViewModel.asTyped(keyType)) }

@@ -3,18 +3,17 @@ package dev.enro.core
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
-import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.ActiveNavigationHandleReference
-import dev.enro.core.controller.usecase.GetNavigationBinding
+import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlin.reflect.KClass
 
 
 internal val NavigationContext<*>.allParentContexts: List<NavigationContext<*>>
@@ -37,10 +36,6 @@ internal val NavigationContext<*>.isActive: Flow<Boolean>
             .distinctUntilChanged()
     }
 
-// Interface to be implemented by platform-specific navigation hosts
-public interface NavigationHost {
-    public fun accept(instruction: NavigationInstruction.Open<*>): Boolean = true
-}
 
 public fun NavigationContext<*>.parentContainer(): NavigationContainer? {
     val parentContext = parentContext ?: return null
@@ -70,12 +65,6 @@ public fun NavigationContext<*>.directParentContainer(): NavigationContainer? {
 }
 
 
-public fun NavigationContainer.parentContainer(): NavigationContainer? = context.parentContainer()
-
-// Extension property for platform-specific ComposableDestination that implements ComposableDestinationReference
-public val ComposableDestinationReference.parentContainer: NavigationContainer? 
-    get() = navigationContext.parentContainer()
-
 public val parentContainer: NavigationContainer?
     @Composable
     get() {
@@ -92,20 +81,16 @@ public val parentContainer: NavigationContainer?
 public fun NavigationContext<*>.findRootContainer(): NavigationContainer? {
     var parentContainer = parentContainer()
     while(parentContainer != null) {
-        val nextParent = parentContainer.parentContainer()
+        val nextParent = parentContainer.context.parentContainer()
         if (nextParent == parentContainer) return parentContainer
         parentContainer = nextParent ?: return parentContainer
     }
     return null
 }
 
-public fun NavigationContainer.findRootContainer(): NavigationContainer? = context.findRootContainer()
-
 public fun NavigationContext<*>.requireRootContainer(): NavigationContainer {
     return requireNotNull(findRootContainer())
 }
-
-public fun NavigationContainer.requireRootContainer(): NavigationContainer = context.requireRootContainer()
 
 public fun NavigationContext<*>.findContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer? {
     val seen = mutableSetOf<NavigationContext<*>>()
@@ -131,13 +116,11 @@ public fun NavigationContext<*>.findContainer(navigationContainerKey: Navigation
     return findFrom(this)
 }
 
-public fun NavigationContainer.findContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer? = context.findContainer(navigationContainerKey)
 
 public fun NavigationContext<*>.requireContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer {
     return requireNotNull(findContainer(navigationContainerKey))
 }
 
-public fun NavigationContainer.requireContainer(navigationContainerKey: NavigationContainerKey): NavigationContainer = context.requireContainer(navigationContainerKey)
 
 public fun NavigationContext<*>.rootContext(): NavigationContext<*> {
     var parent = this
@@ -147,47 +130,30 @@ public fun NavigationContext<*>.rootContext(): NavigationContext<*> {
     }
 }
 
-// TODO this should be able to live in common
-public expect fun NavigationContext<*>.leafContext(): NavigationContext<*>
-
-/**
- * A NavigationHostFactory allows for destinations of different types to be interoperable with each other. For example,
- * a Fragment destination can host a Composable destination. There are two important functions to register here:
- * - supports: This function should return true if the NavigationHostFactory can host the provided NavigationInstruction.Open
- * - wrap: This function should return a new NavigationInstruction.Open that is compatible with the HostType
- */
-@AdvancedEnroApi
-public abstract class NavigationHostFactory<HostType: Any>(
-    public val hostType: KClass<HostType>,
-) {
-    internal lateinit var dependencyScope: EnroDependencyScope
-
-    private val getNavigationBinding: GetNavigationBinding by lazy { dependencyScope.get() }
-
-    protected fun getNavigationBinding(instruction: NavigationInstruction.Open<*>): NavigationBinding<*, *>?
-        = getNavigationBinding.invoke(instruction)
-
-    protected fun requireNavigationBinding(instruction: NavigationInstruction.Open<*>): NavigationBinding<*, *>
-            = getNavigationBinding.require(instruction)
-
-    protected fun cannotCreateHost(instruction: NavigationInstruction.Open<*>): Nothing {
-        throw EnroException.CannotCreateHostForType(hostType, instruction.internal.openingType)
-    }
-
-    public abstract fun supports(
-        navigationContext: NavigationContext<*>,
-        instruction: NavigationInstruction.Open<*>
-    ): Boolean
-
-    public abstract fun wrap(
-        navigationContext: NavigationContext<*>,
-        instruction: NavigationInstruction.Open<*>
-    ): NavigationInstruction.Open<*>
+public fun NavigationContext<*>.leafContext(): NavigationContext<*> {
+    return containerManager.activeContainer?.childContext?.leafContext()
+        ?: unboundChildContext?.leafContext()
+        ?: this
 }
 
-// Extension to get navigation context from ViewModelStoreOwner, to be implemented per platform
-internal expect val ViewModelStoreOwner.navigationContext: NavigationContext<*>?
+internal val ViewModelStoreOwner.navigationContext: NavigationContext<*>?
+    get() = getNavigationHandleViewModel().navigationContext
 
-public expect val containerManager: NavigationContainerManager
+public val containerManager: NavigationContainerManager
     @Composable
-    get
+    get() {
+        val viewModelStoreOwner = requireNotNull(LocalViewModelStoreOwner.current) {
+            "Failed to get containerManager in Composable: LocalViewModelStoreOwner was null"
+        }
+        val lifecycleOwner = LocalLifecycleOwner.current
+
+        // The navigation context attached to a NavigationHandle may change when the ViewModelStoreOwner
+        // or LifecycleOwner changes, so we're going to re-query the navigation context whenever
+        // any of these change, to ensure the container always has an up-to-date NavigationContext
+        return remember(viewModelStoreOwner, lifecycleOwner) {
+            val navigationContext = requireNotNull(viewModelStoreOwner.navigationContext) {
+                "Failed to get containerManager in Composable: LocalViewModelStoreOwner did not have a NavigationContext attached"
+            }
+            navigationContext.containerManager
+        }
+    }

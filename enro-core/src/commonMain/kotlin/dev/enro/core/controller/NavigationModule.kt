@@ -5,7 +5,7 @@ import dev.enro.animation.NavigationAnimationOverride
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationBinding
-import dev.enro.core.NavigationHostFactory
+import NavigationHostFactory
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.repository.ComposeEnvironment
 import dev.enro.core.plugins.EnroPlugin
