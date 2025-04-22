@@ -133,6 +133,12 @@ object NavigationDestinationGenerator {
                 destination.keyType.asStarProjectedType().toTypeName(),
                 requireNotNull(destination.declaration.simpleName).asString(),
             )
+            destination.isDesktopWindow -> addCode(
+                "navigationModuleScope.desktopWindowDestination<%T, %T> { %T() }",
+                destination.keyType.asStarProjectedType().toTypeName(),
+                destination.toClassName(),
+                destination.toClassName(),
+            )
             else -> error("${destination.declaration.qualifiedName?.asString()}")
         }
     }
@@ -345,6 +351,14 @@ fun FileSpec.Builder.addImportsForBinding(destination: DestinationReference.Kotl
                 it.addImport(
                     "dev.enro.destination.fragment",
                     "fragmentDestination"
+                )
+            } else it
+        }
+        .let {
+            if (destination.isDesktopWindow) {
+                it.addImport(
+                    "dev.enro.destination.desktop",
+                    "desktopWindowDestination"
                 )
             } else it
         }

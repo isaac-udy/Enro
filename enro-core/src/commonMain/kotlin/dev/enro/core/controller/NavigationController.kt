@@ -19,7 +19,7 @@ public class NavigationController internal constructor() {
     private val pluginRepository: PluginRepository = dependencyScope.get()
     private val navigationBindingRepository: NavigationBindingRepository = dependencyScope.get()
     private val addModuleToController: AddModuleToController = dependencyScope.get()
-    internal val windowManager: NavigationWindowManager = dependencyScope.get()
+    public val windowManager: NavigationWindowManager = dependencyScope.get()
 
     internal var config: EnroConfig = EnroConfig()
         private set

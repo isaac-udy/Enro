@@ -48,6 +48,9 @@ sealed class DestinationReference {
         val isComposable = declaration is KSFunctionDeclaration && declaration.annotations
             .any { it.shortName.asString() == "Composable" }
 
+        val isDesktopWindow = declaration is KSClassDeclaration &&
+                declaration.getAllSuperTypes().any { it.declaration.qualifiedName?.asString() == "dev.enro.destination.desktop.DesktopWindow" }
+
         val annotation = declaration.getAnnotationsByType(NavigationDestination::class)
             .firstOrNull()
             ?: error("${declaration.simpleName} is not annotated with @NavigationDestination")

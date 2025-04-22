@@ -1,7 +1,6 @@
-package dev.enro.tests.application.activity
+package dev.enro.tests.application.window
 
 import android.os.Bundle
-import android.os.Parcelable
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,15 +10,11 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
 import dev.enro.core.requestClose
+import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.tests.application.compose.common.TitledColumn
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
-object SimpleActivity : Parcelable, NavigationKey.SupportsPresent
-
-
-@NavigationDestination(SimpleActivity::class)
-class SimpleActivityImpl : ComponentActivity() {
+@NavigationDestination(SimpleWindow::class)
+class SimpleWindowActivity : ComponentActivity() {
 
     private val navigation by navigationHandle<NavigationKey>()
 
@@ -27,9 +22,9 @@ class SimpleActivityImpl : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            TitledColumn(title = "Simple Activity") {
+            TitledColumn(title = "Simple Window") {
                 Button(onClick = { navigation.requestClose() }) {
-                    Text(text = "Close Activity")
+                    Text(text = "Close Window")
                 }
             }
         }
