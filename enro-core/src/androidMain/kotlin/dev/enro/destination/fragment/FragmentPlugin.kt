@@ -11,11 +11,12 @@ import androidx.lifecycle.lifecycleScope
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationBinding
+import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
-import dev.enro.core.activity.ActivityNavigationContainer
+import dev.enro.core.activity
 import dev.enro.core.close
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationContainerProperty
@@ -62,15 +63,13 @@ internal object FragmentPlugin : EnroPlugin() {
                     // to be switched into a Present Instruction and opened into the default fragment container, which
                     // will result in the destination being opened as a full screen dialog
                     val container = findContainerFor(context, instruction)
-                    if (instruction.navigationDirection == NavigationDirection.Push && container is ActivityNavigationContainer) {
+                    val defaultFragmentContainer = context.activity.containerManager.getContainer(NavigationContainerKey.FromId(android.R.id.content))
+                    if (instruction.navigationDirection == NavigationDirection.Push && container == null && defaultFragmentContainer != null) {
                         EnroException.MissingContainerForPushInstruction.logForStrictMode(
                             navigationController = context.controller,
                             navigationKey = instruction.navigationKey,
                         )
-                        val activityContext = requireNotNull(container.childContext) {
-                            // TODO add better error message
-                        }
-                        activityContext.navigationHandle.executeInstruction(instruction.asPresentInstruction())
+                        defaultFragmentContainer.context.navigationHandle.executeInstruction(instruction.asPresentInstruction())
                         return null
                     }
                     return instruction

@@ -1,4 +1,4 @@
-package dev.enro.core.fragment
+package dev.enro.destination.fragment
 
 import androidx.fragment.app.Fragment
 import dev.enro.core.NavigationBinding

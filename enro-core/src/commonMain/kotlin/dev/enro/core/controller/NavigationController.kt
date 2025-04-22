@@ -8,6 +8,7 @@ import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.controller.repository.SerializerRepository
 import dev.enro.core.controller.usecase.AddModuleToController
 import dev.enro.core.result.EnroResult
+import dev.enro.core.window.NavigationWindowManager
 import kotlinx.serialization.modules.SerializersModule
 import kotlin.reflect.KClass
 
@@ -18,6 +19,7 @@ public class NavigationController internal constructor() {
     private val pluginRepository: PluginRepository = dependencyScope.get()
     private val navigationBindingRepository: NavigationBindingRepository = dependencyScope.get()
     private val addModuleToController: AddModuleToController = dependencyScope.get()
+    internal val windowManager: NavigationWindowManager = dependencyScope.get()
 
     internal var config: EnroConfig = EnroConfig()
         private set

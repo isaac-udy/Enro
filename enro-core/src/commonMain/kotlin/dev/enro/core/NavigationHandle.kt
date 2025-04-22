@@ -5,7 +5,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
 import dev.enro.core.container.NavigationContainerContext
-import dev.enro.core.container.backstackOf
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
@@ -127,9 +126,12 @@ public fun NavigationHandle.onParentContainer(
 
 @Deprecated("TODO don't ")
 public fun NavigationHandle.replaceRoot(navigationKey: NavigationKey) {
-    requireNavigationContext().rootContext().navigationHandle.onActiveContainer {
-        setBackstack(backstackOf(NavigationInstruction.DefaultDirection(navigationKey)))
-    }
+    val context =  requireNavigationContext()
+    val rootContext = context.rootContext()
+    context.controller.windowManager.close(
+        context = rootContext,
+        andOpen = NavigationInstruction.DefaultDirection(navigationKey),
+    )
 }
 
 @Deprecated("TODO don't ")

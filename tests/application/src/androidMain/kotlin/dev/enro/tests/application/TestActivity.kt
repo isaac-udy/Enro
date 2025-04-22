@@ -11,6 +11,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.tests.application.activity.applyInsetsForContentView
 
 class TestActivity : AppCompatActivity() {
 
@@ -28,5 +29,6 @@ class TestActivity : AppCompatActivity() {
                 }
             }
         }
+        applyInsetsForContentView()
     }
 }

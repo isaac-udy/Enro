@@ -25,6 +25,7 @@ import dev.enro.core.controller.usecase.HostInstructionAs
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.controller.usecase.OnNavigationContextSaved
 import dev.enro.core.result.EnroResult
+import dev.enro.core.window.NavigationWindowManager
 
 internal class NavigationControllerScope(
     navigationController: NavigationController
@@ -62,6 +63,13 @@ internal class NavigationControllerScope(
             register { HostInstructionAs(get(), get()) }
             register { GetNavigationBinding(get()) }
             register { GetNavigationAnimations(get(), get<NavigationAnimationRepository>().controllerOverrides) }
+
+            register {
+                NavigationWindowManager(get())
+                    .also {
+                        get<PluginRepository>().addPlugins(listOf(it))
+                    }
+            }
         }
     )
 }

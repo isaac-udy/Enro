@@ -23,7 +23,7 @@ import dev.enro.core.requireNavigationContext
 
 @Composable
 public fun rememberNavigationContainer(
-    key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
+    key: NavigationContainerKey = rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.Dynamic() },
     root: NavigationKey.SupportsPush,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
@@ -44,7 +44,7 @@ public fun rememberNavigationContainer(
 
 @Composable
 public fun rememberNavigationContainer(
-    key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
+    key: NavigationContainerKey = rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.Dynamic() },
     initialBackstack: List<NavigationKey.SupportsPush> = emptyList(),
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
@@ -68,7 +68,7 @@ public fun rememberNavigationContainer(
 @Composable
 @AdvancedEnroApi
 public fun rememberNavigationContainer(
-    key: NavigationContainerKey = rememberSaveable { NavigationContainerKey.Dynamic() },
+    key: NavigationContainerKey = rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.Dynamic() },
     initialBackstack: NavigationBackstack,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},

@@ -14,12 +14,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.savedstate.serialization.serializers.ParcelableSerializer
-import dev.enro.core.*
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.NavigationKey
+import dev.enro.core.activity
+import dev.enro.core.close
 import dev.enro.core.compose.navigationHandle
+import dev.enro.core.getNavigationHandle
+import dev.enro.core.present
 import dev.enro.core.result.AdvancedResultExtensions
+import dev.enro.destination.compose.OverrideNavigationAnimations
 import dev.enro.destination.synthetic.SyntheticDestinationProvider
 import dev.enro.destination.synthetic.syntheticDestination
-import dev.enro.destination.compose.OverrideNavigationAnimations
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 

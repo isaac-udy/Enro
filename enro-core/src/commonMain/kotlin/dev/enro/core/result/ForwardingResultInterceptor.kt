@@ -26,7 +26,8 @@ internal object ForwardingResultInterceptor  : NavigationInstructionInterceptor 
         val forwardingResultId = AdvancedResultExtensions.getForwardingInstructionId(openInstruction)
             ?: return instruction
 
-        val containers = context.rootContext()
+        val rootContext = context.rootContext()
+        val containers = rootContext
             .containerManager
             .containers
             .toMutableList()
@@ -44,6 +45,9 @@ internal object ForwardingResultInterceptor  : NavigationInstructionInterceptor 
                 next.setBackstack(filteredBackstack)
             }
             containers.addAll(next.childContext?.containerManager?.containers.orEmpty())
+        }
+        if (rootContext == context) {
+            context.controller.windowManager.close(context)
         }
 
         val addPendingResult = context.controller.dependencyScope.get<AddPendingResult>()

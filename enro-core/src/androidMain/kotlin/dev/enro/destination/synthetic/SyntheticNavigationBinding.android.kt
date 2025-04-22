@@ -2,7 +2,6 @@ package dev.enro.destination.synthetic
 
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
-import dev.enro.destination.synthetic.SyntheticDestination
 
 // Class-based overload for Java compatibility
 public fun <T : NavigationKey> createSyntheticNavigationBinding(

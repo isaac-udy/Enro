@@ -26,6 +26,10 @@ public class SyntheticDestinationProvider<T : NavigationKey> internal constructo
     }
 }
 
+public fun <T : NavigationKey> syntheticDestination(block: SyntheticDestinationScope<T>.() -> Unit): SyntheticDestinationProvider<T> {
+    return SyntheticDestinationProvider(block)
+}
+
 public fun <T : NavigationKey> syntheticDestinationProvider(block: SyntheticDestinationScope<T>.() -> Unit): SyntheticDestinationProvider<T> {
     return SyntheticDestinationProvider(block)
 }

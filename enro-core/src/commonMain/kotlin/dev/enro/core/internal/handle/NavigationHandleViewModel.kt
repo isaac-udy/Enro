@@ -16,10 +16,7 @@ import dev.enro.core.controller.usecase.ExecuteCloseInstruction
 import dev.enro.core.controller.usecase.ExecuteContainerOperationInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.extras
-import dev.enro.core.directParentContainer
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.yield
 
 internal open class NavigationHandleViewModel(
     override val instruction: AnyOpenInstruction,
@@ -109,11 +106,6 @@ private fun NavigationContext<*>.runWhenContextActive(block: () -> Unit) {
         if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
             block()
             return@launch
-        }
-        withTimeout(1000) {
-            while (directParentContainer() == null) {
-                yield()
-            }
         }
         lifecycle.withStarted(block)
     }

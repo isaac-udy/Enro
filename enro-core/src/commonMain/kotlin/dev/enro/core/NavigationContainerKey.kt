@@ -1,5 +1,6 @@
 package dev.enro.core
 
+import androidx.compose.runtime.saveable.SaverScope
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -102,6 +103,35 @@ public sealed class NavigationContainerKey {
                     is FromName -> encodeIntElement(descriptor, 2, -1)
                     is FromId -> encodeIntElement(descriptor, 2, value.id)
                 }
+            }
+        }
+    }
+
+    public object Saver : androidx.compose.runtime.saveable.Saver<NavigationContainerKey, String> {
+        override fun restore(value: String): NavigationContainerKey? {
+            val split = value.split(",")
+            if (split.size < 2) {
+                return null
+            }
+            val type = split[0]
+            val nameOrId = split[1]
+            return when (type) {
+                "Dynamic" -> Dynamic(nameOrId)
+                "FromName" -> FromName(nameOrId)
+                "FromId" -> {
+                    val id = nameOrId.toIntOrNull()
+                        ?: throw IllegalArgumentException("Invalid id: $nameOrId")
+                    FromId(id)
+                }
+                else -> null
+            }
+        }
+
+        override fun SaverScope.save(value: NavigationContainerKey): String {
+            return when(value) {
+                is Dynamic -> "Dynamic,${value.name}"
+                is FromName -> "FromName,${value.name}"
+                is FromId -> "FromId,${value.id}"
             }
         }
     }

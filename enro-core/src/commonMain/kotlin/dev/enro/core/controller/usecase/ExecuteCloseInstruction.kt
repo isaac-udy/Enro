@@ -7,7 +7,6 @@ import dev.enro.core.container.setBackstack
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.parentContainer
-import dev.enro.core.toDisplayString
 
 internal interface ExecuteCloseInstruction {
     operator fun invoke(
@@ -34,15 +33,28 @@ internal class ExecuteCloseInstructionImpl(
             return
         }
 
-        val container = requireNotNull(navigationContext.parentContainer()) {
-            "Failed to close navigation context ${navigationContext.toDisplayString()} in context because it has no parent container"
+        val container = navigationContext.parentContainer()
+        if (container != null) {
+            container.setBackstack {
+                it.close(navigationContext.getNavigationHandle().id)
+            }
+            addPendingResult(navigationContext, processedInstruction)
+            if (instruction is NavigationInstruction.Close.AndThenOpen) {
+                container.context.navigationHandle.executeInstruction(instruction.instruction)
+            }
+            return
         }
-        container.setBackstack {
-            it.close(navigationContext.getNavigationHandle().id)
-        }
-        addPendingResult(navigationContext, processedInstruction)
-        if (instruction is NavigationInstruction.Close.AndThenOpen) {
-            container.context.navigationHandle.executeInstruction(instruction.instruction)
+        else {
+            val controller = navigationContext.controller
+            val andOpen = when(instruction) {
+                is NavigationInstruction.Close.AndThenOpen -> instruction.instruction
+                else -> null
+            }
+            addPendingResult(navigationContext, processedInstruction)
+            controller.windowManager.close(
+                context = navigationContext,
+                andOpen = andOpen,
+            )
         }
     }
 }

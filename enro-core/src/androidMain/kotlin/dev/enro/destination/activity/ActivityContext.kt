@@ -1,6 +1,5 @@
 package dev.enro.destination.activity
 
-import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
@@ -20,13 +19,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 internal fun <ContextType : ComponentActivity> ActivityContext(
-    applicationContext: NavigationContext<out Application>,
     contextReference: ContextType,
 ): NavigationContext<ContextType> {
     return NavigationContext(
         contextReference = contextReference,
         getController = { contextReference.application.navigationController },
-        getParentContext = { applicationContext },
+        getParentContext = { null },
         getArguments = { contextReference.intent.extras ?: Bundle() },
         getViewModelStoreOwner = { contextReference },
         getSavedStateRegistryOwner = { contextReference },

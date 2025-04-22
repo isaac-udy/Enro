@@ -16,7 +16,7 @@ internal enum class EnroPackage(val packageName: String) {
     // Feature packages
     ACTIVITY_PACKAGE("dev.enro.core.activity.."),
     COMPOSE_PACKAGE("dev.enro.core.compose.."),
-    FRAGMENT_PACKAGE("dev.enro.core.fragment.."),
+    FRAGMENT_PACKAGE("dev.enro.destination.fragment.."),
     SYNTHETIC_PACKAGE("dev.enro.destination.synthetic.."),
     HOST_PACKAGE("dev.enro.core.hosts.."),
     VIEWMODEL_PACKAGE("dev.enro.viewmodel.."),

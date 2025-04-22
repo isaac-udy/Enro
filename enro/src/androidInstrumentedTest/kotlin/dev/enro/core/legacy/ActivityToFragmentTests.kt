@@ -3,7 +3,6 @@ package dev.enro.core.legacy
 
 import android.os.Bundle
 import android.os.Parcelable
-import android.util.Log
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.core.view.isVisible
@@ -20,14 +19,11 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.asTyped
 import dev.enro.core.close
 import dev.enro.core.container.accept
-import dev.enro.core.directParentContainer
 import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.navigationHandle
-import dev.enro.core.parentContainer
 import dev.enro.core.push
 import dev.enro.core.replace
-import dev.enro.core.toDisplayString
 import dev.enro.expectActivity
 import dev.enro.expectActivityHostForAnyInstruction
 import dev.enro.expectContext
@@ -144,8 +140,7 @@ class ActivityToFragmentTests {
 
         val id = UUID.randomUUID().toString()
         handle.push(GenericFragmentKey(id))
-        val context = expectFragmentContext<GenericFragmentKey>()
-        Log.e("EnroTests", "Context: ${context.navigationContext.toDisplayString()}, ${context.navigationContext.directParentContainer()?.context?.toDisplayString()}, ${context.navigationContext.parentContainer()?.context?.parentContainer()?.context?.toDisplayString()}")
+        expectFragmentContext<GenericFragmentKey>()
         val activity = expectFragmentHostForPresentableFragment()
         val activeFragment = activity.childFragmentManager.primaryNavigationFragment!!
         val fragmentHandle = activeFragment.getNavigationHandle().asTyped<GenericFragmentKey>()

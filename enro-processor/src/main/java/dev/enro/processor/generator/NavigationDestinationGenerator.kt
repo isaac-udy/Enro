@@ -341,9 +341,9 @@ fun FileSpec.Builder.addImportsForBinding(destination: DestinationReference.Kotl
             } else it
         }
         .let {
-            if (destination.isActivity) {
+            if (destination.isFragment) {
                 it.addImport(
-                    "dev.enro.core.fragment",
+                    "dev.enro.destination.fragment",
                     "fragmentDestination"
                 )
             } else it

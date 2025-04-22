@@ -35,7 +35,7 @@ object ClassNames {
             "Fragment"
         )
         val fragmentNavigationBindingKt = JavaClassName.get(
-            "dev.enro.core.fragment",
+            "dev.enro.destination.fragment",
             "FragmentNavigationBindingKt"
         )
 
@@ -45,7 +45,7 @@ object ClassNames {
         )
         val syntheticNavigationBindingKt = JavaClassName.get(
             "dev.enro.destination.synthetic",
-            "SyntheticNavigationBindingKt"
+            "SyntheticNavigationBinding_androidKt"
         )
 
         val managedFlowNavigationBindingKt = JavaClassName.get(
