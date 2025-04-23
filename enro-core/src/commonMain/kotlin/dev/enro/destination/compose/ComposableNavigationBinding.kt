@@ -40,12 +40,13 @@ internal fun <KeyType : NavigationKey, DestinationType: ComposableDestination> c
     keyType: KClass<KeyType>,
     destinationType: KClass<DestinationType>,
 ): NavigationBinding<KeyType, DestinationType> {
-    val constructor = destinationType.constructors.first { it.parameters.isEmpty() }
-    return ComposableNavigationBinding(
-        keyType = keyType,
-        destinationType = destinationType,
-        constructDestination = { constructor.call() }
-    )
+    TODO("JS")
+//    val constructor = destinationType.constructors.first { it.parameters.isEmpty() }
+//    return ComposableNavigationBinding(
+//        keyType = keyType,
+//        destinationType = destinationType,
+//        constructDestination = { constructor.call() }
+//    )
 }
 
 public inline fun <reified KeyType : NavigationKey> createComposableNavigationBinding(

@@ -2,8 +2,8 @@ package dev.enro.core.compose.container
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelLazy
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 
@@ -31,5 +31,11 @@ internal class ComposableViewModelStoreStorage : ViewModel() {
 internal fun NavigationContext<*>.getComposableViewModelStoreStorage(): ComposableViewModelStoreStorage = ViewModelLazy(
     viewModelClass = ComposableViewModelStoreStorage::class,
     storeProducer = { viewModelStoreOwner.viewModelStore },
-    factoryProducer = { ViewModelProvider.NewInstanceFactory() },
+    factoryProducer = {
+        viewModelFactory {
+            addInitializer(ComposableViewModelStoreStorage::class) {
+                ComposableViewModelStoreStorage()
+            }
+        }
+    },
 ).value

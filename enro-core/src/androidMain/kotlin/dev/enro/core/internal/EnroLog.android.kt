@@ -1,13 +1,16 @@
 package dev.enro.core.internal
 
+import android.app.Application
 import android.util.Log
+import dev.enro.core.controller.NavigationController
 
 internal actual object EnroLog {
     private const val LOG_TAG = "Enro"
 
     // Enabled/disabled by EnroTest
     @Suppress("MemberVisibilityCanBePrivate")
-    internal var usePrint = false
+    internal val usePrint
+        get() = NavigationController.platformReference !is Application
 
     actual fun debug(message: String) {
         if (usePrint) {

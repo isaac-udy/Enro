@@ -1,6 +1,6 @@
 package dev.enro.core.internal
 
-internal actual class EnroWeakReference<T : Any> actual constructor(referent: T) {
+internal actual class EnroWeakReference<T : Any> actual constructor(referent: T?) {
     actual fun clear() {
     }
 

@@ -9,6 +9,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.TypedNavigationHandle
 import dev.enro.core.close
 import dev.enro.core.controller.EnroDependencyScope
+import dev.enro.core.controller.usecase.extras
 import java.lang.ref.WeakReference
 
 class TestNavigationHandle<T : NavigationKey>(
@@ -26,8 +27,6 @@ class TestNavigationHandle<T : NavigationKey>(
     override val dependencyScope: EnroDependencyScope
         get() = navigationHandle.dependencyScope
 
-    internal var internalOnCloseRequested: () -> Unit = { close() }
-
     override val lifecycle: Lifecycle
         get() {
             return navigationHandle.lifecycle
@@ -41,6 +40,10 @@ class TestNavigationHandle<T : NavigationKey>(
             return instructions as List<NavigationInstruction>
         }
 
+    init {
+        extras.put(INTERNAL_CLOSE_REQUESTED_KEY, { close() })
+    }
+
     override fun executeInstruction(navigationInstruction: NavigationInstruction) {
         if (instructions.lastOrNull() is NavigationInstruction.Close) {
             throw IllegalStateException("TestNavigationHandle has received a close instruction and can no longer execute instructions")
@@ -50,6 +53,7 @@ class TestNavigationHandle<T : NavigationKey>(
     }
 
     companion object {
+        internal const val INTERNAL_CLOSE_REQUESTED_KEY = "TestNavigationHandle.internalOnCloseRequested"
         internal val allInstructions = mutableListOf<NavigationInstruction>()
     }
 }
@@ -62,7 +66,10 @@ fun <T : NavigationKey> createTestNavigationHandle(
 ): TestNavigationHandle<T> {
     lateinit var navigationHandle: WeakReference<TestNavigationHandle<T>>
     val fakeNavigationHandle = FakeNavigationHandle(key) {
-        navigationHandle.get()?.internalOnCloseRequested?.invoke()
+        val extras = navigationHandle.get()?.extras ?: return@FakeNavigationHandle
+        val closeRequested = extras[TestNavigationHandle.INTERNAL_CLOSE_REQUESTED_KEY] as? () -> Unit
+            ?: return@FakeNavigationHandle
+        closeRequested()
     }
     navigationHandle = WeakReference(TestNavigationHandle(fakeNavigationHandle))
     return navigationHandle.get()!!

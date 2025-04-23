@@ -32,14 +32,16 @@ internal class OnNavigationContextCreated(
         val config = NavigationHandleProperty.getPendingConfig(context)
         val defaultKey = config?.defaultKey
             ?: NoNavigationKey(context.contextReference::class.qualifiedName ?: "", context.arguments)
+
+        val defaultDirection: NavigationDirection = when (defaultKey) {
+            is NavigationKey.SupportsPresent -> NavigationDirection.Present
+            is NavigationKey.SupportsPush -> NavigationDirection.Push
+            else -> NavigationDirection.Present
+        }
         val defaultInstruction = NavigationInstruction
             .Open.OpenInternal(
                 navigationKey = defaultKey,
-                navigationDirection = when (defaultKey) {
-                    is NavigationKey.SupportsPresent -> NavigationDirection.Present
-                    is NavigationKey.SupportsPush -> NavigationDirection.Push
-                    else -> NavigationDirection.Present
-                }
+                navigationDirection = defaultDirection,
             )
             .internal
             .copy(instructionId = contextId)

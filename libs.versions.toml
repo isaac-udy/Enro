@@ -10,6 +10,7 @@ kotlinx-serialization = "1.8.0"
 maven-publish = "0.29.0"
 ksp = "2.1.10-1.0.31"
 kotlinx-coroutines = "1.10.2"
+kotlin-js = "2025.1.4" # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -61,6 +62,8 @@ compose-materialIconsExtended = "androidx.compose.material:material-icons-extend
 
 kotlin-stdLib = "org.jetbrains.kotlin:kotlin-stdlib:2.1.0"
 kotlin-reflect = "org.jetbrains.kotlin:kotlin-reflect:2.1.0"
+kotlin-js = { module = "org.jetbrains.kotlin-wrappers:kotlin-js", version.ref = "kotlin-js" }
+
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }

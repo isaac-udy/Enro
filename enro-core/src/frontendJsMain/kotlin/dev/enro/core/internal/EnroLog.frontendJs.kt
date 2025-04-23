@@ -15,6 +15,6 @@ internal actual object EnroLog {
 
     actual fun error(message: String, throwable: Throwable) {
         println("[Enro] ERROR: $message")
-        throwable.printStackTrace()
+//        throwable.printStackTrace()
     }
 }

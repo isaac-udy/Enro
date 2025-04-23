@@ -2,11 +2,9 @@ package dev.enro.core
 
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
+import dev.enro.core.controller.usecase.extras
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import kotlin.reflect.KClass
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.jvm.isAccessible
 
 public class NavigationHandleConfiguration<T : NavigationKey> @PublishedApi internal constructor(
     private val keyType: KClass<T>
@@ -52,13 +50,9 @@ public class LazyNavigationHandleConfiguration<T : NavigationKey>(
             handle.internalOnCloseRequested =
                 { onCloseRequested(navigationHandle.asTyped(keyType)) }
         } else if (handle.dependencyScope.get<NavigationController>().config.isInTest) {
-            val field = handle::class
-                .declaredMemberProperties
-                .filterIsInstance<KMutableProperty<*>>()
-                .firstOrNull { it.name.startsWith("internalOnCloseRequested") }
-                ?: return
-            field.isAccessible = true
-            field.setter.call(handle, { onCloseRequested(navigationHandle.asTyped(keyType)) })
+            handle.extras["TestNavigationHandle.internalOnCloseRequested"] = {
+                onCloseRequested(navigationHandle.asTyped(keyType))
+            }
         }
     }
 }

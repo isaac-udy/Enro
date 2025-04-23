@@ -14,6 +14,7 @@ import dev.enro.core.internal.isMainThread
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
+import kotlin.reflect.typeOf
 
 public interface NavigationHandle : LifecycleOwner {
     public val id: String
@@ -142,7 +143,6 @@ public fun NavigationHandle.replace(
 }
 
 public fun <T : Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.closeWithResult(result: T) {
-    EnroLog.error("Requesting close from ${getNavigationContext()?.toDisplayString()} with ${getNavigationContext()?.parentContainer()} ${getNavigationContext()?.lifecycle?.currentState}")
     executeInstruction(NavigationInstruction.Close.WithResult(result))
 }
 

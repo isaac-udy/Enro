@@ -88,6 +88,10 @@ kotlin {
             implementation(libs.testing.androidx.runner)
             implementation(libs.testing.androidx.compose)
         }
+
+        frontendJsMain.dependencies {
+            implementation(npm("@js-joda/core", "5.6.5"))
+        }
     }
 }
 

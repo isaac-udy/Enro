@@ -28,7 +28,7 @@ internal class ExecuteContainerOperationInstructionImpl(): ExecuteContainerOpera
                 NavigationInstruction.ContainerOperation.Target.ActiveContainer -> "ActiveContainer"
                 is NavigationInstruction.ContainerOperation.Target.TargetContainer -> "TargetContainer(${instruction.target.key})"
             }
-            val contextKeyName = navigationContext.instruction.navigationKey::class.java.simpleName
+            val contextKeyName = navigationContext.instruction.navigationKey::class.simpleName
             "Failed to perform container instruction for $targetName in context with key $contextKeyName: Could not find valid container to perform instruction on"
         }
         instruction.operation.invoke(container)

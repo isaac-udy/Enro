@@ -16,6 +16,7 @@ import org.gradle.kotlin.dsl.getting
 import org.gradle.kotlin.dsl.invoke
 import org.gradle.kotlin.dsl.the
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+import org.jetbrains.kotlin.gradle.dsl.JsSourceMapEmbedMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
@@ -85,10 +86,14 @@ internal fun Project.configureKotlinMultiplatform(
                             }
                         }
                     }
+                    compilerOptions {
+                        sourceMap.set(true)
+                        sourceMapEmbedSources.set(JsSourceMapEmbedMode.SOURCE_MAP_SOURCE_CONTENT_ALWAYS)
+                    }
                 }
                 binaries.executable()
                 compilerOptions {
-                    freeCompilerArgs.addAll("-Xexpect-actual-classes")
+                    freeCompilerArgs.addAll("-Xexpect-actual-classes", "-Xwasm-attach-js-exception")
                     optIn.addAll(
                         "dev.enro.annotations.AdvancedEnroApi",
                         "dev.enro.annotations.ExperimentalEnroApi",

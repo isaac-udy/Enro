@@ -20,6 +20,7 @@ internal class NavigationHandleViewModelFactory(
     private val navigationController: NavigationController,
     private val instruction: AnyOpenInstruction
 ) : ViewModelProvider.Factory {
+
     override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
         if (navigationController.config.isInTest) {
             return TestNavigationHandleViewModel(

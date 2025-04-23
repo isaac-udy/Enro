@@ -4,7 +4,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import dev.enro.core.NavigationHandle
 import dev.enro.core.controller.get
-import java.io.Closeable
 
 /**
  * NavigationHandleExtras provides a centralised place to store additional objects on a NavigationHandle.
@@ -16,12 +15,12 @@ import java.io.Closeable
  *
  * Extras which extend java.io.Closeable will automatically have their close method called when the NavigationHandle is destroyed.
  */
-public class NavigationHandleExtras : Closeable {
+public class NavigationHandleExtras : AutoCloseable {
     internal val extras: SnapshotStateMap<String, Any> = mutableStateMapOf()
 
     override fun close() {
         extras.values.forEach {
-            if(it is Closeable) it.close()
+            if(it is AutoCloseable) it.close()
         }
         extras.clear()
     }

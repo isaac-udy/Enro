@@ -8,6 +8,7 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationHandle
 import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.getNavigationHandle
+import dev.enro.core.internal.EnroWeakReference
 import dev.enro.core.internal.handle.NavigationHandleViewModel
 import dev.enro.core.internal.hasKey
 import dev.enro.core.leafContext
@@ -15,12 +16,11 @@ import dev.enro.core.rootContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import java.lang.ref.WeakReference
 
 internal class ActiveNavigationHandleReference(
     private val pluginRepository: PluginRepository
 ) {
-    private var activeNavigationHandle: WeakReference<NavigationHandle> = WeakReference(null)
+    private var activeNavigationHandle: EnroWeakReference<NavigationHandle> = EnroWeakReference(null)
         set(value) {
             if (value.get() == field.get()) { return }
             field = value
@@ -28,7 +28,7 @@ internal class ActiveNavigationHandleReference(
             val active = value.get()
             if (active != null) {
                 if (active is NavigationHandleViewModel && !active.hasKey) {
-                    field = WeakReference(null)
+                    field = EnroWeakReference(null)
                     mutableActiveNavigationIdFlow.value = null
                     return
                 }
@@ -48,7 +48,7 @@ internal class ActiveNavigationHandleReference(
         runCatching {
             val active = context.rootContext().leafContext().getNavigationHandle()
             if (!active.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return@runCatching
-            activeNavigationHandle = WeakReference(active)
+            activeNavigationHandle = EnroWeakReference(active)
         }
     }
 

@@ -2,7 +2,6 @@ package dev.enro.core.container
 
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationDirection
-import dev.enro.core.internal.enroIdentityHashCode
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
@@ -12,11 +11,10 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
-import kotlin.jvm.JvmInline
+import kotlin.uuid.Uuid
 
-@JvmInline
 @Serializable(with = NavigationBackstackSerializer::class)
-public value class NavigationBackstack(private val backstack: List<AnyOpenInstruction>) : List<AnyOpenInstruction> by backstack {
+public class NavigationBackstack(private val backstack: List<AnyOpenInstruction>) : List<AnyOpenInstruction> by backstack {
     public val active: AnyOpenInstruction? get() = lastOrNull()
 
     public val activePushed: AnyOpenInstruction? get() = lastOrNull { it.navigationDirection == NavigationDirection.Push }
@@ -24,7 +22,9 @@ public value class NavigationBackstack(private val backstack: List<AnyOpenInstru
     public val activePresented: AnyOpenInstruction? get() = takeWhile { it.navigationDirection != NavigationDirection.Push }
         .lastOrNull { it.navigationDirection == NavigationDirection.Push }
 
-    internal val identity get() = enroIdentityHashCode(backstack)
+    internal val identity: Int = Uuid.random().hashCode()
+//            return enroIdentityHashCode(backstack)
+//        }
 }
 
 public object NavigationBackstackSerializer : KSerializer<NavigationBackstack> {

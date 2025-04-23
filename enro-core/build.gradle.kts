@@ -34,6 +34,10 @@ kotlin {
             compileOnly(libs.androidx.navigation.fragment)
 
         }
+
+        frontendJsMain.dependencies {
+            implementation(libs.kotlin.js)
+        }
     }
 }
 

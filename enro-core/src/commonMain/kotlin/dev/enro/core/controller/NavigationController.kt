@@ -14,7 +14,6 @@ import kotlin.reflect.KClass
 
 public class NavigationController internal constructor() {
     internal val dependencyScope: EnroDependencyScope = NavigationControllerScope(this)
-
     private val enroResult: EnroResult = dependencyScope.get()
     private val pluginRepository: PluginRepository = dependencyScope.get()
     private val navigationBindingRepository: NavigationBindingRepository = dependencyScope.get()

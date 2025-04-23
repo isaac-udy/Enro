@@ -33,14 +33,42 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.controller.NavigationController
 import dev.enro.core.present
 import dev.enro.core.push
 import dev.enro.destination.compose.navigationContext
+import dev.enro.tests.application.compose.results.ComposeAsyncManagedResultFlow
+import dev.enro.tests.application.compose.results.ComposeManagedResultFlow
+import dev.enro.tests.application.compose.results.ComposeMixedResultTypes
+import dev.enro.tests.application.compose.results.ComposeNestedResults
+import dev.enro.tests.application.compose.results.ResultsWithExtra
+import dev.enro.tests.application.window.SimpleWindow
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal object SelectDestination : NavigationKey.SupportsPush, NavigationKey.SupportsPresent
+internal object SelectDestination : NavigationKey.SupportsPush, NavigationKey.SupportsPresent {
+    internal val selectableDestinations = run {
+        val commonDestinations = listOf<NavigationKey>(
+            ComposeManagedResultFlow,
+            ComposeAsyncManagedResultFlow,
+            ComposeMixedResultTypes,
+            ComposeNestedResults,
+            ResultsWithExtra,
+            SimpleWindow,
+        )
+        mutableStateOf(
+            commonDestinations.map { SelectableDestination(it) }
+        )
+    }
+
+    fun registerSelectableDestinations(
+        vararg destinations: NavigationKey,
+    ) {
+        selectableDestinations.value = (selectableDestinations.value.plus(
+            destinations.toList()
+                .map { SelectableDestination(it) }
+        )).sortedBy { it.title }
+    }
+}
 
 @Composable
 @NavigationDestination(SelectDestination::class)
@@ -50,14 +78,12 @@ fun SelectDestinationScreen() {
         navigation.instruction.navigationDirection == NavigationDirection.Present
     }
     val context = navigationContext
-    val destinations = remember {
-        loadNavigationDestinations(context.controller)
-    }
+    val destinations = SelectDestination.selectableDestinations.value
 
     val destinationsList = remember {
         movableContentOf {
             destinations.forEach {
-                ReflectedDestinationCard(reflectedDestination = it)
+                ReflectedDestinationCard(selectableDestination = it)
             }
         }
     }
@@ -111,7 +137,7 @@ fun SelectDestinationScreen() {
 
 @Composable
 fun ReflectedDestinationCard(
-    reflectedDestination: ReflectedDestination
+    selectableDestination: SelectableDestination
 ) {
     val navigation = navigationHandle()
     Card(
@@ -125,28 +151,28 @@ fun ReflectedDestinationCard(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = reflectedDestination.title,
+                text = selectableDestination.title,
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.button,
             )
 
             when {
-                reflectedDestination.pushInstance == null -> {
+                selectableDestination.pushInstance == null -> {
                     TextButton(
                         modifier = Modifier.widthIn(min = 56.dp),
                         onClick = {
-                            navigation.present(reflectedDestination.presentInstance!!)
+                            navigation.present(selectableDestination.presentInstance!!)
                         }
                     ) {
                         Text("Present")
                     }
                 }
 
-                reflectedDestination.presentInstance == null -> {
+                selectableDestination.presentInstance == null -> {
                     TextButton(
                         modifier = Modifier.widthIn(min = 56.dp),
                         onClick = {
-                            navigation.push(reflectedDestination.pushInstance)
+                            navigation.push(selectableDestination.pushInstance)
                         }
                     ) {
                         Text("Push")
@@ -175,7 +201,7 @@ fun ReflectedDestinationCard(
                                     TextButton(
                                         onClick = {
                                             popUpVisible = false
-                                            navigation.present(reflectedDestination.presentInstance)
+                                            navigation.present(selectableDestination.presentInstance)
                                         }
                                     ) {
                                         Text("Present")
@@ -183,7 +209,7 @@ fun ReflectedDestinationCard(
                                     TextButton(
                                         onClick = {
                                             popUpVisible = false
-                                            navigation.push(reflectedDestination.pushInstance)
+                                            navigation.push(selectableDestination.pushInstance)
                                         }
                                     ) {
                                         Text("Push")
@@ -200,15 +226,27 @@ fun ReflectedDestinationCard(
     }
 }
 
-data class ReflectedDestination(
+data class SelectableDestination(
     val pushInstance: NavigationKey.SupportsPush?,
     val presentInstance: NavigationKey.SupportsPresent?,
     val title: String,
 )
 
-// This is a hacky method of loading all NavigationKeys available,
-// so that we can render a destination picker easily in the test application
-// this uses slow reflection to work, and should not be used in a production application
-internal expect fun loadNavigationDestinations(
-    controller: NavigationController
-): List<ReflectedDestination>
+fun SelectableDestination(
+    instance: NavigationKey,
+): SelectableDestination {
+    val title = instance::class.simpleName!!.toCharArray()
+        .mapIndexed { index, c ->
+            if (index > 0 && c.isUpperCase()) {
+                return@mapIndexed " $c"
+            }
+            return@mapIndexed c.toString()
+        }
+        .joinToString(separator = "")
+
+    return SelectableDestination(
+        pushInstance = instance as? NavigationKey.SupportsPush,
+        presentInstance = instance as? NavigationKey.SupportsPresent,
+        title = title,
+    )
+}

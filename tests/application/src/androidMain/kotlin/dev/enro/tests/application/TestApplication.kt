@@ -22,6 +22,23 @@ import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.createNavigationController
 import dev.enro.destination.compose.navigationContext
 import dev.enro.destination.fragment.FragmentSharedElements
+import dev.enro.tests.application.activity.PictureInPicture
+import dev.enro.tests.application.activity.SimpleActivity
+import dev.enro.tests.application.compose.BottomNavigation
+import dev.enro.tests.application.compose.BottomSheetChangeSize
+import dev.enro.tests.application.compose.CloseLandingPageAndPresent
+import dev.enro.tests.application.compose.ComposeAnimations
+import dev.enro.tests.application.compose.ComposeSavePrimitives
+import dev.enro.tests.application.compose.ComposeStability
+import dev.enro.tests.application.compose.EmbeddedDestination
+import dev.enro.tests.application.compose.FindContext
+import dev.enro.tests.application.compose.LazyColumn
+import dev.enro.tests.application.compose.SyntheticViewModelAccess
+import dev.enro.tests.application.fragment.FragmentPresentation
+import dev.enro.tests.application.fragment.FragmentSharedElementDestination
+import dev.enro.tests.application.fragment.UnboundBottomSheet
+import dev.enro.tests.application.managedflow.ManagedFlowInComposable
+import dev.enro.tests.application.managedflow.ManagedFlowInFragment
 
 @NavigationComponent
 class TestApplication : Application(), NavigationApplication {
@@ -67,5 +84,28 @@ class TestApplication : Application(), NavigationApplication {
                 returnExiting = fadeOut() + slideOutHorizontally { it / 3 }
             )
         }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        SelectDestination.registerSelectableDestinations(
+            BottomNavigation,
+            BottomSheetChangeSize,
+            CloseLandingPageAndPresent,
+            ComposeAnimations,
+            ComposeSavePrimitives,
+            ComposeStability,
+            EmbeddedDestination,
+            FindContext,
+            FragmentPresentation,
+            FragmentSharedElementDestination,
+            LazyColumn,
+            ManagedFlowInComposable,
+            ManagedFlowInFragment,
+            PictureInPicture,
+            SimpleActivity,
+            SyntheticViewModelAccess,
+            UnboundBottomSheet,
+        )
     }
 }

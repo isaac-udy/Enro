@@ -16,18 +16,20 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 public class ViewModelNavigationHandleProperty<T : NavigationKey> @PublishedApi internal constructor(
-    viewModelType: KClass<out ViewModel>,
+    viewModel: ViewModel,
     type: KClass<T>,
     block: LazyNavigationHandleConfiguration<T>.() -> Unit
 ) : ReadOnlyProperty<ViewModel, TypedNavigationHandle<T>> {
 
-    private val navigationHandle = EnroViewModelNavigationHandleProvider.get(viewModelType)
-        .asTyped(type)
-        .apply {
-            LazyNavigationHandleConfiguration(type)
-                .apply(block)
-                .configure(this)
-        }
+    private val navigationHandle = run {
+        EnroViewModelNavigationHandleProvider.get(viewModel::class)
+            .asTyped(type)
+            .apply {
+                LazyNavigationHandleConfiguration(type)
+                    .apply(block)
+                    .configure(this)
+            }
+    }
 
     override fun getValue(thisRef: ViewModel, property: KProperty<*>): TypedNavigationHandle<T> {
         return navigationHandle
@@ -38,7 +40,7 @@ public fun <T : NavigationKey> ViewModel.navigationHandle(
     type: KClass<T>,
     block: LazyNavigationHandleConfiguration<T>.() -> Unit = {}
 ): ViewModelNavigationHandleProperty<T> =
-    ViewModelNavigationHandleProperty(this::class, type, block)
+    ViewModelNavigationHandleProperty(this, type, block)
 
 public inline fun <reified T : NavigationKey> ViewModel.navigationHandle(
     noinline block: LazyNavigationHandleConfiguration<T>.() -> Unit = {}

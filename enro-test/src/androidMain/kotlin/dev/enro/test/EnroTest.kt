@@ -7,7 +7,6 @@ import androidx.test.core.app.ApplicationProvider
 import dev.enro.core.controller.NavigationApplication
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.createUnattachedNavigationController
-import dev.enro.core.internal.EnroLog
 import dev.enro.viewmodel.EnroViewModelNavigationHandleProvider
 
 object EnroTest {
@@ -37,10 +36,6 @@ object EnroTest {
                     isInTest = true
                 )
             )
-            when (application) {
-                null -> EnroLog.usePrint = true
-                else -> EnroLog.usePrint = false
-            }
             when (val application = application) {
                 is NavigationApplication -> return@apply
                 else -> install(application)
