@@ -78,3 +78,23 @@ private.properties
 /.kotlin/
 
 /.codebuddy/
+
+### Xcode ###
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata/
+/*.gcno
+**/xcshareddata/WorkspaceSettings.xcsettings
+*.xcuserstate
+*.xcscheme
+*.xcworkspace
+xcuserdata/
+
+# CocoaPods
+Pods/
+
+## iOS App packaging
+*.ipa
+*.dSYM.zip
+*.dSYM
