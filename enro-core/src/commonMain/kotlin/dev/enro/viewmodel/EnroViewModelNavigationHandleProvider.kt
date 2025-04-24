@@ -1,11 +1,9 @@
 package dev.enro.viewmodel
 
-import androidx.lifecycle.VIEW_MODEL_STORE_OWNER_KEY
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationHandle
-import dev.enro.core.getNavigationHandle
 import kotlin.reflect.KClass
 
 internal object EnroViewModelNavigationHandleProvider {
@@ -32,13 +30,17 @@ internal object EnroViewModelNavigationHandleProvider {
     }
 }
 
-// TODO added for JS, might need cleanup?
-public fun prepareNavigationHandle(
-    viewModelType: KClass<out ViewModel>,
-    extras: CreationExtras,
-) {
-    val owner = requireNotNull(extras[VIEW_MODEL_STORE_OWNER_KEY]) {
-        "TODO better error"
+public inline fun <reified T : ViewModel> CreationExtras.createEnroViewModel(noinline block: () -> T): T {
+    return createEnroViewModel(T::class, block)
+}
+
+public fun <T : ViewModel> CreationExtras.createEnroViewModel(
+    viewModelType: KClass<T>,
+    block: () -> T,
+): T {
+    EnroViewModelNavigationHandleProvider.put(viewModelType, getNavigationHandle())
+    val viewModel = block.invoke()
+    return viewModel.also {
+        EnroViewModelNavigationHandleProvider.clear(viewModelType)
     }
-    EnroViewModelNavigationHandleProvider.put(viewModelType, owner.getNavigationHandle())
 }

@@ -14,6 +14,7 @@ import dev.enro.core.closeWithResult
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.viewmodel.createEnroViewModel
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
@@ -64,7 +65,11 @@ class ComposeMixedResultViewModel : ViewModel() {
 @NavigationDestination(ComposeMixedResultTypes::class)
 @Composable
 fun ComposeMixedResultTypesScreen() {
-    val viewModel = viewModel<ComposeMixedResultViewModel>()
+    val viewModel = viewModel<ComposeMixedResultViewModel> {
+        createEnroViewModel {
+            ComposeMixedResultViewModel()
+        }
+    }
 
     TitledColumn(
         title = "Mixed Result Types",

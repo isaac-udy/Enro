@@ -41,6 +41,7 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.result.flows.registerForFlowResult
 import dev.enro.core.withExtra
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.viewmodel.createEnroViewModel
 import dev.enro.viewmodel.navigationHandle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -142,7 +143,11 @@ class ComposeAsyncManagedResultViewModel : ViewModel() {
 @OptIn(ExperimentalComposeUiApi::class)
 @NavigationDestination(ComposeAsyncManagedResultFlow::class)
 @Composable
-fun ComposeAsyncManagedResultFlowScreen(viewModel: ComposeAsyncManagedResultViewModel = viewModel()) {
+fun ComposeAsyncManagedResultFlowScreen(viewModel: ComposeAsyncManagedResultViewModel = viewModel {
+    createEnroViewModel {
+        ComposeAsyncManagedResultViewModel()
+    }
+}) {
     val container = rememberNavigationContainer(
         emptyBehavior = EmptyBehavior.CloseParent,
     )

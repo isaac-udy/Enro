@@ -2,7 +2,12 @@
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -31,6 +36,8 @@ import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.createNavigationController
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
+import dev.enro.core.leafContext
+import dev.enro.core.requestClose
 import dev.enro.tests.application.SelectDestination
 import kotlinx.browser.document
 import org.jetbrains.compose.resources.configureWebResources
@@ -62,12 +69,21 @@ fun main() {
                     },
                 )
 
-                Box(
-                    modifier = Modifier
-                        .background(Color.LightGray)
-                        .fillMaxSize()
-                ) {
-                    container.Render()
+                Column {
+                    IconButton(
+                        onClick = {
+                            container.context.leafContext().navigationHandle.requestClose()
+                        }
+                    ) {
+                        Icon(Icons.Default.ArrowBack, null)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .background(Color.LightGray)
+                            .fillMaxSize()
+                    ) {
+                        container.Render()
+                    }
                 }
             }
         }
@@ -110,6 +126,7 @@ internal fun ApplyLocals(
                 .invoke(this, null)
         }
     }
+
     CompositionLocalProvider(
         EnroLocalSavedStateRegistryOwner provides context.savedStateRegistryOwner,
         LocalNavigationHandle provides context.navigationHandle,
@@ -121,4 +138,40 @@ internal fun ApplyLocals(
         content()
     }
 }
+
+// Attempt at implementing a backstack
+/*
+    LaunchedEffect(Unit) {
+        var eventListenerEnabled = true
+        val eventListener: (Event) -> Unit = {
+            if (eventListenerEnabled) {
+                context.leafContext().navigationHandle.requestClose()
+                window.history.replaceState(context.leafContext().instruction.instructionId.toJsString(), "example", "#${context.leafContext().instruction.instructionId}")
+            }
+        }
+        window.addEventListener("popstate", eventListener)
+        context.containerManager.activeContainerFlow
+            .flatMapLatest { container ->
+                container?.backstackFlow?.map {
+                    container to it
+                } ?: flowOf(null to null)
+            }
+            .collectLatest { (container, backstack) ->
+                if (backstack == null) return@collectLatest
+                eventListenerEnabled = false
+                while (isActive) {
+                    delay(1)
+                    val last = window.history.state
+                    if (last == null || last == backstack.active?.instructionId?.toJsString()) break
+                    window.history.back()
+                }
+                if (window.history.state != backstack.active?.instructionId?.toJsString()) {
+                    backstack.forEachIndexed { index, item ->
+                        window.history.pushState(item.instructionId.toJsString(), "example", "#${item.instructionId}")
+                    }
+                }
+                eventListenerEnabled = true
+            }
+    }
+ */
 

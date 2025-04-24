@@ -25,6 +25,19 @@ public class NavigationBackstack(private val backstack: List<AnyOpenInstruction>
     internal val identity: Int = Uuid.random().hashCode()
 //            return enroIdentityHashCode(backstack)
 //        }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as NavigationBackstack
+
+        return backstack == other.backstack
+    }
+
+    override fun hashCode(): Int {
+        return backstack.hashCode()
+    }
 }
 
 public object NavigationBackstackSerializer : KSerializer<NavigationBackstack> {
