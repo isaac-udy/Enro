@@ -1,5 +1,7 @@
 package dev.enro.core.internal
 
+import platform.Foundation.NSThread
+
 internal actual fun isMainThread(): Boolean {
-    TODO("Not yet implemented")
+    return NSThread.isMainThread
 }

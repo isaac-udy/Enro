@@ -92,6 +92,18 @@ kotlin {
         frontendJsMain.dependencies {
             implementation(npm("@js-joda/core", "5.6.5"))
         }
+//        iosX64Main {
+//            kotlin.srcDir("build/generated/ksp/iosX64/${name}/kotlin")
+//        }
+//        iosArm64Main {
+//            kotlin.srcDir("build/generated/ksp/iosArm64/${name}/kotlin")
+//        }
+//        iosSimulatorArm64Main {
+//            kotlin.srcDir("build/generated/ksp/iosSimulatorArm64/${name}/kotlin")
+//        }
+//        iosMain {
+//            kotlin.srcDir("build/generated/ksp/iosSimulatorArm64/iosSimulatorArm64Main/kotlin")
+//        }
     }
 }
 
@@ -105,7 +117,14 @@ dependencies {
         kapt("dev.enro:enro-processor:${project.enroVersionName}")
     }
     else {
-        ksp("dev.enro:enro-processor:${project.enroVersionName}")
+        val enroProcessor = "dev.enro:enro-processor:${project.enroVersionName}"
+        add("kspCommonMainMetadata", enroProcessor)
+        add("kspAndroid", enroProcessor)
+        add("kspDesktop", enroProcessor)
+        add("kspFrontendJs", enroProcessor)
+        add("kspIosX64", enroProcessor)
+        add("kspIosArm64", enroProcessor)
+        add("kspIosSimulatorArm64", enroProcessor)
     }
 
     lintChecks(project(":enro-lint"))

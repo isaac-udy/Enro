@@ -41,8 +41,8 @@ import dev.enro.core.result.flows.requireStep
 import dev.enro.core.withExtra
 import dev.enro.destination.compose.OverrideNavigationAnimations
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.viewmodel.createEnroViewModel
 import dev.enro.viewmodel.navigationHandle
-import dev.enro.viewmodel.prepareNavigationHandle
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -114,11 +114,9 @@ class ComposeManagedResultViewModel : ViewModel() {
 @NavigationDestination(ComposeManagedResultFlow::class)
 @Composable
 fun ComposeManagedResultFlowScreen(viewModel: ComposeManagedResultViewModel = viewModel {
-    prepareNavigationHandle(
-        viewModelType = ComposeManagedResultViewModel::class,
-        extras = this,
-    )
-    ComposeManagedResultViewModel()
+    createEnroViewModel {
+        ComposeManagedResultViewModel()
+    }
 }) {
     val container = rememberNavigationContainer(
         emptyBehavior = EmptyBehavior.CloseParent,

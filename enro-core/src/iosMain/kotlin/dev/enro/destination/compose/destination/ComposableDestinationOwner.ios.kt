@@ -1,7 +1,9 @@
 package dev.enro.core.compose.destination
 
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.savedstate.SavedStateRegistryOwner
 
-internal actual val EnroLocalSavedStateRegistryOwner: ProvidableCompositionLocal<SavedStateRegistryOwner>
-    get() = TODO("Not yet implemented")
+public actual val EnroLocalSavedStateRegistryOwner: ProvidableCompositionLocal<SavedStateRegistryOwner> = staticCompositionLocalOf {
+    error("No SavedStateRegistryOwner provided. Ensure you are using Enro's Compose Navigation.")
+}

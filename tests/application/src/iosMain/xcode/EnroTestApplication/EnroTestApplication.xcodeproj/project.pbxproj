@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		425EE45A2DB9C7D40009282E /* EnroTestApplicationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425EE4592DB9C7D40009282E /* EnroTestApplicationApp.swift */; };
-		425EE45C2DB9C7D40009282E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425EE45B2DB9C7D40009282E /* ContentView.swift */; };
+		42503B8E2DB9D63D00D743E6 /* MainViewControllerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42503B8D2DB9D63D00D743E6 /* MainViewControllerView.swift */; };
+		42503B8F2DB9D64F00D743E6 /* EnroTestApplicationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425EE4592DB9C7D40009282E /* EnroTestApplicationApp.swift */; };
+		42503B902DB9D64F00D743E6 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425EE45B2DB9C7D40009282E /* ContentView.swift */; };
 		425EE45E2DB9C7D50009282E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 425EE45D2DB9C7D50009282E /* Assets.xcassets */; };
 		425EE4612DB9C7D50009282E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 425EE4602DB9C7D50009282E /* Preview Assets.xcassets */; };
 		425EE46B2DB9C7D50009282E /* EnroTestApplicationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425EE46A2DB9C7D50009282E /* EnroTestApplicationTests.swift */; };
@@ -34,6 +35,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		42503B8D2DB9D63D00D743E6 /* MainViewControllerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainViewControllerView.swift; sourceTree = "<group>"; };
+		42503B952DB9D93A00D743E6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		425EE4562DB9C7D40009282E /* EnroTestApplication.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EnroTestApplication.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		425EE4592DB9C7D40009282E /* EnroTestApplicationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnroTestApplicationApp.swift; sourceTree = "<group>"; };
 		425EE45B2DB9C7D40009282E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -94,10 +97,12 @@
 		425EE4582DB9C7D40009282E /* EnroTestApplication */ = {
 			isa = PBXGroup;
 			children = (
+				42503B8D2DB9D63D00D743E6 /* MainViewControllerView.swift */,
 				425EE4592DB9C7D40009282E /* EnroTestApplicationApp.swift */,
 				425EE45B2DB9C7D40009282E /* ContentView.swift */,
 				425EE45D2DB9C7D50009282E /* Assets.xcassets */,
 				425EE45F2DB9C7D50009282E /* Preview Content */,
+				42503B952DB9D93A00D743E6 /* Info.plist */,
 			);
 			path = EnroTestApplication;
 			sourceTree = "<group>";
@@ -196,6 +201,7 @@
 				TargetAttributes = {
 					425EE4552DB9C7D40009282E = {
 						CreatedOnToolsVersion = 15.4;
+						LastSwiftMigration = 1540;
 					};
 					425EE4652DB9C7D50009282E = {
 						CreatedOnToolsVersion = 15.4;
@@ -279,8 +285,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				425EE45C2DB9C7D40009282E /* ContentView.swift in Sources */,
-				425EE45A2DB9C7D40009282E /* EnroTestApplicationApp.swift in Sources */,
+				42503B8F2DB9D64F00D743E6 /* EnroTestApplicationApp.swift in Sources */,
+				42503B902DB9D64F00D743E6 /* ContentView.swift in Sources */,
+				42503B8E2DB9D63D00D743E6 /* MainViewControllerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -441,6 +448,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"EnroTestApplication/Preview Content\"";
@@ -448,6 +456,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/EnroTestApplication/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -461,6 +470,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = dev.enro.EnroTestApplication;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -471,6 +481,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"EnroTestApplication/Preview Content\"";
@@ -478,6 +489,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/EnroTestApplication/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

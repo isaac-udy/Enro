@@ -35,10 +35,10 @@ internal fun Project.configureKotlinMultiplatform(
 
     val libs = project.the<LibrariesForLibs>()
 
-    val kotlinMultiplatformExtension = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
+    val kotlinMultiplatformExtension =
+        project.extensions.getByType(KotlinMultiplatformExtension::class.java)
     kotlinMultiplatformExtension.apply {
         explicitApi = ExplicitApiMode.Strict
-
         if (android) {
             androidTarget {
                 compilerOptions {
@@ -103,7 +103,6 @@ internal fun Project.configureKotlinMultiplatform(
                 }
             }
         }
-
         if (ios) {
             listOf(
                 iosX64(),

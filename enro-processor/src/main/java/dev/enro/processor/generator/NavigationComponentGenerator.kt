@@ -90,6 +90,16 @@ object NavigationComponentGenerator {
                 requireNotNull(generatedComponent.name)
             )
             .addType(generatedComponent)
+            .addType(
+                TypeSpec.objectBuilder("${generatedName}Reference")
+                    .addModifiers(KModifier.PUBLIC)
+                    .addProperty(
+                        PropertySpec.builder("reference", Any::class)
+                            .initializer(CodeBlock.of("${generatedName}()"))
+                            .build()
+                    )
+                    .build()
+            )
             .build()
             .writeTo(
                 codeGenerator = environment.codeGenerator,
