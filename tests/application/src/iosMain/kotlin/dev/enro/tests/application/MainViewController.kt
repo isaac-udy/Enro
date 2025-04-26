@@ -1,4 +1,6 @@
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:OptIn(ExperimentalComposeUiApi::class)
+
 package dev.enro.tests.application
 
 import androidx.compose.foundation.background
@@ -14,7 +16,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateRegistry
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.ComposeUIViewController
 import androidx.lifecycle.Lifecycle
@@ -116,6 +120,10 @@ internal fun ApplyLocals(
         }
     }
 
+    PredictiveBackHandler { progress ->
+        progress.collect {}
+        context.leafContext().navigationHandle.requestClose()
+    }
     CompositionLocalProvider(
         EnroLocalSavedStateRegistryOwner provides context.savedStateRegistryOwner,
         LocalNavigationHandle provides context.navigationHandle,
