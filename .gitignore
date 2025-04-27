@@ -86,7 +86,7 @@ private.properties
 !*.xcworkspace/contents.xcworkspacedata/
 /*.gcno
 **/xcshareddata/WorkspaceSettings.xcsettings
-*.xcuserstate
+**/*.xcuserstate
 *.xcscheme
 *.xcworkspace
 xcuserdata/
