@@ -17,7 +17,9 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.leafContext
 import dev.enro.core.requestClose
+import dev.enro.destination.compose.navigationContext
 import dev.enro.destination.desktop.DesktopWindow
 import kotlinx.serialization.Serializable
 
@@ -29,9 +31,11 @@ class ExampleApplicationWindowDestination : DesktopWindow() {
     @Composable
     override fun ApplicationScope.Render() {
         val navigationHandle = navigationHandle()
+        val context = navigationContext
         Window(
             onKeyEvent = {
                 if (it.key == Key.Escape && it.type == KeyEventType.KeyUp) {
+                    context.leafContext().navigationHandle.requestClose()
                     true
                 } else {
                     false

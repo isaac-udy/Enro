@@ -19,8 +19,8 @@ public class NavigationBackstack(private val backstack: List<AnyOpenInstruction>
 
     public val activePushed: AnyOpenInstruction? get() = lastOrNull { it.navigationDirection == NavigationDirection.Push }
 
-    public val activePresented: AnyOpenInstruction? get() = takeWhile { it.navigationDirection != NavigationDirection.Push }
-        .lastOrNull { it.navigationDirection == NavigationDirection.Push }
+    public val activePresented: AnyOpenInstruction? get() = takeLastWhile { it.navigationDirection == NavigationDirection.Present }
+        .lastOrNull()
 
     internal val identity: Int = Uuid.random().hashCode()
 //            return enroIdentityHashCode(backstack)

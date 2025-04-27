@@ -3,6 +3,10 @@
 
 package dev.enro.tests.application
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,8 +34,10 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.savedState
+import dev.enro.animation.direction
 import dev.enro.annotations.NavigationComponent
 import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.compose.destination.EnroLocalSavedStateRegistryOwner
 import dev.enro.core.compose.rememberNavigationContainer
@@ -55,6 +61,15 @@ fun MainViewController(
     val controller = createNavigationController(UIApplication.sharedApplication) {
         generatedModule as (NavigationModuleScope) -> Unit
         generatedModule.invoke(this)
+        animations {
+            direction(
+                direction = NavigationDirection.Push,
+                entering = fadeIn() + slideInHorizontally { it / 3 },
+                exiting = slideOutHorizontally { -it / 6 },
+                returnEntering = slideInHorizontally { -it / 6 },
+                returnExiting = fadeOut() + slideOutHorizontally { it / 3 }
+            )
+        }
     }
     return ComposeUIViewController {
         ApplyLocals(controller) {

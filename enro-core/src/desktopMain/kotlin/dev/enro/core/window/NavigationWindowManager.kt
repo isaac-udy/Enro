@@ -20,6 +20,9 @@ public actual class NavigationWindowManager actual constructor(
     public actual fun open(instruction: AnyOpenInstruction) {
         val binding = controller.bindingForKeyType(instruction.navigationKey::class) as DesktopWindowNavigationBinding
         val window = binding.constructDestination()
+        require(window is DesktopWindow) {
+            "Attempted to open window for a NavigationInstruction with key of type ${instruction.navigationKey::class}, which not bound to a DesktopWindow"
+        }
         desktopWindows.value = desktopWindows.value + window
     }
     public actual fun close(context: NavigationContext<*>, andOpen: AnyOpenInstruction?) {

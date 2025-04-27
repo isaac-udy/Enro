@@ -100,7 +100,7 @@ public abstract class NavigationContainer(
     private val backstackUpdateJob = context.lifecycleOwner.lifecycleScope.launch {
         context.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             if (currentTransition === initialTransition) return@repeatOnLifecycle
-            performBackstackUpdate(NavigationBackstackTransition(initialBackstack to backstack))
+            performBackstackUpdate(NavigationBackstackTransition(initialBackstack to backstack), true)
         }
     }
 
@@ -124,7 +124,7 @@ public abstract class NavigationContainer(
                 .map { decodeFromSavedState<AnyOpenInstruction>(it) }
                 .toBackstack()
         }
-        setBackstack(restoredBackstack, ignoreContainerChanges = true)
+        setBackstack(restoredBackstack, isLifecycleUpdate = true)
     }
 
     /**
@@ -142,11 +142,18 @@ public abstract class NavigationContainer(
     public override fun setBackstack(backstack: NavigationBackstack) {
         setBackstack(
             backstack = backstack,
-            ignoreContainerChanges = false
+            isLifecycleUpdate = false
         )
     }
 
-    internal fun setBackstack(backstack: NavigationBackstack, ignoreContainerChanges: Boolean) {
+    internal fun setBackstack(
+        backstack: NavigationBackstack,
+        // isLifecycleUpdate is true if the backstack was updated as part of an internal
+        // Enro lifecycle event, such as restoring or setting an initial backstack,
+        // for these cases we often want to skip some parts of the update,
+        // such as animations or updating active container state
+        isLifecycleUpdate: Boolean,
+    ) {
         if (!isMainThread()) throw EnroException.NavigationContainerWrongThread(
             "A NavigationContainer's setBackstack method must only be called from the main thread"
         )
@@ -162,20 +169,27 @@ public abstract class NavigationContainer(
         mutableBackstack = processedBackstack
         mutableBackstackFlow.value = mutableBackstack
         val transition = NavigationBackstackTransition(lastBackstack to processedBackstack)
-        if (!ignoreContainerChanges) {
+        if (!isLifecycleUpdate) {
             setActiveContainerFrom(transition)
         }
-        performBackstackUpdate(transition)
+        performBackstackUpdate(transition, isLifecycleUpdate)
     }
 
-    private fun performBackstackUpdate(transition: NavigationBackstackTransition) {
+    private fun performBackstackUpdate(
+        transition: NavigationBackstackTransition,
+        // isLifecycleUpdate is true if the backstack was updated as part of an internal
+        // Enro lifecycle event, such as restoring or setting an initial backstack,
+        // for these cases we often want to skip some parts of the update,
+        // such as animations or updating active container state
+        isLifecycleUpdate: Boolean,
+    ) {
         currentTransition = transition
-        if (onBackstackUpdated(transition)) {
+        if (onBackstackUpdated(transition, isLifecycleUpdate)) {
             return
         }
         renderJob = context.lifecycleOwner.lifecycleScope.launch {
             context.lifecycle.withCreated {}
-            while (!onBackstackUpdated(transition) && isActive) {
+            while (!onBackstackUpdated(transition, isLifecycleUpdate) && isActive) {
                 delay(16)
             }
         }
@@ -185,7 +199,12 @@ public abstract class NavigationContainer(
 
     // Returns true if the backstack was able to be updated successfully
     protected abstract fun onBackstackUpdated(
-        transition: NavigationBackstackTransition
+        transition: NavigationBackstackTransition,
+        // isLifecycleUpdate is true if the backstack was updated as part of an internal
+        // Enro lifecycle event, such as restoring or setting an initial backstack,
+        // for these cases we often want to skip some parts of the update,
+        // such as animations or updating active container state
+        isLifecycleUpdate: Boolean,
     ): Boolean
 
     private fun acceptedByContext(navigationInstruction: NavigationInstruction.Open<*>): Boolean {
@@ -217,7 +236,7 @@ public abstract class NavigationContainer(
         val initialise = {
             val savedState = savedStateRegistry.consumeRestoredStateForKey(key.name)
             when (savedState) {
-                null -> setBackstack(backstack)
+                null -> setBackstack(backstack, true)
                 else -> restore(savedState)
             }
         }

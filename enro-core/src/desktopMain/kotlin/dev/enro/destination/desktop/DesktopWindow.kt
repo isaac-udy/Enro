@@ -11,6 +11,7 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.enableSavedStateHandles
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
@@ -58,6 +59,7 @@ public abstract class DesktopWindow {
         }
         CompositionLocalProvider(
             EnroLocalSavedStateRegistryOwner provides context.savedStateRegistryOwner,
+            LocalViewModelStoreOwner provides context.viewModelStoreOwner,
             LocalNavigationHandle provides context.navigationHandle,
             LocalSaveableStateRegistry provides SaveableStateRegistry(
                 restoredValues = mapOf(),

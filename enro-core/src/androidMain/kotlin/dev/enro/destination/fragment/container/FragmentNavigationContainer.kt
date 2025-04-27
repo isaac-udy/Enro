@@ -150,7 +150,8 @@ public class FragmentNavigationContainer internal constructor(
     }
 
     override fun onBackstackUpdated(
-        transition: NavigationBackstackTransition
+        transition: NavigationBackstackTransition,
+        isLifecycleUpdate: Boolean,
     ): Boolean {
         if (!tryExecutePendingTransitions()) return false
         if (fragmentManager.isStateSaved) return false

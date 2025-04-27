@@ -36,11 +36,10 @@ import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerBackEvent
 import dev.enro.core.container.NavigationInstructionFilter
-import dev.enro.core.container.getAnimationsForEntering
-import dev.enro.core.container.getAnimationsForExiting
 import dev.enro.core.container.merge
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.core.controller.usecase.GetAnimationsForTransition
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.requestClose
 import dev.enro.destination.compose.ComposableDestination
@@ -177,7 +176,8 @@ public class ComposableNavigationContainer internal constructor(
 
     @OptIn(ExperimentalMaterialApi::class)
     override fun onBackstackUpdated(
-        transition: NavigationBackstackTransition
+        transition: NavigationBackstackTransition,
+        isLifecycleUpdate: Boolean,
     ): Boolean {
         if (!context.lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) return false
 
@@ -202,9 +202,19 @@ public class ComposableNavigationContainer internal constructor(
         backstack.lastOrNull { it.navigationDirection == NavigationDirection.Push }
             ?.let { visible.add(it) }
 
+        if (!isLifecycleUpdate) {
+            dependencyScope.get<GetAnimationsForTransition>()
+                .getAnimations(this, transition)
+                .forEach { (instructionId, animation) ->
+                    val destinationOwner =
+                        activeDestinations.values.firstOrNull { it.instruction.instructionId == instructionId }
+                            ?: destinationOwners.firstOrNull { it.instruction.instructionId == instructionId }
+                            ?: return@forEach
+                    destinationOwner.animations.setAnimation(animation.asComposable())
+                }
+        }
         destinationOwners.forEach {
             if (activeDestinations[it.instruction] == null) {
-                it.animations.setAnimation(getAnimationsForExiting(it.instruction).asComposable())
                 it.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
             }
         }
@@ -254,53 +264,19 @@ public class ComposableNavigationContainer internal constructor(
         )
     }
 
-    @OptIn(ExperimentalMaterialApi::class)
     private fun setVisibilityForBackstack(transition: NavigationBackstackTransition) {
         val isParentContextStarted = context.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
         if (!isParentContextStarted && shouldTakeAnimationsFromParentContainer) return
-
-        val isParentBeingRemoved = when {
-//            context.contextReference is Fragment && !context.contextReference.isAdded -> true
-            else -> false
-        }
-        val presented =
-            transition.activeBackstack.takeLastWhile { it.navigationDirection is NavigationDirection.Present }.toSet()
-        val activePush = transition.activeBackstack.lastOrNull { it.navigationDirection !is NavigationDirection.Present }?.instructionId
-        val activePresented = presented.lastOrNull()?.instructionId
         destinationOwners.forEach { destinationOwner ->
             val instruction = destinationOwner.instruction
-
-            val isActive = when (instruction.instructionId) {
-                activePresented -> !isParentBeingRemoved
-                activePush -> !isParentBeingRemoved
-                else -> false
-            }
+            val isActive = instruction == transition.activeBackstack.activePresented
+                    || instruction == transition.activeBackstack.activePushed
             val isClosing = transition.lastInstruction is NavigationInstruction.Close
             when {
-                isActive && isClosing -> {
-                    destinationOwner.animations.setAnimation(
-                        getAnimationsForEntering(destinationOwner.instruction).asComposable()
-                    )
-                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(true))
-                }
-                !isActive && isClosing -> {
-                    destinationOwner.animations.setAnimation(
-                        getAnimationsForExiting(destinationOwner.instruction).asComposable()
-                    )
-                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
-                }
-                isActive && !isClosing -> {
-                    destinationOwner.animations.setAnimation(
-                        getAnimationsForEntering(destinationOwner.instruction).asComposable()
-                    )
-                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(true))
-                }
-                !isActive && !isClosing -> {
-                    destinationOwner.animations.setAnimation(
-                        getAnimationsForExiting(destinationOwner.instruction).asComposable()
-                    )
-                    destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
-                }
+                isActive && isClosing -> destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(true))
+                !isActive && isClosing -> destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
+                isActive && !isClosing -> destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(true))
+                !isActive && !isClosing -> destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
             }
         }
     }
@@ -397,7 +373,7 @@ public class ComposableNavigationContainer internal constructor(
             val lifecycleObserver = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_RESUME || event == Lifecycle.Event.ON_PAUSE) {
                     setVisibilityForBackstack(NavigationBackstackTransition(backstack to backstack))
-                    setBackstack(backstack, ignoreContainerChanges = true)
+                    setBackstack(backstack, isLifecycleUpdate = true)
                 }
             }
             context.lifecycle.addObserver(lifecycleObserver)
