@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import androidx.savedstate.write
+import dev.enro.animation.NavigationAnimation
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.AnyOpenInstruction
@@ -67,7 +68,8 @@ public class ComposableNavigationContainer internal constructor(
     animations = animations,
     instructionFilter = instructionFilter,
 ) {
-    private val viewModelStoreStorage: ComposableViewModelStoreStorage = parentContext.getComposableViewModelStoreStorage()
+    private val viewModelStoreStorage: ComposableViewModelStoreStorage =
+        parentContext.getComposableViewModelStoreStorage()
     private val viewModelStores = viewModelStoreStorage.getStorageForContainer(key)
 
     private val restoredDestinationState = mutableMapOf<String, SavedState>()
@@ -210,7 +212,10 @@ public class ComposableNavigationContainer internal constructor(
                         activeDestinations.values.firstOrNull { it.instruction.instructionId == instructionId }
                             ?: destinationOwners.firstOrNull { it.instruction.instructionId == instructionId }
                             ?: return@forEach
-                    destinationOwner.animations.setAnimation(animation.asComposable())
+                    destinationOwner.animations.setAnimation(
+                        animation as? NavigationAnimation.Composable
+                            ?: NavigationAnimation.Composable.none
+                    )
                 }
         }
         destinationOwners.forEach {
@@ -245,9 +250,11 @@ public class ComposableNavigationContainer internal constructor(
             is ComposableNavigationBinding<*, *> -> {
                 rawBinding.constructDestination()
             }
+
             is ManagedFlowNavigationBinding<*, *> -> {
                 ComposableHostForManagedFlowDestination()
             }
+
             else -> error("")
         }
 
@@ -265,7 +272,8 @@ public class ComposableNavigationContainer internal constructor(
     }
 
     private fun setVisibilityForBackstack(transition: NavigationBackstackTransition) {
-        val isParentContextStarted = context.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+        val isParentContextStarted =
+            context.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
         if (!isParentContextStarted && shouldTakeAnimationsFromParentContainer) return
         destinationOwners.forEach { destinationOwner ->
             val instruction = destinationOwner.instruction
@@ -273,10 +281,21 @@ public class ComposableNavigationContainer internal constructor(
                     || instruction == transition.activeBackstack.activePushed
             val isClosing = transition.lastInstruction is NavigationInstruction.Close
             when {
-                isActive && isClosing -> destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(true))
-                !isActive && isClosing -> destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
-                isActive && !isClosing -> destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(true))
-                !isActive && !isClosing -> destinationOwner.animations.setAnimationEvent(AnimationEvent.AnimateTo(false))
+                isActive && isClosing -> destinationOwner.animations.setAnimationEvent(
+                    AnimationEvent.AnimateTo(true)
+                )
+
+                !isActive && isClosing -> destinationOwner.animations.setAnimationEvent(
+                    AnimationEvent.AnimateTo(false)
+                )
+
+                isActive && !isClosing -> destinationOwner.animations.setAnimationEvent(
+                    AnimationEvent.AnimateTo(true)
+                )
+
+                !isActive && !isClosing -> destinationOwner.animations.setAnimationEvent(
+                    AnimationEvent.AnimateTo(false)
+                )
             }
         }
     }
@@ -318,7 +337,7 @@ public class ComposableNavigationContainer internal constructor(
             AutoCloseable { destroy() }
         }
 
-        rememberSaveable<Unit> (
+        rememberSaveable<Unit>(
             init = {
                 if (currentTransition === initialTransition) {
                     restoreOrSetBackstack(initialBackstack)
@@ -333,18 +352,22 @@ public class ComposableNavigationContainer internal constructor(
                     // and then re-set the active container afterwards.
                     val activeBeforeRestore = context.containerManager.activeContainer?.key
                     when (registrationStrategy) {
-                        ContainerRegistrationStrategy.DisposeWithComposition -> this@ComposableNavigationContainer.restore(value)
+                        ContainerRegistrationStrategy.DisposeWithComposition -> this@ComposableNavigationContainer.restore(
+                            value
+                        )
+
                         ContainerRegistrationStrategy.DisposeWithCompositionDoNotSave -> Unit
                         ContainerRegistrationStrategy.DisposeWithLifecycle -> Unit
                     }
                     context.containerManager.setActiveContainerByKey(activeBeforeRestore)
                 }
 
-                override fun SaverScope.save(value: Unit): SavedState? = when(registrationStrategy) {
-                    ContainerRegistrationStrategy.DisposeWithComposition -> this@ComposableNavigationContainer.save()
-                    ContainerRegistrationStrategy.DisposeWithCompositionDoNotSave -> null
-                    ContainerRegistrationStrategy.DisposeWithLifecycle -> null
-                }
+                override fun SaverScope.save(value: Unit): SavedState? =
+                    when (registrationStrategy) {
+                        ContainerRegistrationStrategy.DisposeWithComposition -> this@ComposableNavigationContainer.save()
+                        ContainerRegistrationStrategy.DisposeWithCompositionDoNotSave -> null
+                        ContainerRegistrationStrategy.DisposeWithLifecycle -> null
+                    }
             }
         )
 
@@ -363,7 +386,8 @@ public class ComposableNavigationContainer internal constructor(
             onDispose {
                 if (!context.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return@onDispose
                 if (containerManager.activeContainer == this@ComposableNavigationContainer) {
-                    val previouslyActiveContainer = backstack.active?.internal?.previouslyActiveContainer?.takeIf { it != key }
+                    val previouslyActiveContainer =
+                        backstack.active?.internal?.previouslyActiveContainer?.takeIf { it != key }
                     containerManager.setActiveContainerByKey(previouslyActiveContainer)
                 }
             }

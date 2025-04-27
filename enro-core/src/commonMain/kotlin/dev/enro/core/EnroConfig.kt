@@ -14,10 +14,4 @@ public data class EnroConfig(
     @Deprecated("This behavior is no longer recommended, and will be removed in a future version of Enro. Please update your NavigationContainers to use a NavigationInstructionFilter that explicitly declares all instructions that are valid for the container.")
     internal val useLegacyContainerPresentBehavior: Boolean = false,
     internal val backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Default,
-    /**
-     * This Boolean sets whether or not Composables will attempt to fallback to View based animations (Animation or Animator)
-     * when there are no Composable Enter/ExitTransition animations provided. This is disabled by default for tests, based
-     * on checking for the presence of the JUnit Test class, because these animations cause issues with ComposeTestRule tests.
-     */
-    internal val enableViewAnimationsForCompose: Boolean = !isInTest,
 )

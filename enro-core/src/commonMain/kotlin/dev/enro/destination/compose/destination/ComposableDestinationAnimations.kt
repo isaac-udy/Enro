@@ -25,7 +25,7 @@ internal class ComposableDestinationAnimations(
     private val owner: ComposableDestinationOwner,
 ) {
     private var currentAnimationEvent by mutableStateOf<AnimationEvent>(AnimationEvent.SnapTo(false))
-    private var containerAnimation by mutableStateOf<NavigationAnimation.Composable?>(NavigationAnimation.None.asComposable())
+    private var containerAnimation by mutableStateOf<NavigationAnimation.Composable?>(NavigationAnimation.Composable.none)
 
     private var animationOverride by mutableStateOf<NavigationAnimation.Composable?>(null)
 

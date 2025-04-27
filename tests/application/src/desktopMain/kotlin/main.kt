@@ -22,10 +22,10 @@ fun main() = application {
             animations {
                 direction(
                     direction = NavigationDirection.Push,
-                    entering = fadeIn() + slideInHorizontally { it / 3 },
-                    exiting = slideOutHorizontally { -it / 6 },
-                    returnEntering = slideInHorizontally { -it / 6 },
-                    returnExiting = fadeOut() + slideOutHorizontally { it / 3 }
+                    entering = fadeIn() + slideInHorizontally { 192 },
+                    exiting = slideOutHorizontally { -64 },
+                    returnEntering = slideInHorizontally { -64 },
+                    returnExiting = fadeOut() + slideOutHorizontally { 192 }
                 )
             }
         }

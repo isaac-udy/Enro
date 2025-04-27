@@ -9,38 +9,12 @@ import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.runtime.Immutable
 
-public sealed interface NavigationAnimation {
-    public sealed interface Enter : NavigationAnimation
-    public sealed interface Exit : NavigationAnimation
-    public sealed interface ForView : NavigationAnimation, Enter, Exit
+public interface NavigationAnimation {
+    public interface Enter : NavigationAnimation
+    public interface Exit : NavigationAnimation
+    public object None : NavigationAnimation, Enter, Exit
 
-    public object None : NavigationAnimation, ForView, Enter, Exit
-
-//    public data class Resource(
-//        public val id: Int
-//    ) : ForView, Enter, Exit {
-//        public fun isAnim(context: Context): Boolean = runCatching {
-//            if (id == 0) return@runCatching false
-//            context.resources.getResourceTypeName(id) == "anim"
-//        }.getOrDefault(false)
-//
-//        public fun isAnimator(context: Context): Boolean = runCatching {
-//            if (id == 0) return@runCatching false
-//            context.resources.getResourceTypeName(id) == "animator"
-//        }.getOrDefault(false)
-//    }
-//
-//    public data class Attr(
-//        public val attr: Int,
-//    ) : ForView, Enter, Exit
-//
-//    public data class Theme(
-//        public val id: (Resources.Theme) -> Int,
-//    ) : ForView, Enter, Exit
-
-    public sealed class Composable : NavigationAnimation, Enter, Exit {
-        internal abstract val forView: ForView
-
+    public sealed class Composable : Enter, Exit {
         @androidx.compose.runtime.Composable
         internal abstract fun Animate(
             state: SeekableTransitionState<Boolean>,
@@ -49,32 +23,29 @@ public sealed interface NavigationAnimation {
         )
 
         public companion object {
-            public operator fun invoke(
-                enter: EnterTransition,
-                exit: ExitTransition,
-                forView: ForView = DefaultAnimations.ForView.noneEnter,
-            ): Composable = EnterExit(enter, exit, forView)
+            public val none: Composable = invoke(
+                enter = EnterTransition.None,
+                exit = ExitTransition.None,
+            )
 
             public operator fun invoke(
                 enter: EnterTransition,
-                forView: ForView = DefaultAnimations.ForView.noneEnter,
-            ): Enter = EnterExit(enter, ExitTransition.None, forView)
+                exit: ExitTransition,
+            ): Composable = EnterExit(enter, exit)
+
+            public operator fun invoke(
+                enter: EnterTransition,
+            ): Enter = EnterExit(enter, ExitTransition.None)
 
             public operator fun invoke(
                 exit: ExitTransition,
-                forView: ForView = DefaultAnimations.ForView.noneCloseExit,
-            ): Exit = EnterExit(EnterTransition.None, exit, forView)
-
-            public operator fun invoke(
-                forView: ForView,
-            ): Composable = EnterExit(forView = forView)
+            ): Exit = EnterExit(EnterTransition.None, exit)
         }
 
         @Immutable
         internal data class EnterExit(
             val enter: EnterTransition = EnterTransition.None,
             val exit: ExitTransition = ExitTransition.None,
-            override val forView: ForView = DefaultAnimations.ForView.noneEnter,
         ) : Composable(), Enter, Exit {
             @androidx.compose.runtime.Composable
             override fun Animate(
@@ -83,53 +54,14 @@ public sealed interface NavigationAnimation {
                 content: @androidx.compose.runtime.Composable (Transition<EnterExitState>) -> Unit,
             ) {
                 val visible = rememberTransition(state, "ComposableDestination Visibility")
-//                val context = LocalContext.current
-//                val config = remember(context) {
-//                    val navigationApplication = (context.applicationContext as? NavigationApplication)
-//                    navigationApplication?.navigationController?.config ?: EnroConfig()
-//                }
-
-//                val resourceAnimation = remember(this, forView) { forView.asResource(context.theme) }
                 visible.AnimatedVisibility(
                     visible = { it },
                     enter = enter,
                     exit = exit,
                 ) {
-//                    if (config.enableViewAnimationsForCompose) {
-//                        transition.ResourceAnimatedVisibility(
-//                            visible = { it == EnterExitState.Visible },
-//                            enter = resourceAnimation.id,
-//                            exit = resourceAnimation.id,
-//                            progress = state.fraction,
-//                            isSeeking = isSeeking,
-//                        ) {
-//                            content(transition)
-//                        }
-//                    } else {
-                        content(transition)
-//                    }
+                    content(transition)
                 }
             }
-        }
-    }
-
-//    public fun asResource(theme: Resources.Theme): Resource = when (this) {
-//        is Resource -> this
-//        is Attr -> Resource(
-//            theme.getAttributeResourceId(attr),
-//        )
-//
-//        is Theme -> Resource(
-//            id(theme),
-//        )
-//
-//        is Composable -> forView.asResource(theme)
-//    }
-//
-    public fun asComposable(): Composable {
-        return when (this) {
-            is ForView -> Composable(forView = this)
-            is Composable -> this
         }
     }
 }
