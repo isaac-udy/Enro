@@ -35,12 +35,12 @@ public object DefaultAnimations {
     public fun opening(exiting: AnyOpenInstruction?, entering: AnyOpenInstruction): NavigationAnimationTransition {
         val enteringAnimation = NavigationAnimation.Composable(
             enter = fadeIn(tween(125)),
-            exit = fadeOut(tween(125)),
+            exit = fadeOut(tween(16, delayMillis = 125)),
         )
 
         val exitingAnimation = NavigationAnimation.Composable(
             enter = fadeIn(tween(125)),
-            exit = fadeOut(tween(125)),
+            exit = fadeOut(tween(16, delayMillis = 125)),
         )
 
         return NavigationAnimationTransition(
@@ -51,13 +51,13 @@ public object DefaultAnimations {
 
     public fun closing(exiting: AnyOpenInstruction, entering: AnyOpenInstruction?): NavigationAnimationTransition {
         val enteringAnimation = NavigationAnimation.Composable(
-            enter = fadeIn(tween(125)),
-            exit = fadeOut(tween(125)),
+            enter = fadeIn(tween(16)),
+            exit = fadeOut(tween(125, delayMillis = 16)),
         )
 
         val exitingAnimation = NavigationAnimation.Composable(
-            enter = fadeIn(tween(125)),
-            exit = fadeOut(tween(125)),
+            enter = fadeIn(tween(16)),
+            exit = fadeOut(tween(125, delayMillis = 16)),
         )
 
         return NavigationAnimationTransition(
