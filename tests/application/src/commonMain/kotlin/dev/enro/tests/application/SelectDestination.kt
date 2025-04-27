@@ -36,6 +36,7 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.core.present
 import dev.enro.core.push
 import dev.enro.destination.compose.navigationContext
+import dev.enro.tests.application.compose.ComposeSharedElementTransitions
 import dev.enro.tests.application.compose.results.ComposeAsyncManagedResultFlow
 import dev.enro.tests.application.compose.results.ComposeManagedResultFlow
 import dev.enro.tests.application.compose.results.ComposeMixedResultTypes
@@ -52,11 +53,15 @@ internal object SelectDestination : NavigationKey.SupportsPush, NavigationKey.Su
             ComposeAsyncManagedResultFlow,
             ComposeMixedResultTypes,
             ComposeNestedResults,
+            ComposeSharedElementTransitions,
             ResultsWithExtra,
             SimpleWindow,
         )
+
         mutableStateOf(
-            commonDestinations.map { SelectableDestination(it) }
+            commonDestinations
+                .map { SelectableDestination(it) }
+                .sortedBy { it.title }
         )
     }
 

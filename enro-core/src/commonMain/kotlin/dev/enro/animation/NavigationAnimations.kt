@@ -1,13 +1,16 @@
 package dev.enro.animation
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.rememberTransition
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
+import dev.enro.destination.compose.LocalAnimatedVisibilityScope
 
 public interface NavigationAnimation {
     public interface Enter : NavigationAnimation
@@ -19,7 +22,7 @@ public interface NavigationAnimation {
         internal abstract fun Animate(
             state: SeekableTransitionState<Boolean>,
             isSeeking: Boolean,
-            content: @androidx.compose.runtime.Composable (Transition<EnterExitState>) -> Unit,
+            content: @androidx.compose.runtime.Composable AnimatedVisibilityScope.(Transition<EnterExitState>) -> Unit,
         )
 
         public companion object {
@@ -51,7 +54,7 @@ public interface NavigationAnimation {
             override fun Animate(
                 state: SeekableTransitionState<Boolean>,
                 isSeeking: Boolean,
-                content: @androidx.compose.runtime.Composable (Transition<EnterExitState>) -> Unit,
+                content: @androidx.compose.runtime.Composable AnimatedVisibilityScope.(Transition<EnterExitState>) -> Unit,
             ) {
                 val visible = rememberTransition(state, "ComposableDestination Visibility")
                 visible.AnimatedVisibility(
@@ -59,7 +62,9 @@ public interface NavigationAnimation {
                     enter = enter,
                     exit = exit,
                 ) {
-                    content(transition)
+                    CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                        content(transition)
+                    }
                 }
             }
         }

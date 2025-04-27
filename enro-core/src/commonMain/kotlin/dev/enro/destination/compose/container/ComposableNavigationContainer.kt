@@ -1,7 +1,10 @@
 package dev.enro.core.compose.container
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -45,6 +48,7 @@ import dev.enro.core.getNavigationHandle
 import dev.enro.core.requestClose
 import dev.enro.destination.compose.ComposableDestination
 import dev.enro.destination.compose.ComposableNavigationBinding
+import dev.enro.destination.compose.LocalSharedTransitionScope
 import dev.enro.destination.compose.destination.AnimationEvent
 import dev.enro.destination.flow.ManagedFlowNavigationBinding
 import dev.enro.destination.flow.host.ComposableHostForManagedFlowDestination
@@ -97,15 +101,34 @@ public class ComposableNavigationContainer internal constructor(
 
     // We want "Render" to look like it's a Composable function (it's a Composable lambda), so
     // we are uppercasing the first letter of the property name, which triggers a PropertyName lint warning
+    @OptIn(ExperimentalSharedTransitionApi::class)
     @Suppress("PropertyName")
     public val Render: @Composable () -> Unit = movableContentOf {
-        key(key.name) {
-            destinationOwners
-                .forEach {
-                    key(it.instruction.instructionId) {
-                        it.Render(backstack)
+        if (parentContext.contextReference is ComposableDestination) {
+            key(key.name) {
+                destinationOwners
+                    .forEach {
+                        key(it.instruction.instructionId) {
+                            it.Render(backstack)
+                        }
+                    }
+            }
+        }
+        else {
+            key(key.name) {
+                SharedTransitionLayout {
+                    CompositionLocalProvider(
+                        LocalSharedTransitionScope provides this
+                    ) {
+                        destinationOwners
+                            .forEach {
+                                key(it.instruction.instructionId) {
+                                    it.Render(backstack)
+                                }
+                            }
                     }
                 }
+            }
         }
     }
 
