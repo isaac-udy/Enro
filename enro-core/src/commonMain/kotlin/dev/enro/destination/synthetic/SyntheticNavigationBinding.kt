@@ -13,7 +13,7 @@ public class SyntheticNavigationBinding<KeyType : NavigationKey> @PublishedApi i
     override val keyType: KClass<KeyType>,
     internal val destination: () -> SyntheticDestination<KeyType>,
     override val keySerializer: NavigationKeySerializer<KeyType> = NavigationKeySerializer.default(keyType),
-) : NavigationBinding<KeyType, SyntheticDestination<*>> {
+) : NavigationBinding<KeyType, SyntheticDestination<*>>() {
     override val destinationType: KClass<SyntheticDestination<*>> = SyntheticDestination::class
     override val baseType: KClass<in SyntheticDestination<*>> = SyntheticDestination::class
 

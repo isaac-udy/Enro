@@ -1,5 +1,6 @@
 package dev.enro.processor.generator
 
+import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -37,6 +38,7 @@ import com.squareup.javapoet.TypeSpec as JavaTypeSpec
 
 object NavigationDestinationGenerator {
 
+    @OptIn(KspExperimental::class)
     fun generateKotlin(
         environment: SymbolProcessorEnvironment,
         resolver: Resolver,
@@ -104,43 +106,51 @@ object NavigationDestinationGenerator {
     private fun FunSpec.Builder.addNavigationDestination(
         destination: DestinationReference.Kotlin,
     ): FunSpec.Builder {
-        return when {
+        when (destination.isPlatformDestination) {
+            true -> addCode("navigationModuleScope.platformOverrides(\n\tnavigationModuleScope = {\n\t\t")
+            else -> addCode("navigationModuleScope.")
+        }
+        when {
             destination.isActivity -> addCode(
-                "navigationModuleScope.activityDestination<%T, %T>()",
+                "activityDestination<%T, %T>()",
                 destination.keyType.asStarProjectedType().toTypeName(),
                 destination.toClassName(),
             )
             destination.isFragment -> addCode(
-                "navigationModuleScope.fragmentDestination<%T, %T>()",
+                "fragmentDestination<%T, %T>()",
                 destination.keyType.asStarProjectedType().toTypeName(),
                 destination.toClassName(),
             )
             destination.isSyntheticClass -> addCode(
-                "navigationModuleScope.syntheticDestination<%T, %T>()",
+                "syntheticDestination<%T, %T>()",
                 destination.keyType.asStarProjectedType().toTypeName(),
                 destination.toClassName(),
             )
             destination.isSyntheticProvider -> addCode(
-                "navigationModuleScope.syntheticDestination(%L)",
+                "syntheticDestination(%L)",
                 requireNotNull(destination.declaration.simpleName).asString(),
             )
             destination.isManagedFlowProvider -> addCode(
-                "navigationModuleScope.managedFlowDestination(%L)",
+                "managedFlowDestination(%L)",
                 requireNotNull(destination.declaration.simpleName).asString(),
             )
             destination.isComposable -> addCode(
-                "navigationModuleScope.composableDestination<%T> { %L() }",
+                "composableDestination<%T> { %L() }",
                 destination.keyType.asStarProjectedType().toTypeName(),
                 requireNotNull(destination.declaration.simpleName).asString(),
             )
             destination.isDesktopWindow -> addCode(
-                "navigationModuleScope.desktopWindowDestination<%T, %T> { %T() }",
+                "desktopWindowDestination<%T, %T> { %T() }",
                 destination.keyType.asStarProjectedType().toTypeName(),
                 destination.toClassName(),
                 destination.toClassName(),
             )
             else -> error("${destination.declaration.qualifiedName?.asString()}")
         }
+        if (destination.isPlatformDestination) {
+            addCode("\n\t}\n)")
+        }
+        return this
     }
 
     fun generateJava(

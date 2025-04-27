@@ -12,7 +12,7 @@ public class ManagedFlowNavigationBinding<KeyType : NavigationKey, Result> @Publ
     override val keyType: KClass<KeyType>,
     internal val destination: (TypedNavigationHandle<KeyType>) -> ManagedFlowDestination<KeyType, Result>,
     override val keySerializer: NavigationKeySerializer<KeyType> = NavigationKeySerializer.default(keyType),
-) : NavigationBinding<KeyType, ManagedFlowDestination<*, *>> {
+) : NavigationBinding<KeyType, ManagedFlowDestination<*, *>>() {
     override val destinationType: KClass<ManagedFlowDestination<*, *>> = ManagedFlowDestination::class
     override val baseType: KClass<in ManagedFlowDestination<*, *>> = ManagedFlowDestination::class
 }

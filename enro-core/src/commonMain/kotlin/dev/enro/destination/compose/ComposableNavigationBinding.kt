@@ -13,7 +13,7 @@ public class ComposableNavigationBinding<KeyType : NavigationKey, ComposableType
     override val destinationType: KClass<ComposableType>,
     internal val constructDestination: () -> ComposableType,
     override val keySerializer: NavigationKeySerializer<KeyType> = NavigationKeySerializer.default(keyType),
-) : NavigationBinding<KeyType, ComposableType> {
+) : NavigationBinding<KeyType, ComposableType>() {
     override val baseType: KClass<in ComposableType> = ComposableDestination::class
 }
 

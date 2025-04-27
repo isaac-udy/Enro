@@ -12,7 +12,7 @@ public class FragmentNavigationBinding<KeyType : NavigationKey, FragmentType : F
     override val keyType: KClass<KeyType>,
     override val destinationType: KClass<FragmentType>,
     override val keySerializer: NavigationKeySerializer<KeyType> = NavigationKeySerializer.default(keyType),
-) : NavigationBinding<KeyType, FragmentType> {
+) : NavigationBinding<KeyType, FragmentType>() {
     override val baseType: KClass<in FragmentType> = Fragment::class
 }
 

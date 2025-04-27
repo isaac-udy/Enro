@@ -6,10 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.window.ApplicationScope
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
+import dev.enro.core.asPresent
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.plugins.EnroPlugin
+import dev.enro.destination.compose.ComposableNavigationBinding
 import dev.enro.destination.desktop.DesktopWindow
 import dev.enro.destination.desktop.DesktopWindowNavigationBinding
+import dev.enro.destination.desktop.OpenComposableInDesktopWindow
 
 public actual class NavigationWindowManager actual constructor(
     private val controller: NavigationController,
@@ -18,11 +21,21 @@ public actual class NavigationWindowManager actual constructor(
     private val desktopWindows = mutableStateOf(listOf<DesktopWindow>())
 
     public actual fun open(instruction: AnyOpenInstruction) {
-        val binding = controller.bindingForKeyType(instruction.navigationKey::class) as DesktopWindowNavigationBinding
-        val window = binding.constructDestination()
-        require(window is DesktopWindow) {
-            "Attempted to open window for a NavigationInstruction with key of type ${instruction.navigationKey::class}, which not bound to a DesktopWindow"
-        }
+        val binding = controller.bindingForKeyType(instruction.navigationKey::class)
+        val window = when (binding) {
+            is DesktopWindowNavigationBinding -> binding.constructDestination()
+            is ComposableNavigationBinding -> {
+                open(
+                    OpenComposableInDesktopWindow(instruction).asPresent()
+                )
+                return
+            }
+            else -> error(
+                "Attempted to open window for a NavigationInstruction with key of type ${instruction.navigationKey::class}, which not bound to a DesktopWindow"
+            )
+        } as DesktopWindow
+
+        window.instruction = instruction
         desktopWindows.value = desktopWindows.value + window
     }
     public actual fun close(context: NavigationContext<*>, andOpen: AnyOpenInstruction?) {

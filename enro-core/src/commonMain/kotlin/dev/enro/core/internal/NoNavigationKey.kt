@@ -17,7 +17,7 @@ internal class NoNavigationKey(
     val arguments: @Contextual SavedState?
 ) : NavigationKey, EnroInternalNavigationKey
 
-internal class NoKeyNavigationBinding : NavigationBinding<NoNavigationKey, Nothing> {
+internal class NoKeyNavigationBinding : NavigationBinding<NoNavigationKey, Nothing>() {
     override val keyType: KClass<NoNavigationKey> = NoNavigationKey::class
     override val keySerializer: NavigationKeySerializer<NoNavigationKey> = NavigationKeySerializer.default()
     override val destinationType: KClass<Nothing> = Nothing::class

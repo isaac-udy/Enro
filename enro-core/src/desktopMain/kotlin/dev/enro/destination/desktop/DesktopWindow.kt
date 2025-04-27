@@ -17,6 +17,8 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.savedState
 import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationInstruction
+import dev.enro.core.addOpenInstruction
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.compose.destination.EnroLocalSavedStateRegistryOwner
 import dev.enro.core.controller.NavigationController
@@ -24,6 +26,8 @@ import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 
 public abstract class DesktopWindow {
+    internal lateinit var instruction: NavigationInstruction.Open<*>
+
     @Composable
     internal fun ApplyLocals(
         controller: NavigationController,
@@ -47,7 +51,7 @@ public abstract class DesktopWindow {
                 contextReference = this@DesktopWindow,
                 getController = { controller },
                 getParentContext = { null },
-                getArguments = { savedState() },
+                getArguments = { savedState().addOpenInstruction(instruction) },
                 getViewModelStoreOwner = { owners },
                 getSavedStateRegistryOwner = { owners },
                 getLifecycleOwner = { owners },

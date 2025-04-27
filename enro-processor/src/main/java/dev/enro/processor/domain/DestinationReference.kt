@@ -30,6 +30,9 @@ sealed class DestinationReference {
         resolver: Resolver,
         val declaration: KSDeclaration,
     ) {
+        val isPlatformDestination = declaration.annotations
+            .any { it.shortName.asString() == "PlatformDestination" }
+
         val isActivity = declaration is KSClassDeclaration && declaration.getAllSuperTypes()
             .any { it.declaration.qualifiedName?.asString() == "androidx.activity.ComponentActivity" }
 

@@ -12,7 +12,7 @@ public class DesktopWindowNavigationBinding<KeyType : NavigationKey, WindowType 
     override val destinationType: KClass<WindowType>,
     internal val constructDestination: () -> WindowType,
     override val keySerializer: NavigationKeySerializer<KeyType> = NavigationKeySerializer.default(keyType),
-) : NavigationBinding<KeyType, WindowType> {
+) : NavigationBinding<KeyType, WindowType>() {
     override val baseType: KClass<in WindowType> = DesktopWindow::class
 }
 

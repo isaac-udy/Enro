@@ -13,7 +13,7 @@ public class ActivityNavigationBinding<KeyType : NavigationKey, ActivityType : C
     override val keyType: KClass<KeyType>,
     override val destinationType: KClass<ActivityType>,
     override val keySerializer: NavigationKeySerializer<KeyType> = NavigationKeySerializer.default(keyType),
-) : NavigationBinding<KeyType, ActivityType> {
+) : NavigationBinding<KeyType, ActivityType>() {
     override val baseType: KClass<in ActivityType> = Activity::class
 }
 

@@ -5,6 +5,9 @@ import dev.enro.core.controller.interceptor.NavigationContainerDelegateIntercept
 import dev.enro.core.internal.NoKeyNavigationBinding
 import dev.enro.core.result.ForwardingResultInterceptor
 import dev.enro.core.result.flows.NavigationFlowInterceptor
+import dev.enro.destination.desktop.DesktopWindowHostForComposable
+import dev.enro.destination.desktop.OpenComposableInDesktopWindow
+import dev.enro.destination.desktop.desktopWindowDestination
 import dev.enro.destination.synthetic.SyntheticExecutionInterceptor
 
 internal actual val defaultNavigationModule: NavigationModule = createNavigationModule {
@@ -13,6 +16,8 @@ internal actual val defaultNavigationModule: NavigationModule = createNavigation
     interceptor(InstructionOpenedByInterceptor)
     interceptor(NavigationFlowInterceptor)
     interceptor(ForwardingResultInterceptor)
+
+    desktopWindowDestination<OpenComposableInDesktopWindow, DesktopWindowHostForComposable> { DesktopWindowHostForComposable() }
 
     binding(NoKeyNavigationBinding())
 }

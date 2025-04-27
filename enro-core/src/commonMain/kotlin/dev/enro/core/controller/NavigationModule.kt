@@ -1,11 +1,11 @@
 package dev.enro.core.controller
 
+import NavigationHostFactory
 import androidx.compose.runtime.Composable
 import dev.enro.animation.NavigationAnimationOverride
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationBinding
-import NavigationHostFactory
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.repository.ComposeEnvironment
 import dev.enro.core.plugins.EnroPlugin
@@ -44,6 +44,14 @@ public class NavigationModuleScope internal constructor(
     @PublishedApi
     internal val module: NavigationModule,
 ) {
+    public fun platformOverrides(navigationModuleScope: NavigationModuleScope.() -> Unit) {
+        val overrideModule = NavigationModule()
+        NavigationModuleScope(overrideModule)
+            .apply(navigationModuleScope)
+        overrideModule.bindings.forEach { it.isPlatformOverride = true }
+        module.bindings.addAll(overrideModule.bindings)
+    }
+
     public fun binding(binding: NavigationBinding<*, *>) {
         module.bindings.add(binding)
     }
