@@ -24,7 +24,7 @@ internal class ExecuteOpenInstructionImpl(
         navigationContext: NavigationContext<out Any>,
         instruction: AnyOpenInstruction
     ) {
-        val binding = bindingRepository.bindingForKeyType(instruction.navigationKey::class)
+        val binding = bindingRepository.bindingForInstruction(instruction)
             ?: throw EnroException.MissingNavigationBinding(instruction.navigationKey)
 
         val processedInstruction = interceptorRepository.intercept(

@@ -15,7 +15,7 @@ internal class CanInstructionBeHostedAs(
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>
     ): Boolean {
-        val binding = navigationBindingRepository.bindingForKeyType(instruction.navigationKey::class) ?: return false
+        val binding = navigationBindingRepository.bindingForInstruction(instruction) ?: return false
         val wrappedType = binding.baseType
         if (hostType == wrappedType) return true
 

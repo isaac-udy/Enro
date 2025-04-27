@@ -8,7 +8,7 @@ internal class GetNavigationBinding(
     private val navigationBindingRepository: NavigationBindingRepository,
 ) {
     operator fun invoke(instruction: AnyOpenInstruction): NavigationBinding<*, *>? {
-        return navigationBindingRepository.bindingForKeyType(instruction.navigationKey::class)
+        return navigationBindingRepository.bindingForInstruction(instruction)
     }
 
     fun require(instruction: AnyOpenInstruction): NavigationBinding<*, *> {

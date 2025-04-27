@@ -19,7 +19,7 @@ internal class HostInstructionAs(
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>
     ): NavigationInstruction.Open<*> {
-        val binding = navigationBindingRepository.bindingForKeyType(instruction.navigationKey::class)
+        val binding = navigationBindingRepository.bindingForInstruction(instruction)
             ?: throw IllegalStateException()
         val wrappedType = binding.baseType
         if (hostType == wrappedType) return instruction

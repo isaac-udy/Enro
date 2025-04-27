@@ -13,7 +13,7 @@ internal fun NavigationBackstack.ensureOpeningTypeIsSet(
         InstructionOpenedByInterceptor.intercept(
             it,
             parentContext,
-            parentContext.controller.bindingForKeyType(it.navigationKey::class)
+            parentContext.controller.bindingForInstruction(it)
                 ?: throw EnroException.MissingNavigationBinding(it.navigationKey),
         )
     }.toBackstack()

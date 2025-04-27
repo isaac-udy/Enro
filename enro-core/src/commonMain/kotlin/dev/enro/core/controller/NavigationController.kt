@@ -1,5 +1,6 @@
 package dev.enro.core.controller
 
+import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroConfig
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
@@ -32,10 +33,10 @@ public class NavigationController internal constructor() {
         addModuleToController(component)
     }
 
-    public fun bindingForKeyType(
-        keyType: KClass<out NavigationKey>
+    public fun bindingForInstruction(
+        instruction: AnyOpenInstruction,
     ): NavigationBinding<*, *>? {
-        return navigationBindingRepository.bindingForKeyType(keyType)
+        return navigationBindingRepository.bindingForInstruction(instruction)
     }
 
     // The reference parameter is used to pass the platform-specific reference to the NavigationController,

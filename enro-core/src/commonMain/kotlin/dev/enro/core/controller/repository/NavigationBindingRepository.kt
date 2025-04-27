@@ -1,7 +1,8 @@
 package dev.enro.core.controller.repository
 
+import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationBinding
-import dev.enro.core.NavigationKey
+import dev.enro.core.shouldUseOriginalBinding
 import kotlin.reflect.KClass
 
 internal class NavigationBindingRepository {
@@ -9,7 +10,8 @@ internal class NavigationBindingRepository {
     private val bindingsByDestinationType = mutableMapOf<KClass<*>, NavigationBinding<*, *>>()
 
     private val originalBindingsByKeyType = mutableMapOf<KClass<*>, NavigationBinding<*, *>>()
-    private val originalBindingsByDestinationType = mutableMapOf<KClass<*>, NavigationBinding<*, *>>()
+    private val originalBindingsByDestinationType =
+        mutableMapOf<KClass<*>, NavigationBinding<*, *>>()
 
     fun addNavigationBindings(binding: List<NavigationBinding<*, *>>) {
         binding.forEach { it ->
@@ -33,12 +35,14 @@ internal class NavigationBindingRepository {
             when {
                 multiplePlatformOverrides -> error(
                     "Found multiple platform override bindings for ${it.keyType.qualifiedName}." +
-                        " Please ensure that only one binding is provided for each key type."
+                            " Please ensure that only one binding is provided for each key type."
                 )
+
                 multipleRegularBindings -> error(
                     "Found multiple bindings for ${it.keyType.qualifiedName}." +
-                        " Please ensure that only one binding is provided for each key type, or use @PlatformOverride to override an existing binding for a specific platform."
+                            " Please ensure that only one binding is provided for each key type, or use @PlatformOverride to override an existing binding for a specific platform."
                 )
+
                 platformOverrideAlreadyBound -> {
                     // If an existing binding is a platform override, and the new binding is not,
                     // then we should not replace the existing binding.
@@ -46,6 +50,7 @@ internal class NavigationBindingRepository {
                     originalBindingsByDestinationType[it.destinationType] = it
                     return@forEach
                 }
+
                 isValidBinding -> {
                     // If the existing binding is not a platform override, and the new binding is,
                     // then we should replace the existing binding.
@@ -53,9 +58,11 @@ internal class NavigationBindingRepository {
                     bindingsByDestinationType[it.destinationType] = it
                     if (existingBinding != null) {
                         originalBindingsByKeyType[existingBinding.keyType] = existingBinding
-                        originalBindingsByDestinationType[existingBinding.destinationType] = existingBinding
+                        originalBindingsByDestinationType[existingBinding.destinationType] =
+                            existingBinding
                     }
                 }
+
                 else -> {
                     error("An unknown error occurred while adding the binding for ${it.keyType.qualifiedName}.")
                 }
@@ -63,9 +70,15 @@ internal class NavigationBindingRepository {
         }
     }
 
-    fun bindingForKeyType(
-        keyType: KClass<out NavigationKey>
+    fun bindingForInstruction(
+        instruction: AnyOpenInstruction,
     ): NavigationBinding<*, *>? {
-        return bindingsByKeyType[keyType]
+        return when {
+            instruction.extras.shouldUseOriginalBinding() ->
+                originalBindingsByKeyType[instruction.navigationKey::class]
+                    ?: bindingsByKeyType[instruction.navigationKey::class]
+
+            else -> bindingsByKeyType[instruction.navigationKey::class]
+        }
     }
 }

@@ -21,7 +21,7 @@ public actual class NavigationWindowManager actual constructor(
     private val desktopWindows = mutableStateOf(listOf<DesktopWindow>())
 
     public actual fun open(instruction: AnyOpenInstruction) {
-        val binding = controller.bindingForKeyType(instruction.navigationKey::class)
+        val binding = controller.bindingForInstruction(instruction)
         val window = when (binding) {
             is DesktopWindowNavigationBinding -> binding.constructDestination()
             is ComposableNavigationBinding -> {

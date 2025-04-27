@@ -234,7 +234,7 @@ public class ComposableNavigationContainer internal constructor(
     private fun createDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner {
         val controller = context.controller
         val composeKey = instruction.navigationKey
-        val rawBinding = controller.bindingForKeyType(composeKey::class)
+        val rawBinding = controller.bindingForInstruction(instruction)
             ?: throw EnroException.MissingNavigationBinding(composeKey)
 
         if (rawBinding !is ComposableNavigationBinding<*, *> && rawBinding !is ManagedFlowNavigationBinding<*, *>) {

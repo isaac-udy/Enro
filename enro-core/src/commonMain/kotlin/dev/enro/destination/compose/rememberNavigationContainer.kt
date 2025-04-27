@@ -45,6 +45,27 @@ public fun rememberNavigationContainer(
 @Composable
 public fun rememberNavigationContainer(
     key: NavigationContainerKey = rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.Dynamic() },
+    root: NavigationKey.WithExtras<out NavigationKey.SupportsPush>,
+    emptyBehavior: EmptyBehavior,
+    interceptor: NavigationInterceptorBuilder.() -> Unit = {},
+    animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
+    filter: NavigationInstructionFilter = acceptAll(),
+): ComposableNavigationContainer {
+    return rememberNavigationContainer(
+        key = key,
+        initialBackstack = remember {
+            backstackOf(NavigationInstruction.Push(root))
+        },
+        emptyBehavior = emptyBehavior,
+        interceptor = interceptor,
+        animations = animations,
+        filter = filter,
+    )
+}
+
+@Composable
+public fun rememberNavigationContainer(
+    key: NavigationContainerKey = rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.Dynamic() },
     initialBackstack: List<NavigationKey.SupportsPush> = emptyList(),
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
