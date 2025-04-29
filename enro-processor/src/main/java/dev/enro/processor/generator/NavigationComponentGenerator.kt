@@ -1,10 +1,13 @@
 package dev.enro.processor.generator
 
 import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.getKotlinClassByName
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.symbol.ClassKind
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
@@ -18,10 +21,12 @@ import dev.enro.processor.domain.GeneratedBindingReference
 import dev.enro.processor.domain.GeneratedModuleReference
 import dev.enro.processor.extensions.ClassNames
 import dev.enro.processor.extensions.EnroLocation
+import dev.enro.processor.extensions.extends
 import dev.enro.processor.extensions.getElementName
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
+import javax.lang.model.element.TypeElement
 import javax.tools.StandardLocation
 import com.squareup.javapoet.AnnotationSpec as JavaAnnotationSpec
 import com.squareup.javapoet.ClassName as JavaClassName
@@ -39,6 +44,44 @@ object NavigationComponentGenerator {
         resolverBindings: List<KSDeclaration>,
         resolverModules: List<KSDeclaration>,
     ) {
+        val isIos = resolver.getKotlinClassByName("platform.UIKit.UIApplication") != null
+        val isDesktop = resolver.getKotlinClassByName("androidx.compose.ui.window.ApplicationScope") != null
+        val isAndroid = resolver.getKotlinClassByName("android.app.Application") != null
+
+        if (declaration !is KSClassDeclaration) {
+            val message = "@NavigationComponent can only be applied to objects"
+            environment.logger.error(message, declaration)
+            error(message)
+        }
+        val isObject = declaration.classKind == ClassKind.OBJECT
+        val isAndroidApplication = declaration
+            .getAllSuperTypes()
+            .any { it.declaration.qualifiedName?.asString() == "android.app.Application" }
+        val isNavigationComponentConfiguration = declaration
+            .getAllSuperTypes()
+            .any { it.declaration.qualifiedName?.asString() == "dev.enro.core.NavigationComponentConfiguration" }
+
+        when {
+            isAndroid && isAndroidApplication -> {
+                // It's OK for a NavigationComponent to be an application
+            }
+            !isObject -> {
+                val message = when {
+                    isAndroid -> "@NavigationComponent can only be applied to objects or classes that " +
+                            "extend android.app.Application"
+                    else -> "@NavigationComponent can only be applied to objects"
+                }
+                environment.logger.error(message, declaration)
+                error(message)
+            }
+            !isNavigationComponentConfiguration -> {
+                val message = "@NavigationComponent can only be applied to objects that extend " +
+                        "NavigationComponentConfiguration"
+                environment.logger.error(message, declaration)
+                error(message)
+            }
+        }
+
         val modules = GeneratedModuleReference.load(resolver)
         val bindings = modules.flatMap { it.bindings }
 
@@ -117,12 +160,13 @@ object NavigationComponentGenerator {
 
         val functionName = "installNavigationController"
         val extensionName = "${declaration.simpleName.asString()}.$functionName"
-        val isIos = resolver.getKotlinClassByName("platform.UIKit.UIApplication") != null
-        val isDesktop =
-            resolver.getKotlinClassByName("androidx.compose.ui.window.ApplicationScope") != null
         val (platformParameterName, addPlatformParameter) = createPlatformApplicationReferenceParameter(
             resolver,
         )
+        val callNavigationComponentConfigModule = when {
+            isNavigationComponentConfiguration -> "module(${declaration.simpleName.asString()}.module)"
+            else -> ""
+        }
         val extensionFunction = FunSpec.builder(functionName)
             .addModifiers(
                 when {
@@ -177,6 +221,7 @@ object NavigationComponentGenerator {
                             backConfiguration = backConfiguration,
                             block = {
                                 ${generatedComponent.name}().invoke(this)
+                                $callNavigationComponentConfigModule
                                 block()
                             }
                         )
@@ -201,15 +246,17 @@ object NavigationComponentGenerator {
             else -> extensionFunction.toBuilder("rememberNavigationController")
                 .apply { modifiers.clear() }
                 .apply {
-                    val updatedParameters = parameters.filterNot { it.name == platformParameterName }
+                    val updatedParameters =
+                        parameters.filterNot { it.name == platformParameterName }
                     parameters.clear()
                     parameters.addAll(updatedParameters)
                 }
                 .addModifiers(KModifier.PUBLIC)
                 .addAnnotation(ClassNames.Kotlin.composable)
                 .clearBody()
-                .addCode(CodeBlock.of(
-                    """
+                .addCode(
+                    CodeBlock.of(
+                        """
                         return androidx.compose.runtime.remember {
                             installNavigationController(
                                 $platformParameterName = Unit,
@@ -221,7 +268,8 @@ object NavigationComponentGenerator {
                             )
                         }
                     """.trimIndent()
-                ))
+                    )
+                )
                 .build()
         }
 
@@ -287,6 +335,15 @@ object NavigationComponentGenerator {
         generatedModuleName: String?,
         generatedModuleBindings: List<Element>
     ) {
+        val isAndroidApplication = component is TypeElement &&
+                component.extends(processingEnv, ClassNames.Java.androidApplication)
+        if (!isAndroidApplication) {
+            val message = "When using Enro with KAPT/Java annotation processing, classes " +
+                        "annotated with @NavigationComponent must extend android.app.Application."
+            processingEnv.messager.printError(message)
+            error(message)
+        }
+
         val modules = GeneratedModuleReference.load(processingEnv)
         val bindings = modules.flatMap { it.bindings }
             .plus(

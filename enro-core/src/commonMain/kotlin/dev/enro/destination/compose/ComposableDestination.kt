@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
-import dev.enro.core.ComposableDestinationReference
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationHandle
 import dev.enro.core.compose.destination.ComposableDestinationOwner
@@ -20,8 +19,7 @@ import dev.enro.core.getNavigationHandle
 public abstract class ComposableDestination : LifecycleOwner,
     ViewModelStoreOwner,
     SavedStateRegistryOwner,
-    HasDefaultViewModelProviderFactory,
-    ComposableDestinationReference {
+    HasDefaultViewModelProviderFactory {
 
     internal lateinit var owner: ComposableDestinationOwner
     internal val context by lazy { ComposeContext(this) }
@@ -41,7 +39,7 @@ public abstract class ComposableDestination : LifecycleOwner,
     override val defaultViewModelCreationExtras: CreationExtras
         get() = owner.defaultViewModelCreationExtras
 
-    override val navigationContext: NavigationContext<*>
+    public val navigationContext: NavigationContext<*>
         get() = context
 
     /**

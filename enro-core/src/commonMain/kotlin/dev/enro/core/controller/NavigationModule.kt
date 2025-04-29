@@ -95,6 +95,8 @@ public class NavigationModuleScope internal constructor(
         module.plugins.addAll(other.plugins)
         module.interceptors.addAll(other.interceptors)
         module.hostFactories.addAll(other.hostFactories)
+        module.animations.addAll(other.animations)
+        module.serializersModule += other.serializersModule
 
         if (other.composeEnvironment != null) {
             module.composeEnvironment = other.composeEnvironment

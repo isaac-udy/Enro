@@ -9,9 +9,5 @@ fun main() = application {
     val controller = EnroComponent.rememberNavigationController(
         root = ExampleApplicationWindow.asPresent()
     )
-    println("Controller: ${controller}")
-    controller.windowManager.desktopWindows.value.forEach { window ->
-        println("WINDOW: ${window}")
-    }
     controller.windowManager.Render()
 }

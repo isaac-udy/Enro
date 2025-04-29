@@ -24,7 +24,7 @@ public fun NavigationContext<*>.activeChildContext(): NavigationContext<*>? {
 
 public val ComponentActivity.containerManager: NavigationContainerManager get() = navigationContext.containerManager
 public val Fragment.containerManager: NavigationContainerManager get() = navigationContext.containerManager
-public val ComposableDestinationReference.containerManager: NavigationContainerManager get() = navigationContext.containerManager
+public val ComposableDestination.containerManager: NavigationContainerManager get() = navigationContext.containerManager
 
 public val Fragment.parentContainer: NavigationContainer? get() = navigationContext.parentContainer()
 

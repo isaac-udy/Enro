@@ -8,6 +8,10 @@ import com.squareup.javapoet.ClassName as JavaClassName
 
 object ClassNames {
     object Java {
+        val androidApplication = JavaClassName.get(
+            "android.app",
+            "Application"
+        )
         val enroBackConfiguration = JavaClassName.get(
             "dev.enro.core.controller",
             "EnroBackConfiguration"
@@ -157,6 +161,11 @@ object ClassNames {
         val enroIosExtensions = ClassName(
             "dev.enro",
             "Enro"
+        )
+
+        val navigationComponentConfiguration = ClassName(
+            "dev.enro.core",
+            "NavigationComponentConfiguration"
         )
     }
 }

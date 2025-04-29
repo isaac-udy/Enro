@@ -2,10 +2,6 @@ package dev.enro.tests.application
 
 import android.app.Activity
 import android.app.Application
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,8 +11,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import dev.enro.animation.direction
-import dev.enro.core.NavigationDirection
 import dev.enro.core.controller.NavigationApplication
 import dev.enro.destination.compose.navigationContext
 import dev.enro.destination.fragment.FragmentSharedElements
@@ -24,6 +18,7 @@ import dev.enro.tests.application.activity.PictureInPicture
 import dev.enro.tests.application.activity.SimpleActivity
 import dev.enro.tests.application.compose.BottomNavigation
 import dev.enro.tests.application.compose.BottomSheetChangeSize
+import dev.enro.tests.application.compose.BottomSheetCloseAndPresent
 import dev.enro.tests.application.compose.CloseLandingPageAndPresent
 import dev.enro.tests.application.compose.ComposeAnimations
 import dev.enro.tests.application.compose.ComposeSavePrimitives
@@ -32,6 +27,7 @@ import dev.enro.tests.application.compose.EmbeddedDestination
 import dev.enro.tests.application.compose.FindContext
 import dev.enro.tests.application.compose.LazyColumn
 import dev.enro.tests.application.compose.SyntheticViewModelAccess
+import dev.enro.tests.application.compose.results.ComposeEmbeddedResultFlow
 import dev.enro.tests.application.fragment.FragmentPresentation
 import dev.enro.tests.application.fragment.FragmentSharedElementDestination
 import dev.enro.tests.application.fragment.UnboundBottomSheet
@@ -71,16 +67,6 @@ class TestApplication : Application(), NavigationApplication {
          *  shared element transitions between a Fragment and Composable NavigationDestination
          */
         plugin(FragmentSharedElements.composeCompatibilityPlugin)
-
-        animations {
-            direction(
-                direction = NavigationDirection.Push,
-                entering = fadeIn() + slideInHorizontally { it / 3 },
-                exiting = slideOutHorizontally { -it / 6 },
-                returnEntering = slideInHorizontally { -it / 6 },
-                returnExiting = fadeOut() + slideOutHorizontally { it / 3 }
-            )
-        }
     }
 
     override fun onCreate() {
@@ -88,8 +74,10 @@ class TestApplication : Application(), NavigationApplication {
         SelectDestination.registerSelectableDestinations(
             BottomNavigation,
             BottomSheetChangeSize,
+            BottomSheetCloseAndPresent,
             CloseLandingPageAndPresent,
             ComposeAnimations,
+            ComposeEmbeddedResultFlow,
             ComposeSavePrimitives,
             ComposeStability,
             EmbeddedDestination,

@@ -37,8 +37,10 @@ import dev.enro.core.present
 import dev.enro.core.push
 import dev.enro.destination.compose.navigationContext
 import dev.enro.tests.application.compose.ComposeSharedElementTransitions
+import dev.enro.tests.application.compose.HorizontalPager
 import dev.enro.tests.application.compose.results.ComposeAsyncManagedResultFlow
 import dev.enro.tests.application.compose.results.ComposeManagedResultFlow
+import dev.enro.tests.application.compose.results.ComposeManagedResultsWithNestedFlowAndEmptyRoot
 import dev.enro.tests.application.compose.results.ComposeMixedResultTypes
 import dev.enro.tests.application.compose.results.ComposeNestedResults
 import dev.enro.tests.application.compose.results.ResultsWithExtra
@@ -49,11 +51,13 @@ import kotlinx.serialization.Serializable
 internal object SelectDestination : NavigationKey.SupportsPush, NavigationKey.SupportsPresent {
     internal val selectableDestinations = run {
         val commonDestinations = listOf<NavigationKey>(
-            ComposeManagedResultFlow,
             ComposeAsyncManagedResultFlow,
+            ComposeManagedResultFlow,
+            ComposeManagedResultsWithNestedFlowAndEmptyRoot,
             ComposeMixedResultTypes,
             ComposeNestedResults,
             ComposeSharedElementTransitions,
+            HorizontalPager,
             ResultsWithExtra,
             SimpleWindow,
         )
