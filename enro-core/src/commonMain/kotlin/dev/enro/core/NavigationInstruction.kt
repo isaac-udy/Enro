@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.result.internal.ResultChannelId
 import kotlinx.serialization.Serializable
+import kotlin.native.ObjCName
 import kotlin.uuid.Uuid
 
 internal const val OPEN_ARG = "dev.enro.core.OPEN_ARG"
@@ -13,6 +14,7 @@ public typealias AnyOpenInstruction = NavigationInstruction.Open<out NavigationD
 public typealias OpenPushInstruction = NavigationInstruction.Open<NavigationDirection.Push>
 public typealias OpenPresentInstruction = NavigationInstruction.Open<NavigationDirection.Present>
 
+@ObjCName("NavigationInstruction", exact = true)
 public sealed class NavigationInstruction {
     @Stable
     @Immutable

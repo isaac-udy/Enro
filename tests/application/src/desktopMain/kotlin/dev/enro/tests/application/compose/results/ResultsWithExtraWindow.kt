@@ -20,7 +20,7 @@ import dev.enro.destination.desktop.DesktopWindow
 class ResultsWithExtraWindow : DesktopWindow() {
 
     @Composable
-    override fun ApplicationScope.Render() {
+    override fun Render() {
         val navigation = navigationHandle()
         Window(
             onCloseRequest = navigation::requestClose,

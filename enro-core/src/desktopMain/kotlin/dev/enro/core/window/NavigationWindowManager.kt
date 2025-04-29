@@ -1,9 +1,9 @@
 package dev.enro.core.window
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.window.ApplicationScope
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
 import dev.enro.core.asPresent
@@ -18,7 +18,7 @@ public actual class NavigationWindowManager actual constructor(
     private val controller: NavigationController,
 ) : EnroPlugin() {
 
-    private val desktopWindows = mutableStateOf(listOf<DesktopWindow>())
+    public val desktopWindows: MutableState<List<DesktopWindow>> = mutableStateOf(listOf<DesktopWindow>())
 
     public actual fun open(instruction: AnyOpenInstruction) {
         val binding = controller.bindingForInstruction(instruction)
@@ -48,13 +48,11 @@ public actual class NavigationWindowManager actual constructor(
     }
 
     @Composable
-    public fun ApplicationScope.Render() {
+    public fun Render() {
         desktopWindows.value.forEach { window ->
             key(window) {
-                with(window) {
-                    ApplyLocals(controller) {
-                        Render()
-                    }
+                window.ApplyLocals(controller) {
+                    window.Render()
                 }
             }
         }

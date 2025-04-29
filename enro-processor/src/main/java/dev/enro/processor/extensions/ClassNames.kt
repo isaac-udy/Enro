@@ -74,6 +74,10 @@ object ClassNames {
     }
 
     object Kotlin {
+        val composable = ClassName(
+            "androidx.compose.runtime",
+            "Composable"
+        )
         val enroBackConfiguration = ClassName(
             "dev.enro.core.controller",
             "EnroBackConfiguration"
@@ -148,6 +152,11 @@ object ClassNames {
         val uiViewController = ClassName(
             "platform.UIKit",
             "UIViewController"
+        )
+
+        val enroIosExtensions = ClassName(
+            "dev.enro",
+            "Enro"
         )
     }
 }

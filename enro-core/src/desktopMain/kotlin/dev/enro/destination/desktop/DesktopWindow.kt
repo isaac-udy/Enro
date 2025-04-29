@@ -5,7 +5,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateRegistry
-import androidx.compose.ui.window.ApplicationScope
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelStore
@@ -75,5 +74,5 @@ public abstract class DesktopWindow {
     }
 
     @Composable
-    public abstract fun ApplicationScope.Render()
+    public abstract fun Render()
 }

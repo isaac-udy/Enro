@@ -31,6 +31,7 @@ import com.squareup.javapoet.ParameterSpec as JavaParameterSpec
 import com.squareup.javapoet.TypeSpec as JavaTypeSpec
 
 object NavigationComponentGenerator {
+    @OptIn(KspExperimental::class)
     fun generateKotlin(
         environment: SymbolProcessorEnvironment,
         resolver: Resolver,
@@ -107,14 +108,30 @@ object NavigationComponentGenerator {
                         .toTypedArray()
                 )
             )
+        environment.codeGenerator
+            .associateWithClasses(
+                classes = modules.map { it.declaration },
+                packageName = declaration.packageName.asString(),
+                fileName = requireNotNull(generatedComponent.name),
+            )
 
         val functionName = "installNavigationController"
         val extensionName = "${declaration.simpleName.asString()}.$functionName"
+        val isIos = resolver.getKotlinClassByName("platform.UIKit.UIApplication") != null
+        val isDesktop =
+            resolver.getKotlinClassByName("androidx.compose.ui.window.ApplicationScope") != null
         val (platformParameterName, addPlatformParameter) = createPlatformApplicationReferenceParameter(
             resolver,
         )
         val extensionFunction = FunSpec.builder(functionName)
-            .addModifiers(KModifier.PUBLIC)
+            .addModifiers(
+                when {
+                    // on Desktop the application should be installed through the Composable
+                    // extension function, which is added later, so we make this function private
+                    isDesktop -> KModifier.PRIVATE
+                    else -> KModifier.PUBLIC
+                }
+            )
             .returns(ClassNames.Kotlin.navigationController)
             .addPlatformParameter()
             .addParameter(
@@ -179,6 +196,35 @@ object NavigationComponentGenerator {
             )
             .build()
 
+        val desktopFunction = when {
+            !isDesktop -> null
+            else -> extensionFunction.toBuilder("rememberNavigationController")
+                .apply { modifiers.clear() }
+                .apply {
+                    val updatedParameters = parameters.filterNot { it.name == platformParameterName }
+                    parameters.clear()
+                    parameters.addAll(updatedParameters)
+                }
+                .addModifiers(KModifier.PUBLIC)
+                .addAnnotation(ClassNames.Kotlin.composable)
+                .clearBody()
+                .addCode(CodeBlock.of(
+                    """
+                        return androidx.compose.runtime.remember {
+                            installNavigationController(
+                                $platformParameterName = Unit,
+                                root = root,
+                                strictMode = strictMode,
+                                useLegacyContainerPresentBehavior = useLegacyContainerPresentBehavior,
+                                backConfiguration = backConfiguration,
+                                block = block,
+                            )
+                        }
+                    """.trimIndent()
+                ))
+                .build()
+        }
+
         FileSpec
             .builder(
                 packageName = declaration.packageName.asString(),
@@ -194,6 +240,28 @@ object NavigationComponentGenerator {
                 names = arrayOf("internalCreateNavigationController"),
             )
             .addFunction(extensionFunction)
+            .let {
+                if (desktopFunction == null) return@let it
+                it.addFunction(desktopFunction)
+            }
+            .let {
+                if (!isIos) return@let it
+                it.addFunction(
+                    extensionFunction
+                        .toBuilder(functionName)
+                        .apply {
+                            val newParameter = ParameterSpec
+                                .builder(
+                                    "enro",
+                                    ClassNames.Kotlin.enroIosExtensions,
+                                )
+                                .defaultValue("%T", ClassNames.Kotlin.enroIosExtensions)
+                                .build()
+                            parameters.add(5, newParameter)
+                        }
+                        .build()
+                )
+            }
             .build()
             .writeTo(
                 codeGenerator = environment.codeGenerator,
@@ -209,7 +277,7 @@ object NavigationComponentGenerator {
             .associateWithClasses(
                 classes = modules.map { it.declaration },
                 packageName = declaration.packageName.asString(),
-                fileName = requireNotNull(generatedComponent.name),
+                fileName = requireNotNull(extensionName),
             )
     }
 
@@ -381,11 +449,11 @@ object NavigationComponentGenerator {
             }
 
             desktopApplication != null -> {
-                return "application" to {
+                return "ignored" to {
                     addParameter(
                         ParameterSpec.builder(
-                            "application",
-                            desktopApplication.toClassName(),
+                            "ignored",
+                            ClassNames.Kotlin.unit,
                         ).build()
                     )
                 }

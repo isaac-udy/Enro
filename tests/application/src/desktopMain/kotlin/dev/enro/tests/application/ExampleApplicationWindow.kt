@@ -10,7 +10,6 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Window
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
@@ -29,7 +28,7 @@ object ExampleApplicationWindow : NavigationKey.SupportsPresent
 @NavigationDestination(ExampleApplicationWindow::class)
 class ExampleApplicationWindowDestination : DesktopWindow() {
     @Composable
-    override fun ApplicationScope.Render() {
+    override fun Render() {
         val navigationHandle = navigationHandle()
         val context = navigationContext
         Window(
@@ -46,10 +45,7 @@ class ExampleApplicationWindowDestination : DesktopWindow() {
         ) {
             val container = rememberNavigationContainer(
                 root = SelectDestination,
-                emptyBehavior = EmptyBehavior.Action {
-                    exitApplication()
-                    true
-                },
+                emptyBehavior = EmptyBehavior.CloseParent,
             )
 
             Box(

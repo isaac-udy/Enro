@@ -21,6 +21,14 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
+private val optIns = arrayOf(
+    "dev.enro.annotations.AdvancedEnroApi",
+    "dev.enro.annotations.ExperimentalEnroApi",
+    "kotlin.uuid.ExperimentalUuidApi",
+    "kotlin.io.encoding.ExperimentalEncodingApi",
+    "kotlin.experimental.ExperimentalObjCName",
+)
+
 internal fun Project.configureKotlinMultiplatform(
     android: Boolean = true,
     ios: Boolean = true,
@@ -48,12 +56,7 @@ internal fun Project.configureKotlinMultiplatform(
                         "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=dev.enro.annotations.Parcelize"
                     )
                     freeCompilerArgs.addAll("-Xexpect-actual-classes")
-                    optIn.addAll(
-                        "dev.enro.annotations.AdvancedEnroApi",
-                        "dev.enro.annotations.ExperimentalEnroApi",
-                        "kotlin.uuid.ExperimentalUuidApi",
-                        "kotlin.io.encoding.ExperimentalEncodingApi",
-                    )
+                    optIn.addAll(*optIns)
                 }
             }
         }
@@ -63,12 +66,7 @@ internal fun Project.configureKotlinMultiplatform(
                 compilerOptions {
                     jvmTarget.set(JvmTarget.JVM_21)
                     freeCompilerArgs.addAll("-Xexpect-actual-classes")
-                    optIn.addAll(
-                        "dev.enro.annotations.AdvancedEnroApi",
-                        "dev.enro.annotations.ExperimentalEnroApi",
-                        "kotlin.uuid.ExperimentalUuidApi",
-                        "kotlin.io.encoding.ExperimentalEncodingApi",
-                    )
+                    optIn.addAll(*optIns)
                 }
             }
         }
@@ -94,12 +92,7 @@ internal fun Project.configureKotlinMultiplatform(
                 binaries.executable()
                 compilerOptions {
                     freeCompilerArgs.addAll("-Xexpect-actual-classes", "-Xwasm-attach-js-exception")
-                    optIn.addAll(
-                        "dev.enro.annotations.AdvancedEnroApi",
-                        "dev.enro.annotations.ExperimentalEnroApi",
-                        "kotlin.uuid.ExperimentalUuidApi",
-                        "kotlin.io.encoding.ExperimentalEncodingApi",
-                    )
+                    optIn.addAll(*optIns)
                 }
             }
         }
@@ -114,12 +107,7 @@ internal fun Project.configureKotlinMultiplatform(
                     isStatic = true
                     compilerOptions {
                         freeCompilerArgs.addAll("-Xexpect-actual-classes")
-                        optIn.addAll(
-                            "dev.enro.annotations.AdvancedEnroApi",
-                            "dev.enro.annotations.ExperimentalEnroApi",
-                            "kotlin.uuid.ExperimentalUuidApi",
-                            "kotlin.io.encoding.ExperimentalEncodingApi",
-                        )
+                        optIn.addAll(*optIns)
                     }
                 }
             }

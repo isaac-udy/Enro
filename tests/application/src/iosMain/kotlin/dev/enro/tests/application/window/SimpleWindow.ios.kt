@@ -1,7 +1,11 @@
 package dev.enro.tests.application.window
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.Button
 import androidx.compose.material.Text
+import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.present
@@ -14,7 +18,10 @@ import platform.UIKit.UIViewController
 fun SimpleWindowViewController(): UIViewController {
     return EnroComposeUIViewController {
         val navigation = navigationHandle()
-        TitledColumn(title = "Simple Window") {
+        TitledColumn(
+            title = "Simple Window",
+            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
+        ) {
             Button(onClick = { navigation.present(SimpleWindow) }) {
                 Text(text = "Open Simple Window again")
             }

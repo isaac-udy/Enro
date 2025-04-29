@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Window
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
@@ -23,7 +22,7 @@ internal class OpenComposableInDesktopWindow(
 
 internal class DesktopWindowHostForComposable : DesktopWindow() {
     @Composable
-    override fun ApplicationScope.Render() {
+    override fun Render() {
         val navigation = navigationHandle<OpenComposableInDesktopWindow>()
         Window(
             onCloseRequest = navigation::requestClose,

@@ -14,7 +14,7 @@ import dev.enro.tests.application.compose.common.TitledColumn
 @NavigationDestination(SimpleWindow::class)
 class SimpleWindowDestination : DesktopWindow() {
     @Composable
-    override fun ApplicationScope.Render() {
+    override fun Render() {
         val navigation = navigationHandle()
         Window(
             onCloseRequest = navigation::requestClose,
