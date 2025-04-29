@@ -39,14 +39,13 @@ internal fun <KeyType : NavigationKey> createComposableNavigationBinding(
 internal fun <KeyType : NavigationKey, DestinationType: ComposableDestination> createComposableNavigationBinding(
     keyType: KClass<KeyType>,
     destinationType: KClass<DestinationType>,
+    constructDestination: () -> DestinationType,
 ): NavigationBinding<KeyType, DestinationType> {
-    TODO("JS")
-//    val constructor = destinationType.constructors.first { it.parameters.isEmpty() }
-//    return ComposableNavigationBinding(
-//        keyType = keyType,
-//        destinationType = destinationType,
-//        constructDestination = { constructor.call() }
-//    )
+    return ComposableNavigationBinding(
+        keyType = keyType,
+        destinationType = destinationType,
+        constructDestination = constructDestination,
+    )
 }
 
 public inline fun <reified KeyType : NavigationKey> createComposableNavigationBinding(
@@ -58,15 +57,20 @@ public inline fun <reified KeyType : NavigationKey> createComposableNavigationBi
     )
 }
 
-public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComposableDestination> createComposableNavigationBinding(): NavigationBinding<KeyType, DestinationType> {
+public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComposableDestination> createComposableNavigationBinding(
+    noinline constructDestination: () -> DestinationType,
+): NavigationBinding<KeyType, DestinationType> {
     return createComposableNavigationBinding(
         keyType = KeyType::class,
         destinationType = DestinationType::class,
+        constructDestination = constructDestination,
     )
 }
 
-public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComposableDestination> NavigationModuleScope.composableDestination() {
-    binding(createComposableNavigationBinding<KeyType, DestinationType>())
+public inline fun <reified KeyType : NavigationKey, reified DestinationType : ComposableDestination> NavigationModuleScope.composableDestination(
+    noinline constructDestination: () -> DestinationType,
+) {
+    binding(createComposableNavigationBinding<KeyType, DestinationType>(constructDestination))
 }
 
 public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.composableDestination(noinline content: @Composable () -> Unit) {

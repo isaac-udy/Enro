@@ -6,14 +6,10 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.remember
 import androidx.compose.ui.window.application
 import dev.enro.animation.direction
-import dev.enro.annotations.NavigationComponent
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.createNavigationController
 import dev.enro.tests.application.ExampleApplicationWindow
-
-@NavigationComponent
-object EnroExampleApp
 
 fun main() = application {
     val controller = remember {

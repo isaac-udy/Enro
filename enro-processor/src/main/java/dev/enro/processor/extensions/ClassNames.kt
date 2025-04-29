@@ -1,11 +1,21 @@
 package dev.enro.processor.extensions
 
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.STAR
 import com.squareup.javapoet.ClassName as JavaClassName
 
 
 object ClassNames {
     object Java {
+        val enroBackConfiguration = JavaClassName.get(
+            "dev.enro.core.controller",
+            "EnroBackConfiguration"
+        )
+        val navigationController = JavaClassName.get(
+            "dev.enro.core.controller",
+            "NavigationController"
+        )
         val kotlinFunctionOne = JavaClassName.get(
             "kotlin.jvm.functions",
             "Function1"
@@ -64,6 +74,10 @@ object ClassNames {
     }
 
     object Kotlin {
+        val enroBackConfiguration = ClassName(
+            "dev.enro.core.controller",
+            "EnroBackConfiguration"
+        )
         val unit = ClassName(
             "kotlin",
             "Unit"
@@ -82,5 +96,58 @@ object ClassNames {
 
         val optIn = ClassName("kotlin", "OptIn")
         val experimentalMaterialApi = ClassName("androidx.compose.material", "ExperimentalMaterialApi")
+
+        val experimentalObjCName = ClassName("kotlin.experimental", "ExperimentalObjCName")
+        val objCName = ClassName("kotlin.native", "ObjCName")
+
+        val navigationController = ClassName(
+            "dev.enro.core.controller",
+            "NavigationController"
+        )
+
+        val navigationInstructionOpen = ClassName(
+            "dev.enro.core",
+            "NavigationInstruction",
+            "Open"
+        ).parameterizedBy(STAR)
+
+        val anyOpenInstruction = ClassName(
+            "dev.enro.core",
+            "AnyOpenInstruction"
+        )
+
+        val navigationInstructionOpenPush = ClassName(
+            "dev.enro.core",
+            "NavigationInstruction",
+            "Open"
+        ).parameterizedBy(
+            ClassName(
+                "dev.enro.core",
+                "NavigationDirection",
+                "Push",
+            )
+        )
+
+        val navigationInstructionOpenPresent = ClassName(
+            "dev.enro.core",
+            "NavigationInstruction",
+            "Open"
+        ).parameterizedBy(
+            ClassName(
+                "dev.enro.core",
+                "NavigationDirection",
+                "Present",
+            )
+        )
+
+        val navigationKey = ClassName(
+            "dev.enro.core",
+            "NavigationKey"
+        )
+
+        val uiViewController = ClassName(
+            "platform.UIKit",
+            "UIViewController"
+        )
     }
 }

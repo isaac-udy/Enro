@@ -9,7 +9,9 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ksp.toClassName
+import com.squareup.kotlinpoet.ksp.toTypeName
 import dev.enro.annotations.NavigationDestination
 import dev.enro.processor.extensions.ClassNames
 import dev.enro.processor.extensions.extends
@@ -53,6 +55,19 @@ sealed class DestinationReference {
 
         val isDesktopWindow = declaration is KSClassDeclaration &&
                 declaration.getAllSuperTypes().any { it.declaration.qualifiedName?.asString() == "dev.enro.destination.desktop.DesktopWindow" }
+
+        val isUIViewControllerClass = declaration is KSClassDeclaration &&
+                declaration.getAllSuperTypes().any { it.declaration.qualifiedName?.asString() == "platform.UIKit.UIViewController" }
+
+        val isUIViewControllerFunction = kotlin.run {
+            val declaration = declaration
+            if (declaration !is KSFunctionDeclaration) return@run false
+            val typeName = runCatching { declaration.returnType?.toTypeName() }
+                .getOrNull() ?: return@run false
+            if (typeName !is ClassName) return@run false
+            return@run typeName.packageName == "platform.UIKit" &&
+                    typeName.simpleName == "UIViewController"
+        }
 
         val annotation = declaration.getAnnotationsByType(NavigationDestination::class)
             .firstOrNull()

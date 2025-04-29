@@ -16,10 +16,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import dev.enro.animation.direction
-import dev.enro.annotations.NavigationComponent
 import dev.enro.core.NavigationDirection
 import dev.enro.core.controller.NavigationApplication
-import dev.enro.core.controller.createNavigationController
 import dev.enro.destination.compose.navigationContext
 import dev.enro.destination.fragment.FragmentSharedElements
 import dev.enro.tests.application.activity.PictureInPicture
@@ -40,9 +38,8 @@ import dev.enro.tests.application.fragment.UnboundBottomSheet
 import dev.enro.tests.application.managedflow.ManagedFlowInComposable
 import dev.enro.tests.application.managedflow.ManagedFlowInFragment
 
-@NavigationComponent
 class TestApplication : Application(), NavigationApplication {
-    override val navigationController = createNavigationController {
+    override val navigationController = EnroComponent.installNavigationController(this) {
         plugin(TestApplicationPlugin)
         composeEnvironment { content ->
             val navigationContext = navigationContext

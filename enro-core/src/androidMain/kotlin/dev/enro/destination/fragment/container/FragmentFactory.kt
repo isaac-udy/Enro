@@ -19,7 +19,7 @@ internal object FragmentFactory {
             else -> throw IllegalStateException()
         }
 
-        val hostedBinding = parentContext.controller.bindingForInstruction(instruction.navigationKey::class)
+        val hostedBinding = parentContext.controller.bindingForInstruction(instruction)
             ?: throw EnroException.MissingNavigationBinding(instruction.navigationKey)
 
         return fragmentManager.fragmentFactory.instantiate(

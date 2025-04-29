@@ -4,7 +4,9 @@ import androidx.savedstate.savedState
 import dev.enro.core.NavigationContext
 import dev.enro.core.addOpenInstruction
 import dev.enro.core.compose.destination.navigationController
-import dev.enro.core.controller.EnroBackConfiguration
+import dev.enro.core.controller.EnroBackConfigurationDefault
+import dev.enro.core.controller.EnroBackConfigurationManual
+import dev.enro.core.controller.EnroBackConfigurationPredictive
 
 internal fun <ContextType : ComposableDestination> ComposeContext(
     contextReference: ContextType,
@@ -30,15 +32,15 @@ internal fun bindBackHandling(
     val backConfiguration = navigationContext.controller.config.backConfiguration
 
     when (backConfiguration) {
-        is EnroBackConfiguration.Default -> {
+        is EnroBackConfigurationDefault -> {
             // Should be handled at the Activity level
         }
 
-        is EnroBackConfiguration.Manual -> {
+        is EnroBackConfigurationManual -> {
             // Do nothing
         }
 
-        is EnroBackConfiguration.Predictive -> configurePredictiveBackHandling(
+        is EnroBackConfigurationPredictive -> configurePredictiveBackHandling(
             navigationContext,
             navigationHandle
         )

@@ -1,5 +1,7 @@
 package dev.enro.processor.generator
 
+import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.getKotlinClassByName
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -8,6 +10,7 @@ import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationBinding
 import dev.enro.annotations.GeneratedNavigationComponent
@@ -19,6 +22,7 @@ import dev.enro.processor.extensions.getElementName
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
+import javax.tools.StandardLocation
 import com.squareup.javapoet.AnnotationSpec as JavaAnnotationSpec
 import com.squareup.javapoet.ClassName as JavaClassName
 import com.squareup.javapoet.CodeBlock as JavaCodeBlock
@@ -76,7 +80,10 @@ object NavigationComponentGenerator {
                         bindings.forEach {
                             addStatement(
                                 "%T().invoke(navigationModuleScope)",
-                                ClassName(EnroLocation.GENERATED_PACKAGE, it.binding.split(".").last())
+                                ClassName(
+                                    EnroLocation.GENERATED_PACKAGE,
+                                    it.binding.split(".").last()
+                                )
                             )
                         }
                     }
@@ -90,16 +97,103 @@ object NavigationComponentGenerator {
                 requireNotNull(generatedComponent.name)
             )
             .addType(generatedComponent)
-            .addType(
-                TypeSpec.objectBuilder("${generatedName}Reference")
-                    .addModifiers(KModifier.PUBLIC)
-                    .addProperty(
-                        PropertySpec.builder("reference", Any::class)
-                            .initializer(CodeBlock.of("${generatedName}()"))
-                            .build()
-                    )
+            .build()
+            .writeTo(
+                codeGenerator = environment.codeGenerator,
+                dependencies = Dependencies(
+                    aggregating = true,
+                    sources = (resolverModules + resolverBindings).mapNotNull { it.containingFile }
+                        .plus(listOfNotNull(declaration.containingFile))
+                        .toTypedArray()
+                )
+            )
+
+        val functionName = "installNavigationController"
+        val extensionName = "${declaration.simpleName.asString()}.$functionName"
+        val (platformParameterName, addPlatformParameter) = createPlatformApplicationReferenceParameter(
+            resolver,
+        )
+        val extensionFunction = FunSpec.builder(functionName)
+            .addModifiers(KModifier.PUBLIC)
+            .returns(ClassNames.Kotlin.navigationController)
+            .addPlatformParameter()
+            .addParameter(
+                ParameterSpec.builder(
+                    "root",
+                    ClassNames.Kotlin.navigationInstructionOpenPresent.copy(nullable = true)
+                )
+                    .defaultValue("null")
                     .build()
             )
+            .addParameter(
+                ParameterSpec.builder("strictMode", Boolean::class)
+                    .defaultValue("false")
+                    .build()
+            )
+            .addParameter(
+                ParameterSpec.builder("useLegacyContainerPresentBehavior", Boolean::class)
+                    .defaultValue("false")
+                    .build()
+            )
+            .addParameter(
+                ParameterSpec.builder("backConfiguration", ClassNames.Kotlin.enroBackConfiguration)
+                    .defaultValue("%T.Default", ClassNames.Kotlin.enroBackConfiguration)
+                    .build()
+            )
+            .addParameter(
+                ParameterSpec.builder(
+                    "block",
+                    LambdaTypeName.get(
+                        receiver = ClassNames.Kotlin.navigationModuleScope,
+                        returnType = ClassNames.Kotlin.unit
+                    )
+                )
+                    .defaultValue("{}")
+                    .build()
+            )
+            .addCode(
+                CodeBlock.of(
+                    """
+                        val controller = internalCreateNavigationController(
+                            strictMode = strictMode,
+                            useLegacyContainerPresentBehavior = useLegacyContainerPresentBehavior,
+                            backConfiguration = backConfiguration,
+                            block = {
+                                ${generatedComponent.name}().invoke(this)
+                                block()
+                            }
+                        )
+                        controller.install($platformParameterName)
+                        if (root != null) {
+                            controller.windowManager.open(root)
+                        }
+                        return controller
+                    """.trimIndent()
+                )
+            )
+            .receiver(
+                ClassName(
+                    declaration.packageName.asString(),
+                    declaration.simpleName.asString()
+                )
+            )
+            .build()
+
+        FileSpec
+            .builder(
+                packageName = declaration.packageName.asString(),
+                fileName = extensionName,
+            )
+            .addAnnotation(
+                AnnotationSpec.builder(Suppress::class)
+                    .addMember("\"INVISIBLE_REFERENCE\", \"INVISIBLE_MEMBER\"")
+                    .build()
+            )
+            .addImport(
+                packageName = "dev.enro.core.controller",
+                names = arrayOf("internalCreateNavigationController"),
+            )
+            .addFunction(extensionFunction)
             .build()
             .writeTo(
                 codeGenerator = environment.codeGenerator,
@@ -141,7 +235,7 @@ object NavigationComponentGenerator {
         val moduleNames = modules
             .map { "${it.qualifiedName}.class" }
             .let {
-                if(generatedModuleName != null) {
+                if (generatedModuleName != null) {
                     it + "$generatedModuleName.class"
                 } else it
             }
@@ -149,6 +243,7 @@ object NavigationComponentGenerator {
 
         val bindingNames = bindings.joinToString(separator = ",\n") { "${it.binding}.class" }
 
+        val packageName = processingEnv.elementUtils.getPackageOf(component).toString()
         val generatedName = "${component.simpleName}Navigation"
         val classBuilder = JavaTypeSpec.classBuilder(generatedName)
             .addOriginatingElement(component)
@@ -205,11 +300,123 @@ object NavigationComponentGenerator {
 
         JavaFile
             .builder(
-                processingEnv.elementUtils.getPackageOf(component).toString(),
+                packageName,
                 classBuilder
             )
             .build()
             .writeTo(processingEnv.filer)
+
+        val extensionFunctionName = "installNavigationController"
+        processingEnv.filer
+            .createResource(
+                StandardLocation.SOURCE_OUTPUT,
+                packageName,
+                "${component.simpleName}.$extensionFunctionName.kt",
+                component,
+            )
+            .openWriter()
+            .append(
+                """
+                @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+                package $packageName
+                
+                import android.app.Application
+                import dev.enro.core.AnyOpenInstruction
+                import dev.enro.core.controller.EnroBackConfiguration
+                import dev.enro.core.controller.NavigationController
+                import dev.enro.core.controller.NavigationModuleScope
+                import dev.enro.core.controller.internalCreateNavigationController
+                import kotlin.Boolean
+                import kotlin.Suppress
+                import kotlin.Unit
+                
+                public fun ${component.simpleName}.$extensionFunctionName(
+                  application: Application,
+                  root: AnyOpenInstruction? = null,
+                  strictMode: Boolean = false,
+                  useLegacyContainerPresentBehavior: Boolean = false,
+                  backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Default,
+                  block: NavigationModuleScope.() -> Unit = {},
+                ): NavigationController {
+                  val controller = internalCreateNavigationController(
+                      strictMode = strictMode,
+                      useLegacyContainerPresentBehavior = useLegacyContainerPresentBehavior,
+                      backConfiguration = backConfiguration,
+                      block = {
+                          ${generatedName}().invoke(this)
+                          block()
+                      }
+                  )
+                  controller.install(application)
+                  if (root != null) {
+                      controller.windowManager.open(root)
+                  }
+                  return controller
+                }
+                """.trimIndent()
+            )
+            .close()
+    }
+
+    @OptIn(KspExperimental::class)
+    fun createPlatformApplicationReferenceParameter(
+        resolver: Resolver,
+    ): Pair<String, FunSpec.Builder.() -> FunSpec.Builder> {
+        val androidApplication = resolver.getKotlinClassByName("android.app.Application")
+        val desktopApplication =
+            resolver.getKotlinClassByName("androidx.compose.ui.window.ApplicationScope")
+        val webDocument = resolver.getKotlinClassByName("org.w3c.dom.Document")
+        val iosApplication = resolver.getKotlinClassByName("platform.UIKit.UIApplication")
+
+        when {
+            androidApplication != null -> {
+                return "application" to {
+                    addParameter(
+                        ParameterSpec.builder(
+                            "application",
+                            androidApplication.toClassName(),
+                        ).build()
+                    )
+                }
+            }
+
+            desktopApplication != null -> {
+                return "application" to {
+                    addParameter(
+                        ParameterSpec.builder(
+                            "application",
+                            desktopApplication.toClassName(),
+                        ).build()
+                    )
+                }
+            }
+
+            webDocument != null -> {
+                return "document" to {
+                    addParameter(
+                        ParameterSpec.builder(
+                            "document",
+                            webDocument.toClassName(),
+                        ).build()
+                    )
+                }
+            }
+
+            iosApplication != null -> {
+                return "application" to {
+                    addParameter(
+                        ParameterSpec.builder(
+                            "application",
+                            iosApplication.toClassName(),
+                        ).build()
+                    )
+                }
+            }
+
+            else -> {
+                error("Unsupported platform!")
+            }
+        }
     }
 }
 

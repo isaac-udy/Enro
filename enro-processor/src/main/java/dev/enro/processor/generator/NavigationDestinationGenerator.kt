@@ -145,6 +145,17 @@ object NavigationDestinationGenerator {
                 destination.toClassName(),
                 destination.toClassName(),
             )
+            destination.isUIViewControllerClass -> addCode(
+                "uiViewControllerDestination<%T, %T> { %T() }",
+                destination.keyType.asStarProjectedType().toTypeName(),
+                destination.toClassName(),
+            )
+            destination.isUIViewControllerFunction -> addCode(
+                "uiViewControllerDestination<%T, %T> { %L() }",
+                destination.keyType.asStarProjectedType().toTypeName(),
+                ClassNames.Kotlin.uiViewController,
+                requireNotNull(destination.declaration.simpleName).asString(),
+            )
             else -> error("${destination.declaration.qualifiedName?.asString()}")
         }
         if (destination.isPlatformDestination) {
@@ -293,7 +304,8 @@ object NavigationDestinationGenerator {
                         navigationModuleScope.binding(
                             createComposableNavigationBinding(
                                 $1T.class,
-                                $composableWrapper.class
+                                $composableWrapper.class,
+                                () -> new $composableWrapper()
                             )
                         )
                     """.trimIndent(),
@@ -369,6 +381,14 @@ fun FileSpec.Builder.addImportsForBinding(destination: DestinationReference.Kotl
                 it.addImport(
                     "dev.enro.destination.desktop",
                     "desktopWindowDestination"
+                )
+            } else it
+        }
+        .let {
+            if (destination.isUIViewControllerClass || destination.isUIViewControllerFunction) {
+                it.addImport(
+                    "dev.enro.destination.uiviewcontroller",
+                    "uiViewControllerDestination",
                 )
             } else it
         }

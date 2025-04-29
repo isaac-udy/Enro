@@ -43,9 +43,6 @@ import kotlinx.browser.document
 import org.jetbrains.compose.resources.configureWebResources
 import org.w3c.dom.Element
 
-@NavigationComponent
-object EnroExampleApp
-
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     configureWebResources {

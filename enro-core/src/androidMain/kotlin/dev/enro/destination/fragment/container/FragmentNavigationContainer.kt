@@ -12,7 +12,7 @@ import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.lifecycleScope
-import dev.enro.animation.DefaultAnimations
+import dev.enro.animation.NavigationAnimation
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.animation.NavigationAnimationTransition
 import dev.enro.core.AnyOpenInstruction
@@ -426,8 +426,8 @@ public val FragmentNavigationContainer.containerView: View?
 public fun FragmentNavigationContainer.setVisibilityAnimated(
     isVisible: Boolean,
     animations: NavigationAnimationTransition = NavigationAnimationTransition(
-        entering = DefaultAnimations.ForView.presentEnter,
-        exiting = DefaultAnimations.ForView.presentCloseExit,
+        entering = NavigationAnimation.None,
+        exiting = NavigationAnimation.None,
     )
 ) {
     val view = containerView ?: return

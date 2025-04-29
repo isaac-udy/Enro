@@ -4,7 +4,6 @@ import android.app.Application
 import android.os.Build
 import dev.enro.annotations.NavigationComponent
 import dev.enro.core.controller.NavigationApplication
-import dev.enro.core.controller.createNavigationController
 import dev.enro.core.destinations.ComposableDestinations
 import dev.enro.core.destinations.ManuallyBoundComposableScreen
 import dev.enro.core.destinations.TestResultSerializer
@@ -17,7 +16,7 @@ import shark.AndroidReferenceMatchers
 
 @NavigationComponent
 open class TestApplication : Application(), NavigationApplication {
-    override val navigationController = createNavigationController {
+    override val navigationController = installNavigationController(this) {
         plugin(EnroLogger())
         plugin(TestPlugin)
         registerSerializer(TestResultSerializer)
