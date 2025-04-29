@@ -26,19 +26,19 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.savedState
-import dev.enro.annotations.NavigationComponent
 import dev.enro.core.NavigationContext
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.compose.destination.EnroLocalSavedStateRegistryOwner
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.controller.NavigationController
-import dev.enro.core.controller.createNavigationController
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.leafContext
 import dev.enro.core.requestClose
+import dev.enro.tests.application.EnroComponent
 import dev.enro.tests.application.SelectDestination
+import dev.enro.tests.application.installNavigationController
 import kotlinx.browser.document
 import org.jetbrains.compose.resources.configureWebResources
 import org.w3c.dom.Element
@@ -48,11 +48,9 @@ fun main() {
     configureWebResources {
         resourcePathMapping { path -> "./$path" }
     }
-    val controller = createNavigationController(
+    val controller = EnroComponent.installNavigationController(
         document = document,
-    ) {
-        EnroExampleAppNavigation().invoke(this)
-    }
+    )
     runCatching {
         ComposeViewport(document.body!!) {
             ApplyLocals(
