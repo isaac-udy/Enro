@@ -7,6 +7,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.navigationHandle
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 @Parcelize
 data class DefaultActivityKey(val id: String) : Parcelable, NavigationKey.SupportsPresent
@@ -22,8 +23,8 @@ class DefaultActivity : TestActivity() {
     }
 }
 
-@Parcelize
-data class GenericActivityKey(val id: String) : Parcelable, NavigationKey.SupportsPresent
+@Serializable
+data class GenericActivityKey(val id: String) : NavigationKey.SupportsPresent
 
 @NavigationDestination(GenericActivityKey::class)
 class GenericActivity : TestActivity()

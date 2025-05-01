@@ -13,6 +13,9 @@ public actual class NavigationWindowManager actual constructor(
 //    private val desktopWindows = mutableStateOf(listOf<DesktopWindow>())
 
     public actual fun open(instruction: AnyOpenInstruction) {
+
+//        val newWindow = window.open(url.href, "_self")!!
+//        newWindow.sessionStorage.set("sessionThing", "SeqrchQ")
     }
 
     public actual fun close(context: NavigationContext<*>, andOpen: AnyOpenInstruction?) {

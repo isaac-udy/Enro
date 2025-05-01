@@ -7,6 +7,7 @@ plugins {
     id("wtf.emulator.gradle")
     id("configure-publishing")
     id("configure-compose")
+    kotlin("plugin.serialization")
 }
 configureEmulatorWtf(numShards = 4)
 

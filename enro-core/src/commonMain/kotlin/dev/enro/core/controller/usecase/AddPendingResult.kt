@@ -18,11 +18,11 @@ internal class AddPendingResult(
         instruction: NavigationInstruction.Close
     ) {
         val openInstruction = navigationContext.instruction
-        val navigationKey = openInstruction.internal.resultKey
+        val navigationKey = openInstruction.resultKey
             ?: openInstruction.navigationKey
 
         if (navigationKey !is NavigationKey.WithResult<*>) return
-        val resultId = openInstruction.internal.resultId ?: when {
+        val resultId = openInstruction.resultId ?: when {
             controller.config.isInTest -> ResultChannelId(
                 ownerId = openInstruction.instructionId,
                 resultId = openInstruction.instructionId

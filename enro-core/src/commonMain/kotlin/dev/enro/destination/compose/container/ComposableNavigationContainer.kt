@@ -410,7 +410,7 @@ public class ComposableNavigationContainer internal constructor(
                 if (!context.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return@onDispose
                 if (containerManager.activeContainer == this@ComposableNavigationContainer) {
                     val previouslyActiveContainer =
-                        backstack.active?.internal?.previouslyActiveContainer?.takeIf { it != key }
+                        backstack.active?.previouslyActiveContainer?.takeIf { it != key }
                     containerManager.setActiveContainerByKey(previouslyActiveContainer)
                 }
             }

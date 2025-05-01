@@ -25,7 +25,7 @@ internal class OnNavigationContextCreated(
         savedInstanceState: SavedState?
     ) {
         val instruction = context.arguments.readOpenInstruction()
-        val contextId = instruction?.internal?.instructionId
+        val contextId = instruction?.instructionId
             ?: savedInstanceState?.read { getStringOrNull(CONTEXT_ID_ARG) }
             ?: Uuid.random().toString()
 
@@ -39,11 +39,10 @@ internal class OnNavigationContextCreated(
             else -> NavigationDirection.Present
         }
         val defaultInstruction = NavigationInstruction
-            .Open.OpenInternal(
+            .Open(
                 navigationKey = defaultKey,
                 navigationDirection = defaultDirection,
             )
-            .internal
             .copy(instructionId = contextId)
 
         val handle = createNavigationHandleViewModel(

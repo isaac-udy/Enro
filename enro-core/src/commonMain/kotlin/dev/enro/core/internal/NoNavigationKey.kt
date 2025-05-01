@@ -5,9 +5,8 @@ import dev.enro.core.EnroInternalNavigationKey
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
-import dev.enro.core.NavigationKeySerializer
-import dev.enro.core.default
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -19,7 +18,7 @@ internal class NoNavigationKey(
 
 internal class NoKeyNavigationBinding : NavigationBinding<NoNavigationKey, Nothing>() {
     override val keyType: KClass<NoNavigationKey> = NoNavigationKey::class
-    override val keySerializer: NavigationKeySerializer<NoNavigationKey> = NavigationKeySerializer.default()
+    override val keySerializer: KSerializer<NoNavigationKey> = NoNavigationKey.serializer()
     override val destinationType: KClass<Nothing> = Nothing::class
     override val baseType: KClass<in Nothing> = Nothing::class
 }

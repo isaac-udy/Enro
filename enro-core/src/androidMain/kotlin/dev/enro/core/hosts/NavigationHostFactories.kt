@@ -34,7 +34,7 @@ internal class ActivityHost : NavigationHostFactory<Activity>(Activity::class) {
         val binding = requireNavigationBinding(instruction)
         if (binding is ActivityNavigationBinding) return instruction
 
-        return instruction.internal.copy(
+        return instruction.copy(
             navigationKey = when {
                 navigationContext.isHiltApplication -> OpenInstructionInHiltActivity(instruction)
                 else -> OpenInstructionInActivity(instruction)
@@ -84,7 +84,7 @@ internal class DialogFragmentHost : NavigationHostFactory<DialogFragment>(Dialog
             }
             else -> cannotCreateHost(instruction)
         }
-        return instruction.internal.copy(navigationKey = key)
+        return instruction.copy(navigationKey = key)
     }
 }
 
@@ -108,13 +108,13 @@ internal class FragmentHost : NavigationHostFactory<Fragment>(Fragment::class) {
 
         return when (binding) {
             is FragmentNavigationBinding -> return instruction
-            is ComposableNavigationBinding -> instruction.internal.copy(
+            is ComposableNavigationBinding -> instruction.copy(
                 navigationKey = when {
                     navigationContext.isHiltContext -> OpenComposableInHiltFragment(instruction)
                     else -> OpenComposableInFragment(instruction)
                 }
             )
-            is ManagedFlowNavigationBinding<*, *> -> instruction.internal.copy(
+            is ManagedFlowNavigationBinding<*, *> -> instruction.copy(
                 navigationKey = when {
                     navigationContext.isHiltContext -> OpenManagedFlowInHiltFragment(instruction)
                     else -> OpenManagedFlowInFragment(instruction)

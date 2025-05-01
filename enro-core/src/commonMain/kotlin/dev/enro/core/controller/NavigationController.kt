@@ -1,17 +1,18 @@
 package dev.enro.core.controller
 
+import androidx.savedstate.serialization.SavedStateConfiguration
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroConfig
 import dev.enro.core.NavigationBinding
-import dev.enro.core.NavigationKey
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.controller.repository.SerializerRepository
 import dev.enro.core.controller.usecase.AddModuleToController
 import dev.enro.core.result.EnroResult
 import dev.enro.core.window.NavigationWindowManager
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
-import kotlin.reflect.KClass
 
 public class NavigationController internal constructor() {
     internal val dependencyScope: EnroDependencyScope = NavigationControllerScope(this)
@@ -75,17 +76,56 @@ public class NavigationController internal constructor() {
     public companion object {
         internal var navigationController: NavigationController? = null
             private set
+
         internal var platformReference: Any? = null
             private set
 
-        @PublishedApi
-        internal val serializersModule: SerializersModule
+        /**
+         * SerializersModule is used to configure serialization internally within Enro, and is
+         * based on the serializers that have been registered with Enro's NavigationController.
+         * This is the default serializers module that is used for serialization within Enro,
+         * and is used by the savedStateConfiguration and jsonConfiguration.
+         */
+        @AdvancedEnroApi
+        public val serializersModule: SerializersModule
             get() {
                 val activeController = requireNotNull(navigationController) {
                     "Could not find active NavigationController"
                 }
                 return activeController.dependencyScope.get<SerializerRepository>()
                     .serializersModule
+            }
+
+        /**
+         * SavedStateConfiguration is used to configure the androidx.savedstate serialization for
+         * Enro, based on the serializers that have been registered with Enro; this is primarily
+         * for internal use when managing serialization internally within Enro, but is exposed
+         * for advanced use cases where you may need to perform some custom serialization.
+         */
+        @AdvancedEnroApi
+        public val savedStateConfiguration: SavedStateConfiguration
+            get() {
+                val activeController = requireNotNull(navigationController) {
+                    "Could not find active NavigationController"
+                }
+                return activeController.dependencyScope.get<SerializerRepository>()
+                    .getSavedStateConfiguration()
+            }
+
+        /**
+         * JsonConfiguration is used to configure the kotlinx.serialization.Json serialization for
+         * Enro, based on the serializers that have been registered with Enro; this is primarily
+         * for internal use when managing serialization internally within Enro, but is exposed
+         * for advanced use cases where you may need to perform some custom serialization.
+         */
+        @AdvancedEnroApi
+        public val jsonConfiguration: Json
+            get() {
+                val activeController = requireNotNull(navigationController) {
+                    "Could not find active NavigationController"
+                }
+                return activeController.dependencyScope.get<SerializerRepository>()
+                    .getJsonConfiguration()
             }
     }
 }

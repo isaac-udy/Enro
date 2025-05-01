@@ -19,11 +19,11 @@ public object AdvancedResultExtensions {
         direction: T,
         navigationKey: NavigationKey.WithResult<*>,
     ): NavigationInstruction.Open<T> {
-        return NavigationInstruction.Open.OpenInternal(
+        return NavigationInstruction.Open(
             navigationDirection = direction,
             navigationKey = navigationKey,
-            resultId = originalInstruction.internal.resultId,
-            resultKey = originalInstruction.internal.resultKey
+            resultId = originalInstruction.resultId,
+            resultKey = originalInstruction.resultKey
                 ?: originalInstruction.navigationKey
         ).apply {
             val originalForwardingInstructionId = originalInstruction.extras.get<String>(FORWARDING_RESULT_FROM_EXTRA)
@@ -40,9 +40,9 @@ public object AdvancedResultExtensions {
         instruction: NavigationInstruction.Open<*>,
         result: T
     ) {
-        val resultId = instruction.internal.resultId
+        val resultId = instruction.resultId
         if (resultId != null) {
-            val keyForResult = instruction.internal.resultKey
+            val keyForResult = instruction.resultKey
                 ?: instruction.navigationKey
             if (keyForResult !is NavigationKey.WithResult<*>) return
 
@@ -63,9 +63,9 @@ public object AdvancedResultExtensions {
         navigationController: NavigationController,
         instruction: NavigationInstruction.Open<*>,
     ) {
-        val resultId = instruction.internal.resultId
+        val resultId = instruction.resultId
         if (resultId != null) {
-            val keyForResult = instruction.internal.resultKey
+            val keyForResult = instruction.resultKey
                 ?: instruction.navigationKey
             if (keyForResult !is NavigationKey.WithResult<*>) return
 

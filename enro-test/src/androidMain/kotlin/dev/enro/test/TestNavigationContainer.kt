@@ -12,6 +12,7 @@ import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.container.emptyBackstack
 import dev.enro.core.container.toBackstack
+import dev.enro.core.controller.NavigationController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -43,7 +44,7 @@ public class TestNavigationContainer(
 
     public override fun save(): SavedState {
         return savedState {
-            putSavedStateList(BACKSTACK_KEY, backstack.map { encodeToSavedState(it) })
+            putSavedStateList(BACKSTACK_KEY, backstack.map { encodeToSavedState(it, NavigationController.savedStateConfiguration) })
         }
     }
 
@@ -51,7 +52,7 @@ public class TestNavigationContainer(
         val restoredBackstack = savedState.read {
             getSavedStateListOrNull(BACKSTACK_KEY)
                 .orEmpty()
-                .map { decodeFromSavedState<AnyOpenInstruction>(it) }
+                .map { decodeFromSavedState<AnyOpenInstruction>(it, NavigationController.savedStateConfiguration) }
                 .toBackstack()
         }
         setBackstack(restoredBackstack)

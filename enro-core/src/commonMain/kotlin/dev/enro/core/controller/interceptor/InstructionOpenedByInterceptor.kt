@@ -22,10 +22,10 @@ internal object InstructionOpenedByInterceptor : NavigationInstructionIntercepto
     private fun AnyOpenInstruction.setOpeningType(
         parentContext: NavigationContext<*>
     ) : AnyOpenInstruction {
-        if (internal.openingType != null) return internal
+        if (openingType != null) return this
         val binding =  parentContext.controller.bindingForInstruction(this)
             ?: throw EnroException.MissingNavigationBinding(navigationKey)
-        return internal.copy(
+        return copy(
             openingType = binding.destinationType.qualifiedName
         )
     }
@@ -34,8 +34,8 @@ internal object InstructionOpenedByInterceptor : NavigationInstructionIntercepto
         parentContext: NavigationContext<*>
     ): AnyOpenInstruction {
         // If openRequestedBy has been set, don't change it
-        if(internal.openedByType != null) return internal
-        return internal.copy(
+        if(openedByType != null) return this
+        return copy(
             openedByType = parentContext.contextReference::class.qualifiedName,
             openedById = parentContext.arguments.readOpenInstruction()?.instructionId
         )

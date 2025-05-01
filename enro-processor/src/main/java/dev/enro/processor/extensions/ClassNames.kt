@@ -8,6 +8,10 @@ import com.squareup.javapoet.ClassName as JavaClassName
 
 object ClassNames {
     object Java {
+        val parcelable = JavaClassName.get(
+            "android.os",
+            "Parcelable"
+        )
         val androidApplication = JavaClassName.get(
             "android.app",
             "Application"
@@ -166,6 +170,11 @@ object ClassNames {
         val navigationComponentConfiguration = ClassName(
             "dev.enro.core",
             "NavigationComponentConfiguration"
+        )
+
+        val kotlinxSerializable = ClassName(
+            "kotlinx.serialization",
+            "Serializable"
         )
     }
 }

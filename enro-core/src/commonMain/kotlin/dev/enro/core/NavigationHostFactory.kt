@@ -29,7 +29,7 @@ public abstract class NavigationHostFactory<HostType: Any>(
             = getNavigationBinding.require(instruction)
 
     protected fun cannotCreateHost(instruction: NavigationInstruction.Open<*>): Nothing {
-        throw EnroException.CannotCreateHostForType(hostType, instruction.internal.openingType)
+        throw EnroException.CannotCreateHostForType(hostType, instruction.openingType)
     }
 
     public abstract fun supports(

@@ -7,13 +7,13 @@ import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import androidx.savedstate.savedState
 import androidx.savedstate.serialization.decodeFromSavedState
-import dev.enro.core.NKSerializer
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationInstructionExtras
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.toBackstack
+import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.usecase.extras
 import dev.enro.core.internal.handle.savedStateHandle
 import dev.enro.core.onActiveContainer
@@ -47,7 +47,7 @@ public class NavigationFlow<T> internal constructor(
     private var steps: List<FlowStep<out Any>> = savedStateHandle.get<SavedState>(STEPS_KEY)
         ?.read { getSavedStateListOrNull(STEPS_KEY)}
         .orEmpty()
-        .map { decodeFromSavedState(NKSerializer, it) }
+        .map { decodeFromSavedState<NavigationKey>(it, NavigationController.savedStateConfiguration) }
         .filterIsInstance<FlowStep<out Any>>()
 
     @Suppress("UNCHECKED_CAST")
@@ -138,7 +138,7 @@ public class NavigationFlow<T> internal constructor(
         navigation.onActiveContainer {
             val existingInstructions = backstack
                 .mapNotNull { instruction ->
-                    val flowKey = instruction.internal.resultKey as? FlowStep<Any> ?: return@mapNotNull null
+                    val flowKey = instruction.resultKey as? FlowStep<Any> ?: return@mapNotNull null
                     val step = steps.firstOrNull { it.stepId == flowKey.stepId } ?: return@mapNotNull null
                     step to instruction
                 }
@@ -156,7 +156,7 @@ public class NavigationFlow<T> internal constructor(
                             .firstOrNull { it.stepId == step.stepId }
                             ?.dependsOn == step.dependsOn
                     }
-                    existingStep ?: NavigationInstruction.Open.OpenInternal(
+                    existingStep ?: NavigationInstruction.Open(
                         navigationDirection = step.direction,
                         navigationKey = step.key,
                         resultKey = step,

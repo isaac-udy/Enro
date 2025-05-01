@@ -9,6 +9,7 @@ import androidx.savedstate.serialization.encodeToSavedState
 import androidx.savedstate.write
 import dev.enro.core.EnroException
 import dev.enro.core.NavigationContainerKey
+import dev.enro.core.controller.NavigationController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged

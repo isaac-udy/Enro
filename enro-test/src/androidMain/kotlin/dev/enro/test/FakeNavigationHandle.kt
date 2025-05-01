@@ -24,7 +24,7 @@ internal class FakeNavigationHandle(
     private val onCloseRequested: () -> Unit,
 ): NavigationHandle {
     override val instruction: NavigationInstruction.Open<*> =
-        NavigationInstruction.Open.OpenInternal(
+        NavigationInstruction.Open(
             navigationDirection = when (key) {
                 is NavigationKey.SupportsPush -> NavigationDirection.Push
                 is NavigationKey.SupportsPresent -> NavigationDirection.Present

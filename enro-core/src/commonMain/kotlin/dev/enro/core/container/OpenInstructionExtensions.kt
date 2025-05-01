@@ -28,12 +28,13 @@ internal fun AnyOpenInstruction.originalNavigationDirection(): NavigationDirecti
 @Suppress("UNCHECKED_CAST")
 internal fun <T : NavigationDirection> AnyOpenInstruction.asDirection(direction: T): NavigationInstruction.Open<T> {
     if (navigationDirection == direction) return this as NavigationInstruction.Open<T>
-    return internal.copy(
+    this as NavigationInstruction.Open<T>
+    return copy(
         navigationDirection = direction,
         extras = extras.apply {
             val originalDirection = get<NavigationDirection>(ORIGINAL_NAVIGATION_DIRECTION)
             if (originalDirection != null) return@apply
-            put(ORIGINAL_NAVIGATION_DIRECTION, navigationDirection)
+            put<Any>(ORIGINAL_NAVIGATION_DIRECTION, navigationDirection)
         }
     ) as NavigationInstruction.Open<T>
 }

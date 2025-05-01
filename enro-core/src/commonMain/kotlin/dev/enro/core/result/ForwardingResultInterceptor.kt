@@ -36,7 +36,7 @@ internal object ForwardingResultInterceptor  : NavigationInstructionInterceptor 
             val next = containers.removeAt(0)
             val filteredBackstack = next.backstack
                 .filterNot {
-                    (it.instructionId == forwardingResultId && it.internal.resultKey !is FlowStep<*>) ||
+                    (it.instructionId == forwardingResultId && it.resultKey !is FlowStep<*>) ||
                         AdvancedResultExtensions.getForwardingInstructionId(it) == forwardingResultId
                 }
                 .toBackstack()

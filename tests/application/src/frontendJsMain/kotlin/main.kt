@@ -3,7 +3,7 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
@@ -34,14 +34,24 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
-import dev.enro.core.leafContext
-import dev.enro.core.requestClose
 import dev.enro.tests.application.EnroComponent
 import dev.enro.tests.application.SelectDestination
 import dev.enro.tests.application.installNavigationController
 import kotlinx.browser.document
+import kotlinx.browser.window
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.configureWebResources
+import org.w3c.dom.BroadcastChannel
 import org.w3c.dom.Element
+import org.w3c.dom.get
+import org.w3c.dom.set
+import org.w3c.dom.url.URL
+
+@Serializable
+data class RandomOtherType(
+    val thing: String,
+    val otherThing: Int,
+)
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
@@ -50,7 +60,27 @@ fun main() {
     }
     val controller = EnroComponent.installNavigationController(
         document = document,
-    )
+    ) {
+        registerSerializer(RandomOtherType.serializer())
+    }
+
+    val channel = BroadcastChannel(name = "EnroChannel")
+
+    val ref = window.location.href
+    println(window.sessionStorage.get("sessionThing"))
+    /*
+    There's something interesting here with hrefs and window.open calls (particularly with _self target)
+    I think that we probably want to somehow relate the href to a destination,
+    and use window.open to drive the JS window manager. Might need a way to iterate through
+    JS registered window destinations and find one that matches a URL and use that as the root?
+    Doesn't really work so well with the development server as other URLs just execute get requests
+
+    It's also worth thinking about the multi-platform implications here. On both Android, iOS and
+    the web, there's the possiblity to open a new "window" within the current context (e.g. _self)
+    and a new "window" in a new context (e.g. _blank); iOS uses WindowScenes for this, Android uses
+    Activities with new tasks, and the web uses new windows. Not sure if this applies to Desktop,
+    but it's worth thinking about.
+     */
     runCatching {
         ComposeViewport(document.body!!) {
             ApplyLocals(
@@ -60,6 +90,12 @@ fun main() {
                 val container = rememberNavigationContainer(
                     root = SelectDestination,
                     emptyBehavior = EmptyBehavior.Action {
+                        val url = URL(window.location.href)
+                        url.search = "searchQ" // Clear query parameters
+                        url.hash = "hash"   // Clear hash
+
+                        val newWindow = window.open(url.href, "_self")!!
+                        newWindow.sessionStorage.set("sessionThing", "SeqrchQ")
                         true
                     },
                 )
@@ -67,17 +103,24 @@ fun main() {
                 Column {
                     IconButton(
                         onClick = {
-                            container.context.leafContext().navigationHandle.requestClose()
+                            val url = URL(window.location.href)
+                            url.search = "searchQ" // Clear query parameters
+                            url.hash = "hash"   // Clear hash
+
+                            val newWindow = window.open(url.href, "_self")!!
+                            newWindow.sessionStorage.set("sessionThing", "SeqrchQ")
+//                            container.context.leafContext().navigationHandle.requestClose()
                         }
                     ) {
                         Icon(Icons.Default.ArrowBack, null)
                     }
+
                     Box(
                         modifier = Modifier
                             .background(Color.LightGray)
-                            .fillMaxSize()
+                            .fillMaxWidth()
                     ) {
-                        container.Render()
+//                        container.Render()
                     }
                 }
             }

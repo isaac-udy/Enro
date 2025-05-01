@@ -36,8 +36,8 @@ fun <T : Any> NavigationKey.WithResult<T>.deliverResultForTest(
         }
     }
     val navigationController = EnroTest.getCurrentNavigationController()
-    val resultId = instruction.internal.resultId!!
-    val navigationKey = instruction.internal.resultKey ?: instruction.navigationKey
+    val resultId = instruction.resultId!!
+    val navigationKey = instruction.resultKey ?: instruction.navigationKey
 
     @Suppress("UNCHECKED_CAST")
     val pendingResult = PendingResult.Result(

@@ -10,6 +10,7 @@ import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.ksp.toAnnotationSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import dev.enro.annotations.NavigationDestination
@@ -32,6 +33,10 @@ sealed class DestinationReference {
         resolver: Resolver,
         val declaration: KSDeclaration,
     ) {
+        val isClass = declaration is KSClassDeclaration
+        val isFunction = declaration is KSFunctionDeclaration
+        val isProperty = declaration is KSPropertyDeclaration
+
         val isPlatformDestination = declaration.annotations
             .any { it.shortName.asString() == "PlatformDestination" }
 
@@ -75,6 +80,12 @@ sealed class DestinationReference {
 
         val keyType =
             requireNotNull(resolver.getClassDeclarationByName(getNameFromKClass { annotation.key }))
+
+        val keyIsParcelable = keyType.getAllSuperTypes()
+            .any { it.declaration.qualifiedName?.asString() == "android.os.Parcelable" }
+
+        val keyIsKotlinSerializable = keyType.annotations
+            .any { it.toAnnotationSpec().typeName == ClassNames.Kotlin.kotlinxSerializable }
 
         val bindingName = requireNotNull(declaration.qualifiedName).asString()
             .replace(".", "_")
@@ -143,6 +154,16 @@ sealed class DestinationReference {
 
         val keyType =
             processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
+
+        val keyIsParcelable = keyType is TypeElement &&
+                keyType.implements(processingEnv, ClassNames.Java.parcelable)
+
+        val keyIsKotlinSerializable = keyType is TypeElement &&
+                keyType.annotationMirrors
+                    .firstOrNull {
+                        it.annotationType.asElement()
+                            .getElementName(processingEnv) == "kotlinx.serialization.Serializable"
+                    } != null
 
         val bindingName = element.getElementName(processingEnv)
             .removeSuffix("\$annotations")

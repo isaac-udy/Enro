@@ -8,7 +8,7 @@ internal fun NavigationBackstack.ensureOpeningTypeIsSet(
     parentContext: NavigationContext<*>
 ): NavigationBackstack {
     return map {
-        if (it.internal.openingType != null) return@map it
+        if (it.openingType != null) return@map it
 
         InstructionOpenedByInterceptor.intercept(
             it,

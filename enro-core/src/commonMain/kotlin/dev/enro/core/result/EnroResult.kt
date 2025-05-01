@@ -41,7 +41,7 @@ internal class EnroResult: EnroPlugin() {
     }
 
     internal fun hasPendingResultFrom(instruction: AnyOpenInstruction): Boolean {
-        return pendingResults[instruction.internal.resultId] != null
+        return pendingResults[instruction.resultId] != null
     }
 
     private fun consumePendingResult(resultChannelId: ResultChannelId): PendingResult? {

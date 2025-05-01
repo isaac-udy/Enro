@@ -3,7 +3,9 @@ package dev.enro.core
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import dev.enro.core.container.NavigationContainerContext
+import dev.enro.core.internal.isDebugBuild
 import dev.enro.core.result.internal.ResultChannelId
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlin.native.ObjCName
 import kotlin.uuid.Uuid
@@ -19,75 +21,96 @@ public sealed class NavigationInstruction {
     @Stable
     @Immutable
     @Serializable
-    public sealed class Open<T : NavigationDirection> : NavigationInstruction() {
-        public abstract val navigationDirection: T
-        public abstract val navigationKey: NavigationKey
-        public abstract val extras: NavigationInstructionExtras
-        public abstract val instructionId: String
+    @ConsistentCopyVisibility
+    public data class Open<T : NavigationDirection> internal constructor(
+        public val navigationDirection: @Serializable(with = NavigationDirection.Serializer::class) T,
+        public val navigationKey: @Contextual NavigationKey,
+        public val extras: NavigationInstructionExtras = NavigationInstructionExtras(),
+        public val instructionId: String = Uuid.random().toString(),
 
-        internal val internal by lazy { this as OpenInternal<NavigationDirection> }
-
+        internal val previouslyActiveContainer: NavigationContainerKey? = null,
+        internal val openingType: String? = null,
+        internal val openedByType: String? = null, // the type of context that requested this open instruction was executed
+        internal val openedById: String? = null,
+        internal val resultKey: @Contextual NavigationKey? = null,
+        internal val resultId: ResultChannelId? = null,
+    ) : NavigationInstruction() {
         @Suppress("UNCHECKED_CAST")
         public fun copy(
             instructionId: String = Uuid.random().toString()
-        ): Open<T> = internal.copy(
-            navigationDirection = navigationDirection,
-            instructionId = instructionId,
-            extras = extras,
-        ) as Open<T>
+        ): Open<T> {
+            return copy(
+                navigationDirection = navigationDirection,
+                instructionId = instructionId,
+                extras = extras,
+            )
+        }
 
-        @Stable
-        @Immutable
-        @Serializable
-        internal data class OpenInternal<T : NavigationDirection> constructor(
-            override val navigationDirection: @Serializable(with = NavigationDirection.Serializer::class) T,
-            override val navigationKey: @Serializable(with = NKSerializer::class) NavigationKey,
-            override val extras: NavigationInstructionExtras = NavigationInstructionExtras(),
-            override val instructionId: String = Uuid.random().toString(),
-            val previouslyActiveContainer: NavigationContainerKey? = null,
-            val openingType: String? = null,
-            val openedByType: String? = null, // the type of context that requested this open instruction was executed
-            val openedById: String? = null,
-            val resultKey: @Serializable(with = NKSerializer::class) NavigationKey? = null,
-            val resultId: ResultChannelId? = null,
-        ) : Open<T>() {
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other == null) return false
-                if (this::class != other::class) return false
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null) return false
+            if (this::class != other::class) return false
+            if (other !is Open<*>) return false
+            if (navigationDirection != other.navigationDirection) return false
+            if (navigationKey != other.navigationKey) return false
+            if (instructionId != other.instructionId) return false
+            if (resultKey != other.resultKey) return false
+            if (resultId != other.resultId) return false
 
-                other as OpenInternal<*>
+            return true
+        }
 
-                if (navigationDirection != other.navigationDirection) return false
-                if (navigationKey != other.navigationKey) return false
-                if (instructionId != other.instructionId) return false
-                if (resultKey != other.resultKey) return false
-                if (resultId != other.resultId) return false
+        override fun hashCode(): Int {
+            var result = navigationDirection.hashCode()
+            result = 31 * result + navigationKey.hashCode()
+            result = 31 * result + instructionId.hashCode()
+            result = 31 * result + resultKey.hashCode()
+            result = 31 * result + (resultId?.hashCode() ?: 0)
+            return result
+        }
 
-                return true
+        override fun toString(): String {
+            return toString(formatted = isDebugBuild())
+        }
+
+        public fun toString(formatted: Boolean): String {
+            val directionName = when (navigationDirection) {
+                NavigationDirection.Push -> "Push"
+                NavigationDirection.Present -> "Present"
+                else -> "Unknown"
             }
+            val id = instructionId
+            val key = navigationKey
+            val extras = extras
 
-            override fun hashCode(): Int {
-                var result = navigationDirection.hashCode()
-                result = 31 * result + navigationKey.hashCode()
-                result = 31 * result + instructionId.hashCode()
-                result = 31 * result + resultKey.hashCode()
-                result = 31 * result + (resultId?.hashCode() ?: 0)
-                return result
+            if (!formatted) {
+                return "NavigationInstruction.Open<$directionName>(" +
+                        "instructionId=$id, " +
+                        "navigationKey=$key, " +
+                        "extras=$extras)"
             }
-
-            override fun toString(): String {
-                val directionName = when(navigationDirection) {
-                    NavigationDirection.Push -> "Push"
-                    NavigationDirection.Present -> "Present"
-                    else -> "Unknown"
+            val extrasEntries = extras.values.entries.map { (key, value) ->
+                "$key = $value,"
+            }
+            val formattedExtras = buildString {
+                append("{")
+                if (extrasEntries.isNotEmpty()) {
+                    appendLine()
                 }
-                val id = instructionId
-                val key = navigationKey
-                val extras = extras.values.takeIf { it.isNotEmpty() }?.let {
-                    ", extras=$it"
-                } ?: ""
-                return "NavigationInstruction.Open<$directionName>(instructionId=$id, navigationKey=$key$extras)"
+                extrasEntries.forEach {
+                    appendLine(it.prependIndent("    "))
+                }
+                append("}")
+            }
+            val content = "instructionId = $id,\n" +
+                    "navigationKey = $key,\n" +
+                    "extras = $formattedExtras,"
+            return buildString {
+                appendLine("NavigationInstruction.Open<$directionName>(")
+                content.lines().forEach {
+                    appendLine(it.prependIndent("    "))
+                }
+                append(")")
             }
         }
     }
@@ -133,7 +156,7 @@ public sealed class NavigationInstruction {
         }
 
         override fun toString(): String {
-            return when(this) {
+            return when (this) {
                 is WithResult -> "NavigationInstruction.Close.WithResult(result=$result)"
                 else -> "NavigationInstruction.Close"
             }
@@ -147,7 +170,7 @@ public sealed class NavigationInstruction {
         internal fun DefaultDirection(
             navigationKey: NavigationKey,
         ): AnyOpenInstruction {
-            return Open.OpenInternal(
+            return Open(
                 navigationDirection = NavigationDirection.defaultDirection(navigationKey),
                 navigationKey = navigationKey,
             )
@@ -156,7 +179,7 @@ public sealed class NavigationInstruction {
         @Suppress("FunctionName") // mimicking constructor
         public fun Push(
             navigationKey: NavigationKey.SupportsPush,
-        ): Open<NavigationDirection.Push> = Open.OpenInternal(
+        ): Open<NavigationDirection.Push> = Open(
             navigationDirection = NavigationDirection.Push,
             navigationKey = navigationKey,
         )
@@ -164,7 +187,7 @@ public sealed class NavigationInstruction {
         @Suppress("FunctionName") // mimicking constructor
         public fun Push(
             navigationKey: NavigationKey.WithExtras<out NavigationKey.SupportsPush>,
-        ): Open<NavigationDirection.Push> = Open.OpenInternal(
+        ): Open<NavigationDirection.Push> = Open(
             navigationDirection = NavigationDirection.Push,
             navigationKey = navigationKey.navigationKey,
         ).apply {
@@ -174,7 +197,7 @@ public sealed class NavigationInstruction {
         @Suppress("FunctionName") // mimicking constructor
         public fun Present(
             navigationKey: NavigationKey.SupportsPresent,
-        ): Open<NavigationDirection.Present> = Open.OpenInternal(
+        ): Open<NavigationDirection.Present> = Open(
             navigationDirection = NavigationDirection.Present,
             navigationKey = navigationKey,
         )
@@ -182,7 +205,7 @@ public sealed class NavigationInstruction {
         @Suppress("FunctionName") // mimicking constructor
         public fun Present(
             navigationKey: NavigationKey.WithExtras<out NavigationKey.SupportsPresent>,
-        ): Open<NavigationDirection.Present> = Open.OpenInternal(
+        ): Open<NavigationDirection.Present> = Open(
             navigationDirection = NavigationDirection.Present,
             navigationKey = navigationKey.navigationKey,
         ).apply {

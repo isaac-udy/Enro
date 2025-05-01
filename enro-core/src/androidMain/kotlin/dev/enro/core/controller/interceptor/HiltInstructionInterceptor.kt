@@ -32,7 +32,7 @@ internal object HiltInstructionInterceptor : NavigationInstructionInterceptor {
         val navigationKey = instruction.navigationKey
 
         if(navigationKey is OpenInstructionInActivity && isHiltApplication) {
-            return instruction.internal.copy(
+            return instruction.copy(
                 navigationKey = OpenInstructionInHiltActivity(
                     instruction = navigationKey.instruction
                 )
@@ -40,7 +40,7 @@ internal object HiltInstructionInterceptor : NavigationInstructionInterceptor {
         }
 
         if(navigationKey is OpenComposableInFragment && isHiltActivity) {
-            return instruction.internal.copy(
+            return instruction.copy(
                 navigationKey = OpenComposableInHiltFragment(
                     instruction = navigationKey.instruction,
                 )
@@ -48,7 +48,7 @@ internal object HiltInstructionInterceptor : NavigationInstructionInterceptor {
         }
 
         if(navigationKey is OpenPresentableFragmentInFragment && isHiltActivity) {
-            return instruction.internal.copy(
+            return instruction.copy(
                 navigationKey = OpenPresentableFragmentInHiltFragment(
                     instruction = navigationKey.instruction,
                 )

@@ -1,12 +1,10 @@
 package dev.enro.core
 
-import androidx.savedstate.serialization.SavedStateConfiguration
-import androidx.savedstate.serialization.decodeFromSavedState
-import androidx.savedstate.serialization.encodeToSavedState
-import androidx.savedstate.serialization.serializers.SavedStateSerializer
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.internal.isDebugBuild
-import kotlinx.serialization.Contextual
+import dev.enro.core.serialization.unwrapForSerialization
+import dev.enro.core.serialization.wrapForSerialization
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
@@ -22,22 +20,22 @@ public class NavigationInstructionExtras internal constructor(
     internal val map: MutableMap<String, Any> = mutableMapOf()
 ) {
     public object Serializer : KSerializer<NavigationInstructionExtras> {
-        override val descriptor: SerialDescriptor = SavedStateSerializer.descriptor
+        private val innerSerializer = MapSerializer(String.serializer(), PolymorphicSerializer(Any::class))
+        override val descriptor: SerialDescriptor = innerSerializer.descriptor
 
         override fun serialize(encoder: Encoder, value: NavigationInstructionExtras) {
-            val config = SavedStateConfiguration {
-                serializersModule = NavigationController.serializersModule
-            }
-            val serializer = MapSerializer(String.serializer(), PolymorphicSerializer(Any::class))
-            val savedState = encodeToSavedState(serializer, value.map, config)
-            SavedStateSerializer.serialize(encoder, savedState)
+            innerSerializer.serialize(
+                encoder = encoder,
+                value = value.map.mapValues {
+                    it.value.wrapForSerialization()
+                },
+            )
         }
 
         override fun deserialize(decoder: Decoder): NavigationInstructionExtras {
-            val config = SavedStateConfiguration { serializersModule = NavigationController.serializersModule }
-            val savedState = SavedStateSerializer.deserialize(decoder)
-            val serializer = MapSerializer(String.serializer(), PolymorphicSerializer(Any::class))
-            val map = decodeFromSavedState(serializer, savedState, config)
+            val map = innerSerializer
+                .deserialize(decoder)
+                .mapValues { it.value.unwrapForSerialization() }
             return NavigationInstructionExtras(map.toMutableMap())
         }
     }
@@ -53,11 +51,13 @@ public class NavigationInstructionExtras internal constructor(
         map.remove(key)
     }
 
-    public inline fun <reified T : Any> put(key: String, value: T) {
+    @OptIn(ExperimentalSerializationApi::class)
+    public fun <T : Any> put(key: String, value: T) {
         if (isDebugBuild()) {
-            val hasSerializer = NavigationController.serializersModule.getPolymorphic(Any::class, value) != null
+            val wrapped = value.wrapForSerialization()
+            val hasSerializer = NavigationController.serializersModule.getPolymorphic(Any::class, wrapped) != null
             if (!hasSerializer) {
-                error("Object of type ${T::class} could not be added to NavigationInstructionExtras. Make sure to register the serializer with the NavigationController.")
+                error("Object of type ${value::class} could not be added to NavigationInstructionExtras. Make sure to register the serializer with the NavigationController.")
             }
         }
         map.put(key, value)
@@ -65,5 +65,9 @@ public class NavigationInstructionExtras internal constructor(
 
     public fun putAll(other: NavigationInstructionExtras) {
         map.putAll(other.map)
+    }
+
+    override fun toString(): String {
+        return map.toString()
     }
 }

@@ -12,6 +12,7 @@ import androidx.savedstate.serialization.decodeFromSavedState
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
 import dev.enro.core.TypedNavigationHandle
+import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.usecase.extras
 import dev.enro.core.getParentNavigationHandle
 import dev.enro.extensions.isSaveable
@@ -31,7 +32,7 @@ public class FlowResultManager private constructor(
 
             getSavedStateListOrNull(RESULTS_KEY)
                 .orEmpty()
-                .map { decodeFromSavedState<FlowStepResult>(it) }
+                .map { decodeFromSavedState<FlowStepResult>(it, NavigationController.savedStateConfiguration) }
         }
         val savedMap = savedList.associateBy { it.stepId }
         putAll(savedMap)
@@ -131,7 +132,7 @@ public class FlowResultManager private constructor(
 }
 
 public fun <T: Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.getFlowResult(): T? {
-    val step = instruction.internal.resultKey
+    val step = instruction.resultKey
     if (step == null || step !is FlowStep<*>) return null
     val parentNavigationHandle = getParentNavigationHandle() ?: return null
     val resultManager = FlowResultManager.get(parentNavigationHandle) ?: return null
@@ -140,7 +141,7 @@ public fun <T: Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.getFl
 
 @Composable
 public fun <T: Any> TypedNavigationHandle<out NavigationKey.WithResult<T>>.rememberFlowResult(): T? {
-    val step = instruction.internal.resultKey
+    val step = instruction.resultKey
     if (step == null || step !is FlowStep<*>) return null
 
     val parentNavigationHandle = remember(this) {

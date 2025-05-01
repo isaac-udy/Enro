@@ -79,7 +79,10 @@ object NavigationDestinationGenerator {
                             )
                             .build()
                     )
-                    .addNavigationDestination(destination)
+                    .addNavigationDestination(
+                        environment = environment,
+                        destination = destination,
+                    )
                     .build()
             )
             .build()
@@ -104,59 +107,91 @@ object NavigationDestinationGenerator {
     }
 
     private fun FunSpec.Builder.addNavigationDestination(
+        environment: SymbolProcessorEnvironment,
         destination: DestinationReference.Kotlin,
     ): FunSpec.Builder {
         when (destination.isPlatformDestination) {
             true -> addCode("navigationModuleScope.platformOverrides(\n\tnavigationModuleScope = {\n\t\t")
             else -> addCode("navigationModuleScope.")
         }
+        val formatting = LinkedHashMap<String, Any>()
+        formatting["keyType"] = destination.keyType.asStarProjectedType().toTypeName()
+        val destinationName = when {
+            destination.isClass -> {
+                formatting["destinationType"] = destination.toClassName()
+                "%destinationType:T"
+            }
+            destination.isFunction -> {
+                formatting["destinationFun"] = destination.declaration.simpleName.asString()
+                "%destinationFun:L"
+            }
+            destination.isProperty -> {
+                formatting["destinationProp"] = destination.declaration.simpleName.asString()
+                "%destinationProp:L"
+            }
+            else -> {
+                environment.logger.error(
+                    "Could not generate NavigationDestination for ${destination.declaration.qualifiedName?.asString()}. " +
+                            "This is likely because the destination is not a class, function or property."
+                )
+                "INVALID_DESTINATION_IS_NOT_CLASS_OR_FUNCTION"
+            }
+        }
+        val serializer = when {
+            destination.keyIsParcelable -> "dev.enro.core.ParcelableNavigationKeySerializer(%keyType:T::class)"
+            destination.keyIsKotlinSerializable -> "%keyType:T.serializer()"
+            else -> {
+                environment.logger.error(
+                    "Could not generate NavigationDestination for " +
+                            "NavigationKey of type ${destination.keyType.simpleName}. This NavigationKey does" +
+                            " not implement Parcelable and is not annotated with @kotlinx.serialization.Serializable." +
+                            " All NavigationKeys must implement Parcelable or be annotated with @kotlinx.serialization.Serializable."
+                )
+                "NAVIGATION_KEY_IS_NOT_SERIALIZABLE_OR_PARCELABLE"
+            }
+        }
         when {
-            destination.isActivity -> addCode(
-                "activityDestination<%T, %T>()",
-                destination.keyType.asStarProjectedType().toTypeName(),
-                destination.toClassName(),
+            destination.isActivity -> addNamedCode(
+                "activityDestination<%keyType:T, $destinationName>(keySerializer = $serializer)",
+                formatting,
             )
-            destination.isFragment -> addCode(
-                "fragmentDestination<%T, %T>()",
-                destination.keyType.asStarProjectedType().toTypeName(),
-                destination.toClassName(),
+            destination.isFragment -> addNamedCode(
+                "fragmentDestination<%keyType:T, $destinationName>(keySerializer = $serializer)",
+                formatting,
             )
-            destination.isSyntheticClass -> addCode(
-                "syntheticDestination<%T, %T>()",
-                destination.keyType.asStarProjectedType().toTypeName(),
-                destination.toClassName(),
+            destination.isSyntheticClass -> addNamedCode(
+                "syntheticDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
+                formatting,
             )
-            destination.isSyntheticProvider -> addCode(
-                "syntheticDestination(%L)",
-                requireNotNull(destination.declaration.simpleName).asString(),
+            destination.isSyntheticProvider -> addNamedCode(
+                "syntheticDestination(keySerializer = $serializer, provider = $destinationName)",
+                formatting,
             )
-            destination.isManagedFlowProvider -> addCode(
-                "managedFlowDestination(%L)",
-                requireNotNull(destination.declaration.simpleName).asString(),
+            destination.isManagedFlowProvider -> addNamedCode(
+                "managedFlowDestination(keySerializer = $serializer, provider = $destinationName)",
+                formatting,
             )
-            destination.isComposable -> addCode(
-                "composableDestination<%T> { %L() }",
-                destination.keyType.asStarProjectedType().toTypeName(),
-                requireNotNull(destination.declaration.simpleName).asString(),
+            destination.isComposable -> addNamedCode(
+                "composableDestination<%keyType:T>(keySerializer = $serializer) { $destinationName() }",
+                formatting,
             )
-            destination.isDesktopWindow -> addCode(
-                "desktopWindowDestination<%T, %T> { %T() }",
-                destination.keyType.asStarProjectedType().toTypeName(),
-                destination.toClassName(),
-                destination.toClassName(),
+            destination.isDesktopWindow -> addNamedCode(
+                "desktopWindowDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
+                formatting,
             )
-            destination.isUIViewControllerClass -> addCode(
-                "uiViewControllerDestination<%T, %T> { %T() }",
-                destination.keyType.asStarProjectedType().toTypeName(),
-                destination.toClassName(),
+            destination.isUIViewControllerClass -> addNamedCode(
+                "uiViewControllerDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
+                formatting,
             )
-            destination.isUIViewControllerFunction -> addCode(
-                "uiViewControllerDestination<%T, %T> { %L() }",
-                destination.keyType.asStarProjectedType().toTypeName(),
-                ClassNames.Kotlin.uiViewController,
-                requireNotNull(destination.declaration.simpleName).asString(),
+            destination.isUIViewControllerFunction -> addNamedCode(
+                "uiViewControllerDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
+                formatting,
             )
-            else -> error("${destination.declaration.qualifiedName?.asString()}")
+            else -> {
+                environment.logger.error(
+                    "${destination.declaration.qualifiedName?.asString()} is not a valid destination."
+                )
+            }
         }
         if (destination.isPlatformDestination) {
             addCode("\n\t}\n)")
@@ -221,6 +256,19 @@ object NavigationDestinationGenerator {
         processingEnv: ProcessingEnvironment,
         destination: DestinationReference.Java,
     ): MethodSpec.Builder {
+        val serializer = when {
+            destination.keyIsParcelable -> "dev.enro.core.ParcelableNavigationKeySerializer"
+            destination.keyIsKotlinSerializable -> "dev.enro.core.KSerializerForJava"
+            else -> {
+                processingEnv.messager.printError(
+                    "Could not generate NavigationDestination for " +
+                            "NavigationKey of type ${destination.keyType.simpleName}. This NavigationKey does" +
+                            " not implement Parcelable and is not annotated with @kotlinx.serialization.Serializable." +
+                            " All NavigationKeys must implement Parcelable or be annotated with @kotlinx.serialization.Serializable."
+                )
+                "NAVIGATION_KEY_IS_NOT_SERIALIZABLE_OR_PARCELABLE"
+            }
+        }
         addStatement(
             when {
                 destination.isActivity -> JavaCodeBlock.of(
@@ -228,6 +276,7 @@ object NavigationDestinationGenerator {
                     navigationModuleScope.binding(
                         createActivityNavigationBinding(
                             $1T.class,
+                            ${serializer}.create($1T.class),
                             $2T.class
                         )
                     )
@@ -241,6 +290,7 @@ object NavigationDestinationGenerator {
                     navigationModuleScope.binding(
                         createFragmentNavigationBinding(
                             $1T.class,
+                            ${serializer}.create($1T.class),
                             $2T.class
                         )
                     )
@@ -254,6 +304,7 @@ object NavigationDestinationGenerator {
                     navigationModuleScope.binding(
                         createSyntheticNavigationBinding(
                             $1T.class,
+                            ${serializer}.create($1T.class),
                             () -> new $2T()
                         )
                     )
@@ -274,6 +325,7 @@ object NavigationDestinationGenerator {
                         navigationModuleScope.binding(
                             createSyntheticNavigationBinding(
                                 $1T.class,
+                                ${serializer}.create($1T.class),
                                 $2T.${destination.originalElement.simpleName.removeSuffix("\$annotations")}()
                             )
                         )
@@ -286,6 +338,7 @@ object NavigationDestinationGenerator {
                         navigationModuleScope.binding(
                             createManagedFlowNavigationBinding(
                                 $1T.class,
+                                ${serializer}.create($1T.class),
                                 $2T.${destination.originalElement.simpleName.removeSuffix("\$annotations")}()
                             )
                         )
@@ -304,6 +357,7 @@ object NavigationDestinationGenerator {
                         navigationModuleScope.binding(
                             createComposableNavigationBinding(
                                 $1T.class,
+                                ${serializer}.create($1T.class),
                                 $composableWrapper.class,
                                 () -> new $composableWrapper()
                             )

@@ -82,7 +82,7 @@ public fun acceptAll(): NavigationInstructionFilter = NavigationInstructionFilte
  * by a [dev.enro.core.result.flows.NavigationFlow].
  */
 public fun acceptFromFlow(): NavigationInstructionFilter = NavigationInstructionFilter {
-    it.internal.resultKey is FlowStep<*>
+    it.resultKey is FlowStep<*>
 }
 
 /**

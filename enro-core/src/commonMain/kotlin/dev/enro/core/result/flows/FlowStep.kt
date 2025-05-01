@@ -1,13 +1,9 @@
 package dev.enro.core.result.flows
 
-import androidx.savedstate.SavedState
-import androidx.savedstate.serialization.decodeFromSavedState
-import androidx.savedstate.serialization.encodeToSavedState
-import dev.enro.core.NKSerializer
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstructionExtras
 import dev.enro.core.NavigationKey
-import dev.enro.core.NavigationKeySerializer
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -19,7 +15,7 @@ public sealed interface FlowStepConfiguration {
 @Serializable
 public class FlowStep<Result : Any> private constructor(
     @PublishedApi internal val stepId: String,
-    @PublishedApi internal val key: @Serializable(with = NKSerializer::class) NavigationKey,
+    @PublishedApi internal val key: @Contextual NavigationKey,
     @PublishedApi internal val extras: NavigationInstructionExtras,
     @PublishedApi internal val dependsOn: Long,
     @PublishedApi internal val direction: NavigationDirection,
@@ -79,22 +75,6 @@ public class FlowStep<Result : Any> private constructor(
         result = 31 * result + direction.hashCode()
         result = 31 * result + configuration.hashCode()
         return result
-    }
-
-    public companion object {
-        @Suppress("unused")
-        // Call NavigationKeySerializer.default to instantiate and register a NavigationKeySerializer for FlowStep
-        private val flowStepSerializer = object : NavigationKeySerializer<FlowStep<out Any>>(FlowStep::class) {
-            override fun serialize(key: FlowStep<out Any>): SavedState {
-                return encodeToSavedState(kotlinx.serialization.serializer<FlowStep<Unit>>(), key as FlowStep<Unit>)
-            }
-
-            override fun deserialize(data: SavedState): FlowStep<out Any> {
-                return decodeFromSavedState(kotlinx.serialization.serializer<FlowStep<Unit>>(), data)
-            }
-        }
-
-//            NavigationKeySerializer.default(FlowStep::class)
     }
 }
 

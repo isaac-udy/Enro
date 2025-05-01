@@ -15,9 +15,9 @@ import dev.enro.test.EnroTest
 @Deprecated("Use deliverResultForTest instead")
 fun <T : Any> NavigationInstruction.Open<*>.sendResultForTest(type: Class<T>, result: T) {
     val navigationController = EnroTest.getCurrentNavigationController()
-    val resultId = internal.resultId!!
+    val resultId = resultId!!
 
-    val navigationKey = internal.resultKey ?: navigationKey
+    val navigationKey = resultKey ?: navigationKey
 
     val pendingResult = PendingResult.Result(
         resultChannelId = resultId,

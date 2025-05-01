@@ -101,7 +101,7 @@ processing-incremental = "net.ltgt.gradle.incap:incap:0.3"
 processing-incrementalProcessor = "net.ltgt.gradle.incap:incap-processor:0.3"
 processing-autoService = "com.google.auto.service:auto-service:1.0.1"
 processing-javaPoet = "com.squareup:javapoet:1.13.0"
-processing-kotlinPoet = "com.squareup:kotlinpoet:1.14.2"
+processing-kotlinPoet = "com.squareup:kotlinpoet:2.1.0"
 processing-kotlinPoet-ksp = "com.squareup:kotlinpoet-ksp:1.13.2"
 
 material = "com.google.android.material:material:1.12.0"

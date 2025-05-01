@@ -5,7 +5,9 @@ import androidx.compose.runtime.Composable
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationModuleScope
+import dev.enro.core.defaultSerializer
 import dev.enro.destination.compose.ComposableDestination
+import kotlinx.serialization.KSerializer
 import dev.enro.destination.compose.createComposableNavigationBinding as newCreateComposableNavigationBinding
 import dev.enro.destination.compose.composableDestination as newComposableDestination
 
@@ -14,9 +16,10 @@ public typealias ComposableDestination = dev.enro.destination.compose.Composable
 
 @Deprecated("Use dev.enro.destination.compose.createComposableNavigationBinding instead", ReplaceWith("dev.enro.destination.compose.createComposableNavigationBinding(content)", "dev.enro.destination.compose.createComposableNavigationBinding"))
 public inline fun <reified KeyType : NavigationKey> createComposableNavigationBinding(
+    keySerializer: KSerializer<KeyType> = NavigationKey.defaultSerializer<KeyType>(),
     noinline content: @Composable () -> Unit
 ): NavigationBinding<KeyType, ComposableDestination> {
-    return newCreateComposableNavigationBinding(content)
+    return newCreateComposableNavigationBinding(keySerializer, content)
 }
 
 @Deprecated("Use dev.enro.destination.compose.createComposableNavigationBinding instead", ReplaceWith("dev.enro.destination.compose.createComposableNavigationBinding()", "dev.enro.destination.compose.createComposableNavigationBinding"))
@@ -32,6 +35,9 @@ public inline fun <reified KeyType : NavigationKey, reified DestinationType : Co
 }
 
 @Deprecated("Use dev.enro.destination.compose.composableDestination instead", ReplaceWith("dev.enro.destination.compose.composableDestination(content)", "dev.enro.destination.compose.composableDestination"))
-public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.composableDestination(noinline content: @Composable () -> Unit) {
-    newComposableDestination<KeyType>(content)
+public inline fun <reified KeyType : NavigationKey> NavigationModuleScope.composableDestination(
+    keySerializer: KSerializer<KeyType> = NavigationKey.defaultSerializer(),
+    noinline content: @Composable () -> Unit,
+) {
+    newComposableDestination<KeyType>(keySerializer, content)
 }

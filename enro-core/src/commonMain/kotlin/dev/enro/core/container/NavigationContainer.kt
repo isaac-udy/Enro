@@ -24,6 +24,7 @@ import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationHost
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.close
+import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
@@ -112,7 +113,7 @@ public abstract class NavigationContainer(
     @CallSuper
     public override fun save(): SavedState {
         return savedState {
-            putSavedStateList(BACKSTACK_KEY, backstack.map { encodeToSavedState(it) })
+            putSavedStateList(BACKSTACK_KEY, backstack.map { encodeToSavedState(it, NavigationController.savedStateConfiguration) })
         }
     }
 
@@ -121,7 +122,7 @@ public abstract class NavigationContainer(
         val restoredBackstack = savedState.read {
             getSavedStateListOrNull(BACKSTACK_KEY)
                 .orEmpty()
-                .map { decodeFromSavedState<AnyOpenInstruction>(it) }
+                .map { decodeFromSavedState<AnyOpenInstruction>(it, NavigationController.savedStateConfiguration) }
                 .toBackstack()
         }
         setBackstack(restoredBackstack, isLifecycleUpdate = true)
@@ -291,7 +292,7 @@ public abstract class NavigationContainer(
         }
 
         if (backstackTransition.exitingInstruction != null) {
-            val previouslyActiveContainer = backstackTransition.exitingInstruction.internal.previouslyActiveContainer
+            val previouslyActiveContainer = backstackTransition.exitingInstruction.previouslyActiveContainer
             if (previouslyActiveContainer != null) {
                 context.rootContext()
                     .findContainer(previouslyActiveContainer)
@@ -304,8 +305,8 @@ public abstract class NavigationContainer(
 
     private fun NavigationBackstack.processBackstackForPreviouslyActiveContainer(): NavigationBackstack {
         return map {
-            if (it.internal.previouslyActiveContainer != null) return@map it
-            it.internal.copy(
+            if (it.previouslyActiveContainer != null) return@map it
+            it.copy(
                 previouslyActiveContainer = context.rootContext().leafContext().parentContainer()?.key
             )
         }.toBackstack()
