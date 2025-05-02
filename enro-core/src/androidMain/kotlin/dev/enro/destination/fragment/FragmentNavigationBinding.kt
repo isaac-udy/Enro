@@ -4,7 +4,7 @@ import androidx.fragment.app.Fragment
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationModuleScope
-import dev.enro.core.defaultSerializer
+import dev.enro.core.serialization.defaultSerializer
 import kotlinx.serialization.KSerializer
 import kotlin.reflect.KClass
 

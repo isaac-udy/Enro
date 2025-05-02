@@ -65,10 +65,13 @@ internal class SerializerRepository {
 
     private var savedStateConfiguration: SavedStateConfiguration = SavedStateConfiguration {
         serializersModule += this@SerializerRepository.serializersModule
+        classDiscriminatorMode = androidx.savedstate.serialization.ClassDiscriminatorMode.ALL_OBJECTS
     }
 
     private var jsonConfiguration: Json = Json {
         serializersModule += this@SerializerRepository.serializersModule
+        classDiscriminatorMode = kotlinx.serialization.json.ClassDiscriminatorMode.ALL_JSON_OBJECTS
+        ignoreUnknownKeys = true
         allowStructuredMapKeys = true
         prettyPrint = isDebugBuild()
     }

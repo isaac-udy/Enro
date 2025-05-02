@@ -138,7 +138,7 @@ object NavigationDestinationGenerator {
             }
         }
         val serializer = when {
-            destination.keyIsParcelable -> "dev.enro.core.ParcelableNavigationKeySerializer(%keyType:T::class)"
+            destination.keyIsParcelable -> "dev.enro.core.serialization.SerializerForParcelableNavigationKey(%keyType:T::class)"
             destination.keyIsKotlinSerializable -> "%keyType:T.serializer()"
             else -> {
                 environment.logger.error(
@@ -184,7 +184,7 @@ object NavigationDestinationGenerator {
                 formatting,
             )
             destination.isUIViewControllerFunction -> addNamedCode(
-                "uiViewControllerDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
+                "uiViewControllerDestination<%keyType:T, platform.UIKit.UIViewController>(keySerializer = $serializer) { $destinationName() }",
                 formatting,
             )
             else -> {
@@ -257,8 +257,8 @@ object NavigationDestinationGenerator {
         destination: DestinationReference.Java,
     ): MethodSpec.Builder {
         val serializer = when {
-            destination.keyIsParcelable -> "dev.enro.core.ParcelableNavigationKeySerializer"
-            destination.keyIsKotlinSerializable -> "dev.enro.core.KSerializerForJava"
+            destination.keyIsParcelable -> "dev.enro.core.serialization.SerializerForParcelableNavigationKey"
+            destination.keyIsKotlinSerializable -> "dev.enro.core.serialization.DefaultSerializer"
             else -> {
                 processingEnv.messager.printError(
                     "Could not generate NavigationDestination for " +

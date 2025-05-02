@@ -3,7 +3,11 @@ package dev.enro
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.EnroBackConfiguration
 import dev.enro.core.controller.NavigationModuleScope
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.serializer
 import platform.UIKit.UIViewController
+import kotlin.reflect.KClass
 
 /**
  * This class is used as an entry point for Enro on iOS. In Swift sources that are using Enro,
@@ -22,14 +26,16 @@ public object Enro {
         public val Manual: EnroBackConfiguration = EnroBackConfiguration.Manual
     }
 
+    @OptIn(InternalSerializationApi::class)
     public fun <KeyType : NavigationKey> addUIViewControllerNavigationBinding(
         scope: NavigationModuleScope,
         key: KeyType,
         constructDestination: () -> UIViewController,
     ) {
         scope.binding(
-            dev.enro.destination.uiviewcontroller.createUIViewControllerNavigationBinding(
-                keyType = key::class,
+            dev.enro.destination.uiviewcontroller.createUIViewControllerNavigationBinding<KeyType, UIViewController>(
+                keyType = key::class as KClass<KeyType>,
+                keySerializer = key::class.serializer() as KSerializer<KeyType>,
                 destinationType = UIViewController::class,
                 constructDestination = constructDestination,
             )

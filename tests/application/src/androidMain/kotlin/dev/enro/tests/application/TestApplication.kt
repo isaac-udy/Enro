@@ -33,6 +33,7 @@ import dev.enro.tests.application.fragment.FragmentSharedElementDestination
 import dev.enro.tests.application.fragment.UnboundBottomSheet
 import dev.enro.tests.application.managedflow.ManagedFlowInComposable
 import dev.enro.tests.application.managedflow.ManagedFlowInFragment
+import dev.enro.tests.application.serialization.AndroidSerialization
 
 class TestApplication : Application(), NavigationApplication {
     override val navigationController = EnroComponent.installNavigationController(this) {
@@ -72,6 +73,7 @@ class TestApplication : Application(), NavigationApplication {
     override fun onCreate() {
         super.onCreate()
         SelectDestination.registerSelectableDestinations(
+            AndroidSerialization,
             BottomNavigation,
             BottomSheetChangeSize,
             BottomSheetCloseAndPresent,

@@ -13,64 +13,27 @@ import dev.enro.core.controller.NavigationController
 import dev.enro.tests.application.serialization.ParcelableAndSerializableData
 import dev.enro.tests.application.serialization.ParcelableData
 import dev.enro.tests.application.serialization.SerializableData
-import dev.enro.tests.application.serialization.Serialization
+import dev.enro.tests.application.serialization.AndroidSerialization
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.util.UUID
 import kotlin.random.Random
 
-class SerializationTests {
+class AndroidSerializationTests {
 
-    private val parcelableNavigationKey = Serialization.ParcelableNavigationKey(
-        name = "test",
-        parcelableData = ParcelableData(
-            string = UUID.randomUUID().toString(),
-            int = Random.nextInt(),
-            boolean = listOf(true, false).random(),
-            float = Random.nextFloat(),
-            double = Random.nextDouble(),
-            long = Random.nextLong(),
-        ),
-        generalData = ParcelableAndSerializableData(
-            string = UUID.randomUUID().toString(),
-            int = Random.nextInt(),
-            boolean = listOf(true, false).random(),
-            float = Random.nextFloat(),
-            double = Random.nextDouble(),
-            long = Random.nextLong(),
-        )
-    )
-
-    private val serializableNavigationKey = Serialization.SerializableNavigationKey(
-        name = "test",
-        serializableData = SerializableData(
-            string = UUID.randomUUID().toString(),
-            int = Random.nextInt(),
-            boolean = listOf(true, false).random(),
-            float = Random.nextFloat(),
-            double = Random.nextDouble(),
-            long = Random.nextLong(),
-        ),
-        generalData = ParcelableAndSerializableData(
-            string = UUID.randomUUID().toString(),
-            int = Random.nextInt(),
-            boolean = listOf(true, false).random(),
-            float = Random.nextFloat(),
-            double = Random.nextDouble(),
-            long = Random.nextLong(),
-        )
-    )
+    private val parcelableNavigationKey = AndroidSerialization.ParcelableNavigationKey.createRandom()
+    private val serializableNavigationKey = AndroidSerialization.SerializableNavigationKey.createRandom()
 
     @Test
     fun testParcelableCanBeCycledToParcelWithExplicitType() {
-        val savedState = encodeToSavedState<Serialization.ParcelableNavigationKey>(
+        val savedState = encodeToSavedState<AndroidSerialization.ParcelableNavigationKey>(
             value = parcelableNavigationKey,
             configuration = NavigationController.savedStateConfiguration,
         )
         val encodedParcelableNavigationKey = cycleSavedState(
             data = savedState,
         )
-        val decodedParcelableNavigationKey = decodeFromSavedState<Serialization.ParcelableNavigationKey>(
+        val decodedParcelableNavigationKey = decodeFromSavedState<AndroidSerialization.ParcelableNavigationKey>(
             savedState = encodedParcelableNavigationKey,
             configuration = NavigationController.savedStateConfiguration
         )
@@ -95,14 +58,14 @@ class SerializationTests {
 
     @Test
     fun testSerializableCanBeCycledToParcelWithExplicitType() {
-        val savedState = encodeToSavedState<Serialization.SerializableNavigationKey>(
+        val savedState = encodeToSavedState<AndroidSerialization.SerializableNavigationKey>(
             value = serializableNavigationKey,
             configuration = NavigationController.savedStateConfiguration,
         )
         val encodedSerializableNavigationKey = cycleSavedState(
             data = savedState,
         )
-        val decodedSerializableNavigationKey = decodeFromSavedState<Serialization.SerializableNavigationKey>(
+        val decodedSerializableNavigationKey = decodeFromSavedState<AndroidSerialization.SerializableNavigationKey>(
             savedState = encodedSerializableNavigationKey,
             configuration = NavigationController.savedStateConfiguration
         )
@@ -127,10 +90,10 @@ class SerializationTests {
 
     @Test
     fun testParcelableCanBeCycledToJsonWithExplicitType() {
-        val jsonString = NavigationController.jsonConfiguration.encodeToString<Serialization.ParcelableNavigationKey>(
+        val jsonString = NavigationController.jsonConfiguration.encodeToString<AndroidSerialization.ParcelableNavigationKey>(
             parcelableNavigationKey,
         )
-        val decodedJson = NavigationController.jsonConfiguration.decodeFromString<Serialization.ParcelableNavigationKey>(
+        val decodedJson = NavigationController.jsonConfiguration.decodeFromString<AndroidSerialization.ParcelableNavigationKey>(
             jsonString,
         )
         assertEquals(parcelableNavigationKey, decodedJson)
@@ -149,10 +112,10 @@ class SerializationTests {
 
     @Test
     fun testSerializableCanBeCycledToJsonWithExplicitType() {
-        val jsonString = NavigationController.jsonConfiguration.encodeToString<Serialization.SerializableNavigationKey>(
+        val jsonString = NavigationController.jsonConfiguration.encodeToString<AndroidSerialization.SerializableNavigationKey>(
             serializableNavigationKey,
         )
-        val decodedJson = NavigationController.jsonConfiguration.decodeFromString<Serialization.SerializableNavigationKey>(
+        val decodedJson = NavigationController.jsonConfiguration.decodeFromString<AndroidSerialization.SerializableNavigationKey>(
             jsonString,
         )
         assertEquals(serializableNavigationKey, decodedJson)
@@ -246,7 +209,7 @@ fun cycleSavedState(
         unmarshall(base64Decoded, 0, base64Decoded.size)
     }
     savedParcel.setDataPosition(0)
-    val readState = savedParcel.readBundle(SerializationTests::class.java.classLoader)
+    val readState = savedParcel.readBundle(AndroidSerializationTests::class.java.classLoader)
     savedParcel.recycle()
     return readState as SavedState
 }

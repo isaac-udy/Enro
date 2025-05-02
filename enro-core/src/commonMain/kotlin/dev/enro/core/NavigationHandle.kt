@@ -8,18 +8,16 @@ import dev.enro.core.container.NavigationContainerContext
 import dev.enro.core.controller.EnroDependencyScope
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
-import dev.enro.core.internal.EnroLog
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.core.internal.isMainThread
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
-import kotlin.reflect.typeOf
 
 public interface NavigationHandle : LifecycleOwner {
     public val id: String
     public val key: NavigationKey
-    public val instruction: NavigationInstruction.Open<*>
+    public val instruction: AnyOpenInstruction
     public val dependencyScope: EnroDependencyScope
     public fun executeInstruction(navigationInstruction: NavigationInstruction)
 }

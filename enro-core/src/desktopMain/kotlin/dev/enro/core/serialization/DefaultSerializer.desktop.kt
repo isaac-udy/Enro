@@ -1,5 +1,6 @@
-package dev.enro.core
+package dev.enro.core.serialization
 
+import dev.enro.core.NavigationKey
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
 

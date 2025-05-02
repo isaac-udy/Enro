@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationModuleScope
-import dev.enro.core.defaultSerializer
+import dev.enro.core.serialization.defaultSerializer
 import dev.enro.destination.compose.ComposableDestination
 import kotlinx.serialization.KSerializer
 import dev.enro.destination.compose.createComposableNavigationBinding as newCreateComposableNavigationBinding

@@ -59,20 +59,20 @@ public sealed class NavigationContainerKey {
 
     public object Serializer : KSerializer<NavigationContainerKey> {
         override val descriptor: SerialDescriptor = buildClassSerialDescriptor("NavigationContainerKey") {
-            element("type", String.serializer().descriptor)
+            element("containerType", String.serializer().descriptor)
             element("name", String.serializer().descriptor)
             element("id", Int.serializer().descriptor)
         }
 
         override fun deserialize(decoder: Decoder): NavigationContainerKey {
-            lateinit var type: String
+            lateinit var containerType: String
             lateinit var name: String
             var id: Int? = null
 
             decoder.decodeStructure(descriptor) {
                 while (true) {
                     when (val index = decodeElementIndex(descriptor)) {
-                        0 -> type = decodeStringElement(descriptor, index)
+                        0 -> containerType = decodeStringElement(descriptor, index)
                         1 -> name = decodeStringElement(descriptor, index)
                         2 -> id = decodeIntElement(descriptor, index)
                         CompositeDecoder.DECODE_DONE -> break
@@ -80,22 +80,22 @@ public sealed class NavigationContainerKey {
                     }
                 }
             }
-            return when (type) {
+            return when (containerType) {
                 "Dynamic" -> Dynamic(name)
                 "FromName" -> FromName(name)
                 "FromId" -> FromId(id ?: throw SerializationException("Id is required for FromId"))
-                else -> throw SerializationException("Unknown type: $type")
+                else -> throw SerializationException("Unknown type: $containerType")
             }
         }
 
         override fun serialize(encoder: Encoder, value: NavigationContainerKey) {
-            val type = when(value) {
+            val containerType = when(value) {
                 is Dynamic -> "Dynamic"
                 is FromName -> "FromName"
                 is FromId -> "FromId"
             }
             encoder.encodeStructure(descriptor) {
-                encodeStringElement(descriptor, 0, type)
+                encodeStringElement(descriptor, 0, containerType)
                 encodeStringElement(descriptor, 1, value.name)
 
                 when (value) {
@@ -113,9 +113,9 @@ public sealed class NavigationContainerKey {
             if (split.size < 2) {
                 return null
             }
-            val type = split[0]
+            val containerType = split[0]
             val nameOrId = split[1]
-            return when (type) {
+            return when (containerType) {
                 "Dynamic" -> Dynamic(nameOrId)
                 "FromName" -> FromName(nameOrId)
                 "FromId" -> {
