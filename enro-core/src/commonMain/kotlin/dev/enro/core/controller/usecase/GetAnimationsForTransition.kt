@@ -6,14 +6,28 @@ import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.controller.get
 import kotlin.collections.set
+import kotlin.reflect.KClass
 
 // TODO: Merge this with the GetNavigationAnimations use case?
 internal class GetAnimationsForTransition {
-    fun getAnimations(
+
+    inline fun <reified T: NavigationAnimation> getAnimations(
         container: NavigationContainer,
         transition: NavigationBackstackTransition,
-    ): Map<String, NavigationAnimation> {
-        val animations = mutableMapOf<String, NavigationAnimation>()
+    ): Map<String, T> {
+        return getAnimations(
+            type = T::class,
+            container = container,
+            transition = transition
+        )
+    }
+
+    fun <T: NavigationAnimation> getAnimations(
+        type: KClass<T>,
+        container: NavigationContainer,
+        transition: NavigationBackstackTransition,
+    ): Map<String, T> {
+        val animations = mutableMapOf<String, T>()
         val activeInstruction = transition.activeBackstack.active
         val exitingInstruction = transition.exitingInstruction
 
@@ -21,28 +35,31 @@ internal class GetAnimationsForTransition {
             val state = getAnimationState(transition, instruction)
             val animation = when (state) {
                 AnimationState.Entering -> container.getNavigationAnimations.opening(
+                    type = type,
                     exiting = exitingInstruction,
                     entering = instruction,
-                ).entering
+                )
 
                 AnimationState.Exiting -> when (activeInstruction == null) {
                     true -> null
                     else -> container.getNavigationAnimations.opening(
+                        type = type,
                         exiting = instruction,
                         entering = activeInstruction,
-                    ).exiting
+                    )
                 }
 
                 AnimationState.ReturnEnter -> container.getNavigationAnimations.closing(
+                    type = type,
                     exiting = instruction,
                     entering = activeInstruction,
-                ).entering
+                )
 
                 AnimationState.ReturnExit -> container.getNavigationAnimations.closing(
+                    type = type,
                     exiting = instruction,
                     entering = activeInstruction,
-                ).exiting
-
+                )
 
                 AnimationState.None -> null
             }
@@ -52,20 +69,22 @@ internal class GetAnimationsForTransition {
         return animations
     }
 
-    private fun NavigationContainer.getAnimationsForPredictiveBackExit(
+    private fun <T : NavigationAnimation> NavigationContainer.getAnimationsForPredictiveBackExit(
+        type: KClass<T>,
         predictiveClosing: AnyOpenInstruction,
         predictiveActive: AnyOpenInstruction?,
     ): NavigationAnimation {
         val animations = dependencyScope.get<GetNavigationAnimations>()
-        return animations.closing(predictiveClosing, predictiveActive).exiting
+        return animations.closing(type, predictiveClosing, predictiveActive)
     }
 
-    private fun NavigationContainer.getAnimationsForPredictiveBackEnter(
+    private fun <T: NavigationAnimation> NavigationContainer.getAnimationsForPredictiveBackEnter(
+        type: KClass<T>,
         predictiveClosing: AnyOpenInstruction,
         predictiveActive: AnyOpenInstruction,
     ): NavigationAnimation {
         val animations = dependencyScope.get<GetNavigationAnimations>()
-        return animations.closing(predictiveClosing, predictiveActive).entering
+        return animations.closing(type, predictiveClosing, predictiveActive)
     }
 
     private fun getAnimationState(

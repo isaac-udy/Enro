@@ -1,5 +1,7 @@
 package dev.enro.core.controller
 
+import dev.enro.animation.NavigationAnimationForComposable
+import dev.enro.animation.NavigationAnimationForView
 import dev.enro.core.activity.ActivityResultBridge
 import dev.enro.core.activity.ActivityResultDestination
 import dev.enro.core.controller.interceptor.HiltInstructionInterceptor
@@ -17,6 +19,11 @@ import dev.enro.destination.synthetic.SyntheticExecutionInterceptor
 internal actual val defaultNavigationModule = createNavigationModule {
     plugin(ActivityPlugin)
     plugin(FragmentPlugin)
+
+    animations {
+        defaults(NavigationAnimationForComposable.Defaults)
+        defaults(NavigationAnimationForView.Defaults)
+    }
 
     interceptor(SyntheticExecutionInterceptor)
     interceptor(NavigationContainerDelegateInterceptor)

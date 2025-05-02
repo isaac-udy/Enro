@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityOptionsCompat
+import dev.enro.animation.NavigationAnimationForView
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
 import dev.enro.core.activity
@@ -14,6 +15,7 @@ import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
 import dev.enro.core.controller.get
 import dev.enro.core.controller.isInAndroidContext
+import dev.enro.core.controller.usecase.GetNavigationAnimations
 import dev.enro.core.controller.usecase.GetNavigationBinding
 import dev.enro.core.hosts.ActivityHost
 import dev.enro.core.internal.EnroLog
@@ -25,6 +27,7 @@ public actual class NavigationWindowManager actual constructor(
     private val controller: NavigationController,
 ) : EnroPlugin() {
     private val activityHost = ActivityHost()
+    private val getNavigationAnimations = controller.dependencyScope.get<GetNavigationAnimations>()
 
     private var activities = listOf<Activity>()
 
@@ -56,6 +59,7 @@ public actual class NavigationWindowManager actual constructor(
         // TODO need to handle non-ComponentActivity cases, and null cases
         val activity = activities.lastOrNull()
         if (activity != null) {
+            val exitingInstruction = (activity as? ComponentActivity)?.navigationContext?.instruction
             val instructionToOpenHosted = activityHost.wrap(controller, instruction)
 
             val binding = requireNotNull(
@@ -66,11 +70,15 @@ public actual class NavigationWindowManager actual constructor(
             val intent = Intent(activity, binding.destinationType.java)
                 .addOpenInstruction(instructionToOpenHosted)
 
-            // TODO handle animations correctly
+            val animations = getNavigationAnimations.opening(
+                type = NavigationAnimationForView::class,
+                exiting = exitingInstruction,
+                entering = instructionToOpenHosted,
+            )
             val options = ActivityOptionsCompat.makeCustomAnimation(
                 activity,
-                0, // animations.entering.asResource(childContext.activity.theme).id,
-                0, // animations.exiting.asResource(childContext.activity.theme).id
+                animations.enterAsResource(activity),
+                animations.exitAsResource(activity),
             )
             activity.startActivity(intent, options.toBundle())
         } else {
@@ -85,6 +93,19 @@ public actual class NavigationWindowManager actual constructor(
 
         if (andOpen != null) {
             open(andOpen)
+        }
+        else {
+            val animations = getNavigationAnimations.closing(
+                type = NavigationAnimationForView::class,
+                exiting = context.instruction,
+                entering = andOpen,
+            )
+
+            @Suppress("DEPRECATION") // TODO stop using deprecated method overridePendingTransition
+            toClose.overridePendingTransition(
+                animations.enterAsResource(toClose),
+                animations.exitAsResource(toClose),
+            )
         }
         toClose.finish()
     }

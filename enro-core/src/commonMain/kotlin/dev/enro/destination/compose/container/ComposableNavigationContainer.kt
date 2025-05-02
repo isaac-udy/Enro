@@ -22,7 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import androidx.savedstate.write
-import dev.enro.animation.NavigationAnimation
+import dev.enro.animation.NavigationAnimationForComposable
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.AnyOpenInstruction
@@ -229,16 +229,14 @@ public class ComposableNavigationContainer internal constructor(
 
         if (!isLifecycleUpdate) {
             dependencyScope.get<GetAnimationsForTransition>()
-                .getAnimations(this, transition)
+                .getAnimations<NavigationAnimationForComposable>(this, transition)
                 .forEach { (instructionId, animation) ->
                     val destinationOwner =
                         activeDestinations.values.firstOrNull { it.instruction.instructionId == instructionId }
                             ?: destinationOwners.firstOrNull { it.instruction.instructionId == instructionId }
                             ?: return@forEach
-                    destinationOwner.animations.setAnimation(
-                        animation as? NavigationAnimation.Composable
-                            ?: NavigationAnimation.Composable.none
-                    )
+
+                    destinationOwner.animations.setAnimation(animation)
                 }
         }
         destinationOwners.forEach {

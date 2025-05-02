@@ -8,9 +8,12 @@ import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.container.originalNavigationDirection
+import kotlin.reflect.KClass
 
 
 public class NavigationAnimationOverrideBuilder {
+    private val defaults =
+        mutableMapOf<KClass<out NavigationAnimation>, NavigationAnimation.Defaults<out NavigationAnimation>>()
     private val opening = mutableListOf<OpeningTransition>()
     private val closing = mutableListOf<ClosingTransition>()
 
@@ -34,7 +37,7 @@ public class NavigationAnimationOverrideBuilder {
     @AdvancedEnroApi
     public fun addOpeningTransition(
         priority: Int,
-        transition: (exiting: AnyOpenInstruction?, entering: AnyOpenInstruction) -> NavigationAnimationTransition?
+        transition: (exiting: AnyOpenInstruction?, entering: AnyOpenInstruction) -> NavigationAnimation?
     ) {
         opening.add(OpeningTransition(priority, transition))
     }
@@ -59,9 +62,22 @@ public class NavigationAnimationOverrideBuilder {
     @AdvancedEnroApi
     public fun addClosingTransition(
         priority: Int,
-        transition: (exiting: AnyOpenInstruction, entering: AnyOpenInstruction?) -> NavigationAnimationTransition?
+        transition: (exiting: AnyOpenInstruction, entering: AnyOpenInstruction?) -> NavigationAnimation?
     ) {
         closing.add(ClosingTransition(priority, transition))
+    }
+
+    public fun <T : NavigationAnimation> defaults(
+        type: KClass<T>,
+        defaults: NavigationAnimation.Defaults<T>,
+    ) {
+        this.defaults[type] = defaults
+    }
+
+    public inline fun <reified T : NavigationAnimation> defaults(
+        defaults: NavigationAnimation.Defaults<T>
+    ) {
+        defaults(T::class, defaults)
     }
 
     /**
@@ -80,28 +96,19 @@ public class NavigationAnimationOverrideBuilder {
      */
     public fun direction(
         direction: NavigationDirection,
-        entering: NavigationAnimation.Enter,
-        exiting: NavigationAnimation.Exit,
-        returnEntering: NavigationAnimation.Enter? = entering,
-        returnExiting: NavigationAnimation.Exit? = exiting,
+        animation: NavigationAnimation,
+        returnAnimation: NavigationAnimation? = null,
     ) {
         addOpeningTransition(DIRECTION_PRIORITY) { _, enteringInstruction ->
             if (enteringInstruction.originalNavigationDirection() != direction) return@addOpeningTransition null
-            NavigationAnimationTransition(
-                entering = entering,
-                exiting = exiting,
-            )
+            animation
         }
 
-        if (returnEntering == null) return
-        if (returnExiting == null) return
+        if (returnAnimation == null) return
         addClosingTransition(DIRECTION_PRIORITY) { _, enteringInstruction ->
             if (enteringInstruction == null) return@addClosingTransition null
             if (enteringInstruction.originalNavigationDirection() != direction) return@addClosingTransition null
-            NavigationAnimationTransition(
-                entering = returnEntering,
-                exiting = returnExiting,
-            )
+            returnAnimation
         }
     }
 
@@ -123,29 +130,19 @@ public class NavigationAnimationOverrideBuilder {
      */
     public inline fun <reified Key : NavigationKey> transitionTo(
         direction: NavigationDirection? = null,
-        entering: NavigationAnimation.Enter,
-        exiting: NavigationAnimation.Exit,
-        returnEntering: NavigationAnimation.Enter? = entering,
-        returnExiting: NavigationAnimation.Exit? = exiting,
+        animation: NavigationAnimation,
+        returnAnimation: NavigationAnimation? = null,
     ) {
         addOpeningTransition(PARTIAL_KEY_PRIORITY) { _, enteringInstruction ->
             if (direction != null && enteringInstruction.originalNavigationDirection() != direction) return@addOpeningTransition null
             if (enteringInstruction.navigationKey !is Key) return@addOpeningTransition null
-            NavigationAnimationTransition(
-                entering = entering,
-                exiting = exiting,
-            )
+            animation
         }
 
-        if (returnEntering == null) return
-        if (returnExiting == null) return
         addClosingTransition(PARTIAL_KEY_PRIORITY) { exitingInstruction, _ ->
             if (direction != null && exitingInstruction.originalNavigationDirection() != direction) return@addClosingTransition null
             if (exitingInstruction.navigationKey !is Key) return@addClosingTransition null
-            NavigationAnimationTransition(
-                entering = returnEntering,
-                exiting = returnExiting,
-            )
+            returnAnimation
         }
     }
 
@@ -169,39 +166,31 @@ public class NavigationAnimationOverrideBuilder {
      */
     public inline fun <reified Exit : NavigationKey, reified Enter : NavigationKey> transitionBetween(
         direction: NavigationDirection? = null,
-        entering: NavigationAnimation.Enter,
-        exiting: NavigationAnimation.Exit,
-        returnEntering: NavigationAnimation.Enter? = entering,
-        returnExiting: NavigationAnimation.Exit? = exiting,
+        animation: NavigationAnimation,
+        returnAnimation: NavigationAnimation? = null,
     ) {
         addOpeningTransition(EXACT_KEY_PRIORITY) { exitingInstruction, enteringInstruction ->
             if (exitingInstruction == null) return@addOpeningTransition null
             if (direction != null && enteringInstruction.originalNavigationDirection() != direction) return@addOpeningTransition null
             if (exitingInstruction.navigationKey !is Exit) return@addOpeningTransition null
             if (enteringInstruction.navigationKey !is Enter) return@addOpeningTransition null
-            NavigationAnimationTransition(
-                entering = entering,
-                exiting = exiting,
-            )
+            animation
         }
 
-        if (returnEntering == null) return
-        if (returnExiting == null) return
+        if (returnAnimation == null) return
         addClosingTransition(EXACT_KEY_PRIORITY) { exitingInstruction, enteringInstruction ->
             if (enteringInstruction == null) return@addClosingTransition null
             if (direction != null && exitingInstruction.originalNavigationDirection() != direction) return@addClosingTransition null
             if (exitingInstruction.navigationKey !is Enter) return@addClosingTransition null
             if (enteringInstruction.navigationKey !is Exit) return@addClosingTransition null
-            NavigationAnimationTransition(
-                entering = returnEntering,
-                exiting = returnExiting,
-            )
+            returnAnimation
         }
     }
 
     internal fun build(parent: NavigationAnimationOverride?): NavigationAnimationOverride {
         return NavigationAnimationOverride(
             parent = parent,
+            defaults = defaults,
             opening = opening,
             closing = closing
         )
@@ -210,81 +199,17 @@ public class NavigationAnimationOverrideBuilder {
     public companion object {
         @AdvancedEnroApi
         public const val DEFAULT_PRIORITY: Int = 0
+
         @AdvancedEnroApi
         public const val DIRECTION_PRIORITY: Int = 10
+
         @AdvancedEnroApi
         public const val PARTIAL_KEY_PRIORITY: Int = 20
+
         @AdvancedEnroApi
         public const val EXACT_KEY_PRIORITY: Int = 30
     }
 }
-
-//// Resource extensions
-///**
-// * An overload of [NavigationAnimationOverrideBuilder.transitionBetween] that allows providing
-// * Anim or Animator resources
-// *
-// * @see [NavigationAnimationOverrideBuilder.direction]
-// */
-//public fun NavigationAnimationOverrideBuilder.direction(
-//    direction: NavigationDirection,
-//    @AnimRes @AnimatorRes entering: Int,
-//    @AnimRes @AnimatorRes exiting: Int,
-//    @AnimRes @AnimatorRes returnEntering: Int? = entering,
-//    @AnimRes @AnimatorRes returnExiting: Int? = exiting,
-//) {
-//    direction(
-//        direction = direction,
-//        entering = NavigationAnimation.Resource(entering),
-//        exiting = NavigationAnimation.Resource(exiting),
-//        returnEntering = returnEntering?.let { NavigationAnimation.Resource(it) },
-//        returnExiting = returnExiting?.let { NavigationAnimation.Resource(it) },
-//    )
-//}
-//
-///**
-// * An overload of [NavigationAnimationOverrideBuilder.transitionBetween] that allows providing
-// * Anim or Animator resources
-// *
-// * @see [NavigationAnimationOverrideBuilder.transitionTo]
-// */
-//public inline fun <reified Key : NavigationKey> NavigationAnimationOverrideBuilder.transitionTo(
-//    direction: NavigationDirection? = null,
-//    @AnimRes @AnimatorRes entering: Int,
-//    @AnimRes @AnimatorRes exiting: Int,
-//    @AnimRes @AnimatorRes returnEntering: Int? = entering,
-//    @AnimRes @AnimatorRes returnExiting: Int? = exiting,
-//) {
-//    transitionTo<Key>(
-//        direction = direction,
-//        entering = NavigationAnimation.Resource(entering),
-//        exiting = NavigationAnimation.Resource(exiting),
-//        returnEntering = returnEntering?.let { NavigationAnimation.Resource(it) },
-//        returnExiting = returnExiting?.let { NavigationAnimation.Resource(it) },
-//    )
-//}
-//
-///**
-// * An overload of [NavigationAnimationOverrideBuilder.transitionBetween] that allows providing
-// * Anim or Animator resources
-// *
-// * @see [NavigationAnimationOverrideBuilder.transitionBetween]
-// */
-//public inline fun <reified Exit : NavigationKey, reified Enter : NavigationKey> NavigationAnimationOverrideBuilder.transitionBetween(
-//    direction: NavigationDirection? = null,
-//    @AnimRes @AnimatorRes entering: Int,
-//    @AnimRes @AnimatorRes exiting: Int,
-//    @AnimRes @AnimatorRes returnEntering: Int? = entering,
-//    @AnimRes @AnimatorRes returnExiting: Int? = exiting,
-//) {
-//    transitionBetween<Exit, Enter>(
-//        direction = direction,
-//        entering = NavigationAnimation.Resource(entering),
-//        exiting = NavigationAnimation.Resource(exiting),
-//        returnEntering = returnEntering?.let { NavigationAnimation.Resource(it) },
-//        returnExiting = returnExiting?.let { NavigationAnimation.Resource(it) },
-//    )
-//}
 
 // Composable transition extensions
 
@@ -300,12 +225,21 @@ public fun NavigationAnimationOverrideBuilder.direction(
     returnEntering: EnterTransition? = entering,
     returnExiting: ExitTransition? = exiting,
 ) {
+    val returnAnimation = if (returnEntering != null || returnExiting != null) {
+        NavigationAnimationForComposable(
+            enter = returnEntering ?: entering,
+            exit = returnExiting ?: exiting,
+        )
+    } else {
+        null
+    }
     direction(
         direction = direction,
-        entering = NavigationAnimation.Composable(entering),
-        exiting = NavigationAnimation.Composable(exiting),
-        returnEntering = returnEntering?.let { NavigationAnimation.Composable(it) },
-        returnExiting = returnExiting?.let { NavigationAnimation.Composable(it) },
+        animation = NavigationAnimationForComposable(
+            entering,
+            exiting,
+        ),
+        returnAnimation = returnAnimation,
     )
 }
 
@@ -321,12 +255,21 @@ public inline fun <reified Key : NavigationKey> NavigationAnimationOverrideBuild
     returnEntering: EnterTransition? = entering,
     returnExiting: ExitTransition? = exiting,
 ) {
+    val returnAnimation = if (returnEntering != null || returnExiting != null) {
+        NavigationAnimationForComposable(
+            enter = returnEntering ?: entering,
+            exit = returnExiting ?: exiting,
+        )
+    } else {
+        null
+    }
     transitionTo<Key>(
         direction = direction,
-        entering = NavigationAnimation.Composable(entering),
-        exiting = NavigationAnimation.Composable(exiting),
-        returnEntering = returnEntering?.let { NavigationAnimation.Composable(it) },
-        returnExiting = returnExiting?.let { NavigationAnimation.Composable(it) },
+        animation = NavigationAnimationForComposable(
+            entering,
+            exiting,
+        ),
+        returnAnimation = returnAnimation,
     )
 }
 
@@ -342,11 +285,20 @@ public inline fun <reified Exit : NavigationKey, reified Enter : NavigationKey> 
     returnEntering: EnterTransition? = entering,
     returnExiting: ExitTransition? = exiting,
 ) {
+    val returnAnimation = if (returnEntering != null || returnExiting != null) {
+        NavigationAnimationForComposable(
+            enter = returnEntering ?: entering,
+            exit = returnExiting ?: exiting,
+        )
+    } else {
+        null
+    }
     transitionBetween<Exit, Enter>(
         direction = direction,
-        entering = NavigationAnimation.Composable(entering),
-        exiting = NavigationAnimation.Composable(exiting),
-        returnEntering = returnEntering?.let { NavigationAnimation.Composable(it) },
-        returnExiting = returnExiting?.let { NavigationAnimation.Composable(it) },
+        animation = NavigationAnimationForComposable(
+            enter = entering,
+            exit = exiting,
+        ),
+        returnAnimation = returnAnimation,
     )
 }

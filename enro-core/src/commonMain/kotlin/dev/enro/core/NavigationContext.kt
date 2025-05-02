@@ -81,6 +81,10 @@ public class NavigationContext<ContextType : Any> internal constructor(
         onBoundToNavigationHandle = null
         callback(navigationHandle)
     }
+
+    internal fun unbind(navigationHandle: NavigationHandle) {
+        _navigationHandle = null
+    }
 }
 
 public fun NavigationContext<*>.toDisplayString(): String {

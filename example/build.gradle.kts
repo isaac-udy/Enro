@@ -10,6 +10,7 @@ plugins {
     id("kotlin-parcelize")
     id("kotlin-kapt")
     id("configure-compose")
+    kotlin("plugin.serialization")
 }
 configureAndroidApp("dev.enro.example")
 

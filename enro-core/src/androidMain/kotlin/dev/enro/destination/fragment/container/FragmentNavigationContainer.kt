@@ -12,14 +12,14 @@ import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.lifecycleScope
-import dev.enro.animation.NavigationAnimation
+import dev.enro.animation.NavigationAnimationForView
 import dev.enro.animation.NavigationAnimationOverrideBuilder
-import dev.enro.animation.NavigationAnimationTransition
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
 import dev.enro.core.R
+import dev.enro.core.activity
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationBackstack
 import dev.enro.core.container.NavigationBackstackTransition
@@ -29,6 +29,7 @@ import dev.enro.core.container.NavigationInstructionFilter
 import dev.enro.core.container.close
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro.core.controller.usecase.GetAnimationsForTransition
 import dev.enro.core.controller.usecase.HostInstructionAs
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.navigationContext
@@ -172,6 +173,9 @@ public class FragmentNavigationContainer internal constructor(
         val toRemoveDialogs = toRemove.filterIsInstance<DialogFragment>()
         val toRemoveDirect = toRemove.filter { it !is DialogFragment }
 
+        val animations = dependencyScope.get<GetAnimationsForTransition>()
+            .getAnimations<NavigationAnimationForView>(this, transition)
+
         (toDetach + activePushed)
             .filterNotNull()
             .forEach {
@@ -182,6 +186,17 @@ public class FragmentNavigationContainer internal constructor(
             applyAnimationsForTransaction(
                 active = activePushed
             )
+            val pushedInstruction = activePushed?.instruction
+            if (pushedInstruction != null) {
+                val animation = animations[pushedInstruction.instructionId]
+                if (animation != null) {
+                    setCustomAnimations(
+                        animation.enterAsResource(context.activity),
+                        animation.exitAsResource(context.activity),
+                    )
+                }
+            }
+
             toRemoveDirect.forEach {
                 remove(it)
                 FragmentSharedElements.getSharedElements(it).forEach { sharedElement ->
@@ -215,6 +230,13 @@ public class FragmentNavigationContainer internal constructor(
                 applyAnimationsForTransaction(
                     active = it
                 )
+                val animation = animations[it.instruction.instructionId]
+                if (animation != null) {
+                    setCustomAnimations(
+                        animation.enterAsResource(context.activity),
+                        animation.exitAsResource(context.activity),
+                    )
+                }
                 if (it.fragment is DialogFragment) {
                     if (it.fragment.isAdded) {
                     } else if (it.fragment.isDetached) {
@@ -425,10 +447,7 @@ public val FragmentNavigationContainer.containerView: View?
 
 public fun FragmentNavigationContainer.setVisibilityAnimated(
     isVisible: Boolean,
-    animations: NavigationAnimationTransition = NavigationAnimationTransition(
-        entering = NavigationAnimation.None,
-        exiting = NavigationAnimation.None,
-    )
+    animations: NavigationAnimationForView = NavigationAnimationForView.Defaults.present,
 ) {
     val view = containerView ?: return
     if (!view.isVisible && !isVisible) return
@@ -436,13 +455,9 @@ public fun FragmentNavigationContainer.setVisibilityAnimated(
 
     view.animate(
         animOrAnimator = when (isVisible) {
-            true -> android.R.anim.fade_in
-            false -> android.R.anim.fade_out
+            true -> animations.enterAsResource(view.context)
+            false -> animations.exitAsResource(view.context)
         },
-//        when (isVisible) {
-//            true -> animations.entering.asResource(view.context.theme).id
-//            false -> animations.exiting.asResource(view.context.theme).id
-//        },
         onAnimationStart = {
             view.translationZ = if (isVisible) 0f else -1f
             view.isVisible = true

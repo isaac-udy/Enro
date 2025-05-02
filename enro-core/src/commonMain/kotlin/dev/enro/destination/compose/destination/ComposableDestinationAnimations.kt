@@ -10,7 +10,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import dev.enro.animation.NavigationAnimation
+import dev.enro.animation.AnimateNavigationAnimations
+import dev.enro.animation.NavigationAnimationForComposable
 import dev.enro.core.compose.destination.ComposableDestinationOwner
 
 internal sealed class AnimationEvent {
@@ -25,17 +26,17 @@ internal class ComposableDestinationAnimations(
     private val owner: ComposableDestinationOwner,
 ) {
     private var currentAnimationEvent by mutableStateOf<AnimationEvent>(AnimationEvent.SnapTo(false))
-    private var containerAnimation by mutableStateOf<NavigationAnimation.Composable?>(NavigationAnimation.Composable.none)
+    private var containerAnimation by mutableStateOf<NavigationAnimationForComposable?>(NavigationAnimationForComposable.Defaults.none)
 
-    private var animationOverride by mutableStateOf<NavigationAnimation.Composable?>(null)
+    private var animationOverride by mutableStateOf<NavigationAnimationForComposable?>(null)
 
     internal lateinit var enterExitTransition: Transition<EnterExitState>
 
-    internal fun setAnimation(animation: NavigationAnimation.Composable) {
+    internal fun setAnimation(animation: NavigationAnimationForComposable) {
         containerAnimation = animation
     }
 
-    internal fun setAnimationOverride(animation: NavigationAnimation.Composable) {
+    internal fun setAnimationOverride(animation: NavigationAnimationForComposable) {
         animationOverride = animation
     }
 
@@ -60,7 +61,8 @@ internal class ComposableDestinationAnimations(
         }
         if (animation == null) return
 
-        animation.Animate(
+        AnimateNavigationAnimations(
+            animation = animation,
             state = visibilityState,
             isSeeking = currentAnimationEvent is AnimationEvent.Seek
         ) {

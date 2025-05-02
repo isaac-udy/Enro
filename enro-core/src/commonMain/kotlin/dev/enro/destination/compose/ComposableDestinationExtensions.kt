@@ -16,7 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalInspectionMode
-import dev.enro.animation.NavigationAnimation
+import dev.enro.animation.NavigationAnimationForComposable
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.destination.compose.destination.AnimationEvent
 
@@ -74,7 +74,7 @@ public fun OverrideNavigationAnimations(
     val navigationContext = navigationContext
     val destination = navigationContext.contextReference as ComposableDestination
     DisposableEffect(enter, exit) {
-        destination.owner.animations.setAnimationOverride(NavigationAnimation.Composable(
+        destination.owner.animations.setAnimationOverride(NavigationAnimationForComposable(
             enter = enter,
             exit = exit,
         ))
@@ -106,7 +106,7 @@ public fun OverrideNavigationAnimations(
 
     var isOverrideSet by remember { mutableStateOf(false) }
     DisposableEffect(Unit) {
-        val overrideAnimation = NavigationAnimation.Composable(
+        val overrideAnimation = NavigationAnimationForComposable(
             enter = fadeIn(
                 initialAlpha = 0.99999f,
                 animationSpec = snap(64),

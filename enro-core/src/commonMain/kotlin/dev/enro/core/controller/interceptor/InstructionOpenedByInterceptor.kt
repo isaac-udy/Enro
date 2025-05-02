@@ -5,7 +5,6 @@ import dev.enro.core.EnroException
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationKey
-import dev.enro.core.readOpenInstruction
 
 internal object InstructionOpenedByInterceptor : NavigationInstructionInterceptor {
 
@@ -37,7 +36,7 @@ internal object InstructionOpenedByInterceptor : NavigationInstructionIntercepto
         if(openedByType != null) return this
         return copy(
             openedByType = parentContext.contextReference::class.qualifiedName,
-            openedById = parentContext.arguments.readOpenInstruction()?.instructionId
+            openedById = parentContext.instruction.instructionId
         )
     }
 }

@@ -97,6 +97,7 @@ internal open class NavigationHandleViewModel(
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         dependencyScope.close()
         dependencyScope.container.clear()
+        navigationContext?.unbind(this)
         navigationContext = null
     }
 }

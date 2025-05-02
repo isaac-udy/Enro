@@ -17,6 +17,7 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationBinding
@@ -116,6 +117,7 @@ object NavigationDestinationGenerator {
         }
         val formatting = LinkedHashMap<String, Any>()
         formatting["keyType"] = destination.keyType.asStarProjectedType().toTypeName()
+        formatting["keyName"] = destination.keyType.toClassName()
         val destinationName = when {
             destination.isClass -> {
                 formatting["destinationType"] = destination.toClassName()
@@ -138,7 +140,7 @@ object NavigationDestinationGenerator {
             }
         }
         val serializer = when {
-            destination.keyIsParcelable -> "dev.enro.core.serialization.SerializerForParcelableNavigationKey(%keyType:T::class)"
+            destination.keyIsParcelable -> "dev.enro.core.serialization.SerializerForParcelableNavigationKey(%keyName:T::class)"
             destination.keyIsKotlinSerializable -> "%keyType:T.serializer()"
             else -> {
                 environment.logger.error(
@@ -276,12 +278,13 @@ object NavigationDestinationGenerator {
                     navigationModuleScope.binding(
                         createActivityNavigationBinding(
                             $1T.class,
-                            ${serializer}.create($1T.class),
-                            $2T.class
+                            ${serializer}.create($2L.class),
+                            $3T.class
                         )
                     )
                 """.trimIndent(),
                     JavaClassName.get(destination.keyType),
+                    JavaClassName.get(destination.keyType).simpleName(),
                     destination.element
                 )
 
@@ -290,12 +293,13 @@ object NavigationDestinationGenerator {
                     navigationModuleScope.binding(
                         createFragmentNavigationBinding(
                             $1T.class,
-                            ${serializer}.create($1T.class),
-                            $2T.class
+                            ${serializer}.create($2L.class),
+                            $3T.class
                         )
                     )
                 """.trimIndent(),
                     JavaClassName.get(destination.keyType),
+                    JavaClassName.get(destination.keyType).simpleName(),
                     destination.element
                 )
 
@@ -304,8 +308,8 @@ object NavigationDestinationGenerator {
                     navigationModuleScope.binding(
                         createSyntheticNavigationBinding(
                             $1T.class,
-                            ${serializer}.create($1T.class),
-                            () -> new $2T()
+                            ${serializer}.create($2L.class),
+                            () -> new $3T()
                         )
                     )
                 """.trimIndent(),
@@ -318,19 +322,21 @@ object NavigationDestinationGenerator {
                             )
                         }
                     }),
-                    destination.element
+                    JavaClassName.get(destination.element as TypeElement).simpleName(),
+                    destination.element,
                 )
                 destination.isSyntheticProvider -> JavaCodeBlock.of(
                     """
                         navigationModuleScope.binding(
                             createSyntheticNavigationBinding(
                                 $1T.class,
-                                ${serializer}.create($1T.class),
-                                $2T.${destination.originalElement.simpleName.removeSuffix("\$annotations")}()
+                                ${serializer}.create($2L.class),
+                                $3T.${destination.originalElement.simpleName.removeSuffix("\$annotations")}()
                             )
                         )
                     """.trimIndent(),
                     JavaClassName.get(destination.keyType),
+                    JavaClassName.get(destination.keyType).simpleName(),
                     JavaClassName.get(destination.element as TypeElement)
                 )
                 destination.isManagedFlowProvider -> JavaCodeBlock.of(
@@ -338,12 +344,13 @@ object NavigationDestinationGenerator {
                         navigationModuleScope.binding(
                             createManagedFlowNavigationBinding(
                                 $1T.class,
-                                ${serializer}.create($1T.class),
-                                $2T.${destination.originalElement.simpleName.removeSuffix("\$annotations")}()
+                                ${serializer}.create($2L.class),
+                                $3T.${destination.originalElement.simpleName.removeSuffix("\$annotations")}()
                             )
                         )
                     """.trimIndent(),
                     JavaClassName.get(destination.keyType),
+                    JavaClassName.get(destination.keyType).simpleName(),
                     JavaClassName.get(destination.element as TypeElement)
                 )
                 destination.isComposable -> {
@@ -357,13 +364,14 @@ object NavigationDestinationGenerator {
                         navigationModuleScope.binding(
                             createComposableNavigationBinding(
                                 $1T.class,
-                                ${serializer}.create($1T.class),
+                                ${serializer}.create($2L.class),
                                 $composableWrapper.class,
                                 () -> new $composableWrapper()
                             )
                         )
                     """.trimIndent(),
-                        JavaClassName.get(destination.keyType)
+                        JavaClassName.get(destination.keyType),
+                        JavaClassName.get(destination.keyType).simpleName()
                     )
                 }
                 else -> {

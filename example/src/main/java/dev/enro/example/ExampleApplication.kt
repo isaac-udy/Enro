@@ -8,13 +8,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import dagger.hilt.android.HiltAndroidApp
 import dev.enro.annotations.NavigationComponent
 import dev.enro.core.controller.NavigationApplication
-import dev.enro.core.controller.createNavigationController
 import dev.enro.core.plugins.EnroLogger
 
 @HiltAndroidApp
 @NavigationComponent
 class ExampleApplication : Application(), NavigationApplication {
-    override val navigationController = createNavigationController {
+    override val navigationController = installNavigationController(this) {
         plugin(EnroLogger())
         interceptor(ExampleInterceptor)
         composeEnvironment { content ->
