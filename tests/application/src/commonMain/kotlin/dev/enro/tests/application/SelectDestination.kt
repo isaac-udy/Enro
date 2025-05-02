@@ -44,6 +44,7 @@ import dev.enro.tests.application.compose.results.ComposeManagedResultsWithNeste
 import dev.enro.tests.application.compose.results.ComposeMixedResultTypes
 import dev.enro.tests.application.compose.results.ComposeNestedResults
 import dev.enro.tests.application.compose.results.ResultsWithExtra
+import dev.enro.tests.application.serialization.CommonSerialization
 import dev.enro.tests.application.window.SimpleWindow
 import kotlinx.serialization.Serializable
 
@@ -51,6 +52,7 @@ import kotlinx.serialization.Serializable
 internal object SelectDestination : NavigationKey.SupportsPush, NavigationKey.SupportsPresent {
     internal val selectableDestinations = run {
         val commonDestinations = listOf<NavigationKey>(
+            CommonSerialization,
             ComposeAsyncManagedResultFlow,
             ComposeManagedResultFlow,
             ComposeManagedResultsWithNestedFlowAndEmptyRoot,

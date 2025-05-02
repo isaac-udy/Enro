@@ -10,16 +10,27 @@ import dev.enro.core.NavigationComponentConfiguration
 import dev.enro.core.NavigationDirection
 import dev.enro.core.controller.createNavigationModule
 
+
+private val maximumWidthForSlide = 1080
+
 @NavigationComponent
 object EnroComponent : NavigationComponentConfiguration(
     module = createNavigationModule {
         animations {
             direction(
                 direction = NavigationDirection.Push,
-                entering = fadeIn() + slideInHorizontally { it / 3 },
-                exiting = slideOutHorizontally { -it / 6 },
-                returnEntering = slideInHorizontally { -it / 6 },
-                returnExiting = fadeOut() + slideOutHorizontally { it / 3 }
+                entering = fadeIn() + slideInHorizontally {
+                    it.coerceAtMost(maximumWidthForSlide) / 3
+                },
+                exiting = fadeOut() + slideOutHorizontally {
+                    -(it.coerceAtMost(maximumWidthForSlide)) / 6
+                },
+                returnEntering = fadeIn() + slideInHorizontally {
+                    -(it.coerceAtMost(maximumWidthForSlide)) / 6
+                },
+                returnExiting = fadeOut() + slideOutHorizontally {
+                    it.coerceAtMost(maximumWidthForSlide) / 3
+                },
             )
         }
     }
