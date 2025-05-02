@@ -45,7 +45,7 @@ internal class NavigationControllerScope(
             register { ComposeEnvironmentRepository() }
             register { InstructionInterceptorRepository() }
             register { NavigationAnimationRepository() }
-            register { NavigationHostFactoryRepository(this) }
+            register { NavigationHostFactoryRepository() }
             register { SerializerRepository() }
 
             // Usecases

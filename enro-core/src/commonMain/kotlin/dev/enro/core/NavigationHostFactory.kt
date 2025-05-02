@@ -1,11 +1,8 @@
+
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.EnroException
-import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
-import dev.enro.core.controller.EnroDependencyScope
-import dev.enro.core.controller.get
-import dev.enro.core.controller.usecase.GetNavigationBinding
 import kotlin.reflect.KClass
 
 /**
@@ -18,16 +15,6 @@ import kotlin.reflect.KClass
 public abstract class NavigationHostFactory<HostType: Any>(
     public val hostType: KClass<HostType>,
 ) {
-    internal lateinit var dependencyScope: EnroDependencyScope
-
-    private val getNavigationBinding: GetNavigationBinding by lazy { dependencyScope.get() }
-
-    protected fun getNavigationBinding(instruction: NavigationInstruction.Open<*>): NavigationBinding<*, *>?
-        = getNavigationBinding.invoke(instruction)
-
-    protected fun requireNavigationBinding(instruction: NavigationInstruction.Open<*>): NavigationBinding<*, *>
-            = getNavigationBinding.require(instruction)
-
     protected fun cannotCreateHost(instruction: NavigationInstruction.Open<*>): Nothing {
         throw EnroException.CannotCreateHostForType(hostType, instruction.openingType)
     }

@@ -7,6 +7,7 @@ import dagger.hilt.internal.GeneratedComponentManager
 import dagger.hilt.internal.GeneratedComponentManagerHolder
 import dev.enro.core.container.NavigationContainer
 import dev.enro.core.container.NavigationContainerManager
+import dev.enro.core.controller.NavigationController
 import dev.enro.core.internal.handle.getNavigationHandleViewModel
 import dev.enro.destination.compose.ComposableDestination
 
@@ -88,4 +89,9 @@ private val generatedComponentManagerClass by lazy {
 internal val NavigationContext<*>.isHiltApplication
     get() = if (generatedComponentManagerClass != null) {
         activity.application is GeneratedComponentManager<*>
+    } else false
+
+internal val NavigationController.Companion.isHiltApplication
+    get() = if (generatedComponentManagerClass != null) {
+        platformReference is GeneratedComponentManager<*>
     } else false

@@ -15,7 +15,7 @@ import dev.enro.core.controller.application
 import dev.enro.core.controller.get
 import dev.enro.core.controller.isInAndroidContext
 import dev.enro.core.controller.usecase.GetNavigationBinding
-import dev.enro.core.controller.usecase.HostInstructionAs
+import dev.enro.core.hosts.ActivityHost
 import dev.enro.core.internal.EnroLog
 import dev.enro.core.navigationContext
 import dev.enro.core.plugins.EnroPlugin
@@ -24,6 +24,8 @@ import dev.enro.core.result.EnroResult
 public actual class NavigationWindowManager actual constructor(
     private val controller: NavigationController,
 ) : EnroPlugin() {
+    private val activityHost = ActivityHost()
+
     private var activities = listOf<Activity>()
 
     private var activityLifecycleListener: Application.ActivityLifecycleCallbacks? = null
@@ -52,12 +54,9 @@ public actual class NavigationWindowManager actual constructor(
         if (isOpen) return
 
         // TODO need to handle non-ComponentActivity cases, and null cases
-        val activity = activities.lastOrNull() as? ComponentActivity
+        val activity = activities.lastOrNull()
         if (activity != null) {
-            val instructionToOpenHosted = controller.dependencyScope.get<HostInstructionAs>().invoke<Activity>(
-                activity.navigationContext,
-                instruction
-            )
+            val instructionToOpenHosted = activityHost.wrap(controller, instruction)
 
             val binding = requireNotNull(
                 controller.dependencyScope.get<GetNavigationBinding>()
@@ -75,7 +74,7 @@ public actual class NavigationWindowManager actual constructor(
             )
             activity.startActivity(intent, options.toBundle())
         } else {
-            EnroLog.warn("Could not open $instruction; active activity was not a ComponentActivity or there was no active activity")
+            EnroLog.warn("Could not open $instruction; there was no active activity")
         }
     }
 

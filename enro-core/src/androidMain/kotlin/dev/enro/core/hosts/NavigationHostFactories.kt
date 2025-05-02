@@ -1,16 +1,13 @@
 package dev.enro.core.hosts
 
-import android.app.Activity
+import NavigationHostFactory
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
-import NavigationHostFactory
 import dev.enro.core.NavigationInstruction
-import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.container.asPresentInstruction
 import dev.enro.core.fragment.FragmentNavigationBinding
-import dev.enro.core.isHiltApplication
 import dev.enro.core.isHiltContext
 import dev.enro.destination.compose.ComposableDestination
 import dev.enro.destination.compose.ComposableNavigationBinding
@@ -19,37 +16,13 @@ import dev.enro.destination.flow.host.OpenManagedFlowInFragment
 import dev.enro.destination.flow.host.OpenManagedFlowInHiltFragment
 import kotlin.reflect.full.isSubclassOf
 
-internal class ActivityHost : NavigationHostFactory<Activity>(Activity::class) {
-    override fun supports(
-        navigationContext: NavigationContext<*>,
-        instruction: NavigationInstruction.Open<*>,
-    ): Boolean {
-        return true
-    }
-
-    override fun wrap(
-        navigationContext: NavigationContext<*>,
-        instruction: NavigationInstruction.Open<*>,
-    ): NavigationInstruction.Open<*> {
-        val binding = requireNavigationBinding(instruction)
-        if (binding is ActivityNavigationBinding) return instruction
-
-        return instruction.copy(
-            navigationKey = when {
-                navigationContext.isHiltApplication -> OpenInstructionInHiltActivity(instruction)
-                else -> OpenInstructionInActivity(instruction)
-            }
-        )
-    }
-}
-
 internal class DialogFragmentHost : NavigationHostFactory<DialogFragment>(DialogFragment::class) {
 
     override fun supports(
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>,
     ): Boolean {
-        val binding = requireNavigationBinding(instruction)
+        val binding = requireNotNull(navigationContext.controller.bindingForInstruction(instruction))
         val isSupportedBinding = binding is FragmentNavigationBinding ||
                 binding is ComposableNavigationBinding ||
                 binding is ManagedFlowNavigationBinding<*, *>
@@ -64,7 +37,7 @@ internal class DialogFragmentHost : NavigationHostFactory<DialogFragment>(Dialog
         val isPresent = instruction.navigationDirection is NavigationDirection.Present
         if (!isPresent) cannotCreateHost(instruction)
 
-        val binding = requireNavigationBinding(instruction)
+        val binding = requireNotNull(navigationContext.controller.bindingForInstruction(instruction))
 
         val isDialog = binding.destinationType.isSubclassOf(DialogFragment::class)
         if (isDialog) return instruction
@@ -94,7 +67,7 @@ internal class FragmentHost : NavigationHostFactory<Fragment>(Fragment::class) {
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>,
     ): Boolean {
-        val binding = requireNavigationBinding(instruction)
+        val binding = requireNotNull(navigationContext.controller.bindingForInstruction(instruction))
         return binding is FragmentNavigationBinding ||
                 binding is ComposableNavigationBinding ||
                 binding is ManagedFlowNavigationBinding<*, *>
@@ -104,7 +77,7 @@ internal class FragmentHost : NavigationHostFactory<Fragment>(Fragment::class) {
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>,
     ): NavigationInstruction.Open<*> {
-        val binding = requireNavigationBinding(instruction)
+        val binding = requireNotNull(navigationContext.controller.bindingForInstruction(instruction))
 
         return when (binding) {
             is FragmentNavigationBinding -> return instruction
@@ -130,7 +103,7 @@ internal class ComposableHost : NavigationHostFactory<ComposableDestination>(Com
         navigationContext: NavigationContext<*>,
         instruction: NavigationInstruction.Open<*>,
     ): Boolean {
-        val binding = requireNavigationBinding(instruction)
+        val binding = requireNotNull(navigationContext.controller.bindingForInstruction(instruction))
         return binding is ComposableNavigationBinding ||
                 binding is ManagedFlowNavigationBinding<*, *>
     }

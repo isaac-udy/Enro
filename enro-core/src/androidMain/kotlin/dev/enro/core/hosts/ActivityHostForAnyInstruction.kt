@@ -1,19 +1,56 @@
 package dev.enro.core.hosts
 
+import NavigationHostFactory
+import android.app.Activity
 import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroInternalNavigationKey
+import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationHost
+import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.R
+import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.asPushInstruction
+import dev.enro.core.controller.NavigationController
 import dev.enro.core.fragment.container.navigationContainer
+import dev.enro.core.isHiltApplication
 import dev.enro.core.navigationHandle
 import kotlinx.serialization.Serializable
+
+internal class ActivityHost : NavigationHostFactory<Activity>(Activity::class) {
+    override fun supports(
+        navigationContext: NavigationContext<*>,
+        instruction: NavigationInstruction.Open<*>,
+    ): Boolean {
+        return true
+    }
+    override fun wrap(
+        navigationContext: NavigationContext<*>,
+        instruction: NavigationInstruction.Open<*>,
+    ): NavigationInstruction.Open<*> {
+        return wrap(navigationContext.controller, instruction)
+    }
+
+    fun wrap(
+        controller: NavigationController,
+        instruction: NavigationInstruction.Open<*>,
+    ): NavigationInstruction.Open<*> {
+        val binding = requireNotNull(controller.bindingForInstruction(instruction))
+        if (binding is ActivityNavigationBinding) return instruction
+
+        return instruction.copy(
+            navigationKey = when {
+                NavigationController.isHiltApplication -> OpenInstructionInHiltActivity(instruction)
+                else -> OpenInstructionInActivity(instruction)
+            }
+        )
+    }
+}
 
 internal abstract class AbstractOpenInstructionInActivityKey :
     NavigationKey,
