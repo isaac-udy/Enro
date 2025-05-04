@@ -183,9 +183,6 @@ public class FragmentNavigationContainer internal constructor(
             }
 
         fragmentManager.commitNow {
-            applyAnimationsForTransaction(
-                active = activePushed
-            )
             val pushedInstruction = activePushed?.instruction
             if (pushedInstruction != null) {
                 val animation = animations[pushedInstruction.instructionId]
@@ -198,6 +195,14 @@ public class FragmentNavigationContainer internal constructor(
             }
 
             toRemoveDirect.forEach {
+                val instruction = it.navigationContext.instruction.instructionId
+                val animation = animations[instruction]
+                if (animation != null) {
+                    setCustomAnimations(
+                        animation.enterAsResource(context.activity),
+                        animation.exitAsResource(context.activity),
+                    )
+                }
                 remove(it)
                 FragmentSharedElements.getSharedElements(it).forEach { sharedElement ->
                     addSharedElement(sharedElement.view, sharedElement.name)
@@ -211,12 +216,27 @@ public class FragmentNavigationContainer internal constructor(
                 }
             }
             toDetach.forEach {
+                val instruction = it.instruction.instructionId
+                val animation = animations[instruction]
+                if (animation != null) {
+                    setCustomAnimations(
+                        animation.enterAsResource(context.activity),
+                        animation.exitAsResource(context.activity),
+                    )
+                }
                 FragmentSharedElements.getSharedElements(it.fragment).forEach { sharedElement ->
                     addSharedElement(sharedElement.view, sharedElement.name)
                 }
                 detach(it.fragment)
             }
             if (activePushed != null) {
+                val animation = animations[activePushed.instruction.instructionId]
+                if (animation != null) {
+                    setCustomAnimations(
+                        animation.enterAsResource(context.activity),
+                        animation.exitAsResource(context.activity),
+                    )
+                }
                 when {
                     activePushed.fragment.id != 0 -> attach(activePushed.fragment)
                     else -> add(
@@ -227,9 +247,6 @@ public class FragmentNavigationContainer internal constructor(
                 }
             }
             toPresent.forEach {
-                applyAnimationsForTransaction(
-                    active = it
-                )
                 val animation = animations[it.instruction.instructionId]
                 if (animation != null) {
                     setCustomAnimations(

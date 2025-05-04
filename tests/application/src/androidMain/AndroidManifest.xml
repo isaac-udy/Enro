@@ -35,6 +35,7 @@
         <activity android:name="dev.enro.tests.application.fragment.FragmentPresentationActivity"/>
         <activity android:name="dev.enro.tests.application.fragment.FragmentPresentationActivityPresentableActivity"/>
         <activity android:name="dev.enro.tests.application.window.SimpleWindowActivity" />
+        <activity android:name="dev.enro.tests.application.fragment.FragmentAnimationsActivity" />
     </application>
 
 </manifest>

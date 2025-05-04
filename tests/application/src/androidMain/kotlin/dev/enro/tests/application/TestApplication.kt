@@ -28,6 +28,7 @@ import dev.enro.tests.application.compose.FindContext
 import dev.enro.tests.application.compose.LazyColumn
 import dev.enro.tests.application.compose.SyntheticViewModelAccess
 import dev.enro.tests.application.compose.results.ComposeEmbeddedResultFlow
+import dev.enro.tests.application.fragment.FragmentAnimations
 import dev.enro.tests.application.fragment.FragmentPresentation
 import dev.enro.tests.application.fragment.FragmentSharedElementDestination
 import dev.enro.tests.application.fragment.UnboundBottomSheet
@@ -84,6 +85,7 @@ class TestApplication : Application(), NavigationApplication {
             ComposeStability,
             EmbeddedDestination,
             FindContext,
+            FragmentAnimations,
             FragmentPresentation,
             FragmentSharedElementDestination,
             LazyColumn,
