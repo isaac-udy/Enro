@@ -284,7 +284,7 @@ object NavigationDestinationGenerator {
                     )
                 """.trimIndent(),
                     JavaClassName.get(destination.keyType),
-                    JavaClassName.get(destination.keyType).simpleName(),
+                    JavaClassName.get(destination.keyType).nameInPackage(),
                     destination.element
                 )
 
@@ -299,7 +299,7 @@ object NavigationDestinationGenerator {
                     )
                 """.trimIndent(),
                     JavaClassName.get(destination.keyType),
-                    JavaClassName.get(destination.keyType).simpleName(),
+                    JavaClassName.get(destination.keyType).nameInPackage(),
                     destination.element
                 )
 
@@ -322,7 +322,7 @@ object NavigationDestinationGenerator {
                             )
                         }
                     }),
-                    JavaClassName.get(destination.element as TypeElement).simpleName(),
+                    JavaClassName.get(destination.keyType).nameInPackage(),
                     destination.element,
                 )
                 destination.isSyntheticProvider -> JavaCodeBlock.of(
@@ -336,7 +336,7 @@ object NavigationDestinationGenerator {
                         )
                     """.trimIndent(),
                     JavaClassName.get(destination.keyType),
-                    JavaClassName.get(destination.keyType).simpleName(),
+                    JavaClassName.get(destination.keyType).nameInPackage(),
                     JavaClassName.get(destination.element as TypeElement)
                 )
                 destination.isManagedFlowProvider -> JavaCodeBlock.of(
@@ -350,7 +350,7 @@ object NavigationDestinationGenerator {
                         )
                     """.trimIndent(),
                     JavaClassName.get(destination.keyType),
-                    JavaClassName.get(destination.keyType).simpleName(),
+                    JavaClassName.get(destination.keyType).nameInPackage(),
                     JavaClassName.get(destination.element as TypeElement)
                 )
                 destination.isComposable -> {
@@ -371,7 +371,7 @@ object NavigationDestinationGenerator {
                         )
                     """.trimIndent(),
                         JavaClassName.get(destination.keyType),
-                        JavaClassName.get(destination.keyType).simpleName()
+                        JavaClassName.get(destination.keyType).nameInPackage()
                     )
                 }
                 else -> {
@@ -390,6 +390,18 @@ object NavigationDestinationGenerator {
         addStatement(JavaCodeBlock.of("return kotlin.Unit.INSTANCE"))
         return this
     }
+
+}
+
+/**
+ * Returns the name of a class within it's package. This is slightly different to the simple name of a
+ * class, because it also includes the name of any enclosing classes. For example, if the class has
+ * a qualified name of `com.example.MyClass$MyInnerClass`, this function will return "MyClass.MyInnerClass"
+ */
+fun JavaClassName.nameInPackage(): String {
+    return canonicalName()
+        .removePrefix(packageName())
+        .removePrefix(".")
 }
 
 fun JavaFile.Builder.addImportsForBinding(): JavaFile.Builder {
