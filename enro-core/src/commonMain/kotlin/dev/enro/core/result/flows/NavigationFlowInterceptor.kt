@@ -6,7 +6,6 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.usecase.AddPendingResult
-import dev.enro.core.readOpenInstruction
 
 internal object NavigationFlowInterceptor : NavigationInstructionInterceptor {
     override fun intercept(
@@ -14,7 +13,7 @@ internal object NavigationFlowInterceptor : NavigationInstructionInterceptor {
         context: NavigationContext<*>
     ): NavigationInstruction? {
         if (instruction !is NavigationInstruction.Close.WithResult) return instruction
-        val openInstruction = context.arguments.readOpenInstruction() ?: return instruction
+        val openInstruction = context.instruction
 
         val navigationKey = openInstruction.navigationKey
         if (navigationKey !is NavigationKey.WithResult<*>) return instruction

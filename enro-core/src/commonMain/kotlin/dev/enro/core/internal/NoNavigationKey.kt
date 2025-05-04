@@ -1,11 +1,9 @@
 package dev.enro.core.internal
 
-import androidx.savedstate.SavedState
 import dev.enro.core.EnroInternalNavigationKey
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationHandle
 import dev.enro.core.NavigationKey
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
@@ -13,7 +11,6 @@ import kotlin.reflect.KClass
 @Serializable
 internal class NoNavigationKey(
     val contextType: String,
-    val arguments: @Contextual SavedState?
 ) : NavigationKey, EnroInternalNavigationKey
 
 internal class NoKeyNavigationBinding : NavigationBinding<NoNavigationKey, Nothing>() {

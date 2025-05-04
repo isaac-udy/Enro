@@ -7,7 +7,6 @@ import dev.enro.core.container.toBackstack
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.usecase.AddPendingResult
-import dev.enro.core.readOpenInstruction
 import dev.enro.core.result.flows.FlowStep
 import dev.enro.core.rootContext
 
@@ -18,7 +17,7 @@ internal object ForwardingResultInterceptor  : NavigationInstructionInterceptor 
         context: NavigationContext<*>
     ): NavigationInstruction? {
         if (instruction !is NavigationInstruction.Close.WithResult) return instruction
-        val openInstruction = context.arguments.readOpenInstruction() ?: return instruction
+        val openInstruction = context.instruction
 
         val navigationKey = openInstruction.navigationKey
         if (navigationKey !is NavigationKey.WithResult<*>) return instruction

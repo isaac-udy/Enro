@@ -3,9 +3,7 @@ package dev.enro.core
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.savedstate.SavedState
 import androidx.savedstate.SavedStateRegistryOwner
-import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
 
@@ -23,7 +21,7 @@ public class NavigationContext<ContextType : Any> internal constructor(
     private val getController: () -> NavigationController,
     private val getParentContext: () -> NavigationContext<*>?,
     private val getUnboundChildContext: () -> NavigationContext<*>? = { null },
-    private val getArguments: () -> SavedState,
+    private val getContextInstruction: () -> AnyOpenInstruction?,
     private val getViewModelStoreOwner: () -> ViewModelStoreOwner,
     private val getSavedStateRegistryOwner: () -> SavedStateRegistryOwner,
     private val getLifecycleOwner: () -> LifecycleOwner,
@@ -39,15 +37,14 @@ public class NavigationContext<ContextType : Any> internal constructor(
     private var onBoundToNavigationHandle: (NavigationContext<ContextType>.(NavigationHandle) -> Unit)? = onBoundToNavigationHandle
 
     /**
-     * The arguments provided to this NavigationContext. It is possible to read the open instruction from these arguments,
-     * but it may be different than the open instruction attached to the NavigationHandle. If the arguments do not contain
-     * a NavigationInstruction, a NavigationInstruction is still provided to the NavigationHandle, which will be either a
-     * default key (if one is provided with the destination) or a "NoNavigationKey" NavigationKey.
-     *
-     * Generally it should be preferred to read the instruction property, rather than read the instruction from the arguments.
+     * The contextInstruction is the NavigationInstruction that is included with the NavigationContext
+     * as part of the ContextReference. For example, the NavigationInstruction that is passed to a Fragment
+     * in the Fragment's arguments bundle, or the NavigationInstruction that is passed to an Activity
+     * in the Intent's extras. This may be null, as not all NavigationContexts have a NavigationInstruction
+     * associated with them by default, and if this is null, the NavigationHandle may include a
+     * default open instruction, or may provide a NavigationInstruction for NoNavigationKey
      */
-    @AdvancedEnroApi
-    public val arguments: SavedState by lazy { getArguments() }
+    internal val contextInstruction: AnyOpenInstruction? by lazy { getContextInstruction() }
 
     private lateinit var _instruction: NavigationInstruction.Open<*>
     public val instruction: NavigationInstruction.Open<*> get() = _instruction
@@ -70,7 +67,7 @@ public class NavigationContext<ContextType : Any> internal constructor(
 
         controller.hashCode()
         parentContext.hashCode()
-        arguments.hashCode()
+        contextInstruction.hashCode()
         viewModelStoreOwner.hashCode()
         savedStateRegistryOwner.hashCode()
         lifecycleOwner.hashCode()

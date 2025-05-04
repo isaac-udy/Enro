@@ -7,7 +7,6 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.usecase.AddPendingResult
-import dev.enro.core.readOpenInstruction
 
 public sealed class OnNavigationKeyClosedWithResultScope {
     /**
@@ -45,7 +44,7 @@ internal class OnNavigationKeyClosedWithResultInterceptor<T : Any>(
         context: NavigationContext<*>,
     ): NavigationInstruction? {
         if (instruction !is NavigationInstruction.Close.WithResult) return instruction
-        val openInstruction = context.arguments.readOpenInstruction() ?: return instruction
+        val openInstruction = context.instruction
         if (!matcher(openInstruction.navigationKey)) return openInstruction
         val addPendingResult = context.controller.dependencyScope.get<AddPendingResult>()
 

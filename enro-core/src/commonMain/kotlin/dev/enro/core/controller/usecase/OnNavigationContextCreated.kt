@@ -12,7 +12,6 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.internal.NoNavigationKey
 import dev.enro.core.internal.handle.createNavigationHandleViewModel
-import dev.enro.core.readOpenInstruction
 import kotlin.uuid.Uuid
 
 internal const val CONTEXT_ID_ARG = "dev.enro.core.ContextController.CONTEXT_ID"
@@ -24,14 +23,14 @@ internal class OnNavigationContextCreated(
         context: NavigationContext<*>,
         savedInstanceState: SavedState?
     ) {
-        val instruction = context.arguments.readOpenInstruction()
+        val instruction = context.contextInstruction
         val contextId = instruction?.instructionId
             ?: savedInstanceState?.read { getStringOrNull(CONTEXT_ID_ARG) }
             ?: Uuid.random().toString()
 
         val config = NavigationHandleProperty.getPendingConfig(context)
         val defaultKey = config?.defaultKey
-            ?: NoNavigationKey(context.contextReference::class.qualifiedName ?: "", context.arguments)
+            ?: NoNavigationKey(context.contextReference::class.qualifiedName ?: "UnknownContextType")
 
         val defaultDirection: NavigationDirection = when (defaultKey) {
             is NavigationKey.SupportsPresent -> NavigationDirection.Present

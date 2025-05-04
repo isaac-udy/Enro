@@ -1,6 +1,5 @@
 package dev.enro.destination.fragment
 
-import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.BackEventCompat
@@ -26,6 +25,7 @@ import dev.enro.core.isActive
 import dev.enro.core.leafContext
 import dev.enro.core.navigationContext
 import dev.enro.core.parentContainer
+import dev.enro.core.readOpenInstruction
 import dev.enro.core.requestClose
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -47,7 +47,7 @@ internal fun <ContextType : Fragment> FragmentContext(
         getUnboundChildContext = {
             runCatching { contextReference.childFragmentManager.primaryNavigationFragment?.navigationContext }.getOrNull()
         },
-        getArguments = { contextReference.arguments ?: Bundle() },
+        getContextInstruction = { contextReference.readOpenInstruction() },
         getViewModelStoreOwner = { contextReference },
         getSavedStateRegistryOwner = { contextReference },
         getLifecycleOwner = { contextReference },

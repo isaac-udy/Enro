@@ -1,8 +1,6 @@
 package dev.enro.destination.compose
 
-import androidx.savedstate.savedState
 import dev.enro.core.NavigationContext
-import dev.enro.core.addOpenInstruction
 import dev.enro.core.compose.destination.navigationController
 import dev.enro.core.controller.EnroBackConfiguration
 
@@ -13,7 +11,7 @@ internal fun <ContextType : ComposableDestination> ComposeContext(
         contextReference = contextReference,
         getController = { contextReference.owner.navigationController },
         getParentContext = { contextReference.owner.parentContainer.context },
-        getArguments = { savedState { addOpenInstruction(contextReference.owner.instruction) } },
+        getContextInstruction = { contextReference.owner.instruction },
         getViewModelStoreOwner = { contextReference },
         getSavedStateRegistryOwner = { contextReference },
         getLifecycleOwner = { contextReference },

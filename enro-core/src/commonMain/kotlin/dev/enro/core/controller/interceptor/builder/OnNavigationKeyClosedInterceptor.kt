@@ -5,7 +5,6 @@ import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
-import dev.enro.core.readOpenInstruction
 
 public sealed class OnNavigationKeyClosedScope {
     /**
@@ -36,7 +35,7 @@ internal class OnNavigationKeyClosedInterceptor(
         instruction: NavigationInstruction.Close,
         context: NavigationContext<*>,
     ): NavigationInstruction? {
-        val openInstruction = context.arguments.readOpenInstruction() ?: return instruction
+        val openInstruction = context.instruction
         if (!matcher(openInstruction.navigationKey)) return openInstruction
         val result = action(openInstruction.navigationKey)
         return when (result) {

@@ -1,6 +1,5 @@
 package dev.enro.destination.activity
 
-import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
@@ -16,6 +15,7 @@ import dev.enro.core.internal.handle.hasCustomOnRequestClose
 import dev.enro.core.isActive
 import dev.enro.core.leafContext
 import dev.enro.core.navigationContext
+import dev.enro.core.readOpenInstruction
 import dev.enro.core.requestClose
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -31,7 +31,9 @@ internal fun <ContextType : ComponentActivity> ActivityContext(
             val fragmentManager = (contextReference as? FragmentActivity)?.supportFragmentManager
             runCatching { fragmentManager?.primaryNavigationFragment?.navigationContext }.getOrNull()
         },
-        getArguments = { contextReference.intent.extras ?: Bundle() },
+        getContextInstruction = {
+            contextReference.intent.readOpenInstruction()
+        },
         getViewModelStoreOwner = { contextReference },
         getSavedStateRegistryOwner = { contextReference },
         getLifecycleOwner = { contextReference },
