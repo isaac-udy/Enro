@@ -13,9 +13,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.key
 import dev.enro.destination.compose.LocalAnimatedVisibilityScope
 
-public class NavigationAnimationForComposable(
+public data class NavigationAnimationForComposable(
     public val enter: EnterTransition = EnterTransition.None,
     public val exit: ExitTransition = ExitTransition.None,
 ) : NavigationAnimation {
@@ -56,14 +57,16 @@ internal fun AnimateNavigationAnimations(
     isSeeking: Boolean,
     content: @Composable AnimatedVisibilityScope.(Transition<EnterExitState>) -> Unit,
 ) {
-    val visible = rememberTransition(state, "ComposableDestination Visibility")
-    visible.AnimatedVisibility(
-        visible = { it },
-        enter = animation.enter,
-        exit = animation.exit,
-    ) {
-        CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
-            content(transition)
+    key(animation) {
+        val visible = rememberTransition(state, "ComposableDestination Visibility")
+        visible.AnimatedVisibility(
+            visible = { it },
+            enter = animation.enter,
+            exit = animation.exit,
+        ) {
+            CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+                content(transition)
+            }
         }
     }
 }

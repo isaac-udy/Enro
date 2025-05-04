@@ -48,9 +48,6 @@ internal class ComposableDestinationAnimations(
     @NonSkippableComposable
     fun Animate(content: @Composable () -> Unit) {
         val instruction = owner.instruction
-        val visibilityState = remember(instruction.instructionId, animationOverride.hashCode()) {
-            SeekableTransitionState(false)
-        }
         val animation = remember(
             containerAnimation,
             animationOverride
@@ -58,6 +55,9 @@ internal class ComposableDestinationAnimations(
            animationOverride
                 ?: containerAnimation
                 ?: return@remember null
+        }
+        val visibilityState = remember(instruction.instructionId, animation) {
+            SeekableTransitionState(false)
         }
         if (animation == null) return
 
