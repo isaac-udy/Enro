@@ -94,76 +94,64 @@ public class NavigationAnimationForView internal constructor(
             enter = Type.Resource(0),
             exit = Type.Resource(0),
         )
-    }
-
-    public object Defaults : NavigationAnimation.Defaults<NavigationAnimationForView> {
-        public override val none: NavigationAnimationForView = NavigationAnimationForView(
-            enter = 0,
-            exit = dev.enro.core.R.anim.enro_no_op_exit_animation,
-        )
-
-        public val noneReturn: NavigationAnimationForView = NavigationAnimationForView(
-            enter = 0,
-            exit = 0,
-        )
-
-        public override val push: NavigationAnimationForView = NavigationAnimationForView(
-            enter = android.R.attr.activityOpenEnterAnimation,
-            exit = android.R.attr.activityOpenExitAnimation
-        )
-        public override val pushReturn: NavigationAnimationForView = NavigationAnimationForView(
-            enter = android.R.attr.activityCloseEnterAnimation,
-            exit = android.R.attr.activityCloseExitAnimation
-        )
-
-        public override val present: NavigationAnimationForView = NavigationAnimationForView(
-            enterFromTheme = { theme ->
-                if (Build.VERSION.SDK_INT >= 33) {
-                    theme.getNestedAttributeResourceId(
-                        android.R.attr.dialogTheme,
-                        android.R.attr.windowAnimationStyle,
-                        android.R.attr.windowEnterAnimation
-                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
-                } else {
-                    theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
+        public val Defaults: NavigationAnimation.Defaults<NavigationAnimationForView> = NavigationAnimation.Defaults(
+            none = none,
+            push = NavigationAnimationForView(
+                enter = android.R.attr.activityOpenEnterAnimation,
+                exit = android.R.attr.activityOpenExitAnimation
+            ),
+            pushReturn = NavigationAnimationForView(
+                enter = android.R.attr.activityCloseEnterAnimation,
+                exit = android.R.attr.activityCloseExitAnimation
+            ),
+            present = NavigationAnimationForView(
+                enterFromTheme = { theme ->
+                    if (Build.VERSION.SDK_INT >= 33) {
+                        theme.getNestedAttributeResourceId(
+                            android.R.attr.dialogTheme,
+                            android.R.attr.windowAnimationStyle,
+                            android.R.attr.windowEnterAnimation
+                        ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
+                    } else {
+                        theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
+                    }
+                },
+                exitFromTheme = { theme ->
+                    if (Build.VERSION.SDK_INT >= 33) {
+                        theme.getNestedAttributeResourceId(
+                            android.R.attr.dialogTheme,
+                            android.R.attr.windowAnimationStyle,
+                            android.R.attr.windowExitAnimation
+                        ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+                    } else {
+                        theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+                    }
                 }
-            },
-            exitFromTheme = { theme ->
-                if (Build.VERSION.SDK_INT >= 33) {
-                    theme.getNestedAttributeResourceId(
-                        android.R.attr.dialogTheme,
-                        android.R.attr.windowAnimationStyle,
-                        android.R.attr.windowExitAnimation
-                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
-                } else {
-                    theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+            ),
+            presentReturn = NavigationAnimationForView(
+                enterFromTheme = { theme ->
+                    if (Build.VERSION.SDK_INT >= 33) {
+                        theme.getNestedAttributeResourceId(
+                            android.R.attr.dialogTheme,
+                            android.R.attr.windowAnimationStyle,
+                            android.R.attr.windowEnterAnimation
+                        ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
+                    } else {
+                        theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
+                    }
+                },
+                exitFromTheme = { theme ->
+                    if (Build.VERSION.SDK_INT >= 33) {
+                        theme.getNestedAttributeResourceId(
+                            android.R.attr.dialogTheme,
+                            android.R.attr.windowAnimationStyle,
+                            android.R.attr.windowExitAnimation
+                        ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+                    } else {
+                        theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
+                    }
                 }
-            }
-        )
-
-        public override val presentReturn: NavigationAnimationForView = NavigationAnimationForView(
-            enterFromTheme = { theme ->
-                if (Build.VERSION.SDK_INT >= 33) {
-                    theme.getNestedAttributeResourceId(
-                        android.R.attr.dialogTheme,
-                        android.R.attr.windowAnimationStyle,
-                        android.R.attr.windowEnterAnimation
-                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
-                } else {
-                    theme.getAttributeResourceId(android.R.attr.activityOpenEnterAnimation)
-                }
-            },
-            exitFromTheme = { theme ->
-                if (Build.VERSION.SDK_INT >= 33) {
-                    theme.getNestedAttributeResourceId(
-                        android.R.attr.dialogTheme,
-                        android.R.attr.windowAnimationStyle,
-                        android.R.attr.windowExitAnimation
-                    ) ?: theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
-                } else {
-                    theme.getAttributeResourceId(android.R.attr.activityOpenExitAnimation)
-                }
-            },
+            )
         )
     }
 }

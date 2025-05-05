@@ -26,6 +26,10 @@ public fun NavigationBackstack.close(id: String): NavigationBackstack {
     return filterIndexed { i, _ -> i != index }.toBackstack()
 }
 
+public fun NavigationBackstack.close(instruction: AnyOpenInstruction): NavigationBackstack {
+    return close(instruction.instructionId)
+}
+
 public fun NavigationBackstack.pop(): NavigationBackstack {
     return dropLast(1).toBackstack()
 }

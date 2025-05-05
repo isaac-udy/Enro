@@ -117,6 +117,9 @@ internal fun Project.configureKotlinMultiplatform(
             commonMain.dependencies {
                 implementation(kotlin("stdlib-common"))
             }
+            commonTest.dependencies {
+                implementation(kotlin("test"))
+            }
             if (android) {
                 androidMain.dependencies {
                     implementation(kotlin("stdlib"))

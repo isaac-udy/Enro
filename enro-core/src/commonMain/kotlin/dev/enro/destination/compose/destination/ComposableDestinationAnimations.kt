@@ -56,7 +56,7 @@ internal class ComposableDestinationAnimations(
                 ?: containerAnimation
                 ?: return@remember null
         }
-        val visibilityState = remember(instruction.instructionId, animation) {
+        val visibilityState = remember(instruction.instructionId, animationOverride.hashCode()) {
             SeekableTransitionState(false)
         }
         if (animation == null) return

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.container.NavigationContainerManager
 import dev.enro.core.controller.NavigationController
+import dev.enro.core.internal.isDebugBuild
 
 
 /**
@@ -81,6 +82,30 @@ public class NavigationContext<ContextType : Any> internal constructor(
 
     internal fun unbind(navigationHandle: NavigationHandle) {
         _navigationHandle = null
+    }
+
+    override fun toString(): String {
+        return toString(formatted = isDebugBuild())
+    }
+
+    public fun toString(formatted: Boolean): String {
+       if (!formatted) {
+            return "NavigationContext(" +
+                "contextReference=$contextReference," +
+                "lifecycleState=${lifecycle.currentState}," +
+                "instruction=$instruction," +
+            ")"
+        }
+        val content = "contextReference=$contextReference,\n" +
+                "lifecycleState=${lifecycle.currentState},\n" +
+                "instruction=$instruction"
+        return buildString {
+            appendLine("NavigationContext(")
+            content.lines().forEach {
+                appendLine(it.prependIndent("    "))
+            }
+            append(")")
+        }
     }
 }
 

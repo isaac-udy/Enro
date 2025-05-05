@@ -24,6 +24,15 @@ internal class ExecuteCloseInstructionImpl(
         navigationContext: NavigationContext<out Any>,
         instruction: NavigationInstruction.Close,
     ) {
+        val navigationHandle = navigationContext.getNavigationHandle()
+        // There appear to be some situations where actions that may trigger a close instruction
+        // could be executed multiple times (for example onDismissRequest in Compose Dialogs).
+        // Setting and checking the NAVIGATION_CONTEXT_CLOSED extra on the NavigationHandle
+        // is a workaround for these cases that will prevent a close instruction from executing
+        // multiple times.
+        if (navigationHandle.extras[NAVIGATION_CONTEXT_CLOSED] == true) {
+            return
+        }
         val processedInstruction = interceptorRepository.intercept(
             instruction, navigationContext
         ) ?: return
@@ -34,6 +43,7 @@ internal class ExecuteCloseInstructionImpl(
         }
 
         val container = navigationContext.parentContainer()
+        navigationHandle.extras[NAVIGATION_CONTEXT_CLOSED] = true
         if (container != null) {
             container.setBackstack {
                 it.close(navigationContext.getNavigationHandle().id)
@@ -56,5 +66,9 @@ internal class ExecuteCloseInstructionImpl(
                 andOpen = andOpen,
             )
         }
+    }
+
+    companion object {
+        const val NAVIGATION_CONTEXT_CLOSED = "NAVIGATION_CONTEXT_CLOSED"
     }
 }

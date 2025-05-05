@@ -9,7 +9,6 @@ import androidx.core.app.ActivityOptionsCompat
 import dev.enro.animation.NavigationAnimationForView
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
-import dev.enro.core.activity
 import dev.enro.core.addOpenInstruction
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
@@ -88,7 +87,7 @@ public actual class NavigationWindowManager actual constructor(
 
     public actual fun close(context: NavigationContext<*>, andOpen: AnyOpenInstruction?) {
         val toClose = activities
-            .firstOrNull { it == context.activity }
+            .firstOrNull { it == context.contextReference }
             ?: throw IllegalStateException("Could not find activity to close for $context")
 
         if (andOpen != null) {

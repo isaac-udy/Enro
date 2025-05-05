@@ -152,18 +152,18 @@ class FragmentAnimationsDialogFragment : DialogFragment() {
     }
 }
 
-object FragmentAnimationsDefaults : NavigationAnimation.Defaults<NavigationAnimationForView> {
-    override val none: NavigationAnimationForView = NavigationAnimationForView.Defaults.none
-    override val push: NavigationAnimationForView = NavigationAnimationForView(
+val FragmentAnimationsDefaults = NavigationAnimation.Defaults(
+    none = NavigationAnimationForView.Defaults.none,
+    push = NavigationAnimationForView(
         enter = R.animator.fragment_animations_push_enter,
         exit = R.animator.fragment_animations_push_exit,
-    )
-    override val pushReturn: NavigationAnimationForView = NavigationAnimationForView(
+    ),
+    pushReturn = NavigationAnimationForView(
         enter = R.animator.fragment_animations_push_return_enter,
         exit = R.animator.fragment_animations_push_return_exit,
-    )
-    override val present: NavigationAnimationForView = NavigationAnimationForView(
+    ),
+    present = NavigationAnimationForView(
         enter = R.animator.fragment_animations_present_enter,
         exit = R.animator.fragment_animations_present_exit,
-    )
-}
+    ),
+)
