@@ -27,6 +27,7 @@ import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
+import javax.lang.model.element.VariableElement
 import javax.tools.StandardLocation
 import com.squareup.javapoet.AnnotationSpec as JavaAnnotationSpec
 import com.squareup.javapoet.ClassName as JavaClassName
@@ -337,11 +338,36 @@ object NavigationComponentGenerator {
     ) {
         val isAndroidApplication = component is TypeElement &&
                 component.extends(processingEnv, ClassNames.Java.androidApplication)
-        if (!isAndroidApplication) {
-            val message = "When using Enro with KAPT/Java annotation processing, classes " +
-                        "annotated with @NavigationComponent must extend android.app.Application."
-            processingEnv.messager.printError(message)
-            error(message)
+
+        val isNavigationComponentConfiguration = component is TypeElement &&
+            component.extends(processingEnv, JavaClassName.get("dev.enro.core", "NavigationComponentConfiguration"))
+
+        // This is only a best guess at whether an object is really a Kotlin object, as we
+        // don't have full access to Kotlin constructs in KAPT, but this is good enough
+        // for the purposes of preventing a user from getting themselves into trouble with KAPT
+        val isObject = component is TypeElement
+                && component.enclosedElements
+            .filterIsInstance<VariableElement>()
+            .filter { it.simpleName.contentEquals("INSTANCE") }
+            .filter { it.modifiers == setOf(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL) }
+            .isNotEmpty()
+
+        when {
+            isAndroidApplication -> {
+                // It's OK for a NavigationComponent to be an application
+            }
+            !isObject -> {
+                val message = "@NavigationComponent can only be applied to objects or classes that " +
+                    "extend android.app.Application"
+                processingEnv.messager.printError(message, component)
+                error(message)
+            }
+            !isNavigationComponentConfiguration -> {
+                val message = "@NavigationComponent can only be applied to objects that extend " +
+                        "NavigationComponentConfiguration"
+                processingEnv.messager.printError(message, component)
+                error(message)
+            }
         }
 
         val modules = GeneratedModuleReference.load(processingEnv)
