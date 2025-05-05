@@ -20,7 +20,6 @@ import dev.enro.core.controller.usecase.ExecuteContainerOperationInstructionImpl
 import dev.enro.core.controller.usecase.ExecuteOpenInstruction
 import dev.enro.core.controller.usecase.ExecuteOpenInstructionImpl
 import dev.enro.core.controller.usecase.GetAnimationsForTransition
-import dev.enro.core.controller.usecase.GetNavigationAnimations
 import dev.enro.core.controller.usecase.GetNavigationBinding
 import dev.enro.core.controller.usecase.HostInstructionAs
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
@@ -63,7 +62,7 @@ internal class NavigationControllerScope(
             register { CanInstructionBeHostedAs(get(), get()) }
             register { HostInstructionAs(get(), get()) }
             register { GetNavigationBinding(get()) }
-            register { GetNavigationAnimations(get(), get<NavigationAnimationRepository>().controllerOverrides) }
+            register { get<NavigationAnimationRepository>().controllerOverrides }
             register { GetAnimationsForTransition() }
 
             register {

@@ -15,6 +15,7 @@ import androidx.savedstate.read
 import androidx.savedstate.savedState
 import androidx.savedstate.serialization.decodeFromSavedState
 import androidx.savedstate.serialization.encodeToSavedState
+import dev.enro.animation.NavigationAnimationOverride
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroException
@@ -28,7 +29,6 @@ import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.CanInstructionBeHostedAs
-import dev.enro.core.controller.usecase.GetNavigationAnimations
 import dev.enro.core.findContainer
 import dev.enro.core.findRootContainer
 import dev.enro.core.getNavigationHandle
@@ -69,7 +69,7 @@ public abstract class NavigationContainer(
     public var emptyBehavior: EmptyBehavior = emptyBehavior
         internal set
 
-    internal val getNavigationAnimations = dependencyScope.get<GetNavigationAnimations>()
+    internal val animationOverride = dependencyScope.get<NavigationAnimationOverride>()
     private val canInstructionBeHostedAs = dependencyScope.get<CanInstructionBeHostedAs>()
 
     internal val interceptor = NavigationInterceptorBuilder()

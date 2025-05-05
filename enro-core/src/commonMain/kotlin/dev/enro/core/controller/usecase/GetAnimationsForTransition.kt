@@ -1,14 +1,17 @@
 package dev.enro.core.controller.usecase
 
 import dev.enro.animation.NavigationAnimation
+import dev.enro.animation.findDefaults
+import dev.enro.animation.findOverrideForClosing
+import dev.enro.animation.findOverrideForOpening
 import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.NavigationDirection
 import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
-import dev.enro.core.controller.get
+import dev.enro.core.controller.NavigationController
 import kotlin.collections.set
 import kotlin.reflect.KClass
 
-// TODO: Merge this with the GetNavigationAnimations use case?
 internal class GetAnimationsForTransition {
 
     inline fun <reified T: NavigationAnimation> getAnimations(
@@ -31,40 +34,49 @@ internal class GetAnimationsForTransition {
         val activeInstruction = transition.activeBackstack.active
         val exitingInstruction = transition.exitingInstruction
 
+        val earlyExit = earlyExitForNoAnimation(container.context.controller)
+        val defaults = container.animationOverride.findDefaults(type)
+        if (earlyExit) {
+            return (transition.removed + transition.activeBackstack)
+                .associate { it.instructionId to defaults.none }
+        }
+
         (transition.removed + transition.activeBackstack).forEach { instruction ->
             val state = getAnimationState(transition, instruction)
-            val animation = when (state) {
-                AnimationState.Entering -> container.getNavigationAnimations.opening(
-                    type = type,
-                    exiting = exitingInstruction,
-                    entering = instruction,
-                )
+            if (state == AnimationState.None) return@forEach
+            val defaultAnimation = getDefaultAnimationFor(defaults, state, instruction)
+            animations[instruction.instructionId] = when (state) {
+                AnimationState.Entering -> {
+                    container.animationOverride.findOverrideForOpening(
+                        type = type,
+                        exiting = exitingInstruction,
+                        entering = instruction,
+                    ) ?: defaultAnimation
+                }
 
                 AnimationState.Exiting -> when (activeInstruction == null) {
-                    true -> null
-                    else -> container.getNavigationAnimations.opening(
+                    true -> defaultAnimation
+                    else -> container.animationOverride.findOverrideForOpening(
                         type = type,
                         exiting = instruction,
                         entering = activeInstruction,
-                    )
+                    ) ?: defaultAnimation
                 }
 
-                AnimationState.ReturnEnter -> container.getNavigationAnimations.closing(
+                AnimationState.ReturnEnter -> container.animationOverride.findOverrideForClosing(
                     type = type,
                     exiting = instruction,
                     entering = activeInstruction,
-                )
+                ) ?: defaultAnimation
 
-                AnimationState.ReturnExit -> container.getNavigationAnimations.closing(
+                AnimationState.ReturnExit -> container.animationOverride.findOverrideForClosing(
                     type = type,
                     exiting = instruction,
                     entering = activeInstruction,
-                )
+                ) ?: defaultAnimation
 
-                AnimationState.None -> null
+                AnimationState.None -> error("AnimationState.None should have already been filtered out")
             }
-            if (animation == null) return@forEach
-            animations[instruction.instructionId] = animation
         }
         return animations
     }
@@ -74,8 +86,19 @@ internal class GetAnimationsForTransition {
         predictiveClosing: AnyOpenInstruction,
         predictiveActive: AnyOpenInstruction?,
     ): NavigationAnimation {
-        val animations = dependencyScope.get<GetNavigationAnimations>()
-        return animations.closing(type, predictiveClosing, predictiveActive)
+        val earlyExit = earlyExitForNoAnimation(context.controller)
+        val defaults = animationOverride.findDefaults(type)
+        if (earlyExit) {
+            return defaults.none
+        }
+        return animationOverride.findOverrideForClosing(
+            type = type,
+            exiting = predictiveClosing,
+            entering = predictiveActive,
+        ) ?: when(predictiveClosing.navigationDirection) {
+            NavigationDirection.Present -> defaults.presentReturn
+            NavigationDirection.Push -> defaults.pushReturn
+        }
     }
 
     private fun <T: NavigationAnimation> NavigationContainer.getAnimationsForPredictiveBackEnter(
@@ -83,8 +106,19 @@ internal class GetAnimationsForTransition {
         predictiveClosing: AnyOpenInstruction,
         predictiveActive: AnyOpenInstruction,
     ): NavigationAnimation {
-        val animations = dependencyScope.get<GetNavigationAnimations>()
-        return animations.closing(type, predictiveClosing, predictiveActive)
+        val earlyExit = earlyExitForNoAnimation(context.controller)
+        val defaults = animationOverride.findDefaults(type)
+        if (earlyExit) {
+            return defaults.none
+        }
+        return animationOverride.findOverrideForClosing(
+            type = type,
+            exiting = predictiveClosing,
+            entering = predictiveActive,
+        ) ?: when(predictiveActive.navigationDirection) {
+            NavigationDirection.Present -> defaults.presentReturn
+            NavigationDirection.Push -> defaults.pushReturn
+        }
     }
 
     private fun getAnimationState(
@@ -125,6 +159,36 @@ internal class GetAnimationsForTransition {
         return AnimationState.None
     }
 
+    private fun earlyExitForNoAnimation(controller: NavigationController) : Boolean {
+        return isAnimationsDisabledForPlatform(controller) || controller.config.isAnimationsDisabled
+    }
+
+    private fun <T: NavigationAnimation> getDefaultAnimationFor(
+        defaults: NavigationAnimation.Defaults<T>,
+        state: AnimationState,
+        instruction: AnyOpenInstruction,
+    ): T {
+        return when (state) {
+            AnimationState.Entering -> when (instruction.navigationDirection) {
+                NavigationDirection.Present -> defaults.present
+                NavigationDirection.Push -> defaults.push
+            }
+            AnimationState.Exiting -> when (instruction.navigationDirection) {
+                NavigationDirection.Present -> defaults.present
+                NavigationDirection.Push -> defaults.push
+            }
+            AnimationState.ReturnEnter -> when (instruction.navigationDirection) {
+                NavigationDirection.Present -> defaults.presentReturn
+                NavigationDirection.Push -> defaults.pushReturn
+            }
+            AnimationState.ReturnExit -> when (instruction.navigationDirection) {
+                NavigationDirection.Present -> defaults.presentReturn
+                NavigationDirection.Push -> defaults.pushReturn
+            }
+            AnimationState.None -> defaults.none
+        }
+    }
+
     enum class AnimationState {
         Entering,    // Instruction is becoming active/visible
         Exiting,     // Instruction is no longer active/visible
@@ -133,3 +197,5 @@ internal class GetAnimationsForTransition {
         None,        // No animation needed
     }
 }
+
+internal expect fun isAnimationsDisabledForPlatform(controller: NavigationController): Boolean
