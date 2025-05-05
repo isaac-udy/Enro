@@ -8,7 +8,6 @@ import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationDirection
 import dev.enro.core.container.NavigationBackstackTransition
 import dev.enro.core.container.NavigationContainer
-import dev.enro.core.controller.NavigationController
 import kotlin.collections.set
 import kotlin.reflect.KClass
 
@@ -34,12 +33,7 @@ internal class GetAnimationsForTransition {
         val activeInstruction = transition.activeBackstack.active
         val exitingInstruction = transition.exitingInstruction
 
-        val earlyExit = earlyExitForNoAnimation(container.context.controller)
         val defaults = container.animationOverride.findDefaults(type)
-        if (earlyExit) {
-            return (transition.removed + transition.activeBackstack)
-                .associate { it.instructionId to defaults.none }
-        }
 
         (transition.removed + transition.activeBackstack).forEach { instruction ->
             val state = getAnimationState(transition, instruction)
@@ -86,11 +80,7 @@ internal class GetAnimationsForTransition {
         predictiveClosing: AnyOpenInstruction,
         predictiveActive: AnyOpenInstruction?,
     ): NavigationAnimation {
-        val earlyExit = earlyExitForNoAnimation(context.controller)
         val defaults = animationOverride.findDefaults(type)
-        if (earlyExit) {
-            return defaults.none
-        }
         return animationOverride.findOverrideForClosing(
             type = type,
             exiting = predictiveClosing,
@@ -106,11 +96,7 @@ internal class GetAnimationsForTransition {
         predictiveClosing: AnyOpenInstruction,
         predictiveActive: AnyOpenInstruction,
     ): NavigationAnimation {
-        val earlyExit = earlyExitForNoAnimation(context.controller)
         val defaults = animationOverride.findDefaults(type)
-        if (earlyExit) {
-            return defaults.none
-        }
         return animationOverride.findOverrideForClosing(
             type = type,
             exiting = predictiveClosing,
@@ -159,10 +145,6 @@ internal class GetAnimationsForTransition {
         return AnimationState.None
     }
 
-    private fun earlyExitForNoAnimation(controller: NavigationController) : Boolean {
-        return isAnimationsDisabledForPlatform(controller) || controller.config.isAnimationsDisabled
-    }
-
     private fun <T: NavigationAnimation> getDefaultAnimationFor(
         defaults: NavigationAnimation.Defaults<T>,
         state: AnimationState,
@@ -197,5 +179,3 @@ internal class GetAnimationsForTransition {
         None,        // No animation needed
     }
 }
-
-internal expect fun isAnimationsDisabledForPlatform(controller: NavigationController): Boolean

@@ -1,6 +1,7 @@
 package dev.enro.animation
 
 import dev.enro.core.AnyOpenInstruction
+import dev.enro.core.controller.NavigationController
 import kotlin.reflect.KClass
 
 internal data class NavigationAnimationOverride(
@@ -22,6 +23,15 @@ internal data class NavigationAnimationOverride(
 internal fun <T : NavigationAnimation> NavigationAnimationOverride.findDefaults(type: KClass<T>) : NavigationAnimation.Defaults<T> {
     val defaults = defaults[type] as? NavigationAnimation.Defaults<T>
     if (defaults != null) {
+        if (earlyExitForNoAnimation()) {
+            return NavigationAnimation.Defaults(
+                none = defaults.none,
+                push = defaults.none,
+                pushReturn = defaults.none,
+                present = defaults.none,
+                presentReturn = defaults.none,
+            )
+        }
         return defaults
     }
     val parent = parent
@@ -44,6 +54,7 @@ internal fun <T : NavigationAnimation> NavigationAnimationOverride.findOverrideF
     exiting: AnyOpenInstruction?,
     entering: AnyOpenInstruction,
 ): T? {
+    if (earlyExitForNoAnimation()) return null
     val opening = mutableMapOf<Int, MutableList<OpeningTransition>>()
     var override: NavigationAnimationOverride? = this
     while(override != null) {
@@ -77,6 +88,7 @@ internal fun <T: NavigationAnimation> NavigationAnimationOverride.findOverrideFo
     exiting: AnyOpenInstruction,
     entering: AnyOpenInstruction?,
 ): T? {
+    if (earlyExitForNoAnimation()) return null
     val closing = mutableMapOf<Int, MutableList<ClosingTransition>>()
     var override: NavigationAnimationOverride? = this
     while(override != null) {
@@ -95,4 +107,9 @@ internal fun <T: NavigationAnimation> NavigationAnimationOverride.findOverrideFo
             return animation as? T
         }
     return null
+}
+
+private fun earlyExitForNoAnimation() : Boolean {
+    val controller = NavigationController.navigationController ?: return false
+    return isAnimationsDisabledForPlatform(controller) || controller.config.isAnimationsDisabled
 }

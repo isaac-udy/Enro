@@ -1,4 +1,4 @@
-package dev.enro.core.controller.usecase
+package dev.enro.animation
 
 import dev.enro.core.controller.NavigationController
 
