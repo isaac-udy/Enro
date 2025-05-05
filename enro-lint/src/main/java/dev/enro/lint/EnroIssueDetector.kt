@@ -25,11 +25,10 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
     }
 
     override fun createUastHandler(context: JavaContext): UElementHandler {
-        fun PsiJvmModifiersOwner.getNavigationDestinationType(): PsiType? {
+        fun PsiJvmModifiersOwner.getNavigationDestinationType(): UClassLiteralExpression? {
             return getAnnotation("dev.enro.annotations.NavigationDestination")
                 ?.findAttributeValue("key")
                 .toUElementOfType<UClassLiteralExpression>()
-                ?.type
         }
 
         // UCallExpression.receiverType is not always correct, so we need to manually resolve the receiver type,
@@ -58,9 +57,10 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
             val navigationHandleGenericType = returnType.parameters.first()
 
             val receiverClass = node.getActualReceiver() ?: return
-            val navigationDestinationType = receiverClass.getNavigationDestinationType()
+            val navigationDestinationExpression = receiverClass.getNavigationDestinationType()
+            val navigationDestinationType = navigationDestinationExpression?.type
 
-            if (navigationDestinationType == null) {
+            if (navigationDestinationExpression == null) {
                 val classSource = receiverClass.sourceElement?.text
                 context.report(
                     issue = missingNavigationDestinationAnnotation,
@@ -78,7 +78,7 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
                 return
             }
 
-            if (!navigationHandleGenericType.isAssignableFrom(navigationDestinationType)) {
+            if (navigationDestinationType != null && !navigationHandleGenericType.isAssignableFrom(navigationDestinationType)) {
                 context.report(
                     issue = incorrectlyTypedNavigationHandle,
                     location = context.getLocation(node),
@@ -124,9 +124,10 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
             if (!typedNavigationHandleType.isAssignableFrom(returnType)) return
 
             val navigationHandleGenericType = TypeConversionUtil.erasure(returnType.parameters.first())
-            val navigationDestinationType = composableParent.getNavigationDestinationType()
+            val navigationDestinationExpression = composableParent.getNavigationDestinationType()
+            val navigationDestinationType = navigationDestinationExpression?.type
 
-            if (navigationDestinationType == null) {
+            if (navigationDestinationExpression == null) {
                 // allow references like navigationHandle<NavigationKey> because these aren't dangerous
                 if (navigationHandleGenericType == navigationKeyType) return
 
@@ -147,7 +148,7 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
                 return
             }
 
-            if (!navigationHandleGenericType.isAssignableFrom(navigationDestinationType)) {
+            if (navigationDestinationType != null && !navigationHandleGenericType.isAssignableFrom(navigationDestinationType)) {
                 context.report(
                     issue = incorrectlyTypedNavigationHandle,
                     location = context.getLocation(node),
