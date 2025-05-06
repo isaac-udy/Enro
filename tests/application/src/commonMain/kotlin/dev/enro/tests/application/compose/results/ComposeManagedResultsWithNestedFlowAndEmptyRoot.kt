@@ -12,7 +12,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
@@ -24,8 +23,8 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.result.deliverResultFromPush
 import dev.enro.core.result.flows.registerForFlowResult
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.viewmodel.createEnroViewModel
 import dev.enro.viewmodel.navigationHandle
-import dev.enro.viewmodel.withNavigationHandle
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
@@ -89,16 +88,13 @@ object ComposeManagedResultsWithNestedFlowAndEmptyRoot : NavigationKey.SupportsP
 @NavigationDestination(ComposeManagedResultsWithNestedFlowAndEmptyRoot::class)
 @Composable
 internal fun ComposeManagedResultsWithNestedFlowAndEmptyRootDestination(
-    viewModel: ComposeManagedResultsWithNestedFlowAndEmptyRoot.FlowViewModel = viewModel(
-        // TODO: This is not good, need to resolve
-        factory = viewModelFactory {
-            addInitializer(ComposeManagedResultsWithNestedFlowAndEmptyRoot.FlowViewModel::class) {
-                ComposeManagedResultsWithNestedFlowAndEmptyRoot.FlowViewModel(
-                    savedStateHandle = createSavedStateHandle(),
-                )
-            }
-        }.withNavigationHandle()
-    )
+    viewModel: ComposeManagedResultsWithNestedFlowAndEmptyRoot.FlowViewModel = viewModel {
+        createEnroViewModel {
+            ComposeManagedResultsWithNestedFlowAndEmptyRoot.FlowViewModel(
+                savedStateHandle = createSavedStateHandle(),
+            )
+        }
+    }
 ) {
     val container = rememberNavigationContainer(
         emptyBehavior = EmptyBehavior.CloseParent,

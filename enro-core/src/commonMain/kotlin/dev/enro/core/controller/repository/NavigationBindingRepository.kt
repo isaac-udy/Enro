@@ -2,7 +2,6 @@ package dev.enro.core.controller.repository
 
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationBinding
-import dev.enro.core.shouldUseOriginalBinding
 import kotlin.reflect.KClass
 
 internal class NavigationBindingRepository {
@@ -74,7 +73,7 @@ internal class NavigationBindingRepository {
         instruction: AnyOpenInstruction,
     ): NavigationBinding<*, *>? {
         return when {
-            instruction.extras.shouldUseOriginalBinding() ->
+            NavigationBinding.shouldUseOriginalBinding(instruction.extras) ->
                 originalBindingsByKeyType[instruction.navigationKey::class]
                     ?: bindingsByKeyType[instruction.navigationKey::class]
 

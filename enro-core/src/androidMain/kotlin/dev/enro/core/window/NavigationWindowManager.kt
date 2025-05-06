@@ -3,6 +3,8 @@ package dev.enro.core.window
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityOptionsCompat
@@ -59,7 +61,6 @@ public actual class NavigationWindowManager actual constructor(
             .any { it.navigationContext.instruction.instructionId == instruction.instructionId }
         if (isOpen) return
 
-        // TODO need to handle non-ComponentActivity cases, and null cases
         val activity = activities.lastOrNull()
         if (activity != null) {
             val exitingInstruction = (activity as? ComponentActivity)?.navigationContext?.instruction
@@ -116,11 +117,20 @@ public actual class NavigationWindowManager actual constructor(
                 NavigationDirection.Push -> defaults.pushReturn
             }
 
-            @Suppress("DEPRECATION") // TODO stop using deprecated method overridePendingTransition
-            toClose.overridePendingTransition(
-                animations.enterAsResource(toClose),
-                animations.exitAsResource(toClose),
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                toClose.overrideActivityTransition(
+                    Activity.OVERRIDE_TRANSITION_CLOSE,
+                    animations.enterAsResource(toClose),
+                    animations.exitAsResource(toClose),
+                    Color.TRANSPARENT,
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                toClose.overridePendingTransition(
+                    animations.enterAsResource(toClose),
+                    animations.exitAsResource(toClose),
+                )
+            }
         }
         toClose.finish()
     }
@@ -160,68 +170,3 @@ public actual class NavigationWindowManager actual constructor(
         }
     }
 }
-
-/*
-override fun onBackstackUpdated(transition: NavigationBackstackTransition): Boolean {
-        // When the backstack is updated, we need to check if there are pending results and close
-        // immediately to ensure forwarding results work correctly
-        val result = EnroResult.from(context.controller)
-        if (result.hasPendingResultFrom(context.instruction)) {
-            context.activity.finish()
-            return true
-        }
-
-        val activity = weakActivity.get() ?: return true
-        val activeInstruction = activity.navigationContext.instruction
-        if (transition.activeBackstack.singleOrNull()?.instructionId == activeInstruction.instructionId) return true
-        val childContext = requireNotNull(childContext)
-        setBackstack(backstackOf(activeInstruction))
-
-        val activeInstructionIsPresent = transition.activeBackstack.any { it.instructionId == activeInstruction.instructionId }
-        if (!activeInstructionIsPresent) {
-            ActivityCompat.finishAfterTransition(childContext.activity)
-//            val animations = getNavigationAnimations.closing(
-//                exiting = activeInstruction,
-//                entering = transition.activeBackstack.active,
-//            )
-            childContext.activity.overridePendingTransition(
-                0,0
-//                animations.entering.asResource(childContext.activity.theme).id,
-//                animations.exiting.asResource(childContext.activity.theme).id
-            )
-        }
-
-        val instructionToOpen = transition.activeBackstack
-            .filter { it.instructionId != activeInstruction?.instructionId }
-            .also {
-                require(it.size <= 2) { transition.activeBackstack.joinToString { it.navigationKey.toString() } }
-            }
-            .firstOrNull() ?: return true
-
-        val instructionToOpenHosted = childContext.controller.dependencyScope.get<HostInstructionAs>().invoke<Activity>(
-            childContext,
-            instructionToOpen
-        )
-        val binding = requireNotNull(
-            childContext.controller.dependencyScope.get<GetNavigationBinding>()
-                .invoke(instructionToOpenHosted)
-        ) { "Could not open ${instructionToOpenHosted.navigationKey::class.simpleName}: No NavigationBinding was found" }
-
-        val intent = Intent(childContext.activity, binding.destinationType.java)
-            .addOpenInstruction(instructionToOpenHosted)
-
-        val animations = getNavigationAnimations.opening(
-            exiting = activeInstruction,
-            entering = instructionToOpenHosted
-        )
-
-        val options = ActivityOptionsCompat.makeCustomAnimation(
-            activity, 0,0
-//            animations.entering.asResource(childContext.activity.theme).id,
-//            animations.exiting.asResource(childContext.activity.theme).id
-        )
-        activity.startActivity(intent, options.toBundle())
-
-        return true
-    }
- */

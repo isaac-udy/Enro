@@ -371,7 +371,6 @@ public class FragmentNavigationContainer internal constructor(
         )
     }
 
-    // TODO this doesn't work, it needs to know about the exiting element
     private fun setZIndexForAnimations(
         backstack: List<AnyOpenInstruction>,
         fragmentAndInstruction: FragmentAndInstruction
