@@ -13,7 +13,6 @@ public data class HostUIViewControllerInUIWindow(
 ) : NavigationKey.SupportsPush, NavigationKey.SupportsPresent
 
 internal val windowForHostingUIViewController = uiWindowDestination<HostUIViewControllerInUIWindow> {
-    println("windowForHostingUIViewController")
     val binding = controller.bindingForInstruction(navigationKey.originalInstruction)
     requireNotNull(binding) {
         "UIViewControllerNavigationBinding expected, but got null"

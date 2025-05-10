@@ -14,7 +14,6 @@ public data class HostComposableInUIWindow(
 ) : NavigationKey.SupportsPush, NavigationKey.SupportsPresent
 
 internal val windowForHostingComposable = uiWindowDestination<HostComposableInUIWindow> {
-    println("windowForHostingComposable")
     val binding = controller.bindingForInstruction(navigationKey.originalInstruction)
     requireNotNull(binding) {
         "ComposableNavigationBinding expected for ${navigationKey.originalInstruction.navigationKey}, but got null"
