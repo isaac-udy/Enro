@@ -7,8 +7,8 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.snap
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -110,8 +110,8 @@ public fun OverrideNavigationAnimations(
         // and attach child transitions. This is a bit of a hack, but it's the only way to ensure that child exit transitions
         // are fully run.
         val overrideAnimation = NavigationAnimationForComposable(
-            enter = slideInHorizontally(snap(64)) { 1 },
-            exit = slideOutHorizontally(snap(64)) { 1 }
+            enter = fadeIn(snap(64), initialAlpha = 0.99999f),//slideInHorizontally(snap(64)) { 1 },
+            exit = fadeOut(snap(64), targetAlpha = 0.99999f),//slideOutHorizontally(snap(64)) { 1 }
         )
         destination.owner.animations.setAnimationOverride(overrideAnimation)
         isOverrideSet = true
