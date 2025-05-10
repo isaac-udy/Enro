@@ -461,7 +461,7 @@ fun FileSpec.Builder.addImportsForBinding(destination: DestinationReference.Kotl
         .let {
             if (destination.isUIViewControllerClass || destination.isUIViewControllerFunction) {
                 it.addImport(
-                    "dev.enro.destination.uiviewcontroller",
+                    "dev.enro.destination.ios",
                     "uiViewControllerDestination",
                 )
             } else it

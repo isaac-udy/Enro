@@ -44,6 +44,7 @@ import dev.enro.core.container.merge
 import dev.enro.core.controller.get
 import dev.enro.core.controller.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.core.controller.usecase.GetAnimationsForTransition
+import dev.enro.core.controller.usecase.HostInstructionAs
 import dev.enro.core.getNavigationHandle
 import dev.enro.core.requestClose
 import dev.enro.destination.compose.ComposableDestination
@@ -254,13 +255,17 @@ public class ComposableNavigationContainer internal constructor(
 
     private fun createDestinationOwner(instruction: AnyOpenInstruction): ComposableDestinationOwner {
         val controller = context.controller
-        val composeKey = instruction.navigationKey
-        val rawBinding = controller.bindingForInstruction(instruction)
+        val hostedInstruction = controller.dependencyScope.get<HostInstructionAs>()
+            .invoke<ComposableDestination>(context, instruction)
+
+        val composeKey = hostedInstruction.navigationKey
+        val rawBinding = controller.bindingForInstruction(hostedInstruction)
             ?: throw EnroException.MissingNavigationBinding(composeKey)
 
         if (rawBinding !is ComposableNavigationBinding<*, *> && rawBinding !is ManagedFlowNavigationBinding<*, *>) {
             throw IllegalStateException("Expected ${composeKey::class.simpleName} to be bound to a Composable, but was instead bound to a ${rawBinding.baseType.simpleName}")
         }
+
         // TODO:
         //  Instead of managing destination construction here, we should move this to the NavigationHostFactory,
         //  and let the NavigationHostFactory manage the destination construction. This means more significant changes

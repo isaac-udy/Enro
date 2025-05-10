@@ -10,7 +10,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.present
 import dev.enro.core.requestClose
-import dev.enro.destination.uiviewcontroller.EnroComposeUIViewController
+import dev.enro.destination.ios.EnroComposeUIViewController
 import dev.enro.tests.application.compose.common.TitledColumn
 import platform.UIKit.UIViewController
 

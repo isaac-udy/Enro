@@ -6,6 +6,10 @@ import dev.enro.core.controller.interceptor.NavigationContainerDelegateIntercept
 import dev.enro.core.internal.NoKeyNavigationBinding
 import dev.enro.core.result.ForwardingResultInterceptor
 import dev.enro.core.result.flows.NavigationFlowInterceptor
+import dev.enro.destination.compose.composableDestination
+import dev.enro.destination.ios.hosts.ComposableHostForUIViewController
+import dev.enro.destination.ios.hosts.HostUIViewControllerInCompose
+import dev.enro.destination.ios.hosts.HostUIViewControllerInComposeScreen
 import dev.enro.destination.synthetic.SyntheticExecutionInterceptor
 
 internal actual val defaultNavigationModule: NavigationModule = createNavigationModule {
@@ -20,4 +24,7 @@ internal actual val defaultNavigationModule: NavigationModule = createNavigation
     interceptor(ForwardingResultInterceptor)
 
     binding(NoKeyNavigationBinding())
+
+    navigationHostFactory(ComposableHostForUIViewController())
+    composableDestination<HostUIViewControllerInCompose> { HostUIViewControllerInComposeScreen() }
 }

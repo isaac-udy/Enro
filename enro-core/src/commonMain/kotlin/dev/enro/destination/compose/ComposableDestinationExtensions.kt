@@ -7,8 +7,8 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.snap
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -106,18 +106,12 @@ public fun OverrideNavigationAnimations(
 
     var isOverrideSet by remember { mutableStateOf(false) }
     DisposableEffect(Unit) {
+        // We need a small animation here to keep the animation active while the animated visibility below has a chance to run
+        // and attach child transitions. This is a bit of a hack, but it's the only way to ensure that child exit transitions
+        // are fully run.
         val overrideAnimation = NavigationAnimationForComposable(
-            enter = fadeIn(
-                initialAlpha = 0.99999f,
-                animationSpec = snap(64),
-            ),
-            // We need a little fade out here to keep the animation active while the animated visibility below has a chance to run
-            // and attach child transitions. This is a bit of a hack, but it's the only way to ensure that child exit transitions
-            // are fully run.
-            exit = fadeOut(
-                targetAlpha = 0.99999f,
-                animationSpec = snap(64),
-            ),
+            enter = slideInHorizontally(snap(64)) { 1 },
+            exit = slideOutHorizontally(snap(64)) { 1 }
         )
         destination.owner.animations.setAnimationOverride(overrideAnimation)
         isOverrideSet = true

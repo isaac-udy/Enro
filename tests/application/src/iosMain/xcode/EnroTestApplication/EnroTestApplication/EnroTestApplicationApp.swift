@@ -10,41 +10,48 @@ import SwiftUI
 import EnroTestsApplication
 
 //@main
-//struct EnroTestApplicationApp: App {
-//    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-//
-//    var body: some Scene {
-//        WindowGroup {
-//            MainViewControllerView()
-//        }
-//    }
-//}
+struct EnroTestApplicationApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
+    var body: some Scene {
+        WindowGroup {
+            MainViewControllerView()
+        }
+    }
+}
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        
-        let root = NavigationInstruction.companion.Present(navigationKey: MainView.shared)
+        SelectDestination_iosKt.registerIosDestinations()
         EnroComponent.shared.installNavigationController(
             application: application,
-            root: root,
+            root: NavigationInstruction.companion.Present(navigationKey: MainView.shared),
             strictMode: false,
             useLegacyContainerPresentBehavior: false,
             backConfiguration: Enro.shared.backConfiguration.Default,
             block: { scope in
-                // TODO add documentation explaining how to use the Enro iOS bindings
-                // TODO add functionality to access navigation handle from UIViewControllers
-                // TODO add functionality to access navigation handle from SwiftUI views
-//                Enro.shared.addUIViewControllerNavigationBinding(
-//                    scope: scope,
-//                    key: MainView.shared,
-//                    constructDestination: {
-//                        MainViewControllerKt.MainViewController()
-//                    }
-//                )
+                Enro.shared.addUIViewControllerNavigationBinding(
+                    scope: scope,
+                    keyType: NativeSwiftUIView.self,
+                    constructDestination: {
+                        UIHostingController(rootView: NativeSwiftUIViewDestination())
+                    }
+                )
             }
         )
         return true
     }
 }
+
+
+struct NativeSwiftUIViewDestination: View {
+    var body: some View {
+        VStack {
+            Text("This is a SwiftUI View hosted as an Enro destination")
+        }
+        .padding()
+    }
+}
+

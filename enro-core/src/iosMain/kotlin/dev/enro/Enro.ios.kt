@@ -1,10 +1,16 @@
 package dev.enro
 
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.EnroBackConfiguration
 import dev.enro.core.controller.NavigationModuleScope
+import dev.enro.destination.ios.EnroUIViewController
+import dev.enro.destination.ios.createUIViewControllerNavigationBinding
+import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.ObjCClass
+import kotlinx.cinterop.getOriginalKotlinClass
 import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
 import platform.UIKit.UIViewController
 import kotlin.reflect.KClass
@@ -26,19 +32,50 @@ public object Enro {
         public val Manual: EnroBackConfiguration = EnroBackConfiguration.Manual
     }
 
-    @OptIn(InternalSerializationApi::class)
-    public fun <KeyType : NavigationKey> addUIViewControllerNavigationBinding(
+    @OptIn(InternalSerializationApi::class, BetaInteropApi::class)
+    public fun addUIViewControllerNavigationBinding(
         scope: NavigationModuleScope,
-        key: KeyType,
+        keyType: ObjCClass,
         constructDestination: () -> UIViewController,
     ) {
+        val originalClass = getOriginalKotlinClass(keyType)
+        requireNotNull(originalClass) {
+            "Could not find a Kotlin class for $keyType."
+        }
+        @Suppress("UNCHECKED_CAST")
         scope.binding(
-            dev.enro.destination.uiviewcontroller.createUIViewControllerNavigationBinding<KeyType, UIViewController>(
-                keyType = key::class as KClass<KeyType>,
-                keySerializer = key::class.serializer() as KSerializer<KeyType>,
+            createUIViewControllerNavigationBinding<NavigationKey, UIViewController>(
+                keyType = originalClass as KClass<NavigationKey>,
+                keySerializer = originalClass.serializer(),
                 destinationType = UIViewController::class,
                 constructDestination = constructDestination,
             )
         )
+    }
+
+    public fun createEnroViewController(
+        present: NavigationInstruction.Open<NavigationDirection.Present>,
+    ): UIViewController {
+        return EnroUIViewController(present)
+    }
+
+    public fun createEnroViewController(
+        push: NavigationInstruction.Open<NavigationDirection.Push>,
+    ): UIViewController {
+        return EnroUIViewController(push)
+    }
+
+    public fun createEnroViewController(
+        present: NavigationInstruction.Open<NavigationDirection.Present>,
+        controller: () -> UIViewController,
+    ): UIViewController {
+        return EnroUIViewController(present, controller)
+    }
+
+    public fun createEnroViewController(
+        push: NavigationInstruction.Open<NavigationDirection.Push>,
+        controller: () -> UIViewController,
+    ): UIViewController {
+        return EnroUIViewController(push, controller)
     }
 }

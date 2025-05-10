@@ -10,7 +10,6 @@ import androidx.lifecycle.enableSavedStateHandles
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.savedState
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
 import dev.enro.core.controller.NavigationController
@@ -18,15 +17,16 @@ import dev.enro.core.controller.enroNavigationController
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.plugins.EnroPlugin
-import dev.enro.destination.uiviewcontroller.UIViewControllerNavigationBinding
-import dev.enro.destination.uiviewcontroller.isEnroViewController
-import dev.enro.destination.uiviewcontroller.navigationInstruction
+import dev.enro.destination.compose.ComposableNavigationBinding
+import dev.enro.destination.ios.EnroUIViewController
+import dev.enro.destination.ios.UIViewControllerNavigationBinding
+import dev.enro.destination.ios.isEnroViewController
+import dev.enro.destination.ios.navigationInstruction
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIApplication
 import platform.UIKit.UISceneActivationStateForegroundActive
 import platform.UIKit.UISceneActivationStateForegroundInactive
 import platform.UIKit.UIView
-import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowScene
 import platform.darwin.NSObject
@@ -34,23 +34,18 @@ import platform.objc.OBJC_ASSOCIATION_RETAIN_NONATOMIC
 import platform.objc.objc_getAssociatedObject
 import platform.objc.objc_setAssociatedObject
 
-// Define a key for your associated object (can be a static object or address)
 @OptIn(ExperimentalForeignApi::class)
 private val NavigationContextPropertyKey = kotlinx.cinterop.staticCFunction<Unit> {}
 
 @OptIn(ExperimentalForeignApi::class)
-private val Navigation = kotlinx.cinterop.staticCFunction<Unit> {}
-
-// Extension function to set the extra property
-@OptIn(ExperimentalForeignApi::class)
-internal var NSObject.navigationContext: NavigationContext<UIWindowScene>?
+public var NSObject.navigationContext: NavigationContext<*>?
     get() {
         return objc_getAssociatedObject(
             this,
             NavigationContextPropertyKey
-        ) as? NavigationContext<UIWindowScene>
+        ) as? NavigationContext<*>
     }
-    set(value) {
+    internal set(value) {
         objc_setAssociatedObject(
             `object` = this,
             key = NavigationContextPropertyKey,
@@ -86,7 +81,7 @@ public actual class NavigationWindowManager actual constructor(
                 contextReference = scene,
                 getController = { controller },
                 getParentContext = { null },
-                getArguments = { savedState() },
+                getContextInstruction = { null },
                 getViewModelStoreOwner = { owners },
                 getSavedStateRegistryOwner = { owners },
                 getLifecycleOwner = { owners },
@@ -134,9 +129,16 @@ public actual class NavigationWindowManager actual constructor(
             "NavigationWindowManager.open failed: NavigationKey '${instruction.navigationKey::class.simpleName}'" +
                     " does not have a registered NavigationBinding."
         }
-        binding as UIViewControllerNavigationBinding<*, out UIViewController>
+        val controller = when (binding) {
+            is UIViewControllerNavigationBinding<*, *> -> {
+                binding.constructDestination()
+            }
+            is ComposableNavigationBinding<*, *> -> {
+                EnroUIViewController(instruction)
+            }
+            else -> error("Unsupported NavigationBinding: ${binding::class.simpleName}")
+        }
 
-        val controller = binding.constructDestination()
         controller.navigationInstruction = instruction
 
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")

@@ -1,4 +1,4 @@
-package dev.enro.destination.uiviewcontroller
+package dev.enro.destination.ios
 
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
