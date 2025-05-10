@@ -18,7 +18,7 @@ public var UIViewController.navigationInstruction: NavigationInstruction.Open<*>
             NavigationInstructionKey
         ) as? NavigationInstruction.Open<*>
     }
-    internal set(value) {
+    set(value) {
         objc_setAssociatedObject(
             `object` = this,
             key = NavigationInstructionKey,

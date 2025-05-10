@@ -11,7 +11,7 @@ import dev.enro.destination.compose.navigationContext
 import platform.UIKit.UIViewController
 
 @Composable
-internal fun EmbedEnroUIKitViewController(
+internal fun EmbeddedEnroUIViewController(
     instruction: AnyOpenInstruction,
     factory: () -> UIViewController,
 ) {

@@ -12,15 +12,15 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.enroNavigationController
 import dev.enro.core.controller.get
+import dev.enro.core.controller.usecase.HostInstructionAs
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.plugins.EnroPlugin
-import dev.enro.destination.compose.ComposableNavigationBinding
-import dev.enro.destination.ios.EnroUIViewController
-import dev.enro.destination.ios.UIViewControllerNavigationBinding
-import dev.enro.destination.ios.isEnroViewController
+import dev.enro.destination.ios.UIWindowNavigationBinding
+import dev.enro.destination.ios.UIWindowScope
 import dev.enro.destination.ios.navigationInstruction
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIApplication
@@ -62,7 +62,6 @@ public actual class NavigationWindowManager actual constructor(
 
     private val observer = WindowSceneObserver(
         onSceneActivated = { scene ->
-            println("Scene activated: $scene")
             val owners = object : SavedStateRegistryOwner, ViewModelStoreOwner {
                 private val savedStateRegistryController = SavedStateRegistryController.create(this)
                 override val savedStateRegistry: SavedStateRegistry =
@@ -95,9 +94,7 @@ public actual class NavigationWindowManager actual constructor(
                 open(it)
             }
         },
-        onSceneDeactivated = { scene ->
-            println("Scene deactivated: $scene")
-        }
+        onSceneDeactivated = { scene -> }
     )
 
     override fun onAttached(navigationController: NavigationController) {
@@ -110,9 +107,7 @@ public actual class NavigationWindowManager actual constructor(
 
     @OptIn(ExperimentalForeignApi::class)
     public actual fun open(instruction: AnyOpenInstruction) {
-        if (UIApplication.sharedApplication
-                .connectedScenes.isEmpty()
-        ) {
+        if (UIApplication.sharedApplication.connectedScenes.isEmpty()) {
             pendingInstruction = instruction
             return
         }
@@ -121,33 +116,6 @@ public actual class NavigationWindowManager actual constructor(
 //            .sharedApplication
 //            .connectedScenes
 //            .mapNotNull { it as? UIWindowScene }
-        val binding = UIApplication
-            .sharedApplication
-            .enroNavigationController
-            .bindingForInstruction(instruction)
-        requireNotNull(binding) {
-            "NavigationWindowManager.open failed: NavigationKey '${instruction.navigationKey::class.simpleName}'" +
-                    " does not have a registered NavigationBinding."
-        }
-        val controller = when (binding) {
-            is UIViewControllerNavigationBinding<*, *> -> {
-                binding.constructDestination()
-            }
-            is ComposableNavigationBinding<*, *> -> {
-                EnroUIViewController(instruction)
-            }
-            else -> error("Unsupported NavigationBinding: ${binding::class.simpleName}")
-        }
-
-        controller.navigationInstruction = instruction
-
-        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        if (controller::class.simpleName == "ComposeHostingViewController" && !controller.isEnroViewController) {
-            error(
-                "UIViewController for NavigationKey ${instruction.navigationKey::class.simpleName} was created as a" +
-                        " ComposeHostingViewController, but was not created using EnroComposeUIViewController."
-            )
-        }
         val windowScene = UIApplication.sharedApplication
             .connectedScenes
             .filterIsInstance<UIWindowScene>()
@@ -156,17 +124,53 @@ public actual class NavigationWindowManager actual constructor(
                 it.activationState == UISceneActivationStateForegroundActive ||
                         it.activationState == UISceneActivationStateForegroundInactive
             }
+
+        val navigationController = UIApplication
+            .sharedApplication
+            .enroNavigationController
+
+        val hostedInstruction = navigationController
+            .dependencyScope
+            .get<HostInstructionAs>()
+            .invoke(
+                hostType = UIWindow::class,
+                navigationContext = windowScene.navigationContext as NavigationContext<*>,
+                instruction = instruction,
+            )
+
+        val binding = navigationController.bindingForInstruction(hostedInstruction)
+
+        requireNotNull(binding) {
+            "NavigationWindowManager.open failed: NavigationKey '${instruction.navigationKey::class.simpleName}'" +
+                    " does not have a registered NavigationBinding."
+        }
+        require(binding is UIWindowNavigationBinding<*, *>) {
+            "NavigationWindowManager.open failed: NavigationBinding '${binding::class.simpleName}' is not a" +
+                    " UIWindowNavigationBinding."
+        }
+        @Suppress("UNCHECKED_CAST")
+        binding as UIWindowNavigationBinding<NavigationKey, UIWindow>
+
         val existingEmptyWindow = windowScene.windows
             .filterIsInstance<UIWindow>()
             .firstOrNull { it.rootViewController == null }
 
-        val window = existingEmptyWindow ?: UIWindow(windowScene)
-        window.rootViewController = controller
+        val windowProviderScope = UIWindowScope<NavigationKey>(
+            navigationKey = hostedInstruction.navigationKey,
+            controller = navigationController,
+            instruction = hostedInstruction,
+        )
+        val window = binding.windowProvider.createUIWindow(windowProviderScope)
+        window.rootViewController?.navigationInstruction = hostedInstruction
+        window.windowScene = windowScene
         window.hidden = true
         window.alpha = 0.0
         window.makeKeyAndVisible()
         UIView.animateWithDuration(0.125) {
             window.alpha = 1.0
+        }
+        if (existingEmptyWindow != null) {
+            existingEmptyWindow.windowScene = null
         }
     }
 

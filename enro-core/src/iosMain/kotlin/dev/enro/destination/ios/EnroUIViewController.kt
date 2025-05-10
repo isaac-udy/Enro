@@ -34,7 +34,6 @@ public fun EnroUIViewController(
             rootContainer.Render()
         }
     }
-
     controller.navigationInstruction = instruction
     return controller
 }
@@ -48,7 +47,7 @@ public fun EnroUIViewController(
     controller: () -> UIViewController,
 ): UIViewController {
     val composeController = EnroComposeUIViewController {
-        EmbedEnroUIKitViewController(
+        EmbeddedEnroUIViewController(
             instruction = instruction,
             factory = controller,
         )

@@ -11,12 +11,13 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.core.present
 import dev.enro.core.requestClose
 import dev.enro.destination.ios.EnroComposeUIViewController
+import dev.enro.destination.ios.uiWindowDestination
 import dev.enro.tests.application.compose.common.TitledColumn
-import platform.UIKit.UIViewController
+import platform.UIKit.UIWindow
 
 @NavigationDestination(SimpleWindow::class)
-fun SimpleWindowViewController(): UIViewController {
-    return EnroComposeUIViewController {
+val simpleWindowDestination = uiWindowDestination<SimpleWindow> {
+    val controller = EnroComposeUIViewController {
         val navigation = navigationHandle()
         TitledColumn(
             title = "Simple Window",
@@ -29,5 +30,8 @@ fun SimpleWindowViewController(): UIViewController {
                 Text(text = "Close Window")
             }
         }
+    }
+    UIWindow().apply {
+        rootViewController = controller
     }
 }

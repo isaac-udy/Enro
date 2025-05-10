@@ -189,6 +189,10 @@ object NavigationDestinationGenerator {
                 "uiViewControllerDestination<%keyType:T, platform.UIKit.UIViewController>(keySerializer = $serializer) { $destinationName() }",
                 formatting,
             )
+            destination.isUIWindowProvider -> addNamedCode(
+                "uiWindowDestination(keySerializer = $serializer, provider = $destinationName)",
+                formatting,
+            )
             else -> {
                 environment.logger.error(
                     "${destination.declaration.qualifiedName?.asString()} is not a valid destination."
@@ -463,6 +467,14 @@ fun FileSpec.Builder.addImportsForBinding(destination: DestinationReference.Kotl
                 it.addImport(
                     "dev.enro.destination.ios",
                     "uiViewControllerDestination",
+                )
+            } else it
+        }
+        .let {
+            if (destination.isUIWindowProvider) {
+                it.addImport(
+                    "dev.enro.destination.ios",
+                    "uiWindowDestination",
                 )
             } else it
         }

@@ -6,7 +6,7 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.controller.NavigationController
-import dev.enro.destination.ios.EmbedEnroUIKitViewController
+import dev.enro.destination.ios.EmbeddedEnroUIViewController
 import dev.enro.destination.ios.UIViewControllerNavigationBinding
 import kotlinx.serialization.Serializable
 
@@ -24,7 +24,7 @@ internal fun HostUIViewControllerInComposeScreen() {
             else -> navigationHandle.instruction
         }
     }
-    EmbedEnroUIKitViewController(
+    EmbeddedEnroUIViewController(
         instruction = instruction,
         factory = {
             val binding = requireNotNull(NavigationController.navigationController)

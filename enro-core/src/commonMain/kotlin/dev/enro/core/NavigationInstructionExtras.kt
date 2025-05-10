@@ -44,7 +44,8 @@ public class NavigationInstructionExtras internal constructor(
         get() = map
 
     public fun <T : Any> get(key: String): T? {
-        return map[key] as? T?
+        if (!map.containsKey(key)) return null
+        return runCatching { map[key] as? T? }.getOrNull()
     }
 
     public fun remove(key: String) {

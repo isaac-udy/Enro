@@ -74,6 +74,9 @@ sealed class DestinationReference {
                     typeName.simpleName == "UIViewController"
         }
 
+        val isUIWindowProvider = declaration is KSPropertyDeclaration &&
+                declaration.type.resolve().declaration.qualifiedName?.asString() == "dev.enro.destination.ios.UIWindowProvider"
+
         val annotation = declaration.getAnnotationsByType(NavigationDestination::class)
             .firstOrNull()
             ?: error("${declaration.simpleName} is not annotated with @NavigationDestination")
