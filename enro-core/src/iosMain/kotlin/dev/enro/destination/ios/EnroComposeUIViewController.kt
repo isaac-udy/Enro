@@ -53,7 +53,7 @@ public fun EnroComposeUIViewController(
     configure: ComposeUIViewControllerConfiguration.() -> Unit = {},
     content: @Composable () -> Unit
 ): UIViewController {
-    val viewController = ComposeUIViewController (
+    val viewController = ComposeUIViewController(
         configure = configure,
     ) {
         ProvideNavigationContextForUIViewController(content)

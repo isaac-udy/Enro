@@ -9,10 +9,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -21,8 +18,11 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.getNavigationHandle
 import dev.enro.core.leafContext
 import dev.enro.core.requestClose
+import dev.enro.destination.compose.navigationContext
+import dev.enro.destination.ios.PredictiveBackArrow
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -32,6 +32,7 @@ object MainView : NavigationKey.SupportsPresent
 @Composable
 fun MainViewController() {
     val navigation = navigationHandle()
+    val navigationContext = navigationContext
     val container = rememberNavigationContainer(
         root = SelectDestination,
         emptyBehavior = EmptyBehavior.CloseParent,
@@ -39,18 +40,16 @@ fun MainViewController() {
     Column(
         modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
-        IconButton(
-            onClick = {
-                container.context.leafContext().navigationHandle.requestClose()
-            }
-        ) {
-            Icon(Icons.AutoMirrored.Default.ArrowBack, null)
-        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
         ) {
             container.Render()
+            PredictiveBackArrow(
+                enabled = container.backstack.size > 1,
+                arrowTint = MaterialTheme.colors.onBackground.copy(alpha = 0.6f),
+                onBack = { navigationContext.leafContext().getNavigationHandle().requestClose() }
+            )
         }
     }
 }
