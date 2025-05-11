@@ -7,7 +7,6 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.Transition
-import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -52,7 +51,7 @@ internal fun AnimateNavigationAnimations(
     isSeeking: Boolean,
     content: @Composable AnimatedVisibilityScope.(Transition<EnterExitState>) -> Unit,
 ) {
-    val visible = rememberTransition(state, "ComposableDestination Visibility")
+    val visible = rememberTransitionCompat(state, "ComposableDestination Visibility")
     visible.AnimatedVisibility(
         visible = { it },
         enter = animation.enter,

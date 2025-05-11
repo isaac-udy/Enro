@@ -32,6 +32,7 @@ import dev.enro.core.controller.NavigationController
 import dev.enro.core.push
 import dev.enro.core.requestClose
 import dev.enro.tests.application.compose.common.TitledColumn
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
 import kotlin.uuid.Uuid
@@ -135,7 +136,10 @@ fun CommonSerializableNavigationKeyScreen() {
                 navigation.push(
                     CommonSerialization.DisplaySerializedData(
                         CommonSerialization.SerializedData.NavigationKeyJson(
-                            data = NavigationController.jsonConfiguration.encodeToString(navigation.key)
+                            data = NavigationController.jsonConfiguration.encodeToString(
+                                PolymorphicSerializer(NavigationKey::class),
+                                navigation.key
+                            )
                         )
                     )
                 )
@@ -149,7 +153,11 @@ fun CommonSerializableNavigationKeyScreen() {
                 navigation.push(
                     CommonSerialization.DisplaySerializedData(
                         CommonSerialization.SerializedData.NavigationKeySavedState(
-                            data = encodeToSavedState<NavigationKey>(navigation.key, NavigationController.savedStateConfiguration)
+                            data = encodeToSavedState<NavigationKey>(
+                                PolymorphicSerializer(NavigationKey::class),
+                                navigation.key,
+                                NavigationController.savedStateConfiguration
+                            )
                         )
                     )
                 )
@@ -212,12 +220,14 @@ fun CommonDisplaySerializedDataScreen() {
                 onClick = {
                     decodedData = when (encodedData) {
                         is CommonSerialization.SerializedData.NavigationKeyJson -> {
-                            NavigationController.jsonConfiguration.decodeFromString<NavigationKey>(
+                            NavigationController.jsonConfiguration.decodeFromString(
+                                deserializer = PolymorphicSerializer(NavigationKey::class),
                                 string = encodedData.data,
                             ).toString()
                         }
                         is CommonSerialization.SerializedData.NavigationKeySavedState -> {
-                            decodeFromSavedState<NavigationKey>(
+                            decodeFromSavedState(
+                                deserializer = PolymorphicSerializer(NavigationKey::class),
                                 savedState = encodedData.data,
                                 configuration = NavigationController.savedStateConfiguration,
                             ).toString()
