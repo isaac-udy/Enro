@@ -6,16 +6,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.ComposeViewport
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
@@ -25,7 +26,6 @@ import androidx.lifecycle.enableSavedStateHandles
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.savedState
 import dev.enro.core.NavigationContext
 import dev.enro.core.compose.LocalNavigationHandle
 import dev.enro.core.compose.destination.EnroLocalSavedStateRegistryOwner
@@ -34,6 +34,8 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
+import dev.enro.core.leafContext
+import dev.enro.core.requestClose
 import dev.enro.tests.application.EnroComponent
 import dev.enro.tests.application.SelectDestination
 import dev.enro.tests.application.installNavigationController
@@ -41,11 +43,7 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.configureWebResources
-import org.w3c.dom.BroadcastChannel
 import org.w3c.dom.Element
-import org.w3c.dom.get
-import org.w3c.dom.set
-import org.w3c.dom.url.URL
 
 @Serializable
 data class RandomOtherType(
@@ -58,16 +56,13 @@ fun main() {
     configureWebResources {
         resourcePathMapping { path -> "./$path" }
     }
+    val historyPlugin = WebHistoryPlugin(window)
     val controller = EnroComponent.installNavigationController(
         document = document,
     ) {
-        registerSerializer(RandomOtherType.serializer())
+        plugin(historyPlugin)
     }
 
-    val channel = BroadcastChannel(name = "EnroChannel")
-
-    val ref = window.location.href
-    println(window.sessionStorage.get("sessionThing"))
     /*
     There's something interesting here with hrefs and window.open calls (particularly with _self target)
     I think that we probably want to somehow relate the href to a destination,
@@ -90,26 +85,17 @@ fun main() {
                 val container = rememberNavigationContainer(
                     root = SelectDestination,
                     emptyBehavior = EmptyBehavior.Action {
-                        val url = URL(window.location.href)
-                        url.search = "searchQ" // Clear query parameters
-                        url.hash = "hash"   // Clear hash
-
-                        val newWindow = window.open(url.href, "_self")!!
-                        newWindow.sessionStorage.set("sessionThing", "SeqrchQ")
                         true
                     },
                 )
+                LaunchedEffect(Unit) {
+                    historyPlugin.rootContainer = container
+                }
 
                 Column {
                     IconButton(
                         onClick = {
-                            val url = URL(window.location.href)
-                            url.search = "searchQ" // Clear query parameters
-                            url.hash = "hash"   // Clear hash
-
-                            val newWindow = window.open(url.href, "_self")!!
-                            newWindow.sessionStorage.set("sessionThing", "SeqrchQ")
-//                            container.context.leafContext().navigationHandle.requestClose()
+                            container.context.leafContext().navigationHandle.requestClose()
                         }
                     ) {
                         Icon(Icons.Default.ArrowBack, null)
@@ -117,10 +103,10 @@ fun main() {
 
                     Box(
                         modifier = Modifier
-                            .background(Color.LightGray)
+                            .background(MaterialTheme.colors.background)
                             .fillMaxWidth()
                     ) {
-//                        container.Render()
+                        container.Render()
                     }
                 }
             }
@@ -154,7 +140,7 @@ internal fun ApplyLocals(
             contextReference = element,
             getController = { controller },
             getParentContext = { null },
-            getArguments = { savedState() },
+            getContextInstruction = { null },
             getViewModelStoreOwner = { owners },
             getSavedStateRegistryOwner = { owners },
             getLifecycleOwner = { owners },
