@@ -2,6 +2,7 @@ package dev.enro.core.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -23,7 +24,10 @@ import dev.enro.core.requireNavigationContext
 
 @Composable
 public fun rememberNavigationContainer(
-    key: NavigationContainerKey = rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.Dynamic() },
+    key: NavigationContainerKey = run {
+        val hash = currentCompositeKeyHash
+        rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.FromName(hash.toString()) }
+    },
     root: NavigationKey.SupportsPush,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
@@ -44,7 +48,10 @@ public fun rememberNavigationContainer(
 
 @Composable
 public fun rememberNavigationContainer(
-    key: NavigationContainerKey = rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.Dynamic() },
+    key: NavigationContainerKey = run {
+        val hash = currentCompositeKeyHash
+        rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.FromName(hash.toString()) }
+    },
     root: NavigationKey.WithExtras<out NavigationKey.SupportsPush>,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
@@ -65,7 +72,10 @@ public fun rememberNavigationContainer(
 
 @Composable
 public fun rememberNavigationContainer(
-    key: NavigationContainerKey = rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.Dynamic() },
+    key: NavigationContainerKey = run {
+        val hash = currentCompositeKeyHash
+        rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.FromName(hash.toString()) }
+    },
     initialBackstack: List<NavigationKey.SupportsPush> = emptyList(),
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
@@ -89,7 +99,10 @@ public fun rememberNavigationContainer(
 @Composable
 @AdvancedEnroApi
 public fun rememberNavigationContainer(
-    key: NavigationContainerKey = rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.Dynamic() },
+    key: NavigationContainerKey = run {
+        val hash = currentCompositeKeyHash
+        rememberSaveable(saver = NavigationContainerKey.Saver) { NavigationContainerKey.FromName(hash.toString()) }
+    },
     initialBackstack: NavigationBackstack,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
