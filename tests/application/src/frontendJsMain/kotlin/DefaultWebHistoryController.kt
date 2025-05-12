@@ -19,8 +19,21 @@ import org.w3c.dom.PopStateEvent
 import org.w3c.dom.Window
 import org.w3c.dom.events.Event
 
+// TODO: rootOnly=true is pretty safe, but probably need to do a bit more exploring with rootOnly=flase,
+// as it appears to work correctly in many cases, but there still seem to be some cases where the
+// synthetic backstack history gets out of sync with the browser history. There's also the case
+// with managed flows where things don't quite work as you might expect with the browser history,
+// resulting in some strange forward/back behavior and some steps getting skipped. One solution to
+// explore here is to make sure to clear the results for steps when they are navigated away from
+// due to browser back presses. Another option might be to use some kind of "reset" on the history
+// state when things appear to be getting out-of-sync (or some pop-and-then-push forward resets).
+// It may also be interesting to do some kind of middle ground here, where certain destinations
+// or containers are allowed within the history, but not all of them. This would be a reasonable
+// way to allow for some more complex navigation while avoiding certain issues that may
+// be present with the full/deep container history.
 class WebHistoryPlugin(
     private val window: Window,
+    private val rootOnly: Boolean = true,
 ) : EnroPlugin() {
 
     internal var rootContainer: NavigationContainer? = null
@@ -35,7 +48,6 @@ class WebHistoryPlugin(
     private val eventListener: (Event) -> Unit = {
         if (eventListenerEnabled && it is PopStateEvent) {
             updateHistoryState(it)
-//            rootContainer?.context?.leafContext()?.getNavigationHandle()?.requestClose()
         }
     }
 
@@ -73,7 +85,7 @@ class WebHistoryPlugin(
         }
         println("START")
         job = CoroutineScope(Dispatchers.Main).launch {
-            val currentState = createNodeFor(container)
+            val currentState = createNodeFor(container, rootOnly)
             val serializedCurrentState = NavigationController.jsonConfiguration
                 .encodeToString(currentState)
                 .toJsString()
@@ -89,7 +101,7 @@ class WebHistoryPlugin(
                 if (currentState != poppedState) {
                     println("History browserpop")
                     applyNodeFor(container, poppedState)
-                    val updatedState = createNodeFor(container)
+                    val updatedState = createNodeFor(container, rootOnly)
                     if (updatedState != poppedState) {
                         window.history.back()
                         return@launch
@@ -258,13 +270,20 @@ data class ContainerNode(
 
 fun createNodeFor(
     container: NavigationContainer,
+    rootOnly: Boolean,
 ): ContainerNode {
     return ContainerNode(
         containerKey = container.key,
         backstack = container.backstack.toList(),
-        children = container.childContext?.containerManager?.containers.orEmpty()
-            .map { createNodeFor(it) }
-            .sortedBy { it.containerKey.name }
+        // When we're in the "rootOnly" navigation mode, we just want to ignore
+        // any changes in child containers, as they are not relevant to the back navigation
+        children = when {
+            rootOnly -> emptyList()
+            else -> container.childContext?.containerManager?.containers.orEmpty()
+                .map { createNodeFor(it, false) }
+                .sortedBy { it.containerKey.name }
+
+        }
     )
 }
 
