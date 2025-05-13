@@ -47,6 +47,10 @@ public actual class NavigationWindowManager actual constructor(
         }
     }
 
+    internal actual fun isExplicitWindowInstruction(instruction: AnyOpenInstruction): Boolean {
+        return instruction.isOpenInWindow() || controller.bindingForInstruction(instruction) is DesktopWindowNavigationBinding<*, *>
+    }
+
     @Composable
     public fun Render() {
         desktopWindows.value.forEach { window ->

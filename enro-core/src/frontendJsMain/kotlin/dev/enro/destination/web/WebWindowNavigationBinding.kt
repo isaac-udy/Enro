@@ -3,8 +3,8 @@ package dev.enro.destination.web
 import dev.enro.core.NavigationBinding
 import dev.enro.core.NavigationKey
 import dev.enro.core.controller.NavigationModuleScope
-import dev.enro.core.serialization.defaultSerializer
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
 
 public class WebWindowNavigationBinding<KeyType : NavigationKey, WindowType : WebWindow> @PublishedApi internal constructor(
@@ -32,7 +32,7 @@ internal fun <KeyType : NavigationKey, DestinationType : WebWindow> createWebWin
 }
 
 public inline fun <reified KeyType : NavigationKey, reified DestinationType : WebWindow> NavigationModuleScope.webWindowDestination(
-    keySerializer: KSerializer<KeyType> = NavigationKey.defaultSerializer(),
+    keySerializer: KSerializer<KeyType> = serializer<KeyType>(),
     noinline constructDestination: () -> DestinationType,
 ) {
     binding(

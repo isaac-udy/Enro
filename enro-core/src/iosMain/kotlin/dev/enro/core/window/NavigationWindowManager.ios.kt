@@ -19,6 +19,7 @@ import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.HostInstructionAs
 import dev.enro.core.controller.usecase.OnNavigationContextCreated
 import dev.enro.core.plugins.EnroPlugin
+import dev.enro.destination.ios.UIViewControllerNavigationBinding
 import dev.enro.destination.ios.UIWindowNavigationBinding
 import dev.enro.destination.ios.UIWindowScope
 import dev.enro.destination.ios.navigationInstruction
@@ -55,7 +56,7 @@ public var NSObject.navigationContext: NavigationContext<*>?
     }
 
 public actual class NavigationWindowManager actual constructor(
-    controller: NavigationController,
+    private val controller: NavigationController,
 ) : EnroPlugin() {
 
     private var pendingInstruction: AnyOpenInstruction? = null
@@ -207,6 +208,13 @@ public actual class NavigationWindowManager actual constructor(
                 open(andOpen)
             }
         }
+    }
+
+    internal actual fun isExplicitWindowInstruction(instruction: AnyOpenInstruction): Boolean {
+        val binding = controller.bindingForInstruction(instruction)
+        return instruction.isOpenInWindow()
+                || binding is UIWindowNavigationBinding<*, *>
+                || binding is UIViewControllerNavigationBinding<*, *>
     }
 
     public actual companion object

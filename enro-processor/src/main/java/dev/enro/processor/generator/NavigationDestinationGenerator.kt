@@ -181,6 +181,10 @@ object NavigationDestinationGenerator {
                 "desktopWindowDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
                 formatting,
             )
+            destination.isWebWindow -> addNamedCode(
+                "webWindowDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
+                formatting,
+            )
             destination.isUIViewControllerClass -> addNamedCode(
                 "uiViewControllerDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
                 formatting,
@@ -463,6 +467,14 @@ fun FileSpec.Builder.addImportsForBinding(destination: DestinationReference.Kotl
             } else it
         }
         .let {
+            if (destination.isWebWindow) {
+                it.addImport(
+                    "dev.enro.destination.web",
+                    "webWindowDestination"
+                )
+            } else it
+        }
+        .let {
             if (destination.isUIViewControllerClass || destination.isUIViewControllerFunction) {
                 it.addImport(
                     "dev.enro.destination.ios",
@@ -478,6 +490,7 @@ fun FileSpec.Builder.addImportsForBinding(destination: DestinationReference.Kotl
                 )
             } else it
         }
+
         .addImport(
             "dev.enro.destination.synthetic",
             "syntheticDestination"

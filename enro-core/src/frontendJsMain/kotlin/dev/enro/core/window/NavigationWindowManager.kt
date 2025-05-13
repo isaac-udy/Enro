@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
+import dev.enro.core.NavigationDirection
+import dev.enro.core.NavigationInstruction
 import dev.enro.core.asPresent
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.plugins.EnroPlugin
@@ -12,6 +14,11 @@ import dev.enro.destination.flow.ManagedFlowNavigationBinding
 import dev.enro.destination.web.HostComposableInWebWindow
 import dev.enro.destination.web.WebWindow
 import dev.enro.destination.web.WebWindowNavigationBinding
+import kotlinx.browser.sessionStorage
+import kotlinx.browser.window
+import org.w3c.dom.get
+import org.w3c.dom.set
+import org.w3c.dom.url.URLSearchParams
 
 
 public actual class NavigationWindowManager actual constructor(
@@ -22,15 +29,33 @@ public actual class NavigationWindowManager actual constructor(
 
     public actual fun open(instruction: AnyOpenInstruction) {
         if (!::activeWebWindow.isInitialized) {
+            val search = URLSearchParams(window.location.search.toJsString())
+            val instructionForRoot = search.get("instruction")
+                ?.let { instructionId ->
+                    println("LOADING: $instructionId")
+                    val loaded = sessionStorage.get(instructionId)
+                    println("LOADED: $loaded")
+                    sessionStorage.removeItem(instructionId)
+                    return@let loaded
+                }
+                ?.let { serializedInstruction ->
+                    runCatching {
+                        NavigationController.jsonConfiguration.decodeFromString<NavigationInstruction.Open<NavigationDirection>>(
+                            serializedInstruction
+                        )
+                    }.onFailure { it.printStackTrace() }.getOrNull()
+                } ?: instruction
+            println("ROOT: $instruction")
+            println("LOADED $instructionForRoot")
             // this is the initial setup of the window, which will occur when the NavigationController
             // is first created with a root parameter, so we're going to do some slightly different
             // things to set up the window
-            val binding = controller.bindingForInstruction(instruction)
+            val binding = controller.bindingForInstruction(instructionForRoot)
             val hostedInstruction = when (binding) {
-                is WebWindowNavigationBinding<*, *> -> instruction
-                is ComposableNavigationBinding<*, *> -> HostComposableInWebWindow(instruction).asPresent()
-                is ManagedFlowNavigationBinding<*, *> -> HostComposableInWebWindow(instruction).asPresent()
-                else -> error("Cannot open ${instruction.navigationKey} in a WebWindow")
+                is WebWindowNavigationBinding<*, *> -> instructionForRoot
+                is ComposableNavigationBinding<*, *> -> HostComposableInWebWindow(instructionForRoot).asPresent()
+                is ManagedFlowNavigationBinding<*, *> -> HostComposableInWebWindow(instructionForRoot).asPresent()
+                else -> error("Cannot open ${instructionForRoot.navigationKey} in a WebWindow")
             }
             val hostedBinding = controller.bindingForInstruction(hostedInstruction)
             requireNotNull(hostedBinding) {
@@ -58,8 +83,16 @@ public actual class NavigationWindowManager actual constructor(
         Activities with new tasks, and the web uses new windows. Not sure if this applies to Desktop,
         but it's worth thinking about.
          */
-//        val newWindow = window.open(url.href, "_self")!!
-//        newWindow.sessionStorage.set("sessionThing", "SeqrchQ")
+        val hashlessWindow = window.location.href
+            .removeSuffix(window.location.hash)
+            .removeSuffix(window.location.search)
+        val newWindow = window
+            .open(hashlessWindow+"?instruction=${instruction.instructionId}", "_blank")!!
+
+        newWindow.sessionStorage.set(
+            instruction.instructionId,
+            NavigationController.jsonConfiguration.encodeToString(instruction)
+        )
     }
 
     public actual fun close(context: NavigationContext<*>, andOpen: AnyOpenInstruction?) {
@@ -67,8 +100,12 @@ public actual class NavigationWindowManager actual constructor(
             open(andOpen)
         }
         runCatching {
-            kotlinx.browser.window.close()
+            window.close()
         }
+    }
+
+    internal actual fun isExplicitWindowInstruction(instruction: AnyOpenInstruction): Boolean {
+        return instruction.isOpenInWindow() || controller.bindingForInstruction(instruction) is WebWindowNavigationBinding<*, *>
     }
 
     @Composable

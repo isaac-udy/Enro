@@ -16,6 +16,7 @@ import dev.enro.animation.findOverrideForOpening
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.NavigationContext
 import dev.enro.core.NavigationDirection
+import dev.enro.core.activity.ActivityNavigationBinding
 import dev.enro.core.addOpenInstruction
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.application
@@ -168,6 +169,11 @@ public actual class NavigationWindowManager actual constructor(
                 activity.finish()
             }
         }
+    }
+
+    internal actual fun isExplicitWindowInstruction(instruction: AnyOpenInstruction): Boolean {
+        return instruction.isOpenInWindow()
+                || controller.bindingForInstruction(instruction) is ActivityNavigationBinding<*, *>
     }
 
     public actual companion object

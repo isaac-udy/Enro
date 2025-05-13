@@ -8,7 +8,6 @@ import dev.enro.core.container.setBackstack
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.getNavigationHandle
-import dev.enro.core.window.isOpenInWindow
 
 internal interface ExecuteOpenInstruction {
     operator fun invoke(
@@ -37,7 +36,7 @@ internal class ExecuteOpenInstructionImpl(
             return
         }
 
-        val openInWindow = instruction.isOpenInWindow()
+        val openInWindow = navigationContext.controller.windowManager.isExplicitWindowInstruction(instruction)
         if (openInWindow) {
             val controller = navigationContext.controller
             controller.windowManager.open(processedInstruction)

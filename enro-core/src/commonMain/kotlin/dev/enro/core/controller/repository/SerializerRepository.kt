@@ -6,6 +6,7 @@ import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.internal.isDebugBuild
 import dev.enro.core.result.flows.FlowStep
+import dev.enro.core.result.internal.ResultChannelId
 import dev.enro.core.serialization.WrappedBoolean
 import dev.enro.core.serialization.WrappedByte
 import dev.enro.core.serialization.WrappedChar
@@ -40,6 +41,7 @@ internal class SerializerRepository {
             subclass(NavigationDirection.serializer())
             subclass(NavigationDirection.Push.serializer())
             subclass(NavigationDirection.Present.serializer())
+            subclass(ResultChannelId.serializer())
 
             subclass(WrappedBoolean.serializer())
             subclass(WrappedDouble.serializer())

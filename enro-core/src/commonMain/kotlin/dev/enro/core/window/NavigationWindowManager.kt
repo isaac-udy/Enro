@@ -11,6 +11,8 @@ public expect class NavigationWindowManager(
     public fun open(instruction: AnyOpenInstruction)
     public fun close(context: NavigationContext<*>, andOpen: AnyOpenInstruction? = null)
 
+    internal fun isExplicitWindowInstruction(instruction: AnyOpenInstruction): Boolean
+
     public companion object
 }
 

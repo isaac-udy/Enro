@@ -12,7 +12,7 @@ internal sealed class PendingResult {
     class Closed(
         override val resultChannelId: ResultChannelId,
         override val instruction: AnyOpenInstruction,
-        override val navigationKey: NavigationKey.WithResult<*>,
+       override val navigationKey:  NavigationKey.WithResult<*>,
     ) : PendingResult()
 
     data class Result(

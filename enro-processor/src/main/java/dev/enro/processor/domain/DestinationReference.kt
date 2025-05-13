@@ -61,6 +61,9 @@ sealed class DestinationReference {
         val isDesktopWindow = declaration is KSClassDeclaration &&
                 declaration.getAllSuperTypes().any { it.declaration.qualifiedName?.asString() == "dev.enro.destination.desktop.DesktopWindow" }
 
+        val isWebWindow = declaration is KSClassDeclaration &&
+                declaration.getAllSuperTypes().any { it.declaration.qualifiedName?.asString() == "dev.enro.destination.web.WebWindow" }
+
         val isUIViewControllerClass = declaration is KSClassDeclaration &&
                 declaration.getAllSuperTypes().any { it.declaration.qualifiedName?.asString() == "platform.UIKit.UIViewController" }
 
