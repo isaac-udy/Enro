@@ -23,4 +23,6 @@ public actual class NavigationWindowManager actual constructor(
             open(andOpen)
         }
     }
+
+    public actual companion object
 }

@@ -10,4 +10,19 @@ public expect class NavigationWindowManager(
 ) : EnroPlugin {
     public fun open(instruction: AnyOpenInstruction)
     public fun close(context: NavigationContext<*>, andOpen: AnyOpenInstruction? = null)
+
+    public companion object
 }
+
+/**
+ * This is the key used to identify that the NavigationInstruction is intended to open a
+ * new window, using the platform specific functionality to host the instruction in a window.
+ *
+ * Various platforms have different window types and window hosts:
+ * Android: Activity (ActivityHostForAnyInstruction)
+ * Desktop: Window (DesktopWindowHostForComposable)
+ * iOS: Window (iOSWindowHostForComposable)
+ * Web: Window (WebWindowHostForComposable)
+ */
+public val NavigationWindowManager.Companion.EXTRA_OPEN_IN_WINDOW: String
+    get() = "dev.enro.core.window.OPEN_IN_WINDOW"

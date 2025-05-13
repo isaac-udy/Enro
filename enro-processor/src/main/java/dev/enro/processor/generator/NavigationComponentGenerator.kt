@@ -189,7 +189,7 @@ object NavigationComponentGenerator {
             )
             .addParameter(
                 ParameterSpec.builder("strictMode", Boolean::class)
-                    .defaultValue("false")
+                    .defaultValue("true")
                     .build()
             )
             .addParameter(
@@ -228,7 +228,7 @@ object NavigationComponentGenerator {
                         )
                         controller.install($platformParameterName)
                         if (root != null) {
-                            controller.windowManager.open(root)
+                            controller.windowManager.open(root.setOpenInWindow())
                         }
                         return controller
                     """.trimIndent()
@@ -287,6 +287,10 @@ object NavigationComponentGenerator {
             .addImport(
                 packageName = "dev.enro.core.controller",
                 names = arrayOf("internalCreateNavigationController"),
+            )
+            .addImport(
+                packageName = "dev.enro.core.window",
+                names = arrayOf("setOpenInWindow")
             )
             .addFunction(extensionFunction)
             .let {
@@ -477,6 +481,7 @@ object NavigationComponentGenerator {
                 import dev.enro.core.controller.NavigationController
                 import dev.enro.core.controller.NavigationModuleScope
                 import dev.enro.core.controller.internalCreateNavigationController
+                import dev.enro.core.window.isOpenInWindow
                 import kotlin.Boolean
                 import kotlin.Suppress
                 import kotlin.Unit
@@ -484,7 +489,7 @@ object NavigationComponentGenerator {
                 public fun ${component.simpleName}.$extensionFunctionName(
                   application: Application,
                   root: AnyOpenInstruction? = null,
-                  strictMode: Boolean = false,
+                  strictMode: Boolean = true,
                   useLegacyContainerPresentBehavior: Boolean = false,
                   backConfiguration: EnroBackConfiguration = EnroBackConfiguration.Default,
                   block: NavigationModuleScope.() -> Unit = {},
@@ -500,7 +505,7 @@ object NavigationComponentGenerator {
                   )
                   controller.install(application)
                   if (root != null) {
-                      controller.windowManager.open(root)
+                      controller.windowManager.open(root.setOpenInWindow())
                   }
                   return controller
                 }

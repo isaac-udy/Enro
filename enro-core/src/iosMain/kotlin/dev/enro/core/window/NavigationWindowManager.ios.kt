@@ -208,6 +208,8 @@ public actual class NavigationWindowManager actual constructor(
             }
         }
     }
+
+    public actual companion object
 }
 
 private val systemWindowNames = setOf(

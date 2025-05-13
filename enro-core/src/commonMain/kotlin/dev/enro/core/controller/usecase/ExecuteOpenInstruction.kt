@@ -8,6 +8,7 @@ import dev.enro.core.container.setBackstack
 import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.getNavigationHandle
+import dev.enro.core.window.isOpenInWindow
 
 internal interface ExecuteOpenInstruction {
     operator fun invoke(
@@ -36,15 +37,32 @@ internal class ExecuteOpenInstructionImpl(
             return
         }
 
-        val container = findContainerFor(navigationContext, processedInstruction)
-        // TODO: Do we need warnings here for non-hosted instructions/instructions that are going to be opened in a new window?
-        if (container != null) {
-            container.setBackstack { backstack ->
-                backstack.plus(processedInstruction)
-            }
-        } else {
+        val openInWindow = instruction.isOpenInWindow()
+        if (openInWindow) {
             val controller = navigationContext.controller
             controller.windowManager.open(processedInstruction)
+            return
+        }
+        val container = findContainerFor(navigationContext, processedInstruction)
+        val isStrictMode = navigationContext.controller.config.isStrictMode
+        when  {
+            container != null -> container.setBackstack { backstack ->
+                backstack.plus(processedInstruction)
+            }
+            isStrictMode -> {
+                error("No container was found for NavigationInstruction.Open with NavigationKey " +
+                        "${processedInstruction.navigationKey}. This error can be disabled by " +
+                        "setting the strictMode flag to false when creating a NavigationController, " +
+                        "but this is not recommended for most applications (it is better to figure out " +
+                        "why there is no container for the instruction, or explicitly set the instruction " +
+                        "to open in a new window by using the openInWindow extensions on NavigationKey or " +
+                        "NavigationInstruction."
+                )
+            }
+            else -> {
+                val controller = navigationContext.controller
+                controller.windowManager.open(processedInstruction)
+            }
         }
     }
 }

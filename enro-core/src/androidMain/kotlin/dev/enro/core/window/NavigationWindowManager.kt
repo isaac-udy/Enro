@@ -169,4 +169,6 @@ public actual class NavigationWindowManager actual constructor(
             }
         }
     }
+
+    public actual companion object
 }
