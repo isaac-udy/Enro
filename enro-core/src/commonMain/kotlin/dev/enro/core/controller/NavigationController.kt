@@ -9,6 +9,7 @@ import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.controller.repository.SerializerRepository
 import dev.enro.core.controller.usecase.AddModuleToController
+import dev.enro.core.plugins.EnroPlugin
 import dev.enro.core.result.EnroResult
 import dev.enro.core.window.NavigationWindowManager
 import kotlinx.serialization.json.Json
@@ -32,6 +33,14 @@ public class NavigationController internal constructor() {
 
     public fun addModule(component: NavigationModule) {
         addModuleToController(component)
+    }
+
+    public fun addPlugin(plugin: EnroPlugin) {
+        pluginRepository.addPlugins(listOf(plugin))
+    }
+
+    public fun removePlugin(plugin: EnroPlugin) {
+        pluginRepository.removePlugins(listOf(plugin))
     }
 
     public fun bindingForInstruction(

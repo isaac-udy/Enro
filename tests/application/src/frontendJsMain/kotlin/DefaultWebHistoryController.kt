@@ -33,17 +33,11 @@ import org.w3c.dom.events.Event
 // be present with the full/deep container history.
 class WebHistoryPlugin(
     private val window: Window,
+    private val rootContainer: NavigationContainer,
     private val rootOnly: Boolean = true,
 ) : EnroPlugin() {
 
-    internal var rootContainer: NavigationContainer? = null
-        set(value) {
-            field = value
-            if (value != null) {
-                updateHistoryState()
-            }
-        }
-
+    private var activeHistoryJob: Job? = null
     private var eventListenerEnabled = true
     private val eventListener: (Event) -> Unit = {
         if (eventListenerEnabled && it is PopStateEvent) {
@@ -74,17 +68,17 @@ class WebHistoryPlugin(
     override fun onClosed(navigationHandle: NavigationHandle) {
         updateHistoryState()
     }
-    var job: Job? = null
+
     private fun updateHistoryState(
         event: PopStateEvent? = null,
     ) {
-        val container = rootContainer ?: return
+        val container = rootContainer
         eventListenerEnabled = false
-        if (job != null) {
+        if (activeHistoryJob != null) {
             return
         }
         println("START")
-        job = CoroutineScope(Dispatchers.Main).launch {
+        activeHistoryJob = CoroutineScope(Dispatchers.Main).launch {
             val currentState = createNodeFor(container, rootOnly)
             val serializedCurrentState = NavigationController.jsonConfiguration
                 .encodeToString(currentState)
@@ -211,7 +205,7 @@ class WebHistoryPlugin(
         }.apply {
             invokeOnCompletion {
                 println("END")
-                job = null
+                activeHistoryJob = null
                 eventListenerEnabled = true
             }
         }

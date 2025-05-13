@@ -7,6 +7,9 @@ import dev.enro.core.internal.NoKeyNavigationBinding
 import dev.enro.core.result.ForwardingResultInterceptor
 import dev.enro.core.result.flows.NavigationFlowInterceptor
 import dev.enro.destination.synthetic.SyntheticExecutionInterceptor
+import dev.enro.destination.web.HostComposableInWebWindow
+import dev.enro.destination.web.WindowForHostingComposable
+import dev.enro.destination.web.webWindowDestination
 
 internal actual val defaultNavigationModule: NavigationModule = createNavigationModule {
     animations {
@@ -19,4 +22,5 @@ internal actual val defaultNavigationModule: NavigationModule = createNavigation
     interceptor(ForwardingResultInterceptor)
 
     binding(NoKeyNavigationBinding())
+    webWindowDestination<HostComposableInWebWindow, WindowForHostingComposable> { WindowForHostingComposable() }
 }
