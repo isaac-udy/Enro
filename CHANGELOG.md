@@ -6,6 +6,7 @@
     * Only the Android target is currently supported, but the project is now set up to support other targets in the future
 * ⚠️ Removed NavigationExecutor and executor override functionality ⚠️
     * This functionality was not widely used, and was complicating the codebase, and has been removed. Most of the functionality provided through using executor overrides can be achieved through other means, such as NavigationInstructionInterceptors or SyntheticDestinations. If you were using a custom executor, please raise an issue on the Enro GitHub repository to discuss your use case, and we can work together to find a solution.
+* ⚠️ Updated NavigationController's configuration to default to `strictMode = true` ⚠️
 * Fixed a possible memory leak bug with `ComposableDestinationOwner`
 
 ## 2.8.3

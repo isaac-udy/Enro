@@ -5,7 +5,7 @@ import dev.enro.core.controller.EnroBackConfiguration
 public data class EnroConfig(
     internal val isInTest: Boolean = false,
     internal val isAnimationsDisabled: Boolean = false,
-    internal val isStrictMode: Boolean = false,
+    internal val isStrictMode: Boolean = true,
     /**
      * In versions of Enro before 2.8.0, NavigationContainers would always accept destinations that were presented, and
      * would only enforce their navigation instruction filter for pushed instructions. This is no longer the default
