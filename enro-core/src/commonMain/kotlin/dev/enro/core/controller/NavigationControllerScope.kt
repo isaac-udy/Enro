@@ -6,6 +6,7 @@ import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.controller.repository.NavigationAnimationRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.NavigationHostFactoryRepository
+import dev.enro.core.controller.repository.NavigationPathRepository
 import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.controller.repository.SerializerRepository
 import dev.enro.core.controller.usecase.ActiveNavigationHandleReference
@@ -46,9 +47,10 @@ internal class NavigationControllerScope(
             register { NavigationAnimationRepository() }
             register { NavigationHostFactoryRepository() }
             register { SerializerRepository() }
+            register { NavigationPathRepository() }
 
             // Usecases
-            register { AddModuleToController(get(), get(), get(), get(), get(), get(), get()) }
+            register { AddModuleToController(get(), get(), get(), get(), get(), get(), get(), get()) }
             register { AddPendingResult(get(), get()) }
             register<ExecuteOpenInstruction> { ExecuteOpenInstructionImpl(get(), get()) }
             register<ExecuteCloseInstruction> { ExecuteCloseInstructionImpl(get(), get()) }

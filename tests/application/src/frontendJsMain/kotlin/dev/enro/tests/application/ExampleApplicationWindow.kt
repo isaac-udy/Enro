@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationDestination
+import dev.enro.annotations.NavigationPath
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
@@ -17,6 +18,7 @@ import kotlinx.browser.window
 import kotlinx.serialization.Serializable
 
 @Serializable
+@NavigationPath("/")
 object ExampleApplicationWindow : NavigationKey.SupportsPresent
 
 @NavigationDestination(ExampleApplicationWindow::class)

@@ -69,6 +69,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
+thauvin-urlencoder = "net.thauvin.erik.urlencoder:urlencoder-lib:1.6.0"
 
 hilt-gradle = "com.google.dagger:hilt-android-gradle-plugin:2.55"
 hilt-android = "com.google.dagger:hilt-android:2.55"

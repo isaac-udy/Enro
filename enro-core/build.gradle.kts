@@ -20,6 +20,7 @@ kotlin {
             implementation(libs.androidx.savedState)
             implementation(libs.kotlinx.serialization)
             implementation(libs.kotlin.reflect)
+            implementation(libs.thauvin.urlencoder)
         }
         androidMain.dependencies {
             implementation(libs.androidx.core)

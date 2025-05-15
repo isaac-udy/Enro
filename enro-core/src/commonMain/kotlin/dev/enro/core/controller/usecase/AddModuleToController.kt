@@ -8,6 +8,7 @@ import dev.enro.core.controller.repository.InstructionInterceptorRepository
 import dev.enro.core.controller.repository.NavigationAnimationRepository
 import dev.enro.core.controller.repository.NavigationBindingRepository
 import dev.enro.core.controller.repository.NavigationHostFactoryRepository
+import dev.enro.core.controller.repository.NavigationPathRepository
 import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.controller.repository.SerializerRepository
 import kotlinx.serialization.KSerializer
@@ -21,6 +22,7 @@ import kotlin.reflect.KClass
 internal class AddModuleToController(
     private val pluginRepository: PluginRepository,
     private val navigationBindingRepository: NavigationBindingRepository,
+    private val navigationPathRepository: NavigationPathRepository,
     private val interceptorRepository: InstructionInterceptorRepository,
     private val animationRepository: NavigationAnimationRepository,
     private val composeEnvironmentRepository: ComposeEnvironmentRepository,
@@ -33,6 +35,7 @@ internal class AddModuleToController(
         interceptorRepository.addInterceptors(module.interceptors)
         module.animations.forEach { animationRepository.addAnimations(it) }
         module.hostFactories.forEach { navigationHostFactoryRepository.addFactory(it) }
+        module.pathBindings.forEach { navigationPathRepository.addPath(it) }
 
         serializerRepository.registerSerializersModule(module.serializersModule)
         if (module.bindings.isNotEmpty()) {

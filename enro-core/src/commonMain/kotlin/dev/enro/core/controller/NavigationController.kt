@@ -5,10 +5,13 @@ import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.AnyOpenInstruction
 import dev.enro.core.EnroConfig
 import dev.enro.core.NavigationBinding
+import dev.enro.core.NavigationInstruction
 import dev.enro.core.controller.repository.NavigationBindingRepository
+import dev.enro.core.controller.repository.NavigationPathRepository
 import dev.enro.core.controller.repository.PluginRepository
 import dev.enro.core.controller.repository.SerializerRepository
 import dev.enro.core.controller.usecase.AddModuleToController
+import dev.enro.core.path.ParsedPath
 import dev.enro.core.plugins.EnroPlugin
 import dev.enro.core.result.EnroResult
 import dev.enro.core.window.NavigationWindowManager
@@ -20,6 +23,7 @@ public class NavigationController internal constructor() {
     private val enroResult: EnroResult = dependencyScope.get()
     private val pluginRepository: PluginRepository = dependencyScope.get()
     private val navigationBindingRepository: NavigationBindingRepository = dependencyScope.get()
+    private val navigationPathRepository: NavigationPathRepository = dependencyScope.get()
     private val addModuleToController: AddModuleToController = dependencyScope.get()
     public val windowManager: NavigationWindowManager = dependencyScope.get()
 
@@ -41,6 +45,14 @@ public class NavigationController internal constructor() {
 
     public fun removePlugin(plugin: EnroPlugin) {
         pluginRepository.removePlugins(listOf(plugin))
+    }
+
+    public fun instructionForPath(path: String): AnyOpenInstruction? {
+        val parsedPath = ParsedPath.fromString(path)
+        val pathBinding = navigationPathRepository.getPathBinding(parsedPath)
+            ?: return null
+        val navigationKey = pathBinding.fromPath(parsedPath)
+        return NavigationInstruction.DefaultDirection(navigationKey)
     }
 
     public fun bindingForInstruction(

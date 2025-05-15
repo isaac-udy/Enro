@@ -6,6 +6,7 @@ import dev.enro.animation.NavigationAnimationOverride
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.NavigationBinding
+import dev.enro.core.path.NavigationPathBinding
 import dev.enro.core.controller.interceptor.NavigationInstructionInterceptor
 import dev.enro.core.controller.repository.ComposeEnvironment
 import dev.enro.core.plugins.EnroPlugin
@@ -34,7 +35,11 @@ public class NavigationModule {
     internal val hostFactories: MutableList<NavigationHostFactory<*>> = mutableListOf()
 
     @PublishedApi
+    internal val pathBindings: MutableList<NavigationPathBinding<*>> = mutableListOf()
+
+    @PublishedApi
     internal var serializersModule: SerializersModule = EmptySerializersModule()
+
 
     @PublishedApi
     internal var composeEnvironment: ComposeEnvironment? = null
@@ -54,6 +59,10 @@ public class NavigationModuleScope internal constructor(
 
     public fun binding(binding: NavigationBinding<*, *>) {
         module.bindings.add(binding)
+    }
+
+    public fun path(binding: NavigationPathBinding<*>) {
+        module.pathBindings.add(binding)
     }
 
     public fun plugin(enroPlugin: EnroPlugin) {
@@ -96,6 +105,7 @@ public class NavigationModuleScope internal constructor(
         module.interceptors.addAll(other.interceptors)
         module.hostFactories.addAll(other.hostFactories)
         module.animations.addAll(other.animations)
+        module.pathBindings.addAll(other.pathBindings)
         module.serializersModule += other.serializersModule
 
         if (other.composeEnvironment != null) {

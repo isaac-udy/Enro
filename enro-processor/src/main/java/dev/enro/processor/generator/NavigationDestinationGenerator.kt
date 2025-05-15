@@ -1,6 +1,8 @@
 package dev.enro.processor.generator
 
 import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.getConstructors
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -20,7 +22,9 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
+import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.GeneratedNavigationBinding
+import dev.enro.annotations.NavigationPath
 import dev.enro.processor.domain.DestinationReference
 import dev.enro.processor.extensions.ClassNames
 import dev.enro.processor.extensions.EnroLocation
@@ -84,6 +88,10 @@ object NavigationDestinationGenerator {
                         environment = environment,
                         destination = destination,
                     )
+                    .addPathBinding(
+                        environment = environment,
+                        destination = destination,
+                    )
                     .build()
             )
             .build()
@@ -123,14 +131,17 @@ object NavigationDestinationGenerator {
                 formatting["destinationType"] = destination.toClassName()
                 "%destinationType:T"
             }
+
             destination.isFunction -> {
                 formatting["destinationFun"] = destination.declaration.simpleName.asString()
                 "%destinationFun:L"
             }
+
             destination.isProperty -> {
                 formatting["destinationProp"] = destination.declaration.simpleName.asString()
                 "%destinationProp:L"
             }
+
             else -> {
                 environment.logger.error(
                     "Could not generate NavigationDestination for ${destination.declaration.qualifiedName?.asString()}. " +
@@ -157,46 +168,57 @@ object NavigationDestinationGenerator {
                 "activityDestination<%keyType:T, $destinationName>(keySerializer = $serializer)",
                 formatting,
             )
+
             destination.isFragment -> addNamedCode(
                 "fragmentDestination<%keyType:T, $destinationName>(keySerializer = $serializer)",
                 formatting,
             )
+
             destination.isSyntheticClass -> addNamedCode(
                 "syntheticDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
                 formatting,
             )
+
             destination.isSyntheticProvider -> addNamedCode(
                 "syntheticDestination(keySerializer = $serializer, provider = $destinationName)",
                 formatting,
             )
+
             destination.isManagedFlowProvider -> addNamedCode(
                 "managedFlowDestination(keySerializer = $serializer, provider = $destinationName)",
                 formatting,
             )
+
             destination.isComposable -> addNamedCode(
                 "composableDestination<%keyType:T>(keySerializer = $serializer) { $destinationName() }",
                 formatting,
             )
+
             destination.isDesktopWindow -> addNamedCode(
                 "desktopWindowDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
                 formatting,
             )
+
             destination.isWebWindow -> addNamedCode(
                 "webWindowDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
                 formatting,
             )
+
             destination.isUIViewControllerClass -> addNamedCode(
                 "uiViewControllerDestination<%keyType:T, $destinationName>(keySerializer = $serializer) { $destinationName() }",
                 formatting,
             )
+
             destination.isUIViewControllerFunction -> addNamedCode(
                 "uiViewControllerDestination<%keyType:T, platform.UIKit.UIViewController>(keySerializer = $serializer) { $destinationName() }",
                 formatting,
             )
+
             destination.isUIWindowProvider -> addNamedCode(
                 "uiWindowDestination(keySerializer = $serializer, provider = $destinationName)",
                 formatting,
             )
+
             else -> {
                 environment.logger.error(
                     "${destination.declaration.qualifiedName?.asString()} is not a valid destination."
@@ -205,6 +227,58 @@ object NavigationDestinationGenerator {
         }
         if (destination.isPlatformDestination) {
             addCode("\n\t}\n)")
+        }
+        return this
+    }
+
+    @OptIn(KspExperimental::class, ExperimentalEnroApi::class)
+    private fun FunSpec.Builder.addPathBinding(
+        environment: SymbolProcessorEnvironment,
+        destination: DestinationReference.Kotlin,
+    ): FunSpec.Builder {
+        val navigationPaths = destination.keyType.getAnnotationsByType(NavigationPath::class)
+            .map { it to destination.keyType.primaryConstructor }
+            .plus(
+                destination.keyType.getConstructors()
+                    .flatMap { constructor ->
+                        constructor.getAnnotationsByType(NavigationPath::class).toList().map {
+                            it to constructor
+                        }
+                    }
+            )
+            .toList()
+
+        if (navigationPaths.isEmpty()) return this
+        environment.logger.warn("Found ${navigationPaths.size} NavigationPath annotations on ${destination.keyType.simpleName.asString()}")
+        navigationPaths.forEach { (path, constructor) ->
+            val pattern = path.pattern
+            val constructorReference = when {
+                constructor == null -> "{ %T }"
+                else -> { "::%T" }
+            }
+
+            addCode("\n")
+            val params = pathPatternToParameterNames(pattern)
+
+            val typeName = destination.keyType.asStarProjectedType().toTypeName()
+            val paramTypeArray = params.map { typeName }.toTypedArray()
+            val paramReferences = params.map { "%T::$it" }.joinToString("\n") {
+                "                        $it,"
+            }
+
+            addCode(
+               """
+                navigationModuleScope.path(
+                    NavigationPathBinding.createPathBinding(
+                        pattern = %S,${"\n"}$paramReferences
+                        constructor = $constructorReference
+                    )
+                )
+               """.trimIndent(),
+                pattern,
+                *paramTypeArray,
+                typeName,
+            )
         }
         return this
     }
@@ -333,6 +407,7 @@ object NavigationDestinationGenerator {
                     JavaClassName.get(destination.keyType).nameInPackage(),
                     destination.element,
                 )
+
                 destination.isSyntheticProvider -> JavaCodeBlock.of(
                     """
                         navigationModuleScope.binding(
@@ -347,6 +422,7 @@ object NavigationDestinationGenerator {
                     JavaClassName.get(destination.keyType).nameInPackage(),
                     JavaClassName.get(destination.element as TypeElement)
                 )
+
                 destination.isManagedFlowProvider -> JavaCodeBlock.of(
                     """
                         navigationModuleScope.binding(
@@ -361,6 +437,7 @@ object NavigationDestinationGenerator {
                     JavaClassName.get(destination.keyType).nameInPackage(),
                     JavaClassName.get(destination.element as TypeElement)
                 )
+
                 destination.isComposable -> {
                     val composableWrapper = ComposableWrapperGenerator.generate(
                         processingEnv = processingEnv,
@@ -382,6 +459,7 @@ object NavigationDestinationGenerator {
                         JavaClassName.get(destination.keyType).nameInPackage()
                     )
                 }
+
                 else -> {
                     processingEnv.messager.printMessage(
                         Diagnostic.Kind.ERROR,
@@ -503,4 +581,31 @@ fun FileSpec.Builder.addImportsForBinding(destination: DestinationReference.Kotl
             "dev.enro.destination.compose",
             "composableDestination"
         )
+        .addImport(
+            "dev.enro.core.path",
+            "createPathBinding",
+            "NavigationPathBinding"
+        )
+}
+
+private fun pathPatternToParameterNames(pattern: String): List<String> {
+    val split = pattern.split("?", limit = 2)
+    val path = split[0]
+    val query = if (split.size > 1) split[1] else null
+    val pathParameters = path
+        .split("/")
+        .filter { it.startsWith("{") && it.endsWith("}") }
+
+    val queryParameters = query?.split("&")
+        .orEmpty()
+        .mapNotNull { it.split("=", limit = 2).getOrNull(1) }
+        .filter { it.startsWith("{") && it.endsWith("}") }
+
+    return (pathParameters + queryParameters)
+        .map {
+            it.removePrefix("{")
+                .removeSuffix("}")
+                .removeSuffix("?")
+        }
+        .filter { it.isNotEmpty() }
 }
