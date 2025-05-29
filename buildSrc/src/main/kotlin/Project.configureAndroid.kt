@@ -1,3 +1,4 @@
+
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
@@ -44,11 +45,13 @@ private fun Project.commonAndroidConfig(
     versionProperties.load(FileInputStream(rootProject.file("version.properties")))
 
     extensions.configure<BaseExtension> {
+        val libs = project.the<LibrariesForLibs>()
         this@configure.namespace = namespace
-        compileSdkVersion(35)
+        compileSdkVersion(libs.versions.android.compileSdk.get().toInt())
+
         defaultConfig {
-            minSdk = 21
-            targetSdk = 34
+            minSdk = libs.versions.android.minSdk.get().toInt()
+            targetSdk = libs.versions.android.targetSdk.get().toInt()
             versionCode = versionProperties.getProperty("versionCode").toInt()
             versionName = versionProperties.getProperty("versionName")
 
