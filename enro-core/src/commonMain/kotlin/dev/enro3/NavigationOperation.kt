@@ -1,6 +1,5 @@
-package dev.enro
+package dev.enro3
 
-import dev.enro.NavigationResultChannel.ResultIdKey
 import kotlin.jvm.JvmName
 
 public class NavigationOperation(
@@ -43,10 +42,10 @@ public class NavigationOperation(
                 "${instance.key} is a NavigationKey.WithResult and cannot be completed without a result"
             }
             instance.setResultCompleted()
-            val resultId = instance.metadata.get(ResultIdKey)
+            val resultId = instance.metadata.get(NavigationResultChannel.ResultIdKey)
             return NavigationOperation { backstack ->
                 val toRemove = backstack.filter {
-                    it.id == instance.id || it.metadata.get(ResultIdKey) == resultId
+                    it.id == instance.id || it.metadata.get(NavigationResultChannel.ResultIdKey) == resultId
                 }
                 return@NavigationOperation backstack - toRemove
             }
@@ -68,10 +67,10 @@ public class NavigationOperation(
             result: R,
         ): NavigationOperation {
             instance.setResultCompleted(result)
-            val resultId = instance.metadata.get(ResultIdKey)
+            val resultId = instance.metadata.get(NavigationResultChannel.ResultIdKey)
             return NavigationOperation { backstack ->
                 val toRemove = backstack.filter {
-                    it.id == instance.id || it.metadata.get(ResultIdKey) == resultId
+                    it.id == instance.id || it.metadata.get(NavigationResultChannel.ResultIdKey) == resultId
                 }
                 return@NavigationOperation backstack - toRemove
             }
@@ -82,7 +81,7 @@ public class NavigationOperation(
             from: NavigationKey.Instance<out NavigationKey>,
         ): NavigationOperation {
             instance.setDelegatedResult(from)
-            from.metadata.set(ResultIdKey, instance.metadata.get(ResultIdKey))
+            from.metadata.set(NavigationResultChannel.ResultIdKey, instance.metadata.get(NavigationResultChannel.ResultIdKey))
             return NavigationOperation { backstack ->
                 return@NavigationOperation backstack + from
             }
@@ -105,7 +104,7 @@ public class NavigationOperation(
             from: NavigationKey.Instance<out NavigationKey.WithResult<R>>,
         ): NavigationOperation {
             instance.setDelegatedResult(from)
-            from.metadata.set(ResultIdKey, instance.metadata.get(ResultIdKey))
+            from.metadata.set(NavigationResultChannel.ResultIdKey, instance.metadata.get(NavigationResultChannel.ResultIdKey))
             return NavigationOperation { backstack ->
                 return@NavigationOperation backstack + from
             }

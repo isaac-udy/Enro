@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Build
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.runtime.Composable
+import dev.enro3.NavigationBackEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

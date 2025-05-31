@@ -1,10 +1,10 @@
-package dev.enro
+package dev.enro3
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.remember
-import dev.enro.NavigationResultChannel.ResultIdKey
+import dev.enro3.NavigationResultChannel.ResultIdKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.Serializable

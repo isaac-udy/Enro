@@ -15,6 +15,9 @@ import dev.enro.core.compose.ComposableDestination
 import dev.enro.core.controller.NavigationController
 import dev.enro.core.controller.navigationController
 import dev.enro.core.result.NavigationResultChannel
+import dev.enro3.NavigationContext
+import dev.enro3.NavigationHandle
+import dev.enro3.NavigationKey
 import kotlin.reflect.KClass
 
 private val isDebugging: Boolean get() = Debug.isDebuggerConnected()
