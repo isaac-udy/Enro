@@ -1,10 +1,13 @@
-package dev.enro3
+package dev.enro3.result
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.remember
-import dev.enro3.NavigationResultChannel.ResultIdKey
+import dev.enro3.*
+import dev.enro3.result.NavigationResult.Completed.Companion.result
+import dev.enro3.result.NavigationResultChannel.ResultIdKey
+import dev.enro3.ui.LocalNavigationHandle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.Serializable
@@ -61,10 +64,9 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
                             if (T::class == Unit::class) {
                                 resultChannel.onCompleted(NavigationResultScope(instance), Unit as T)
                             } else {
-                                require(result.data is T) {
-                                    "Expected result of type ${T::class}, but got ${result.data::class}"
-                                }
-                                resultChannel.onCompleted(NavigationResultScope(instance), result.data)
+                                @Suppress("UNCHECKED_CAST")
+                                result as NavigationResult.Completed<out NavigationKey.WithResult<T>>
+                                resultChannel.onCompleted(NavigationResultScope(instance), result.result)
                             }
                         }
                     }
@@ -88,24 +90,18 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
             }
             pendingResults.value += instance
         }
-    }
 
-    internal object Interceptor : NavigationInterceptor {
-        override fun intercept(
-            transition: NavigationTransition
-        ): NavigationTransition? {
-            transition.closed
-                .forEach { instance ->
-                    registerResult(instance)
-                }
-            return transition
+        internal fun registerResults(
+            transition: NavigationTransition,
+        ) {
+            transition.closed.forEach { registerResult(it) }
         }
     }
 }
 
 public fun <Result : Any> NavigationResultChannel<Result>.open(key: NavigationKey.WithResult<out Result>) {
     navigationHandle.execute(
-        operation = NavigationOperation.open(
+        operation = NavigationOperation.Companion.open(
             instance = key.withMetadata(ResultIdKey, id).asInstance()
         )
     )
@@ -113,7 +109,7 @@ public fun <Result : Any> NavigationResultChannel<Result>.open(key: NavigationKe
 
 public fun <Result : Any> NavigationResultChannel<Result>.open(key: NavigationKey.WithMetadata<out NavigationKey.WithResult<out Result>>) {
     navigationHandle.execute(
-        operation = NavigationOperation.open(
+        operation = NavigationOperation.Companion.open(
             instance = key.withMetadata(ResultIdKey, id).asInstance()
         )
     )
@@ -122,7 +118,7 @@ public fun <Result : Any> NavigationResultChannel<Result>.open(key: NavigationKe
 @JvmName("openAny")
 public fun NavigationResultChannel<Unit>.open(key: NavigationKey) {
     navigationHandle.execute(
-        operation = NavigationOperation.open(
+        operation = NavigationOperation.Companion.open(
             instance = key.withMetadata(ResultIdKey, id).asInstance()
         )
     )
@@ -131,7 +127,7 @@ public fun NavigationResultChannel<Unit>.open(key: NavigationKey) {
 @JvmName("openAny")
 public fun NavigationResultChannel<Unit>.open(key: NavigationKey.WithMetadata<*>) {
     navigationHandle.execute(
-        operation = NavigationOperation.open(
+        operation = NavigationOperation.Companion.open(
             instance = key.withMetadata(ResultIdKey, id).asInstance()
         )
     )
@@ -148,7 +144,7 @@ public class NavigationResultScope<Key : NavigationKey> @PublishedApi internal c
 public inline fun <reified R : Any> registerForNavigationResult(
     noinline onClosed: NavigationResultScope<out NavigationKey.WithResult<out R>>.() -> Unit = {},
     noinline onCompleted: NavigationResultScope<out NavigationKey.WithResult<out R>>.(R) -> Unit,
-) : NavigationResultChannel<R> {
+): NavigationResultChannel<R> {
     val hashKey = currentCompositeKeyHash
     val navigationHandle = LocalNavigationHandle.current
     val channel = remember(hashKey) {
@@ -171,7 +167,7 @@ public inline fun <reified R : Any> registerForNavigationResult(
         )
     }
     LaunchedEffect(hashKey) {
-        NavigationResultChannel.observe(this,  channel)
+        NavigationResultChannel.observe(this, channel)
     }
     return channel
 }
@@ -181,7 +177,7 @@ public inline fun <reified R : Any> registerForNavigationResult(
 public fun registerForNavigationResult(
     onClosed: NavigationResultScope<out NavigationKey>.() -> Unit = {},
     onCompleted: NavigationResultScope<out NavigationKey>.() -> Unit,
-) : NavigationResultChannel<Unit> {
+): NavigationResultChannel<Unit> {
     val hashKey = currentCompositeKeyHash
     val navigationHandle = LocalNavigationHandle.current
     val channel = remember(hashKey) {
@@ -198,7 +194,7 @@ public fun registerForNavigationResult(
         )
     }
     LaunchedEffect(hashKey) {
-        NavigationResultChannel.observe<Unit>(this,  channel)
+        NavigationResultChannel.observe<Unit>(this, channel)
     }
     @Suppress("UNCHECKED_CAST")
     return channel

@@ -1,6 +1,7 @@
-package dev.enro3
+package dev.enro3.ui
 
 import androidx.compose.runtime.Composable
+import dev.enro3.NavigationKey
 import kotlin.jvm.JvmSuppressWildcards
 
 

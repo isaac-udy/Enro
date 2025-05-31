@@ -15,18 +15,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.tests.application.compose.common.TitledColumn
-import dev.enro3.NavigationDisplay
-import dev.enro3.NavigationKey
-import dev.enro3.asInstance
-import dev.enro3.close
-import dev.enro3.complete
-import dev.enro3.completeFrom
-import dev.enro3.destinations
-import dev.enro3.navigationDestination
-import dev.enro3.navigationHandle
-import dev.enro3.open
-import dev.enro3.registerForNavigationResult
-import dev.enro3.rememberNavigationContainer
+import dev.enro3.*
+import dev.enro3.result.open
+import dev.enro3.result.registerForNavigationResult
+import dev.enro3.ui.NavigationDisplay
+import dev.enro3.ui.navigationDestination
+import dev.enro3.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 class TestActivity : AppCompatActivity() {

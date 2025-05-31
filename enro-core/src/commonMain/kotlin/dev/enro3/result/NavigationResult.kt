@@ -1,20 +1,32 @@
-package dev.enro3
+package dev.enro3.result
 
+import dev.enro3.NavigationKey
 import kotlin.jvm.JvmName
 
-public sealed class NavigationResult<T> {
+public sealed class NavigationResult<K : NavigationKey> {
     @PublishedApi
-    internal class Closed : NavigationResult<Nothing>()
+    internal class Closed : NavigationResult<NavigationKey>()
 
     @PublishedApi
     internal class Delegated(
         val id: String,
-    ) : NavigationResult<Nothing>()
+    ) : NavigationResult<NavigationKey>()
 
     @PublishedApi
-    internal class Completed<T>(
-        val data: T
-    ) : NavigationResult<T>()
+    internal class Completed<K : NavigationKey>(
+        @PublishedApi
+        internal val data: Any?
+    ) : NavigationResult<K>() {
+        companion object {
+            val <R : Any> Completed<out NavigationKey.WithResult<R>>.result: R get() {
+                require(data != null) {
+                    "Incorrect type, but got null"
+                }
+                @Suppress("UNCHECKED_CAST")
+                return data as R
+            }
+        }
+    }
 
     @PublishedApi
     internal object MetadataKey : NavigationKey.TransientMetadataKey<NavigationResult<*>>(
@@ -26,6 +38,12 @@ internal fun NavigationKey.Instance<out NavigationKey>.clearResult() {
     metadata.remove(NavigationResult.MetadataKey)
 }
 
+@PublishedApi
+internal fun <K : NavigationKey> NavigationKey.Instance<K>.getResult(): NavigationResult<K> {
+    @Suppress("UNCHECKED_CAST")
+    return metadata.get(NavigationResult.MetadataKey) as NavigationResult<K>
+}
+
 internal fun NavigationKey.Instance<out NavigationKey>.setResultClosed() {
     metadata.set(NavigationResult.MetadataKey, NavigationResult.Closed())
 }
@@ -34,7 +52,7 @@ internal fun NavigationKey.Instance<out NavigationKey>.setResultCompleted() {
     require(key !is NavigationKey.WithResult<*>) {
         "${key::class} is not a NavigationKey.WithResult and cannot be completed"
     }
-    metadata.set(NavigationResult.MetadataKey, NavigationResult.Completed(Unit))
+    metadata.set(NavigationResult.MetadataKey, NavigationResult.Completed<NavigationKey>(Unit))
 }
 
 @JvmName("setResultCompletedWithoutResult")
@@ -47,7 +65,7 @@ internal fun <R: Any> NavigationKey.Instance<out NavigationKey.WithResult<R>>.se
 }
 
 internal fun <R: Any> NavigationKey.Instance<out NavigationKey.WithResult<R>>.setResultCompleted(result: R) {
-    metadata.set(NavigationResult.MetadataKey, NavigationResult.Completed(result))
+    metadata.set(NavigationResult.MetadataKey, NavigationResult.Completed<NavigationKey.WithResult<R>>(result))
 }
 
 @JvmName("setDelegatedResultGeneric")

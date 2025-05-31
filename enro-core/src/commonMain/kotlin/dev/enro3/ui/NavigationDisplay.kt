@@ -1,140 +1,14 @@
-package dev.enro3
+package dev.enro3.ui
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import dev.enro.animation.rememberTransitionCompat
+import dev.enro3.*
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
-import kotlin.reflect.KClass
-
-
-/**
- * Is the root level container the window manager? Do I still want to be doing per-platform window stuff?
- *
- * Probably not TBH. It's a bit more flexible to allow a synthetic destination or something to actually do the
- * platform specific navigation. Desktop windowing can be handled reasonably easily through scenes (because
- * the windows end up just being composable, but for this to work on Android/iOS, we might need to consider a
- * slightly different method.
- *
- * Perhaps it does make sense to try and have some kind of root level scene? Will be tricky though.
- *
- * Synthetics could be left in the backstack as an invisible thing to be a bridge between certain platform behaviours?
- * Might not actually make sense. But also means we could use a launched effect for synthetics.
- */
-
-/**
- * A NavigationInstruction is a command that is sent to Enro to perform some action
- *
- * It might be a nice idea to actually separate these into different instructions, there's actually no reason that these
- * need to be off the same sealed hierarchy.
- *
- * Would it be a good idea to simplify everything down to a container instruction? There's difficulties there with
- * requestClose vs. close vs. closeWithResult, but could generally help?
- */
-
-
-/**
- * Do all NavigationDestinations need to be Composable, or should they just mostly be? I think it might be possible
- * to get away with Composable only destinations, and then rely on winder rendering to handle non-Composable type destinations,
- * but how exactly is non-Composable/window rendering actually going to work? It can't really flow through the regular channels,
- * but that's probably not a bad thing. Windows can be windows on desktop very easily. Windows on the web are tricky no matter what,
- * but it's Android and iOS that want to do picture in picture and scenes and shit like that that will make this more difficult.
- *
- * Is Window the right term or would "Root" be more accurate? Root in a tab on web, Root in an activity, Root in a window scene, etc
- *
- * There's also the back behaviour for desktop that needs consideration; web is reasonably straight forward, iOS and Android
- * are also reasonably straight forward, but are we maknig people bind the escape key presses on every window? Are we allowing
- * people to drop random Window {} composables into composition anyhwere? I feel like we don't want to do that, but I'm not entirely
- * sure...
- */
-// NavigationDestination -> ComposableDestination, SyntheticDestination, FragmentDestination, DialogDestination, ...
-// BindDestination() / RegisterDestination()
-// BindNavigation() / RegisterNavigation()
-// BindPath() / RegisterPath()
-
-public val LocalNavigationContainer: ProvidableCompositionLocal<NavigationContainer> = staticCompositionLocalOf {
-    error("No LocalNavigationContainer")
-}
-
-public val LocalNavigationHandle: ProvidableCompositionLocal<NavigationHandle<out NavigationKey>> =
-    staticCompositionLocalOf {
-        error("No LocalNavigationHandle")
-    }
-
-public interface NavigationScene {
-    public val key: Any
-    public val entries: List<NavigationDestination<out NavigationKey>>
-    public val previousEntries: List<NavigationDestination<out NavigationKey>>
-    public val content: @Composable () -> Unit
-}
-
-public interface NavigationSceneStrategy {
-    @Composable
-    public fun calculateScene(
-        entries: List<NavigationDestination<out NavigationKey>>,
-        onBack: (count: Int) -> Unit
-    ): NavigationScene?
-}
-
-public class SinglePaneScene : NavigationSceneStrategy {
-    @Composable
-    override fun calculateScene(
-        entries: List<NavigationDestination<out NavigationKey>>,
-        onBack: (Int) -> Unit
-    ): NavigationScene {
-        return object : NavigationScene {
-
-            override val entries: List<NavigationDestination<out NavigationKey>> = listOf(entries.last())
-            override val key: Any = SinglePaneScene::class to entries.map { it.instance.id }
-
-            override val previousEntries: List<NavigationDestination<out NavigationKey>> = entries.dropLast(1)
-            override val content: @Composable (() -> Unit) = {
-                this.entries.single().content()
-            }
-        }
-    }
-}
-
-
-public class DoublePaneScene : NavigationSceneStrategy {
-    @Composable
-    override fun calculateScene(
-        entries: List<NavigationDestination<out NavigationKey>>,
-        onBack: (Int) -> Unit
-    ): NavigationScene {
-        return object : NavigationScene {
-
-            override val entries: List<NavigationDestination<out NavigationKey>> = entries.takeLast(2)
-            override val key: Any = DoublePaneScene::class to entries.map { it.instance.id }
-
-            override val previousEntries: List<NavigationDestination<out NavigationKey>> = entries.dropLast(1)
-            override val content: @Composable (() -> Unit) = {
-                Column {
-                    Box(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        entries[0].content()
-                    }
-                    if (entries.size > 1) {
-                        Box(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            entries[1].content()
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-public var destinations: MutableMap<KClass<out NavigationKey>, NavigationDestinationProvider<out NavigationKey>> =
-    mutableMapOf()
 
 @Composable
 public fun NavigationDisplay(

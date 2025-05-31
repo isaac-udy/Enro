@@ -1,4 +1,4 @@
-package dev.enro3
+package dev.enro3.handle
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,6 +7,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModel
 import dev.enro.core.internal.EnroLog
+import dev.enro3.NavigationContext
+import dev.enro3.NavigationHandle
+import dev.enro3.NavigationKey
+import dev.enro3.NavigationOperation
 
 internal class NavigationHandleHolder<T : NavigationKey>(
     instance: NavigationKey.Instance<T>

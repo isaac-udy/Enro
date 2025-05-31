@@ -15,11 +15,11 @@ public abstract class NavigationHandle<T : NavigationKey> internal constructor()
 }
 
 public fun NavigationHandle<*>.close() {
-    execute(NavigationOperation.close(instance))
+    execute(NavigationOperation.Companion.close(instance))
 }
 
 public fun NavigationHandle<*>.complete() {
-    execute(NavigationOperation.complete(instance))
+    execute(NavigationOperation.Companion.complete(instance))
 }
 
 @JvmName("completeWithoutResult")
@@ -32,11 +32,11 @@ public fun <R: Any> NavigationHandle<out NavigationKey.WithResult<R>>.complete()
 }
 
 public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.complete(result: R) {
-    execute(NavigationOperation.complete(instance, result))
+    execute(NavigationOperation.Companion.complete(instance, result))
 }
 
 public fun NavigationHandle<out NavigationKey>.completeFrom(key: NavigationKey) {
-    execute(NavigationOperation.completeFrom(instance, key.asInstance()))
+    execute(NavigationOperation.Companion.completeFrom(instance, key.asInstance()))
 }
 
 @JvmName("completeFromGeneric")
@@ -49,20 +49,18 @@ public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.completeF
 }
 
 public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey.WithResult<R>) {
-    execute(NavigationOperation.completeFrom(instance, key.asInstance()))
+    execute(NavigationOperation.Companion.completeFrom(instance, key.asInstance()))
 }
 
 public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey.WithMetadata<out NavigationKey.WithResult<R>>) {
-    execute(NavigationOperation.completeFrom(instance, key.asInstance()))
+    execute(NavigationOperation.Companion.completeFrom(instance, key.asInstance()))
 }
 
 public fun NavigationHandle<*>.open(key: NavigationKey) {
-    execute(NavigationOperation.open(key.asInstance()))
+    execute(NavigationOperation.Companion.open(key.asInstance()))
 }
 
 public fun NavigationHandle<*>.open(key: NavigationKey.WithMetadata<*>) {
-    execute(NavigationOperation.open(key.asInstance()))
+    execute(NavigationOperation.Companion.open(key.asInstance()))
 }
-
-
 

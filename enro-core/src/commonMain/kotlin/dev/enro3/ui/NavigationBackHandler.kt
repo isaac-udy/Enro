@@ -1,4 +1,4 @@
-package dev.enro3
+package dev.enro3.ui
 
 import androidx.annotation.IntDef
 import androidx.annotation.RestrictTo

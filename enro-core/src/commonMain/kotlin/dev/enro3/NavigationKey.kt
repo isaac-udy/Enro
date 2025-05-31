@@ -153,9 +153,17 @@ public interface NavigationKey {
             }
         }
 
-        public fun putAll(other: Metadata) {
+        public fun setFrom(other: Metadata) {
+            map.clear()
             map.putAll(other.map)
+            transientMap.clear()
             transientMap.putAll(other.transientMap)
+        }
+
+        public fun copy(): Metadata {
+            return Metadata().apply {
+                setFrom(this@Metadata)
+            }
         }
 
         override fun toString(): String {

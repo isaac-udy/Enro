@@ -4,10 +4,13 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-
-public val LocalNavigationContext: ProvidableCompositionLocal<NavigationContext<out NavigationKey>> = staticCompositionLocalOf {
-    error("No LocalNavigationContext")
-}
+import dev.enro3.handle.NavigationHandleHolder
+import dev.enro3.ui.LocalNavigationContainer
+import dev.enro3.ui.LocalNavigationContext
+import dev.enro3.ui.LocalNavigationHandle
+import dev.enro3.ui.NavigationDestination
+import dev.enro3.ui.NavigationDestinationDecorator
+import dev.enro3.ui.navigationDestinationDecorator
 
 public class NavigationContext<T : NavigationKey>(
     lifecycleOwner: LifecycleOwner,

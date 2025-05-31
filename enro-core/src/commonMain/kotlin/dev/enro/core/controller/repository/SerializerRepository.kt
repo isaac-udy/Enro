@@ -1,7 +1,7 @@
 package dev.enro.core.controller.repository
 
 import androidx.savedstate.serialization.SavedStateConfiguration
-import dev.enro3.NavigationResultChannel
+import dev.enro3.result.NavigationResultChannel
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
