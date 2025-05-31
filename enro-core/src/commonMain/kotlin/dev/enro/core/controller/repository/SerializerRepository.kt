@@ -1,33 +1,18 @@
 package dev.enro.core.controller.repository
 
 import androidx.savedstate.serialization.SavedStateConfiguration
+import dev.enro.NavigationResultChannel
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationInstruction
 import dev.enro.core.NavigationKey
 import dev.enro.core.internal.isDebugBuild
 import dev.enro.core.result.flows.FlowStep
 import dev.enro.core.result.internal.ResultChannelId
-import dev.enro.core.serialization.WrappedBoolean
-import dev.enro.core.serialization.WrappedByte
-import dev.enro.core.serialization.WrappedChar
-import dev.enro.core.serialization.WrappedDouble
-import dev.enro.core.serialization.WrappedFloat
-import dev.enro.core.serialization.WrappedInt
-import dev.enro.core.serialization.WrappedList
-import dev.enro.core.serialization.WrappedLong
-import dev.enro.core.serialization.WrappedMap
-import dev.enro.core.serialization.WrappedNull
-import dev.enro.core.serialization.WrappedSet
-import dev.enro.core.serialization.WrappedShort
-import dev.enro.core.serialization.WrappedString
+import dev.enro.core.serialization.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.NothingSerializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.contextual
-import kotlinx.serialization.modules.plus
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
+import kotlinx.serialization.modules.*
 
 internal class SerializerRepository {
     var serializersModule = SerializersModule {
@@ -57,6 +42,8 @@ internal class SerializerRepository {
             subclass(WrappedList.serializer())
             subclass(WrappedSet.serializer())
             subclass(WrappedMap.serializer())
+
+            subclass(NavigationResultChannel.Id.serializer())
         }
 
         polymorphic(NavigationKey::class) {

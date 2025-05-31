@@ -1,77 +1,17 @@
 package dev.enro
 
-import androidx.annotation.IntDef
-import androidx.annotation.RestrictTo
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import dev.enro.core.NavigationInstructionExtras
-import kotlinx.coroutines.flow.Flow
+import dev.enro.animation.rememberTransitionCompat
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
-import kotlin.uuid.Uuid
 
-
-/**
- * A NavigationKey represents the contract for a screen; it is the interface that
- * defines the inputs to a screen, and the outputs (if any).
- *
- * NavigationKey.WithExtras is a way of attaching metadata to a NavigationKey before the NavigationKey
- * is turned into a NavigationInstruction
- */
-public interface NavigationKey {
-    public interface WithResult<T> : NavigationKey
-
-    @ConsistentCopyVisibility
-    public data class WithExtras<T : NavigationKey> internal constructor(
-        val navigationKey: T,
-        val extras: NavigationInstructionExtras,
-    )
-}
-
-public class NavigationContext<T : NavigationKey>(
-    public val destination: NavigationDestination<T>,
-    public val parentContainer: NavigationContainer,
-    public val childContainers: List<NavigationContainer>,
-)
-
-/**
- * NavigationHandle is the bridge to perform navigation actions; a NavigationHandle has a nullable (internal) reference
- * to the navigation context that it is bound to, and the navigation instruction that was used to open
- * that navigation context
- */
-public interface NavigationHandle<T : NavigationKey> {
-    public val instruction: NavigationInstruction.Open<T>
-    public val container: NavigationContainer
-    public val key: T get() = instruction.navigationKey
-}
-public typealias AnyNavigationHandle = NavigationHandle<out NavigationKey>
-
-public typealias NavigationBackstack = List<NavigationInstruction.Open<out NavigationKey>>
-
-/**
- * A NavigationContainer is an identifiable backstack (using navigation container key), which
- * provides the rendering context for a backstack.
- *
- * It's probably the NavigationContainer that needs to be able to host NavigationScenes/NavigationRenderers\
- *
- * Instead of having a CloseParent/AllowEmpty, we should provide a special "Empty" instruction here (maybe even with a
- * placeholder) so that the close behaviour is always consistent (easier for predictive back stuff).
- */
-public class NavigationContainer {
-    public val key: Any = Unit
-    public val backstack: SnapshotStateList<NavigationInstruction.Open<*>> = mutableStateListOf()
-
-//    public val interceptor: NavigationInstructionInterceptor = TODO()
-//    public val filter: NavigationInstructionFilter = TODO()
-
-    // Root containers might need slightly different handling?
-    public val parent: NavigationContainer? = null
-}
 
 /**
  * Is the root level container the window manager? Do I still want to be doing per-platform window stuff?
@@ -96,20 +36,6 @@ public class NavigationContainer {
  * Would it be a good idea to simplify everything down to a container instruction? There's difficulties there with
  * requestClose vs. close vs. closeWithResult, but could generally help?
  */
-public sealed interface NavigationInstruction {
-    public class Open<T : NavigationKey>(
-        public val navigationKey: T
-    ) : NavigationInstruction {
-        public val id: String = Uuid.random().toString()
-    }
-
-    public class Container : NavigationInstruction
-    public sealed class Close : NavigationInstruction {
-        public class WithResult<T> : Close()
-    }
-
-    public class RequestClose : NavigationInstruction
-}
 
 
 /**
@@ -131,53 +57,14 @@ public sealed interface NavigationInstruction {
 // BindNavigation() / RegisterNavigation()
 // BindPath() / RegisterPath()
 
-public class NavigationDestinationProvider<T : NavigationKey>(
-    private val metadata: Map<String, Any> = emptyMap(),
-    private val content: @Composable () -> Unit,
-) {
-    public fun create(instruction: NavigationInstruction.Open<T>): NavigationDestination<T> {
-        return object : NavigationDestination<T>(
-            instruction = instruction,
-            metadata = metadata,
-            content = content,
-        ) {}
-    }
-}
-public open class NavigationDestination<T : NavigationKey>(
-    public val instruction: NavigationInstruction.Open<T>,
-    public val metadata: Map<String, Any> = emptyMap(),
-    public open val content: @Composable () -> Unit,
-)
-
-public open class NavigationDestinationWrapper<T : NavigationKey>(
-    wrapped: NavigationDestination<T>,
-    content: @Composable (content: @Composable () -> Unit) -> Unit
-) : NavigationDestination<T>(
-    instruction = wrapped.instruction,
-    metadata = wrapped.metadata,
-    content = { content(wrapped.content) },
-)
-
-// We probably want to get rid of push/present and let scenes handle those
-
-public fun <T: NavigationKey> navigationDestination(
-    metadata: Map<String, Any> = emptyMap(),
-    content: @Composable () -> Unit
-): NavigationDestinationProvider<T> {
-    return NavigationDestinationProvider(metadata, content)
-}
-
 public val LocalNavigationContainer: ProvidableCompositionLocal<NavigationContainer> = staticCompositionLocalOf {
     error("No LocalNavigationContainer")
 }
 
-public val LocalNavigationContext: ProvidableCompositionLocal<NavigationContext<out NavigationKey>> = staticCompositionLocalOf {
-    error("No LocalNavigationContext")
-}
-
-public val LocalNavigationHandle: ProvidableCompositionLocal<NavigationContext<out NavigationKey>> = staticCompositionLocalOf {
-    error("No LocalNavigationHandle")
-}
+public val LocalNavigationHandle: ProvidableCompositionLocal<NavigationHandle<out NavigationKey>> =
+    staticCompositionLocalOf {
+        error("No LocalNavigationHandle")
+    }
 
 public interface NavigationScene {
     public val key: Any
@@ -188,7 +75,10 @@ public interface NavigationScene {
 
 public interface NavigationSceneStrategy {
     @Composable
-    public fun calculateScene(entries: List<NavigationDestination<out NavigationKey>>, onBack: (count: Int) -> Unit): NavigationScene?
+    public fun calculateScene(
+        entries: List<NavigationDestination<out NavigationKey>>,
+        onBack: (count: Int) -> Unit
+    ): NavigationScene?
 }
 
 public class SinglePaneScene : NavigationSceneStrategy {
@@ -200,7 +90,7 @@ public class SinglePaneScene : NavigationSceneStrategy {
         return object : NavigationScene {
 
             override val entries: List<NavigationDestination<out NavigationKey>> = listOf(entries.last())
-            override val key: Any = SinglePaneScene::class to entries.map { it.instruction.id }
+            override val key: Any = SinglePaneScene::class to entries.map { it.instance.id }
 
             override val previousEntries: List<NavigationDestination<out NavigationKey>> = entries.dropLast(1)
             override val content: @Composable (() -> Unit) = {
@@ -210,7 +100,41 @@ public class SinglePaneScene : NavigationSceneStrategy {
     }
 }
 
-public var destinations: MutableMap<KClass<out NavigationKey>, NavigationDestinationProvider<out NavigationKey>> = mutableMapOf()
+
+public class DoublePaneScene : NavigationSceneStrategy {
+    @Composable
+    override fun calculateScene(
+        entries: List<NavigationDestination<out NavigationKey>>,
+        onBack: (Int) -> Unit
+    ): NavigationScene {
+        return object : NavigationScene {
+
+            override val entries: List<NavigationDestination<out NavigationKey>> = entries.takeLast(2)
+            override val key: Any = DoublePaneScene::class to entries.map { it.instance.id }
+
+            override val previousEntries: List<NavigationDestination<out NavigationKey>> = entries.dropLast(1)
+            override val content: @Composable (() -> Unit) = {
+                Column {
+                    Box(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        entries[0].content()
+                    }
+                    if (entries.size > 1) {
+                        Box(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            entries[1].content()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+public var destinations: MutableMap<KClass<out NavigationKey>, NavigationDestinationProvider<out NavigationKey>> =
+    mutableMapOf()
 
 @Composable
 public fun NavigationDisplay(
@@ -233,30 +157,32 @@ public fun NavigationDisplay(
     },
     predictivePopTransitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = popTransitionSpec,
 ) {
-    require(container.backstack.isNotEmpty()) { "NavigationDisplay backstack cannot be empty" }
-    
+    val backstack = container.backstack.collectAsState().value
+    require(backstack.isNotEmpty()) { "NavigationDisplay backstack cannot be empty" }
+
     var isSettled by remember { mutableStateOf(true) }
-    
-    val destinations = container.backstack
-        .map { instruction ->
-            val destination = destinations[instruction.navigationKey::class] as NavigationDestinationProvider<NavigationKey>
-            destination.create(instruction as NavigationInstruction.Open<NavigationKey>)
+
+    val destinations = backstack
+        .map { instance ->
+            val destination = destinations[instance.key::class] as NavigationDestinationProvider<NavigationKey>
+            destination.create(instance as NavigationKey.Instance<NavigationKey>)
         }
         .map {
-            localNavigationContextWrapper(it)
+            decorateNavigationDestination(
+                destination = it,
+                destinationDecorators = listOf(
+                    localNavigationContextDecorator<NavigationKey>(backstack, isSettled)
+                )
+            )
         }
-    
+
     val scenes = remember { mutableStateMapOf<Any, NavigationScene>() }
     val mostRecentSceneKeys = remember { mutableStateListOf<Any>() }
-    
+
     val scene = sceneStrategy.calculateScene(destinations) { count ->
-        repeat(count) { 
-            if (container.backstack.isNotEmpty()) {
-                container.backstack.removeAt(container.backstack.lastIndex) 
-            }
-        }
+        container.execute(NavigationOperation.closeByCount(count))
     }
-    
+
     if (scene != null) {
         scenes[scene.key] = scene
     }
@@ -274,11 +200,7 @@ public fun NavigationDisplay(
             }
             inPredictiveBack = false
             val count = destinations.size - (scene?.previousEntries?.size ?: 0)
-            repeat(count) {
-                if (container.backstack.isNotEmpty()) {
-                    container.backstack.removeAt(container.backstack.lastIndex)
-                }
-            }
+            container.execute(NavigationOperation.closeByCount(count))
         } finally {
             inPredictiveBack = false
         }
@@ -291,7 +213,7 @@ public fun NavigationDisplay(
         SeekableTransitionState(sceneKey ?: Unit)
     }
 
-    val transition = rememberTransition(transitionState, label = sceneKey.toString())
+    val transition = rememberTransitionCompat(transitionState, label = sceneKey.toString())
 
     LaunchedEffect(transition.targetState) {
         if (mostRecentSceneKeys.lastOrNull() != transition.targetState) {
@@ -305,8 +227,8 @@ public fun NavigationDisplay(
 
     // Consider this a pop if the current entries match the previous entries
     val isPop = isPop(
-        transitionCurrentStateEntries.map { it.instruction.id }, 
-        destinations.map { it.instruction.id }
+        transitionCurrentStateEntries.map { it.instance.id },
+        destinations.map { it.instance.id }
     )
 
     val zIndices = remember { mutableMapOf<Any, Float>() }
@@ -322,11 +244,7 @@ public fun NavigationDisplay(
 
     if (inPredictiveBack && scene != null) {
         val peekScene = sceneStrategy.calculateScene(scene.previousEntries) { count ->
-            repeat(count) { 
-                if (container.backstack.isNotEmpty()) {
-                    container.backstack.removeAt(container.backstack.lastIndex) 
-                }
-            }
+            container.execute(NavigationOperation.closeByCount(count))
         }
         if (peekScene != null) {
             scenes[peekScene.key] = peekScene
@@ -415,102 +333,8 @@ private fun <T : Any> isPop(oldBackStack: List<T>, newBackStack: List<T>): Boole
     if (oldBackStack.first() != newBackStack.first()) return false
     if (newBackStack.size > oldBackStack.size) return false
 
-    val divergingIndex = newBackStack.indices.firstOrNull { index -> 
-        newBackStack[index] != oldBackStack[index] 
+    val divergingIndex = newBackStack.indices.firstOrNull { index ->
+        newBackStack[index] != oldBackStack[index]
     }
     return divergingIndex == null && newBackStack.size != oldBackStack.size
 }
-
-public fun localNavigationContextWrapper(wrapped: NavigationDestination<*>): NavigationDestinationWrapper<*> =
-    NavigationDestinationWrapper(wrapped) { content ->
-        val container = LocalNavigationContainer.current
-        val context = NavigationContext(
-            destination = wrapped,
-            parentContainer = container,
-            childContainers = emptyList()
-        )
-        CompositionLocalProvider(
-            LocalNavigationContext provides context
-        ) {
-            content()
-        }
-    }
-
-
-@Composable
-internal expect fun NavigationBackHandler(
-    enabled: Boolean = true,
-    onBack: suspend (progress: Flow<NavigationBackEvent>) -> Unit
-)
-
-public class NavigationBackEvent(
-    /**
-     * Absolute X location of the touch point of this event in the coordinate space of the screen
-     * that received this navigation event.
-     */
-    public val touchX: Float,
-    /**
-     * Absolute Y location of the touch point of this event in the coordinate space of the screen
-     * that received this navigation event.
-     */
-    public val touchY: Float,
-    /** Value between 0 and 1 on how far along the back gesture is. */
-    public val progress: Float,
-    /** Indicates which edge the swipe starts from. */
-    public val swipeEdge: @SwipeEdge Int,
-    /** Frame time of the navigation event. */
-    public val frameTimeMillis: Long = 0,
-) {
-
-    /**  */
-    @Target(AnnotationTarget.TYPE)
-    @RestrictTo(RestrictTo.Scope.LIBRARY)
-    @Retention(AnnotationRetention.SOURCE)
-    @IntDef(EDGE_LEFT, EDGE_RIGHT, EDGE_NONE)
-    public annotation class SwipeEdge
-
-    public companion object {
-        /** Indicates that the edge swipe starts from the left edge of the screen */
-        public const val EDGE_LEFT: Int = 0
-
-        /** Indicates that the edge swipe starts from the right edge of the screen */
-        public const val EDGE_RIGHT: Int = 1
-
-        /**
-         * Indicates that the back event was not triggered by an edge swipe back gesture. This
-         * applies to cases like using the back button in 3-button navigation or pressing a hardware
-         * back button.
-         */
-        public const val EDGE_NONE: Int = 2
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as NavigationBackEvent
-
-        if (touchX != other.touchX) return false
-        if (touchY != other.touchY) return false
-        if (progress != other.progress) return false
-        if (swipeEdge != other.swipeEdge) return false
-        if (frameTimeMillis != other.frameTimeMillis) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = touchX.hashCode()
-        result = 31 * result + touchY.hashCode()
-        result = 31 * result + progress.hashCode()
-        result = 31 * result + swipeEdge
-        result = 31 * result + frameTimeMillis.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "NavigationEvent(touchX=$touchX, touchY=$touchY, progress=$progress, swipeEdge=$swipeEdge, frameTimeMillis=$frameTimeMillis)"
-    }
-}
-
-

@@ -30,6 +30,7 @@ import androidx.navigation3.ui.NavDisplay.DEFAULT_TRANSITION_DURATION_MILLISECON
 import androidx.navigation3.ui.NavDisplay.POP_TRANSITION_SPEC
 import androidx.navigation3.ui.NavDisplay.PREDICTIVE_POP_TRANSITION_SPEC
 import androidx.navigation3.ui.NavDisplay.TRANSITION_SPEC
+import dev.enro.NavigationBackHandler
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
@@ -177,19 +178,19 @@ public fun <T : Any> NavDisplay(
         var progress by remember { mutableFloatStateOf(0f) }
         var inPredictiveBack by remember { mutableStateOf(false) }
 
-//        NavigationEventHandler({ scene.previousEntries.isNotEmpty() }) { navEvent ->
-//            progress = 0f
-//            try {
-//                navEvent.collect { value ->
-//                    inPredictiveBack = true
-//                    progress = value.progress
-//                }
-//                inPredictiveBack = false
-//                onBack(entries.size - scene.previousEntries.size)
-//            } finally {
-//                inPredictiveBack = false
-//            }
-//        }
+        NavigationBackHandler( scene.previousEntries.isNotEmpty()) { navEvent ->
+            progress = 0f
+            try {
+                navEvent.collect { value ->
+                    inPredictiveBack = true
+                    progress = value.progress
+                }
+                inPredictiveBack = false
+                onBack(entries.size - scene.previousEntries.size)
+            } finally {
+                inPredictiveBack = false
+            }
+        }
 
         // Scene Handling
         val sceneKey = scene::class to scene.key
