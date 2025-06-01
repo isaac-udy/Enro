@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import dev.enro.core.controller.NavigationController
 
+@PublishedApi
 internal actual object EnroLog {
     private const val LOG_TAG = "Enro"
 
