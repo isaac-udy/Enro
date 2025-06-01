@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
 public fun NavigationDisplay(
     container: NavigationContainer,
     modifier: Modifier = Modifier,
-    sceneStrategy: NavigationSceneStrategy = DialogNavigationSceneStrategy() then SinglePaneScene(),
+    sceneStrategy: NavigationSceneStrategy = remember { DialogNavigationSceneStrategy() then SinglePaneScene() },
     contentAlignment: Alignment = Alignment.TopStart,
     sizeTransform: SizeTransform? = null,
     transitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
@@ -43,8 +43,12 @@ public fun NavigationDisplay(
 
     var isSettled by remember { mutableStateOf(true) }
 
-    val destinations = backstack
-        .map { instance ->
+    val movableContentDecorator = rememberMovableContentDestinationDecorator<NavigationKey>()
+    val navigationContextDecorator = remember(backstack, isSettled) {
+        navigationContextDecorator<NavigationKey>(backstack, isSettled)
+    }
+    val destinations = remember(backstack) {
+        backstack.map { instance ->
             @Suppress("UNCHECKED_CAST")
             val binding = controller.bindings.bindingFor(instance) as NavigationBinding<NavigationKey>
             binding.provider.create(instance as NavigationKey.Instance<NavigationKey>)
@@ -53,10 +57,12 @@ public fun NavigationDisplay(
             decorateNavigationDestination(
                 destination = it,
                 destinationDecorators = listOf(
-                    navigationContextDecorator<NavigationKey>(backstack, isSettled)
+                    movableContentDecorator,
+                    navigationContextDecorator,
                 )
             )
         }
+    }
 
     // Calculate all scenes, starting with the main scene and then processing overlay scenes
     val onBack: (Int) -> Unit = { count ->
