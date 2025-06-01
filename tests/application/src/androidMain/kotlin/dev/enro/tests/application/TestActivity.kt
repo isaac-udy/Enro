@@ -14,14 +14,21 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.currentComposer
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,18 +46,23 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.tests.application.compose.common.TitledColumn
-import dev.enro3.*
+import dev.enro3.NavigationKey
+import dev.enro3.NavigationOperation
+import dev.enro3.asInstance
+import dev.enro3.close
+import dev.enro3.complete
+import dev.enro3.completeFrom
+import dev.enro3.navigationHandle
+import dev.enro3.open
 import dev.enro3.result.open
 import dev.enro3.result.registerForNavigationResult
 import dev.enro3.ui.NavigationDisplay
 import dev.enro3.ui.destinations.syntheticDestination
 import dev.enro3.ui.navigationDestination
-import dev.enro3.ui.navigationHandle
 import dev.enro3.ui.rememberNavigationContainer
 import dev.enro3.ui.scenes.DialogSceneStrategy
 import dev.enro3.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro3.viewmodel.createEnroViewModel
-import dev.enro3.viewmodel.navigationHandle
 import kotlinx.serialization.Serializable
 
 class TestActivity : AppCompatActivity() {
@@ -72,7 +84,9 @@ class TestActivity : AppCompatActivity() {
                 backstack = listOf(ListKey().asInstance()),
             )
             MaterialTheme {
-                Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colors.background)) {
                     NavigationDisplay(
                         container = container,
                     )
@@ -287,8 +301,6 @@ val activityDestination = navigationDestination<ActivityKey>(
         DirectOverlaySceneStrategy.overlay(),
     ),
 ) {
-    val context = rememberCompositionContext()
-    context.effectCoroutineContext
     val navigation = navigationHandle<ActivityKey>()
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult(),
@@ -297,6 +309,7 @@ val activityDestination = navigationDestination<ActivityKey>(
             Activity.RESULT_OK -> {
                 navigation.complete()
             }
+
             else -> {
                 navigation.close()
             }
@@ -353,7 +366,7 @@ val screenWithViewModelDestination = navigationDestination<ScreenWithViewModelKe
 
 @Serializable
 class DialogKey(
-    val title: String = "Dialog"
+    val title: String = "Dialog",
 ) : NavigationKey
 
 val dialogDestination = navigationDestination<DialogKey>(
@@ -461,11 +474,11 @@ val directBottomSheetDestination = navigationDestination<DirectBottomSheetKey>(
         ) {
             Text(
                 text = "This is some text in the bottom sheet to create some addtional content and space to make sure that " +
-                    "the bottom sheet actually is long enough to have some interesting things in it and scroll, and " +
-                    "other things like that. This text really does not have any meaning at all. " +
-                    "This is some text in the bottom sheet to create some addtional content and space to make sure that " +
-                    "the bottom sheet actually is long enough to have some interesting things in it and scroll, and " +
-                    "other things like that. This text really does not have any meaning at all."
+                        "the bottom sheet actually is long enough to have some interesting things in it and scroll, and " +
+                        "other things like that. This text really does not have any meaning at all. " +
+                        "This is some text in the bottom sheet to create some addtional content and space to make sure that " +
+                        "the bottom sheet actually is long enough to have some interesting things in it and scroll, and " +
+                        "other things like that. This text really does not have any meaning at all."
             )
             Text(
                 text = "This is some text in the bottom sheet to create some addtional content and space to make sure that " +
@@ -494,6 +507,7 @@ val directBottomSheetDestination = navigationDestination<DirectBottomSheetKey>(
 
 @Serializable
 class EmptyKey : NavigationKey
+
 val emptyDestination = navigationDestination<EmptyKey> {}
 
 @Serializable
