@@ -1,4 +1,4 @@
-package dev.enro3.ui
+package dev.enro3.ui.decorators
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -6,7 +6,6 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.SAVED_STATE_REGISTRY_OWNER_KEY
-import androidx.lifecycle.SavedStateViewModelFactory
 import androidx.lifecycle.VIEW_MODEL_STORE_OWNER_KEY
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -21,6 +20,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import dev.enro3.NavigationKey
+import dev.enro3.ui.NavigationDestinationDecorator
+import dev.enro3.ui.navigationDestinationDecorator
 
 /**
  * Returns a [ViewModelStoreNavEntryDecorator] that is remembered across recompositions.
@@ -32,7 +33,7 @@ import dev.enro3.NavigationKey
  *   entry's ViewModelStoreOwner will be removed.
  */
 @Composable
-public fun rememberViewModelStoreNavEntryDecorator(
+public fun rememberViewModelStoreDecorator(
     viewModelStoreOwner: ViewModelStoreOwner =
         checkNotNull(LocalViewModelStoreOwner.current) {
             "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"

@@ -1,4 +1,4 @@
-package dev.enro3.ui
+package dev.enro3.ui.decorators
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
@@ -17,6 +17,11 @@ import dev.enro3.NavigationBackstack
 import dev.enro3.NavigationContext
 import dev.enro3.NavigationKey
 import dev.enro3.handle.NavigationHandleHolder
+import dev.enro3.ui.LocalNavigationContainer
+import dev.enro3.ui.LocalNavigationContext
+import dev.enro3.ui.LocalNavigationHandle
+import dev.enro3.ui.NavigationDestinationDecorator
+import dev.enro3.ui.navigationDestinationDecorator
 
 internal fun <T: NavigationKey> navigationContextDecorator(
     backstack: NavigationBackstack,

@@ -1,4 +1,4 @@
-package dev.enro3.ui
+package dev.enro3.ui.decorators
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect

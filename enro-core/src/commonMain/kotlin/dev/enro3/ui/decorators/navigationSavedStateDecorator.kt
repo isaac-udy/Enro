@@ -1,4 +1,4 @@
-package dev.enro3.ui
+package dev.enro3.ui.decorators
 
 
 import androidx.compose.runtime.Composable
@@ -19,6 +19,8 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import androidx.savedstate.savedState
 import dev.enro3.NavigationKey
+import dev.enro3.ui.NavigationDestinationDecorator
+import dev.enro3.ui.navigationDestinationDecorator
 
 /**
  * Returns a [SavedStateNavEntryDecorator] that is remembered across recompositions.
