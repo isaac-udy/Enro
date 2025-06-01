@@ -93,6 +93,8 @@ class TestApplication : Application(), NavigationApplication {
             destination<ResultKey>(resultDestination)
             destination<SyntheticKey>(syntheticDestination)
             destination<FragmentKey>(fragmentDestination)
+            destination<ActivityKey>(activityDestination)
+            destination<ScreenWithViewModelKey>(screenWithViewModelDestination)
         }.install(this)
     }
 }

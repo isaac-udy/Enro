@@ -3,6 +3,9 @@ package dev.enro3
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.MutableCreationExtras
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro3.handle.NavigationHandleHolder
 import dev.enro3.ui.*
@@ -10,13 +13,16 @@ import dev.enro3.ui.*
 public class NavigationContext<T : NavigationKey>(
     lifecycleOwner: LifecycleOwner,
     viewModelStoreOwner: ViewModelStoreOwner,
+    defaultViewModelProviderFactory: HasDefaultViewModelProviderFactory,
 
     public val destination: NavigationDestination<T>,
     public val parentContainer: NavigationContainer,
 
     // TODO need some kind of ContainerManager type thing for child containers
     public val childContainers: List<NavigationContainer>,
-) : LifecycleOwner by lifecycleOwner, ViewModelStoreOwner by viewModelStoreOwner
+) : LifecycleOwner by lifecycleOwner,
+    ViewModelStoreOwner by viewModelStoreOwner,
+    HasDefaultViewModelProviderFactory by defaultViewModelProviderFactory
 
 public fun <T: NavigationKey> localNavigationContextDecorator(
     backstack: NavigationBackstack,
@@ -34,24 +40,45 @@ public fun <T: NavigationKey> localNavigationContextDecorator(
             },
             parentLifecycleOwner = LocalLifecycleOwner.current
         )
+        val localViewModelStoreOwner = LocalViewModelStoreOwner.current
+
+        val owner = object : ViewModelStoreOwner {
+            override val viewModelStore: ViewModelStore = ViewModelStore()
+        } as ViewModelStoreOwner
+
+        val navigationHandleHolder = viewModel<NavigationHandleHolder<T>>(
+            viewModelStoreOwner = owner,
+        ) {
+            NavigationHandleHolder(instance = destination.instance)
+        }
+
         val context = NavigationContext(
             lifecycleOwner = lifecycleOwner,
-            viewModelStoreOwner = object : ViewModelStoreOwner {
-                override val viewModelStore: ViewModelStore = ViewModelStore()
+            viewModelStoreOwner = owner,
+            defaultViewModelProviderFactory = object : HasDefaultViewModelProviderFactory {
+                override val defaultViewModelCreationExtras: CreationExtras get() {
+                    return MutableCreationExtras().apply {
+                        set(VIEW_MODEL_STORE_OWNER_KEY, owner)
+                    }
+                }
+                override val defaultViewModelProviderFactory: ViewModelProvider.Factory
+                    get() {
+                        val parentDefault = localViewModelStoreOwner as? HasDefaultViewModelProviderFactory
+                        requireNotNull(parentDefault) {
+                            "No default ViewModelProvider.Factory found for ViewModelStoreOwner: $localViewModelStoreOwner"
+                        }
+                        return parentDefault.defaultViewModelProviderFactory
+                    }
             },
             destination = destination,
             parentContainer = container,
             childContainers = emptyList()
         )
-        val navigationHandleHolder = viewModel<NavigationHandleHolder<T>>(
-            viewModelStoreOwner = context,
-        ) {
-            NavigationHandleHolder(instance = destination.instance)
-        }
         navigationHandleHolder.bindContext(context)
         CompositionLocalProvider(
             LocalNavigationContext provides context,
             LocalLifecycleOwner provides context,
+            LocalViewModelStoreOwner provides context,
             LocalNavigationHandle provides navigationHandleHolder.navigationHandle,
         ) {
             destination.content()
