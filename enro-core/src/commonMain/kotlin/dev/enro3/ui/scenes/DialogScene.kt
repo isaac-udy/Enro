@@ -23,7 +23,7 @@ internal class DialogScene(
 
     override val content: @Composable (() -> Unit) = {
         Dialog(onDismissRequest = { onBack(1) }, properties = dialogProperties) {
-            entry.content()
+            entry.Content()
         }
     }
 }

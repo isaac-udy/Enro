@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 public fun NavigationDisplay(
     container: NavigationContainer,
@@ -219,60 +220,71 @@ public fun NavigationDisplay(
 
     CompositionLocalProvider(
         LocalNavigationContainer provides container,
-        LocalDestinationsToRenderInCurrentScene provides sceneToRenderableDestinationMap.getValue(transition.targetState)
     ) {
-        transition.AnimatedContent(
-            contentAlignment = contentAlignment,
-            modifier = modifier,
-            transitionSpec = {
-                ContentTransform(
-                    targetContentEnter = contentTransform(this).targetContentEnter,
-                    initialContentExit = contentTransform(this).initialContentExit,
-                    targetContentZIndex = targetZIndex,
-                    sizeTransform = sizeTransform,
-                )
-            }
-        ) { targetSceneKey ->
-            val targetScene = scenes.getValue(targetSceneKey)
-            CompositionLocalProvider(
-                LocalDestinationsToRenderInCurrentScene provides sceneToRenderableDestinationMap.getValue(targetSceneKey)
-            ) {
-                targetScene.content()
+        SharedTransitionLayout {
+            transition.AnimatedContent(
+                contentAlignment = contentAlignment,
+                modifier = modifier,
+                transitionSpec = {
+                    ContentTransform(
+                        targetContentEnter = contentTransform(this).targetContentEnter,
+                        initialContentExit = contentTransform(this).initialContentExit,
+                        targetContentZIndex = targetZIndex,
+                        sizeTransform = sizeTransform,
+                    )
+                }
+            ) { targetSceneKey ->
+                val targetScene = scenes.getValue(targetSceneKey)
+                CompositionLocalProvider(
+                    LocalNavigationAnimatedVisibilityScope provides this@AnimatedContent,
+                    LocalNavigationSharedTransitionScope provides this@SharedTransitionLayout,
+                    LocalDestinationsToRenderInCurrentScene provides sceneToRenderableDestinationMap.getValue(
+                        targetSceneKey
+                    )
+                ) {
+                    targetScene.content()
+                }
             }
         }
-    }
 
-    // Clean-up scene book-keeping once the transition is finished.
-    LaunchedEffect(transition) {
-        snapshotFlow { transition.isRunning }
-            .filter { !it }
-            .collect {
-                scenes.keys.toList().forEach { key ->
-                    if (key != transition.targetState) {
-                        scenes.remove(key)
+        // Clean-up scene book-keeping once the transition is finished.
+        LaunchedEffect(transition) {
+            snapshotFlow { transition.isRunning }
+                .filter { !it }
+                .collect {
+                    scenes.keys.toList().forEach { key ->
+                        if (key != transition.targetState) {
+                            scenes.remove(key)
+                        }
+                    }
+                    mostRecentSceneKeys.toList().forEach { key ->
+                        if (key != transition.targetState) {
+                            mostRecentSceneKeys.remove(key)
+                        }
                     }
                 }
-                mostRecentSceneKeys.toList().forEach { key ->
-                    if (key != transition.targetState) {
-                        mostRecentSceneKeys.remove(key)
+        }
+
+        LaunchedEffect(transition.currentState, transition.targetState) {
+            val settled = transition.currentState == transition.targetState
+            isSettled = settled
+        }
+
+
+        // Show all OverlayNavigationScene instances above the AnimatedContent
+        overlayScenes.fastForEachReversed { overlayScene ->
+            val allDestinations = overlayScene.entries.map { it.instance.id }.toSet()
+            SharedTransitionLayout {
+                AnimatedVisibility(true) {
+                    CompositionLocalProvider(
+                        LocalNavigationAnimatedVisibilityScope provides this@AnimatedVisibility,
+                        LocalNavigationSharedTransitionScope provides this@SharedTransitionLayout,
+                        LocalDestinationsToRenderInCurrentScene provides allDestinations
+                    ) {
+                        overlayScene.content()
                     }
                 }
             }
-    }
-
-    LaunchedEffect(transition.currentState, transition.targetState) {
-        val settled = transition.currentState == transition.targetState
-        isSettled = settled
-    }
-
-    // Show all OverlayNavigationScene instances above the AnimatedContent
-    overlayScenes.fastForEachReversed { overlayScene ->
-        val allDestinations = overlayScene.entries.map { it.instance.id }.toSet()
-        CompositionLocalProvider(
-            LocalNavigationContainer provides container,
-            LocalDestinationsToRenderInCurrentScene provides allDestinations
-        ) {
-            overlayScene.content()
         }
     }
 }

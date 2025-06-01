@@ -19,7 +19,7 @@ public class SinglePaneScene : NavigationSceneStrategy {
 
             override val previousEntries: List<NavigationDestination<out NavigationKey>> = entries.dropLast(1)
             override val content: @Composable (() -> Unit) = {
-                this.entries.single().content()
+                this.entries.single().Content()
             }
         }
     }

@@ -101,6 +101,9 @@ class TestApplication : Application(), NavigationApplication {
             destination<DirectDialogKey>(directDialogDestination)
             destination<DirectButtonKey>(directButtonDestination)
             destination<DirectBottomSheetKey>(directBottomSheetDestination)
+
+            destination<ComposeSharedElementTransitions.List>(composeSharedElementTransitionsListScreen)
+            destination<ComposeSharedElementTransitions.Detail>(composeSharedElementTransitionsDetailScreen)
         }.install(this)
     }
 }

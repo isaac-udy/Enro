@@ -147,6 +147,11 @@ val listDestination = navigationDestination<ListKey> {
             Text("Direct Bottom Sheet")
         }
         Button(onClick = {
+            resultChannel.open(ComposeSharedElementTransitions.List())
+        }) {
+            Text("Shared Elements")
+        }
+        Button(onClick = {
             resultChannel.open(NestedKey())
         }) {
             Text("Nested")
@@ -279,7 +284,7 @@ object ActivityKey : NavigationKey
 
 val activityDestination = navigationDestination<ActivityKey>(
     metadata = mapOf(
-        "key" to "value"
+        DirectOverlaySceneStrategy.overlay(),
     ),
 ) {
     val context = rememberCompositionContext()
@@ -515,3 +520,6 @@ val nestedDestination = navigationDestination<NestedKey> {
         NavigationDisplay(container)
     }
 }
+
+
+

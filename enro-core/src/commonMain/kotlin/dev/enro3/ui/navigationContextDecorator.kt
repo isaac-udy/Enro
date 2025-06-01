@@ -69,7 +69,7 @@ internal fun <T: NavigationKey> navigationContextDecorator(
             LocalViewModelStoreOwner provides context,
             LocalNavigationHandle provides navigationHandleHolder.navigationHandle,
         ) {
-            destination.content()
+            destination.Content()
         }
     }
 }

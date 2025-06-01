@@ -28,7 +28,7 @@ public class DirectOverlayScene(
     override val entries: List<NavigationDestination<out NavigationKey>> = listOf(entry)
 
     override val content: @Composable (() -> Unit) = {
-        entry.content()
+        entry.Content()
     }
 }
 
