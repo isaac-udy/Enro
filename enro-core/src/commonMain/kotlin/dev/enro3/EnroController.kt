@@ -1,7 +1,11 @@
 package dev.enro3
 
 import dev.enro3.controller.NavigationModule
-import dev.enro3.controller.repository.*
+import dev.enro3.controller.repository.BindingRepository
+import dev.enro3.controller.repository.InterceptorRepository
+import dev.enro3.controller.repository.PathRepository
+import dev.enro3.controller.repository.PluginRepository
+import dev.enro3.controller.repository.SerializerRepository
 
 public class EnroController {
     // TODO NEED TO CONFIGURE THIS
@@ -19,6 +23,7 @@ public class EnroController {
         interceptors.addInterceptors(module.interceptors)
         paths.addPaths(module.paths)
         serializers.registerSerializersModule(module.serializers)
+        serializers.registerSerializersModule(module.serializersForBindings)
     }
 
     // The reference parameter is used to pass the platform-specific reference to the NavigationController,

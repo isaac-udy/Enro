@@ -18,6 +18,7 @@ kotlin {
             implementation(libs.compose.viewmodel)
             implementation(libs.compose.lifecycle)
             implementation(libs.androidx.savedState)
+            implementation(libs.androidx.savedState.compose)
             implementation(libs.kotlinx.serialization)
             implementation(libs.kotlin.reflect)
             implementation(libs.thauvin.urlencoder)

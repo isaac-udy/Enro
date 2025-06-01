@@ -171,6 +171,11 @@ val listDestination = navigationDestination<ListKey> {
             Text("Nested")
         }
         Button(onClick = {
+            navigation.open(ComposeStabilityKey())
+        }) {
+            Text("Stability")
+        }
+        Button(onClick = {
             stringResultChannel.open(ScreenWithViewModelKey())
         }) {
             Text("ViewModel")

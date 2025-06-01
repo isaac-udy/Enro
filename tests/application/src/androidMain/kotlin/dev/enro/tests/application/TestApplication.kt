@@ -2,7 +2,12 @@ package dev.enro.tests.application
 
 import android.app.Activity
 import android.app.Application
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -12,7 +17,17 @@ import dev.enro.destination.compose.navigationContext
 import dev.enro.destination.fragment.FragmentSharedElements
 import dev.enro.tests.application.activity.PictureInPicture
 import dev.enro.tests.application.activity.SimpleActivity
-import dev.enro.tests.application.compose.*
+import dev.enro.tests.application.compose.BottomNavigation
+import dev.enro.tests.application.compose.BottomSheetChangeSize
+import dev.enro.tests.application.compose.BottomSheetCloseAndPresent
+import dev.enro.tests.application.compose.CloseLandingPageAndPresent
+import dev.enro.tests.application.compose.ComposeAnimations
+import dev.enro.tests.application.compose.ComposeSavePrimitives
+import dev.enro.tests.application.compose.ComposeStability
+import dev.enro.tests.application.compose.EmbeddedDestination
+import dev.enro.tests.application.compose.FindContext
+import dev.enro.tests.application.compose.LazyColumn
+import dev.enro.tests.application.compose.SyntheticViewModelAccess
 import dev.enro.tests.application.compose.results.ComposeEmbeddedResultFlow
 import dev.enro.tests.application.fragment.FragmentAnimations
 import dev.enro.tests.application.fragment.FragmentPresentation
@@ -104,6 +119,8 @@ class TestApplication : Application(), NavigationApplication {
 
             destination<ComposeSharedElementTransitions.List>(composeSharedElementTransitionsListScreen)
             destination<ComposeSharedElementTransitions.Detail>(composeSharedElementTransitionsDetailScreen)
+
+            destination<ComposeStabilityKey>(composeStabilityDestination)
         }.install(this)
     }
 }

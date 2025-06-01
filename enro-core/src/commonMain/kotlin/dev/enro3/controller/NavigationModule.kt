@@ -9,7 +9,6 @@ import dev.enro3.ui.NavigationDestinationProvider
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.plus
-import kotlinx.serialization.serializer
 
 public class NavigationModule @PublishedApi internal constructor() {
     internal val plugins: MutableList<NavigationPlugin> = mutableListOf()
@@ -17,6 +16,16 @@ public class NavigationModule @PublishedApi internal constructor() {
     internal val interceptors: MutableList<NavigationInterceptor> = mutableListOf()
     internal val paths: MutableList<NavigationPathBinding<*>> = mutableListOf()
     internal var serializers: SerializersModule = EmptySerializersModule()
+
+    internal val serializersForBindings: SerializersModule
+        get() {
+            if (bindings.isEmpty()) return EmptySerializersModule()
+            return SerializersModule {
+                bindings.forEach { binding ->
+                    binding.serializerModule.invoke(this)
+                }
+            }
+        }
 
     public class BuilderScope @PublishedApi internal constructor(
         private val module: NavigationModule
@@ -36,11 +45,7 @@ public class NavigationModule @PublishedApi internal constructor() {
             destination: NavigationDestinationProvider<K>,
         ) {
             binding(
-                binding = NavigationBinding(
-                    keyType = K::class,
-                    keySerializer = serializer<K>(),
-                    provider = destination,
-                )
+                binding = NavigationBinding.create<K>(destination)
             )
         }
 

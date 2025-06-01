@@ -1,12 +1,18 @@
 package dev.enro3.ui
 
-import androidx.compose.runtime.*
-import androidx.lifecycle.*
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.HasDefaultViewModelProviderFactory
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.lifecycle.viewmodel.MutableCreationExtras
+import androidx.lifecycle.enableSavedStateHandles
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.savedstate.SavedStateRegistry
+import androidx.savedstate.SavedStateRegistryController
+import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro3.NavigationBackstack
 import dev.enro3.NavigationContext
 import dev.enro3.NavigationKey
@@ -29,35 +35,19 @@ internal fun <T: NavigationKey> navigationContextDecorator(
             parentLifecycleOwner = LocalLifecycleOwner.current
         )
         val localViewModelStoreOwner = LocalViewModelStoreOwner.current
-
-        val owner = object : ViewModelStoreOwner {
-            override val viewModelStore: ViewModelStore = ViewModelStore()
-        } as ViewModelStoreOwner
+        requireNotNull(localViewModelStoreOwner)
+        require(localViewModelStoreOwner is HasDefaultViewModelProviderFactory)
 
         val navigationHandleHolder = viewModel<NavigationHandleHolder<T>>(
-            viewModelStoreOwner = owner,
+            viewModelStoreOwner = localViewModelStoreOwner,
         ) {
             NavigationHandleHolder(instance = destination.instance)
         }
 
         val context = NavigationContext(
             lifecycleOwner = lifecycleOwner,
-            viewModelStoreOwner = owner,
-            defaultViewModelProviderFactory = object : HasDefaultViewModelProviderFactory {
-                override val defaultViewModelCreationExtras: CreationExtras get() {
-                    return MutableCreationExtras().apply {
-                        set(VIEW_MODEL_STORE_OWNER_KEY, owner)
-                    }
-                }
-                override val defaultViewModelProviderFactory: ViewModelProvider.Factory
-                    get() {
-                        val parentDefault = localViewModelStoreOwner as? HasDefaultViewModelProviderFactory
-                        requireNotNull(parentDefault) {
-                            "No default ViewModelProvider.Factory found for ViewModelStoreOwner: $localViewModelStoreOwner"
-                        }
-                        return parentDefault.defaultViewModelProviderFactory
-                    }
-            },
+            viewModelStoreOwner = localViewModelStoreOwner,
+            defaultViewModelProviderFactory = localViewModelStoreOwner,
             destination = destination,
             parentContainer = container,
             childContainers = emptyList()
@@ -74,53 +64,18 @@ internal fun <T: NavigationKey> navigationContextDecorator(
     }
 }
 
-@Composable
-private fun rememberNavigationLifecycleOwner(
-    maxLifecycle: Lifecycle.State,
-    parentLifecycleOwner: LifecycleOwner,
-) : LifecycleOwner {
-    val childLifecycleOwner = remember(parentLifecycleOwner) { ChildLifecycleOwner() }
-    // Pass LifecycleEvents from the parent down to the child
-    DisposableEffect(childLifecycleOwner, parentLifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            childLifecycleOwner.handleLifecycleEvent(event)
-        }
+private class NavigationContextOwners(
+    lifecycleOwner: LifecycleOwner,
+) : SavedStateRegistryOwner,
+    ViewModelStoreOwner,
+    LifecycleOwner by lifecycleOwner {
 
-        parentLifecycleOwner.lifecycle.addObserver(observer)
+    private val savedStateRegistryController = SavedStateRegistryController.create(this)
+    override val savedStateRegistry: SavedStateRegistry = savedStateRegistryController.savedStateRegistry
+    override val viewModelStore: ViewModelStore = ViewModelStore()
 
-        onDispose { parentLifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-    // Ensure that the child lifecycle is capped at the maxLifecycle
-    LaunchedEffect(childLifecycleOwner, maxLifecycle) {
-        childLifecycleOwner.maxLifecycle = maxLifecycle
-    }
-    return childLifecycleOwner
-}
-
-private class ChildLifecycleOwner : LifecycleOwner {
-    private val lifecycleRegistry = LifecycleRegistry(this)
-
-    override val lifecycle: Lifecycle
-        get() = lifecycleRegistry
-
-    var maxLifecycle: Lifecycle.State = Lifecycle.State.INITIALIZED
-        set(maxState) {
-            field = maxState
-            updateState()
-        }
-
-    private var parentLifecycleState: Lifecycle.State = Lifecycle.State.CREATED
-
-    fun handleLifecycleEvent(event: Lifecycle.Event) {
-        parentLifecycleState = event.targetState
-        updateState()
-    }
-
-    fun updateState() {
-        if (parentLifecycleState.ordinal < maxLifecycle.ordinal) {
-            lifecycleRegistry.currentState = parentLifecycleState
-        } else {
-            lifecycleRegistry.currentState = maxLifecycle
-        }
+    init {
+        enableSavedStateHandles()
+        savedStateRegistryController.performRestore(null)
     }
 }

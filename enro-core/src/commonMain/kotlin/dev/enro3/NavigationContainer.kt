@@ -17,13 +17,11 @@ import kotlinx.coroutines.flow.StateFlow
  */
 public class NavigationContainer internal constructor(
     public val key: Key,
+    public val controller: EnroController,
     backstack: NavigationBackstack = emptyList(),
     public val parent: NavigationContainer? = null,
     private val interceptor: NavigationInterceptor = NoOpNavigationInterceptor
 ) {
-    public val controller: EnroController = requireNotNull(EnroController.instance) {
-        "EnroController instance is not initialized"
-    }
     private val mutableBackstack: MutableStateFlow<NavigationBackstack> = MutableStateFlow(backstack)
     public val backstack: StateFlow<NavigationBackstack> = mutableBackstack
 

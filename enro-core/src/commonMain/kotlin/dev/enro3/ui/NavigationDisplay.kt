@@ -1,12 +1,41 @@
 package dev.enro3.ui
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.runtime.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.SeekableTransitionState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
-import dev.enro3.*
+import dev.enro3.EnroController
+import dev.enro3.NavigationBinding
+import dev.enro3.NavigationContainer
+import dev.enro3.NavigationKey
+import dev.enro3.NavigationOperation
 import dev.enro3.ui.animation.rememberTransitionCompat
 import dev.enro3.ui.scenes.DialogSceneStrategy
 import dev.enro3.ui.scenes.DirectOverlaySceneStrategy
@@ -55,6 +84,8 @@ public fun NavigationDisplay(
     var isSettled by remember { mutableStateOf(true) }
 
     val movableContentDecorator = rememberMovableContentDestinationDecorator<NavigationKey>()
+    val viewModelStoreOwnerDecorator = rememberViewModelStoreNavEntryDecorator()
+    val navigationSavedStateDecorator = rememberSavedStateDecorator()
     val navigationContextDecorator = remember(backstack, isSettled) {
         navigationContextDecorator<NavigationKey>(backstack, isSettled)
     }
@@ -69,6 +100,8 @@ public fun NavigationDisplay(
                     destination = it,
                     destinationDecorators = listOf(
                         movableContentDecorator,
+                        navigationSavedStateDecorator,
+                        viewModelStoreOwnerDecorator,
                         navigationContextDecorator,
                     )
                 )

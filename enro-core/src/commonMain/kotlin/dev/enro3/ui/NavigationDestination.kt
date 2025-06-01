@@ -3,7 +3,12 @@ package dev.enro3.ui
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.key
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import dev.enro3.NavigationKey
 import kotlin.jvm.JvmSuppressWildcards
 
@@ -62,12 +67,12 @@ public class NavigationDestinationWrapper<T : NavigationKey>(
 )
 
 public open class NavigationDestinationDecorator<T : NavigationKey>(
-    internal val onPop: (key: Any) -> Unit,
+    internal val onPop: (key: NavigationKey.Instance<T>) -> Unit,
     internal val decorator: @Composable (entry: NavigationDestination<T>) -> Unit,
 )
 
 public fun <T : NavigationKey> navigationDestinationDecorator(
-    onPop: (key: Any) -> Unit = {},
+    onPop: (key: NavigationKey.Instance<T>) -> Unit = {},
     decorator: @Composable (entry: NavigationDestination<T>) -> Unit,
 ): NavigationDestinationDecorator<T> = NavigationDestinationDecorator(onPop, decorator)
 
