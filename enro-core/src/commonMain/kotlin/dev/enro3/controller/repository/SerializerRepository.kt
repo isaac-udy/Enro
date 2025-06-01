@@ -2,7 +2,7 @@ package dev.enro3.controller.repository
 
 import androidx.savedstate.serialization.ClassDiscriminatorMode
 import androidx.savedstate.serialization.SavedStateConfiguration
-import dev.enro.core.serialization.*
+import dev.enro3.serialization.*
 import dev.enro3.result.NavigationResultChannel
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule

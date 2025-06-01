@@ -4,6 +4,9 @@ import dev.enro3.controller.NavigationModule
 import dev.enro3.controller.repository.*
 
 public class EnroController {
+    // TODO NEED TO CONFIGURE THIS
+    internal val isDebug = false
+
     internal val plugins = PluginRepository()
     internal val bindings = BindingRepository()
     internal val serializers = SerializerRepository()
@@ -44,6 +47,10 @@ public class EnroController {
     public companion object {
         internal var instance: EnroController? = null
             private set
+
+        internal fun requireInstance(): EnroController {
+            return instance ?: error("EnroController has not been installed")
+        }
 
         internal var platformReference: Any? = null
             private set

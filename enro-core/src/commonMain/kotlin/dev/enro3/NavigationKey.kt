@@ -3,10 +3,8 @@ package dev.enro3
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import dev.enro.annotations.AdvancedEnroApi
-import dev.enro.core.controller.NavigationController
-import dev.enro.core.internal.isDebugBuild
-import dev.enro.core.serialization.unwrapForSerialization
-import dev.enro.core.serialization.wrapForSerialization
+import dev.enro3.serialization.unwrapForSerialization
+import dev.enro3.serialization.wrapForSerialization
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -133,10 +131,11 @@ public interface NavigationKey {
 
         @OptIn(ExperimentalSerializationApi::class)
         public fun <T> set(key: MetadataKey<T>, value: T) {
+            val controller = EnroController.requireInstance()
             val isTransient = key is TransientMetadataKey<*>
-            if (isDebugBuild() && value != null && !isTransient) {
+            if (controller.isDebug && value != null && !isTransient) {
                 val wrapped = value.wrapForSerialization()
-                val hasSerializer = NavigationController.serializersModule.getPolymorphic(Any::class, wrapped) != null
+                val hasSerializer = controller.serializers.serializersModule.getPolymorphic(Any::class, wrapped) != null
                 if (!hasSerializer) {
                     error("Object of type ${value::class} could not be added to NavigationKey.Metadata, make sure to register the serializer with the NavigationController.")
                 }
@@ -198,6 +197,8 @@ public interface NavigationKey {
     public abstract class TransientMetadataKey<T>(
         default: T
     ) : MetadataKey<T>(default)
+
+    public companion object
 }
 
 /**

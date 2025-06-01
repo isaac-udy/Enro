@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModel
-import dev.enro.core.internal.EnroLog
+import dev.enro3.platform.EnroLog
 import dev.enro3.NavigationContext
 import dev.enro3.NavigationHandle
 import dev.enro3.NavigationKey

@@ -5,7 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import dev.enro.animation.rememberTransitionCompat
+import dev.enro3.ui.animation.rememberTransitionCompat
 import dev.enro3.*
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch

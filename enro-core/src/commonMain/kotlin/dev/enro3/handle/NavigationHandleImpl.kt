@@ -3,7 +3,7 @@ package dev.enro3.handle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleRegistry
-import dev.enro.core.internal.EnroLog
+import dev.enro3.platform.EnroLog
 import dev.enro3.NavigationContext
 import dev.enro3.NavigationHandle
 import dev.enro3.NavigationKey
