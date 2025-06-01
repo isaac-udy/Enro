@@ -2,6 +2,7 @@ package dev.enro3.interceptor.builder
 
 import dev.enro3.NavigationBackstack
 import dev.enro3.NavigationKey
+import dev.enro3.interceptor.NavigationTransitionInterceptor
 
 /**
  * Scope for handling when a navigation key is closed.
@@ -12,16 +13,16 @@ public class OnNavigationKeyClosedScope<K : NavigationKey> @PublishedApi interna
     /**
      * Continue with the navigation as normal.
      */
-    public fun continueWithClose(): Nothing = throw TransitionInterceptorResult.Continue()
+    public fun continueWithClose(): Nothing = throw NavigationTransitionInterceptor.Result.Continue()
 
     /**
      * Cancel the navigation entirely.
      */
-    public fun cancel(): Nothing = throw TransitionInterceptorResult.Cancel()
+    public fun cancel(): Nothing = throw NavigationTransitionInterceptor.Result.Cancel()
 
     /**
      * Replace the current transition with a modified one.
      */
     public fun replaceWith(transition: NavigationBackstack): Nothing =
-        throw TransitionInterceptorResult.ReplaceWith(transition)
+        throw NavigationTransitionInterceptor.Result.ReplaceWith(transition)
 }

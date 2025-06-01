@@ -1,0 +1,78 @@
+package dev.enro3.controller.repository
+
+import dev.enro3.NavigationBinding
+import dev.enro3.NavigationKey
+import kotlin.reflect.KClass
+
+internal class BindingRepository {
+    private val bindingsByKeyType = mutableMapOf<KClass<*>, NavigationBinding<*>>()
+    private val originalBindingsByKeyType = mutableMapOf<KClass<*>, NavigationBinding<*>>()
+
+    fun addNavigationBindings(binding: List<NavigationBinding<*>>) {
+        binding.forEach { it ->
+            val existingBinding = bindingsByKeyType[it.keyType]
+            val existingIsPlatformOverride = existingBinding?.isPlatformOverride == true
+
+            val multiplePlatformOverrides = existingIsPlatformOverride
+                    && it.isPlatformOverride
+
+            val multipleRegularBindings = existingBinding != null
+                    && !existingIsPlatformOverride
+                    && !it.isPlatformOverride
+
+            val platformOverrideAlreadyBound = existingIsPlatformOverride
+                    && !it.isPlatformOverride
+
+            val isValidBinding = existingBinding == null
+                    || existingBinding == it
+                    || (it.isPlatformOverride && !existingBinding.isPlatformOverride)
+
+            when {
+                multiplePlatformOverrides -> error(
+                    "Found multiple platform override bindings for ${it.keyType.qualifiedName}." +
+                            " Please ensure that only one binding is provided for each key type."
+                )
+
+                multipleRegularBindings -> error(
+                    "Found multiple bindings for ${it.keyType.qualifiedName}." +
+                            " Please ensure that only one binding is provided for each key type, or use @PlatformOverride to override an existing binding for a specific platform."
+                )
+
+                platformOverrideAlreadyBound -> {
+                    // If an existing binding is a platform override, and the new binding is not,
+                    // then we should not replace the existing binding.
+                    originalBindingsByKeyType[it.keyType] = it
+                    return@forEach
+                }
+
+                isValidBinding -> {
+                    // If the existing binding is not a platform override, and the new binding is,
+                    // then we should replace the existing binding.
+                    bindingsByKeyType[it.keyType] = it
+                    if (existingBinding != null) {
+                        originalBindingsByKeyType[existingBinding.keyType] = existingBinding
+                    }
+                }
+
+                else -> {
+                    error("An unknown error occurred while adding the binding for ${it.keyType.qualifiedName}.")
+                }
+            }
+        }
+    }
+
+    fun bindingFor(
+        instance: NavigationKey.Instance<*>,
+    ): NavigationBinding<*> {
+        val binding =  when {
+            NavigationBinding.usesOriginalBinding(instance) ->
+                originalBindingsByKeyType[instance.key::class]
+                    ?: bindingsByKeyType[instance.key::class]
+
+            else -> bindingsByKeyType[instance.key::class]
+        }
+        return requireNotNull(binding) {
+            "No binding found for ${instance.key::class.qualifiedName}"
+        }
+    }
+}

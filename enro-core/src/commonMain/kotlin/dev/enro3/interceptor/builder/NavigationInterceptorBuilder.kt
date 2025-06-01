@@ -3,6 +3,7 @@ package dev.enro3.interceptor.builder
 import dev.enro3.NavigationKey
 import dev.enro3.interceptor.AggregateNavigationInterceptor
 import dev.enro3.interceptor.NavigationInterceptor
+import dev.enro3.interceptor.NavigationTransitionInterceptor
 import dev.enro3.interceptor.NoOpNavigationInterceptor
 import dev.enro3.result.NavigationResult
 import dev.enro3.result.getResult
@@ -38,7 +39,7 @@ public class NavigationInterceptorBuilder internal constructor() {
         interceptors += NavigationTransitionInterceptor(
             action = { transition ->
                 val instance = transition.opened.singleOrNull { it.key is KeyType }
-                if (instance == null) throw TransitionInterceptorResult.Continue()
+                if (instance == null) continueTransition()
 
                 @Suppress("UNCHECKED_CAST")
                 instance as NavigationKey.Instance<KeyType>
@@ -59,7 +60,7 @@ public class NavigationInterceptorBuilder internal constructor() {
         interceptors += NavigationTransitionInterceptor(
             action = { transition ->
                 val instance = transition.closed.singleOrNull { it.key is KeyType }
-                if (instance == null) throw TransitionInterceptorResult.Continue()
+                if (instance == null) continueTransition()
 
                 @Suppress("UNCHECKED_CAST")
                 instance as NavigationKey.Instance<KeyType>
@@ -78,12 +79,12 @@ public class NavigationInterceptorBuilder internal constructor() {
         interceptors += NavigationTransitionInterceptor(
             action = { transition ->
                 val closed = transition.closed.singleOrNull { it.key is KeyType }
-                if (closed == null) throw TransitionInterceptorResult.Continue()
+                if (closed == null) continueTransition()
                 @Suppress("UNCHECKED_CAST")
                 closed as NavigationKey.Instance<KeyType>
 
                 val result = closed.getResult()
-                if (result !is NavigationResult.Completed) throw TransitionInterceptorResult.Continue()
+                if (result !is NavigationResult.Completed) continueTransition()
 
                 OnNavigationKeyCompletedScope(closed, result).block()
             }

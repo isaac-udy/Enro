@@ -21,6 +21,7 @@ import dev.enro.tests.application.fragment.UnboundBottomSheet
 import dev.enro.tests.application.managedflow.ManagedFlowInComposable
 import dev.enro.tests.application.managedflow.ManagedFlowInFragment
 import dev.enro.tests.application.serialization.AndroidSerialization
+import dev.enro3.controller.internalCreateEnroController
 
 class TestApplication : Application(), NavigationApplication {
     override val navigationController = EnroComponent.installNavigationController(
@@ -85,5 +86,13 @@ class TestApplication : Application(), NavigationApplication {
             SyntheticViewModelAccess,
             UnboundBottomSheet,
         )
+
+        internalCreateEnroController {
+            destination<ListKey>(listDestination)
+            destination<DetailKey>(detailDestination)
+            destination<ResultKey>(resultDestination)
+            destination<SyntheticKey>(syntheticDestination)
+            destination<FragmentKey>(fragmentDestination)
+        }.install(this)
     }
 }

@@ -2,6 +2,7 @@ package dev.enro3.interceptor.builder
 
 import dev.enro3.NavigationBackstack
 import dev.enro3.NavigationTransition
+import dev.enro3.interceptor.NavigationTransitionInterceptor
 
 /**
  * Scope for handling any navigation transition.
@@ -13,17 +14,17 @@ public class OnNavigationTransitionScope @PublishedApi internal constructor(
      * Continue with the navigation as normal.
      */
     public fun continueWithTransition(): Nothing =
-        throw TransitionInterceptorResult.Continue()
+        throw NavigationTransitionInterceptor.Result.Continue()
 
     /**
      * Cancel the navigation entirely.
      */
     public fun cancel(): Nothing =
-        throw TransitionInterceptorResult.Cancel()
+        throw NavigationTransitionInterceptor.Result.Cancel()
 
     /**
      * Replace the current transition with a modified one.
      */
     public fun replaceWith(transition: NavigationBackstack): Nothing =
-        throw TransitionInterceptorResult.ReplaceWith(transition)
+        throw NavigationTransitionInterceptor.Result.ReplaceWith(transition)
 }

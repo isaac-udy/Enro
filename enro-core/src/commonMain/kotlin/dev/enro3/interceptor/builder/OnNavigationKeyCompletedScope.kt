@@ -2,6 +2,7 @@ package dev.enro3.interceptor.builder
 
 import dev.enro3.NavigationBackstack
 import dev.enro3.NavigationKey
+import dev.enro3.interceptor.NavigationTransitionInterceptor
 import dev.enro3.result.NavigationResult
 import dev.enro3.result.NavigationResult.Completed.Companion.result
 
@@ -22,18 +23,18 @@ public class OnNavigationKeyCompletedScope<K : NavigationKey> @PublishedApi inte
      * Continue with the navigation as normal.
      */
     public fun continueWithComplete(): Nothing =
-        throw TransitionInterceptorResult.Continue()
+        throw NavigationTransitionInterceptor.Result.Continue()
 
     /**
      * Cancel the navigation entirely.
      */
     public fun cancel(): Nothing =
-        throw TransitionInterceptorResult.Cancel()
+        throw NavigationTransitionInterceptor.Result.Cancel()
 
     /**
      * Replace the current transition with a modified one.
      */
     public fun replaceWith(transition: NavigationBackstack): Nothing =
-        throw TransitionInterceptorResult.ReplaceWith(transition)
+        throw NavigationTransitionInterceptor.Result.ReplaceWith(transition)
 
 }

@@ -21,6 +21,9 @@ public class NavigationContainer internal constructor(
     public val parent: NavigationContainer? = null,
     private val interceptor: NavigationInterceptor = NoOpNavigationInterceptor
 ) {
+    public val controller: EnroController = requireNotNull(EnroController.instance) {
+        "EnroController instance is not initialized"
+    }
     private val mutableBackstack: MutableStateFlow<NavigationBackstack> = MutableStateFlow(backstack)
     public val backstack: StateFlow<NavigationBackstack> = mutableBackstack
 
@@ -28,11 +31,17 @@ public class NavigationContainer internal constructor(
 
     public fun execute(operation: NavigationOperation) {
         val backstack = backstack.value
-        val operation = interceptor.intercept(
+
+        val containerOperation = interceptor.intercept(
             operation = operation,
         )
-        if (operation == null) return
-        val transition = operation.invoke(backstack)
+        if (containerOperation == null) return
+        val controllerOperation = controller.interceptors.intercept(
+            operation = operation,
+        )
+        if (controllerOperation == null) return
+
+        val transition = controllerOperation.invoke(backstack)
         NavigationResultChannel.registerResults(transition)
         mutableBackstack.value = transition.targetBackstack
     }

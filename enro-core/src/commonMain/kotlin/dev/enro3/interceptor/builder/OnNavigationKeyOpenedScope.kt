@@ -4,6 +4,7 @@ import dev.enro3.NavigationBackstack
 import dev.enro3.NavigationKey
 import dev.enro3.NavigationTransition
 import dev.enro3.asInstance
+import dev.enro3.interceptor.NavigationTransitionInterceptor
 
 /**
  * Scope for handling when a navigation key is opened.
@@ -17,18 +18,18 @@ public class OnNavigationKeyOpenedScope<T : NavigationKey>(
     /**
      * Continue with the navigation as normal.
      */
-    public fun continueWithOpen(): Nothing = throw TransitionInterceptorResult.Continue()
+    public fun continueWithOpen(): Nothing = throw NavigationTransitionInterceptor.Result.Continue()
 
     /**
      * Cancel the navigation entirely.
      */
-    public fun cancel(): Nothing = throw TransitionInterceptorResult.Cancel()
+    public fun cancel(): Nothing = throw NavigationTransitionInterceptor.Result.Cancel()
 
     /**
      * Replace the current transition with a modified one.
      */
     public fun replaceWith(backstack: NavigationBackstack): Nothing =
-        throw TransitionInterceptorResult.ReplaceWith(backstack)
+        throw NavigationTransitionInterceptor.Result.ReplaceWith(backstack)
 
     public fun replaceWith(key: NavigationKey): Nothing =
         replaceWith(instance = key.asInstance())
@@ -37,7 +38,7 @@ public class OnNavigationKeyOpenedScope<T : NavigationKey>(
         replaceWith(instance = key.asInstance())
 
     public fun replaceWith(instance: NavigationKey.Instance<*>): Nothing =
-        throw TransitionInterceptorResult.ReplaceWith(
+        throw NavigationTransitionInterceptor.Result.ReplaceWith(
             backstack = transition.targetBackstack.map {
                 if (it == this.instance) instance else it
             }

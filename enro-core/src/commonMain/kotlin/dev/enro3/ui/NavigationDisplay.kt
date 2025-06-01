@@ -31,6 +31,11 @@ public fun NavigationDisplay(
     },
     predictivePopTransitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = popTransitionSpec,
 ) {
+    val controller = remember {
+        requireNotNull(EnroController.instance) {
+            "EnroController must be initialized before using NavigationDisplay"
+        }
+    }
     val backstack = container.backstack.collectAsState().value
     require(backstack.isNotEmpty()) { "NavigationDisplay backstack cannot be empty" }
 
@@ -38,8 +43,9 @@ public fun NavigationDisplay(
 
     val destinations = backstack
         .map { instance ->
-            val destination = destinations[instance.key::class] as NavigationDestinationProvider<NavigationKey>
-            destination.create(instance as NavigationKey.Instance<NavigationKey>)
+            @Suppress("UNCHECKED_CAST")
+            val binding = controller.bindings.bindingFor(instance) as NavigationBinding<NavigationKey>
+            binding.provider.create(instance as NavigationKey.Instance<NavigationKey>)
         }
         .map {
             decorateNavigationDestination(

@@ -12,9 +12,11 @@ import dev.enro3.NavigationHandle
 import dev.enro3.NavigationKey
 import dev.enro3.NavigationOperation
 
+@PublishedApi
 internal class NavigationHandleHolder<T : NavigationKey>(
     instance: NavigationKey.Instance<T>
 ) : ViewModel() {
+    @PublishedApi
     internal var navigationHandle: NavigationHandle<T> by mutableStateOf(NavigationHandleImpl(instance))
 
     fun bindContext(

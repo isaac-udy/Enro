@@ -5,12 +5,7 @@ import androidx.lifecycle.*
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro3.handle.NavigationHandleHolder
-import dev.enro3.ui.LocalNavigationContainer
-import dev.enro3.ui.LocalNavigationContext
-import dev.enro3.ui.LocalNavigationHandle
-import dev.enro3.ui.NavigationDestination
-import dev.enro3.ui.NavigationDestinationDecorator
-import dev.enro3.ui.navigationDestinationDecorator
+import dev.enro3.ui.*
 
 public class NavigationContext<T : NavigationKey>(
     lifecycleOwner: LifecycleOwner,
@@ -116,12 +111,18 @@ private class ChildLifecycleOwner : LifecycleOwner {
 }
 
 @Composable
-public fun <T: NavigationKey> navigationHandle(): NavigationHandle<T> {
+public inline fun <reified T: NavigationKey> navigationHandle(): NavigationHandle<T> {
     val holder = viewModel<NavigationHandleHolder<T>>(
         viewModelStoreOwner = LocalNavigationContext.current,
     ) {
-        error("TODO better error")
+        error("No NavigationHandle found for ${T::class}")
     }
-    return holder.navigationHandle
+
+    return holder.navigationHandle.also { navigationHandle ->
+        @Suppress("USELESS_IS_CHECK")
+        require(navigationHandle.instance.key is T) {
+            "Expected key of type ${T::class}, but found ${navigationHandle.instance.key::class}"
+        }
+    }
 }
 

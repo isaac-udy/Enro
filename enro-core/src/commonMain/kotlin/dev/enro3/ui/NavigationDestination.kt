@@ -5,13 +5,13 @@ import dev.enro3.NavigationKey
 import kotlin.jvm.JvmSuppressWildcards
 
 
-public class NavigationDestinationProvider<T : NavigationKey>(
-    private val metadata: Map<String, Any> = emptyMap(),
+public open class NavigationDestinationProvider<T : NavigationKey>(
+    public val metadata: Map<String, Any> = emptyMap(),
     private val content: @Composable () -> Unit,
 ) {
-    public fun create(instruction: NavigationKey.Instance<T>): NavigationDestination<T> {
+    public fun create(instance: NavigationKey.Instance<T>): NavigationDestination<T> {
         return object : NavigationDestination<T>(
-            instance = instruction,
+            instance = instance,
             metadata = metadata,
             content = content,
         ) {}
