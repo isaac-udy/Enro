@@ -98,6 +98,9 @@ class TestApplication : Application(), NavigationApplication {
             destination<DialogKey>(dialogDestination)
             destination<NestedKey>(nestedDestination)
             destination<EmptyKey>(emptyDestination)
+            destination<DirectDialogKey>(directDialogDestination)
+            destination<DirectButtonKey>(directButtonDestination)
+            destination<DirectBottomSheetKey>(directBottomSheetDestination)
         }.install(this)
     }
 }

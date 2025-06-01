@@ -8,6 +8,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
 import dev.enro3.*
 import dev.enro3.ui.animation.rememberTransitionCompat
+import dev.enro3.ui.scenes.DialogSceneStrategy
+import dev.enro3.ui.scenes.DirectOverlaySceneStrategy
+import dev.enro3.ui.scenes.SinglePaneScene
+import dev.enro3.ui.scenes.calculateSceneWithSinglePaneFallback
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
@@ -16,19 +20,25 @@ import kotlin.reflect.KClass
 public fun NavigationDisplay(
     container: NavigationContainer,
     modifier: Modifier = Modifier,
-    sceneStrategy: NavigationSceneStrategy = remember { DialogNavigationSceneStrategy() then SinglePaneScene() },
+    sceneStrategy: NavigationSceneStrategy = remember {
+        NavigationSceneStrategy.from(
+            DialogSceneStrategy(),
+            DirectOverlaySceneStrategy(),
+            SinglePaneScene(),
+        )
+    },
     contentAlignment: Alignment = Alignment.TopStart,
     sizeTransform: SizeTransform? = null,
     transitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
         ContentTransform(
-            fadeIn(spring(stiffness = Spring.StiffnessMedium)) + slideInHorizontally { it / 3 },
-            slideOutHorizontally { -it / 4 },
+            targetContentEnter = fadeIn(spring(stiffness = Spring.StiffnessMedium)) + slideInHorizontally { it / 3 },
+            initialContentExit = slideOutHorizontally { -it / 4 },
         )
     },
     popTransitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
         ContentTransform(
-            slideInHorizontally { -it / 4 },
-            fadeOut(spring(stiffness = Spring.StiffnessMedium)) + slideOutHorizontally { it / 3 },
+            targetContentEnter = slideInHorizontally { -it / 4 },
+            initialContentExit = fadeOut(spring(stiffness = Spring.StiffnessMedium)) + slideOutHorizontally { it / 3 },
         )
     },
     predictivePopTransitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = popTransitionSpec,
@@ -53,15 +63,15 @@ public fun NavigationDisplay(
             val binding = controller.bindings.bindingFor(instance) as NavigationBinding<NavigationKey>
             binding.provider.create(instance as NavigationKey.Instance<NavigationKey>)
         }
-        .map {
-            decorateNavigationDestination(
-                destination = it,
-                destinationDecorators = listOf(
-                    movableContentDecorator,
-                    navigationContextDecorator,
+            .map {
+                decorateNavigationDestination(
+                    destination = it,
+                    destinationDecorators = listOf(
+                        movableContentDecorator,
+                        navigationContextDecorator,
+                    )
                 )
-            )
-        }
+            }
     }
 
     // Calculate all scenes, starting with the main scene and then processing overlay scenes
@@ -71,7 +81,7 @@ public fun NavigationDisplay(
 
     val allScenes = mutableListOf(sceneStrategy.calculateSceneWithSinglePaneFallback(destinations, onBack))
     do {
-        val overlayScene = allScenes.last() as? OverlayNavigationScene
+        val overlayScene = allScenes.last() as? NavigationScene.Overlay
         val overlaidEntries = overlayScene?.overlaidEntries
         if (overlaidEntries != null) {
             require(overlaidEntries.isNotEmpty()) {

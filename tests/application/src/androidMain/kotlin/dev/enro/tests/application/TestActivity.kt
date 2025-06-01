@@ -18,13 +18,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.AndroidFragment
@@ -39,8 +42,13 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro3.*
 import dev.enro3.result.open
 import dev.enro3.result.registerForNavigationResult
-import dev.enro3.ui.*
+import dev.enro3.ui.NavigationDisplay
 import dev.enro3.ui.destinations.syntheticDestination
+import dev.enro3.ui.navigationDestination
+import dev.enro3.ui.navigationHandle
+import dev.enro3.ui.rememberNavigationContainer
+import dev.enro3.ui.scenes.DialogSceneStrategy
+import dev.enro3.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro3.viewmodel.createEnroViewModel
 import dev.enro3.viewmodel.navigationHandle
 import kotlinx.serialization.Serializable
@@ -124,7 +132,22 @@ val listDestination = navigationDestination<ListKey> {
             Text("Dialog")
         }
         Button(onClick = {
-            navigation.open(NestedKey())
+            resultChannel.open(DirectDialogKey())
+        }) {
+            Text("Direct Dialog")
+        }
+        Button(onClick = {
+            resultChannel.open(DirectButtonKey())
+        }) {
+            Text("Direct Button")
+        }
+        Button(onClick = {
+            resultChannel.open(DirectBottomSheetKey())
+        }) {
+            Text("Direct Bottom Sheet")
+        }
+        Button(onClick = {
+            resultChannel.open(NestedKey())
         }) {
             Text("Nested")
         }
@@ -133,7 +156,7 @@ val listDestination = navigationDestination<ListKey> {
         }) {
             Text("ViewModel")
         }
-        repeat(10) {
+        repeat(3) {
             Button(onClick = {
                 resultChannel.open(DetailKey(it.toString()))
             }) {
@@ -330,7 +353,7 @@ class DialogKey(
 
 val dialogDestination = navigationDestination<DialogKey>(
     metadata = mapOf(
-        DialogNavigationSceneStrategy.dialog(
+        DialogSceneStrategy.dialog(
             DialogProperties(
                 dismissOnBackPress = true,
                 dismissOnClickOutside = false,
@@ -339,28 +362,11 @@ val dialogDestination = navigationDestination<DialogKey>(
     )
 ) {
     val navigation = navigationHandle<DialogKey>()
-    Column(
-        Modifier
-            .height(
-                700.dp - (navigation.key.title.count { it == '\n' } * 100.dp)
-            )
+    TitledColumn(
+        title = navigation.key.title,
+        modifier = Modifier
             .shadow(2.dp)
-            .background(MaterialTheme.colors.background)
-            .padding(16.dp)
     ) {
-        Text(
-            text = navigation.key.title,
-            style = MaterialTheme.typography.h6
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = {
-            navigation.completeFrom(DialogKey(
-                title = "Another\n" + navigation.key.title
-            ))
-        }) {
-            Text("Another Dialog")
-        }
         Button(onClick = {
             navigation.complete()
         }) {
@@ -373,6 +379,113 @@ val dialogDestination = navigationDestination<DialogKey>(
         }
     }
 }
+
+@Serializable
+class DirectDialogKey : NavigationKey
+
+@OptIn(ExperimentalMaterial3Api::class)
+val directDialogDestination = navigationDestination<DirectDialogKey>(
+    metadata = mapOf(DirectOverlaySceneStrategy.overlay()),
+) {
+    val navigation = navigationHandle<NavigationKey>()
+    AlertDialog(
+        onDismissRequest = { navigation.close() },
+        shape = MaterialTheme.shapes.medium,
+        containerColor = MaterialTheme.colors.background,
+        title = {
+            Text("Direct Dialog")
+        },
+        confirmButton = {
+            Button(onClick = { navigation.complete() }) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { navigation.close() }) {
+                Text("Dismiss")
+            }
+        },
+        properties = DialogProperties(
+            dismissOnClickOutside = false,
+        )
+    )
+}
+
+@Serializable
+class DirectButtonKey : NavigationKey
+
+val directButtonDestination = navigationDestination<DirectButtonKey>(
+    metadata = mapOf(DirectOverlaySceneStrategy.overlay()),
+) {
+    val navigation = navigationHandle<NavigationKey>()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.onBackground.copy(alpha = 0.16f)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Button(onClick = {
+            navigation.complete()
+        }) {
+            Text("Complete")
+        }
+        Button(onClick = {
+            navigation.close()
+        }) {
+            Text("Close")
+        }
+    }
+}
+
+@Serializable
+class DirectBottomSheetKey : NavigationKey
+
+@OptIn(ExperimentalMaterial3Api::class)
+val directBottomSheetDestination = navigationDestination<DirectBottomSheetKey>(
+    metadata = mapOf(DirectOverlaySceneStrategy.overlay()),
+) {
+    val navigation = navigationHandle<NavigationKey>()
+    ModalBottomSheet(
+        containerColor = MaterialTheme.colors.background,
+        onDismissRequest = { navigation.close() },
+    ) {
+        TitledColumn(
+            title = "Direct Bottom Sheet",
+            modifier = Modifier,
+        ) {
+            Text(
+                text = "This is some text in the bottom sheet to create some addtional content and space to make sure that " +
+                    "the bottom sheet actually is long enough to have some interesting things in it and scroll, and " +
+                    "other things like that. This text really does not have any meaning at all. " +
+                    "This is some text in the bottom sheet to create some addtional content and space to make sure that " +
+                    "the bottom sheet actually is long enough to have some interesting things in it and scroll, and " +
+                    "other things like that. This text really does not have any meaning at all."
+            )
+            Text(
+                text = "This is some text in the bottom sheet to create some addtional content and space to make sure that " +
+                        "the bottom sheet actually is long enough to have some interesting things in it and scroll, and " +
+                        "other things like that. This text really does not have any meaning at all. " +
+                        "This is some text in the bottom sheet to create some addtional content and space to make sure that " +
+                        "the bottom sheet actually is long enough to have some interesting things in it and scroll, and " +
+                        "other things like that. This text really does not have any meaning at all."
+            )
+            Button(
+                onClick = { navigation.complete() },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Complete")
+            }
+            Button(
+                onClick = { navigation.close() },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Close")
+            }
+        }
+    }
+}
+
 
 @Serializable
 class EmptyKey : NavigationKey

@@ -1,20 +1,23 @@
-package dev.enro3.ui
+package dev.enro3.ui.scenes
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dev.enro3.NavigationKey
-import dev.enro3.ui.DialogNavigationSceneStrategy.Companion.dialog
+import dev.enro3.ui.NavigationDestination
+import dev.enro3.ui.NavigationScene
+import dev.enro3.ui.NavigationSceneStrategy
+import dev.enro3.ui.scenes.DialogSceneStrategy.Companion.dialog
 
-/** An [OverlayNavigationScene] that renders an [entry] within a [Dialog]. */
-internal class DialogNavigationScene(
+/** An [NavigationScene.Overlay] that renders an [entry] within a [Dialog]. */
+internal class DialogScene(
     override val key: Any,
     override val previousEntries: List<NavigationDestination<out NavigationKey>>,
     override val overlaidEntries: List<NavigationDestination<out NavigationKey>>,
     private val entry: NavigationDestination<out NavigationKey>,
     private val dialogProperties: DialogProperties,
     private val onBack: (count: Int) -> Unit,
-) : OverlayNavigationScene {
+) : NavigationScene.Overlay {
 
     override val entries: List<NavigationDestination<out NavigationKey>> = listOf(entry)
 
@@ -31,7 +34,7 @@ internal class DialogNavigationScene(
  *
  * This strategy should always be added before any non-overlay scene strategies.
  */
-public class DialogNavigationSceneStrategy : NavigationSceneStrategy {
+public class DialogSceneStrategy : NavigationSceneStrategy {
     @Composable
     public override fun calculateScene(
         entries: List<NavigationDestination<out NavigationKey>>,
@@ -40,7 +43,7 @@ public class DialogNavigationSceneStrategy : NavigationSceneStrategy {
         val lastEntry = entries.lastOrNull()
         val dialogProperties = lastEntry?.metadata?.get(DialogPropertiesKey) as? DialogProperties
         return if (dialogProperties != null) {
-            DialogNavigationScene(
+            DialogScene(
                 key = lastEntry.instance.id,
                 previousEntries = entries.dropLast(1),
                 overlaidEntries = entries.dropLast(1),
@@ -51,8 +54,9 @@ public class DialogNavigationSceneStrategy : NavigationSceneStrategy {
         } else null
     }
 
-    public companion object {
-        private const val DialogPropertiesKey = "DialogProperties"
+    public companion object Companion {
+        private const val DialogPropertiesKey = "dev.enro3.ui.scenes.DialogProperties"
+
         /**
          * Function to create a metadata map with dialog properties to mark this entry as something that
          * should be displayed within a [Dialog].

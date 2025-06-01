@@ -16,6 +16,7 @@ public open class NavigationDestinationProvider<T : NavigationKey>(
         ) {}
     }
 }
+
 public open class NavigationDestination<T : NavigationKey>(
     public val instance: NavigationKey.Instance<T>,
     public val metadata: Map<String, Any> = emptyMap(),
