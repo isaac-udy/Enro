@@ -14,17 +14,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
+import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.AndroidFragment
 import androidx.fragment.compose.content
@@ -38,11 +39,8 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro3.*
 import dev.enro3.result.open
 import dev.enro3.result.registerForNavigationResult
-import dev.enro3.ui.NavigationDisplay
+import dev.enro3.ui.*
 import dev.enro3.ui.destinations.syntheticDestination
-import dev.enro3.ui.navigationDestination
-import dev.enro3.ui.navigationHandle
-import dev.enro3.ui.rememberNavigationContainer
 import dev.enro3.viewmodel.createEnroViewModel
 import dev.enro3.viewmodel.navigationHandle
 import kotlinx.serialization.Serializable
@@ -119,6 +117,16 @@ val listDestination = navigationDestination<ListKey> {
             navigation.open(ActivityKey)
         }) {
             Text("Activity")
+        }
+        Button(onClick = {
+            resultChannel.open(DialogKey())
+        }) {
+            Text("Dialog")
+        }
+        Button(onClick = {
+            navigation.open(NestedKey())
+        }) {
+            Text("Nested")
         }
         Button(onClick = {
             stringResultChannel.open(ScreenWithViewModelKey())
@@ -215,6 +223,9 @@ val syntheticDestination = syntheticDestination<SyntheticKey> {
 object FragmentKey : NavigationKey
 
 val fragmentDestination = navigationDestination<FragmentKey> {
+    // we can grab composition locals here
+    val compositionLocals = currentComposer.apply { currentCompositionLocalMap }
+
     AndroidFragment<SimpleFragment>(
         fragmentState = rememberFragmentState(),
         arguments = Bundle().apply { putString("key", "value") }
@@ -243,7 +254,13 @@ class SimpleFragment : Fragment() {
 @Serializable
 object ActivityKey : NavigationKey
 
-val activityDestination = navigationDestination<ActivityKey> {
+val activityDestination = navigationDestination<ActivityKey>(
+    metadata = mapOf(
+        "key" to "value"
+    ),
+) {
+    val context = rememberCompositionContext()
+    context.effectCoroutineContext
     val navigation = navigationHandle<ActivityKey>()
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult(),
@@ -303,5 +320,85 @@ val screenWithViewModelDestination = navigationDestination<ScreenWithViewModelKe
         Button(onClick = { viewModel.onComplete("From ViewModel") }) {
             Text("Complete")
         }
+    }
+}
+
+@Serializable
+class DialogKey(
+    val title: String = "Dialog"
+) : NavigationKey
+
+val dialogDestination = navigationDestination<DialogKey>(
+    metadata = mapOf(
+        DialogNavigationSceneStrategy.dialog(
+            DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = false,
+            )
+        )
+    )
+) {
+    val navigation = navigationHandle<DialogKey>()
+    Column(
+        Modifier
+            .height(
+                700.dp - (navigation.key.title.count { it == '\n' } * 100.dp)
+            )
+            .shadow(2.dp)
+            .background(MaterialTheme.colors.background)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = navigation.key.title,
+            style = MaterialTheme.typography.h6
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = {
+            navigation.completeFrom(DialogKey(
+                title = "Another\n" + navigation.key.title
+            ))
+        }) {
+            Text("Another Dialog")
+        }
+        Button(onClick = {
+            navigation.complete()
+        }) {
+            Text("Complete")
+        }
+        Button(onClick = {
+            navigation.close()
+        }) {
+            Text("Close")
+        }
+    }
+}
+
+@Serializable
+class EmptyKey : NavigationKey
+val emptyDestination = navigationDestination<EmptyKey> {}
+
+@Serializable
+class NestedKey : NavigationKey
+
+val nestedDestination = navigationDestination<NestedKey> {
+    val container = rememberNavigationContainer(
+        backstack = listOf(EmptyKey().asInstance()),
+    )
+    TitledColumn(
+        title = "Nested",
+    ) {
+        Button(
+            onClick = {
+                container.execute(
+                    NavigationOperation.open(
+                        ListKey().asInstance()
+                    )
+                )
+            }
+        ) {
+            Text("Push List")
+        }
+        NavigationDisplay(container)
     }
 }

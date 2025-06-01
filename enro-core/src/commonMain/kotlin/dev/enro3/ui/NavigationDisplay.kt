@@ -5,16 +5,18 @@ import androidx.compose.animation.core.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import dev.enro3.ui.animation.rememberTransitionCompat
+import androidx.compose.ui.util.fastForEachReversed
 import dev.enro3.*
+import dev.enro3.ui.animation.rememberTransitionCompat
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
 
 @Composable
 public fun NavigationDisplay(
     container: NavigationContainer,
     modifier: Modifier = Modifier,
-    sceneStrategy: NavigationSceneStrategy = SinglePaneScene(),
+    sceneStrategy: NavigationSceneStrategy = DialogNavigationSceneStrategy() then SinglePaneScene(),
     contentAlignment: Alignment = Alignment.TopStart,
     sizeTransform: SizeTransform? = null,
     transitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
@@ -56,22 +58,37 @@ public fun NavigationDisplay(
             )
         }
 
-    val scenes = remember { mutableStateMapOf<Any, NavigationScene>() }
-    val mostRecentSceneKeys = remember { mutableStateListOf<Any>() }
-
-    val scene = sceneStrategy.calculateScene(destinations) { count ->
+    // Calculate all scenes, starting with the main scene and then processing overlay scenes
+    val onBack: (Int) -> Unit = { count ->
         container.execute(NavigationOperation.closeByCount(count))
     }
 
-    if (scene != null) {
-        scenes[scene.key] = scene
-    }
+    val allScenes = mutableListOf(sceneStrategy.calculateSceneWithSinglePaneFallback(destinations, onBack))
+    do {
+        val overlayScene = allScenes.last() as? OverlayNavigationScene
+        val overlaidEntries = overlayScene?.overlaidEntries
+        if (overlaidEntries != null) {
+            require(overlaidEntries.isNotEmpty()) {
+                "Overlaid entries from $overlayScene must not be empty"
+            }
+            allScenes += sceneStrategy.calculateSceneWithSinglePaneFallback(overlaidEntries, onBack)
+        }
+    } while (overlaidEntries != null)
+
+    val overlayScenes = allScenes.dropLast(1)
+    val scene = allScenes.last()
+
+    val scenes = remember { mutableStateMapOf<Pair<KClass<*>, Any>, NavigationScene>() }
+    val mostRecentSceneKeys = remember { mutableStateListOf<Pair<KClass<*>, Any>>() }
+
+    val sceneKey = scene::class to scene.key
+    scenes[sceneKey] = scene
 
     // Predictive Back Handling
     var progress by remember { mutableFloatStateOf(0f) }
     var inPredictiveBack by remember { mutableStateOf(false) }
 
-    NavigationBackHandler(scene?.previousEntries?.isNotEmpty() == true) { navEvent ->
+    NavigationBackHandler(scene.previousEntries.isNotEmpty()) { navEvent ->
         progress = 0f
         try {
             navEvent.collect { value ->
@@ -79,18 +96,15 @@ public fun NavigationDisplay(
                 progress = value.progress
             }
             inPredictiveBack = false
-            val count = destinations.size - (scene?.previousEntries?.size ?: 0)
-            container.execute(NavigationOperation.closeByCount(count))
+            onBack(destinations.size - scene.previousEntries.size)
         } finally {
             inPredictiveBack = false
         }
     }
 
     // Scene Handling
-    val sceneKey = scene?.key
-
     val transitionState = remember {
-        SeekableTransitionState(sceneKey ?: Unit)
+        SeekableTransitionState(sceneKey)
     }
 
     val transition = rememberTransitionCompat(transitionState, label = sceneKey.toString())
@@ -99,6 +113,32 @@ public fun NavigationDisplay(
         if (mostRecentSceneKeys.lastOrNull() != transition.targetState) {
             mostRecentSceneKeys.remove(transition.targetState)
             mostRecentSceneKeys.add(transition.targetState)
+        }
+    }
+
+    // Determine which destinations should be rendered within each scene.
+    // Each renderable Scene, in order from the scene that is most recently the target scene to
+    // the scene that is least recently the target scene will be assigned each visible
+    // entry that hasn't already been assigned to a Scene that is more recent.
+    val sceneToRenderableDestinationMap = remember(
+        mostRecentSceneKeys.toList(),
+        scenes.values.map { scene -> scene.entries.map { it.instance.id } },
+        transition.targetState,
+    ) {
+        buildMap {
+            val coveredDestinationIds = mutableSetOf<String>()
+            (mostRecentSceneKeys.filter { it != transition.targetState } + listOf(transition.targetState))
+                .fastForEachReversed { sceneKey ->
+                    val scene = scenes.getValue(sceneKey)
+                    put(
+                        sceneKey,
+                        scene.entries
+                            .map { it.instance.id }
+                            .filterNot(coveredDestinationIds::contains)
+                            .toSet(),
+                    )
+                    scene.entries.forEach { coveredDestinationIds.add(it.instance.id) }
+                }
         }
     }
 
@@ -111,7 +151,7 @@ public fun NavigationDisplay(
         destinations.map { it.instance.id }
     )
 
-    val zIndices = remember { mutableMapOf<Any, Float>() }
+    val zIndices = remember { mutableMapOf<Pair<KClass<*>, Any>, Float>() }
     val initialKey = transition.currentState
     val targetKey = transition.targetState
     val initialZIndex = zIndices.getOrPut(initialKey) { 0f }
@@ -122,21 +162,17 @@ public fun NavigationDisplay(
     }
     zIndices[targetKey] = targetZIndex
 
-    if (inPredictiveBack && scene != null) {
-        val peekScene = sceneStrategy.calculateScene(scene.previousEntries) { count ->
-            container.execute(NavigationOperation.closeByCount(count))
-        }
-        if (peekScene != null) {
-            scenes[peekScene.key] = peekScene
-            if (transitionState.currentState != peekScene.key) {
-                LaunchedEffect(progress) { transitionState.seekTo(progress, peekScene.key) }
-            }
+    if (inPredictiveBack) {
+        val peekScene = sceneStrategy.calculateSceneWithSinglePaneFallback(scene.previousEntries, onBack)
+        val peekSceneKey = peekScene::class to peekScene.key
+        scenes[peekSceneKey] = peekScene
+        if (transitionState.currentState != peekSceneKey) {
+            LaunchedEffect(progress) { transitionState.seekTo(progress, peekSceneKey) }
         }
     } else {
-        val currentSceneKey = sceneKey ?: Unit
-        LaunchedEffect(currentSceneKey) {
-            if (transitionState.currentState != currentSceneKey) {
-                transitionState.animateTo(currentSceneKey)
+        LaunchedEffect(sceneKey) {
+            if (transitionState.currentState != sceneKey) {
+                transitionState.animateTo(sceneKey)
             } else {
                 val totalDuration = transition.totalDurationNanos / 1000000
                 animate(
@@ -149,7 +185,7 @@ public fun NavigationDisplay(
                             transitionState.seekTo(value)
                         }
                         if (value == 0f) {
-                            transitionState.snapTo(currentSceneKey)
+                            transitionState.snapTo(sceneKey)
                         }
                     }
                 }
@@ -166,7 +202,8 @@ public fun NavigationDisplay(
     }
 
     CompositionLocalProvider(
-        LocalNavigationContainer provides container
+        LocalNavigationContainer provides container,
+        LocalDestinationsToRenderInCurrentScene provides sceneToRenderableDestinationMap.getValue(transition.targetState)
     ) {
         transition.AnimatedContent(
             contentAlignment = contentAlignment,
@@ -180,7 +217,12 @@ public fun NavigationDisplay(
                 )
             }
         ) { targetSceneKey ->
-            scenes[targetSceneKey]?.content?.invoke()
+            val targetScene = scenes.getValue(targetSceneKey)
+            CompositionLocalProvider(
+                LocalDestinationsToRenderInCurrentScene provides sceneToRenderableDestinationMap.getValue(targetSceneKey)
+            ) {
+                targetScene.content()
+            }
         }
     }
 
@@ -205,6 +247,17 @@ public fun NavigationDisplay(
     LaunchedEffect(transition.currentState, transition.targetState) {
         val settled = transition.currentState == transition.targetState
         isSettled = settled
+    }
+
+    // Show all OverlayNavigationScene instances above the AnimatedContent
+    overlayScenes.fastForEachReversed { overlayScene ->
+        val allDestinations = overlayScene.entries.map { it.instance.id }.toSet()
+        CompositionLocalProvider(
+            LocalNavigationContainer provides container,
+            LocalDestinationsToRenderInCurrentScene provides allDestinations
+        ) {
+            overlayScene.content()
+        }
     }
 }
 

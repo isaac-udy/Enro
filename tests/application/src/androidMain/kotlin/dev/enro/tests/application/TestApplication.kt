@@ -95,6 +95,9 @@ class TestApplication : Application(), NavigationApplication {
             destination<FragmentKey>(fragmentDestination)
             destination<ActivityKey>(activityDestination)
             destination<ScreenWithViewModelKey>(screenWithViewModelDestination)
+            destination<DialogKey>(dialogDestination)
+            destination<NestedKey>(nestedDestination)
+            destination<EmptyKey>(emptyDestination)
         }.install(this)
     }
 }
