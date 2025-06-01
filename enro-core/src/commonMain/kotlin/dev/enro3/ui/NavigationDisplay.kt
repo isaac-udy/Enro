@@ -51,7 +51,7 @@ public fun NavigationDisplay(
             decorateNavigationDestination(
                 destination = it,
                 destinationDecorators = listOf(
-                    localNavigationContextDecorator<NavigationKey>(backstack, isSettled)
+                    navigationContextDecorator<NavigationKey>(backstack, isSettled)
                 )
             )
         }

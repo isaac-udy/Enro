@@ -41,6 +41,7 @@ import dev.enro3.result.registerForNavigationResult
 import dev.enro3.ui.NavigationDisplay
 import dev.enro3.ui.destinations.syntheticDestination
 import dev.enro3.ui.navigationDestination
+import dev.enro3.ui.navigationHandle
 import dev.enro3.ui.rememberNavigationContainer
 import dev.enro3.viewmodel.createEnroViewModel
 import dev.enro3.viewmodel.navigationHandle
@@ -120,7 +121,7 @@ val listDestination = navigationDestination<ListKey> {
             Text("Activity")
         }
         Button(onClick = {
-            navigation.open(ScreenWithViewModelKey())
+            stringResultChannel.open(ScreenWithViewModelKey())
         }) {
             Text("ViewModel")
         }
