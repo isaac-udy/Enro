@@ -52,9 +52,13 @@ sealed class GeneratedModuleReference {
                 val annotation = declaration.getAnnotationsByType(GeneratedNavigationModule::class).first()
                 val bindings = getNamesFromKClasses { annotation.bindings }
 
-                bindings.map { bindingName ->
+                bindings.mapNotNull { bindingName ->
                     val binding = requireNotNull(resolver.getClassDeclarationByName(bindingName))
                     val bindingAnnotation = binding.getAnnotationsByType(GeneratedNavigationBinding::class).first()
+                    val isEnro3 = binding.superTypes.any {
+                        it.resolve().declaration.qualifiedName?.asString() == "dev.enro3.controller.NavigationModuleAction"
+                    }
+                    if (isEnro3) return@mapNotNull null
 
                     GeneratedBindingReference.Kotlin(
                         binding = bindingName,

@@ -87,6 +87,11 @@ sealed class DestinationReference {
         val keyType =
             requireNotNull(resolver.getClassDeclarationByName(getNameFromKClass { annotation.key }))
 
+        val keyIsEnro3 by lazy {
+            val legacyType = resolver.getClassDeclarationByName("dev.enro3.NavigationKey")!!.asStarProjectedType()
+            legacyType.isAssignableFrom(keyType.asStarProjectedType())
+        }
+
         val keyIsParcelable = keyType.getAllSuperTypes()
             .any { it.declaration.qualifiedName?.asString() == "android.os.Parcelable" }
 
@@ -160,6 +165,9 @@ sealed class DestinationReference {
 
         val keyType =
             processingEnv.elementUtils.getTypeElement(getNameFromKClass { annotation.key })
+
+        val keyIsEnro3 = keyType is TypeElement &&
+                keyType.implements(processingEnv, com.squareup.javapoet.ClassName.get("dev.enro3", "NavigationKey"))
 
         val keyIsParcelable = keyType is TypeElement &&
                 keyType.implements(processingEnv, ClassNames.Java.parcelable)

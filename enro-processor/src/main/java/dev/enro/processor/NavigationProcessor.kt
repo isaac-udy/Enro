@@ -43,6 +43,11 @@ class NavigationProcessor(
                     resolver = resolver,
                     declaration = it
                 )
+                dev.enro3.processor.generator.NavigationDestinationGenerator.generate(
+                    environment = environment,
+                    resolver = resolver,
+                    declaration = it
+                )
             }
             .count()
 
@@ -71,6 +76,13 @@ class NavigationProcessor(
 
         components.forEach {
             NavigationComponentGenerator.generateKotlin(
+                environment = environment,
+                resolver = resolver,
+                declaration = it,
+                resolverModules = modules.toList(),
+                resolverBindings = destinations.toList(),
+            )
+            dev.enro3.processor.generator.NavigationComponentGenerator.generate(
                 environment = environment,
                 resolver = resolver,
                 declaration = it,

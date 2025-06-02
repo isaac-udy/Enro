@@ -19,6 +19,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.enro.annotations.NavigationDestination
 import dev.enro3.NavigationKey
 import dev.enro3.navigationHandle
 import dev.enro3.open
@@ -33,6 +34,7 @@ class ComposeStabilityKey(
     val id: String = Uuid.random().toString()
 ) : NavigationKey
 
+@NavigationDestination(ComposeStabilityKey::class)
 val composeStabilityDestination = navigationDestination<ComposeStabilityKey> {
     val navigation = navigationHandle<ComposeStabilityKey>()
     val viewModel = viewModel<ComposeStabilityViewModel> {

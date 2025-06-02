@@ -21,6 +21,7 @@ import androidx.compose.material.Text
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -34,6 +35,7 @@ import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.enro.annotations.NavigationDestination
 import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro3.NavigationKey
@@ -49,8 +51,6 @@ import dev.enro3.result.flow.rememberNavigationContainerForFlow
 import dev.enro3.result.open
 import dev.enro3.result.registerForNavigationResult
 import dev.enro3.ui.NavigationDisplay
-import dev.enro3.ui.destinations.activityDestination
-import dev.enro3.ui.destinations.fragmentDestination
 import dev.enro3.ui.destinations.syntheticDestination
 import dev.enro3.ui.navigationDestination
 import dev.enro3.ui.rememberNavigationContainer
@@ -94,6 +94,7 @@ class TestActivity : AppCompatActivity() {
 @Serializable
 class ListKey : NavigationKey
 
+@NavigationDestination(ListKey::class)
 val listDestination = navigationDestination<ListKey> {
     val navigation = navigationHandle<NavigationKey>()
     val result = rememberSaveable { mutableStateOf("") }
@@ -201,6 +202,7 @@ class DetailKey(
     val id: String,
 ) : NavigationKey
 
+@NavigationDestination(DetailKey::class)
 val detailDestination = navigationDestination<DetailKey> {
     val navigation = navigationHandle<DetailKey>()
     TitledColumn("Details") {
@@ -231,9 +233,11 @@ val detailDestination = navigationDestination<DetailKey> {
 @Serializable
 class ResultKey : NavigationKey.WithResult<String>
 
-
 class ExampleViewModel : ViewModel() {}
-val resultDestination = navigationDestination<ResultKey> {
+
+@NavigationDestination(ResultKey::class)
+@Composable
+fun ResultDestination() {
     val navigation = navigationHandle<ResultKey>()
     val vm = viewModel {
         ExampleViewModel()
@@ -283,6 +287,7 @@ val resultDestination = navigationDestination<ResultKey> {
 @Serializable
 data class SyntheticKey(val message: String) : NavigationKey
 
+@NavigationDestination(SyntheticKey::class)
 val syntheticDestination = syntheticDestination<SyntheticKey> {
     Log.e("SyntheticKey", key.message)
 }
@@ -290,8 +295,7 @@ val syntheticDestination = syntheticDestination<SyntheticKey> {
 @Serializable
 object FragmentKey : NavigationKey
 
-val fragmentDestination = fragmentDestination<FragmentKey, SimpleFragment>()
-
+@NavigationDestination(FragmentKey::class)
 class SimpleFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -313,8 +317,7 @@ class SimpleFragment : Fragment() {
 @Serializable
 object ActivityKey : NavigationKey
 
-val activityDestination = activityDestination<ActivityKey, SimpleActivity>()
-
+@NavigationDestination(ActivityKey::class)
 class SimpleActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -343,6 +346,7 @@ class ScreenWithViewModelViewModel : ViewModel() {
     }
 }
 
+@NavigationDestination(ScreenWithViewModelKey::class)
 val screenWithViewModelDestination = navigationDestination<ScreenWithViewModelKey> {
     val localOwner = LocalViewModelStoreOwner.current
     Log.e("Enro", "$localOwner, ${localOwner is HasDefaultViewModelProviderFactory}")
@@ -363,6 +367,7 @@ class DialogKey(
     val title: String = "Dialog",
 ) : NavigationKey
 
+@NavigationDestination(DialogKey::class)
 val dialogDestination = navigationDestination<DialogKey>(
     metadata = mapOf(
         DialogSceneStrategy.dialog(
@@ -396,6 +401,7 @@ val dialogDestination = navigationDestination<DialogKey>(
 class DirectDialogKey : NavigationKey
 
 @OptIn(ExperimentalMaterial3Api::class)
+@NavigationDestination(DirectDialogKey::class)
 val directDialogDestination = navigationDestination<DirectDialogKey>(
     metadata = mapOf(DirectOverlaySceneStrategy.overlay()),
 ) {
@@ -426,6 +432,7 @@ val directDialogDestination = navigationDestination<DirectDialogKey>(
 @Serializable
 class DirectButtonKey : NavigationKey
 
+@NavigationDestination(DirectButtonKey::class)
 val directButtonDestination = navigationDestination<DirectButtonKey>(
     metadata = mapOf(DirectOverlaySceneStrategy.overlay()),
 ) {
@@ -453,6 +460,7 @@ val directButtonDestination = navigationDestination<DirectButtonKey>(
 @Serializable
 class DirectBottomSheetKey : NavigationKey
 
+@NavigationDestination(DirectBottomSheetKey::class)
 @OptIn(ExperimentalMaterial3Api::class)
 val directBottomSheetDestination = navigationDestination<DirectBottomSheetKey>(
     metadata = mapOf(DirectOverlaySceneStrategy.overlay()),
@@ -502,11 +510,13 @@ val directBottomSheetDestination = navigationDestination<DirectBottomSheetKey>(
 @Serializable
 class EmptyKey : NavigationKey
 
+@NavigationDestination(EmptyKey::class)
 val emptyDestination = navigationDestination<EmptyKey> {}
 
 @Serializable
 class NestedKey : NavigationKey
 
+@NavigationDestination(NestedKey::class)
 val nestedDestination = navigationDestination<NestedKey> {
     val container = rememberNavigationContainer(
         backstack = listOf(EmptyKey().asInstance()),
@@ -548,6 +558,8 @@ class FlowViewModel : ViewModel() {
     )
 }
 
+@NavigationDestination(FlowKey::class)
+
 val flowDestination = navigationDestination<FlowKey> {
     val viewModel = viewModel<FlowViewModel> {
         createEnroViewModel {
@@ -561,6 +573,7 @@ val flowDestination = navigationDestination<FlowKey> {
 @Serializable
 class DialogResultKey : NavigationKey.WithResult<String>
 
+@NavigationDestination(DialogResultKey::class)
 val dialogResultDestination = navigationDestination<DialogResultKey>(
     metadata = mapOf(
         DirectOverlaySceneStrategy.overlay()

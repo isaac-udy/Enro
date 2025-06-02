@@ -50,6 +50,7 @@ object NavigationDestinationGenerator {
         declaration: KSDeclaration
     ) {
         val destination = DestinationReference.Kotlin(resolver, declaration)
+        if (destination.keyIsEnro3) return
 
         val typeSpec = TypeSpec.classBuilder(destination.bindingName)
             .addModifiers(KModifier.PUBLIC)
@@ -291,6 +292,7 @@ object NavigationDestinationGenerator {
             processingEnv,
             element
         )
+        if (destination.keyIsEnro3) return
 
         val classBuilder = JavaTypeSpec.classBuilder(destination.bindingName)
             .addOriginatingElement(element)

@@ -11,8 +11,16 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.LambdaTypeName
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationBinding
@@ -58,9 +66,16 @@ object NavigationComponentGenerator {
         val isAndroidApplication = declaration
             .getAllSuperTypes()
             .any { it.declaration.qualifiedName?.asString() == "android.app.Application" }
+
         val isNavigationComponentConfiguration = declaration
             .getAllSuperTypes()
             .any { it.declaration.qualifiedName?.asString() == "dev.enro.core.NavigationComponentConfiguration" }
+
+        val isEnro3 = declaration
+            .getAllSuperTypes()
+            .any { it.declaration.qualifiedName?.asString() == "dev.enro3.controller.NavigationControllerConfiguration" }
+
+        if (isEnro3) return
 
         when {
             isAndroid && isAndroidApplication -> {

@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import dev.enro.annotations.NavigationDestination
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro3.NavigationKey
 import dev.enro3.navigationHandle
@@ -61,6 +62,7 @@ object ComposeSharedElementTransitions {
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
+@NavigationDestination(ComposeSharedElementTransitions.List::class)
 val composeSharedElementTransitionsListScreen = navigationDestination<ComposeSharedElementTransitions.List> {
     val navigation = navigationHandle<ComposeSharedElementTransitions.List>()
 
@@ -115,6 +117,7 @@ val composeSharedElementTransitionsListScreen = navigationDestination<ComposeSha
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
+@NavigationDestination(ComposeSharedElementTransitions.Detail::class)
 val composeSharedElementTransitionsDetailScreen = navigationDestination<ComposeSharedElementTransitions.Detail> {
     val navigation = navigationHandle<ComposeSharedElementTransitions.Detail>()
     val selectedIconId = navigation.key.iconId

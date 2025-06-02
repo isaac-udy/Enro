@@ -3,6 +3,8 @@ package dev.enro3.controller
 import dev.enro3.NavigationBinding
 import dev.enro3.NavigationKey
 import dev.enro3.interceptor.NavigationInterceptor
+import dev.enro3.interceptor.builder.NavigationInterceptorBuilder
+import dev.enro3.interceptor.builder.navigationInterceptor
 import dev.enro3.path.NavigationPathBinding
 import dev.enro3.plugin.NavigationPlugin
 import dev.enro3.ui.NavigationDestinationProvider
@@ -33,8 +35,13 @@ public class NavigationModule @PublishedApi internal constructor() {
         public fun plugin(plugin: NavigationPlugin) {
             module.plugins.add(plugin)
         }
+
         public fun interceptor(interceptor: NavigationInterceptor) {
             module.interceptors.add(interceptor)
+        }
+
+        public fun interceptor(block: NavigationInterceptorBuilder.() -> Unit) {
+            module.interceptors.add(navigationInterceptor(block))
         }
 
         public fun binding(binding: NavigationBinding<*>) {

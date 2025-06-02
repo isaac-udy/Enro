@@ -103,26 +103,7 @@ class TestApplication : Application(), NavigationApplication {
         )
 
         internalCreateEnroController {
-            destination<ListKey>(listDestination)
-            destination<DetailKey>(detailDestination)
-            destination<ResultKey>(resultDestination)
-            destination<SyntheticKey>(syntheticDestination)
-            destination<FragmentKey>(fragmentDestination)
-            destination<ActivityKey>(activityDestination)
-            destination<ScreenWithViewModelKey>(screenWithViewModelDestination)
-            destination<DialogKey>(dialogDestination)
-            destination<NestedKey>(nestedDestination)
-            destination<EmptyKey>(emptyDestination)
-            destination<DirectDialogKey>(directDialogDestination)
-            destination<DirectButtonKey>(directButtonDestination)
-            destination<DirectBottomSheetKey>(directBottomSheetDestination)
-            destination(flowDestination)
-            destination(dialogResultDestination)
-
-            destination<ComposeSharedElementTransitions.List>(composeSharedElementTransitionsListScreen)
-            destination<ComposeSharedElementTransitions.Detail>(composeSharedElementTransitionsDetailScreen)
-
-            destination<ComposeStabilityKey>(composeStabilityDestination)
+            NavigationComponentNavigation().apply { invoke() }
         }.install(this)
     }
 }
