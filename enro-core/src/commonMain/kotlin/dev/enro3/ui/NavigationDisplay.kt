@@ -37,7 +37,9 @@ import dev.enro3.NavigationContainer
 import dev.enro3.NavigationKey
 import dev.enro3.NavigationOperation
 import dev.enro3.ui.animation.rememberTransitionCompat
+import dev.enro3.ui.decorators.decorateNavigationDestination
 import dev.enro3.ui.decorators.navigationContextDecorator
+import dev.enro3.ui.decorators.rememberMovableContentDecorator
 import dev.enro3.ui.decorators.rememberSavedStateDecorator
 import dev.enro3.ui.decorators.rememberViewModelStoreDecorator
 import dev.enro3.ui.scenes.DialogSceneStrategy
@@ -86,7 +88,7 @@ public fun NavigationDisplay(
 
     var isSettled by remember { mutableStateOf(true) }
 
-    val movableContentDecorator = rememberMovableContentDestinationDecorator<NavigationKey>()
+    val movableContentDecorator = rememberMovableContentDecorator<NavigationKey>()
     val viewModelStoreOwnerDecorator = rememberViewModelStoreDecorator()
     val navigationSavedStateDecorator = rememberSavedStateDecorator()
     val navigationContextDecorator = remember(backstack, isSettled) {
@@ -101,7 +103,7 @@ public fun NavigationDisplay(
             .map {
                 decorateNavigationDestination(
                     destination = it,
-                    destinationDecorators = listOf(
+                    decorators = listOf(
                         movableContentDecorator,
                         navigationSavedStateDecorator,
                         viewModelStoreOwnerDecorator,

@@ -1,6 +1,5 @@
 package dev.enro3.ui.decorators
 
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -19,78 +18,84 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import androidx.savedstate.savedState
 import dev.enro3.NavigationKey
-import dev.enro3.ui.NavigationDestinationDecorator
-import dev.enro3.ui.navigationDestinationDecorator
 
 /**
- * Returns a [SavedStateNavEntryDecorator] that is remembered across recompositions.
+ * Returns a [NavigationDestinationDecorator] that provides saved state functionality to navigation destinations.
+ * This decorator wraps each destination with a [SaveableStateHolder.SaveableStateProvider] to ensure
+ * that calls to [rememberSaveable] within the destination content work properly and that state can be saved.
  *
- * @param saveableStateHolder the [SaveableStateHolder] that scopes the returned NavEntryDecorator
+ * It also provides the destination content with a [SavedStateRegistryOwner] which can be accessed
+ * via [LocalSavedStateRegistryOwner].
+ *
+ * This decorator is **required** for proper state preservation across configuration changes
+ * and process death.
+ *
+ * @param saveableStateHolder The [SaveableStateHolder] that manages the saved state for destinations
  */
 @Composable
 public fun rememberSavedStateDecorator(
-    saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder()
-): NavigationDestinationDecorator<out NavigationKey> = remember { SavedStateNavEntryDecorator(saveableStateHolder) }
-
-/**
- * Wraps the content of a [NavEntry] with a [SaveableStateHolder.SaveableStateProvider] to ensure
- * that calls to [rememberSaveable] within the content work properly and that state can be saved.
- * Also provides the content of a [NavEntry] with a [SavedStateRegistryOwner] which can be accessed
- * in the content with [LocalSavedStateRegistryOwner].
- *
- * This [NavEntryDecorator] is the only one that is **required** as saving state is considered a
- * non-optional feature.
- */
-public fun SavedStateNavEntryDecorator(
-    saveableStateHolder: SaveableStateHolder
-): NavigationDestinationDecorator<out NavigationKey> {
-    val registryMap = mutableMapOf<String, EntrySavedStateRegistry>()
-
-    val onPop: (NavigationKey.Instance<out NavigationKey>) -> Unit = { instance ->
-        val id = instance.id
-        if (registryMap.contains(id)) {
-            // saveableStateHolder onPop
-            saveableStateHolder.removeState(id)
-
-            // saved state onPop
-            val savedState = savedState()
-            val childRegistry = registryMap.getValue(id)
-            childRegistry.savedStateRegistryController.performSave(savedState)
-            childRegistry.savedState = savedState
-            childRegistry.lifecycle.currentState = Lifecycle.State.DESTROYED
-        }
-    }
-
-    return navigationDestinationDecorator(onPop = onPop) { destination ->
-        val instance = destination.instance
-        val id = instance.id
-
-        val childRegistry by
-        rememberSaveable(
-            id,
-            stateSaver =
-                Saver(
-                    save = { it.savedState },
-                    restore = { EntrySavedStateRegistry().apply { savedState = it } },
-                ),
-        ) {
-            mutableStateOf(EntrySavedStateRegistry())
-        }
-        registryMap.put(id, childRegistry)
-
-        saveableStateHolder.SaveableStateProvider(id) {
-            CompositionLocalProvider(LocalSavedStateRegistryOwner provides childRegistry) {
-                destination.Content()
-            }
-        }
-        childRegistry.lifecycle.currentState = Lifecycle.State.RESUMED
-    }
+    saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder(),
+): NavigationDestinationDecorator<NavigationKey> = remember(saveableStateHolder) {
+    savedStateDecorator(saveableStateHolder)
 }
 
-internal class EntrySavedStateRegistry : SavedStateRegistryOwner {
+/**
+ * Creates a [NavigationDestinationDecorator] that provides saved state functionality.
+ *
+ * @param saveableStateHolder The [SaveableStateHolder] that manages the saved state for destinations
+ */
+public fun savedStateDecorator(
+    saveableStateHolder: SaveableStateHolder,
+): NavigationDestinationDecorator<NavigationKey> {
+    val registryMap = mutableMapOf<String, DestinationSavedStateRegistry>()
+
+    return navigationDestinationDecorator<NavigationKey>(
+        onRemove = { instance ->
+            val id = instance.id
+            if (registryMap.contains(id)) {
+                // Remove state from saveableStateHolder
+                saveableStateHolder.removeState(id)
+
+                // Save and clean up saved state registry
+                val savedState = savedState()
+                val childRegistry = registryMap.getValue(id)
+                childRegistry.savedStateRegistryController.performSave(savedState)
+                childRegistry.savedState = savedState
+                childRegistry.lifecycle.currentState = Lifecycle.State.DESTROYED
+            }
+        },
+        decorator = { destination ->
+            val instance = destination.instance
+            val id = instance.id
+
+            val childRegistry by rememberSaveable(
+                id,
+                stateSaver = DestinationSavedStateRegistry.Saver
+            ) {
+                mutableStateOf(DestinationSavedStateRegistry())
+            }
+            registryMap[id] = childRegistry
+
+            saveableStateHolder.SaveableStateProvider(id) {
+                CompositionLocalProvider(LocalSavedStateRegistryOwner provides childRegistry) {
+                    destination.Content()
+                }
+            }
+            childRegistry.lifecycle.currentState = Lifecycle.State.RESUMED
+        }
+    )
+}
+
+/**
+ * Internal implementation of [SavedStateRegistryOwner] for navigation destinations.
+ * Manages the lifecycle and saved state registry for a single destination.
+ */
+internal class DestinationSavedStateRegistry : SavedStateRegistryOwner {
     override val lifecycle: LifecycleRegistry = LifecycleRegistry(this)
+
     val savedStateRegistryController: SavedStateRegistryController =
         SavedStateRegistryController.create(this)
+
     override val savedStateRegistry: SavedStateRegistry =
         savedStateRegistryController.savedStateRegistry
 
@@ -98,5 +103,16 @@ internal class EntrySavedStateRegistry : SavedStateRegistryOwner {
 
     init {
         savedStateRegistryController.performRestore(savedState)
+    }
+
+    companion object {
+        val Saver = Saver<DestinationSavedStateRegistry, SavedState>(
+            save = { it.savedState },
+            restore = { savedState ->
+                DestinationSavedStateRegistry().apply {
+                    this.savedState = savedState
+                }
+            }
+        )
     }
 }
