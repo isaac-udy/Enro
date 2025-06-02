@@ -22,7 +22,7 @@ import dev.enro3.ui.LocalDestinationsToRenderInCurrentScene
  * stateful decorators are moved properly inside the [movableContentOf].
  */
 @Composable
-public fun <T : NavigationKey> rememberMovableContentDecorator(): NavigationDestinationDecorator<T> =
+public fun rememberMovableContentDecorator(): NavigationDestinationDecorator<NavigationKey> =
     remember {
         movableContentDecorator()
     }
@@ -37,7 +37,7 @@ public fun <T : NavigationKey> rememberMovableContentDecorator(): NavigationDest
  * The decorator only renders destinations that are marked as visible in the current scene
  * via [LocalDestinationsToRenderInCurrentScene].
  */
-public fun <T : NavigationKey> movableContentDecorator(): NavigationDestinationDecorator<T> {
+internal fun movableContentDecorator(): NavigationDestinationDecorator<NavigationKey> {
     val movableContentContentHolderMap: MutableMap<String, MutableState<@Composable () -> Unit>> = mutableMapOf()
     val movableContentHolderMap: MutableMap<String, @Composable () -> Unit> = mutableMapOf()
 

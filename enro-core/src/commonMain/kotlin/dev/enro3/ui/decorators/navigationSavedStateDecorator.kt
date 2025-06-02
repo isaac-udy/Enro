@@ -44,7 +44,7 @@ public fun rememberSavedStateDecorator(
  *
  * @param saveableStateHolder The [SaveableStateHolder] that manages the saved state for destinations
  */
-public fun savedStateDecorator(
+internal fun savedStateDecorator(
     saveableStateHolder: SaveableStateHolder,
 ): NavigationDestinationDecorator<NavigationKey> {
     val registryMap = mutableMapOf<String, DestinationSavedStateRegistry>()

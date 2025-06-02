@@ -1,12 +1,12 @@
 package dev.enro3.ui.decorators
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.enro3.NavigationBackstack
 import dev.enro3.NavigationContext
 import dev.enro3.NavigationKey
 import dev.enro3.handle.NavigationHandleHolder
@@ -15,58 +15,54 @@ import dev.enro3.ui.LocalNavigationContext
 import dev.enro3.ui.LocalNavigationHandle
 
 /**
- * Creates a [NavigationDestinationDecorator] that provides navigation context to destinations.
+ * Returns a [NavigationDestinationDecorator] that provides navigation context to destinations.
  *
  * This decorator establishes the navigation context for each destination, including:
- * - Lifecycle management based on the destination's position in the backstack
- * - ViewModelStore ownership
  * - Navigation handle binding
  * - Container hierarchy
+ * - Access to lifecycle and ViewModelStore owners from parent decorators
  *
- * @param backstack The current navigation backstack
- * @param isSettled Whether the navigation state has settled (no animations in progress)
- * @return A decorator that provides navigation context
+ * **Note:** This decorator requires the following decorators to be applied before it:
+ * - [navigationLifecycleDecorator] or [rememberLifecycleDecorator] for lifecycle management
+ * - [viewModelStoreDecorator] or [rememberViewModelStoreDecorator] for ViewModel support
  */
-internal fun <T: NavigationKey> navigationContextDecorator(
-    backstack: NavigationBackstack,
-    isSettled: Boolean,
-): NavigationDestinationDecorator<T> {
+@Composable
+public fun rememberNavigationContextDecorator(): NavigationDestinationDecorator<NavigationKey> = remember {
+    navigationContextDecorator()
+}
+
+/**
+ * Creates a [NavigationDestinationDecorator] that provides navigation context.
+ *
+ * This decorator creates and binds the [NavigationContext] for each destination,
+ * providing access to navigation functionality through composition locals.
+ */
+internal fun navigationContextDecorator(): NavigationDestinationDecorator<NavigationKey> {
     return navigationDestinationDecorator { destination ->
         val container = LocalNavigationContainer.current
-        val isInBackstack = backstack.contains(destination.instance)
+        val lifecycleOwner = LocalLifecycleOwner.current
+        val viewModelStoreOwner = LocalViewModelStoreOwner.current
 
-        // Determine the appropriate lifecycle state based on destination visibility
-        val maxLifecycle = when {
-            isInBackstack && isSettled -> Lifecycle.State.RESUMED
-            isInBackstack && !isSettled -> Lifecycle.State.STARTED
-            else /* !isInBackStack */ -> Lifecycle.State.CREATED
+        requireNotNull(viewModelStoreOwner) {
+            "No ViewModelStoreOwner available. Ensure ViewModelStoreDecorator is applied before NavigationContextDecorator."
         }
-
-        val lifecycleOwner = rememberNavigationLifecycleOwner(
-            maxLifecycle = maxLifecycle,
-            parentLifecycleOwner = LocalLifecycleOwner.current
-        )
-
-        val localViewModelStoreOwner = LocalViewModelStoreOwner.current
-        requireNotNull(localViewModelStoreOwner) {
-            "No ViewModelStoreOwner available. Ensure ViewModelStoreDecorator is applied."
-        }
-        require(localViewModelStoreOwner is HasDefaultViewModelProviderFactory) {
+        require(viewModelStoreOwner is HasDefaultViewModelProviderFactory) {
             "ViewModelStoreOwner must implement HasDefaultViewModelProviderFactory"
         }
 
         // Get or create the NavigationHandleHolder for this destination
-        val navigationHandleHolder = viewModel<NavigationHandleHolder<T>>(
-            viewModelStoreOwner = localViewModelStoreOwner,
+        @Suppress("UNCHECKED_CAST")
+        val navigationHandleHolder = viewModel<NavigationHandleHolder<NavigationKey>>(
+            viewModelStoreOwner = viewModelStoreOwner,
         ) {
-            NavigationHandleHolder(instance = destination.instance)
+            NavigationHandleHolder(instance = destination.instance as NavigationKey.Instance<NavigationKey>)
         }
 
         // Create the navigation context for this destination
         val context = NavigationContext(
             lifecycleOwner = lifecycleOwner,
-            viewModelStoreOwner = localViewModelStoreOwner,
-            defaultViewModelProviderFactory = localViewModelStoreOwner,
+            viewModelStoreOwner = viewModelStoreOwner,
+            defaultViewModelProviderFactory = viewModelStoreOwner,
             destination = destination,
             parentContainer = container,
             childContainers = emptyList() // TODO: Support child containers
@@ -74,11 +70,9 @@ internal fun <T: NavigationKey> navigationContextDecorator(
 
         navigationHandleHolder.bindContext(context)
 
-        // Provide all necessary composition locals
+        // Provide navigation-specific composition locals
         CompositionLocalProvider(
             LocalNavigationContext provides context,
-            LocalLifecycleOwner provides context,
-            LocalViewModelStoreOwner provides context,
             LocalNavigationHandle provides navigationHandleHolder.navigationHandle,
         ) {
             destination.Content()

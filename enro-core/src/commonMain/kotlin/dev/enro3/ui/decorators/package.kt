@@ -7,7 +7,8 @@
  * Decorators wrap navigation destinations to provide additional functionality such as:
  * - State preservation ([savedStateDecorator])
  * - ViewModel scoping ([viewModelStoreDecorator])
- * - Lifecycle management ([navigationContextDecorator])
+ * - Lifecycle management ([navigationLifecycleDecorator])
+ * - Navigation context ([navigationContextDecorator])
  * - Content optimization ([movableContentDecorator])
  *
  * ## Usage
@@ -22,7 +23,8 @@
  *         rememberMovableContentDecorator(),
  *         rememberSavedStateDecorator(),
  *         rememberViewModelStoreDecorator(),
- *         navigationContextDecorator(backstack, isSettled)
+ *         rememberLifecycleDecorator(backstack, isSettled),
+ *         rememberNavigationContextDecorator()
  *     )
  * )
  * ```
@@ -33,7 +35,8 @@
  * 1. **movableContentDecorator** - Should be first to ensure other decorators are moved properly
  * 2. **savedStateDecorator** - Required by ViewModelStore decorator for SavedStateHandle support
  * 3. **viewModelStoreDecorator** - Provides ViewModel scoping
- * 4. **navigationContextDecorator** - Should be last as it depends on the others
+ * 4. **lifecycleDecorator** - Manages lifecycle states based on navigation state
+ * 5. **navigationContextDecorator** - Should be last as it depends on the others
  *
  * ## Creating Custom Decorators
  *

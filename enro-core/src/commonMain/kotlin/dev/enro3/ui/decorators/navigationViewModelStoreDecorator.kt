@@ -58,7 +58,7 @@ public fun rememberViewModelStoreDecorator(
  * @param shouldRemoveStoreOwner A callback that determines if the ViewModelStore should be
  *                               cleared when the destination is removed from the backstack
  */
-public fun viewModelStoreDecorator(
+internal fun viewModelStoreDecorator(
     viewModelStore: ViewModelStore,
     shouldRemoveStoreOwner: () -> Boolean,
 ): NavigationDestinationDecorator<NavigationKey> {
