@@ -82,7 +82,7 @@ internal fun viewModelStoreDecorator(
             }
 
             CompositionLocalProvider(LocalViewModelStoreOwner provides childViewModelStoreOwner) {
-                destination.Content()
+                destination.content()
             }
         }
     )

@@ -84,7 +84,7 @@ internal fun movableContentDecorator(): NavigationDestinationDecorator<Navigatio
                     movableContentContentHolderMap.getValue(key)
                 }
                 // Update the state holder with the actual destination content
-                movableContentContentHolder.value = { destination.Content() }
+                movableContentContentHolder.value = { destination.content() }
                 // In case the key is removed from the backstack while this is still
                 // being rendered, we remember the movableContent directly to allow
                 // rendering it while we are animating out.

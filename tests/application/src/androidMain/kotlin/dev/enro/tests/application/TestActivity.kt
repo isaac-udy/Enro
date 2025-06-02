@@ -1,17 +1,13 @@
 package dev.enro.tests.application
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,21 +21,15 @@ import androidx.compose.material.Text
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.Fragment
-import androidx.fragment.compose.AndroidFragment
 import androidx.fragment.compose.content
-import androidx.fragment.compose.rememberFragmentState
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -57,6 +47,8 @@ import dev.enro3.open
 import dev.enro3.result.open
 import dev.enro3.result.registerForNavigationResult
 import dev.enro3.ui.NavigationDisplay
+import dev.enro3.ui.destinations.activityDestination
+import dev.enro3.ui.destinations.fragmentDestination
 import dev.enro3.ui.destinations.syntheticDestination
 import dev.enro3.ui.navigationDestination
 import dev.enro3.ui.rememberNavigationContainer
@@ -112,10 +104,10 @@ val listDestination = navigationDestination<ListKey> {
     }
     val resultChannel = registerForNavigationResult(
         onClosed = {
-            result.value = "Closed reg"
+            result.value = "Closed ${key::class.simpleName}"
         }
     ) {
-        result.value = "Completed reg"
+        result.value = "Completed ${key::class.simpleName}"
     }
 
     TitledColumn("List") {
@@ -131,12 +123,12 @@ val listDestination = navigationDestination<ListKey> {
             Text("Synthetic")
         }
         Button(onClick = {
-            navigation.open(FragmentKey)
+            resultChannel.open(FragmentKey)
         }) {
             Text("Fragment")
         }
         Button(onClick = {
-            navigation.open(ActivityKey)
+            resultChannel.open(ActivityKey)
         }) {
             Text("Activity")
         }
@@ -269,16 +261,7 @@ val syntheticDestination = syntheticDestination<SyntheticKey> {
 @Serializable
 object FragmentKey : NavigationKey
 
-val fragmentDestination = navigationDestination<FragmentKey> {
-    // we can grab composition locals here
-    val compositionLocals = currentComposer.apply { currentCompositionLocalMap }
-
-    AndroidFragment<SimpleFragment>(
-        fragmentState = rememberFragmentState(),
-        arguments = Bundle().apply { putString("key", "value") }
-    ) { fragment ->
-    }
-}
+val fragmentDestination = fragmentDestination<FragmentKey, SimpleFragment>()
 
 class SimpleFragment : Fragment() {
     override fun onCreateView(
@@ -301,33 +284,7 @@ class SimpleFragment : Fragment() {
 @Serializable
 object ActivityKey : NavigationKey
 
-val activityDestination = navigationDestination<ActivityKey>(
-    metadata = mapOf(
-        DirectOverlaySceneStrategy.overlay(),
-    ),
-) {
-    val navigation = navigationHandle<ActivityKey>()
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult(),
-    ) {
-        when (it.resultCode) {
-            Activity.RESULT_OK -> {
-                navigation.complete()
-            }
-
-            else -> {
-                navigation.close()
-            }
-        }
-    }
-    val localContext = LocalContext.current
-    val intent = remember {
-        Intent(localContext, SimpleActivity::class.java)
-    }
-    LaunchedEffect(Unit) {
-        launcher.launch(intent)
-    }
-}
+val activityDestination = activityDestination<ActivityKey, SimpleActivity>()
 
 class SimpleActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -335,7 +292,10 @@ class SimpleActivity : ComponentActivity() {
         setContent {
             TitledColumn("Simple Activity") {
                 Text("This is a simple fragment.")
-                Button(onClick = { finish() }) {
+                Button(onClick = {
+                    setResult(RESULT_OK)
+                    finish()
+                }) {
                     Text("Complete")
                 }
             }

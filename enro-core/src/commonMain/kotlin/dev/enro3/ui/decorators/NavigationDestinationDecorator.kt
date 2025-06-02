@@ -3,7 +3,6 @@ package dev.enro3.ui.decorators
 import androidx.compose.runtime.Composable
 import dev.enro3.NavigationKey
 import dev.enro3.ui.NavigationDestination
-import dev.enro3.ui.NavigationDestinationWrapper
 
 /**
  * A decorator that wraps navigation destinations to provide additional functionality
@@ -46,11 +45,10 @@ public fun <T : NavigationKey> decorateNavigationDestination(
     return (decorators as List<NavigationDestinationDecorator<T>>)
         .distinct()
         .foldRight(initial = destination) { decorator, dest ->
-            NavigationDestinationWrapper(
-                destination = dest,
-                wrapper = { wrappedDestination ->
-                    decorator.decorator(wrappedDestination)
-                }
+            NavigationDestination.createWithoutScope(
+                instance = destination.instance,
+                metadata = destination.metadata,
+                content = { decorator.decorator(dest) }
             )
         }
 }

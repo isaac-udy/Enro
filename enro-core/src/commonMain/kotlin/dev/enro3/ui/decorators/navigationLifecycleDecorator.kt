@@ -65,7 +65,7 @@ internal fun navigationLifecycleDecorator(
         CompositionLocalProvider(
             LocalLifecycleOwner provides lifecycleOwner
         ) {
-            destination.Content()
+            destination.content()
         }
     }
 }

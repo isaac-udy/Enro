@@ -75,7 +75,7 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
             LocalNavigationContext provides context,
             LocalNavigationHandle provides navigationHandleHolder.navigationHandle,
         ) {
-            destination.Content()
+            destination.content()
         }
     }
 }

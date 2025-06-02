@@ -78,7 +78,7 @@ internal fun savedStateDecorator(
 
             saveableStateHolder.SaveableStateProvider(id) {
                 CompositionLocalProvider(LocalSavedStateRegistryOwner provides childRegistry) {
-                    destination.Content()
+                    destination.content()
                 }
             }
             childRegistry.lifecycle.currentState = Lifecycle.State.RESUMED

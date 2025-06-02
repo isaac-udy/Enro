@@ -22,6 +22,7 @@ kotlin {
             implementation(libs.kotlinx.serialization)
             implementation(libs.kotlin.reflect)
             implementation(libs.thauvin.urlencoder)
+            implementation(libs.androidx.fragment.compose)
         }
         androidMain.dependencies {
             implementation(libs.androidx.core)
