@@ -26,6 +26,7 @@ public class NavigationTransitionInterceptor @PublishedApi internal constructor(
             when (result) {
                 is Result.Continue -> transition.targetBackstack
                 is Result.Cancel -> null
+                is Result.CancelAnd -> throw NavigationOperation.CancelWithSideEffect(result.block)
                 is Result.ReplaceWith -> result.backstack
                 else -> throw result
             }
@@ -48,6 +49,11 @@ public class NavigationTransitionInterceptor @PublishedApi internal constructor(
         class Cancel : Result()
 
         /**
+         * Cancel the navigation transition and execute a block of code after the transition is cancelled.
+         */
+        class CancelAnd(val block: () -> Unit) : Result()
+
+        /**
          * Replace the current transition with a modified one.
          */
         class ReplaceWith(
@@ -62,6 +68,10 @@ public class NavigationTransitionInterceptor @PublishedApi internal constructor(
 
         public fun cancelTransition(): Nothing {
             throw Result.Cancel()
+        }
+
+        public fun cancelTransition(block: () -> Unit): Nothing {
+            throw Result.CancelAnd(block)
         }
 
         public fun replaceTransition(backstack: NavigationBackstack): Nothing {

@@ -25,6 +25,12 @@ public class OnNavigationKeyClosedScope<K : NavigationKey> @PublishedApi interna
     public fun cancel(): Nothing = throw NavigationTransitionInterceptor.Result.Cancel()
 
     /**
+     * Cancel the navigation and execute the provided block after the navigation is canceled.
+     */
+    public fun cancelAnd(block: () -> Unit): Nothing =
+        throw NavigationTransitionInterceptor.Result.CancelAnd(block)
+
+    /**
      * Replace the current transition with a modified one.
      */
     public fun replaceWith(transition: NavigationBackstack): Nothing =

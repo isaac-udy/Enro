@@ -28,6 +28,15 @@ public fun NavigationHandle<*>.close() {
     execute(NavigationOperation.Companion.close(instance))
 }
 
+public fun NavigationHandle<*>.closeWithoutCallback() {
+    instance.metadata.set(NavigationHandleConfiguration.OnCloseCallbacksEnabled, false)
+    try {
+        execute(NavigationOperation.Companion.close(instance))
+    } finally {
+        instance.metadata.set(NavigationHandleConfiguration.OnCloseCallbacksEnabled, true)
+    }
+}
+
 public fun NavigationHandle<*>.complete() {
     execute(NavigationOperation.Companion.complete(instance))
 }
@@ -37,7 +46,7 @@ public fun NavigationHandle<*>.complete() {
     message = "A NavigationKey.WithResult should not be completed without a result, doing so will result in an error",
     level = DeprecationLevel.ERROR,
 )
-public fun <R: Any> NavigationHandle<out NavigationKey.WithResult<R>>.complete() {
+public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.complete() {
     error("${instance.key} is a NavigationKey.WithResult and cannot be completed without a result")
 }
 

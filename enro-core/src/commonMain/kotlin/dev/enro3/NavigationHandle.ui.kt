@@ -1,6 +1,7 @@
 package dev.enro3
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro3.handle.NavigationHandleHolder
 import dev.enro3.ui.LocalNavigationContext
@@ -12,11 +13,20 @@ public inline fun <reified T: NavigationKey> navigationHandle(): NavigationHandl
     ) {
         error("No NavigationHandle found for ${T::class}")
     }
+    val navigationHandle = holder.navigationHandle
+    @Suppress("USELESS_IS_CHECK")
+    require(navigationHandle.instance.key is T) {
+        "Expected key of type ${T::class}, but found ${navigationHandle.instance.key::class}"
+    }
+    return navigationHandle
+}
 
-    return holder.navigationHandle.also { navigationHandle ->
-        @Suppress("USELESS_IS_CHECK")
-        require(navigationHandle.instance.key is T) {
-            "Expected key of type ${T::class}, but found ${navigationHandle.instance.key::class}"
-        }
+@Composable
+public inline fun <reified T: NavigationKey> NavigationHandle<T>.configure(
+    noinline block: NavigationHandleConfiguration<T>.() -> Unit
+) {
+    DisposableEffect(block) {
+        val configuration = NavigationHandleConfiguration(this@configure).apply(block)
+        onDispose { configuration.close() }
     }
 }

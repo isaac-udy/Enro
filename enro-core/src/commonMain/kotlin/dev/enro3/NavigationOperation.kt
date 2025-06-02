@@ -19,6 +19,10 @@ public class NavigationOperation(
         )
     }
 
+    internal class CancelWithSideEffect(
+        internal val sideEffect: () -> Unit
+    ) : RuntimeException()
+
     public sealed interface Target {
         public data object Parent : Target
         public data object ActiveChild : Target

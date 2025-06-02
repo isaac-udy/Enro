@@ -78,12 +78,8 @@ internal fun removalTrackingDecorator(
                 }
 
                 // If removed from composition and not in backstack, call onRemove
-                EnroLog.error(
-                    "${instance.id} $wasInComposition && ${!stillInBackstack} && ${removalInfo.keyRefCounts[instance]}"
-                )
                 if (wasInComposition && !stillInBackstack && removalInfo.keyRefCounts[instance] == null) {
                     // Call onRemove in reverse order (similar to navigation3)
-                    EnroLog.error("Calling onRemove for $instance ${popCallbacks.size}")
                     popCallbacks.toList().reversed().forEach { callback ->
                         @Suppress("UNCHECKED_CAST")
                         callback(instance as NavigationKey.Instance<NavigationKey>)

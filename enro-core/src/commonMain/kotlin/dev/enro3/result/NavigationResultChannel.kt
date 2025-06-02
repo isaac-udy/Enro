@@ -4,12 +4,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.remember
-import dev.enro3.*
+import dev.enro3.NavigationHandle
+import dev.enro3.NavigationKey
+import dev.enro3.NavigationOperation
+import dev.enro3.NavigationTransition
+import dev.enro3.asInstance
 import dev.enro3.result.NavigationResult.Completed.Companion.result
 import dev.enro3.result.NavigationResultChannel.ResultIdKey
 import dev.enro3.ui.LocalNavigationHandle
+import dev.enro3.withMetadata
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmName
 

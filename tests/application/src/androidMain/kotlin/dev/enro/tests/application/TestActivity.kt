@@ -42,8 +42,10 @@ import dev.enro3.NavigationKey
 import dev.enro3.NavigationOperation
 import dev.enro3.asInstance
 import dev.enro3.close
+import dev.enro3.closeWithoutCallback
 import dev.enro3.complete
 import dev.enro3.completeFrom
+import dev.enro3.configure
 import dev.enro3.navigationHandle
 import dev.enro3.open
 import dev.enro3.result.flow.registerForFlowResult
@@ -239,6 +241,17 @@ class ExampleViewModel : ViewModel() {}
 @Composable
 fun ResultDestination() {
     val navigation = navigationHandle<ResultKey>()
+    val cancelResult = registerForNavigationResult<String> {
+        if (it == "Dismiss") return@registerForNavigationResult
+        navigation.closeWithoutCallback()
+    }
+    navigation.configure {
+        onCloseRequested {
+            cancelAnd {
+                cancelResult.open(DialogResultKey())
+            }
+        }
+    }
     val vm = viewModel {
         ExampleViewModel()
     }

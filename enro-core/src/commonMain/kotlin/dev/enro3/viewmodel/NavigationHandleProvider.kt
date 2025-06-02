@@ -32,9 +32,11 @@ internal object NavigationHandleProvider {
 }
 
 public inline fun <reified T : ViewModel> CreationExtras.createEnroViewModel(noinline block: () -> T): T {
-    NavigationHandleProvider.put(T::class, getNavigationHandle())
+    val navigationHandle = getNavigationHandle<NavigationKey>()
+    NavigationHandleProvider.put(T::class, navigationHandle)
     val viewModel = block.invoke()
     return viewModel.also {
+        viewModel.navigationHandleReference.navigationHandle = navigationHandle
         NavigationHandleProvider.clear(T::class)
     }
 }

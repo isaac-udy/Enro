@@ -10,7 +10,7 @@ public class SinglePaneScene : NavigationSceneStrategy {
     @Composable
     override fun calculateScene(
         entries: List<NavigationDestination<out NavigationKey>>,
-        onBack: (Int) -> Unit
+        onBack: (Int) -> Unit,
     ): NavigationScene {
         return object : NavigationScene {
 
@@ -24,3 +24,4 @@ public class SinglePaneScene : NavigationSceneStrategy {
         }
     }
 }
+

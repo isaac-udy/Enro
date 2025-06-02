@@ -67,7 +67,6 @@ internal fun viewModelStoreDecorator(
 
     return navigationDestinationDecorator(
         onRemove = { instance ->
-            EnroLog.error("Popping $instance")
             if (shouldRemoveStoreOwner()) {
                 storage.clearViewModelStoreForInstance(instance)
             }
