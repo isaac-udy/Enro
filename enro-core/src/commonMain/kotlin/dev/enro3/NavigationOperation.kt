@@ -19,6 +19,12 @@ public class NavigationOperation(
         )
     }
 
+    public sealed interface Target {
+        public data object Parent : Target
+        public data object ActiveChild : Target
+        public data class Key(val key: NavigationContainer.Key) : Target
+    }
+
     public companion object {
         public fun open(instance: NavigationKey.Instance<*>): NavigationOperation = NavigationOperation { backstack ->
             backstack + instance
@@ -103,6 +109,7 @@ public class NavigationOperation(
             error("Cannot completeFrom a NavigationKey.WithResult from a NavigationKey that does not also implement NavigationKey.WithResult")
         }
 
+        // TODO There's probably also a "closeAndCompleteFrom" that might be useful, for replacements and such?
         public fun <R : Any> completeFrom(
             instance: NavigationKey.Instance<out NavigationKey.WithResult<R>>,
             from: NavigationKey.Instance<out NavigationKey.WithResult<R>>,

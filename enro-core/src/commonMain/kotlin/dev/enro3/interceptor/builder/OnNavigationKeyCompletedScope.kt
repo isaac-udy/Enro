@@ -2,14 +2,17 @@ package dev.enro3.interceptor.builder
 
 import dev.enro3.NavigationBackstack
 import dev.enro3.NavigationKey
+import dev.enro3.NavigationTransition
 import dev.enro3.interceptor.NavigationTransitionInterceptor
 import dev.enro3.result.NavigationResult
 import dev.enro3.result.NavigationResult.Completed.Companion.result
+import dev.enro3.result.NavigationResultChannel
 
 /**
  * Scope for handling when a navigation key is completed (either opened or closed).
  */
 public class OnNavigationKeyCompletedScope<K : NavigationKey> @PublishedApi internal constructor(
+    public val transition: NavigationTransition,
     public val instance: NavigationKey.Instance<K>,
     internal val completedResult: NavigationResult.Completed<K>,
 ) {
@@ -24,6 +27,14 @@ public class OnNavigationKeyCompletedScope<K : NavigationKey> @PublishedApi inte
      */
     public fun continueWithComplete(): Nothing =
         throw NavigationTransitionInterceptor.Result.Continue()
+
+    /**
+     * Deliver the "complete" result, but don't actually close the screen
+     */
+    public fun deliverResultOnly(): Nothing {
+        NavigationResultChannel.registerResult(instance)
+        cancel()
+    }
 
     /**
      * Cancel the navigation entirely.

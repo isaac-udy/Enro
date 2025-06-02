@@ -65,7 +65,6 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
             defaultViewModelProviderFactory = viewModelStoreOwner,
             destination = destination,
             parentContainer = container,
-            childContainers = emptyList() // TODO: Support child containers
         )
 
         navigationHandleHolder.bindContext(context)

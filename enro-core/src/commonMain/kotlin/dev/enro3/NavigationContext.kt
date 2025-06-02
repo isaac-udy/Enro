@@ -9,13 +9,21 @@ public class NavigationContext<T : NavigationKey>(
     lifecycleOwner: LifecycleOwner,
     viewModelStoreOwner: ViewModelStoreOwner,
     defaultViewModelProviderFactory: HasDefaultViewModelProviderFactory,
-
     public val destination: NavigationDestination<T>,
     public val parentContainer: NavigationContainer,
-
-    // TODO need some kind of ContainerManager type thing for child containers
-    public val childContainers: List<NavigationContainer>,
 ) : LifecycleOwner by lifecycleOwner,
     ViewModelStoreOwner by viewModelStoreOwner,
-    HasDefaultViewModelProviderFactory by defaultViewModelProviderFactory
+    HasDefaultViewModelProviderFactory by defaultViewModelProviderFactory {
+
+    private val mutableChildContainers = mutableListOf<NavigationContainer>()
+    public val childContainers: List<NavigationContainer> get() = mutableChildContainers.toList()
+
+    internal fun registerChildContainer(container: NavigationContainer) {
+        mutableChildContainers.add(container)
+    }
+
+    internal fun unregisterChildContainer(container: NavigationContainer) {
+        mutableChildContainers.remove(container)
+    }
+}
 

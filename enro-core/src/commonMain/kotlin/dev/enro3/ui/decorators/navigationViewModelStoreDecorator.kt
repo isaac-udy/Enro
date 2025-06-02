@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import dev.enro3.NavigationKey
+import dev.enro3.platform.EnroLog
 
 /**
  * Returns a [NavigationDestinationDecorator] that provides [ViewModelStore] functionality
@@ -66,6 +67,7 @@ internal fun viewModelStoreDecorator(
 
     return navigationDestinationDecorator(
         onRemove = { instance ->
+            EnroLog.error("Popping $instance")
             if (shouldRemoveStoreOwner()) {
                 storage.clearViewModelStoreForInstance(instance)
             }

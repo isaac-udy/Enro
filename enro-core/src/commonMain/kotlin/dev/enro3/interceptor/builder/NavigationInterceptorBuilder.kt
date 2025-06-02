@@ -61,10 +61,11 @@ public class NavigationInterceptorBuilder internal constructor() {
             action = { transition ->
                 val instance = transition.closed.singleOrNull { it.key is KeyType }
                 if (instance == null) continueTransition()
+                if (instance.getResult() !is NavigationResult.Closed) continueTransition()
 
                 @Suppress("UNCHECKED_CAST")
                 instance as NavigationKey.Instance<KeyType>
-                OnNavigationKeyClosedScope(instance).block()
+                OnNavigationKeyClosedScope(transition, instance).block()
             }
         )
     }
@@ -86,7 +87,11 @@ public class NavigationInterceptorBuilder internal constructor() {
                 val result = closed.getResult()
                 if (result !is NavigationResult.Completed) continueTransition()
 
-                OnNavigationKeyCompletedScope(closed, result).block()
+                OnNavigationKeyCompletedScope(
+                    transition = transition,
+                    instance = closed,
+                    completedResult = result,
+                ).block()
             }
         )
     }

@@ -35,12 +35,25 @@ public class NavigationContainer internal constructor(
         )
         if (containerOperation == null) return
         val controllerOperation = controller.interceptors.intercept(
-            operation = operation,
+            operation = containerOperation,
         )
         if (controllerOperation == null) return
 
         val transition = controllerOperation.invoke(backstack)
         NavigationResultChannel.registerResults(transition)
+        if (transition.targetBackstack.isEmpty()) {
+            error("NavigationContainer backstack cannot be empty; transition was ${
+                buildString {
+                    append(
+                        transition.currentBackstack.map { it.key.toString() }   
+                    )
+                    append(" -> ")
+                    append(
+                        transition.targetBackstack.map { it.key.toString() }
+                    )
+                }
+            }")
+        }
         mutableBackstack.value = transition.targetBackstack
     }
 

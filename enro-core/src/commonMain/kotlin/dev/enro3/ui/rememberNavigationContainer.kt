@@ -1,6 +1,7 @@
 package dev.enro3.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
@@ -26,12 +27,13 @@ public fun rememberNavigationContainer(
     interceptor: NavigationInterceptor = NoOpNavigationInterceptor,
 ): NavigationContainer {
     val parent = runCatching { LocalNavigationContainer.current }
+    val parentContext = runCatching { LocalNavigationContext.current }.getOrNull()
     val controller = remember {
         requireNotNull(EnroController.instance) {
             "EnroController instance is not initialized"
         }
     }
-    return rememberSaveable(
+    val container = rememberSaveable(
         saver = NavigationContainerSaver(
             key = key,
             controller = controller,
@@ -47,6 +49,16 @@ public fun rememberNavigationContainer(
             interceptor = interceptor
         )
     }
+
+    // Register/unregister with parent context
+    DisposableEffect(container, parentContext) {
+        parentContext?.registerChildContainer(container)
+        onDispose {
+            parentContext?.unregisterChildContainer(container)
+        }
+    }
+
+    return container
 }
 
 internal class NavigationContainerSaver(

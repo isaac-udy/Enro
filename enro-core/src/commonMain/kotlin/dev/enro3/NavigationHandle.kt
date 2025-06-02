@@ -11,7 +11,17 @@ public abstract class NavigationHandle<T : NavigationKey> internal constructor()
     public val key: T get() = instance.key
 
     @AdvancedEnroApi
-    public abstract fun execute(operation: NavigationOperation)
+    public fun execute(
+        operation: NavigationOperation,
+    ) {
+        execute(NavigationOperation.Target.Parent, operation)
+    }
+
+    @AdvancedEnroApi
+    public abstract fun execute(
+        target: NavigationOperation.Target,
+        operation: NavigationOperation,
+    )
 }
 
 public fun NavigationHandle<*>.close() {

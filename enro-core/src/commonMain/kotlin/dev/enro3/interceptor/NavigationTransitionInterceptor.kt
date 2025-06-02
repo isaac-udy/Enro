@@ -15,8 +15,8 @@ public class NavigationTransitionInterceptor @PublishedApi internal constructor(
         operation: NavigationOperation,
     ): NavigationOperation? {
         return NavigationOperation { backstack ->
-            val transition = operation.invoke(backstack)
 
+            val transition = operation.invoke(backstack)
             val result = runCatching {
                 Scope().apply {
                     action(transition)

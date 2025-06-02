@@ -3,20 +3,23 @@ package dev.enro3.handle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleRegistry
-import dev.enro3.platform.EnroLog
 import dev.enro3.NavigationContext
 import dev.enro3.NavigationHandle
 import dev.enro3.NavigationKey
 import dev.enro3.NavigationOperation
+import dev.enro3.platform.EnroLog
 
 internal class NavigationHandleImpl<T : NavigationKey>(
-    override val instance: NavigationKey.Instance<T>
+    instance: NavigationKey.Instance<T>,
 ) : NavigationHandle<T>() {
+
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     override val lifecycle: Lifecycle = lifecycleRegistry
 
     private var context: NavigationContext<T>? = null
+    override var instance: NavigationKey.Instance<T> = instance
+        private set
 
     private val lifecycleObserver = LifecycleEventObserver { owner, event ->
         when (event) {
@@ -41,6 +44,7 @@ internal class NavigationHandleImpl<T : NavigationKey>(
 
         this.context?.lifecycle?.removeObserver(lifecycleObserver)
         this.context = context
+        this.instance = context.destination.instance
         if (lifecycle.currentState == Lifecycle.State.INITIALIZED) {
             lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         }
@@ -54,13 +58,25 @@ internal class NavigationHandleImpl<T : NavigationKey>(
         context = null
     }
 
-    override fun execute(operation: NavigationOperation) {
+    override fun execute(
+        target: NavigationOperation.Target,
+        operation: NavigationOperation,
+    ) {
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
         val context = context
         if (context == null) {
             EnroLog.warn("NavigationHandle with instance $instance has no context")
             return
         }
-        context.parentContainer.execute(operation)
+        when(target) {
+            NavigationOperation.Target.ActiveChild -> context.childContainers
+                .single()
+                .execute(operation)
+
+            NavigationOperation.Target.Parent -> context.parentContainer
+                .execute(operation)
+
+            is NavigationOperation.Target.Key -> TODO()
+        }
     }
 }

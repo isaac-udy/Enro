@@ -37,10 +37,12 @@ import dev.enro3.NavigationContainer
 import dev.enro3.NavigationKey
 import dev.enro3.NavigationOperation
 import dev.enro3.ui.animation.rememberTransitionCompat
+import dev.enro3.ui.decorators.ProvideRemovalTrackingInfo
 import dev.enro3.ui.decorators.decorateNavigationDestination
 import dev.enro3.ui.decorators.rememberLifecycleDecorator
 import dev.enro3.ui.decorators.rememberMovableContentDecorator
 import dev.enro3.ui.decorators.rememberNavigationContextDecorator
+import dev.enro3.ui.decorators.rememberRemovalTrackingDecorator
 import dev.enro3.ui.decorators.rememberSavedStateDecorator
 import dev.enro3.ui.decorators.rememberViewModelStoreDecorator
 import dev.enro3.ui.scenes.DialogSceneStrategy
@@ -175,19 +177,21 @@ public fun NavigationDisplay(
 
     // Render the navigation content
     CompositionLocalProvider(LocalNavigationContainer provides container) {
-        RenderMainContent(
-            transition = transition,
-            scenes = state.scenes,
-            sceneToRenderableDestinationMap = sceneToRenderableDestinationMap,
-            zIndices = zIndices,
-            contentTransform = contentTransform,
-            contentAlignment = contentAlignment,
-            modifier = modifier,
-            sizeTransform = sizeTransform
-        )
-        CleanupSceneEffect(transition, state)
-        UpdateSettledStateEffect(transition) { state.isSettled = it }
-        RenderOverlayScenes(overlayScenes)
+        ProvideRemovalTrackingInfo {
+            RenderMainContent(
+                transition = transition,
+                scenes = state.scenes,
+                sceneToRenderableDestinationMap = sceneToRenderableDestinationMap,
+                zIndices = zIndices,
+                contentTransform = contentTransform,
+                contentAlignment = contentAlignment,
+                modifier = modifier,
+                sizeTransform = sizeTransform
+            )
+            CleanupSceneEffect(transition, state)
+            UpdateSettledStateEffect(transition) { state.isSettled = it }
+            RenderOverlayScenes(overlayScenes)
+        }
     }
 }
 
@@ -249,6 +253,9 @@ private fun rememberDecoratedDestinations(
         rememberNavigationContextDecorator(),  // Provides navigation context
     )
 
+    // Add removal tracking decorator last to ensure it tracks all other decorators
+    val decoratorsWithRemovalTracking = decorators + rememberRemovalTrackingDecorator(decorators)
+
     return remember(backstack) {
         backstack
             .map { instance ->
@@ -262,7 +269,7 @@ private fun rememberDecoratedDestinations(
                 // Apply all decorators to enhance the destination
                 decorateNavigationDestination(
                     destination = it,
-                    decorators = decorators,
+                    decorators = decoratorsWithRemovalTracking,
                 )
             }
     }
@@ -436,7 +443,7 @@ private fun updateZIndices(
  * Manages transition animations between scenes.
  *
  * Handles two cases:
- * 1. Predictive back: Creates a peek scene and animates based on gesture progress
+ * 1. Predictive back: Creates a "peek" scene and animates based on gesture progress
  * 2. Regular navigation: Animates to the target scene or handles settling animations
  *
  * @param transitionState The seekable transition state for controlling animations

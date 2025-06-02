@@ -44,6 +44,8 @@ import dev.enro3.complete
 import dev.enro3.completeFrom
 import dev.enro3.navigationHandle
 import dev.enro3.open
+import dev.enro3.result.flow.registerForFlowResult
+import dev.enro3.result.flow.rememberNavigationContainerForFlow
 import dev.enro3.result.open
 import dev.enro3.result.registerForNavigationResult
 import dev.enro3.ui.NavigationDisplay
@@ -102,6 +104,13 @@ val listDestination = navigationDestination<ListKey> {
     ) {
         result.value = it
     }
+    val flowResultChannel = registerForNavigationResult<Pair<String, String>>(
+        onClosed = {
+            result.value = "Closed flow"
+        }
+    ) {
+        result.value = "Flow: ${it.first} ${it.second}"
+    }
     val resultChannel = registerForNavigationResult(
         onClosed = {
             result.value = "Closed ${key::class.simpleName}"
@@ -151,6 +160,11 @@ val listDestination = navigationDestination<ListKey> {
             resultChannel.open(DirectBottomSheetKey())
         }) {
             Text("Direct Bottom Sheet")
+        }
+        Button(onClick = {
+            flowResultChannel.open(FlowKey())
+        }) {
+            Text("Flow")
         }
         Button(onClick = {
             resultChannel.open(ComposeSharedElementTransitions.List())
@@ -217,22 +231,32 @@ val detailDestination = navigationDestination<DetailKey> {
 @Serializable
 class ResultKey : NavigationKey.WithResult<String>
 
+
+class ExampleViewModel : ViewModel() {}
 val resultDestination = navigationDestination<ResultKey> {
     val navigation = navigationHandle<ResultKey>()
+    val vm = viewModel {
+        ExampleViewModel()
+    }
 
     TitledColumn("Results") {
+        Text("${navigation.hashCode()}")
+        Text("${vm.hashCode()}")
         Button(onClick = {
+            Log.e("Enro", "Complete from result")
             navigation.complete("A")
         }) {
             Text("A")
         }
         Button(onClick = {
+            Log.e("Enro", "Complete from result")
             navigation.complete("B")
         }) {
             Text("B")
         }
 
         Button(onClick = {
+            Log.e("Enro", "Complete from result")
             navigation.complete("C")
         }) {
             Text("C")
@@ -242,6 +266,11 @@ val resultDestination = navigationDestination<ResultKey> {
             navigation.completeFrom(ResultKey())
         }) {
             Text("Delegate")
+        }
+        Button(onClick = {
+            navigation.completeFrom(DialogResultKey())
+        }) {
+            Text("Delegate Dialog")
         }
         Button(onClick = {
             navigation.close()
@@ -500,5 +529,62 @@ val nestedDestination = navigationDestination<NestedKey> {
     }
 }
 
+@Serializable
+class FlowKey : NavigationKey.WithResult<Pair<String, String>>
 
+class FlowViewModel : ViewModel() {
+    val navigation = navigationHandle<FlowKey>()
 
+    val resultFlow by registerForFlowResult(
+        navigationHandle = navigation,
+        flow = {
+            val firstResult = open { ResultKey() }
+            val secondResult = open { ResultKey() }
+            Pair(firstResult, secondResult)
+        },
+        onCompleted = { result ->
+            navigation.complete(result)
+        }
+    )
+}
+
+val flowDestination = navigationDestination<FlowKey> {
+    val viewModel = viewModel<FlowViewModel> {
+        createEnroViewModel {
+            FlowViewModel()
+        }
+    }
+    val container = rememberNavigationContainerForFlow(viewModel.resultFlow)
+    NavigationDisplay(container)
+}
+
+@Serializable
+class DialogResultKey : NavigationKey.WithResult<String>
+
+val dialogResultDestination = navigationDestination<DialogResultKey>(
+    metadata = mapOf(
+        DirectOverlaySceneStrategy.overlay()
+    )
+) {
+    AlertDialog(
+        onDismissRequest = { navigation.close() },
+        shape = MaterialTheme.shapes.medium,
+        containerColor = MaterialTheme.colors.background,
+        title = {
+            Text("Direct Dialog")
+        },
+        confirmButton = {
+            Button(onClick = { navigation.complete("Confirm") }) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { navigation.complete("Dismiss") }) {
+                Text("Dismiss")
+            }
+        },
+        properties = DialogProperties(
+            dismissOnClickOutside = false,
+        )
+    )
+}

@@ -4,13 +4,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ViewModel
-import dev.enro3.platform.EnroLog
 import dev.enro3.NavigationContext
 import dev.enro3.NavigationHandle
 import dev.enro3.NavigationKey
 import dev.enro3.NavigationOperation
+import dev.enro3.platform.EnroLog
 
 @PublishedApi
 internal class NavigationHandleHolder<T : NavigationKey>(
@@ -44,11 +44,16 @@ internal class NavigationHandleHolder<T : NavigationKey>(
     private class ClearedNavigationHandle<T: NavigationKey>(
         override val instance: NavigationKey.Instance<T>
     ) : NavigationHandle<T>() {
-        override val lifecycle: Lifecycle = LifecycleRegistry(this).apply {
-            currentState = Lifecycle.State.DESTROYED
+        override val lifecycle: Lifecycle = object : Lifecycle() {
+            override val currentState: State = State.DESTROYED
+            override fun addObserver(observer: LifecycleObserver) {}
+            override fun removeObserver(observer: LifecycleObserver) {}
         }
 
-        override fun execute(operation: NavigationOperation) {
+        override fun execute(
+            target: NavigationOperation.Target,
+            operation: NavigationOperation,
+        ) {
             EnroLog.warn("NavigationHandle with instance $instance has been cleared, but has received an operation which will be ignored")
         }
     }

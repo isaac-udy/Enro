@@ -5,7 +5,11 @@ import androidx.compose.runtime.Stable
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro3.serialization.unwrapForSerialization
 import dev.enro3.serialization.wrapForSerialization
-import kotlinx.serialization.*
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -73,7 +77,20 @@ public interface NavigationKey {
         public val key: @Contextual T,
         public val id: String = Uuid.random().toString(),
         public val metadata: Metadata = Metadata(),
-    )
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Instance<*>
+
+            return id == other.id
+        }
+
+        override fun hashCode(): Int {
+            return id.hashCode()
+        }
+    }
 
     /**
      * A type-safe, serializable key-value store for attaching arbitrary data to a
