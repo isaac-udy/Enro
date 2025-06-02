@@ -61,9 +61,9 @@ internal class BindingRepository {
         }
     }
 
-    fun bindingFor(
-        instance: NavigationKey.Instance<*>,
-    ): NavigationBinding<*> {
+    fun <K : NavigationKey> bindingFor(
+        instance: NavigationKey.Instance<K>,
+    ): NavigationBinding<K> {
         val binding =  when {
             NavigationBinding.usesOriginalBinding(instance) ->
                 originalBindingsByKeyType[instance.key::class]
@@ -71,8 +71,9 @@ internal class BindingRepository {
 
             else -> bindingsByKeyType[instance.key::class]
         }
+        @Suppress("UNCHECKED_CAST")
         return requireNotNull(binding) {
             "No binding found for ${instance.key::class.qualifiedName}"
-        }
+        } as NavigationBinding<K>
     }
 }

@@ -33,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
 import dev.enro3.EnroController
-import dev.enro3.NavigationBinding
 import dev.enro3.NavigationContainer
 import dev.enro3.NavigationKey
 import dev.enro3.NavigationOperation
@@ -84,11 +83,8 @@ public fun NavigationDisplay(
     val backstack = container.backstack.collectAsState().value
     require(backstack.isNotEmpty()) { "NavigationDisplay backstack cannot be empty" }
 
-    var progress by remember { mutableFloatStateOf(0f) }
-    var inPredictiveBack by remember { mutableStateOf(false) }
-    var isSettled by remember { mutableStateOf(true) }
-
-    val destinations = rememberDecoratedDestinations(controller, backstack, isSettled)
+    val state = remember { NavigationDisplayState() }
+    val destinations = rememberDecoratedDestinations(controller, backstack, state.isSettled)
 
     val (scene, overlayScenes) = calculateScenes(
         destinations = destinations,
@@ -96,30 +92,25 @@ public fun NavigationDisplay(
         onBack = { count -> container.execute(NavigationOperation.closeByCount(count)) }
     )
 
-    val scenes = remember { mutableStateMapOf<Pair<KClass<*>, Any>, NavigationScene>() }
-    val mostRecentSceneKeys = remember { mutableStateListOf<Pair<KClass<*>, Any>>() }
-    val sceneKey: Pair<KClass<*>, Any> = scene::class to scene.key
-    scenes[sceneKey] = scene
+    val sceneKey = SceneKey(
+        scene::class,
+        scene.key
+    )
+    state.scenes[sceneKey] = scene
 
-    handlePredictiveBack(
+    HandlePredictiveBack(
         scene = scene,
         destinations = destinations,
-        progress = progress,
-        inPredictiveBack = inPredictiveBack,
-        onProgressChange = { progress = it },
-        onPredictiveBackChange = { inPredictiveBack = it },
+        state = state,
         onBack = { count -> container.execute(NavigationOperation.closeByCount(count)) }
     )
 
-    val transitionState = remember { SeekableTransitionState<Pair<KClass<*>, Any>>(sceneKey) }
+    val transitionState = remember { SeekableTransitionState(sceneKey) }
     val transition = rememberTransitionCompat(transitionState, label = sceneKey.toString())
 
-    updateMostRecentSceneKeys(transition, mostRecentSceneKeys)
-
     val sceneToRenderableDestinationMap = calculateSceneToRenderableDestinationMap(
-        mostRecentSceneKeys = mostRecentSceneKeys.toList(),
-        scenes = scenes,
-        transitionTargetState = transition.targetState
+        state = state,
+        transition = transition,
     )
 
     val isPop = isPop(
@@ -130,23 +121,23 @@ public fun NavigationDisplay(
     val zIndices = updateZIndices(
         transition = transition,
         isPop = isPop,
-        inPredictiveBack = inPredictiveBack
+        inPredictiveBack = state.inPredictiveBack
     )
 
-    handleTransitionAnimation(
+    TransitionAnimationEffect(
         transitionState = transitionState,
         transition = transition,
         sceneKey = sceneKey,
-        progress = progress,
-        inPredictiveBack = inPredictiveBack,
+        progress = state.progress,
+        inPredictiveBack = state.inPredictiveBack,
         scene = scene,
         sceneStrategy = sceneStrategy,
-        scenes = scenes
+        scenes = state.scenes
     )
 
     val contentTransform: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
         when {
-            inPredictiveBack -> predictivePopTransitionSpec(this)
+            state.inPredictiveBack -> predictivePopTransitionSpec(this)
             isPop -> popTransitionSpec(this)
             else -> transitionSpec(this)
         }
@@ -155,7 +146,7 @@ public fun NavigationDisplay(
     CompositionLocalProvider(LocalNavigationContainer provides container) {
         RenderMainContent(
             transition = transition,
-            scenes = scenes,
+            scenes = state.scenes,
             sceneToRenderableDestinationMap = sceneToRenderableDestinationMap,
             zIndices = zIndices,
             contentTransform = contentTransform,
@@ -163,13 +154,18 @@ public fun NavigationDisplay(
             modifier = modifier,
             sizeTransform = sizeTransform
         )
-
-        cleanupScenes(transition, scenes, mostRecentSceneKeys)
-
-        updateSettledState(transition) { isSettled = it }
-
+        CleanupSceneEffect(transition, state)
+        UpdateSettledStateEffect(transition) { state.isSettled = it }
         RenderOverlayScenes(overlayScenes)
     }
+}
+
+private class NavigationDisplayState {
+    var progress by mutableFloatStateOf(0f)
+    var inPredictiveBack by mutableStateOf(false)
+    var isSettled by mutableStateOf(true)
+    val scenes =  mutableStateMapOf<SceneKey, NavigationScene>()
+    val mostRecentSceneKeys =  mutableStateListOf<SceneKey>()
 }
 
 @Composable
@@ -196,11 +192,13 @@ private fun rememberDecoratedDestinations(
     )
 
     return remember(backstack) {
-        backstack.map { instance ->
-            @Suppress("UNCHECKED_CAST")
-            val binding = controller.bindings.bindingFor(instance) as NavigationBinding<NavigationKey>
-            binding.provider.create(instance as NavigationKey.Instance<NavigationKey>)
-        }
+        backstack
+            .map { instance ->
+                @Suppress("UNCHECKED_CAST")
+                instance as NavigationKey.Instance<NavigationKey>
+                val binding = controller.bindings.bindingFor(instance)
+                binding.provider.create(instance)
+            }
             .map {
                 decorateNavigationDestination(
                     destination = it,
@@ -229,59 +227,58 @@ private fun calculateScenes(
 }
 
 @Composable
-private fun handlePredictiveBack(
+private fun HandlePredictiveBack(
     scene: NavigationScene,
     destinations: List<NavigationDestination<NavigationKey>>,
-    progress: Float,
-    inPredictiveBack: Boolean,
-    onProgressChange: (Float) -> Unit,
-    onPredictiveBackChange: (Boolean) -> Unit,
+    state: NavigationDisplayState,
     onBack: (Int) -> Unit,
 ) {
     NavigationBackHandler(scene.previousEntries.isNotEmpty()) { navEvent ->
-        onProgressChange(0f)
+        state.progress = 0f
         try {
             navEvent.collect { value ->
-                onPredictiveBackChange(true)
-                onProgressChange(value.progress)
+                state.inPredictiveBack = true
+                state.progress = value.progress
             }
-            onPredictiveBackChange(false)
+            state.inPredictiveBack = false
             onBack(destinations.size - scene.previousEntries.size)
         } finally {
-            onPredictiveBackChange(false)
+            state.inPredictiveBack = false
         }
     }
 }
 
-@Composable
-private fun updateMostRecentSceneKeys(
-    transition: Transition<Pair<KClass<*>, Any>>,
-    mostRecentSceneKeys: MutableList<Pair<KClass<*>, Any>>,
-) {
-    LaunchedEffect(transition.targetState) {
-        if (mostRecentSceneKeys.lastOrNull() != transition.targetState) {
-            mostRecentSceneKeys.remove(transition.targetState)
-            mostRecentSceneKeys.add(transition.targetState)
-        }
-    }
-}
+/**
+ * A key that uniquely identifies a scene; this is the KClass for the Scene's type, along with the
+ * key for the scene's instance.
+ */
+private data class SceneKey(
+    val sceneType: KClass<*>,
+    val key: Any,
+)
 
 @Composable
 private fun calculateSceneToRenderableDestinationMap(
-    mostRecentSceneKeys: List<Pair<KClass<*>, Any>>,
-    scenes: Map<Pair<KClass<*>, Any>, NavigationScene>,
-    transitionTargetState: Pair<KClass<*>, Any>,
-): Map<Pair<KClass<*>, Any>, Set<String>> {
+    state: NavigationDisplayState,
+    transition: Transition<SceneKey>,
+): Map<SceneKey, Set<String>> {
+    LaunchedEffect(transition.targetState) {
+        if (state.mostRecentSceneKeys.lastOrNull() != transition.targetState) {
+            state.mostRecentSceneKeys.remove(transition.targetState)
+            state.mostRecentSceneKeys.add(transition.targetState)
+        }
+    }
+
     return remember(
-        mostRecentSceneKeys,
-        scenes.values.map { scene -> scene.entries.map { it.instance.id } },
-        transitionTargetState,
+        state.mostRecentSceneKeys,
+        state.scenes.values.map { scene -> scene.entries.map { it.instance.id } },
+        transition.targetState,
     ) {
         buildMap {
             val coveredDestinationIds = mutableSetOf<String>()
-            (mostRecentSceneKeys.filter { it != transitionTargetState } + listOf(transitionTargetState))
+            (state.mostRecentSceneKeys.filter { it != transition.targetState } + listOf(transition.targetState))
                 .fastForEachReversed { sceneKey ->
-                    val scene = scenes.getValue(sceneKey)
+                    val scene = state.scenes.getValue(sceneKey)
                     put(
                         sceneKey,
                         scene.entries
@@ -297,11 +294,11 @@ private fun calculateSceneToRenderableDestinationMap(
 
 @Composable
 private fun updateZIndices(
-    transition: Transition<Pair<KClass<*>, Any>>,
+    transition: Transition<SceneKey>,
     isPop: Boolean,
     inPredictiveBack: Boolean,
-): MutableMap<Pair<KClass<*>, Any>, Float> {
-    val zIndices = remember { mutableMapOf<Pair<KClass<*>, Any>, Float>() }
+): MutableMap<SceneKey, Float> {
+    val zIndices = remember { mutableMapOf<SceneKey, Float>() }
     val initialKey = transition.currentState
     val targetKey = transition.targetState
     val initialZIndex = zIndices.getOrPut(initialKey) { 0f }
@@ -315,22 +312,25 @@ private fun updateZIndices(
 }
 
 @Composable
-private fun handleTransitionAnimation(
-    transitionState: SeekableTransitionState<Pair<KClass<*>, Any>>,
-    transition: Transition<Pair<KClass<*>, Any>>,
-    sceneKey: Pair<KClass<*>, Any>,
+private fun TransitionAnimationEffect(
+    transitionState: SeekableTransitionState<SceneKey>,
+    transition: Transition<SceneKey>,
+    sceneKey: SceneKey,
     progress: Float,
     inPredictiveBack: Boolean,
     scene: NavigationScene,
     sceneStrategy: NavigationSceneStrategy,
-    scenes: MutableMap<Pair<KClass<*>, Any>, NavigationScene>,
+    scenes: MutableMap<SceneKey, NavigationScene>,
 ) {
     if (inPredictiveBack) {
         val peekScene = sceneStrategy.calculateSceneWithSinglePaneFallback(
             scene.previousEntries,
             { /* No-op during predictive back */ }
         )
-        val peekSceneKey = peekScene::class to peekScene.key
+        val peekSceneKey = SceneKey(
+            sceneType = peekScene::class,
+            key = peekScene.key,
+        )
         scenes[peekSceneKey] = peekScene
         if (transitionState.currentState != peekSceneKey) {
             LaunchedEffect(progress) { transitionState.seekTo(progress, peekSceneKey) }
@@ -363,10 +363,10 @@ private fun handleTransitionAnimation(
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun RenderMainContent(
-    transition: Transition<Pair<KClass<*>, Any>>,
-    scenes: Map<Pair<KClass<*>, Any>, NavigationScene>,
-    sceneToRenderableDestinationMap: Map<Pair<KClass<*>, Any>, Set<String>>,
-    zIndices: Map<Pair<KClass<*>, Any>, Float>,
+    transition: Transition<SceneKey>,
+    scenes: Map<SceneKey, NavigationScene>,
+    sceneToRenderableDestinationMap: Map<SceneKey, Set<String>>,
+    zIndices: Map<SceneKey, Float>,
     contentTransform: AnimatedContentTransitionScope<*>.() -> ContentTransform,
     contentAlignment: Alignment,
     modifier: Modifier,
@@ -400,23 +400,22 @@ private fun RenderMainContent(
 }
 
 @Composable
-private fun cleanupScenes(
-    transition: Transition<Pair<KClass<*>, Any>>,
-    scenes: MutableMap<Pair<KClass<*>, Any>, NavigationScene>,
-    mostRecentSceneKeys: MutableList<Pair<KClass<*>, Any>>,
+private fun CleanupSceneEffect(
+    transition: Transition<SceneKey>,
+    state: NavigationDisplayState,
 ) {
     LaunchedEffect(transition) {
         snapshotFlow { transition.isRunning }
             .filter { !it }
             .collect {
-                scenes.keys.toList().forEach { key ->
+                state.scenes.keys.toList().forEach { key ->
                     if (key != transition.targetState) {
-                        scenes.remove(key)
+                        state.scenes.remove(key)
                     }
                 }
-                mostRecentSceneKeys.toList().forEach { key ->
+                state.mostRecentSceneKeys.toList().forEach { key ->
                     if (key != transition.targetState) {
-                        mostRecentSceneKeys.remove(key)
+                        state.mostRecentSceneKeys.remove(key)
                     }
                 }
             }
@@ -424,8 +423,8 @@ private fun cleanupScenes(
 }
 
 @Composable
-private fun updateSettledState(
-    transition: Transition<Pair<KClass<*>, Any>>,
+private fun UpdateSettledStateEffect(
+    transition: Transition<SceneKey>,
     onSettledChange: (Boolean) -> Unit,
 ) {
     LaunchedEffect(transition.currentState, transition.targetState) {
