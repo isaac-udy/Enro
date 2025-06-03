@@ -22,12 +22,12 @@ kotlin {
             implementation(libs.kotlinx.serialization)
             implementation(libs.kotlin.reflect)
             implementation(libs.thauvin.urlencoder)
-            implementation(libs.androidx.fragment.compose)
         }
         androidMain.dependencies {
             implementation(libs.androidx.core)
             implementation(libs.androidx.appcompat)
             implementation(libs.androidx.fragment)
+            implementation(libs.androidx.fragment.compose)
             implementation(libs.androidx.activity)
             implementation(libs.androidx.recyclerview)
             implementation(libs.androidx.lifecycle.process)
