@@ -21,30 +21,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
 import dev.enro3.EnroController
-import dev.enro3.NavigationContainer
 import dev.enro3.NavigationKey
 import dev.enro3.NavigationOperation
 import dev.enro3.ui.animation.rememberTransitionCompat
 import dev.enro3.ui.decorators.ProvideRemovalTrackingInfo
-import dev.enro3.ui.decorators.decorateNavigationDestination
-import dev.enro3.ui.decorators.rememberLifecycleDecorator
-import dev.enro3.ui.decorators.rememberMovableContentDecorator
-import dev.enro3.ui.decorators.rememberNavigationContextDecorator
-import dev.enro3.ui.decorators.rememberRemovalTrackingDecorator
-import dev.enro3.ui.decorators.rememberSavedStateDecorator
-import dev.enro3.ui.decorators.rememberViewModelStoreDecorator
 import dev.enro3.ui.scenes.DialogSceneStrategy
 import dev.enro3.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro3.ui.scenes.SinglePaneScene
@@ -70,11 +58,12 @@ import kotlin.reflect.KClass
  * @param transitionSpec Animation spec for forward navigation transitions
  * @param popTransitionSpec Animation spec for back navigation transitions
  * @param predictivePopTransitionSpec Animation spec for predictive back gesture transitions
+ * @param containerTransitionSpec Animation spec for transitions when the container [state] changes
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 public fun NavigationDisplay(
-    container: NavigationContainer,
+    state: NavigationContainerState,
     modifier: Modifier = Modifier,
     sceneStrategy: NavigationSceneStrategy = remember {
         NavigationSceneStrategy.from(
@@ -98,37 +87,40 @@ public fun NavigationDisplay(
         )
     },
     predictivePopTransitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = popTransitionSpec,
+    containerTransitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
+        ContentTransform(
+            targetContentEnter = fadeIn(spring(stiffness = Spring.StiffnessMedium)),
+            initialContentExit = fadeOut(),
+        )
+    }
 ) {
-    val controller = rememberEnroController()
-    val backstack = container.backstack.collectAsState().value
+    val backstack = state.container.backstack.collectAsState().value
     require(backstack.isNotEmpty()) { "NavigationDisplay backstack cannot be empty" }
 
     // Create and remember the state that tracks the display's internal state
-    val state = remember { NavigationDisplayState() }
-
-    // Convert the raw backstack entries into decorated NavigationDestination objects
-    val destinations = rememberDecoratedDestinations(controller, backstack, state.isSettled)
+    val sceneState = remember { NavigationSceneState() }
 
     // Calculate the scene hierarchy - scenes organize destinations into logical groups
     val (scene, overlayScenes) = calculateScenes(
-        destinations = destinations,
+        destinations = state.destinations,
         sceneStrategy = sceneStrategy,
-        onBack = { count -> container.execute(NavigationOperation.closeByCount(count)) }
+        onBack = remember<(Int) -> Unit> { { count -> state.container.execute(NavigationOperation.closeByCount(count)) } }
     )
 
     // Create a unique key for the current scene and store it
     val sceneKey = SceneKey(
-        scene::class,
-        scene.key
+        sceneType = scene::class,
+        key = scene.key,
+        containerKey = state.container.key,
     )
-    state.scenes[sceneKey] = scene
+    sceneState.scenes[sceneKey] = scene
 
     // Set up predictive back gesture handling
     HandlePredictiveBack(
         scene = scene,
-        destinations = destinations,
+        destinations = state.destinations,
         state = state,
-        onBack = { count -> container.execute(NavigationOperation.closeByCount(count)) }
+        onBack = remember { { count -> state.container.execute(NavigationOperation.closeByCount(count)) } }
     )
 
     // Create the transition state that manages animations between scenes
@@ -137,14 +129,14 @@ public fun NavigationDisplay(
 
     // Calculate which destinations should be rendered in each scene
     val sceneToRenderableDestinationMap = calculateSceneToRenderableDestinationMap(
-        state = state,
+        state = sceneState,
         transition = transition,
     )
 
     // Determine if this is a pop (back) navigation
     val isPop = isPop(
-        remember(transition.currentState) { destinations.toList() }.map { it.instance.id },
-        destinations.map { it.instance.id }
+        remember(transition.currentState) { state.destinations.toList() }.map { it.instance.id },
+        state.destinations.map { it.instance.id }
     )
 
     // Calculate z-indices for proper layering during transitions
@@ -159,16 +151,17 @@ public fun NavigationDisplay(
         transitionState = transitionState,
         transition = transition,
         sceneKey = sceneKey,
-        progress = state.progress,
-        inPredictiveBack = state.inPredictiveBack,
+        state = state,
         scene = scene,
         sceneStrategy = sceneStrategy,
-        scenes = state.scenes
+        scenes = sceneState.scenes
     )
 
     // Select the appropriate transition spec based on navigation type
-    val contentTransform: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
+    val contentTransform: AnimatedContentTransitionScope<SceneKey>.() -> ContentTransform = {
+        val isDifferentContainer = initialState.containerKey != targetState.containerKey
         when {
+            isDifferentContainer -> containerTransitionSpec(this)
             state.inPredictiveBack -> predictivePopTransitionSpec(this)
             isPop -> popTransitionSpec(this)
             else -> transitionSpec(this)
@@ -176,11 +169,11 @@ public fun NavigationDisplay(
     }
 
     // Render the navigation content
-    CompositionLocalProvider(LocalNavigationContainer provides container) {
+    CompositionLocalProvider(LocalNavigationContainer provides state.container) {
         ProvideRemovalTrackingInfo {
             RenderMainContent(
                 transition = transition,
-                scenes = state.scenes,
+                scenes = sceneState.scenes,
                 sceneToRenderableDestinationMap = sceneToRenderableDestinationMap,
                 zIndices = zIndices,
                 contentTransform = contentTransform,
@@ -188,7 +181,7 @@ public fun NavigationDisplay(
                 modifier = modifier,
                 sizeTransform = sizeTransform
             )
-            CleanupSceneEffect(transition, state)
+            CleanupSceneEffect(transition, sceneState)
             UpdateSettledStateEffect(transition) { state.isSettled = it }
             RenderOverlayScenes(overlayScenes)
         }
@@ -199,16 +192,7 @@ public fun NavigationDisplay(
  * Internal state management for NavigationDisplay.
  * Tracks the current state of animations, scenes, and navigation gestures.
  */
-private class NavigationDisplayState {
-    /** Progress of the current predictive back gesture (0.0 to 1.0) */
-    var progress by mutableFloatStateOf(0f)
-
-    /** Whether a predictive back gesture is currently in progress */
-    var inPredictiveBack by mutableStateOf(false)
-
-    /** Whether the navigation state is settled (no animations running) */
-    var isSettled by mutableStateOf(true)
-
+private class NavigationSceneState {
     /** Map of scene keys to their corresponding NavigationScene instances */
     val scenes = mutableStateMapOf<SceneKey, NavigationScene>()
 
@@ -226,52 +210,6 @@ private fun rememberEnroController(): EnroController {
         requireNotNull(EnroController.instance) {
             "EnroController must be initialized before using NavigationDisplay"
         }
-    }
-}
-
-/**
- * Creates NavigationDestination instances from the backstack and applies decorators.
- * Decorators add functionality like lifecycle management, view models, and saved state.
- *
- * @param controller The navigation controller for binding resolution
- * @param backstack The current navigation backstack
- * @param isSettled Whether animations are currently settled (used by lifecycle decorator)
- * @return List of decorated NavigationDestination instances
- */
-@Composable
-private fun rememberDecoratedDestinations(
-    controller: EnroController,
-    backstack: List<NavigationKey.Instance<*>>,
-    isSettled: Boolean,
-): List<NavigationDestination<NavigationKey>> {
-    // Create decorators that wrap destinations with additional functionality
-    val decorators = listOf(
-        rememberMovableContentDecorator(),  // Preserves content across recompositions
-        rememberSavedStateDecorator(),      // Manages saved instance state
-        rememberViewModelStoreDecorator(),  // Provides ViewModelStore for each destination
-        rememberLifecycleDecorator(backstack, isSettled),  // Manages lifecycle state
-        rememberNavigationContextDecorator(),  // Provides navigation context
-    )
-
-    // Add removal tracking decorator last to ensure it tracks all other decorators
-    val decoratorsWithRemovalTracking = decorators + rememberRemovalTrackingDecorator(decorators)
-
-    return remember(backstack) {
-        backstack
-            .map { instance ->
-                // Find the navigation binding for this instance and create the destination
-                @Suppress("UNCHECKED_CAST")
-                instance as NavigationKey.Instance<NavigationKey>
-                val binding = controller.bindings.bindingFor(instance)
-                binding.provider.create(instance)
-            }
-            .map {
-                // Apply all decorators to enhance the destination
-                decorateNavigationDestination(
-                    destination = it,
-                    decorators = decoratorsWithRemovalTracking,
-                )
-            }
     }
 }
 
@@ -318,14 +256,14 @@ private fun calculateScenes(
  *
  * @param scene The current scene
  * @param destinations All destinations in the backstack
- * @param state The navigation display state to update
+ * @param visibility The navigation display state to update
  * @param onBack Callback to execute when back gesture completes
  */
 @Composable
 private fun HandlePredictiveBack(
     scene: NavigationScene,
     destinations: List<NavigationDestination<NavigationKey>>,
-    state: NavigationDisplayState,
+    state: NavigationContainerState,
     onBack: (Int) -> Unit,
 ) {
     NavigationBackHandler(scene.previousEntries.isNotEmpty()) { navEvent ->
@@ -353,6 +291,7 @@ private fun HandlePredictiveBack(
 private data class SceneKey(
     val sceneType: KClass<*>,
     val key: Any,
+    val containerKey: dev.enro3.NavigationContainer.Key,
 )
 
 /**
@@ -369,7 +308,7 @@ private data class SceneKey(
  */
 @Composable
 private fun calculateSceneToRenderableDestinationMap(
-    state: NavigationDisplayState,
+    state: NavigationSceneState,
     transition: Transition<SceneKey>,
 ): Map<SceneKey, Set<String>> {
     // Update the most recent scene keys list when target changes
@@ -460,13 +399,12 @@ private fun TransitionAnimationEffect(
     transitionState: SeekableTransitionState<SceneKey>,
     transition: Transition<SceneKey>,
     sceneKey: SceneKey,
-    progress: Float,
-    inPredictiveBack: Boolean,
+    state: NavigationContainerState,
     scene: NavigationScene,
     sceneStrategy: NavigationSceneStrategy,
     scenes: MutableMap<SceneKey, NavigationScene>,
 ) {
-    if (inPredictiveBack) {
+    if (state.inPredictiveBack) {
         // During predictive back, create a "peek" scene showing the previous destinations
         val peekScene = sceneStrategy.calculateSceneWithSinglePaneFallback(
             scene.previousEntries,
@@ -475,12 +413,13 @@ private fun TransitionAnimationEffect(
         val peekSceneKey = SceneKey(
             sceneType = peekScene::class,
             key = peekScene.key,
+            containerKey = state.key,
         )
         scenes[peekSceneKey] = peekScene
 
         // Seek to the appropriate position based on gesture progress
         if (transitionState.currentState != peekSceneKey) {
-            LaunchedEffect(progress) { transitionState.seekTo(progress, peekSceneKey) }
+            LaunchedEffect(state.progress) { transitionState.seekTo(state.progress, peekSceneKey) }
         }
     } else {
         // Regular navigation - animate to target or handle settling
@@ -534,7 +473,7 @@ private fun RenderMainContent(
     scenes: Map<SceneKey, NavigationScene>,
     sceneToRenderableDestinationMap: Map<SceneKey, Set<String>>,
     zIndices: Map<SceneKey, Float>,
-    contentTransform: AnimatedContentTransitionScope<*>.() -> ContentTransform,
+    contentTransform: AnimatedContentTransitionScope<SceneKey>.() -> ContentTransform,
     contentAlignment: Alignment,
     modifier: Modifier,
     sizeTransform: SizeTransform?,
@@ -577,7 +516,7 @@ private fun RenderMainContent(
 @Composable
 private fun CleanupSceneEffect(
     transition: Transition<SceneKey>,
-    state: NavigationDisplayState,
+    state: NavigationSceneState,
 ) {
     LaunchedEffect(transition) {
         snapshotFlow { transition.isRunning }

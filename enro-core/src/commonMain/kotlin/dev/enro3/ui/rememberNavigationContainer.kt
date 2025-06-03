@@ -25,7 +25,7 @@ public fun rememberNavigationContainer(
     backstack: NavigationBackstack,
     // Need to get parent interceptors too from controller
     interceptor: NavigationInterceptor = NoOpNavigationInterceptor,
-): NavigationContainer {
+): NavigationContainerState {
     val parent = runCatching { LocalNavigationContainer.current }
     val parentContext = runCatching { LocalNavigationContext.current }.getOrNull()
     val controller = remember {
@@ -58,7 +58,16 @@ public fun rememberNavigationContainer(
         }
     }
 
-    return container
+    val containerState = remember(container) {
+        NavigationContainerState(container = container)
+    }
+    val destinations = rememberDecoratedDestinations(
+        controller = controller,
+        backstack = containerState.backstack,
+        isSettled = containerState.isSettled,
+    )
+    containerState.destinations = destinations
+    return containerState
 }
 
 internal class NavigationContainerSaver(

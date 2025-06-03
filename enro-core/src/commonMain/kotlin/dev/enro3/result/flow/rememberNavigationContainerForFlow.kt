@@ -3,21 +3,20 @@ package dev.enro3.result.flow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
-import dev.enro3.NavigationContainer
 import dev.enro3.NavigationKey
 import dev.enro3.asInstance
 import dev.enro3.interceptor.builder.navigationInterceptor
 import dev.enro3.result.NavigationResult
 import dev.enro3.result.NavigationResultChannel
 import dev.enro3.result.getResult
+import dev.enro3.ui.NavigationContainerState
 import dev.enro3.ui.destinations.EmptyNavigationKey
 import dev.enro3.ui.rememberNavigationContainer
-
 
 @Composable
 public fun rememberNavigationContainerForFlow(
     flow: NavigationFlow<*>,
-): NavigationContainer {
+): NavigationContainerState {
     return rememberNavigationContainer(
         backstack = listOf(EmptyNavigationKey.asInstance()),
         interceptor = remember {
@@ -63,7 +62,7 @@ public fun rememberNavigationContainerForFlow(
         }
     ).apply {
         DisposableEffect(this) {
-            flow.container = this@apply
+            flow.container = container
             onDispose {
                 flow.container = null
             }

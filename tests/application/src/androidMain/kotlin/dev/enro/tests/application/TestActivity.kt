@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -84,7 +86,7 @@ class TestActivity : AppCompatActivity() {
                     .fillMaxSize()
                     .background(MaterialTheme.colors.background)) {
                     NavigationDisplay(
-                        container = container,
+                        state = container,
                     )
                 }
             }
@@ -122,7 +124,10 @@ val listDestination = navigationDestination<ListKey> {
         result.value = "Completed ${key::class.simpleName}"
     }
 
-    TitledColumn("List") {
+    TitledColumn(
+        title = "List",
+        modifier = Modifier.verticalScroll(rememberScrollState()),
+    ) {
         Text("Result: ${result.value}")
         Button(onClick = {
             stringResultChannel.open(ResultKey())
@@ -178,6 +183,11 @@ val listDestination = navigationDestination<ListKey> {
             resultChannel.open(NestedKey())
         }) {
             Text("Nested")
+        }
+        Button(onClick = {
+            resultChannel.open(MultipleNestedContainerExample())
+        }) {
+            Text("Multiple Nested")
         }
         Button(onClick = {
             navigation.open(ComposeStabilityKey())
