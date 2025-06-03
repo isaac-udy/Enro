@@ -18,6 +18,7 @@ import dev.enro3.NavigationContainer
 import dev.enro3.NavigationKey
 import dev.enro3.interceptor.NavigationInterceptor
 import dev.enro3.interceptor.NoOpNavigationInterceptor
+import kotlinx.serialization.PolymorphicSerializer
 
 @Composable
 public fun rememberNavigationContainer(
@@ -80,6 +81,7 @@ internal class NavigationContainerSaver(
         val restoredBackstack = value.read {
             getSavedStateList(BackstackKey).map {
                 decodeFromSavedState<NavigationKey.Instance<NavigationKey>>(
+                    deserializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
                     savedState = it,
                     configuration = controller.serializers.savedStateConfiguration,
                 )
@@ -97,7 +99,8 @@ internal class NavigationContainerSaver(
     override fun SaverScope.save(value: NavigationContainer): SavedState? {
         val savedBackstack = value.backstack.value.map { instance ->
             encodeToSavedState(
-                value = instance,
+                serializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
+                value = instance as NavigationKey.Instance<NavigationKey>,
                 configuration = controller.serializers.savedStateConfiguration
             )
         }
