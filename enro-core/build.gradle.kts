@@ -32,10 +32,6 @@ kotlin {
             implementation(libs.androidx.recyclerview)
             implementation(libs.androidx.lifecycle.process)
             implementation(libs.kotlin.reflect)
-
-            compileOnly(libs.hilt.android)
-            compileOnly(libs.androidx.navigation.fragment)
-
         }
 
         frontendJsMain.dependencies {
