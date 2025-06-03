@@ -6,9 +6,7 @@ import EnroTestsApplication
 
 struct MainViewControllerView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
-        return Enro.shared.createEnroViewController(
-            present: NavigationInstruction.companion.Present(navigationKey: MainView.shared)
-        )
+        return MainViewControllerKt.CreateMainViewController()
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
