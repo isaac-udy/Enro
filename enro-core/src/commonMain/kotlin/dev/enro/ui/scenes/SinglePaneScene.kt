@@ -12,12 +12,15 @@ public class SinglePaneScene : NavigationSceneStrategy {
         entries: List<NavigationDestination<out NavigationKey>>,
     ): NavigationScene {
         return object : NavigationScene {
-            override val entries: List<NavigationDestination<out NavigationKey>> = listOf(entries.last())
+            override val entries: List<NavigationDestination<out NavigationKey>> = entries.takeLast(1)
             override val key: Any = SinglePaneScene::class to entries.map { it.instance.id }
 
             override val previousEntries: List<NavigationDestination<out NavigationKey>> = entries.dropLast(1)
             override val content: @Composable (() -> Unit) = {
-                this.entries.single().content()
+                val entries = this.entries
+                if (entries.isNotEmpty()) {
+                    entries.single().content()
+                }
             }
         }
     }

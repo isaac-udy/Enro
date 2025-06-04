@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
 import dev.enro.NavigationContainer
 import dev.enro.NavigationOperation
-import dev.enro.NavigationTransition
 import dev.enro.platform.EnroLog
 import dev.enro.ui.animation.rememberTransitionCompat
 import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
@@ -247,29 +246,25 @@ private fun HandlePredictiveBack(
 ) {
     val backstack = state.backstack
     val isEnabled = remember(scene.previousEntries, backstack) {
-        val targetBackstack = scene.previousEntries.map { it.instance }
-        state.emptyBehavior.isAnimationEnabled(
-            NavigationTransition(
-                currentBackstack = backstack,
-                targetBackstack = targetBackstack,
-            )
-        )
-    }
-    LaunchedEffect(isEnabled, backstack) {
-        val stack = backstack.map { it.key::class.simpleName }
-        EnroLog.error(
-            "Is enabled for $stack"
-        )
+        if (scene.previousEntries.isNotEmpty()) return@remember true
+        state.emptyBehavior.isBackHandlerEnabled(backstack)
     }
     NavigationBackHandler(
         enabled = isEnabled,
     ) { navEvent ->
-        state.progress = 0f
+        state.predictiveBackProgress = 0f
         try {
             // Collect gesture progress events
             navEvent.collect { value ->
                 state.inPredictiveBack = true
-                state.progress = value.progress
+                val isProgressConsumed = state.emptyBehavior
+                    .onPredictiveBackProgress(
+                        backstack = scene.previousEntries.map { it.instance },
+                        progress = value.progress
+                    )
+                if (!isProgressConsumed) {
+                    state.predictiveBackProgress = value.progress
+                }
             }
             // Gesture completed - execute the back navigation
             state.inPredictiveBack = false
@@ -422,7 +417,7 @@ private fun TransitionAnimationEffect(
 
         // Seek to the appropriate position based on gesture progress
         if (transitionState.currentState != peekSceneKey) {
-            LaunchedEffect(state.progress) { transitionState.seekTo(state.progress, peekSceneKey) }
+            LaunchedEffect(state.predictiveBackProgress) { transitionState.seekTo(state.predictiveBackProgress, peekSceneKey) }
         }
     } else {
         // Regular navigation - animate to target or handle settling

@@ -6,7 +6,6 @@ import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.path.NavigationPathBinding
-import dev.enro.platform.EnroLog
 import dev.enro.plugin.NavigationPlugin
 import dev.enro.ui.NavigationDestinationProvider
 import kotlinx.serialization.modules.EmptySerializersModule
@@ -61,6 +60,14 @@ public class NavigationModule @PublishedApi internal constructor() {
 
         public fun serializersModule(serializersModule: SerializersModule) {
             module.serializers += serializersModule
+        }
+
+        public fun module(module: NavigationModule) {
+            this.module.plugins.addAll(module.plugins)
+            this.module.bindings.addAll(module.bindings)
+            this.module.interceptors.addAll(module.interceptors)
+            this.module.paths.addAll(module.paths)
+            this.module.serializers += module.serializers
         }
     }
 }

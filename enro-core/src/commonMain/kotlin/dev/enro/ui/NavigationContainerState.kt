@@ -13,13 +13,13 @@ import dev.enro.NavigationOperation
 
 public class NavigationContainerState(
     public val container: NavigationContainer,
-    public val emptyBehavior: EmptyBehavior = EmptyBehavior.default(),
+    public val emptyBehavior: EmptyBehavior,
 ) {
 
     public val key: NavigationContainer.Key = container.key
 
     /** Progress of the current predictive back gesture (0.0 to 1.0) */
-    public var progress: Float by mutableFloatStateOf(0f)
+    public var predictiveBackProgress: Float by mutableFloatStateOf(0f)
         internal set
 
     /** Whether a predictive back gesture is currently in progress */

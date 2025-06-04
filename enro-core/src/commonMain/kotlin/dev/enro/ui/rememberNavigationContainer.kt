@@ -42,7 +42,6 @@ public fun rememberNavigationContainer(
             key = key,
             controller = controller,
             parent = parent.getOrNull(),
-            interceptor = interceptor,
             filter = filter,
         ),
     ) {
@@ -51,9 +50,22 @@ public fun rememberNavigationContainer(
             controller = controller,
             backstack = backstack,
             parent = parent.getOrNull(),
-            interceptor = interceptor,
             filter = filter,
         )
+    }
+
+    DisposableEffect(container, emptyBehavior) {
+        container.addInterceptor(emptyBehavior.interceptor)
+        onDispose {
+            container.removeInterceptor(emptyBehavior.interceptor)
+        }
+    }
+
+    DisposableEffect(container, interceptor) {
+        container.addInterceptor(interceptor)
+        onDispose {
+            container.removeInterceptor(interceptor)
+        }
     }
 
     // Register/unregister with parent context
@@ -65,7 +77,10 @@ public fun rememberNavigationContainer(
     }
 
     val containerState = remember(container) {
-        NavigationContainerState(container = container)
+        NavigationContainerState(
+            container = container,
+            emptyBehavior = emptyBehavior,
+        )
     }
     val destinations = rememberDecoratedDestinations(
         controller = controller,
@@ -80,7 +95,6 @@ internal class NavigationContainerSaver(
     private val key: NavigationContainer.Key,
     private val controller: EnroController,
     private val parent: NavigationContainer?,
-    private val interceptor: NavigationInterceptor,
     private val filter: NavigationContainerFilter,
 ) : Saver<NavigationContainer, SavedState> {
     override fun restore(value: SavedState): NavigationContainer? {
@@ -98,7 +112,6 @@ internal class NavigationContainerSaver(
             controller = controller,
             backstack = restoredBackstack,
             parent = parent,
-            interceptor = interceptor,
             filter = filter,
         )
     }

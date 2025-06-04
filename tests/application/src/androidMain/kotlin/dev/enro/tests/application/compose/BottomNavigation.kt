@@ -1,6 +1,7 @@
 package dev.enro.tests.application.compose
 
 import android.os.Parcelable
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +15,6 @@ import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -107,22 +107,22 @@ fun MultiContainerBottomNavigationScreen() {
         key = NavigationContainerKey.FromName("SecondTab"),
         root = BottomNavigation.SecondTab,
         filter = acceptNone(),
-        emptyBehavior = remember { EmptyBehavior.Action {
+        emptyBehavior = EmptyBehavior.Action {
 //            firstContainer.setActive()
             TODO("set active")
             true
-        } } ,
+        },
     )
 
     val thirdContainer = rememberNavigationContainer(
         key = NavigationContainerKey.FromName("ThirdTab"),
         root = BottomNavigation.ThirdTab,
         filter = acceptNone(),
-        emptyBehavior = remember { EmptyBehavior.Action {
+        emptyBehavior = EmptyBehavior.Action {
 //            firstContainer.setActive()
             TODO("set active")
             true
-        } },
+        },
     )
 
     val group = rememberNavigationContainerGroup(
@@ -132,6 +132,7 @@ fun MultiContainerBottomNavigationScreen() {
     )
 
     Column {
+        Log.e("Enro", "Bottom navigation container ${group.activeContainer}")
         AnimatedContent(
             modifier = Modifier
                 .fillMaxWidth()

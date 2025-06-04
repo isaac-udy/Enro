@@ -1,8 +1,8 @@
 package dev.enro
 
 import dev.enro.annotations.AdvancedEnroApi
+import dev.enro.interceptor.AggregateNavigationInterceptor
 import dev.enro.interceptor.NavigationInterceptor
-import dev.enro.interceptor.NoOpNavigationInterceptor
 import dev.enro.result.NavigationResultChannel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,11 +22,20 @@ public class NavigationContainer internal constructor(
     public val controller: EnroController,
     backstack: NavigationBackstack = emptyList(),
     public val parent: NavigationContainer? = null,
-    private val interceptor: NavigationInterceptor = NoOpNavigationInterceptor,
     private val filter: NavigationContainerFilter = acceptAll(),
 ) {
     private val mutableBackstack: MutableStateFlow<NavigationBackstack> = MutableStateFlow(backstack)
     public val backstack: StateFlow<NavigationBackstack> = mutableBackstack
+
+    private val interceptors = mutableListOf<NavigationInterceptor>()
+
+    internal fun addInterceptor(interceptor: NavigationInterceptor) {
+        interceptors.add(interceptor)
+    }
+
+    internal fun removeInterceptor(interceptor: NavigationInterceptor) {
+        interceptors.remove(interceptor)
+    }
 
     private val executionMutex = Mutex(false)
 
@@ -43,7 +52,7 @@ public class NavigationContainer internal constructor(
         var pendingAction: () -> Unit = {}
         runCatching transitionBlock@{
             val backstack = backstack.value
-
+            val interceptor = AggregateNavigationInterceptor(interceptors)
             val containerOperation = interceptor.intercept(
                 operation = operation,
             )
@@ -61,20 +70,6 @@ public class NavigationContainer internal constructor(
                 return@transitionBlock
             }
             NavigationResultChannel.registerResults(transition)
-            if (transition.targetBackstack.isEmpty()) {
-                error(
-                    "NavigationContainer backstack cannot be empty; transition was ${
-                    buildString {
-                        append(
-                            transition.currentBackstack.map { it.key.toString() }
-                        )
-                        append(" -> ")
-                        append(
-                            transition.targetBackstack.map { it.key.toString() }
-                        )
-                    }
-                }")
-            }
             mutableBackstack.value = transition.targetBackstack
         }.apply {
             executionMutex.unlock(this@NavigationContainer)

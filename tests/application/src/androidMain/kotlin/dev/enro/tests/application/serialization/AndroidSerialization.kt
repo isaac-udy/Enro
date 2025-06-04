@@ -29,8 +29,8 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.core.requestClose
 import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.EmptyBehavior
 import dev.enro.ui.NavigationDisplay
-import dev.enro.ui.destinations.EmptyNavigationKey
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
@@ -166,7 +166,8 @@ data class ParcelableAndSerializableData(
 @Composable
 fun AndroidSerializationScreen() {
     val container = rememberNavigationContainer(
-        backstack = listOf(EmptyNavigationKey.asInstance()),
+        backstack = listOf(),
+        emptyBehavior = EmptyBehavior.preventEmpty(),
     )
 
     TitledColumn("Android Serialization") {
