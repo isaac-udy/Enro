@@ -5,9 +5,9 @@ import androidx.compose.runtime.Stable
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.serialization.unwrapForSerialization
 import dev.enro.serialization.wrapForSerialization
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
@@ -73,8 +73,8 @@ public interface NavigationKey {
     @Immutable
     @Serializable
     @ConsistentCopyVisibility
-    public data class Instance<T : NavigationKey> internal constructor(
-        public val key: T,
+    public data class Instance<out T : NavigationKey> internal constructor(
+        @Polymorphic public val key: T,
         public val id: String = Uuid.random().toString(),
         public val metadata: Metadata = Metadata(),
     ) {

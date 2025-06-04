@@ -2,6 +2,7 @@ package dev.enro.controller.repository
 
 import androidx.savedstate.serialization.ClassDiscriminatorMode
 import androidx.savedstate.serialization.SavedStateConfiguration
+import dev.enro.NavigationKey
 import dev.enro.result.NavigationResultChannel
 import dev.enro.result.flow.FlowStep
 import dev.enro.serialization.WrappedBoolean
@@ -18,9 +19,11 @@ import dev.enro.serialization.WrappedSet
 import dev.enro.serialization.WrappedShort
 import dev.enro.serialization.WrappedString
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.NothingSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 import kotlinx.serialization.modules.plus
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -48,6 +51,9 @@ internal class SerializerRepository {
                 subclass(FlowStep.serializer(NothingSerializer()))
                 subclass(NavigationResultChannel.Id.serializer())
             }
+            contextual<NavigationKey.Instance<NavigationKey>>(
+                NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class))
+            )
         }
         private set
 
@@ -58,6 +64,7 @@ internal class SerializerRepository {
         }
         private set
 
+    @OptIn(ExperimentalSerializationApi::class)
     var jsonConfiguration: Json =
         Json {
             serializersModule += this@SerializerRepository.serializersModule
