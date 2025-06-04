@@ -18,6 +18,7 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationBinding
 import dev.enro.processor.domain.DestinationReference
 import dev.enro.processor.extensions.EnroLocation
+import dev.enro.processor.extensions.toDisplayString
 
 object NavigationDestinationGenerator {
 
@@ -28,6 +29,22 @@ object NavigationDestinationGenerator {
         declaration: KSDeclaration,
     ) {
         val destination = DestinationReference(resolver, declaration)
+
+        if (destination.isProperty) {
+            val propertyClassDeclaration = destination.keyTypeFromPropertyProvider
+            if (propertyClassDeclaration == null) {
+                environment.logger.error("Cannot find property type for ${declaration.simpleName.asString()}")
+                return
+            }
+            val propertyType = propertyClassDeclaration
+            if (!destination.keyType.asStarProjectedType().isAssignableFrom(propertyType)) {
+                environment.logger.error(
+                    message = "${declaration.simpleName.asString()} is annotated with @NavigationDestination(${destination.keyType.toDisplayString()}::class) but is a NavigationDestinationProvider<${propertyType.toDisplayString()}>",
+                    symbol = declaration,
+                )
+                return
+            }
+        }
 
         val typeSpec = TypeSpec.classBuilder(destination.bindingName)
             .addModifiers(KModifier.PUBLIC)

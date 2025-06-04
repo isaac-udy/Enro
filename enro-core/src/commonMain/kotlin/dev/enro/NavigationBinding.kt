@@ -1,9 +1,9 @@
 package dev.enro
 
+import dev.enro.serialization.serializerForNavigationKey
 import dev.enro.ui.NavigationDestinationProvider
 import kotlinx.serialization.modules.SerializersModuleBuilder
 import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
 
 public class NavigationBinding<K : NavigationKey> @PublishedApi internal constructor(
@@ -27,15 +27,16 @@ public class NavigationBinding<K : NavigationKey> @PublishedApi internal constru
             provider: NavigationDestinationProvider<K>,
             isPlatformOverride: Boolean = false,
         ): NavigationBinding<K> {
+            val serializer = serializerForNavigationKey<K>()
             return NavigationBinding(
                 keyType = K::class,
                 serializerModule = {
-                    contextual(K::class, serializer<K>())
+                    contextual(K::class, serializer)
                     polymorphic(Any::class) {
-                        subclass(K::class, serializer<K>())
+                        subclass(K::class, serializer)
                     }
                     polymorphic(NavigationKey::class) {
-                        subclass(K::class, serializer<K>())
+                        subclass(K::class, serializer)
                     }
                 },
                 provider = provider,

@@ -8,6 +8,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.ksp.toAnnotationSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import dev.enro.annotations.NavigationDestination
@@ -39,6 +40,30 @@ class DestinationReference(
         val providerType = resolver.getClassDeclarationByName("dev.enro.ui.NavigationDestinationProvider")!!.asStarProjectedType()
         providerType.isAssignableFrom(type.starProjection())
     }
+
+    val keyTypeFromPropertyProvider: KSType? = run {
+        if (!isProperty) return@run null
+        val type = (declaration as KSPropertyDeclaration).type.resolve()
+        val providerDeclaration = type.declaration as? KSClassDeclaration
+        if (providerDeclaration == null) return@run null
+
+        if (providerDeclaration.qualifiedName?.asString() == "dev.enro.ui.NavigationDestinationProvider") {
+            return@run type.arguments.firstOrNull()?.type?.resolve()?.starProjection()
+        }
+
+        providerDeclaration.superTypes
+            .firstOrNull {
+                val resolved = it.resolve()
+                resolved.declaration.qualifiedName?.asString() == "dev.enro.ui.NavigationDestinationProvider"
+            }
+            ?.resolve()
+            ?.arguments
+            ?.firstOrNull()
+            ?.type
+            ?.resolve()
+            ?.starProjection()
+    }
+    
     val isFunction = declaration is KSFunctionDeclaration
 
     val isComposable = declaration is KSFunctionDeclaration && declaration.annotations

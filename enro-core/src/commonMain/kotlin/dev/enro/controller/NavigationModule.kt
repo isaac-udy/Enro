@@ -6,6 +6,7 @@ import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.path.NavigationPathBinding
+import dev.enro.platform.EnroLog
 import dev.enro.plugin.NavigationPlugin
 import dev.enro.ui.NavigationDestinationProvider
 import kotlinx.serialization.modules.EmptySerializersModule
@@ -51,14 +52,13 @@ public class NavigationModule @PublishedApi internal constructor() {
         public inline fun <reified K: NavigationKey> destination(
             destination: NavigationDestinationProvider<K>,
         ) {
-            binding(
-                binding = NavigationBinding.create<K>(destination)
-            )
+            binding(binding = NavigationBinding.create<K>(destination))
         }
 
         public fun path(path: NavigationPathBinding<*>) {
             module.paths.add(path)
         }
+
         public fun serializersModule(serializersModule: SerializersModule) {
             module.serializers += serializersModule
         }

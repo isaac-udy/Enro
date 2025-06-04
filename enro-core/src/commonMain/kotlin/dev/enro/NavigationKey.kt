@@ -74,7 +74,7 @@ public interface NavigationKey {
     @Serializable
     @ConsistentCopyVisibility
     public data class Instance<T : NavigationKey> internal constructor(
-        public val key: @Contextual T,
+        public val key: T,
         public val id: String = Uuid.random().toString(),
         public val metadata: Metadata = Metadata(),
     ) {

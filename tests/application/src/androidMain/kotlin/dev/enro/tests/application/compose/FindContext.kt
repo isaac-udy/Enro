@@ -38,10 +38,8 @@ import dev.enro.core.container.accept
 import dev.enro.core.present
 import dev.enro.core.push
 import dev.enro.core.requestClose
-import dev.enro.serialization.NavigationKeyParceler
 import dev.enro.ui.LocalNavigationContainer
 import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.WriteWith
 import kotlin.reflect.KClass
 
 @Parcelize
@@ -72,7 +70,7 @@ object FindContext : Parcelable, NavigationKey.SupportsPush {
     internal object Find : Parcelable, NavigationKey.SupportsPresent
 
     @Parcelize
-    internal class FindResult(val found: @WriteWith<NavigationKeyParceler.Nullable> NavigationKey?) : Parcelable, NavigationKey.SupportsPresent
+    internal class FindResult(val found: NavigationKey) : Parcelable, NavigationKey.SupportsPresent
 }
 
 @NavigationDestination(FindContext::class)

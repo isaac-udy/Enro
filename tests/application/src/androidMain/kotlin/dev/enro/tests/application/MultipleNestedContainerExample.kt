@@ -10,14 +10,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.enro.annotations.NavigationDestination
-import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
 import dev.enro.navigationHandle
 import dev.enro.open
+import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.destinations.EmptyNavigationKey
 import dev.enro.ui.rememberNavigationContainer
 import dev.enro.viewmodel.createEnroViewModel
 import kotlinx.serialization.Serializable
@@ -98,7 +99,7 @@ fun ChildKeyScreen() {
     }
     val saved = rememberSaveable { Uuid.random() }
     val container = rememberNavigationContainer(
-        backstack = listOf(EmptyKey().asInstance())
+        backstack = listOf(EmptyNavigationKey.asInstance())
     )
     TitledColumn(
         title = "Child Key",

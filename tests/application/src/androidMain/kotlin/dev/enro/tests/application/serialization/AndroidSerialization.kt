@@ -363,12 +363,12 @@ fun DisplaySerializedDataScreen() {
                             ).toString()
                         }
                         is AndroidSerialization.SerializedData.NavigationInstanceJson -> {
-                            EnroController.jsonConfiguration.decodeFromString<NavigationKey.Instance<*>>(
+                            EnroController.jsonConfiguration.decodeFromString<NavigationKey.Instance<NavigationKey>>(
                                 string = encodedData.data,
                             ).toString()
                         }
                         is AndroidSerialization.SerializedData.NavigationInstanceSavedState -> {
-                            decodeFromSavedState<NavigationKey.Instance<*>>(
+                            decodeFromSavedState<NavigationKey.Instance<NavigationKey>>(
                                 savedState = encodedData.data,
                                 configuration = EnroController.savedStateConfiguration,
                             ).toString()

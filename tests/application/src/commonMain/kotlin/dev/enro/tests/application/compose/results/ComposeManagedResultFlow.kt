@@ -141,7 +141,7 @@ fun FirstResultScreen() {
 }
 
 @NavigationDestination(ComposeManagedResultFlow.PresentedResult::class)
-val presentedResultScreen = navigationDestination<ComposeManagedResultFlow>(
+internal val presentedResultScreen = navigationDestination<ComposeManagedResultFlow.PresentedResult>(
     metadata = mapOf(DirectOverlaySceneStrategy.overlay())
 ) {
     val navigation = navigationHandle<ComposeManagedResultFlow.PresentedResult>()
