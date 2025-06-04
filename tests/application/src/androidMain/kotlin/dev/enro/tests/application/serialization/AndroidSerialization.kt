@@ -20,32 +20,31 @@ import androidx.savedstate.SavedState
 import androidx.savedstate.serialization.decodeFromSavedState
 import androidx.savedstate.serialization.encodeToSavedState
 import androidx.savedstate.serialization.serializers.SavedStateSerializer
+import dev.enro.EnroController
+import dev.enro.NavigationKey
+import dev.enro.NavigationOperation
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.asPush
+import dev.enro.asInstance
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.backstackOf
-import dev.enro.core.container.setBackstack
-import dev.enro.core.controller.NavigationController
-import dev.enro.core.push
 import dev.enro.core.requestClose
+import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.destinations.EmptyNavigationKey
+import dev.enro.ui.rememberNavigationContainer
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
 
 @Serializable
-object AndroidSerialization : NavigationKey.SupportsPush {
+object AndroidSerialization : NavigationKey {
     @Parcelize
     data class ParcelableNavigationKey(
         val name: String,
         val parcelableData: ParcelableData,
         val generalData: ParcelableAndSerializableData,
-    ) : Parcelable, NavigationKey.SupportsPush {
+    ) : Parcelable, NavigationKey {
         companion object {
             fun createRandom(): ParcelableNavigationKey {
                 return ParcelableNavigationKey(
@@ -76,7 +75,7 @@ object AndroidSerialization : NavigationKey.SupportsPush {
         val name: String,
         val serializableData: SerializableData,
         val generalData: ParcelableAndSerializableData,
-    ) : NavigationKey.SupportsPush {
+    ) : NavigationKey {
         companion object {
             fun createRandom(): SerializableNavigationKey {
                 return SerializableNavigationKey(
@@ -105,7 +104,7 @@ object AndroidSerialization : NavigationKey.SupportsPush {
     @Serializable
     class DisplaySerializedData(
         val serializedData: SerializedData,
-    ) : NavigationKey.SupportsPush
+    ) : NavigationKey
 
     @Serializable
     sealed interface SerializedData {
@@ -120,12 +119,12 @@ object AndroidSerialization : NavigationKey.SupportsPush {
         ) : SerializedData
 
         @Serializable
-        class NavigationInstructionJson(
+        class NavigationInstanceJson(
             val data: String,
         ) : SerializedData
 
         @Serializable
-        class NavigationInstructionSavedState(
+        class NavigationInstanceSavedState(
             val data: @Serializable(with = SavedStateSerializer::class) SavedState,
         ) : SerializedData
     }
@@ -149,7 +148,7 @@ data class SerializableData(
     val float: Float,
     val double: Double,
     val long: Long,
-) : NavigationKey.SupportsPush
+) : NavigationKey
 
 @Parcelize
 @Serializable
@@ -160,31 +159,31 @@ data class ParcelableAndSerializableData(
     val float: Float,
     val double: Double,
     val long: Long,
-) : Parcelable, NavigationKey.SupportsPush
+) : Parcelable, NavigationKey
 
 
 @NavigationDestination(AndroidSerialization::class)
 @Composable
 fun AndroidSerializationScreen() {
     val container = rememberNavigationContainer(
-        emptyBehavior = EmptyBehavior.CloseParent,
+        backstack = listOf(EmptyNavigationKey.asInstance()),
     )
 
     TitledColumn("Android Serialization") {
         Button(
             onClick = {
-                container.setBackstack {
-                    backstackOf(AndroidSerialization.ParcelableNavigationKey.createRandom().asPush())
-                }
+                container.execute(NavigationOperation {
+                    listOf(AndroidSerialization.ParcelableNavigationKey.createRandom().asInstance())
+                })
             }
         ) {
             Text("Open Parcelable")
         }
         Button(
             onClick = {
-                container.setBackstack {
-                    backstackOf(AndroidSerialization.SerializableNavigationKey.createRandom().asPush())
-                }
+                container.execute(NavigationOperation {
+                    listOf(AndroidSerialization.SerializableNavigationKey.createRandom().asInstance())
+                })
             }
         ) {
             Text("Open Serializable")
@@ -193,7 +192,7 @@ fun AndroidSerializationScreen() {
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            container.Render()
+            NavigationDisplay(container)
         }
     }
 }
@@ -207,10 +206,10 @@ fun ParcelableNavigationKeyScreen() {
     TitledColumn("Parcelable") {
         Button(
             onClick = {
-                navigation.push(
+                navigation.open(
                     AndroidSerialization.DisplaySerializedData(
                         AndroidSerialization.SerializedData.NavigationKeyJson(
-                            data = NavigationController.jsonConfiguration.encodeToString(navigation.key)
+                            data = EnroController.jsonConfiguration.encodeToString(navigation.key)
                         )
                     )
                 )
@@ -224,10 +223,10 @@ fun ParcelableNavigationKeyScreen() {
                 // TODO the encodeToSavedState doesn't work here unless a type is specified
                 // encodeToSavedState<NavigationKey>(...) works, but encodeToSavedState(...) doesn't
                 // and will crash; need to understand why that's happening
-                navigation.push(
+                navigation.open(
                     AndroidSerialization.DisplaySerializedData(
                         AndroidSerialization.SerializedData.NavigationKeySavedState(
-                            data = encodeToSavedState<NavigationKey>(navigation.key, NavigationController.savedStateConfiguration)
+                            data = encodeToSavedState<NavigationKey>(navigation.key, EnroController.savedStateConfiguration)
                         )
                     )
                 )
@@ -238,10 +237,10 @@ fun ParcelableNavigationKeyScreen() {
 
         Button(
             onClick = {
-                navigation.push(
+                navigation.open(
                     AndroidSerialization.DisplaySerializedData(
-                        AndroidSerialization.SerializedData.NavigationInstructionJson(
-                            data = NavigationController.jsonConfiguration.encodeToString(navigation.instruction)
+                        AndroidSerialization.SerializedData.NavigationInstanceJson(
+                            data = EnroController.jsonConfiguration.encodeToString(navigation.instance)
                         )
                     )
                 )
@@ -252,10 +251,10 @@ fun ParcelableNavigationKeyScreen() {
 
         Button(
             onClick = {
-                navigation.push(
+                navigation.open(
                     AndroidSerialization.DisplaySerializedData(
-                        AndroidSerialization.SerializedData.NavigationInstructionSavedState(
-                            data = encodeToSavedState(navigation.instruction, NavigationController.savedStateConfiguration)
+                        AndroidSerialization.SerializedData.NavigationInstanceSavedState(
+                            data = encodeToSavedState(navigation.instance, EnroController.savedStateConfiguration)
                         )
                     )
                 )
@@ -273,10 +272,10 @@ fun SerializableNavigationKeyScreen() {
     TitledColumn("Serializable") {
         Button(
             onClick = {
-                navigation.push(
+                navigation.open(
                     AndroidSerialization.DisplaySerializedData(
                         AndroidSerialization.SerializedData.NavigationKeyJson(
-                            data = NavigationController.jsonConfiguration.encodeToString(navigation.key)
+                            data = EnroController.jsonConfiguration.encodeToString(navigation.key)
                         )
                     )
                 )
@@ -287,10 +286,10 @@ fun SerializableNavigationKeyScreen() {
 
         Button(
             onClick = {
-                navigation.push(
+                navigation.open(
                     AndroidSerialization.DisplaySerializedData(
                         AndroidSerialization.SerializedData.NavigationKeySavedState(
-                            data = encodeToSavedState<NavigationKey>(navigation.key, NavigationController.savedStateConfiguration)
+                            data = encodeToSavedState<NavigationKey>(navigation.key, EnroController.savedStateConfiguration)
                         )
                     )
                 )
@@ -301,10 +300,10 @@ fun SerializableNavigationKeyScreen() {
 
         Button(
             onClick = {
-                navigation.push(
+                navigation.open(
                     AndroidSerialization.DisplaySerializedData(
-                        AndroidSerialization.SerializedData.NavigationInstructionJson(
-                            data = NavigationController.jsonConfiguration.encodeToString(navigation.instruction)
+                        AndroidSerialization.SerializedData.NavigationInstanceJson(
+                            data = EnroController.jsonConfiguration.encodeToString(navigation.instance)
                         )
                     )
                 )
@@ -315,10 +314,10 @@ fun SerializableNavigationKeyScreen() {
 
         Button(
             onClick = {
-                navigation.push(
+                navigation.open(
                     AndroidSerialization.DisplaySerializedData(
-                        AndroidSerialization.SerializedData.NavigationInstructionSavedState(
-                            data = encodeToSavedState(navigation.instruction, NavigationController.savedStateConfiguration)
+                        AndroidSerialization.SerializedData.NavigationInstanceSavedState(
+                            data = encodeToSavedState(navigation.instance, EnroController.savedStateConfiguration)
                         )
                     )
                 )
@@ -342,8 +341,8 @@ fun DisplaySerializedDataScreen() {
         if (decodedData == null) {
             Text("Encoded:")
             val encodedString = when (encodedData) {
-                is AndroidSerialization.SerializedData.NavigationInstructionJson -> encodedData.data.toString()
-                is AndroidSerialization.SerializedData.NavigationInstructionSavedState -> encodedData.data.toString()
+                is AndroidSerialization.SerializedData.NavigationInstanceJson -> encodedData.data.toString()
+                is AndroidSerialization.SerializedData.NavigationInstanceSavedState -> encodedData.data.toString()
                 is AndroidSerialization.SerializedData.NavigationKeyJson -> encodedData.data.toString()
                 is AndroidSerialization.SerializedData.NavigationKeySavedState -> encodedData.data.toString()
             }
@@ -353,25 +352,25 @@ fun DisplaySerializedDataScreen() {
                 onClick = {
                     decodedData = when (encodedData) {
                         is AndroidSerialization.SerializedData.NavigationKeyJson -> {
-                            NavigationController.jsonConfiguration.decodeFromString<NavigationKey>(
+                            EnroController.jsonConfiguration.decodeFromString<NavigationKey>(
                                 string = encodedData.data,
                             ).toString()
                         }
                         is AndroidSerialization.SerializedData.NavigationKeySavedState -> {
                             decodeFromSavedState<NavigationKey>(
                                 savedState = encodedData.data,
-                                configuration = NavigationController.savedStateConfiguration,
+                                configuration = EnroController.savedStateConfiguration,
                             ).toString()
                         }
-                        is AndroidSerialization.SerializedData.NavigationInstructionJson -> {
-                            NavigationController.jsonConfiguration.decodeFromString<AnyOpenInstruction>(
+                        is AndroidSerialization.SerializedData.NavigationInstanceJson -> {
+                            EnroController.jsonConfiguration.decodeFromString<NavigationKey.Instance<*>>(
                                 string = encodedData.data,
                             ).toString()
                         }
-                        is AndroidSerialization.SerializedData.NavigationInstructionSavedState -> {
-                            decodeFromSavedState<AnyOpenInstruction>(
+                        is AndroidSerialization.SerializedData.NavigationInstanceSavedState -> {
+                            decodeFromSavedState<NavigationKey.Instance<*>>(
                                 savedState = encodedData.data,
-                                configuration = NavigationController.savedStateConfiguration,
+                                configuration = EnroController.savedStateConfiguration,
                             ).toString()
                         }
                     }

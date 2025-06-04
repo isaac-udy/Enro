@@ -1,4 +1,4 @@
-package dev.enro3.ui.decorators
+package dev.enro.ui.decorators
 
 import androidx.compose.runtime.Composable
 

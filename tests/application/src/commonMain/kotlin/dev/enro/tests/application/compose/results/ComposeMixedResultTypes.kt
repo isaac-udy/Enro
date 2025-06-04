@@ -8,32 +8,33 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationKey
-import dev.enro.core.closeWithResult
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.result.registerForNavigationResult
+import dev.enro.complete
+import dev.enro.navigationHandle
+import dev.enro.result.open
+import dev.enro.result.registerForNavigationResult
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.viewmodel.createEnroViewModel
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
 @Serializable
-object ComposeMixedResultTypes : NavigationKey.SupportsPush {
+object ComposeMixedResultTypes : NavigationKey {
     @Serializable
-    internal class StringResult : NavigationKey.SupportsPush.WithResult<String>
+    internal class StringResult : NavigationKey.WithResult<String>
 
     @Serializable
-    internal class IntResult : NavigationKey.SupportsPush.WithResult<Int>
+    internal class IntResult : NavigationKey.WithResult<Int>
 
     @Serializable
-    internal class ListOfStringResult : NavigationKey.SupportsPush.WithResult<List<String>>
+    internal class ListOfStringResult : NavigationKey.WithResult<List<String>>
 
     @Serializable
-    internal class BooleanResult : NavigationKey.SupportsPush.WithResult<Boolean>
+    internal class BooleanResult : NavigationKey.WithResult<Boolean>
 
     @Serializable
-    internal class AnotherObjectResult : NavigationKey.SupportsPush.WithResult<AnotherObject>
+    internal class AnotherObjectResult : NavigationKey.WithResult<AnotherObject>
 }
 
 data class AnotherObject(
@@ -77,31 +78,31 @@ fun ComposeMixedResultTypesScreen() {
         Text("Current result: ${viewModel.currentResult}")
 
         Button(
-            onClick = { viewModel.stringChannel.push(ComposeMixedResultTypes.StringResult()) }
+            onClick = { viewModel.stringChannel.open(ComposeMixedResultTypes.StringResult()) }
         ) {
             Text("Get Result: String")
         }
 
         Button(
-            onClick = { viewModel.intChannel.push(ComposeMixedResultTypes.IntResult()) }
+            onClick = { viewModel.intChannel.open(ComposeMixedResultTypes.IntResult()) }
         ) {
             Text("Get Result: Int")
         }
 
         Button(
-            onClick = { viewModel.listOfStringChannel.push(ComposeMixedResultTypes.ListOfStringResult()) }
+            onClick = { viewModel.listOfStringChannel.open(ComposeMixedResultTypes.ListOfStringResult()) }
         ) {
             Text("Get Result: List<String>")
         }
 
         Button(
-            onClick = { viewModel.booleanChannel.push(ComposeMixedResultTypes.BooleanResult()) }
+            onClick = { viewModel.booleanChannel.open(ComposeMixedResultTypes.BooleanResult()) }
         ) {
             Text("Get Result: Boolean")
         }
 
         Button(
-            onClick = { viewModel.anotherObjectChannel.push(ComposeMixedResultTypes.AnotherObjectResult()) }
+            onClick = { viewModel.anotherObjectChannel.open(ComposeMixedResultTypes.AnotherObjectResult()) }
         ) {
             Text("Get Result: AnotherObject")
         }
@@ -114,7 +115,7 @@ fun StringResultScreen() {
     val navigation = navigationHandle<ComposeMixedResultTypes.StringResult>()
     TitledColumn("StringResult") {
         Button(
-            onClick = { navigation.closeWithResult("\"This is a String\"") }
+            onClick = { navigation.complete("\"This is a String\"") }
         ) {
             Text("Send Result")
         }
@@ -127,7 +128,7 @@ fun IntResultScreen() {
     val navigation = navigationHandle<ComposeMixedResultTypes.IntResult>()
     TitledColumn("IntResult") {
         Button(
-            onClick = { navigation.closeWithResult(1) }
+            onClick = { navigation.complete(1) }
         ) {
             Text("Send Result")
         }
@@ -140,7 +141,7 @@ fun ListOfStringResultScreen() {
     val navigation = navigationHandle<ComposeMixedResultTypes.ListOfStringResult>()
     TitledColumn("ListOfStringResult") {
         Button(
-            onClick = { navigation.closeWithResult(listOf("wow", "nice")) }
+            onClick = { navigation.complete(listOf("wow", "nice")) }
         ) {
             Text("Send Result")
         }
@@ -153,7 +154,7 @@ fun BooleanResultScreen() {
     val navigation = navigationHandle<ComposeMixedResultTypes.BooleanResult>()
     TitledColumn("BooleanResult") {
         Button(
-            onClick = { navigation.closeWithResult(true) }
+            onClick = { navigation.complete(true) }
         ) {
             Text("Send Result")
         }
@@ -166,7 +167,7 @@ fun AnotherObjectResultScreen() {
     val navigation = navigationHandle<ComposeMixedResultTypes.AnotherObjectResult>()
     TitledColumn("AnotherObjectResult") {
         Button(
-            onClick = { navigation.closeWithResult(AnotherObject()) }
+            onClick = { navigation.complete(AnotherObject()) }
         ) {
             Text("Send Result")
         }

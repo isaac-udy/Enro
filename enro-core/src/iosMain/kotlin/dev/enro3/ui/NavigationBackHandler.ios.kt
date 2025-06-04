@@ -1,4 +1,4 @@
-package dev.enro3.ui
+package dev.enro.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi

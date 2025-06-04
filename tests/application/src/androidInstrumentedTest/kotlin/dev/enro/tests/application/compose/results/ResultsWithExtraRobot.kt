@@ -4,14 +4,13 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import dev.enro.tests.application.waitForNavigationHandle
-import dev.enro.tests.application.compose.results.ResultsWithExtra
 
 class ResultsWithExtraRobot(
     val composeRule: ComposeTestRule
 ) {
     init {
         composeRule.waitForNavigationHandle {
-            it.key is ResultsWithExtra
+            it.key is ResultsWithMetadata
         }
     }
 
@@ -44,7 +43,7 @@ class ResultsWithExtraRobot(
     ) {
         init {
             composeRule.waitForNavigationHandle {
-                it.key is ResultsWithExtra.Sender
+                it.key is ResultsWithMetadata.Sender
             }
         }
 

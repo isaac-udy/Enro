@@ -12,11 +12,11 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeUIViewController
 import dev.enro.core.NavigationKey
-import dev.enro3.asInstance
-import dev.enro3.controller.NavigationModuleAction
-import dev.enro3.controller.internalCreateEnroController
-import dev.enro3.ui.NavigationDisplay
-import dev.enro3.ui.rememberNavigationContainer
+import dev.enro.asInstance
+import dev.enro.controller.NavigationModuleAction
+import dev.enro.controller.internalCreateEnroController
+import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.rememberNavigationContainer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

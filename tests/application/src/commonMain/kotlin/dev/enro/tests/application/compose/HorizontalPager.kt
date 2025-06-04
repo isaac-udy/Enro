@@ -6,25 +6,24 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import dev.enro.NavigationKey
+import dev.enro.accept
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationKey
-import dev.enro.core.compose.container.rememberNavigationContainerGroup
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.accept
-import dev.enro.core.push
+import dev.enro.asInstance
+import dev.enro.navigationHandle
+import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 @Serializable
-object HorizontalPager : NavigationKey.SupportsPush {
+object HorizontalPager : NavigationKey {
     @Serializable
-    internal class PageOne(val name: String) : NavigationKey.SupportsPush
+    internal class PageOne(val name: String) : NavigationKey
 
     @Serializable
-    internal class PageTwo(val name: String) : NavigationKey.SupportsPush
+    internal class PageTwo(val name: String) : NavigationKey
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -32,28 +31,30 @@ object HorizontalPager : NavigationKey.SupportsPush {
 @Composable
 fun HorizontalPagerCrossFadeScreen() {
     val pageOne = rememberNavigationContainer(
-        root = HorizontalPager.PageOne("Root"),
-        emptyBehavior = EmptyBehavior.CloseParent,
+        backstack = listOf(HorizontalPager.PageTwo("Root").asInstance()),
         filter = accept { key<HorizontalPager.PageOne>() }
     )
     val pageTwo = rememberNavigationContainer(
-        root = HorizontalPager.PageTwo("Root"),
-        emptyBehavior = EmptyBehavior.CloseParent,
+        backstack = listOf(HorizontalPager.PageTwo("Root").asInstance()),
         filter = accept { key<HorizontalPager.PageTwo>() }
     )
-    val containerGroup = rememberNavigationContainerGroup(pageOne, pageTwo)
-    val state = rememberPagerState { containerGroup.containers.size }
-    LaunchedEffect(containerGroup.activeContainer) {
-        val target = when (containerGroup.activeContainer) {
-            pageOne -> 0
-            else -> 1
-        }
-        if (target != state.currentPage) {
-            state.animateScrollToPage(target)
-        }
-    }
+    val state = rememberPagerState { 2 }
+//    LaunchedEffect(containerGroup.activeContainer) {
+//        val target = when (containerGroup.activeContainer) {
+//            pageOne -> 0
+//            else -> 1
+//        }
+//        if (target != state.currentPage) {
+//            state.animateScrollToPage(target)
+//        }
+//    }
     HorizontalPager(state = state) { page ->
-        containerGroup.containers[page].Render()
+        NavigationDisplay(
+            when (page) {
+                0 -> pageOne
+                else -> pageTwo
+            }
+        )
     }
 }
 
@@ -65,14 +66,14 @@ fun HorizontalPagerCrossFadePageOneScreen() {
         Text(text = "Id: ${navigation.key.name}")
         Button(
             onClick = {
-                navigation.push(HorizontalPager.PageOne((navigation.key.name.toIntOrNull() ?: 0).plus(1).toString()))
+                navigation.open(HorizontalPager.PageOne((navigation.key.name.toIntOrNull() ?: 0).plus(1).toString()))
             }
         ) {
             Text(text = "Next Page (one)")
         }
         Button(
             onClick = {
-                navigation.push(HorizontalPager.PageTwo((navigation.key.name.toIntOrNull() ?: 0).plus(1).toString()))
+                navigation.open(HorizontalPager.PageTwo((navigation.key.name.toIntOrNull() ?: 0).plus(1).toString()))
             }
         ) {
             Text(text = "Next Page (two)")
@@ -89,14 +90,14 @@ fun HorizontalPagerCrossFadePageTwoScreen() {
         Text(text = "Id: ${navigation.key.name}")
         Button(
             onClick = {
-                navigation.push(HorizontalPager.PageOne((navigation.key.name.toIntOrNull() ?: 0).plus(1).toString()))
+                navigation.open(HorizontalPager.PageOne((navigation.key.name.toIntOrNull() ?: 0).plus(1).toString()))
             }
         ) {
             Text(text = "Next Page (one)")
         }
         Button(
             onClick = {
-                navigation.push(HorizontalPager.PageTwo((navigation.key.name.toIntOrNull() ?: 0).plus(1).toString()))
+                navigation.open(HorizontalPager.PageTwo((navigation.key.name.toIntOrNull() ?: 0).plus(1).toString()))
             }
         ) {
             Text(text = "Next Page (two)")

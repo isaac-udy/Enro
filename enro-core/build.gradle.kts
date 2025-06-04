@@ -1,6 +1,5 @@
 plugins {
     id("com.google.devtools.ksp")
-    id("dagger.hilt.android.plugin")
     id("configure-library")
     id("configure-publishing")
     id("configure-compose")
@@ -38,9 +37,4 @@ kotlin {
             implementation(libs.kotlin.js)
         }
     }
-}
-
-dependencies {
-    ksp(libs.hilt.compiler)
-    ksp(libs.hilt.androidCompiler)
 }

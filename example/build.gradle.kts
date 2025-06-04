@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("com.google.devtools.ksp")
-    id("dagger.hilt.android.plugin")
     id("com.android.application")
     id("kotlin-android")
     id("kotlin-parcelize")
@@ -50,10 +49,6 @@ dependencies {
 
     implementation(libs.compose.material)
     implementation(libs.compose.accompanist.systemUiController)
-
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
-    kapt(libs.hilt.androidCompiler)
 
     debugImplementation(libs.leakcanary)
 

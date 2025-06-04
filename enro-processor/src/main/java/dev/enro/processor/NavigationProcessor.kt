@@ -38,12 +38,7 @@ class NavigationProcessor(
         val processedDestinations = destinations.filter { !processed.contains(it.qualifiedName?.asString()) }
             .onEach {
                 processed.add(it.qualifiedName?.asString().orEmpty())
-                NavigationDestinationGenerator.generateKotlin(
-                    environment = environment,
-                    resolver = resolver,
-                    declaration = it
-                )
-                dev.enro3.processor.generator.NavigationDestinationGenerator.generate(
+                NavigationDestinationGenerator.generate(
                     environment = environment,
                     resolver = resolver,
                     declaration = it
@@ -60,7 +55,7 @@ class NavigationProcessor(
         val bindingsToProcess = bindings.toList()
 
         if (!processed.contains("module")) {
-            NavigationModuleGenerator.generateKotlin(
+            NavigationModuleGenerator.generate(
                 environment = environment,
                 bindings = bindingsToProcess,
                 destinations = destinations,
@@ -75,14 +70,7 @@ class NavigationProcessor(
         }
 
         components.forEach {
-            NavigationComponentGenerator.generateKotlin(
-                environment = environment,
-                resolver = resolver,
-                declaration = it,
-                resolverModules = modules.toList(),
-                resolverBindings = destinations.toList(),
-            )
-            dev.enro3.processor.generator.NavigationComponentGenerator.generate(
+            NavigationComponentGenerator.generate(
                 environment = environment,
                 resolver = resolver,
                 declaration = it,

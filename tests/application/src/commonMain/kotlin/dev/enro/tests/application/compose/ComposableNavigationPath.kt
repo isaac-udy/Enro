@@ -2,10 +2,10 @@ package dev.enro.tests.application.compose
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.annotations.NavigationPath
-import dev.enro.core.NavigationKey
-import dev.enro.core.compose.navigationHandle
+import dev.enro.navigationHandle
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.serialization.Serializable
 
@@ -15,7 +15,7 @@ data class ComposableNavigationPath(
     val id: String,
     val name: String,
     val title: String? = null,
-) : NavigationKey.SupportsPresent {
+) : NavigationKey {
 
     @NavigationPath("/composable-with-path?title={title?}")
     constructor(

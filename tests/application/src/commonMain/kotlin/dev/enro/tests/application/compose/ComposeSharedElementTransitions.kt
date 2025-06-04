@@ -33,14 +33,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationKey
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.push
-import dev.enro.destination.compose.EnroSharedElements
+import dev.enro.asInstance
+import dev.enro.navigationHandle
+import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.LocalNavigationAnimatedVisibilityScope
+import dev.enro.ui.LocalNavigationSharedTransitionScope
+import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 data class SharedElementIcon(
@@ -59,23 +61,22 @@ val sharedElementIcons = listOf(
 )
 
 @Serializable
-object ComposeSharedElementTransitions : NavigationKey.SupportsPush {
+object ComposeSharedElementTransitions : NavigationKey {
     @Serializable
-    class List : NavigationKey.SupportsPush
+    class List : NavigationKey
     
     @Serializable
-    data class Detail(val iconId: Int) : NavigationKey.SupportsPush
+    data class Detail(val iconId: Int) : NavigationKey
 }
 
 @NavigationDestination(ComposeSharedElementTransitions::class)
 @Composable
 fun ComposableSharedElementTransitionsRootScreen() {
     val container = rememberNavigationContainer(
-        root = ComposeSharedElementTransitions.List(),
-        emptyBehavior = EmptyBehavior.CloseParent,
+        backstack = listOf(ComposeSharedElementTransitions.List().asInstance()),
     )
     Box(Modifier.fillMaxSize()) {
-        container.Render()
+        NavigationDisplay(container)
     }
 }
 
@@ -94,7 +95,7 @@ fun ComposeSharedElementTransitionsListScreen() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            navigation.push(ComposeSharedElementTransitions.Detail(icon.id))
+                            navigation.open(ComposeSharedElementTransitions.Detail(icon.id))
                         },
                     elevation = 2.dp
                 ) {
@@ -104,14 +105,14 @@ fun ComposeSharedElementTransitionsListScreen() {
                             .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        EnroSharedElements {
+                        with(LocalNavigationSharedTransitionScope.current) {
                             Image(
                                 imageVector = icon.icon,
                                 contentDescription = icon.title,
                                 modifier = Modifier
                                     .sharedElement(
                                         rememberSharedContentState(key = "icon_${icon.id}"),
-                                        animatedVisibilityScope = animatedVisibilityScope,
+                                        animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
                                     )
                                     .size(32.dp)
                                     .clip(CircleShape),
@@ -126,7 +127,7 @@ fun ComposeSharedElementTransitionsListScreen() {
                                     .padding(start = 16.dp)
                                     .sharedElement(
                                         rememberSharedContentState(key = "title_${icon.id}"),
-                                        animatedVisibilityScope = animatedVisibilityScope,
+                                        animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
                                     )
                             )
                         }
@@ -151,7 +152,7 @@ fun ComposeSharedElementTransitionsDetailScreen() {
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            EnroSharedElements {
+            with(LocalNavigationSharedTransitionScope.current) {
                 Text(
                     text = selectedIcon.title,
                     style = MaterialTheme.typography.h4,
@@ -165,7 +166,7 @@ fun ComposeSharedElementTransitionsDetailScreen() {
                     modifier = Modifier
                         .sharedElement(
                             rememberSharedContentState(key = "icon_${selectedIcon.id}"),
-                            animatedVisibilityScope = animatedVisibilityScope,
+                            animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
                         )
                         .size(200.dp)
                         .clip(CircleShape),

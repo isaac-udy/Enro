@@ -1,4 +1,4 @@
-package dev.enro3.platform
+package dev.enro.platform
 
 @PublishedApi
 internal actual object EnroLog {

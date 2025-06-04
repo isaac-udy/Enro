@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.asPush
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
@@ -35,10 +34,11 @@ fun ManagedFlowInComposableScreen() {
             key<ManagedFlowInComposable.DisplayUserInformation>()
         },
         interceptor = {
-            onResult<UserInformationFlow, UserInformation> { _, result ->
-                replaceCloseWith(
-                    ManagedFlowInComposable.DisplayUserInformation(result).asPush()
-                )
+            onCompleted<UserInformationFlow> {
+                TODO("replaceWith")
+//                replaceCloseWith(
+//                    ManagedFlowInComposable.DisplayUserInformation(result).asPush()
+//                )
             }
         }
     )

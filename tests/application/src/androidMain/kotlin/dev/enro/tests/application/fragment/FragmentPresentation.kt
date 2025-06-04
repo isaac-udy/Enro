@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -22,17 +23,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import dev.enro.annotations.NavigationDestination
+import dev.enro.asInstance
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.closeWithResult
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.fragment.container.navigationContainer
 import dev.enro.core.navigationHandle
 import dev.enro.core.present
 import dev.enro.core.result.registerForNavigationResult
 import dev.enro.tests.application.R
 import dev.enro.tests.application.activity.applyInsetsForContentView
+import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.rememberNavigationContainer
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import java.util.*
@@ -45,6 +47,7 @@ import java.util.*
  * - Testing result delivery for all these cases
  */
 @Serializable
+@Parcelize
 object FragmentPresentation : NavigationKey.SupportsPresent {
     @Parcelize
     @Serializable
@@ -77,18 +80,16 @@ object FragmentPresentation : NavigationKey.SupportsPresent {
 
 @NavigationDestination(FragmentPresentation::class)
 class FragmentPresentationActivity : androidx.appcompat.app.AppCompatActivity() {
-    private val container by navigationContainer(
-        containerId = R.id.fragment_container,
-        root = {
-            FragmentPresentation.Root
-        },
-        emptyBehavior = EmptyBehavior.CloseParent,
-    )
-
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_fragment_presentation)
+        setContent {
+            val container = rememberNavigationContainer(
+                backstack = listOf(FragmentPresentation.Root.asInstance()),
+            )
+            NavigationDisplay(container)
+        }
         applyInsetsForContentView()
     }
 }
@@ -286,57 +287,57 @@ class FragmentPresentationPresentable : Fragment() {
 @NavigationDestination(FragmentPresentation.PresentableActivity::class)
 class FragmentPresentationActivityPresentableActivity : androidx.appcompat.app.AppCompatActivity() {
     
-    val navigation by navigationHandle<FragmentPresentation.PresentableActivity>()
+//    val navigation by navigationHandle<FragmentPresentation.PresentableActivity>()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            setPadding(16, 16, 16, 16)
-            setBackgroundResource(R.color.white)
-        }
-        
-        // Add a title
-        val title = TextView(this).apply {
-            text = "Presentable Activity"
-            textSize = 24f
-            setPadding(16, 32, 16, 32)
-        }
-        layout.addView(title)
-        
-        // Add action buttons
-        layout.addView(Button(this).apply {
-            text = "Close"
-            setOnClickListener { navigation.close() }
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(0, 8, 0, 8)
-            }
-        })
-        
-        layout.addView(Button(this).apply {
-            text = "Close With Result"
-            setOnClickListener { 
-                navigation.closeWithResult(FragmentPresentation.TestResult())
-            }
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(0, 8, 0, 8)
-            }
-        })
-        
-        setContentView(layout)
-        applyInsetsForContentView()
+        TODO("ACTIVITY STUFF")
+//        val layout = LinearLayout(this).apply {
+//            orientation = LinearLayout.VERTICAL
+//            layoutParams = ViewGroup.LayoutParams(
+//                ViewGroup.LayoutParams.MATCH_PARENT,
+//                ViewGroup.LayoutParams.MATCH_PARENT
+//            )
+//            setPadding(16, 16, 16, 16)
+//            setBackgroundResource(R.color.white)
+//        }
+//
+//        // Add a title
+//        val title = TextView(this).apply {
+//            text = "Presentable Activity"
+//            textSize = 24f
+//            setPadding(16, 32, 16, 32)
+//        }
+//        layout.addView(title)
+//
+//        // Add action buttons
+//        layout.addView(Button(this).apply {
+//            text = "Close"
+//            setOnClickListener { navigation.close() }
+//            layoutParams = LinearLayout.LayoutParams(
+//                ViewGroup.LayoutParams.MATCH_PARENT,
+//                ViewGroup.LayoutParams.WRAP_CONTENT
+//            ).apply {
+//                setMargins(0, 8, 0, 8)
+//            }
+//        })
+//
+//        layout.addView(Button(this).apply {
+//            text = "Close With Result"
+//            setOnClickListener {
+//                navigation.closeWithResult(FragmentPresentation.TestResult())
+//            }
+//            layoutParams = LinearLayout.LayoutParams(
+//                ViewGroup.LayoutParams.MATCH_PARENT,
+//                ViewGroup.LayoutParams.WRAP_CONTENT
+//            ).apply {
+//                setMargins(0, 8, 0, 8)
+//            }
+//        })
+//
+//        setContentView(layout)
+//        applyInsetsForContentView()
     }
 }
 

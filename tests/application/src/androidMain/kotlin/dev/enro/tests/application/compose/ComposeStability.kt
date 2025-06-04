@@ -33,8 +33,6 @@ import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.push
 import dev.enro.core.container.setBackstack
-import dev.enro.core.onContainer
-import dev.enro.core.push
 import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.tests.application.compose.common.Stability
 import dev.enro.tests.application.compose.common.TitledColumn
@@ -54,7 +52,7 @@ object ComposeStability : Parcelable, NavigationKey.SupportsPush {
 
     @Parcelize
     internal data class Content(
-        val id: String = Uuid.random().toString()
+        val id: String = Uuid.random().toString(),
     ) : Parcelable, NavigationKey.SupportsPush {
         val childContainerKey get() = NavigationContainerKey.FromName(id)
         val testTag get() = "ComposeStabilityContent@$id"
@@ -72,7 +70,7 @@ class ComposeStabilityActivity : AppCompatActivity() {
             val navigation = navigationHandle<ComposeStability>()
             val containerGroup = rememberNavigationContainerGroup(
                 rememberNavigationContainer(
-                    key= ComposeStability.primaryContainer,
+                    key = ComposeStability.primaryContainer,
                     emptyBehavior = EmptyBehavior.AllowEmpty,
                     root = ComposeStability.Content(),
                 ),
@@ -90,28 +88,40 @@ class ComposeStabilityActivity : AppCompatActivity() {
                     horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
                     Button(
-                        onClick = { navigation.onContainer(ComposeStability.primaryContainer) { setActive() } }
+                        onClick = {
+                            TODO("CONTAINER ACTIVE STUFF")
+//                            navigation.onContainer(ComposeStability.primaryContainer) { setActive() }
+                        }
                     ) { Text("One") }
 
                     Button(
-                        onClick = { navigation.onContainer(ComposeStability.secondaryContainer) { setActive() } }
+                        onClick = {
+                            TODO("CONTAINER ACTIVE STUFF")
+//                            navigation.onContainer(ComposeStability.secondaryContainer) { setActive() }
+                        }
                     ) { Text("Two") }
 
                     Button(
-                        onClick = { navigation.onContainer(ComposeStability.tertiaryContainer) { setActive() } }
+                        onClick = {
+                            TODO("CONTAINER ACTIVE STUFF")
+//                            navigation.onContainer(ComposeStability.tertiaryContainer) { setActive() }
+                        }
                     ) { Text("Three") }
                 }
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
                     Button(
-                        onClick = { containerGroup.activeContainer.setBackstack { it.push(ComposeStability.Content()) } }
+                        onClick = {
+                            containerGroup.activeContainer.setBackstack { it.push(ComposeStability.Content()) }
+                        }
                     ) { Text("Push Root") }
 
                     Button(
                         onClick = {
-                            val childContext = containerGroup.activeContainer.childContext ?: return@Button
-                            childContext.navigationHandle.push(ComposeStability.Content())
+                            TODO("CONTEXT")
+//                            val childContext = containerGroup.activeContainer.childContext ?: return@Button
+//                            childContext.navigationHandle.push(ComposeStability.Content())
                         }
                     ) { Text("Push Child") }
                 }
@@ -128,7 +138,7 @@ class ComposeStabilityActivity : AppCompatActivity() {
 }
 
 class ComposeStabilityContentViewModel(
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val id: String = Uuid.random().toString()
     val saveStateHandleId = savedStateHandle.getStateFlow("savedStateId", Uuid.random().toString())

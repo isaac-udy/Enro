@@ -21,7 +21,10 @@ internal class ActivityCorrectNavigationKey : Parcelable, NavigationKey.Supports
 
 @NavigationDestination(ActivityCorrectNavigationKey::class)
 internal class ActivityWithIncorrectlyTypedNavigationHandle : AppCompatActivity() {
-    val navigationHandle by navigationHandle<IncorrectlyTypedNavigationKey>()
+//    val navigationHandle by navigationHandle<IncorrectlyTypedNavigationKey>()
+    init {
+        TODO("LINITING STUFF")
+    }
 }
 
 @Parcelize
@@ -46,7 +49,10 @@ fun ComposableWithIncorrectlyTypedNavigationHandle() {
 internal class MissingNavigationKey : Parcelable, NavigationKey.SupportsPush
 
 internal class ActivityWithMissingNavigationDestination : AppCompatActivity() {
-    val navigationHandle by navigationHandle<MissingNavigationKey>()
+//    val navigationHandle by navigationHandle<MissingNavigationKey>()
+    init {
+        TODO("LINTING STUFF")
+    }
 }
 
 

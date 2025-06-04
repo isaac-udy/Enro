@@ -2,8 +2,6 @@ package dev.enro.tests.application.compose
 
 import android.os.Parcelable
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,10 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import dev.enro.animation.direction
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationContainerKey
-import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
 import dev.enro.core.asPush
 import dev.enro.core.closeWithResult
@@ -112,7 +108,8 @@ fun MultiContainerBottomNavigationScreen() {
         root = BottomNavigation.SecondTab,
         filter = acceptNone(),
         emptyBehavior = remember { EmptyBehavior.Action {
-            firstContainer.setActive()
+//            firstContainer.setActive()
+            TODO("set active")
             true
         } } ,
     )
@@ -122,7 +119,8 @@ fun MultiContainerBottomNavigationScreen() {
         root = BottomNavigation.ThirdTab,
         filter = acceptNone(),
         emptyBehavior = remember { EmptyBehavior.Action {
-            firstContainer.setActive()
+//            firstContainer.setActive()
+            TODO("set active")
             true
         } },
     )
@@ -147,7 +145,7 @@ fun MultiContainerBottomNavigationScreen() {
             group.containers.forEach {
                 BottomNavigationItem(
                     selected = it == group.activeContainer,
-                    onClick = { it.setActive() },
+                    onClick = { group.setActive(it) },
                     label = { Text(it.key.name) },
                     icon = { Text((group.containers.indexOf(it) + 1).toString()) }
                 )
@@ -176,7 +174,7 @@ fun SingleContainerReplaceBottomNavigation() {
                 BottomNavigation.SecondTab,
                 BottomNavigation.ThirdTab,
             ).forEachIndexed { index, it ->
-                val activeKey = container.backstack.firstOrNull()?.navigationKey
+                val activeKey = container.backstack.firstOrNull()?.key
                 BottomNavigationItem(
                     selected = activeKey == it,
                     onClick = {
@@ -201,11 +199,12 @@ fun SingleContainerBackstackManipulationBottomNavigation() {
         filter = acceptNone(),
         emptyBehavior = EmptyBehavior.CloseParent,
         animations = {
-            direction(
-                direction = NavigationDirection.Push,
-                entering = fadeIn(),
-                exiting = fadeOut(),
-            )
+            TODO("ANIMATIONS")
+//            direction(
+//                direction = NavigationDirection.Push,
+//                entering = fadeIn(),
+//                exiting = fadeOut(),
+//            )
         },
     )
 
@@ -220,12 +219,12 @@ fun SingleContainerBackstackManipulationBottomNavigation() {
                 BottomNavigation.ThirdTab,
             )
             tabs.forEachIndexed { index, tabKey ->
-                val activeKey = container.backstack.lastOrNull()?.navigationKey
-
+                val activeKey = container.backstack.lastOrNull()?.key
+                val backstack = container.backstack
                 BottomNavigationItem(
                     selected = activeKey == tabKey,
                     onClick = {
-                        val matchingInstruction = container.backstack.firstOrNull { it.navigationKey == tabKey }
+                        val matchingInstruction = backstack.firstOrNull { it.key == tabKey }
                             ?: tabKey.asPush()
 
                         container.setBackstack {

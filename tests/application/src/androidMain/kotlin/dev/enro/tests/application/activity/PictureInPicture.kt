@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -15,15 +16,13 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationDestination
+import dev.enro.asInstance
 import dev.enro.core.NavigationKey
-import dev.enro.core.activity
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.push
 import dev.enro.core.requestClose
-import dev.enro.destination.compose.navigationContext
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.rememberNavigationContainer
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -42,8 +41,7 @@ class PictureInPictureActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val container = rememberNavigationContainer(
-                root = PictureInPicture.FirstChild(),
-                emptyBehavior = EmptyBehavior.CloseParent,
+                backstack = listOf(PictureInPicture.FirstChild().asInstance()),
             )
             Box(
                 modifier = Modifier.fillMaxSize()
@@ -59,7 +57,7 @@ class PictureInPictureActivity : AppCompatActivity() {
 @Composable
 fun PictureInPictureFirstChild() {
     val navigation = navigationHandle()
-    val navigationContext = navigationContext
+    val activity = LocalActivity.current as ComponentActivity
     TitledColumn(title = "Picture In Picture (First)") {
         Button(onClick = {
             navigation.push(PictureInPicture.SecondChild())
@@ -67,7 +65,7 @@ fun PictureInPictureFirstChild() {
             Text(text = "Push Second")
         }
         Button(onClick = {
-            navigationContext.activity.safeEnterPictureInPictureMode()
+            activity.safeEnterPictureInPictureMode()
         }) {
             Text(text = "Enter PiP")
         }
@@ -81,10 +79,10 @@ fun PictureInPictureFirstChild() {
 @Composable
 fun PictureInPictureSecondChild() {
     val navigation = navigationHandle()
-    val navigationContext = navigationContext
+    val activity = LocalActivity.current as ComponentActivity
     TitledColumn(title = "Picture In Picture (Second)") {
         Button(onClick = {
-            navigationContext.activity.safeEnterPictureInPictureMode()
+            activity.safeEnterPictureInPictureMode()
         }) {
             Text(text = "Enter PiP")
         }

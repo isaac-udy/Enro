@@ -19,31 +19,30 @@ import androidx.savedstate.SavedState
 import androidx.savedstate.serialization.decodeFromSavedState
 import androidx.savedstate.serialization.encodeToSavedState
 import androidx.savedstate.serialization.serializers.SavedStateSerializer
+import dev.enro.EnroController
+import dev.enro.NavigationKey
+import dev.enro.NavigationOperation
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.AnyOpenInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.asPush
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.backstackOf
-import dev.enro.core.container.setBackstack
-import dev.enro.core.controller.NavigationController
-import dev.enro.core.push
-import dev.enro.core.requestClose
+import dev.enro.asInstance
+import dev.enro.close
+import dev.enro.navigationHandle
+import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.destinations.EmptyNavigationKey
+import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
 import kotlin.uuid.Uuid
 
 @Serializable
-object CommonSerialization : NavigationKey.SupportsPush {
+object CommonSerialization : NavigationKey {
     @Serializable
     data class SerializableNavigationKey(
         val name: String,
         val serializableData: CommonSerializableData,
-    ) : NavigationKey.SupportsPush {
+    ) : NavigationKey {
         companion object {
             fun createRandom(): SerializableNavigationKey {
                 return SerializableNavigationKey(
@@ -64,7 +63,7 @@ object CommonSerialization : NavigationKey.SupportsPush {
     @Serializable
     class DisplaySerializedData(
         val serializedData: SerializedData,
-    ) : NavigationKey.SupportsPush
+    ) : NavigationKey
 
     @Serializable
     sealed interface SerializedData {
@@ -79,12 +78,12 @@ object CommonSerialization : NavigationKey.SupportsPush {
         ) : SerializedData
 
         @Serializable
-        class NavigationInstructionJson(
+        class NavigationInstanceJson(
             val data: String,
         ) : SerializedData
 
         @Serializable
-        class NavigationInstructionSavedState(
+        class NavigationInstanceSavedState(
             val data: @Serializable(with = SavedStateSerializer::class) SavedState,
         ) : SerializedData
     }
@@ -98,21 +97,21 @@ data class CommonSerializableData(
     val float: Float,
     val double: Double,
     val long: Long,
-) : NavigationKey.SupportsPush
+) : NavigationKey
 
 @NavigationDestination(CommonSerialization::class)
 @Composable
 fun CommonSerializationScreen() {
     val container = rememberNavigationContainer(
-        emptyBehavior = EmptyBehavior.CloseParent,
+        backstack = listOf(EmptyNavigationKey.asInstance())
     )
 
     TitledColumn("Common Serialization") {
         Button(
             onClick = {
-                container.setBackstack {
-                    backstackOf(CommonSerialization.SerializableNavigationKey.createRandom().asPush())
-                }
+                container.execute(NavigationOperation {
+                    listOf(CommonSerialization.SerializableNavigationKey.createRandom().asInstance())
+                })
             }
         ) {
             Text("Open Serializable")
@@ -121,7 +120,7 @@ fun CommonSerializationScreen() {
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            container.Render()
+            NavigationDisplay(container)
         }
     }
 }
@@ -133,10 +132,10 @@ fun CommonSerializableNavigationKeyScreen() {
     TitledColumn("Serializable") {
         Button(
             onClick = {
-                navigation.push(
+                navigation.open(
                     CommonSerialization.DisplaySerializedData(
                         CommonSerialization.SerializedData.NavigationKeyJson(
-                            data = NavigationController.jsonConfiguration.encodeToString(
+                            data = EnroController.jsonConfiguration.encodeToString(
                                 PolymorphicSerializer(NavigationKey::class),
                                 navigation.key
                             )
@@ -150,13 +149,13 @@ fun CommonSerializableNavigationKeyScreen() {
 
         Button(
             onClick = {
-                navigation.push(
+                navigation.open(
                     CommonSerialization.DisplaySerializedData(
                         CommonSerialization.SerializedData.NavigationKeySavedState(
                             data = encodeToSavedState<NavigationKey>(
                                 PolymorphicSerializer(NavigationKey::class),
                                 navigation.key,
-                                NavigationController.savedStateConfiguration
+                                EnroController.savedStateConfiguration
                             )
                         )
                     )
@@ -168,10 +167,10 @@ fun CommonSerializableNavigationKeyScreen() {
 
         Button(
             onClick = {
-                navigation.push(
+                navigation.open(
                     CommonSerialization.DisplaySerializedData(
-                        CommonSerialization.SerializedData.NavigationInstructionJson(
-                            data = NavigationController.jsonConfiguration.encodeToString(navigation.instruction)
+                        CommonSerialization.SerializedData.NavigationInstanceJson(
+                            data = EnroController.jsonConfiguration.encodeToString(navigation.instance)
                         )
                     )
                 )
@@ -182,10 +181,10 @@ fun CommonSerializableNavigationKeyScreen() {
 
         Button(
             onClick = {
-                navigation.push(
+                navigation.open(
                     CommonSerialization.DisplaySerializedData(
-                        CommonSerialization.SerializedData.NavigationInstructionSavedState(
-                            data = encodeToSavedState(navigation.instruction, NavigationController.savedStateConfiguration)
+                        CommonSerialization.SerializedData.NavigationInstanceSavedState(
+                            data = encodeToSavedState(navigation.instance, EnroController.savedStateConfiguration)
                         )
                     )
                 )
@@ -209,8 +208,8 @@ fun CommonDisplaySerializedDataScreen() {
         if (decodedData == null) {
             Text("Encoded:")
             val encodedString = when (encodedData) {
-                is CommonSerialization.SerializedData.NavigationInstructionJson -> encodedData.data.toString()
-                is CommonSerialization.SerializedData.NavigationInstructionSavedState -> encodedData.data.toString()
+                is CommonSerialization.SerializedData.NavigationInstanceJson -> encodedData.data.toString()
+                is CommonSerialization.SerializedData.NavigationInstanceSavedState -> encodedData.data.toString()
                 is CommonSerialization.SerializedData.NavigationKeyJson -> encodedData.data.toString()
                 is CommonSerialization.SerializedData.NavigationKeySavedState -> encodedData.data.toString()
             }
@@ -220,7 +219,7 @@ fun CommonDisplaySerializedDataScreen() {
                 onClick = {
                     decodedData = when (encodedData) {
                         is CommonSerialization.SerializedData.NavigationKeyJson -> {
-                            NavigationController.jsonConfiguration.decodeFromString(
+                            EnroController.jsonConfiguration.decodeFromString(
                                 deserializer = PolymorphicSerializer(NavigationKey::class),
                                 string = encodedData.data,
                             ).toString()
@@ -229,18 +228,18 @@ fun CommonDisplaySerializedDataScreen() {
                             decodeFromSavedState(
                                 deserializer = PolymorphicSerializer(NavigationKey::class),
                                 savedState = encodedData.data,
-                                configuration = NavigationController.savedStateConfiguration,
+                                configuration = EnroController.savedStateConfiguration,
                             ).toString()
                         }
-                        is CommonSerialization.SerializedData.NavigationInstructionJson -> {
-                            NavigationController.jsonConfiguration.decodeFromString<AnyOpenInstruction>(
+                        is CommonSerialization.SerializedData.NavigationInstanceJson -> {
+                            EnroController.jsonConfiguration.decodeFromString<NavigationKey.Instance<*>>(
                                 string = encodedData.data,
                             ).toString()
                         }
-                        is CommonSerialization.SerializedData.NavigationInstructionSavedState -> {
-                            decodeFromSavedState<AnyOpenInstruction>(
+                        is CommonSerialization.SerializedData.NavigationInstanceSavedState -> {
+                            decodeFromSavedState<NavigationKey.Instance<*>>(
                                 savedState = encodedData.data,
-                                configuration = NavigationController.savedStateConfiguration,
+                                configuration = EnroController.savedStateConfiguration,
                             ).toString()
                         }
                     }
@@ -256,7 +255,7 @@ fun CommonDisplaySerializedDataScreen() {
         }
         Button(
             onClick = {
-                navigation.requestClose()
+                navigation.close()
             }
         ) {
             Text("Close")

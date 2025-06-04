@@ -32,10 +32,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
 import dev.enro.tests.application.compose.common.TitledColumn
-import dev.enro3.NavigationKey
-import dev.enro3.navigationHandle
-import dev.enro3.open
-import dev.enro3.ui.navigationDestination
+import dev.enro.NavigationKey
+import dev.enro.navigationHandle
+import dev.enro.open
+import dev.enro.ui.navigationDestination
 import kotlinx.serialization.Serializable
 
 data class SharedElementIcon(

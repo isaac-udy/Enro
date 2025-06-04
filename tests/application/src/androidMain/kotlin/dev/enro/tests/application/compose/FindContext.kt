@@ -45,6 +45,7 @@ import dev.enro.core.push
 import dev.enro.core.requestClose
 import dev.enro.core.rootContext
 import dev.enro.destination.compose.navigationContext
+import dev.enro.ui.LocalNavigationContainer
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import kotlin.reflect.KClass
@@ -204,7 +205,7 @@ fun LeafDestination(
     color: Color,
     nextKey: NavigationKey.SupportsPush,
 ) {
-    val container = parentContainer
+    val container = LocalNavigationContainer.current
     val navigation = navigationHandle()
     Column(
         modifier = Modifier
@@ -220,7 +221,10 @@ fun LeafDestination(
             style = MaterialTheme.typography.caption,
         )
 
-        Button(onClick = { container?.setActive() }) {
+        Button(onClick = {
+            TODO("SET ACTIVE CONTAINER")
+//            container?.setActive()
+        }) {
             Text(
                 modifier = Modifier.testTag("set-active-$tagName"),
                 text = "Set Active",

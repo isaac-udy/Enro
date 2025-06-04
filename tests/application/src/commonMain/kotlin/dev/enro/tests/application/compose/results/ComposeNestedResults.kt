@@ -16,46 +16,46 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalWindowInfo
+import dev.enro.NavigationKey
+import dev.enro.accept
+import dev.enro.acceptNone
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationKey
-import dev.enro.core.closeWithResult
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.registerForNavigationResult
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.accept
-import dev.enro.core.container.acceptNone
-import dev.enro.core.push
-import dev.enro.core.requestClose
+import dev.enro.asInstance
+import dev.enro.close
+import dev.enro.complete
+import dev.enro.navigationHandle
+import dev.enro.open
+import dev.enro.result.open
+import dev.enro.result.registerForNavigationResult
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.tests.application.compose.common.TitledRow
+import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.destinations.EmptyNavigationKey
+import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 @Serializable
-object ComposeNestedResults : NavigationKey.SupportsPush {
+object ComposeNestedResults : NavigationKey {
     @Serializable
-    internal object Receiver : NavigationKey.SupportsPush
+    internal object Receiver : NavigationKey
 
     @Serializable
-    internal object NestedSenderContainer : NavigationKey.SupportsPush
+    internal object NestedSenderContainer : NavigationKey
 
     @Serializable
-    internal object Sender : NavigationKey.SupportsPush.WithResult<String>
+    internal object Sender : NavigationKey.WithResult<String>
 }
 
 @NavigationDestination(ComposeNestedResults::class)
 @Composable
 fun ComposeNestedResults() {
     val primary = rememberNavigationContainer(
-        root = ComposeNestedResults.Receiver,
-        emptyBehavior = EmptyBehavior.CloseParent,
+        backstack = listOf(ComposeNestedResults.Receiver.asInstance()),
         filter = acceptNone(),
     )
+    // TODO NEED TO SWAP CONTAINERS
     val secondary = rememberNavigationContainer(
-        emptyBehavior = EmptyBehavior.Action {
-            primary.setActive()
-            false
-        },
+        backstack = listOf(EmptyNavigationKey.asInstance()),
         filter = accept {
             key(ComposeNestedResults.NestedSenderContainer)
         }
@@ -102,7 +102,7 @@ fun ComposeNestedResultsReceiver() {
         onClosed = {
             result = "Closed"
         },
-        onResult = {
+        onCompleted = {
             result = it
         }
     )
@@ -127,10 +127,10 @@ fun ComposeNestedResultsReceiver() {
                 fontSize = captionSize,
             ),
         )
-        Button(onClick = { navigation.push(ComposeNestedResults.NestedSenderContainer) }) {
+        Button(onClick = { navigation.open(ComposeNestedResults.NestedSenderContainer) }) {
             Text(text = "Open Nested Sender Container")
         }
-        Button(onClick = { resultChannel.push(ComposeNestedResults.Sender) }) {
+        Button(onClick = { resultChannel.open(ComposeNestedResults.Sender) }) {
             Text(text = "Get Result")
         }
     }
@@ -140,14 +140,14 @@ fun ComposeNestedResultsReceiver() {
 @Composable
 fun ComposeNestedResultsNestedSenderContainer() {
     val container = rememberNavigationContainer(
-        emptyBehavior = EmptyBehavior.CloseParent,
+        backstack = listOf(EmptyNavigationKey.asInstance()),
         filter = accept {
             key(ComposeNestedResults.Sender)
         },
     )
     TitledColumn(title = "Nested Sender Container") {
         Box(modifier = Modifier.fillMaxSize()) {
-            container.Render()
+            NavigationDisplay(container)
         }
     }
 }
@@ -157,13 +157,13 @@ fun ComposeNestedResultsNestedSenderContainer() {
 fun ComposeNestedResultsSender() {
     val navigation = navigationHandle<ComposeNestedResults.Sender>()
     TitledColumn(title = "Sender")  {
-        Button(onClick = { navigation.closeWithResult("A") }) {
+        Button(onClick = { navigation.complete("A") }) {
             Text(text = "Send A")
         }
-        Button(onClick = { navigation.closeWithResult("B") }) {
+        Button(onClick = { navigation.complete("B") }) {
             Text(text = "Send B")
         }
-        Button(onClick = { navigation.requestClose() } ) {
+        Button(onClick = { navigation.close() } ) {
             Text(text = "Close")
         }
     }

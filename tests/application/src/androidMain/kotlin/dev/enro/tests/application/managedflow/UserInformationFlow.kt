@@ -21,11 +21,12 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.closeWithResult
-import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.present
-import dev.enro.destination.flow.managedFlowDestination
+import dev.enro.destination.synthetic.syntheticDestination
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.navigationDestination
+import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -54,17 +55,20 @@ internal class UserInformationFlow : Parcelable, NavigationKey.SupportsPush.With
 
 @OptIn(ExperimentalEnroApi::class)
 @NavigationDestination(UserInformationFlow::class)
-internal val userInformationFlow = managedFlowDestination<UserInformationFlow>()
-    .flow {
-        val name = push { UserInformationFlow.GetName() }
-        val email = push { UserInformationFlow.GetEmail() }
-        val age = push { UserInformationFlow.GetAge() }
-
-        UserInformation(name, email, age)
-    }
-    .onComplete { result ->
-        navigation.closeWithResult(result)
-    }
+internal val userInformationFlow = syntheticDestination<UserInformationFlow> {
+    TODO("implement managedFlowDestination")
+//    managedFlowDestination<UserInformationFlow>()
+//        .flow {
+//            val name = push { UserInformationFlow.GetName() }
+//            val email = push { UserInformationFlow.GetEmail() }
+//            val age = push { UserInformationFlow.GetAge() }
+//
+//            UserInformation(name, email, age)
+//        }
+//        .onComplete { result ->
+//            navigation.closeWithResult(result)
+//        }
+}
 
 @Composable
 @NavigationDestination(UserInformationFlow.GetName::class)
@@ -218,31 +222,30 @@ internal fun GetAgeScreen() {
     }
 }
 
-@Composable
 @NavigationDestination(UserInformationFlow.ErrorDialog::class)
-internal fun ErrorDialogScreen() {
+internal val errorDialogScreen = navigationDestination<UserInformationFlow.ErrorDialog>(
+    metadata = mapOf(DirectOverlaySceneStrategy.overlay()),
+) {
     val navigation = navigationHandle<UserInformationFlow.ErrorDialog>()
-    DialogDestination {
-        AlertDialog(
-            onDismissRequest = {
-                navigation.close()
-            },
-            title = {
-                Text("Error")
-            },
-            text = {
-                Text(navigation.key.message)
-            },
-            confirmButton = {
-                Button(
-                    modifier = Modifier.testTag("UserInformationFlow.ErrorDialog.OK"),
-                    onClick = {
-                        navigation.close()
-                    }
-                ) {
-                    Text("OK")
+    AlertDialog(
+        onDismissRequest = {
+            navigation.close()
+        },
+        title = {
+            Text("Error")
+        },
+        text = {
+            Text(navigation.key.message)
+        },
+        confirmButton = {
+            Button(
+                modifier = Modifier.testTag("UserInformationFlow.ErrorDialog.OK"),
+                onClick = {
+                    navigation.close()
                 }
+            ) {
+                Text("OK")
             }
-        )
-    }
+        }
+    )
 }

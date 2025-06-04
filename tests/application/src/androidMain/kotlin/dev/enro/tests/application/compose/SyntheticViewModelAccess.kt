@@ -14,7 +14,6 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.core.present
 import dev.enro.destination.synthetic.syntheticDestination
 import dev.enro.tests.application.compose.common.TitledColumn
-import dev.enro.viewmodel.requireViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -67,10 +66,11 @@ fun SyntheticViewModelAccessDestination() {
 // and trigger a side effect on that ViewModel
 @NavigationDestination(SyntheticViewModelAccess.AccessValidViewModel::class)
 internal val accessValidViewModel = syntheticDestination<SyntheticViewModelAccess.AccessValidViewModel> {
-    require(navigationContext.instruction?.navigationKey is SyntheticViewModelAccess)
-
-    navigationContext.requireViewModel<ViewModelForSyntheticViewModelAccess>()
-        .onViewModelAccessed()
+    TODO("NOT WORKING")
+//    require(navigationContext.instruction?.navigationKey is SyntheticViewModelAccess)
+//
+//    navigationContext.requireViewModel<ViewModelForSyntheticViewModelAccess>()
+//        .onViewModelAccessed()
 }
 
 class InvalidViewModel : ViewModel()
@@ -78,7 +78,8 @@ class InvalidViewModel : ViewModel()
 // This destination should throw an exception for attempting to access an invalid ViewModel
 @NavigationDestination(SyntheticViewModelAccess.AccessInvalidViewModel::class)
 internal val accessInvalidViewModel = syntheticDestination<SyntheticViewModelAccess.AccessInvalidViewModel> {
-    require(navigationContext.instruction?.navigationKey is SyntheticViewModelAccess)
-
-    navigationContext.requireViewModel<InvalidViewModel>()
+    TODO("NOT WORKING")
+//    require(navigationContext.instruction?.navigationKey is SyntheticViewModelAccess)
+//
+//    navigationContext.requireViewModel<InvalidViewModel>()
 }

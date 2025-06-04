@@ -20,11 +20,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.annotations.NavigationDestination
-import dev.enro3.NavigationKey
-import dev.enro3.navigationHandle
-import dev.enro3.open
-import dev.enro3.ui.navigationDestination
-import dev.enro3.viewmodel.createEnroViewModel
+import dev.enro.NavigationKey
+import dev.enro.navigationHandle
+import dev.enro.open
+import dev.enro.ui.navigationDestination
+import dev.enro.viewmodel.createEnroViewModel
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid

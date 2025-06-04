@@ -24,7 +24,6 @@ import dev.enro.core.compose.registerForNavigationResult
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.accept
-import dev.enro.core.navigationHandle
 import dev.enro.core.result.deliverResultFromPresent
 import dev.enro.core.result.deliverResultFromPush
 import dev.enro.tests.application.activity.applyInsetsForContentView
@@ -211,10 +210,11 @@ fun ComposeEmbeddedResultFlowOutsideContainerContainer() {
 @NavigationDestination(ComposeEmbeddedResultFlow.Activity::class)
 class ComposeEmbeddedResultFlowActivity : AppCompatActivity() {
 
-    private val navigation by navigationHandle<ComposeEmbeddedResultFlow.Activity>()
+//    private val navigation by navigationHandle<ComposeEmbeddedResultFlow.Activity>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
+        TODO("NAVIGATION HANDLES IN ACTIVITY")
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
@@ -226,28 +226,28 @@ class ComposeEmbeddedResultFlowActivity : AppCompatActivity() {
 
     @Composable
     private fun Content() {
-        TitledColumn(title = "Embedded Result Flow Activity") {
-            Button(onClick = {
-                navigation.deliverResultFromPresent(
-                    ComposeEmbeddedResultFlow.Activity(navigation.key.currentResult + "-> act x")
-                )
-            }) {
-                Text("Navigate Activity (x)")
-            }
-
-            Button(onClick = {
-                navigation.deliverResultFromPresent(
-                    ComposeEmbeddedResultFlow.Activity(navigation.key.currentResult + "-> act y")
-                )
-            }) {
-                Text("Navigate Activity (y)")
-            }
-
-            Button(onClick = {
-                navigation.closeWithResult(navigation.key.currentResult)
-            }) {
-                Text("Finish")
-            }
-        }
+//        TitledColumn(title = "Embedded Result Flow Activity") {
+//            Button(onClick = {
+//                navigation.deliverResultFromPresent(
+//                    ComposeEmbeddedResultFlow.Activity(navigation.key.currentResult + "-> act x")
+//                )
+//            }) {
+//                Text("Navigate Activity (x)")
+//            }
+//
+//            Button(onClick = {
+//                navigation.deliverResultFromPresent(
+//                    ComposeEmbeddedResultFlow.Activity(navigation.key.currentResult + "-> act y")
+//                )
+//            }) {
+//                Text("Navigate Activity (y)")
+//            }
+//
+//            Button(onClick = {
+//                navigation.closeWithResult(navigation.key.currentResult)
+//            }) {
+//                Text("Finish")
+//            }
+//        }
     }
 }

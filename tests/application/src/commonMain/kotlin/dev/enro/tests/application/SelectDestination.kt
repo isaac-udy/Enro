@@ -15,12 +15,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.Popup
+import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.*
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.navigationHandle
-import dev.enro.destination.compose.navigationContext
+import dev.enro.navigationHandle
+import dev.enro.open
 import dev.enro.tests.application.compose.ComposeSharedElementTransitions
 import dev.enro.tests.application.compose.HorizontalPager
 import dev.enro.tests.application.compose.results.*
@@ -29,46 +27,47 @@ import dev.enro.tests.application.window.SimpleWindow
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal object SelectDestination : NavigationKey.SupportsPush, NavigationKey.SupportsPresent {
-    internal val selectableDestinations = run {
-        val commonDestinations = listOf<NavigationKey>(
-            CommonSerialization,
-            ComposeAsyncManagedResultFlow,
-            ComposeManagedResultFlow,
-            ComposeManagedResultsWithNestedFlowAndEmptyRoot,
-            ComposeMixedResultTypes,
-            ComposeNestedResults,
-            ComposeSharedElementTransitions,
-            HorizontalPager,
-            ResultsWithExtra,
-            SimpleWindow,
-        )
+internal class SelectDestination(
+    val showAsDialog: Boolean = false
+) : NavigationKey {
+    internal companion object {
+        internal val selectableDestinations = run {
+            val commonDestinations = listOf<NavigationKey>(
+                CommonSerialization,
+                ComposeAsyncManagedResultFlow,
+                ComposeManagedResultFlow,
+                ComposeManagedResultsWithNestedFlowAndEmptyRoot,
+                ComposeMixedResultTypes,
+                ComposeNestedResults,
+                ComposeSharedElementTransitions,
+                HorizontalPager,
+                ResultsWithMetadata,
+                SimpleWindow,
+            )
 
-        mutableStateOf(
-            commonDestinations
-                .map { SelectableDestination(it) }
-                .sortedBy { it.title }
-        )
-    }
+            mutableStateOf(
+                commonDestinations
+                    .map { SelectableDestination(it) }
+                    .sortedBy { it.title }
+            )
+        }
 
-    fun registerSelectableDestinations(
-        vararg destinations: NavigationKey,
-    ) {
-        selectableDestinations.value = (selectableDestinations.value.plus(
-            destinations.toList()
-                .map { SelectableDestination(it) }
-        )).sortedBy { it.title }
+        fun registerSelectableDestinations(
+            vararg destinations: NavigationKey,
+        ) {
+            selectableDestinations.value = (selectableDestinations.value.plus(
+                destinations.toList()
+                    .map { SelectableDestination(it) }
+            )).sortedBy { it.title }
+        }
     }
 }
 
 @Composable
 @NavigationDestination(SelectDestination::class)
 fun SelectDestinationScreen() {
-    val navigation = navigationHandle()
-    val isPresented = remember {
-        navigation.instruction.navigationDirection == NavigationDirection.Present
-    }
-    val context = navigationContext
+    val navigation = navigationHandle<SelectDestination>()
+    val isPresented = navigation.key.showAsDialog
     val destinations = SelectDestination.selectableDestinations.value
 
     val destinationsList = remember {
@@ -80,31 +79,29 @@ fun SelectDestinationScreen() {
     }
 
     if (isPresented) {
-        DialogDestination {
-            Dialog(
-                onDismissRequest = { navigation.close() }
-            ) {
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .shadow(16.dp)
-                        .background(
-                            color = MaterialTheme.colors.background,
-                            shape = MaterialTheme.shapes.medium
-                        )
-                        .padding(8.dp)
-                        .padding(bottom = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Destinations",
-                        style = MaterialTheme.typography.subtitle1.copy(
-                            fontWeight = FontWeight.Medium,
-                        ),
-                        modifier = Modifier.padding(vertical = 8.dp)
+        Dialog(
+            onDismissRequest = { navigation.close() }
+        ) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .shadow(16.dp)
+                    .background(
+                        color = MaterialTheme.colors.background,
+                        shape = MaterialTheme.shapes.medium
                     )
-                    destinationsList()
-                }
+                    .padding(8.dp)
+                    .padding(bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Destinations",
+                    style = MaterialTheme.typography.subtitle1.copy(
+                        fontWeight = FontWeight.Medium,
+                    ),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                destinationsList()
             }
         }
     } else {
@@ -147,86 +144,27 @@ fun ReflectedDestinationCard(
                 style = MaterialTheme.typography.button,
             )
 
-            when {
-                selectableDestination.pushInstance == null -> {
-                    TextButton(
-                        modifier = Modifier.widthIn(min = 56.dp),
-                        onClick = {
-                            navigation.present(selectableDestination.presentInstance!!)
-                        }
-                    ) {
-                        Text("Present")
-                    }
+            TextButton(
+                modifier = Modifier.widthIn(min = 56.dp),
+                onClick = {
+                    navigation.open(selectableDestination.key)
                 }
-
-                selectableDestination.presentInstance == null -> {
-                    TextButton(
-                        modifier = Modifier.widthIn(min = 56.dp),
-                        onClick = {
-                            navigation.push(selectableDestination.pushInstance)
-                        }
-                    ) {
-                        Text("Push")
-                    }
-                }
-
-                else -> {
-                    var popUpVisible by remember { mutableStateOf(false) }
-                    TextButton(
-                        modifier = Modifier.widthIn(min = 56.dp),
-                        onClick = { popUpVisible = true }
-                    ) {
-                        Text("Open")
-                        if (popUpVisible) {
-                            Popup(
-                                alignment = Alignment.TopEnd,
-                                onDismissRequest = { popUpVisible = false }
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .shadow(4.dp)
-                                        .background(MaterialTheme.colors.background)
-                                        .padding(8.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                ) {
-                                    TextButton(
-                                        onClick = {
-                                            popUpVisible = false
-                                            navigation.present(selectableDestination.presentInstance)
-                                        }
-                                    ) {
-                                        Text("Present")
-                                    }
-                                    TextButton(
-                                        onClick = {
-                                            popUpVisible = false
-                                            navigation.push(selectableDestination.pushInstance)
-                                        }
-                                    ) {
-                                        Text("Push")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+            ) {
+                Text("Open")
             }
-
-
         }
     }
 }
 
 data class SelectableDestination(
-    val pushInstance: NavigationKey.SupportsPush?,
-    val presentInstance: NavigationKey.SupportsPresent?,
+    val key: NavigationKey,
     val title: String,
 )
 
 fun SelectableDestination(
-    instance: NavigationKey,
+    key: NavigationKey,
 ): SelectableDestination {
-    val title = instance::class.simpleName!!.toCharArray()
+    val title = key::class.simpleName!!.toCharArray()
         .mapIndexed { index, c ->
             if (index > 0 && c.isUpperCase()) {
                 return@mapIndexed " $c"
@@ -236,8 +174,7 @@ fun SelectableDestination(
         .joinToString(separator = "")
 
     return SelectableDestination(
-        pushInstance = instance as? NavigationKey.SupportsPush,
-        presentInstance = instance as? NavigationKey.SupportsPresent,
+        key = key,
         title = title,
     )
 }

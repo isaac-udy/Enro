@@ -26,10 +26,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogWindowProvider
-import dev.enro.animation.direction
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
@@ -72,13 +70,14 @@ fun ComposeAnimationsDestination() {
             key { it::class.java.enclosingClass == ComposeAnimations::class.java }
         },
         animations = {
-            direction(
-                direction = NavigationDirection.Push,
-                entering = fadeIn(defaultSpec()),
-                exiting = fadeOut(defaultSpec()),
-                returnEntering = fadeIn(defaultSpec()),
-                returnExiting = fadeOut(defaultSpec()),
-            )
+            TODO("ANIMATIONS")
+//            direction(
+//                direction = NavigationDirection.Push,
+//                entering = fadeIn(defaultSpec()),
+//                exiting = fadeOut(defaultSpec()),
+//                returnEntering = fadeIn(defaultSpec()),
+//                returnExiting = fadeOut(defaultSpec()),
+//            )
         }
     )
     Box(
