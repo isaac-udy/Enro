@@ -3,7 +3,7 @@ package dev.enro.result.flow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.enro.annotations.ExperimentalEnroApi
-import dev.enro.NavigationHandle
+import dev.enro.getNavigationHandle
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 
@@ -21,20 +21,20 @@ import kotlin.properties.ReadOnlyProperty
  */
 @ExperimentalEnroApi
 public fun <T> ViewModel.registerForFlowResult(
-    navigationHandle: NavigationHandle<*>,
     isManuallyStarted: Boolean = false,
     flow: NavigationFlowScope.() -> T,
     onCompleted: (T) -> Unit,
 ): PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationFlow<T>>> {
     return PropertyDelegateProvider { thisRef, property ->
+        val navigation = thisRef.getNavigationHandle()
         val resultFlowId = property.name
-        val boundResultFlowId = navigationHandle.instance.metadata.get(NavigationFlow.Companion.ResultFlowIdKey)
+        val boundResultFlowId = navigation.instance.metadata.get(NavigationFlow.Companion.ResultFlowIdKey)
         require(boundResultFlowId == null || boundResultFlowId == resultFlowId) {
             "Only one registerForFlowResult can be created per NavigationHandle. Found an existing result flow for $boundResultFlowId."
         }
-        navigationHandle.instance.metadata.set(NavigationFlow.Companion.ResultFlowIdKey, resultFlowId)
+        navigation.instance.metadata.set(NavigationFlow.Companion.ResultFlowIdKey, resultFlowId)
 
-        val resultManager = FlowResultManager.create(navigationHandle)
+        val resultManager = FlowResultManager.create(navigation)
         val navigationFlow = NavigationFlow(
             reference = NavigationFlowReference(resultFlowId),
             resultManager = resultManager,
@@ -42,7 +42,7 @@ public fun <T> ViewModel.registerForFlowResult(
             flow = flow,
             onCompleted = onCompleted,
         )
-        navigationHandle.instance.metadata.set(NavigationFlow.Companion.ResultFlowKey, navigationFlow)
+        navigation.instance.metadata.set(NavigationFlow.Companion.ResultFlowKey, navigationFlow)
         if (!isManuallyStarted) {
             navigationFlow.update()
         }

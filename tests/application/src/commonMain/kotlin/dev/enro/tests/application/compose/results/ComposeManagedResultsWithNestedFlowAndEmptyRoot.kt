@@ -12,19 +12,19 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.enro.NavigationKey
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationKey
-import dev.enro.core.closeWithResult
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.result.deliverResultFromPush
-import dev.enro.core.result.flows.registerForFlowResult
+import dev.enro.asInstance
+import dev.enro.complete
+import dev.enro.completeFrom
+import dev.enro.navigationHandle
+import dev.enro.result.flow.registerForFlowResult
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.destinations.EmptyNavigationKey
+import dev.enro.ui.rememberNavigationContainer
 import dev.enro.viewmodel.createEnroViewModel
-import dev.enro.viewmodel.navigationHandle
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
@@ -42,39 +42,39 @@ import kotlinx.serialization.Serializable
  * that called deliverResultForPush/Present if that destination was launched in a managed flow.
  */
 @Serializable
-object ComposeManagedResultsWithNestedFlowAndEmptyRoot : NavigationKey.SupportsPush.WithResult<String> {
+object ComposeManagedResultsWithNestedFlowAndEmptyRoot : NavigationKey.WithResult<String> {
 
     @Serializable
-    internal class NestedFlow : NavigationKey.SupportsPush.WithResult<String> {
+    internal class NestedFlow : NavigationKey.WithResult<String> {
         @Serializable
-        internal class StepOne : NavigationKey.SupportsPush.WithResult<String>
+        internal class StepOne : NavigationKey.WithResult<String>
 
         @Serializable
-        internal class StepTwo : NavigationKey.SupportsPush.WithResult<String>
+        internal class StepTwo : NavigationKey.WithResult<String>
     }
 
     @Serializable
-    internal class StepTwo : NavigationKey.SupportsPush.WithResult<String>
+    internal class StepTwo : NavigationKey.WithResult<String>
 
     @Serializable
-    internal class FinalScreen : NavigationKey.SupportsPush.WithResult<String>
+    internal class FinalScreen : NavigationKey.WithResult<String>
 
     @OptIn(ExperimentalEnroApi::class, AdvancedEnroApi::class)
     internal class FlowViewModel(
         private val savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
         private val navigation by navigationHandle<ComposeManagedResultsWithNestedFlowAndEmptyRoot>()
+
         private val flow by registerForFlowResult(
-            savedStateHandle = savedStateHandle,
             flow = {
                 val started = async { getAsyncStarter() }
-                val nestedResult = push { NestedFlow() }
-                val secondResult = push { StepTwo() }
-                val finalResult = push { FinalScreen() }
+                val nestedResult = open { NestedFlow() }
+                val secondResult = open { StepTwo() }
+                val finalResult = open { FinalScreen() }
                 return@registerForFlowResult "$started\n$nestedResult\n$secondResult\n$finalResult"
             },
             onCompleted = { result ->
-                navigation.closeWithResult(result)
+                navigation.complete(result)
             }
         )
 
@@ -97,14 +97,14 @@ internal fun ComposeManagedResultsWithNestedFlowAndEmptyRootDestination(
     }
 ) {
     val container = rememberNavigationContainer(
-        emptyBehavior = EmptyBehavior.CloseParent,
+        backstack = listOf(EmptyNavigationKey.asInstance())
     )
     TitledColumn(
         title = "Results with Nested Flow and Empty Root"
     ) {
         Box(Modifier.fillMaxSize()) {
             container.Render()
-            if (container.backstack.isEmpty()) {
+            if (container.backstack.firstOrNull()?.key is EmptyNavigationKey) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
         }
@@ -119,7 +119,7 @@ internal fun CmrwnfNestedFlowDestination() {
         title = "Nested Flow"
     ) {
         Button(onClick = {
-            navigation.deliverResultFromPush(ComposeManagedResultsWithNestedFlowAndEmptyRoot.NestedFlow.StepOne())
+            navigation.completeFrom(ComposeManagedResultsWithNestedFlowAndEmptyRoot.NestedFlow.StepOne())
         }) {
             Text(text = "Next (to nested step one)")
         }
@@ -134,7 +134,7 @@ internal fun CmrwnfNestedStepOneDestination() {
         title = "Nested Step One"
     ) {
         Button(onClick = {
-            navigation.deliverResultFromPush(ComposeManagedResultsWithNestedFlowAndEmptyRoot.NestedFlow.StepTwo())
+            navigation.completeFrom(ComposeManagedResultsWithNestedFlowAndEmptyRoot.NestedFlow.StepTwo())
         }) {
             Text(text = "Next (to nested step two)")
         }
@@ -149,12 +149,12 @@ internal fun CmrwnfNestedStepTwoDestination() {
         title = "Nested Step Two"
     ) {
         Button(onClick = {
-            navigation.closeWithResult("Cow")
+            navigation.complete("Cow")
         }) {
             Text(text = "Cow")
         }
         Button(onClick = {
-            navigation.closeWithResult("Sheep")
+            navigation.complete("Sheep")
         }) {
             Text(text = "Sheep")
         }
@@ -169,12 +169,12 @@ internal fun CmrwnfFlowStepTwoDestination() {
         title = "Step Two"
     ) {
         Button(onClick = {
-            navigation.closeWithResult("House")
+            navigation.complete("House")
         }) {
             Text(text = "House")
         }
         Button(onClick = {
-            navigation.closeWithResult("Farm")
+            navigation.complete("Farm")
         }) {
             Text(text = "Farm")
         }
@@ -189,7 +189,7 @@ internal fun CmrwnfFlowFinalScreenDestination() {
         title = "Final Screen"
     ) {
         Button(onClick = {
-            navigation.closeWithResult("End")
+            navigation.complete("End")
         }) {
             Text(text = "End")
         }

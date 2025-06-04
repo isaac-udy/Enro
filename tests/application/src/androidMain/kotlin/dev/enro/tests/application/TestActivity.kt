@@ -37,11 +37,9 @@ import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.enro.annotations.NavigationDestination
-import dev.enro.tests.application.activity.applyInsetsForContentView
-import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
 import dev.enro.close
 import dev.enro.closeWithoutCallback
@@ -54,6 +52,8 @@ import dev.enro.result.flow.registerForFlowResult
 import dev.enro.result.flow.rememberNavigationContainerForFlow
 import dev.enro.result.open
 import dev.enro.result.registerForNavigationResult
+import dev.enro.tests.application.activity.applyInsetsForContentView
+import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.destinations.syntheticDestination
 import dev.enro.ui.navigationDestination
@@ -362,7 +362,7 @@ class SimpleActivity : ComponentActivity() {
 class ScreenWithViewModelKey : NavigationKey.WithResult<String>
 
 class ScreenWithViewModelViewModel : ViewModel() {
-    private val navigation = navigationHandle<ScreenWithViewModelKey>()
+    private val navigation by navigationHandle<ScreenWithViewModelKey>()
 
     fun onComplete(result: String) {
         navigation.complete(result)
@@ -566,10 +566,9 @@ val nestedDestination = navigationDestination<NestedKey> {
 class FlowKey : NavigationKey.WithResult<Pair<String, String>>
 
 class FlowViewModel : ViewModel() {
-    val navigation = navigationHandle<FlowKey>()
+    val navigation by navigationHandle<FlowKey>()
 
     val resultFlow by registerForFlowResult(
-        navigationHandle = navigation,
         flow = {
             val firstResult = open { ResultKey() }
             val secondResult = open { ResultKey() }

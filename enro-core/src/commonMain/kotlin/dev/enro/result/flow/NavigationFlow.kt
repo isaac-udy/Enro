@@ -1,9 +1,9 @@
 package dev.enro.result.flow
 
-import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.asInstance
 import dev.enro.result.NavigationResultChannel
 import dev.enro.withMetadata
@@ -66,19 +66,21 @@ public class NavigationFlow<T> internal constructor(
         container.execute(
             NavigationOperation { backstack ->
                 val existingSteps = backstack.associateBy { it.id }
-                steps.map { step ->
-                    existingSteps[step.stepId] ?:
-                        step.key
-                            .withMetadata(FlowStep.MetadataKey, step)
-                            .withMetadata(
-                                NavigationResultChannel.ResultIdKey, NavigationResultChannel.Id(
-                                    ownerId = "NavigationFlow",
-                                    resultId = step.stepId,
+                steps
+                    .map { step ->
+                        existingSteps[step.stepId] ?:
+                            step.key
+                                .withMetadata(FlowStep.MetadataKey, step)
+                                .withMetadata(NavigationFlowReference.MetadataKey, this)
+                                .withMetadata(
+                                    NavigationResultChannel.ResultIdKey, NavigationResultChannel.Id(
+                                        ownerId = "NavigationFlow",
+                                        resultId = step.stepId,
+                                    )
                                 )
-                            )
-                            .asInstance()
-                            .copy(id = step.stepId)
-                }
+                                .asInstance()
+                                .copy(id = step.stepId)
+                    }
             }
         )
     }

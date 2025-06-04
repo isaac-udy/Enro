@@ -2,10 +2,6 @@
 
 package dev.enro.tests.application.compose.results
 
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,50 +20,53 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.enro.NavigationKey
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationKey
-import dev.enro.core.close
-import dev.enro.core.closeWithResult
-import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.result.flows.NavigationFlowReference
-import dev.enro.core.result.flows.registerForFlowResult
-import dev.enro.core.result.flows.rememberNavigationFlowReference
-import dev.enro.core.result.flows.requireStep
-import dev.enro.core.withExtra
-import dev.enro.destination.compose.OverrideNavigationAnimations
+import dev.enro.asInstance
+import dev.enro.close
+import dev.enro.complete
+import dev.enro.navigationHandle
+import dev.enro.result.flow.NavigationFlowReference
+import dev.enro.result.flow.registerForFlowResult
+import dev.enro.result.flow.rememberNavigationFlowReference
+import dev.enro.result.flow.requireStep
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.destinations.EmptyNavigationKey
+import dev.enro.ui.navigationDestination
+import dev.enro.ui.rememberNavigationContainer
+import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.viewmodel.createEnroViewModel
-import dev.enro.viewmodel.navigationHandle
+import dev.enro.withMetadata
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object ComposeManagedResultFlow : NavigationKey.SupportsPush {
+data object ComposeManagedResultFlow : NavigationKey {
 
     @Serializable
-    internal class FirstResult : NavigationKey.SupportsPush.WithResult<String>
+    internal class FirstResult : NavigationKey.WithResult<String>
 
     @Serializable
-    internal class PresentedResult : NavigationKey.SupportsPresent.WithResult<String>
+    internal class PresentedResult : NavigationKey.WithResult<String>
 
     @Serializable
-    internal class SecondResult : NavigationKey.SupportsPush.WithResult<String>
+    internal class SecondResult : NavigationKey.WithResult<String> {
+        object MetadataKey : NavigationKey.MetadataKey<Int>(0)
+    }
 
     @Serializable
-    internal class TransientResult : NavigationKey.SupportsPush.WithResult<String>
+    internal class TransientResult : NavigationKey.WithResult<String>
 
     @Serializable
-    internal class ThirdResult : NavigationKey.SupportsPush.WithResult<String>
+    internal class ThirdResult : NavigationKey.WithResult<String>
 
     @Serializable
     internal class FinalScreen(
         val navigationFlowReference: NavigationFlowReference,
         val text: String,
-    ) : NavigationKey.SupportsPush.WithResult<Unit>
+    ) : NavigationKey.WithResult<Unit>
 }
 
 
@@ -77,22 +76,22 @@ class ComposeManagedResultViewModel : ViewModel() {
 
     val resultFlow by registerForFlowResult(
         flow = {
-            val firstResult = push { ComposeManagedResultFlow.FirstResult() }
-            val presentedResult = present { ComposeManagedResultFlow.PresentedResult() }
-            val secondResult = pushWithExtras {
+            val firstResult = open { ComposeManagedResultFlow.FirstResult() }
+            val presentedResult = open { ComposeManagedResultFlow.PresentedResult() }
+            val secondResult = openWithMetadata {
                 // We're using extras here as a simple way to test that pushWithExtras/NavigationKey.withExtra work within
                 // managed flows - this extra is verified by the associated tests, but has no real impact on the flow itself
                 ComposeManagedResultFlow.SecondResult()
-                    .withExtra("secondResultExtra", ComposeManagedResultFlow.hashCode())
+                    .withMetadata(ComposeManagedResultFlow.SecondResult.MetadataKey, ComposeManagedResultFlow.hashCode())
             }
-            val transientResult = push {
+            val transientResult = open {
                 transient()
                 dependsOn(secondResult)
                 ComposeManagedResultFlow.TransientResult()
             }
-            val thirdResult = push { ComposeManagedResultFlow.ThirdResult() }
+            val thirdResult = open { ComposeManagedResultFlow.ThirdResult() }
 
-            push {
+            open {
                 ComposeManagedResultFlow.FinalScreen(
                     navigationFlowReference = navigationFlowReference,
                     text = """
@@ -119,10 +118,10 @@ fun ComposeManagedResultFlowScreen(viewModel: ComposeManagedResultViewModel = vi
     }
 }) {
     val container = rememberNavigationContainer(
-        emptyBehavior = EmptyBehavior.CloseParent,
+        backstack = listOf(EmptyNavigationKey.asInstance()),
     )
     Box(modifier = Modifier.fillMaxSize()) {
-        container.Render()
+        NavigationDisplay(container)
     }
 }
 
@@ -131,19 +130,20 @@ fun ComposeManagedResultFlowScreen(viewModel: ComposeManagedResultViewModel = vi
 fun FirstResultScreen() {
     val navigation = navigationHandle<ComposeManagedResultFlow.FirstResult>()
     TitledColumn(title = "First Result") {
-        Button(onClick = { navigation.closeWithResult("A") }) {
+        Button(onClick = { navigation.complete("A") }) {
             Text("Continue (A)")
         }
 
-        Button(onClick = { navigation.closeWithResult("B") }) {
+        Button(onClick = { navigation.complete("B") }) {
             Text("Continue (B)")
         }
     }
 }
 
 @NavigationDestination(ComposeManagedResultFlow.PresentedResult::class)
-@Composable
-fun PresentedResultScreen() = DialogDestination {
+val presentedResultScreen = navigationDestination<ComposeManagedResultFlow>(
+    metadata = mapOf(DirectOverlaySceneStrategy.overlay())
+) {
     val navigation = navigationHandle<ComposeManagedResultFlow.PresentedResult>()
     Dialog(onDismissRequest = { navigation.close() }) {
         Card {
@@ -157,11 +157,11 @@ fun PresentedResultScreen() = DialogDestination {
                     style = MaterialTheme.typography.h6
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { navigation.closeWithResult("A") }) {
+                Button(onClick = { navigation.complete("A") }) {
                     Text("Continue (A)")
                 }
 
-                Button(onClick = { navigation.closeWithResult("B") }) {
+                Button(onClick = { navigation.complete("B") }) {
                     Text("Continue (B)")
                 }
             }
@@ -174,17 +174,17 @@ fun PresentedResultScreen() = DialogDestination {
 fun SecondResultScreen() {
     val navigation = navigationHandle<ComposeManagedResultFlow.SecondResult>()
     TitledColumn(title = "Second Result") {
-        Button(onClick = { navigation.closeWithResult("A") }) {
+        Button(onClick = { navigation.complete("A") }) {
             Text("Continue (A)")
         }
 
-        Button(onClick = { navigation.closeWithResult("B") }) {
+        Button(onClick = { navigation.complete("B") }) {
             Text("Continue (B)")
         }
 
         Text(
             style = MaterialTheme.typography.caption,
-            text = "Has extra: ${navigation.instruction.extras.get<Int>("secondResultExtra")}"
+            text = "Has extra: ${navigation.instance.metadata.get(ComposeManagedResultFlow.SecondResult.MetadataKey)}"
         )
     }
 }
@@ -193,22 +193,17 @@ fun SecondResultScreen() {
 @Composable
 fun TransientResultScreen() {
     val navigation = navigationHandle<ComposeManagedResultFlow.TransientResult>()
-    OverrideNavigationAnimations(
-        enter = fadeIn() + slideInVertically { it / 4 },
-        exit = fadeOut() + slideOutVertically { it / 4 },
-    ) {
-        TitledColumn(title = "Transient Result") {
-            Text(
-                text = "This screen will only be displayed if the result from the second screen has changed"
-            )
+    TitledColumn(title = "Transient Result") {
+        Text(
+            text = "This screen will only be displayed if the result from the second screen has changed"
+        )
 
-            Button(onClick = { navigation.closeWithResult("A") }) {
-                Text("Continue (A)")
-            }
+        Button(onClick = { navigation.complete("A") }) {
+            Text("Continue (A)")
+        }
 
-            Button(onClick = { navigation.closeWithResult("B") }) {
-                Text("Continue (B)")
-            }
+        Button(onClick = { navigation.complete("B") }) {
+            Text("Continue (B)")
         }
     }
 }
@@ -218,11 +213,11 @@ fun TransientResultScreen() {
 fun ThirdResultScreen() {
     val navigation = navigationHandle<ComposeManagedResultFlow.ThirdResult>()
     TitledColumn(title = "Third Result") {
-        Button(onClick = { navigation.closeWithResult("A") }) {
+        Button(onClick = { navigation.complete("A") }) {
             Text("Continue (A)")
         }
 
-        Button(onClick = { navigation.closeWithResult("B") }) {
+        Button(onClick = { navigation.complete("B") }) {
             Text("Continue (B)")
         }
     }
@@ -262,7 +257,7 @@ fun FinalScreenScreen() {
             Text("Edit Third Result")
         }
 
-        Button(onClick = { navigation.closeWithResult(Unit) }) {
+        Button(onClick = { navigation.complete(Unit) }) {
             Text("Finish")
         }
     }

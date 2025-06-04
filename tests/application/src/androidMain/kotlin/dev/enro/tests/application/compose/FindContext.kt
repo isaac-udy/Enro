@@ -30,21 +30,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.NavigationKeyParceler
 import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.accept
-import dev.enro.core.findActiveContext
-import dev.enro.core.findContext
-import dev.enro.core.navigationContext
-import dev.enro.core.parentContainer
 import dev.enro.core.present
 import dev.enro.core.push
 import dev.enro.core.requestClose
-import dev.enro.core.rootContext
-import dev.enro.destination.compose.navigationContext
+import dev.enro.serialization.NavigationKeyParceler
 import dev.enro.ui.LocalNavigationContainer
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
@@ -246,7 +240,7 @@ fun LeafDestination(
 @Composable
 fun FindContextDialog() {
     val navigation = navigationHandle()
-    val context = navigationContext
+//    val context = navigationContext
     var selectedType by remember { mutableStateOf<KClass<*>>(FindContext.Left.Top::class) }
     var selectedId by remember { mutableStateOf("") }
     DialogDestination {
@@ -322,12 +316,13 @@ fun FindContextDialog() {
                     Button(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
-                            val id = selectedId.toIntOrNull()
-                            val foundContext = context.rootContext().findActiveContext {
-                                val key = it.instruction?.navigationKey as? FindContext.HasId
-                                key != null && key::class == selectedType && (id == null || key.id == id)
-                            }
-                            navigation.present(FindContext.FindResult(foundContext?.instruction?.navigationKey))
+                            TODO("FIND")
+//                            val id = selectedId.toIntOrNull()
+//                            val foundContext = context.rootContext().findActiveContext {
+//                                val key = it.instruction?.navigationKey as? FindContext.HasId
+//                                key != null && key::class == selectedType && (id == null || key.id == id)
+//                            }
+//                            navigation.present(FindContext.FindResult(foundContext?.instruction?.navigationKey))
                         }
                     ) {
                         Text(text = "Find Active Context")
@@ -336,12 +331,13 @@ fun FindContextDialog() {
                     Button(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
-                            val id = selectedId.toIntOrNull()
-                            val foundContext = context.rootContext().findContext {
-                                val key = it.instruction?.navigationKey as? FindContext.HasId
-                                key != null && key::class == selectedType && (id == null || key.id == id)
-                            }
-                            navigation.present(FindContext.FindResult(foundContext?.instruction?.navigationKey))
+                            TODO("FIND")
+//                            val id = selectedId.toIntOrNull()
+//                            val foundContext = context.rootContext().findContext {
+//                                val key = it.instruction?.navigationKey as? FindContext.HasId
+//                                key != null && key::class == selectedType && (id == null || key.id == id)
+//                            }
+//                            navigation.present(FindContext.FindResult(foundContext?.instruction?.navigationKey))
                         }
                     ) {
                         Text(text = "Find Context")

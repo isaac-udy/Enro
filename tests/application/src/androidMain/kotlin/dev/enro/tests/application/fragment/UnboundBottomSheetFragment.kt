@@ -9,13 +9,9 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.FragmentActivity
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.activity
-import dev.enro.core.getNavigationHandle
-import dev.enro.core.requestClose
 import dev.enro.destination.synthetic.syntheticDestination
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
@@ -25,13 +21,13 @@ object UnboundBottomSheet : Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(UnboundBottomSheet::class)
 val unboundBottomSheet = syntheticDestination<UnboundBottomSheet> {
-    val activity = navigationContext.activity as FragmentActivity
-    UnboundBottomSheetFragment()
-        .show(activity.supportFragmentManager, UnboundBottomSheetFragment.tag)
+    TODO("Synthetics")
+//    val activity = navigationContext.activity as FragmentActivity
+//    UnboundBottomSheetFragment()
+//        .show(activity.supportFragmentManager, UnboundBottomSheetFragment.tag)
 }
 
 class UnboundBottomSheetFragment : BottomSheetDialogFragment() {
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,7 +37,7 @@ class UnboundBottomSheetFragment : BottomSheetDialogFragment() {
             setContent {
                 MaterialTheme {
                     TitledColumn(title = "Unbound BottomSheet Fragment") {
-                        Button(onClick = { getNavigationHandle()?.requestClose() }) {
+                        Button(onClick = { dismiss() }) {
                             Text("Close with Enro")
                         }
                         Button(onClick = { dismiss() }) {

@@ -1,7 +1,7 @@
 package dev.enro.result.flow
 
-import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.NavigationKey
+import dev.enro.annotations.AdvancedEnroApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,6 +22,7 @@ public open class NavigationFlowScope internal constructor(
     @PublishedApi
     internal val suspendingSteps: MutableList<String> = mutableListOf(),
 ) {
+
     public inline fun <reified T : Any> open(
         noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithResult<T>,
     ): T = step(

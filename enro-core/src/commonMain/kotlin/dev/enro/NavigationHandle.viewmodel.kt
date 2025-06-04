@@ -3,19 +3,13 @@ package dev.enro
 import androidx.lifecycle.ViewModel
 import dev.enro.viewmodel.NavigationHandleProvider
 import dev.enro.viewmodel.navigationHandleReference
+import kotlin.properties.ReadOnlyProperty
 
 // TODO do we actually want this to be done with a property?
 public inline fun <reified K : NavigationKey> ViewModel.navigationHandle(
     noinline config: (NavigationHandleConfiguration<K>.() -> Unit)? = null,
-): NavigationHandle<K> {
-    val reference = navigationHandleReference
-    if (reference.navigationHandle == null) {
-        reference.navigationHandle = NavigationHandleProvider.get(this::class)
-    }
-    val navigationHandle = reference.navigationHandle
-    requireNotNull(navigationHandle) {
-        "Unable to retrieve navigation handle for ViewModel ${this::class.simpleName}"
-    }
+): ReadOnlyProperty<ViewModel, NavigationHandle<K>> {
+    val navigationHandle = getNavigationHandle()
     require(navigationHandle.key is K) {
         "The navigation handle key does not match the expected type. Expected ${K::class.simpleName}, but got ${navigationHandle.key::class.simpleName}"
     }
@@ -28,11 +22,23 @@ public inline fun <reified K : NavigationKey> ViewModel.navigationHandle(
     }
 
     @Suppress("UNCHECKED_CAST")
-    return navigationHandle as NavigationHandle<K>
+    return ReadOnlyProperty { _, _ -> navigationHandle as NavigationHandle<K> }
 }
 
-public inline fun <reified K : NavigationKey> ViewModel.navigationHandle(): NavigationHandle<K> {
+public inline fun <reified K : NavigationKey> ViewModel.navigationHandle(): ReadOnlyProperty<ViewModel, NavigationHandle<K>> {
    return navigationHandle(
        config = null,
    )
+}
+
+public fun ViewModel.getNavigationHandle(): NavigationHandle<NavigationKey> {
+    val reference = navigationHandleReference
+    if (reference.navigationHandle == null) {
+        reference.navigationHandle = NavigationHandleProvider.get(this::class)
+    }
+    val navigationHandle = reference.navigationHandle
+    requireNotNull(navigationHandle) {
+        "Unable to retrieve navigation handle for ViewModel ${this::class.simpleName}"
+    }
+    return navigationHandle
 }

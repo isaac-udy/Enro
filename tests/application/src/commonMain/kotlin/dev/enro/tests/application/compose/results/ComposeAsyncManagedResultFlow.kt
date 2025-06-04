@@ -29,20 +29,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.enro.NavigationKey
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
-import dev.enro.core.NavigationKey
-import dev.enro.core.close
-import dev.enro.core.closeWithResult
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.result.flows.registerForFlowResult
-import dev.enro.core.withExtra
+import dev.enro.asInstance
+import dev.enro.close
+import dev.enro.complete
+import dev.enro.navigationHandle
+import dev.enro.result.flow.registerForFlowResult
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.destinations.EmptyNavigationKey
+import dev.enro.ui.rememberNavigationContainer
 import dev.enro.viewmodel.createEnroViewModel
-import dev.enro.viewmodel.navigationHandle
+import dev.enro.withMetadata
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -50,18 +50,19 @@ import kotlinx.serialization.Serializable
 import kotlin.random.Random
 
 @Serializable
-object ComposeAsyncManagedResultFlow : NavigationKey.SupportsPush {
+object ComposeAsyncManagedResultFlow : NavigationKey {
 
     @Serializable
     internal class StepResult(
         val name: String,
-    ) : NavigationKey.SupportsPush.WithResult<String>
+    ) : NavigationKey.WithResult<String>
 
     @Serializable
     internal class FinalScreen(
         val data: String,
-    ) : NavigationKey.SupportsPush.WithResult<Unit>
+    ) : NavigationKey.WithResult<Unit>
 
+    object MetadataKey : NavigationKey.MetadataKey<Int>(0)
 }
 
 sealed interface AsyncData<T> {
@@ -95,7 +96,7 @@ class ComposeAsyncManagedResultViewModel : ViewModel() {
                 state.update { it.copy(initialData = AsyncData.Loaded(data)) }
                 return@async data
             }
-            val firstStep = push { ComposeAsyncManagedResultFlow.StepResult("One") }
+            val firstStep = open { ComposeAsyncManagedResultFlow.StepResult("One") }
             val firstStepAsync = async(firstStep) {
                 state.update { it.copy(dataAfterStepOne = AsyncData.Loading()) }
                 val data = loadSuspendingData(firstStep)
@@ -103,11 +104,11 @@ class ComposeAsyncManagedResultViewModel : ViewModel() {
                 return@async data
             }
 
-            val secondStep = pushWithExtras {
+            val secondStep = openWithMetadata {
                 // We're using extras here as a simple way to test that pushWithExtras/NavigationKey.withExtra work within
                 // managed flows - this extra is verified by the associated tests, but has no real impact on the flow itself
                 ComposeAsyncManagedResultFlow.StepResult("Two")
-                    .withExtra("flowResultExtra", ComposeAsyncManagedResultFlow.hashCode())
+                    .withMetadata(ComposeAsyncManagedResultFlow.MetadataKey, ComposeAsyncManagedResultFlow.hashCode())
             }
             val secondStepAsync = async(firstStep, secondStep) {
                 state.update { it.copy(dataAfterStepTwo = AsyncData.Loading()) }
@@ -116,7 +117,7 @@ class ComposeAsyncManagedResultViewModel : ViewModel() {
                 return@async data
             }
 
-            push {
+            open {
                 ComposeAsyncManagedResultFlow.FinalScreen(
                     data = """
                         Initial Data: $initialData
@@ -149,7 +150,7 @@ fun ComposeAsyncManagedResultFlowScreen(viewModel: ComposeAsyncManagedResultView
     }
 }) {
     val container = rememberNavigationContainer(
-        emptyBehavior = EmptyBehavior.CloseParent,
+        backstack = listOf(EmptyNavigationKey.asInstance()),
     )
     val state by viewModel.state.collectAsState()
 
@@ -226,16 +227,16 @@ fun ComposeAsyncManagedResultFlowStepResultScreen() {
     val navigation = navigationHandle<ComposeAsyncManagedResultFlow.StepResult>()
     TitledColumn(title = "Step: ${navigation.key.name}") {
 
-        Button(onClick = { navigation.closeWithResult("A") }) {
+        Button(onClick = { navigation.complete("A") }) {
             Text("Continue (A)")
         }
 
-        Button(onClick = { navigation.closeWithResult("B") }) {
+        Button(onClick = { navigation.complete("B") }) {
             Text("Continue (B)")
         }
 
-        val extra = navigation.instruction.extras.get<Int>("flowResultExtra")
-        if (extra != null) {
+        val extra = navigation.instance.metadata.get(ComposeAsyncManagedResultFlow.MetadataKey)
+        if (extra != 0) {
             Text(
                 text = "Extra: $extra",
                 style = MaterialTheme.typography.caption
@@ -251,7 +252,7 @@ fun ComposeAsyncManagedResultFlowFinalScreenScreen() {
     TitledColumn(title = "Final Screen") {
         Text("Data: ${navigation.key.data}")
 
-        Button(onClick = { navigation.closeWithResult(Unit) }) {
+        Button(onClick = { navigation.complete(Unit) }) {
             Text("Finish")
         }
     }
