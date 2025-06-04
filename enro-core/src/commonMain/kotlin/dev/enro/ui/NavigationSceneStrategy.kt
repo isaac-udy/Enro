@@ -7,15 +7,14 @@ public fun interface NavigationSceneStrategy {
     @Composable
     public fun calculateScene(
         entries: List<NavigationDestination<out NavigationKey>>,
-        onBack: (count: Int) -> Unit
     ): NavigationScene?
 
     public companion object {
         public fun from(
-            vararg sceneStrategies: NavigationSceneStrategy
+            vararg sceneStrategies: NavigationSceneStrategy,
         ): NavigationSceneStrategy {
-            return NavigationSceneStrategy { entries, onBack ->
-                sceneStrategies.firstNotNullOfOrNull { it.calculateScene(entries, onBack) }
+            return NavigationSceneStrategy { entries ->
+                sceneStrategies.firstNotNullOfOrNull { it.calculateScene(entries) }
             }
         }
     }

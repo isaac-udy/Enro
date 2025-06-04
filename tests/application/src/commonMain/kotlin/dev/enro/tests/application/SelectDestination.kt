@@ -30,6 +30,7 @@ import dev.enro.close
 import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.tests.application.compose.ComposeSharedElementTransitions
+import dev.enro.tests.application.compose.DialogScene
 import dev.enro.tests.application.compose.HorizontalPager
 import dev.enro.tests.application.compose.results.ComposeAsyncManagedResultFlow
 import dev.enro.tests.application.compose.results.ComposeManagedResultFlow
@@ -55,6 +56,7 @@ internal class SelectDestination(
                 ComposeMixedResultTypes,
                 ComposeNestedResults,
                 ComposeSharedElementTransitions,
+                DialogScene,
                 HorizontalPager,
                 ResultsWithMetadata,
                 SimpleWindow,

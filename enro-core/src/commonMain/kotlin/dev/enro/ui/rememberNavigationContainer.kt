@@ -26,7 +26,7 @@ import kotlinx.serialization.PolymorphicSerializer
 public fun rememberNavigationContainer(
     key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@${currentCompositeKeyHash}"),
     backstack: NavigationBackstack,
-    // Need to get parent interceptors too from controller
+    emptyBehavior: EmptyBehavior = EmptyBehavior.allowEmpty(),
     interceptor: NavigationInterceptor = NoOpNavigationInterceptor,
     filter: NavigationContainerFilter = acceptAll(),
 ): NavigationContainerState {

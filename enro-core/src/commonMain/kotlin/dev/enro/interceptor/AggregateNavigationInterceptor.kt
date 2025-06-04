@@ -11,4 +11,8 @@ public class AggregateNavigationInterceptor(
             interceptor.intercept(currentOperation)
         }
     }
+
+    public operator fun plus(other: NavigationInterceptor) : AggregateNavigationInterceptor {
+        return AggregateNavigationInterceptor(interceptors + other)
+    }
 }

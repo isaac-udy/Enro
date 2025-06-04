@@ -34,16 +34,6 @@ public class NavigationOperation(
             backstack + instance
         }
 
-        internal fun closeByCount(count: Int): NavigationOperation = NavigationOperation { backstack ->
-            val updatedBackstack = backstack.toMutableList()
-            repeat(count) {
-                if (updatedBackstack.isNotEmpty()) {
-                    updatedBackstack.removeAt(updatedBackstack.lastIndex)
-                }
-            }
-            return@NavigationOperation updatedBackstack
-        }
-
         public fun close(instance: NavigationKey.Instance<*>): NavigationOperation = NavigationOperation { backstack ->
             instance.setResultClosed()
             val toRemove = backstack.last { it.id == instance.id }

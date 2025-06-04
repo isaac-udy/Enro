@@ -13,7 +13,9 @@ import dev.enro.NavigationOperation
 
 public class NavigationContainerState(
     public val container: NavigationContainer,
+    public val emptyBehavior: EmptyBehavior = EmptyBehavior.default(),
 ) {
+
     public val key: NavigationContainer.Key = container.key
 
     /** Progress of the current predictive back gesture (0.0 to 1.0) */

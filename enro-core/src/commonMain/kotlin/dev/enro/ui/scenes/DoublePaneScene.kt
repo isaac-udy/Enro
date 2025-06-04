@@ -21,7 +21,6 @@ public class DoublePaneScene : NavigationSceneStrategy {
     @Composable
     override fun calculateScene(
         entries: List<NavigationDestination<out NavigationKey>>,
-        onBack: (Int) -> Unit,
     ): NavigationScene {
         return object : NavigationScene {
 

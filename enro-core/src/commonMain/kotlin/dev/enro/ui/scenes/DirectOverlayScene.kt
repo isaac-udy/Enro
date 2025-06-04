@@ -42,7 +42,6 @@ public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
     @Composable
     public override fun calculateScene(
         entries: List<NavigationDestination<out NavigationKey>>,
-        onBack: (count: Int) -> Unit,
     ): NavigationScene? {
         val lastEntry = entries.lastOrNull()
         val directOverlayMetadata = lastEntry?.metadata?.get(DirectOverlayKey) as? Unit

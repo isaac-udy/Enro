@@ -1,5 +1,6 @@
 package dev.enro.interceptor
 
+import dev.enro.NavigationContainer
 import dev.enro.NavigationOperation
 
 /**
@@ -11,4 +12,5 @@ public interface NavigationInterceptor {
     public fun intercept(
         operation: NavigationOperation,
     ): NavigationOperation?
+
 }

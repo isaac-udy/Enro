@@ -20,7 +20,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -28,10 +27,10 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
-import dev.enro.EnroController
 import dev.enro.NavigationContainer
-import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.NavigationTransition
+import dev.enro.platform.EnroLog
 import dev.enro.ui.animation.rememberTransitionCompat
 import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
 import dev.enro.ui.scenes.DialogSceneStrategy
@@ -95,17 +94,13 @@ public fun NavigationDisplay(
         )
     }
 ) {
-    val backstack = state.container.backstack.collectAsState().value
-    require(backstack.isNotEmpty()) { "NavigationDisplay backstack cannot be empty" }
-
     // Create and remember the state that tracks the display's internal state
     val sceneState = remember { NavigationSceneState() }
 
     // Calculate the scene hierarchy - scenes organize destinations into logical groups
     val (scene, overlayScenes) = calculateScenes(
-        destinations = state.destinations,
+        state = state,
         sceneStrategy = sceneStrategy,
-        onBack = remember<(Int) -> Unit> { { count -> state.container.execute(NavigationOperation.closeByCount(count)) } }
     )
 
     // Create a unique key for the current scene and store it
@@ -119,9 +114,7 @@ public fun NavigationDisplay(
     // Set up predictive back gesture handling
     HandlePredictiveBack(
         scene = scene,
-        destinations = state.destinations,
         state = state,
-        onBack = remember { { count -> state.container.execute(NavigationOperation.closeByCount(count)) } }
     )
 
     // Create the transition state that manages animations between scenes
@@ -202,19 +195,6 @@ private class NavigationSceneState {
 }
 
 /**
- * Retrieves and remembers the EnroController instance.
- * The controller manages navigation bindings and destination creation.
- */
-@Composable
-private fun rememberEnroController(): EnroController {
-    return remember {
-        requireNotNull(EnroController.instance) {
-            "EnroController must be initialized before using NavigationDisplay"
-        }
-    }
-}
-
-/**
  * Calculates the scene hierarchy from the list of destinations.
  * Scenes organize destinations into logical groups (e.g., main content, dialogs, overlays).
  *
@@ -230,18 +210,18 @@ private fun rememberEnroController(): EnroController {
  */
 @Composable
 private fun calculateScenes(
-    destinations: List<NavigationDestination<NavigationKey>>,
+    state: NavigationContainerState,
     sceneStrategy: NavigationSceneStrategy,
-    onBack: (Int) -> Unit,
 ): Pair<NavigationScene, List<NavigationScene.Overlay>> {
+    val destinations = state.destinations
     // Start with calculating the first scene from all destinations
-    val allScenes = mutableListOf(sceneStrategy.calculateSceneWithSinglePaneFallback(destinations, onBack))
+    val allScenes = mutableListOf(sceneStrategy.calculateSceneWithSinglePaneFallback(destinations))
     var currentScene = allScenes.last()
 
     // Process overlay scenes recursively
     // Each overlay scene may have destinations that should be overlaid on it
     while (currentScene is NavigationScene.Overlay && currentScene.overlaidEntries.isNotEmpty()) {
-        allScenes += sceneStrategy.calculateSceneWithSinglePaneFallback(currentScene.overlaidEntries, onBack)
+        allScenes += sceneStrategy.calculateSceneWithSinglePaneFallback(currentScene.overlaidEntries)
         currentScene = allScenes.last()
     }
 
@@ -263,11 +243,27 @@ private fun calculateScenes(
 @Composable
 private fun HandlePredictiveBack(
     scene: NavigationScene,
-    destinations: List<NavigationDestination<NavigationKey>>,
     state: NavigationContainerState,
-    onBack: (Int) -> Unit,
 ) {
-    NavigationBackHandler(scene.previousEntries.isNotEmpty()) { navEvent ->
+    val backstack = state.backstack
+    val isEnabled = remember(scene.previousEntries, backstack) {
+        val targetBackstack = scene.previousEntries.map { it.instance }
+        state.emptyBehavior.isAnimationEnabled(
+            NavigationTransition(
+                currentBackstack = backstack,
+                targetBackstack = targetBackstack,
+            )
+        )
+    }
+    LaunchedEffect(isEnabled, backstack) {
+        val stack = backstack.map { it.key::class.simpleName }
+        EnroLog.error(
+            "Is enabled for $stack"
+        )
+    }
+    NavigationBackHandler(
+        enabled = isEnabled,
+    ) { navEvent ->
         state.progress = 0f
         try {
             // Collect gesture progress events
@@ -277,7 +273,14 @@ private fun HandlePredictiveBack(
             }
             // Gesture completed - execute the back navigation
             state.inPredictiveBack = false
-            onBack(destinations.size - scene.previousEntries.size)
+            val previousIds = scene.previousEntries
+                .map { it.instance.id }
+                .toSet()
+            state.execute(
+                NavigationOperation { current ->
+                    current.filter { previousIds.contains(it.id) }
+                }
+            )
         } finally {
             // Ensure state is cleaned up even if an error occurs
             state.inPredictiveBack = false
@@ -409,7 +412,6 @@ private fun TransitionAnimationEffect(
         // During predictive back, create a "peek" scene showing the previous destinations
         val peekScene = sceneStrategy.calculateSceneWithSinglePaneFallback(
             scene.previousEntries,
-            { /* No-op during predictive back */ }
         )
         val peekSceneKey = SceneKey(
             sceneType = peekScene::class,
@@ -596,7 +598,7 @@ private fun RenderOverlayScenes(overlayScenes: List<NavigationScene.Overlay>) {
  */
 private fun <T : Any> isPop(oldBackStack: List<T>, newBackStack: List<T>): Boolean {
     if (oldBackStack.isEmpty() || newBackStack.isEmpty()) return false
-    if (oldBackStack.first() != newBackStack.first()) return false  // Different roots
+    if (oldBackStack.firstOrNull() != newBackStack.firstOrNull()) return false  // Different roots
     if (newBackStack.size > oldBackStack.size) return false  // Can't be pop if growing
 
     // Check if new backstack is a prefix of the old one

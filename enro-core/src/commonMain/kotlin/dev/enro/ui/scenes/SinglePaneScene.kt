@@ -10,10 +10,8 @@ public class SinglePaneScene : NavigationSceneStrategy {
     @Composable
     override fun calculateScene(
         entries: List<NavigationDestination<out NavigationKey>>,
-        onBack: (Int) -> Unit,
     ): NavigationScene {
         return object : NavigationScene {
-
             override val entries: List<NavigationDestination<out NavigationKey>> = listOf(entries.last())
             override val key: Any = SinglePaneScene::class to entries.map { it.instance.id }
 

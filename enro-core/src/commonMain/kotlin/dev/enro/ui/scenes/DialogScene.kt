@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dev.enro.NavigationKey
+import dev.enro.NavigationOperation
+import dev.enro.ui.LocalNavigationContainer
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
@@ -16,13 +18,18 @@ internal class DialogScene(
     override val overlaidEntries: List<NavigationDestination<out NavigationKey>>,
     private val entry: NavigationDestination<out NavigationKey>,
     private val dialogProperties: DialogProperties,
-    private val onBack: (count: Int) -> Unit,
 ) : NavigationScene.Overlay {
 
     override val entries: List<NavigationDestination<out NavigationKey>> = listOf(entry)
 
     override val content: @Composable (() -> Unit) = {
-        Dialog(onDismissRequest = { onBack(1) }, properties = dialogProperties) {
+        val container = LocalNavigationContainer.current
+        Dialog(
+            onDismissRequest = {
+                container.execute(NavigationOperation.close(entry.instance))
+            },
+            properties = dialogProperties,
+        ) {
             entry.content()
         }
     }
@@ -38,7 +45,6 @@ public class DialogSceneStrategy : NavigationSceneStrategy {
     @Composable
     public override fun calculateScene(
         entries: List<NavigationDestination<out NavigationKey>>,
-        onBack: (count: Int) -> Unit,
     ): NavigationScene? {
         val lastEntry = entries.lastOrNull()
         val dialogProperties = lastEntry?.metadata?.get(DialogPropertiesKey) as? DialogProperties
@@ -49,7 +55,6 @@ public class DialogSceneStrategy : NavigationSceneStrategy {
                 overlaidEntries = entries.dropLast(1),
                 entry = lastEntry,
                 dialogProperties = dialogProperties,
-                onBack = onBack,
             )
         } else null
     }
