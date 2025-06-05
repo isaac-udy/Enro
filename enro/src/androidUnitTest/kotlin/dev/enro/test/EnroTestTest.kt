@@ -6,7 +6,6 @@ import dev.enro.core.onActiveContainer
 import dev.enro.core.onContainer
 import dev.enro.core.onParentContainer
 import dev.enro.core.requestClose
-import dev.enro.test.extensions.putNavigationHandleForViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -59,7 +58,7 @@ class EnroTestTest {
 
         viewModel.openStringOne()
         val instruction = navigationHandle.assertAnyInstructionOpened<TestResultStringKey>()
-        navigationHandle.assertOpened<TestResultStringKey>()
+        navigationHandle.assertOpen<TestResultStringKey>()
         instruction.deliverResultForTest("wow")
 
         assertEquals("wow", viewModel.stringOneResult)
@@ -73,7 +72,7 @@ class EnroTestTest {
 
         val id = UUID.randomUUID().toString()
         viewModel.forwardToTestWithData(id)
-        val key = navigationHandle.assertOpened<TestTestKeyWithData>()
+        val key = navigationHandle.assertOpen<TestTestKeyWithData>()
 
         assertEquals(id, key.id)
         runCatching {

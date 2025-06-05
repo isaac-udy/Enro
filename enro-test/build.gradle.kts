@@ -19,9 +19,9 @@ kotlin {
         desktopMain.dependencies {
         }
         commonMain.dependencies {
+            api("dev.enro:enro-core:${project.enroVersionName}")
         }
         androidMain.dependencies {
-            api("dev.enro:enro-core:${project.enroVersionName}")
 
             implementation(libs.androidx.core)
             implementation(libs.androidx.appcompat)

@@ -17,23 +17,24 @@ import kotlinx.coroutines.sync.Mutex
  * Instead of having a CloseParent/AllowEmpty, we should provide a special "Empty" instruction here (maybe even with a
  * placeholder) so that the close behaviour is always consistent (easier for predictive back stuff).
  */
-public class NavigationContainer internal constructor(
+public class NavigationContainer(
     public val key: Key,
     public val controller: EnroController,
     backstack: NavigationBackstack = emptyList(),
     public val parent: NavigationContainer? = null,
-    private val filter: NavigationContainerFilter = acceptAll(),
 ) {
     private val mutableBackstack: MutableStateFlow<NavigationBackstack> = MutableStateFlow(backstack)
     public val backstack: StateFlow<NavigationBackstack> = mutableBackstack
 
     private val interceptors = mutableListOf<NavigationInterceptor>()
 
-    internal fun addInterceptor(interceptor: NavigationInterceptor) {
+    @AdvancedEnroApi
+    public fun addInterceptor(interceptor: NavigationInterceptor) {
         interceptors.add(interceptor)
     }
 
-    internal fun removeInterceptor(interceptor: NavigationInterceptor) {
+    @AdvancedEnroApi
+    public fun removeInterceptor(interceptor: NavigationInterceptor) {
         interceptors.remove(interceptor)
     }
 

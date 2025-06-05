@@ -59,7 +59,6 @@ internal class NavigationHandleImpl<T : NavigationKey>(
     }
 
     override fun execute(
-        target: NavigationOperation.Target,
         operation: NavigationOperation,
     ) {
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return

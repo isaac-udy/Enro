@@ -23,12 +23,6 @@ public class NavigationOperation(
         internal val sideEffect: () -> Unit
     ) : RuntimeException()
 
-    public sealed interface Target {
-        public data object Parent : Target
-        public data object ActiveChild : Target
-        public data class Key(val key: NavigationContainer.Key) : Target
-    }
-
     public companion object {
         public fun open(instance: NavigationKey.Instance<*>): NavigationOperation = NavigationOperation { backstack ->
             backstack + instance

@@ -51,7 +51,6 @@ internal class NavigationHandleHolder<T : NavigationKey>(
         }
 
         override fun execute(
-            target: NavigationOperation.Target,
             operation: NavigationOperation,
         ) {
             EnroLog.warn("NavigationHandle with instance $instance has been cleared, but has received an operation which will be ignored")

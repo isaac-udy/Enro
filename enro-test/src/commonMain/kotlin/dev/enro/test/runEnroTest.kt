@@ -8,7 +8,7 @@ package dev.enro.test
  * fun exampleTest() = runEnroTest { ... }
  * ```
  *
- * See the documentation for [EnroTestRule] for more information.
+ * See the documentation for [dev.enro.test.EnroTestRule] for more information.
  */
 fun runEnroTest(block: () -> Unit) {
     EnroTest.installNavigationController()

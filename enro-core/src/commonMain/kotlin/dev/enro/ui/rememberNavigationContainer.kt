@@ -50,7 +50,6 @@ public fun rememberNavigationContainer(
             controller = controller,
             backstack = backstack,
             parent = parent.getOrNull(),
-            filter = filter,
         )
     }
 
@@ -112,7 +111,6 @@ internal class NavigationContainerSaver(
             controller = controller,
             backstack = restoredBackstack,
             parent = parent,
-            filter = filter,
         )
     }
 

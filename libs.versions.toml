@@ -37,7 +37,7 @@ androidx-navigation-event = "androidx.navigationevent:navigationevent:1.0.0-alph
 androidx-activity = "androidx.activity:activity-ktx:1.10.1"
 compose-activity = "androidx.activity:activity-compose:1.10.1"
 
-androidx-lifecycle = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7"
+androidx-lifecycle = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel:2.9.0"
 androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.8.7"
 
 androidx-savedState = "org.jetbrains.androidx.savedstate:savedstate:1.3.0"

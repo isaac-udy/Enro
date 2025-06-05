@@ -11,7 +11,7 @@ import org.junit.runners.model.Statement
  * Enro's test extensions, and allow [TestNavigationHandles] to be created, which will record
  * navigation instructions that are made against the navigation handle. The recorded navigation
  * instructions can then be asserted on, in particular by using extensions such as
- * [expectOpenInstruction], [assertActive], [assertClosed], [assertOpened] and others.
+ * [expectOpenInstruction], [assertActive], [assertClosed], [assertOpen] and others.
  *
  * When EnroTestRule is used in an instrumented test, it will *prevent* regular navigation from
  * occurring, and is designed for testing individual screens in isolation from one another. If you

@@ -7,14 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import dev.enro.core.NavigationKey
-import dev.enro.core.controller.get
 import dev.enro.core.controller.usecase.CreateResultChannel
 import dev.enro.core.result.NavigationResultChannel
 import dev.enro.core.result.NavigationResultScope
 import dev.enro.core.result.internal.ResultChannelId
 import dev.enro.core.result.internal.ResultChannelImpl
 import dev.enro.core.result.registerForNavigationResult
-import dev.enro.test.extensions.putNavigationHandleForViewModel
 import dev.enro.viewmodel.withNavigationHandle
 import kotlinx.parcelize.Parcelize
 import org.junit.Assert.assertNotEquals

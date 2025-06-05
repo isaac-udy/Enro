@@ -1,7 +1,5 @@
 package dev.enro.test
 
-import dev.enro.core.NavigationKey
-
 class EnroTestAssertionException(message: String) : AssertionError(message)
 
 @PublishedApi
@@ -82,6 +80,22 @@ internal fun <T: Any> T?.shouldMatchPredicateNotNull(predicate: (T) -> Boolean, 
 }
 
 @PublishedApi
+internal fun <T : Any> T?.shouldNotMatchPredicate(
+    predicate: (T?) -> Boolean,
+    message: EnroAssertionContext.() -> String,
+): T? {
+    val predicateResult = predicate(this)
+    if (predicateResult) {
+        val assertionContext = EnroAssertionContext(
+            expected = null,
+            actual = this
+        )
+        throw EnroTestAssertionException(message(assertionContext))
+    }
+    return this
+}
+
+@PublishedApi
 internal inline fun <reified T> Any?.shouldBeInstanceOf(): T {
     if (this == null) {
         throw EnroTestAssertionException("Expected a non-null value, but was null.")
@@ -89,26 +103,7 @@ internal inline fun <reified T> Any?.shouldBeInstanceOf(): T {
 
     val isCorrectType = this is T
     if (!isCorrectType) {
-        val assertionContext = EnroAssertionContext(
-            expected = T::class,
-            actual = this::class
-        )
         throw EnroTestAssertionException("Expected type ${T::class.simpleName}, but was ${this::class.simpleName}")
-    }
-    return this as T
-}
-
-@PublishedApi
-internal fun <T : NavigationKey> Any?.shouldBeInstanceOf(
-    cls: Class<T>,
-) : T {
-    if (this == null) {
-        throw EnroTestAssertionException("Expected a non-null value, but was null.")
-    }
-
-    val isCorrectType = cls.isAssignableFrom(this::class.java)
-    if (!isCorrectType) {
-        throw EnroTestAssertionException("Expected type ${cls.simpleName}, but was ${this::class.simpleName}")
     }
     return this as T
 }

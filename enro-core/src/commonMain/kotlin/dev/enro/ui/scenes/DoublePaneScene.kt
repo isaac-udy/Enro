@@ -39,18 +39,19 @@ public class DoublePaneScene : NavigationSceneStrategy {
                 }
                 Row {
                     with(LocalNavigationSharedTransitionScope.current) {
-                        if (entries.size == 2 && width > 600.dp) {
+                        if (width > 600.dp) {
                             // Render both destinations side by side or in some layout
-                            Box(
-                                modifier = Modifier.Companion
-                                    .sharedElement(
-                                        rememberSharedContentState(key = entries.first().instance.id),
-                                        animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
-                                    )
-                                    .weight(1f)
+                            if (entries.size > 1) {
+                                Box(
+                                    modifier = Modifier.Companion
+                                        .sharedElement(
+                                            rememberSharedContentState(key = entries.first().instance.id),
+                                            animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
+                                        )
+                                        .weight(1f)
 
-                            ) { entries.first().content() }
-
+                                ) { entries.first().content() }
+                            }
                             Box(
                                 modifier = Modifier.Companion
                                     .sharedElement(
@@ -63,11 +64,11 @@ public class DoublePaneScene : NavigationSceneStrategy {
                             Box(
                                 modifier = Modifier.Companion
                                     .sharedElement(
-                                        rememberSharedContentState(key = entries.first().instance.id),
+                                        rememberSharedContentState(key = entries.last().instance.id),
                                         animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
                                     )
                                     .weight(1f)
-                            ) { entries.first().content() }
+                            ) { entries.last().content() }
                         }
                     }
                 }
