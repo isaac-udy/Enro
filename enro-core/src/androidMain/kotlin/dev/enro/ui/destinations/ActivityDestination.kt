@@ -2,6 +2,7 @@ package dev.enro.ui.destinations
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Bundle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
@@ -11,6 +12,8 @@ import dev.enro.NavigationKey
 import dev.enro.close
 import dev.enro.complete
 import dev.enro.navigationHandle
+import dev.enro.platform.getNavigationKeyInstance
+import dev.enro.platform.putNavigationKeyInstance
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.navigationDestination
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
@@ -42,4 +45,20 @@ public inline fun <reified T : NavigationKey, reified A : Activity> activityDest
             launcher.launch(intent)
         }
     }
+}
+
+private const val IntentInstanceKey = "dev.enro.ui.destinations.ActivityDestination.IntentInstanceKey"
+
+public fun Intent.putNavigationKeyInstance(instance: NavigationKey.Instance<*>): Intent {
+    return putExtra(
+        IntentInstanceKey, Bundle().putNavigationKeyInstance(
+            instance.copy(
+                metadata = instance.metadata.copy()
+            )
+        )
+    )
+}
+
+public fun Intent.getNavigationKeyInstance(): NavigationKey.Instance<NavigationKey>? {
+    return extras?.getNavigationKeyInstance()
 }

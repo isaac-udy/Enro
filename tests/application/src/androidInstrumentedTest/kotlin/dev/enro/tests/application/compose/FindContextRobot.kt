@@ -10,10 +10,9 @@ import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
-import dev.enro.core.findContextWithKey
-import dev.enro.core.navigationContext
+import dev.enro.findChildDestinationContext
+import dev.enro.platform.navigationContext
 import dev.enro.tests.application.waitForNavigationHandle
-import dev.enro.tests.application.compose.FindContext
 import kotlin.reflect.KClass
 
 class FindContextRobot (
@@ -29,10 +28,10 @@ class FindContextRobot (
         }
         composeRule.waitUntil {
             // Need to wait a moment for all of the child contexts to be created in their containers
-            componentActivity.navigationContext.findContextWithKey<FindContext.Left.Top>() != null
-                && componentActivity.navigationContext.findContextWithKey<FindContext.Left.Bottom>() != null
-                && componentActivity.navigationContext.findContextWithKey<FindContext.Right.Top>() != null
-                && componentActivity.navigationContext.findContextWithKey<FindContext.Right.Bottom>() != null
+            componentActivity.navigationContext.findChildDestinationContext<FindContext.Left.Top>() != null
+                && componentActivity.navigationContext.findChildDestinationContext<FindContext.Left.Bottom>() != null
+                && componentActivity.navigationContext.findChildDestinationContext<FindContext.Right.Top>() != null
+                && componentActivity.navigationContext.findChildDestinationContext<FindContext.Right.Bottom>() != null
         }
     }
 

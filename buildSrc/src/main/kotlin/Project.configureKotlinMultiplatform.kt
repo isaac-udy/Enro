@@ -56,6 +56,7 @@ internal fun Project.configureKotlinMultiplatform(
                         "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=dev.enro.annotations.Parcelize"
                     )
                     freeCompilerArgs.addAll("-Xexpect-actual-classes")
+                    freeCompilerArgs.addAll("-Xnested-type-aliases")
                     optIn.addAll(*optIns)
                 }
             }
@@ -66,6 +67,7 @@ internal fun Project.configureKotlinMultiplatform(
                 compilerOptions {
                     jvmTarget.set(JvmTarget.JVM_21)
                     freeCompilerArgs.addAll("-Xexpect-actual-classes")
+                    freeCompilerArgs.addAll("-Xnested-type-aliases")
                     optIn.addAll(*optIns)
                 }
             }
@@ -92,6 +94,7 @@ internal fun Project.configureKotlinMultiplatform(
                 binaries.executable()
                 compilerOptions {
                     freeCompilerArgs.addAll("-Xexpect-actual-classes", "-Xwasm-attach-js-exception")
+                    freeCompilerArgs.addAll("-Xnested-type-aliases")
                     optIn.addAll(*optIns)
                 }
             }
@@ -107,6 +110,7 @@ internal fun Project.configureKotlinMultiplatform(
                     isStatic = true
                     compilerOptions {
                         freeCompilerArgs.addAll("-Xexpect-actual-classes")
+                        freeCompilerArgs.addAll("-Xnested-type-aliases")
                         optIn.addAll(*optIns)
                     }
                 }

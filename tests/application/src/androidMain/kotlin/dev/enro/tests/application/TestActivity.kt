@@ -11,7 +11,6 @@ import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 
 class TestActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)

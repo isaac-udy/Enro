@@ -22,11 +22,14 @@ public open class NavigationDestinationProvider<T : NavigationKey>(
     }
 }
 
-public class NavigationDestination<T : NavigationKey> private constructor(
+public class NavigationDestination<out T : NavigationKey> private constructor(
     public val instance: NavigationKey.Instance<T>,
     public val metadata: Map<String, Any> = emptyMap(),
     public val content: @Composable () -> Unit,
 ) {
+    public val id: String get() = instance.id
+    public val key: T get() = instance.key
+
     public companion object {
         @OptIn(ExperimentalSharedTransitionApi::class)
         public fun <T: NavigationKey> create(

@@ -5,18 +5,13 @@ import android.util.Base64
 import androidx.savedstate.SavedState
 import androidx.savedstate.serialization.decodeFromSavedState
 import androidx.savedstate.serialization.encodeToSavedState
-import dev.enro.core.NavigationDirection
-import dev.enro.core.NavigationInstruction
-import dev.enro.core.NavigationKey
-import dev.enro.core.asPush
-import dev.enro.core.controller.NavigationController
-import dev.enro.tests.application.serialization.ParcelableAndSerializableData
-import dev.enro.tests.application.serialization.ParcelableData
-import dev.enro.tests.application.serialization.SerializableData
+import dev.enro.EnroController
+import dev.enro.NavigationKey
+import dev.enro.asInstance
 import dev.enro.tests.application.serialization.AndroidSerialization
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.util.UUID
+import java.util.*
 import kotlin.random.Random
 
 class AndroidSerializationTests {
@@ -28,14 +23,14 @@ class AndroidSerializationTests {
     fun testParcelableCanBeCycledToParcelWithExplicitType() {
         val savedState = encodeToSavedState<AndroidSerialization.ParcelableNavigationKey>(
             value = parcelableNavigationKey,
-            configuration = NavigationController.savedStateConfiguration,
+            configuration = EnroController.savedStateConfiguration,
         )
         val encodedParcelableNavigationKey = cycleSavedState(
             data = savedState,
         )
         val decodedParcelableNavigationKey = decodeFromSavedState<AndroidSerialization.ParcelableNavigationKey>(
             savedState = encodedParcelableNavigationKey,
-            configuration = NavigationController.savedStateConfiguration
+            configuration = EnroController.savedStateConfiguration
         )
         assertEquals(parcelableNavigationKey, decodedParcelableNavigationKey)
     }
@@ -44,14 +39,14 @@ class AndroidSerializationTests {
     fun testParcelableCanBeCycledToParcelWithGenericType() {
         val savedState = encodeToSavedState<NavigationKey>(
             value = parcelableNavigationKey,
-            configuration = NavigationController.savedStateConfiguration,
+            configuration = EnroController.savedStateConfiguration,
         )
         val encodedParcelableNavigationKey = cycleSavedState(
             data = savedState,
         )
         val decodedParcelableNavigationKey = decodeFromSavedState<NavigationKey>(
             savedState = encodedParcelableNavigationKey,
-            configuration = NavigationController.savedStateConfiguration
+            configuration = EnroController.savedStateConfiguration
         )
         assertEquals(parcelableNavigationKey, decodedParcelableNavigationKey)
     }
@@ -60,14 +55,14 @@ class AndroidSerializationTests {
     fun testSerializableCanBeCycledToParcelWithExplicitType() {
         val savedState = encodeToSavedState<AndroidSerialization.SerializableNavigationKey>(
             value = serializableNavigationKey,
-            configuration = NavigationController.savedStateConfiguration,
+            configuration = EnroController.savedStateConfiguration,
         )
         val encodedSerializableNavigationKey = cycleSavedState(
             data = savedState,
         )
         val decodedSerializableNavigationKey = decodeFromSavedState<AndroidSerialization.SerializableNavigationKey>(
             savedState = encodedSerializableNavigationKey,
-            configuration = NavigationController.savedStateConfiguration
+            configuration = EnroController.savedStateConfiguration
         )
         assertEquals(serializableNavigationKey, decodedSerializableNavigationKey)
     }
@@ -76,24 +71,24 @@ class AndroidSerializationTests {
     fun testSerializableCanBeCycledToParcelWithGenericType() {
         val savedState = encodeToSavedState<NavigationKey>(
             value = serializableNavigationKey,
-            configuration = NavigationController.savedStateConfiguration,
+            configuration = EnroController.savedStateConfiguration,
         )
         val encodedSerializableNavigationKey = cycleSavedState(
             data = savedState,
         )
         val decodedSerializableNavigationKey = decodeFromSavedState<NavigationKey>(
             savedState = encodedSerializableNavigationKey,
-            configuration = NavigationController.savedStateConfiguration
+            configuration = EnroController.savedStateConfiguration
         )
         assertEquals(serializableNavigationKey, decodedSerializableNavigationKey)
     }
 
     @Test
     fun testParcelableCanBeCycledToJsonWithExplicitType() {
-        val jsonString = NavigationController.jsonConfiguration.encodeToString<AndroidSerialization.ParcelableNavigationKey>(
+        val jsonString = EnroController.jsonConfiguration.encodeToString<AndroidSerialization.ParcelableNavigationKey>(
             parcelableNavigationKey,
         )
-        val decodedJson = NavigationController.jsonConfiguration.decodeFromString<AndroidSerialization.ParcelableNavigationKey>(
+        val decodedJson = EnroController.jsonConfiguration.decodeFromString<AndroidSerialization.ParcelableNavigationKey>(
             jsonString,
         )
         assertEquals(parcelableNavigationKey, decodedJson)
@@ -101,10 +96,10 @@ class AndroidSerializationTests {
 
     @Test
     fun testParcelableCanBeCycledToJsonWithGenericType() {
-        val jsonString = NavigationController.jsonConfiguration.encodeToString<NavigationKey>(
+        val jsonString = EnroController.jsonConfiguration.encodeToString<NavigationKey>(
             parcelableNavigationKey,
         )
-        val decodedJson = NavigationController.jsonConfiguration.decodeFromString<NavigationKey>(
+        val decodedJson = EnroController.jsonConfiguration.decodeFromString<NavigationKey>(
             jsonString,
         )
         assertEquals(parcelableNavigationKey, decodedJson)
@@ -112,10 +107,10 @@ class AndroidSerializationTests {
 
     @Test
     fun testSerializableCanBeCycledToJsonWithExplicitType() {
-        val jsonString = NavigationController.jsonConfiguration.encodeToString<AndroidSerialization.SerializableNavigationKey>(
+        val jsonString = EnroController.jsonConfiguration.encodeToString<AndroidSerialization.SerializableNavigationKey>(
             serializableNavigationKey,
         )
-        val decodedJson = NavigationController.jsonConfiguration.decodeFromString<AndroidSerialization.SerializableNavigationKey>(
+        val decodedJson = EnroController.jsonConfiguration.decodeFromString<AndroidSerialization.SerializableNavigationKey>(
             jsonString,
         )
         assertEquals(serializableNavigationKey, decodedJson)
@@ -123,10 +118,10 @@ class AndroidSerializationTests {
 
     @Test
     fun testSerializableCanBeCycledToJsonWithGenericType() {
-        val jsonString = NavigationController.jsonConfiguration.encodeToString<NavigationKey>(
+        val jsonString = EnroController.jsonConfiguration.encodeToString<NavigationKey>(
             serializableNavigationKey,
         )
-        val decodedJson = NavigationController.jsonConfiguration.decodeFromString<NavigationKey>(
+        val decodedJson = EnroController.jsonConfiguration.decodeFromString<NavigationKey>(
             jsonString,
         )
         assertEquals(serializableNavigationKey, decodedJson)
@@ -134,61 +129,73 @@ class AndroidSerializationTests {
 
     @Test
     fun testNavigationInstructionParcelableKeyAndExtrasCanBeSerialized() {
-        val instruction = parcelableNavigationKey.asPush()
+        val instruction = parcelableNavigationKey.asInstance()
             .apply {
-                extras.put("string",UUID.randomUUID().toString())
-                extras.put("int",Random.nextInt())
-                extras.put("boolean",listOf(true, false).random())
-                extras.put("float",Random.nextFloat())
-                extras.put("double",Random.nextDouble())
-                extras.put("long",Random.nextLong())
-                extras.put("list", listOf(1,2,3,4,5))
-                extras.put("listOfKeys", listOf(parcelableNavigationKey, serializableNavigationKey))
-                extras.put("set", setOf(1,2,3,4))
-                extras.put("map", mapOf("key" to "value"))
-                extras.put("mapOfKeys", mapOf(parcelableNavigationKey to serializableNavigationKey))
+                metadata.set(MetadataString, UUID.randomUUID().toString())
+                metadata.set(MetadataInt, Random.nextInt())
+                metadata.set(MetadataBoolean, listOf(true, false).random())
+                metadata.set(MetadataFloat, Random.nextFloat())
+                metadata.set(MetadataDouble, Random.nextDouble())
+                metadata.set(MetadataLong, Random.nextLong())
+                metadata.set(MetadataList, listOf(1, 2, 3, 4, 5))
+                metadata.set(MetadataListOfKeys, listOf(parcelableNavigationKey, serializableNavigationKey))
+                metadata.set(MetadataSet, setOf(1, 2, 3, 4))
+                metadata.set(MetadataMap, mapOf("key" to "value"))
+                metadata.set(MetadataMapOfKeys, mapOf(parcelableNavigationKey to serializableNavigationKey))
             }
         val cycled = cycleSavedState(
             data = encodeToSavedState(
                 value = instruction,
-                configuration = NavigationController.savedStateConfiguration,
+                configuration = EnroController.savedStateConfiguration,
             ),
         )
-        val decoded = decodeFromSavedState<NavigationInstruction.Open<out NavigationDirection>>(
+        val decoded = decodeFromSavedState<NavigationKey.Instance<NavigationKey>>(
             savedState = cycled,
-            configuration = NavigationController.savedStateConfiguration
+            configuration = EnroController.savedStateConfiguration
         )
         assertEquals(instruction, decoded)
     }
 
     @Test
     fun testNavigationInstructionSerializableKeyAndExtrasCanBeSerialized() {
-        val instruction = serializableNavigationKey.asPush()
+        val instruction = serializableNavigationKey.asInstance()
             .apply {
-                extras.put("string", UUID.randomUUID().toString())
-                extras.put("int", Random.nextInt())
-                extras.put("boolean", listOf(true, false).random())
-                extras.put("float", Random.nextFloat())
-                extras.put("double", Random.nextDouble())
-                extras.put("long", Random.nextLong())
-                extras.put("list", listOf(1, 2, 3, 4, 5))
-                extras.put("listOfKeys", listOf(parcelableNavigationKey, serializableNavigationKey))
-                extras.put("set", setOf(1, 2, 3, 4))
-                extras.put("map", mapOf("key" to "value"))
-                extras.put("mapOfKeys", mapOf(parcelableNavigationKey to serializableNavigationKey))
+                metadata.set(MetadataString, UUID.randomUUID().toString())
+                metadata.set(MetadataInt, Random.nextInt())
+                metadata.set(MetadataBoolean, listOf(true, false).random())
+                metadata.set(MetadataFloat, Random.nextFloat())
+                metadata.set(MetadataDouble, Random.nextDouble())
+                metadata.set(MetadataLong, Random.nextLong())
+                metadata.set(MetadataList, listOf(1, 2, 3, 4, 5))
+                metadata.set(MetadataListOfKeys, listOf(parcelableNavigationKey, serializableNavigationKey))
+                metadata.set(MetadataSet, setOf(1, 2, 3, 4))
+                metadata.set(MetadataMap, mapOf("key" to "value"))
+                metadata.set(MetadataMapOfKeys, mapOf(parcelableNavigationKey to serializableNavigationKey))
             }
         val cycled = cycleSavedState(
             data = encodeToSavedState(
                 value = instruction,
-                configuration = NavigationController.savedStateConfiguration,
+                configuration = EnroController.savedStateConfiguration,
             ),
         )
-        val decoded = decodeFromSavedState<NavigationInstruction.Open<out NavigationDirection>>(
+        val decoded = decodeFromSavedState<NavigationKey.Instance<NavigationKey>>(
             savedState = cycled,
-            configuration = NavigationController.savedStateConfiguration
+            configuration = EnroController.savedStateConfiguration
         )
         assertEquals(instruction, decoded)
     }
+
+    object MetadataString : NavigationKey.MetadataKey<String?>(null)
+    object MetadataInt : NavigationKey.MetadataKey<Int?>(null)
+    object MetadataBoolean : NavigationKey.MetadataKey<Boolean?>(null)
+    object MetadataFloat : NavigationKey.MetadataKey<Float?>(null)
+    object MetadataDouble : NavigationKey.MetadataKey<Double?>(null)
+    object MetadataLong : NavigationKey.MetadataKey<Long?>(null)
+    object MetadataList : NavigationKey.MetadataKey<List<*>?>(null)
+    object MetadataListOfKeys : NavigationKey.MetadataKey<List<NavigationKey>?>(null)
+    object MetadataSet : NavigationKey.MetadataKey<Set<*>?>(null)
+    object MetadataMap : NavigationKey.MetadataKey<Map<*, *>?>(null)
+    object MetadataMapOfKeys : NavigationKey.MetadataKey<Map<NavigationKey, NavigationKey>?>(null)
 }
 
 /**

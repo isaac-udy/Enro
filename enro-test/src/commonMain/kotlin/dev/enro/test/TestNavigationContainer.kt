@@ -21,7 +21,6 @@ fun createTestNavigationContainer(
         key = key,
         controller = controller,
         backstack = backstack,
-        parent = parent,
     )
     container.backstack.value.forEach {
         val currentContainer = it.metadata.get(TestNavigationContainer.MetadataKey)

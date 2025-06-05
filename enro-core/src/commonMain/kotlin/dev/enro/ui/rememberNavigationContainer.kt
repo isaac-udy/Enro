@@ -16,6 +16,7 @@ import dev.enro.EnroController
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationContainerFilter
+import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.acceptAll
 import dev.enro.interceptor.NavigationInterceptor
@@ -26,12 +27,11 @@ import kotlinx.serialization.PolymorphicSerializer
 public fun rememberNavigationContainer(
     key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@${currentCompositeKeyHash}"),
     backstack: NavigationBackstack,
-    emptyBehavior: EmptyBehavior = EmptyBehavior.allowEmpty(),
+    emptyBehavior: EmptyBehavior = EmptyBehavior.preventEmpty(),
     interceptor: NavigationInterceptor = NoOpNavigationInterceptor,
     filter: NavigationContainerFilter = acceptAll(),
 ): NavigationContainerState {
-    val parent = runCatching { LocalNavigationContainer.current }
-    val parentContext = runCatching { LocalNavigationContext.current }.getOrNull()
+    val parentContext = LocalNavigationContext.current
     val controller = remember {
         requireNotNull(EnroController.instance) {
             "EnroController instance is not initialized"
@@ -41,15 +41,12 @@ public fun rememberNavigationContainer(
         saver = NavigationContainerSaver(
             key = key,
             controller = controller,
-            parent = parent.getOrNull(),
-            filter = filter,
         ),
     ) {
         NavigationContainer(
             key = key,
             controller = controller,
             backstack = backstack,
-            parent = parent.getOrNull(),
         )
     }
 
@@ -67,18 +64,25 @@ public fun rememberNavigationContainer(
         }
     }
 
-    // Register/unregister with parent context
-    DisposableEffect(container, parentContext) {
-        parentContext?.registerChildContainer(container)
-        onDispose {
-            parentContext?.unregisterChildContainer(container)
-        }
+    val context = remember(container, parentContext) {
+        NavigationContext.Container(
+            container = container,
+            parentContext = parentContext,
+        )
     }
 
+    // Register/unregister with parent context
+    DisposableEffect(container, parentContext) {
+        parentContext.registerChild(context)
+        onDispose {
+            parentContext.unregisterChild(context)
+        }
+    }
     val containerState = remember(container) {
         NavigationContainerState(
             container = container,
             emptyBehavior = emptyBehavior,
+            context = context,
         )
     }
     val destinations = rememberDecoratedDestinations(
@@ -93,8 +97,6 @@ public fun rememberNavigationContainer(
 internal class NavigationContainerSaver(
     private val key: NavigationContainer.Key,
     private val controller: EnroController,
-    private val parent: NavigationContainer?,
-    private val filter: NavigationContainerFilter,
 ) : Saver<NavigationContainer, SavedState> {
     override fun restore(value: SavedState): NavigationContainer? {
         val restoredBackstack = value.read {
@@ -110,7 +112,6 @@ internal class NavigationContainerSaver(
             key = key,
             controller = controller,
             backstack = restoredBackstack,
-            parent = parent,
         )
     }
 

@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
 import dev.enro.NavigationContainer
 import dev.enro.NavigationOperation
-import dev.enro.platform.EnroLog
 import dev.enro.ui.animation.rememberTransitionCompat
 import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
 import dev.enro.ui.scenes.DialogSceneStrategy
@@ -162,7 +161,10 @@ public fun NavigationDisplay(
     }
 
     // Render the navigation content
-    CompositionLocalProvider(LocalNavigationContainer provides state.container) {
+    CompositionLocalProvider(
+        LocalNavigationContainer provides state.container,
+        LocalNavigationContext provides state.context,
+    ) {
         ProvideRemovalTrackingInfo {
             RenderMainContent(
                 transition = transition,

@@ -2,6 +2,7 @@ package dev.enro.test
 
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
+import kotlin.jvm.JvmName
 
 /**
  * Asserts that the NavigationContainer's backstack contains at least one NavigationKey.Instance that matches the
@@ -30,6 +31,7 @@ inline fun <reified T : NavigationKey> NavigationContainer.assertContains(
  * Asserts that the NavigationContainer's backstack contains at least one NavigationKey.Instance that is equal
  * to the provided NavigationKey.Instance [instance]
  */
+@JvmName("assertContainsAny")
 fun NavigationContainer.assertContains(
     predicate: (NavigationKey.Instance<NavigationKey>) -> Boolean = { true },
 ): NavigationKey.Instance<NavigationKey> {
@@ -74,6 +76,7 @@ inline fun <reified T : NavigationKey> NavigationContainer.assertDoesNotContain(
         }
 }
 
+@JvmName("assertDoesNotContainAny")
 fun NavigationContainer.assertDoesNotContain(
     predicate: (NavigationKey.Instance<NavigationKey>) -> Boolean,
 ) {

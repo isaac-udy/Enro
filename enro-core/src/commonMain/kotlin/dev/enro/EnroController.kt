@@ -12,7 +12,7 @@ import kotlinx.serialization.json.Json
 public class EnroController {
     // TODO NEED TO CONFIGURE THIS
     internal val isDebug = false
-
+    internal var platformReference: Any? = null
     internal val plugins = PluginRepository()
     internal val bindings = BindingRepository()
     internal val serializers = SerializerRepository()
@@ -54,14 +54,9 @@ public class EnroController {
     public companion object {
         internal var instance: EnroController? = null
             private set
-
         internal fun requireInstance(): EnroController {
             return instance ?: error("EnroController has not been installed")
         }
-
-        internal var platformReference: Any? = null
-            private set
-
         public val jsonConfiguration: Json get() {
             val instance = instance ?: return Json
             return instance.serializers.jsonConfiguration

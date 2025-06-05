@@ -12,45 +12,47 @@ import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
-import dev.enro.core.NavigationContext
-import dev.enro.core.NavigationHandle
-import dev.enro.core.activeChildContext
-import dev.enro.core.getNavigationHandle
-import dev.enro.core.navigationContext
+import dev.enro.NavigationContext
+import dev.enro.NavigationHandle
+import dev.enro.NavigationKey
+import dev.enro.findChildDestinationContext
+import dev.enro.getNavigationHandle
+import dev.enro.platform.navigationContext
 import kotlin.reflect.KClass
 
 fun ComposeTestRule.waitForNavigationHandle(
-    block: (NavigationHandle) -> Boolean
-): NavigationHandle {
+    block: (NavigationHandle<NavigationKey>) -> Boolean
+): NavigationHandle<NavigationKey> {
     val context = waitForNavigationContext {
         runCatching {
             it.getNavigationHandle()
                 .let(block)
-        }
-            .getOrNull() == true
+        }.getOrNull() == true
     }
     return context.getNavigationHandle()
 }
 
+@JvmName("waitForAnyNavigationContext")
 fun ComposeTestRule.waitForNavigationContext(
-    block: (NavigationContext<*>) -> Boolean
-): NavigationContext<*> {
-    var navigationContext: NavigationContext<*>? = null
+    block: (NavigationContext.Destination<NavigationKey>) -> Boolean
+) :  NavigationContext.Destination<NavigationKey> {
+    return waitForNavigationContext<NavigationKey>(block)
+}
+
+inline fun <reified T: NavigationKey> ComposeTestRule.waitForNavigationContext(
+    noinline block: (NavigationContext.Destination<T>) -> Boolean = { true }
+): NavigationContext.Destination<T> {
+    var navigationContext: NavigationContext.Destination<T>? = null
     waitUntil(5_000) {
-        val activity = runOnIdle {
-            runOnUiThread {
-                ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
-                    .singleOrNull() as? ComponentActivity
-            }
+        val activity = runOnUiThread {
+            ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
+                .singleOrNull() as? ComponentActivity
         } ?: return@waitUntil false
 
-        var activeContext: NavigationContext<*>? = activity.navigationContext
-        while (activeContext != null) {
-            if (block(activeContext)) {
-                navigationContext = activeContext
-                return@waitUntil true
-            }
-            activeContext = activeContext.activeChildContext()
+        val child = activity.navigationContext.findChildDestinationContext(block)
+        if (child != null) {
+            navigationContext = child
+            return@waitUntil true
         }
         false
     }

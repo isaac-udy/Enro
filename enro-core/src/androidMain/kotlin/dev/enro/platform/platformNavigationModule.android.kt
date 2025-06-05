@@ -6,4 +6,5 @@ import dev.enro.controller.createNavigationModule
 
 internal actual val platformNavigationModule: NavigationModule = createNavigationModule {
     module(compatNavigationModule)
+    plugin(ActivityPlugin)
 }

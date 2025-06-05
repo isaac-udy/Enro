@@ -8,12 +8,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
+import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 
-public class NavigationContainerState(
+public class NavigationContainerState internal constructor(
     public val container: NavigationContainer,
     public val emptyBehavior: EmptyBehavior,
+    public val context: NavigationContext.Container
 ) {
 
     public val key: NavigationContainer.Key = container.key
@@ -31,6 +33,9 @@ public class NavigationContainerState(
         internal set
 
     public var destinations: List<NavigationDestination<NavigationKey>> by mutableStateOf(emptyList())
+        internal set
+
+    public var contexts: List<NavigationContext.Destination<NavigationKey>> by mutableStateOf(emptyList())
         internal set
 
     public val backstack: NavigationBackstack

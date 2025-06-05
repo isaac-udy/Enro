@@ -17,7 +17,7 @@ internal class NavigationHandleImpl<T : NavigationKey>(
     private val lifecycleRegistry = LifecycleRegistry(this)
     override val lifecycle: Lifecycle = lifecycleRegistry
 
-    private var context: NavigationContext<T>? = null
+    private var context: NavigationContext.Destination<T>? = null
     override var instance: NavigationKey.Instance<T> = instance
         private set
 
@@ -39,7 +39,7 @@ internal class NavigationHandleImpl<T : NavigationKey>(
         }
     }
 
-    internal fun bindContext(context: NavigationContext<T>) {
+    internal fun bindContext(context: NavigationContext.Destination<T>) {
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
 
         this.context?.lifecycle?.removeObserver(lifecycleObserver)

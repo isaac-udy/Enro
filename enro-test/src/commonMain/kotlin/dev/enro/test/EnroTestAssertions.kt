@@ -1,5 +1,7 @@
 package dev.enro.test
 
+import kotlin.jvm.JvmName
+
 class EnroTestAssertionException(message: String) : AssertionError(message)
 
 @PublishedApi
@@ -63,6 +65,7 @@ internal fun <T> T.shouldNotMatchPredicate(predicate: (T) -> Boolean, message: E
 }
 
 @PublishedApi
+@JvmName("nullableShouldMatchPredicateNotNull")
 internal fun <T: Any> T?.shouldMatchPredicateNotNull(predicate: (T) -> Boolean, message: EnroAssertionContext.() -> String): T {
     if (this == null) {
         throw EnroTestAssertionException("Expected a non-null value, but was null.")
@@ -80,6 +83,7 @@ internal fun <T: Any> T?.shouldMatchPredicateNotNull(predicate: (T) -> Boolean, 
 }
 
 @PublishedApi
+@JvmName("nullableShouldNotMatchPredicate")
 internal fun <T : Any> T?.shouldNotMatchPredicate(
     predicate: (T?) -> Boolean,
     message: EnroAssertionContext.() -> String,
@@ -96,6 +100,7 @@ internal fun <T : Any> T?.shouldNotMatchPredicate(
 }
 
 @PublishedApi
+@JvmName("nullableShouldBeInstanceOf")
 internal inline fun <reified T> Any?.shouldBeInstanceOf(): T {
     if (this == null) {
         throw EnroTestAssertionException("Expected a non-null value, but was null.")

@@ -21,7 +21,6 @@ public class NavigationContainer(
     public val key: Key,
     public val controller: EnroController,
     backstack: NavigationBackstack = emptyList(),
-    public val parent: NavigationContainer? = null,
 ) {
     private val mutableBackstack: MutableStateFlow<NavigationBackstack> = MutableStateFlow(backstack)
     public val backstack: StateFlow<NavigationBackstack> = mutableBackstack

@@ -6,11 +6,8 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.espresso.Espresso
+import dev.enro.requireViewModel
 import dev.enro.tests.application.waitForNavigationContext
-import dev.enro.tests.application.compose.results.AsyncData
-import dev.enro.tests.application.compose.results.ComposeAsyncManagedResultFlow
-import dev.enro.tests.application.compose.results.ComposeAsyncManagedResultViewModel
-import dev.enro.viewmodel.requireViewModel
 import org.junit.Assert.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
@@ -21,9 +18,7 @@ class ComposeAsyncManagedResultFlowRobot(
     private val maximumTimeout = 5_000L
 
     val viewModel = composeRule
-        .waitForNavigationContext {
-            it.instruction.navigationKey is ComposeAsyncManagedResultFlow
-        }
+        .waitForNavigationContext<ComposeAsyncManagedResultFlow>()
         .requireViewModel<ComposeAsyncManagedResultViewModel>()
 
     fun assertStepOne(): ComposeAsyncManagedResultFlowRobot {
@@ -36,7 +31,7 @@ class ComposeAsyncManagedResultFlowRobot(
 
     fun assertStepTwo(): ComposeAsyncManagedResultFlowRobot {
         composeRule.waitUntilAtLeastOneExists(hasText("Step: Two"), maximumTimeout)
-        assertTrue(viewModel.state.value.dataAfterStepOne is AsyncData.Loaded)
+        assertTrue(viewModel.state.value.dataAfterStepOne is AsyncData.Loaded<*>)
         composeRule.onNodeWithText("Step: Two")
             .assertExists()
         composeRule.onNodeWithText("Extra: ${ComposeAsyncManagedResultFlow.hashCode()}")
@@ -46,7 +41,7 @@ class ComposeAsyncManagedResultFlowRobot(
 
     fun assertFinalStep(): ComposeAsyncManagedResultFlowRobot {
         composeRule.waitUntilAtLeastOneExists(hasText("Final Screen"), maximumTimeout)
-        assertTrue(viewModel.state.value.dataAfterStepTwo is AsyncData.Loaded)
+        assertTrue(viewModel.state.value.dataAfterStepTwo is AsyncData.Loaded<*>)
         composeRule.onNodeWithText("Final Screen")
             .assertExists()
         return this

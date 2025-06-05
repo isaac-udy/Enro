@@ -20,7 +20,7 @@ internal class NavigationHandleHolder<T : NavigationKey>(
     internal var navigationHandle: NavigationHandle<T> by mutableStateOf(NavigationHandleImpl(instance))
 
     fun bindContext(
-        context: NavigationContext<T>,
+        context: NavigationContext.Destination<T>,
     ) {
         require(context.destination.instance.id == navigationHandle.id) {
             "Cannot bind NavigationContext with instance ${context.destination.instance} to NavigationHandle with instance ${navigationHandle.instance}"

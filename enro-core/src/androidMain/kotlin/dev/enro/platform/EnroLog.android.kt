@@ -11,7 +11,7 @@ internal actual object EnroLog {
     // Enabled/disabled by EnroTest
     @Suppress("MemberVisibilityCanBePrivate")
     internal val usePrint
-        get() = EnroController.platformReference !is Application
+        get() = EnroController.instance?.platformReference !is Application
 
     actual fun debug(message: String) {
         if (usePrint) {
