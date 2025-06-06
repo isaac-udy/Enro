@@ -31,9 +31,9 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
     @PublishedApi
     internal val navigationHandle: NavigationHandle<*>,
     @PublishedApi
-    internal val onClosed: NavigationResultScope<out NavigationKey>.() -> Unit,
+    internal val onClosed: NavigationResultScope<NavigationKey>.() -> Unit,
     @PublishedApi
-    internal val onCompleted: NavigationResultScope<out NavigationKey>.(Result) -> Unit,
+    internal val onCompleted: NavigationResultScope<NavigationKey>.(Result) -> Unit,
 ) {
     @Serializable
     @PublishedApi

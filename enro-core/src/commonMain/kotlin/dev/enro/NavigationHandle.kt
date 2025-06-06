@@ -4,7 +4,7 @@ import androidx.lifecycle.LifecycleOwner
 import dev.enro.annotations.AdvancedEnroApi
 import kotlin.jvm.JvmName
 
-public abstract class NavigationHandle<T : NavigationKey> internal constructor() : LifecycleOwner {
+public abstract class NavigationHandle<out T : NavigationKey> internal constructor() : LifecycleOwner {
     public abstract val instance: NavigationKey.Instance<T>
 
     public val id: String get() = instance.id
