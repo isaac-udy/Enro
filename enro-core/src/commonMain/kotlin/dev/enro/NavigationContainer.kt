@@ -61,18 +61,23 @@ public class NavigationContainer(
                     "inside of its [NavigationInterceptor.intercept] method.")
         }
         executionMutex.tryLock(this)
-        val containerContext = findContextFrom(context)
-        requireNotNull(containerContext) {
+        val contextForExecution = when {
+            context is DestinationContext<*> && context.parent.container == this -> context
+            else -> findContextFrom(context)
+        }
+        requireNotNull(contextForExecution) {
             "Could not find ContainerContext with id ${key.name} from context $context"
         }
         var pendingAction: () -> Unit = {}
         runCatching transitionBlock@{
             val interceptor = AggregateNavigationInterceptor(interceptors)
             val containerOperation = interceptor.intercept(
+                context = contextForExecution,
                 operation = operation,
             )
             if (containerOperation == null) return
             val controllerOperation = controller.interceptors.intercept(
+                context = contextForExecution,
                 operation = containerOperation,
             )
             if (controllerOperation == null) return
@@ -86,7 +91,7 @@ public class NavigationContainer(
             }
             NavigationResultChannel.registerResults(transition)
             mutableBackstack.value = transition.targetBackstack
-            containerContext.requestActiveInRoot()
+            contextForExecution.requestActiveInRoot()
         }.apply {
             executionMutex.unlock(this@NavigationContainer)
             getOrThrow()

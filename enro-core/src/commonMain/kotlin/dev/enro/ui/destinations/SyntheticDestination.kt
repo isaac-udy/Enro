@@ -3,6 +3,7 @@ package dev.enro.ui.destinations
 import dev.enro.EnroController
 import dev.enro.NavigationKey
 import dev.enro.interceptor.NavigationTransitionInterceptor
+import dev.enro.platform.EnroLog
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.navigationDestination
 
@@ -13,6 +14,7 @@ internal class SyntheticDestination<K : NavigationKey>(
         const val SyntheticDestinationKey = "dev.enro.ui.destinations.SyntheticDestinationKey"
 
         val interceptor = NavigationTransitionInterceptor { transition ->
+            EnroLog.error("SyntheticDestination intercepting navigation operation...")
             val controller = requireNotNull(EnroController.instance)
             val bindings = transition.opened.map {
                 it to controller.bindings.bindingFor(instance = it)

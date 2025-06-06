@@ -1,7 +1,6 @@
 package dev.enro.tests.application
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -29,7 +28,7 @@ class TestActivity : AppCompatActivity() {
                     val newString = context.getDebugString()
                     if (newString != string) {
                         string = newString
-                        Log.e("Enro", string)
+//                        Log.e("Enro", string)
                     }
                 }
             }

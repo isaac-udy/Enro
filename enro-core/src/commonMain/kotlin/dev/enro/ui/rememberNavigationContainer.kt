@@ -106,7 +106,7 @@ internal class NavigationContainerSaver(
     override fun restore(value: SavedState): NavigationContainer? {
         val restoredBackstack = value.read {
             getSavedStateList(BackstackKey).map {
-                decodeFromSavedState<NavigationKey.Instance<NavigationKey>>(
+                decodeFromSavedState(
                     deserializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
                     savedState = it,
                     configuration = controller.serializers.savedStateConfiguration,

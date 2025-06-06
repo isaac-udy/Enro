@@ -66,7 +66,6 @@ fun SyntheticViewModelAccessDestination() {
 // and trigger a side effect on that ViewModel
 @NavigationDestination(SyntheticViewModelAccess.AccessValidViewModel::class)
 internal val accessValidViewModel = syntheticDestination<SyntheticViewModelAccess.AccessValidViewModel> {
-    TODO("NOT WORKING")
 //    require(navigationContext.instruction?.navigationKey is SyntheticViewModelAccess)
 //
 //    navigationContext.requireViewModel<ViewModelForSyntheticViewModelAccess>()

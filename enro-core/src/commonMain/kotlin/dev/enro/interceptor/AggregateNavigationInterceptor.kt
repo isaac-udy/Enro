@@ -1,5 +1,6 @@
 package dev.enro.interceptor
 
+import dev.enro.NavigationContext
 import dev.enro.NavigationOperation
 
 internal class AggregateNavigationInterceptor(
@@ -7,10 +8,16 @@ internal class AggregateNavigationInterceptor(
 ) : NavigationInterceptor {
     private val interceptors = interceptors.flatMap { it.flatten() }
 
-    override fun intercept(operation: NavigationOperation): NavigationOperation? {
+    override fun intercept(
+        context: NavigationContext,
+        operation: NavigationOperation,
+    ): NavigationOperation? {
         return interceptors.fold(operation as NavigationOperation?) { currentOperation, interceptor ->
             if (currentOperation == null) return null
-            interceptor.intercept(currentOperation)
+            interceptor.intercept(
+                context,
+                currentOperation,
+            )
         }
     }
 

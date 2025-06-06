@@ -81,7 +81,7 @@ class DestinationReference(
 
     val bindingName = requireNotNull(declaration.qualifiedName).asString()
         .replace(".", "_")
-        .let { "_${it}_GeneratedNavigationBinding_enro3" }
+        .let { "_${it}_GeneratedNavigationBinding" }
 
     fun toClassName() = (declaration as KSClassDeclaration).toClassName()
 }

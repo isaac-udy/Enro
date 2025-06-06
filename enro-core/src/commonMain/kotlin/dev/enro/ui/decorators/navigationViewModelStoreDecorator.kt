@@ -20,7 +20,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import dev.enro.NavigationKey
-import dev.enro.platform.EnroLog
+import dev.enro.ui.LocalNavigationContext
 
 /**
  * Returns a [NavigationDestinationDecorator] that provides [ViewModelStore] functionality
@@ -41,8 +41,15 @@ public fun rememberViewModelStoreDecorator(
             "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
         },
     shouldRemoveStoreOwner: () -> Boolean = rememberShouldRemoveViewModelStoreCallback(),
-): NavigationDestinationDecorator<NavigationKey> = remember(viewModelStoreOwner, shouldRemoveStoreOwner) {
-    viewModelStoreDecorator(viewModelStoreOwner.viewModelStore, shouldRemoveStoreOwner)
+): NavigationDestinationDecorator<NavigationKey> {
+    val contextViewModelStoreOwner = LocalNavigationContext.current
+    return remember(viewModelStoreOwner, shouldRemoveStoreOwner) {
+        viewModelStoreDecorator(
+            parentViewModelStoreOwner = contextViewModelStoreOwner,
+            viewModelStore = viewModelStoreOwner.viewModelStore,
+            shouldRemoveStoreOwner = shouldRemoveStoreOwner
+        )
+    }
 }
 
 /**
@@ -60,11 +67,11 @@ public fun rememberViewModelStoreDecorator(
  *                               cleared when the destination is removed from the backstack
  */
 internal fun viewModelStoreDecorator(
+    parentViewModelStoreOwner: ViewModelStoreOwner,
     viewModelStore: ViewModelStore,
     shouldRemoveStoreOwner: () -> Boolean,
 ): NavigationDestinationDecorator<NavigationKey> {
     val storage = viewModelStore.getOrCreateViewModelStoreStorage()
-
     return navigationDestinationDecorator(
         onRemove = { instance ->
             if (shouldRemoveStoreOwner()) {
@@ -77,6 +84,7 @@ internal fun viewModelStoreDecorator(
 
             val childViewModelStoreOwner = remember(savedStateRegistryOwner) {
                 DestinationViewModelStoreOwner(
+                    parentViewModelStoreOwner = parentViewModelStoreOwner,
                     destinationViewModelStore = destinationViewModelStore,
                     savedStateRegistryOwner = savedStateRegistryOwner,
                 )
@@ -94,6 +102,7 @@ internal fun viewModelStoreDecorator(
  * Combines ViewModelStore functionality with SavedStateRegistry support.
  */
 private class DestinationViewModelStoreOwner(
+    private val parentViewModelStoreOwner: ViewModelStoreOwner,
     private val destinationViewModelStore: ViewModelStore,
     savedStateRegistryOwner: SavedStateRegistryOwner,
 ) : ViewModelStoreOwner,
@@ -104,7 +113,16 @@ private class DestinationViewModelStoreOwner(
         get() = destinationViewModelStore
 
     override val defaultViewModelProviderFactory: ViewModelProvider.Factory
-        get() = error("defaultViewModelProviderFactory not supported - use viewModel with explicit factory")
+        get() {
+            when (parentViewModelStoreOwner) {
+                is HasDefaultViewModelProviderFactory -> {
+                    return parentViewModelStoreOwner.defaultViewModelProviderFactory
+                }
+                else -> {
+                    error("defaultViewModelProviderFactory not supported - use viewModel with explicit factory")
+                }
+            }
+        }
 
     override val defaultViewModelCreationExtras: CreationExtras
         get() = MutableCreationExtras().also {

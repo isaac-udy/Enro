@@ -2,7 +2,6 @@ package dev.enro.core.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentCompositeKeyHash
-import androidx.compose.runtime.saveable.rememberSaveable
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationOperation
@@ -32,9 +31,7 @@ public fun rememberNavigationContainer(
 ): NavigationContainerState {
     return rememberNavigationContainer(
         key = key,
-        initialBackstack = rememberSaveable {
-            backstackOf(root.asPush())
-        },
+        initialBackstack = backstackOf(root.asPush()),
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         animations = animations,
@@ -53,10 +50,8 @@ public fun rememberNavigationContainer(
 ): NavigationContainerState {
     return rememberNavigationContainer(
         key = key,
-        initialBackstack = rememberSaveable {
-            initialBackstack.map {
-                it.asPush()
-            }
+        initialBackstack = initialBackstack.map {
+            it.asPush()
         },
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
@@ -69,7 +64,7 @@ public fun rememberNavigationContainer(
 @AdvancedEnroApi
 @JvmName("rememberNavigationContainerWithBackstack")
 public fun rememberNavigationContainer(
-    key: NavigationContainer.Key =  NavigationContainer.Key("NavigationContainer@${currentCompositeKeyHash}"),
+    key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@${currentCompositeKeyHash}"),
     initialBackstack: NavigationBackstack,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
@@ -80,7 +75,7 @@ public fun rememberNavigationContainer(
     return newRememberNavigationContainer(
         key = key,
         backstack = initialBackstack,
-        emptyBehavior = when(emptyBehavior) {
+        emptyBehavior = when (emptyBehavior) {
             is EmptyBehavior.Action -> NewEmptyBehavior(
                 isBackHandlerEnabled = { true },
                 onPredictiveBackProgress = { true },
@@ -89,6 +84,7 @@ public fun rememberNavigationContainer(
                     if (cancel) cancel()
                 }
             )
+
             EmptyBehavior.AllowEmpty -> NewEmptyBehavior.allowEmpty()
             EmptyBehavior.CloseParent -> NewEmptyBehavior(
                 isBackHandlerEnabled = { true },
@@ -103,6 +99,7 @@ public fun rememberNavigationContainer(
                     }
                 }
             )
+
             EmptyBehavior.ForceCloseParent -> NewEmptyBehavior(
                 isBackHandlerEnabled = { true },
                 onPredictiveBackProgress = { true },

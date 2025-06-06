@@ -140,7 +140,7 @@ object NavigationDestinationGenerator {
                     formatting,
                 )
                 destination.isActivity -> addNamedCode(
-                    "destination(activityDestination<%keyType:T, %destinationType:T>())",
+                    "destination(activityDestination(%keyType:T::class, %destinationType:T::class))",
                     formatting,
                 )
                 else ->  environment.logger.error(

@@ -1,8 +1,10 @@
 package dev.enro.interceptor
 
 import dev.enro.NavigationBackstack
+import dev.enro.NavigationContext
 import dev.enro.NavigationOperation
 import dev.enro.NavigationTransition
+import dev.enro.platform.EnroLog
 
 /**
  * An interceptor that handles when specific navigation keys are opened.
@@ -12,16 +14,17 @@ public class NavigationTransitionInterceptor @PublishedApi internal constructor(
 ) : NavigationInterceptor {
 
     override fun intercept(
+        context: NavigationContext,
         operation: NavigationOperation,
     ): NavigationOperation? {
         return NavigationOperation { backstack ->
-
             val transition = operation.invoke(backstack)
             val result = runCatching {
                 Scope().apply {
                     action(transition)
                 }
             }.exceptionOrNull() ?: Result.Continue()
+            EnroLog.error("Intercepting navigation operation $result ${action::class.simpleName}")
 
             when (result) {
                 is Result.Continue -> transition.targetBackstack

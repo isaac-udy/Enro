@@ -68,6 +68,7 @@ internal fun <R: Any> NavigationKey.Instance<NavigationKey.WithResult<R>>.setRes
 }
 
 @JvmName("setDelegatedResultGeneric")
+@PublishedApi
 internal fun NavigationKey.Instance<NavigationKey>.setDelegatedResult(
     instance: NavigationKey.Instance<NavigationKey>,
 ) {
@@ -85,6 +86,7 @@ internal fun <R: Any> NavigationKey.Instance<NavigationKey.WithResult<R>>.setDel
     error("$key is a NavigationKey.WithResult and cannot delegate a result to a key that does not match its result type")
 }
 
+@PublishedApi
 internal fun <R: Any> NavigationKey.Instance<NavigationKey.WithResult<R>>.setDelegatedResult(
     instance: NavigationKey.Instance<NavigationKey.WithResult<R>>,
 ) {
