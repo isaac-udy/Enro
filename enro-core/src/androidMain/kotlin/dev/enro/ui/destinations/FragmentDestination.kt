@@ -6,8 +6,8 @@ import androidx.fragment.compose.AndroidFragment
 import androidx.fragment.compose.rememberFragmentState
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
-import dev.enro.platform.putNavigationKeyInstance
 import dev.enro.platform.getNavigationKeyInstance
+import dev.enro.platform.putNavigationKeyInstance
 import dev.enro.result.NavigationResultChannel
 import dev.enro.result.NavigationResultScope
 import dev.enro.ui.NavigationDestinationProvider

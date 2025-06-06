@@ -1,10 +1,23 @@
 package dev.enro.context
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelLazy
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import kotlin.reflect.KClass
 
+/**
+ * When attempting to find a ViewModel in a NavigationContext, we don't want to create a new ViewModel, rather we want to
+ * get an existing instance of that ViewModel, if it exists, so this ViewModelProvider.Factory always throws an exception
+ * if it is ever asked to actually create a ViewModel.
+ */
+private class NavigationContextViewModelFactory() : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(
+        modelClass: KClass<T>,
+        extras: CreationExtras,
+    ): T {
+        error("Failed to create ViewModel $modelClass. This factory should not be used to create ViewModels.")
+    }
+}
 
 private fun viewModelNotFoundError(context: AnyNavigationContext, modelClass: KClass<*>): Nothing {
     val contextString = when (context) {
@@ -24,13 +37,17 @@ public fun <T : ViewModel> AnyNavigationContext.getViewModel(
     cls: KClass<T>,
     key: String? = null,
 ): T? {
-    val lazy = ViewModelLazy(
-        viewModelClass = cls,
-        storeProducer = { viewModelStore },
-        factoryProducer = { viewModelNotFoundError(this, cls) },
-        extrasProducer = { CreationExtras.Empty },
+    val provider = ViewModelProvider.create(
+        owner = this,
+        factory = NavigationContextViewModelFactory(),
     )
-    val result = kotlin.runCatching { lazy.value }
+    val result = kotlin.runCatching {
+        if (key == null) {
+            provider.get(modelClass = cls)
+        } else {
+            provider.get(modelClass = cls, key = key)
+        }
+    }
     return result.getOrNull()
 }
 

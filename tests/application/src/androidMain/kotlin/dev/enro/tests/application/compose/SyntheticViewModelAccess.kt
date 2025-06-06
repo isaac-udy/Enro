@@ -9,6 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.annotations.NavigationDestination
+import dev.enro.context.requireContext
+import dev.enro.context.requireViewModel
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.present
@@ -66,10 +68,9 @@ fun SyntheticViewModelAccessDestination() {
 // and trigger a side effect on that ViewModel
 @NavigationDestination(SyntheticViewModelAccess.AccessValidViewModel::class)
 internal val accessValidViewModel = syntheticDestination<SyntheticViewModelAccess.AccessValidViewModel> {
-//    require(navigationContext.instruction?.navigationKey is SyntheticViewModelAccess)
-//
-//    navigationContext.requireViewModel<ViewModelForSyntheticViewModelAccess>()
-//        .onViewModelAccessed()
+    val target = context.requireContext<SyntheticViewModelAccess>()
+    target.requireViewModel<ViewModelForSyntheticViewModelAccess>()
+        .onViewModelAccessed()
 }
 
 class InvalidViewModel : ViewModel()
@@ -77,8 +78,6 @@ class InvalidViewModel : ViewModel()
 // This destination should throw an exception for attempting to access an invalid ViewModel
 @NavigationDestination(SyntheticViewModelAccess.AccessInvalidViewModel::class)
 internal val accessInvalidViewModel = syntheticDestination<SyntheticViewModelAccess.AccessInvalidViewModel> {
-    TODO("NOT WORKING")
-//    require(navigationContext.instruction?.navigationKey is SyntheticViewModelAccess)
-//
-//    navigationContext.requireViewModel<InvalidViewModel>()
+    val target = context.requireContext<SyntheticViewModelAccess>()
+    target.requireViewModel<InvalidViewModel>()
 }

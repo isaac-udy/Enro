@@ -3,7 +3,6 @@ package dev.enro.context
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 
-
 private fun AnyNavigationContext.findContext(
     activeOnly: Boolean,
     predicate: (AnyNavigationContext) -> Boolean,

@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 
-public class DestinationContext<T : NavigationKey>(
+public class DestinationContext<out T : NavigationKey>(
     lifecycleOwner: LifecycleOwner,
     viewModelStoreOwner: ViewModelStoreOwner,
     defaultViewModelProviderFactory: HasDefaultViewModelProviderFactory,
