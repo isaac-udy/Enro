@@ -1,12 +1,18 @@
-package dev.enro
+package dev.enro.context
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.viewmodel.CreationExtras
 import kotlin.reflect.KClass
 
-private fun viewModelNotFoundError(context: NavigationContext, modelClass: KClass<*>): Nothing {
-    error("ViewModel ${modelClass.simpleName} was not found in NavigationContext ${context.id}")
+
+private fun viewModelNotFoundError(context: AnyNavigationContext, modelClass: KClass<*>): Nothing {
+    val contextString = when (context) {
+        is DestinationContext<*> -> "NavigationContext.Destination with key: ${context.key::class.simpleName} and id: ${context.id}"
+        is ContainerContext -> "NavigationContext.Container with id: ${context.id}"
+        is RootContext -> "NavigationContext.Root"
+    }
+    error("ViewModel ${modelClass.simpleName} was not found in $contextString")
 }
 
 /**
@@ -14,11 +20,11 @@ private fun viewModelNotFoundError(context: NavigationContext, modelClass: KClas
  *
  * @return The ViewModel requested, or null if the ViewModel does not exist in the NavigationContext's ViewModelStore
  */
-public fun <T : ViewModel> NavigationContext.getViewModel(
+public fun <T : ViewModel> AnyNavigationContext.getViewModel(
     cls: KClass<T>,
     key: String? = null,
 ): T? {
-    val lazy = ViewModelLazy<T>(
+    val lazy = ViewModelLazy(
         viewModelClass = cls,
         storeProducer = { viewModelStore },
         factoryProducer = { viewModelNotFoundError(this, cls) },
@@ -35,7 +41,7 @@ public fun <T : ViewModel> NavigationContext.getViewModel(
  *
  * @throws IllegalStateException if the ViewModel does not already exist in the NavigationContext
  */
-public fun <T : ViewModel> NavigationContext.requireViewModel(
+public fun <T : ViewModel> AnyNavigationContext.requireViewModel(
     cls: KClass<T>,
     key: String? = null,
 ): T {
@@ -48,7 +54,7 @@ public fun <T : ViewModel> NavigationContext.requireViewModel(
  *
  * @return The ViewModel requested, or null if the ViewModel does not exist in the NavigationContext's ViewModelStore
  */
-public inline fun <reified T : ViewModel> NavigationContext.getViewModel(
+public inline fun <reified T : ViewModel> AnyNavigationContext.getViewModel(
     key: String? = null,
 ): T? {
     return getViewModel(T::class, key)
@@ -61,7 +67,7 @@ public inline fun <reified T : ViewModel> NavigationContext.getViewModel(
  *
  * @throws IllegalStateException if the ViewModel does not already exist in the NavigationContext
  */
-public inline fun <reified T : ViewModel> NavigationContext.requireViewModel(
+public inline fun <reified T : ViewModel> AnyNavigationContext.requireViewModel(
     key: String? = null,
 ): T {
     return requireViewModel(T::class, key)

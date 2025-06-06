@@ -6,10 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ViewModel
-import dev.enro.NavigationContext
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.context.DestinationContext
 import dev.enro.platform.EnroLog
 
 @PublishedApi
@@ -20,7 +20,7 @@ internal class NavigationHandleHolder<T : NavigationKey>(
     internal var navigationHandle: NavigationHandle<T> by mutableStateOf(NavigationHandleImpl(instance))
 
     fun bindContext(
-        context: NavigationContext.Destination<T>,
+        context: DestinationContext<T>,
     ) {
         require(context.destination.instance.id == navigationHandle.id) {
             "Cannot bind NavigationContext with instance ${context.destination.instance} to NavigationHandle with instance ${navigationHandle.instance}"

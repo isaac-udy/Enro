@@ -39,22 +39,27 @@ internal fun rememberDecoratedDestinations(
 
     // Add removal tracking decorator last to ensure it tracks all other decorators
     val decoratorsWithRemovalTracking = decorators + rememberRemovalTrackingDecorator(decorators)
+    val decoratedDestinations = remember {
+        mutableMapOf<String, NavigationDestination<NavigationKey>>()
+    }
 
     return remember(backstack) {
+        val active = backstack.map { it.id }
+        decoratedDestinations.filter { it.key !in active }
+            .onEach { decoratedDestinations.remove(it.key) }
+
         backstack
             .map { instance ->
-                // Find the navigation binding for this instance and create the destination
-                @Suppress("UNCHECKED_CAST")
-                instance as NavigationKey.Instance<NavigationKey>
-                val binding = controller.bindings.bindingFor(instance)
-                binding.provider.create(instance)
-            }
-            .map {
-                // Apply all decorators to enhance the destination
-                decorateNavigationDestination(
-                    destination = it,
-                    decorators = decoratorsWithRemovalTracking,
-                )
+                decoratedDestinations.getOrPut(instance.id) {
+                    // Find the navigation binding for this instance and create the destination
+                    val binding = controller.bindings.bindingFor(instance)
+                    val destination = binding.provider.create(instance)
+
+                    decorateNavigationDestination(
+                        destination = destination,
+                        decorators = decoratorsWithRemovalTracking,
+                    )
+                }
             }
     }
 }

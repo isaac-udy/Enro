@@ -20,6 +20,8 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.compose.lifecycle)
+            implementation(libs.androidx.viewmodel)
             api("dev.enro:enro-core:${project.enroVersionName}")
         }
         androidMain.dependencies {

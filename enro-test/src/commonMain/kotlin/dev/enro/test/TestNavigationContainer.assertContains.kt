@@ -13,13 +13,13 @@ import kotlin.jvm.JvmName
 inline fun <reified T : NavigationKey> NavigationContainer.assertContains(
     predicate: (NavigationKey.Instance<T>) -> Boolean = { true },
 ): NavigationKey.Instance<T> {
-    backstack.value
+    backstack
         .firstOrNull {
             @Suppress("UNCHECKED_CAST")
             it.key is T && predicate(it as NavigationKey.Instance<T>)
         }
         .shouldNotBeEqualTo(null) {
-            "NavigationContainer's backstack does not contain expected NavigationKey.Instance.\n\tBackstack: ${backstack.value}"
+            "NavigationContainer's backstack does not contain expected NavigationKey.Instance.\n\tBackstack: ${backstack}"
         }
         .let {
             @Suppress("UNCHECKED_CAST")
@@ -64,7 +64,7 @@ inline fun <reified T : NavigationKey> NavigationContainer.assertContains(key: T
 inline fun <reified T : NavigationKey> NavigationContainer.assertDoesNotContain(
     predicate: (NavigationKey.Instance<T>) -> Boolean,
 ) {
-    backstack.value
+    backstack
         .firstOrNull {
             @Suppress("UNCHECKED_CAST")
             it.key is T && predicate(it as NavigationKey.Instance<T>)
@@ -72,7 +72,7 @@ inline fun <reified T : NavigationKey> NavigationContainer.assertDoesNotContain(
         .shouldBeEqualTo(
             null,
         ) {
-            "NavigationContainer's backstack should not contain NavigationKey.Instance matching predicate.\n\tBackstack: ${backstack.value}"
+            "NavigationContainer's backstack should not contain NavigationKey.Instance matching predicate.\n\tBackstack: $backstack"
         }
 }
 
@@ -90,11 +90,12 @@ fun NavigationContainer.assertDoesNotContain(
 inline fun <reified T : NavigationKey> NavigationContainer.assertDoesNotContain(
     instance: NavigationKey.Instance<T>,
 ) {
-    backstack.value.firstOrNull { it == instance }
+    backstack
+        .firstOrNull { it == instance }
         .shouldNotBeEqualTo(
             instance,
         ) {
-            "NavigationContainer's backstack should not contain NavigationKey.Instance.\n\tNavigationKey.Instance: $expected\n\tBackstack: ${backstack.value}"
+            "NavigationContainer's backstack should not contain NavigationKey.Instance.\n\tNavigationKey.Instance: $expected\n\tBackstack: ${backstack}"
         }
 }
 
@@ -105,7 +106,7 @@ inline fun <reified T : NavigationKey> NavigationContainer.assertDoesNotContain(
 fun NavigationContainer.assertDoesNotContain(
     key: NavigationKey,
 ) {
-    val backstackAsNavigationKeys = backstack.value.map { it.key }
+    val backstackAsNavigationKeys = backstack.map { it.key }
     backstackAsNavigationKeys.firstOrNull { it == key }
         .shouldNotBeEqualTo(
             key,

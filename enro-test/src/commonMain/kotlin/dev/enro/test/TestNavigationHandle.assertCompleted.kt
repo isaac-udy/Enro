@@ -2,7 +2,7 @@
 
 package dev.enro.test
 
-import dev.enro.core.NavigationKey
+import dev.enro.NavigationKey
 import dev.enro.result.NavigationResult
 import dev.enro.result.NavigationResult.Completed.Companion.result
 import dev.enro.result.getResult

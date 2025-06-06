@@ -29,8 +29,8 @@ public class NavigationOperation(
         }
 
         public fun close(instance: NavigationKey.Instance<*>): NavigationOperation = NavigationOperation { backstack ->
-            instance.setResultClosed()
-            val toRemove = backstack.last { it.id == instance.id }
+            val toRemove = backstack.lastOrNull { it.id == instance.id } ?: return@NavigationOperation backstack
+            toRemove.setResultClosed()
             return@NavigationOperation backstack - toRemove
         }
 

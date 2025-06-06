@@ -6,7 +6,7 @@ import dev.enro.NavigationKey
 public fun interface NavigationSceneStrategy {
     @Composable
     public fun calculateScene(
-        entries: List<NavigationDestination<out NavigationKey>>,
+        entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene?
 
     public companion object {

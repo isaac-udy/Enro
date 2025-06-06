@@ -20,20 +20,24 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
 import dev.enro.NavigationContainer
+import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.platform.EnroLog
 import dev.enro.ui.animation.rememberTransitionCompat
 import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
 import dev.enro.ui.scenes.DialogSceneStrategy
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
-import dev.enro.ui.scenes.SinglePaneScene
+import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import dev.enro.ui.scenes.calculateSceneWithSinglePaneFallback
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
@@ -67,7 +71,7 @@ public fun NavigationDisplay(
         NavigationSceneStrategy.from(
             DialogSceneStrategy(),
             DirectOverlaySceneStrategy(),
-            SinglePaneScene(),
+            SinglePaneSceneStrategy(),
         )
     },
     contentAlignment: Alignment = Alignment.TopStart,
@@ -90,7 +94,7 @@ public fun NavigationDisplay(
             targetContentEnter = fadeIn(spring(stiffness = Spring.StiffnessMedium)),
             initialContentExit = fadeOut(),
         )
-    }
+    },
 ) {
     // Create and remember the state that tracks the display's internal state
     val sceneState = remember { NavigationSceneState() }
@@ -159,13 +163,12 @@ public fun NavigationDisplay(
             else -> transitionSpec(this)
         }
     }
-
     // Render the navigation content
     CompositionLocalProvider(
-        LocalNavigationContainer provides state.container,
+        LocalNavigationContainer provides state,
         LocalNavigationContext provides state.context,
     ) {
-        ProvideRemovalTrackingInfo {
+       ProvideRemovalTrackingInfo {
             RenderMainContent(
                 transition = transition,
                 scenes = sceneState.scenes,
@@ -229,8 +232,57 @@ private fun calculateScenes(
     // The last scene is the main scene, all others are overlays
     val overlayScenes = allScenes.dropLast(1).filterIsInstance<NavigationScene.Overlay>()
     val scene = allScenes.last()
+
+    SceneRecompositionDebugger(
+        scene = scene,
+        overlayScenes = overlayScenes,
+        destinations = destinations,
+    )
     return scene to overlayScenes
 }
+
+@Composable
+internal fun SceneRecompositionDebugger(
+    scene: NavigationScene,
+    overlayScenes: List<NavigationScene>,
+    destinations: List<NavigationDestination<NavigationKey>>
+) {
+    val sceneHashes = remember {
+        mutableStateOf(
+            SceneHash(
+                scene = scene,
+                overlayScenes = overlayScenes,
+                destinationIds = destinations.map { it.id }.toSet()
+            )
+        )
+    }
+    val recompositionCount = remember { mutableStateOf(0) }
+    SideEffect {
+        val updatedIds = destinations.map { it.id }.toSet()
+        val isSameDestinations = sceneHashes.value.destinationIds == updatedIds
+        val isSameScenes = sceneHashes.value.scene == scene && sceneHashes.value.overlayScenes == overlayScenes
+        if (isSameDestinations && !isSameScenes) {
+            recompositionCount.value++
+        } else {
+            recompositionCount.value = 0
+        }
+        if (recompositionCount.value > 10) {
+            EnroLog.error("Scenes have changed but destinations have not, causing a recomposition. This may be a bug, caused by a SceneStrategy.calculateScene returning a different scene instance for the same destinations.")
+            recompositionCount.value = 0
+        }
+        sceneHashes.value = SceneHash(
+            scene = scene,
+            overlayScenes = overlayScenes,
+            destinationIds = updatedIds,
+        )
+    }
+}
+
+private data class SceneHash(
+    val scene: NavigationScene,
+    val overlayScenes: List<NavigationScene>,
+    val destinationIds: Set<String>
+)
 
 /**
  * Sets up handling for predictive back gestures.
@@ -252,7 +304,7 @@ private fun HandlePredictiveBack(
         state.emptyBehavior.isBackHandlerEnabled(backstack)
     }
     NavigationBackHandler(
-        enabled = isEnabled,
+        enabled = isEnabled && state.context.isActiveInRoot,
     ) { navEvent ->
         state.predictiveBackProgress = 0f
         try {
@@ -419,7 +471,12 @@ private fun TransitionAnimationEffect(
 
         // Seek to the appropriate position based on gesture progress
         if (transitionState.currentState != peekSceneKey) {
-            LaunchedEffect(state.predictiveBackProgress) { transitionState.seekTo(state.predictiveBackProgress, peekSceneKey) }
+            LaunchedEffect(state.predictiveBackProgress) {
+                transitionState.seekTo(
+                    state.predictiveBackProgress,
+                    peekSceneKey
+                )
+            }
         }
     } else {
         // Regular navigation - animate to target or handle settling

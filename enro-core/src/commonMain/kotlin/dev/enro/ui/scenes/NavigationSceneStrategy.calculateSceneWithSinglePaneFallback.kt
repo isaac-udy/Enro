@@ -8,5 +8,5 @@ import dev.enro.ui.NavigationSceneStrategy
 
 @Composable
 internal fun NavigationSceneStrategy.calculateSceneWithSinglePaneFallback(
-    entries: List<NavigationDestination<out NavigationKey>>,
-): NavigationScene = calculateScene(entries) ?: SinglePaneScene().calculateScene(entries)
+    entries: List<NavigationDestination<NavigationKey>>,
+): NavigationScene = calculateScene(entries) ?: SinglePaneSceneStrategy().calculateScene(entries)

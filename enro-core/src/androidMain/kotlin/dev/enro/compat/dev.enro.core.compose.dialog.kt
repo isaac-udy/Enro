@@ -10,7 +10,6 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +36,7 @@ public fun ModalBottomSheetState.bindToNavigationHandle(): ModalBottomSheetState
     val parent = requireNotNull(LocalNavigationContainer.current) {
         "Failed to bind ModalBottomSheetState to NavigationHandle: parentContainer was not found"
     }
-    val backstack by parent.backstack.collectAsState()
+    val backstack = parent.backstack
     val isInBackstack by remember {
         derivedStateOf { backstack.any { it.id == navigationHandle.id } }
     }
@@ -80,7 +79,7 @@ public fun BottomSheetDestination(
     val container = requireNotNull(LocalNavigationContainer.current) {
         "Failed to render BottomSheetDestination: parentContainer was not found"
     }
-    val backstack by container.backstack.collectAsState()
+    val backstack = container.backstack
     val isActive = remember { derivedStateOf { backstack.lastOrNull()?.id == navigationHandle.id } }
     var hasBeenDisplayed by rememberSaveable { mutableStateOf(false) }
 

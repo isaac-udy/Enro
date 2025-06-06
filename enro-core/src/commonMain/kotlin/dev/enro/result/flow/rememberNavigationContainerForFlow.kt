@@ -61,8 +61,9 @@ public fun rememberNavigationContainerForFlow(
             }
         }
     ).apply {
+        val state = this
         DisposableEffect(this) {
-            flow.container = container
+            flow.container = state
             onDispose {
                 flow.container = null
             }

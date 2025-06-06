@@ -3,13 +3,17 @@ package dev.enro.ui.decorators
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
+import dev.enro.context.ContainerContext
+import dev.enro.context.DestinationContext
 import dev.enro.handle.NavigationHandleHolder
 import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.LocalNavigationHandle
@@ -40,6 +44,9 @@ public fun rememberNavigationContextDecorator(): NavigationDestinationDecorator<
 internal fun navigationContextDecorator(): NavigationDestinationDecorator<NavigationKey> {
     return navigationDestinationDecorator { destination ->
         val parentContext = LocalNavigationContext.current
+        require(parentContext is ContainerContext) {
+            "Parent context must be a NavigationContext.Container"
+        }
         val lifecycleOwner = LocalLifecycleOwner.current
         val viewModelStoreOwner = LocalViewModelStoreOwner.current
 
@@ -58,20 +65,19 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
             NavigationHandleHolder(instance = destination.instance as NavigationKey.Instance<NavigationKey>)
         }
 
+        val activeContainerId = rememberSaveable { mutableStateOf<String?>(null) }
         // Create the navigation context for this destination
-        val context = remember(destination) {
-            require(parentContext is NavigationContext.Container) {
-                "Parent context must be a NavigationContext.Container"
-            }
-            NavigationContext.Destination(
+        val context = remember(parentContext, destination) {
+            DestinationContext(
                 lifecycleOwner = lifecycleOwner,
                 viewModelStoreOwner = viewModelStoreOwner,
                 defaultViewModelProviderFactory = viewModelStoreOwner,
                 destination = destination,
-                parentContext = parentContext,
+                activeChildId = activeContainerId,
+                parent = parentContext,
             )
         }
-        DisposableEffect(destination) {
+        DisposableEffect(parentContext, context) {
             parentContext.registerChild(context)
             onDispose {
                 parentContext.unregisterChild(context)

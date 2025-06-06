@@ -7,10 +7,7 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onSiblings
 import androidx.compose.ui.test.performClick
-import dev.enro.NavigationContext
-import dev.enro.NavigationKey
 import dev.enro.tests.application.waitForNavigationContext
-import dev.enro.ui.NavigationDestination
 
 @OptIn(ExperimentalTestApi::class)
 class ComposeManagedResultFlowRobot(
@@ -138,8 +135,6 @@ class ComposeManagedResultFlowRobot(
         val composeRule: ComposeTestRule,
     ) {
         init {
-            lateinit var example: NavigationContext.Destination<NavigationKey>
-            example.instance.key is ComposeManagedResultFlow.TransientResult
             composeRule.waitForNavigationContext<ComposeManagedResultFlow.TransientResult>()
         }
 
@@ -195,12 +190,6 @@ class ComposeManagedResultFlowRobot(
         }
 
         fun editFirst(): ComposeManagedResultFlowRobot {
-            val list = listOf<NavigationDestination<NavigationKey>>()
-            list.onEach { it.instance.key is ComposeManagedResultFlow.FinalScreen }
-
-            val list2 = listOf<NavigationContext.Destination<NavigationKey>>()
-            list2.onEach { it.instance.key is ComposeManagedResultFlow.FinalScreen }
-
             composeRule.onNodeWithText("Final Screen")
                 .onSiblings()
                 .filterToOne(hasText("Edit First Result"))

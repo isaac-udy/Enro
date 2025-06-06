@@ -22,7 +22,8 @@ public open class NavigationDestinationProvider<T : NavigationKey>(
     }
 }
 
-public class NavigationDestination<out T : NavigationKey> private constructor(
+@ConsistentCopyVisibility
+public data class NavigationDestination<out T : NavigationKey> private constructor(
     public val instance: NavigationKey.Instance<T>,
     public val metadata: Map<String, Any> = emptyMap(),
     public val content: @Composable () -> Unit,

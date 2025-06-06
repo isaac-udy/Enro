@@ -31,7 +31,7 @@ dependencies {
     implementation(libs.kotlin.stdLib)
     implementation(libs.androidx.core)
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.lifecycle)
+    implementation(libs.androidx.viewmodel)
     implementation(libs.androidx.fragment)
     implementation(libs.androidx.activity)
 

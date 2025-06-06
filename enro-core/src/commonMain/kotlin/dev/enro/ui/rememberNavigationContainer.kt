@@ -16,9 +16,11 @@ import dev.enro.EnroController
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationContainerFilter
-import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.acceptAll
+import dev.enro.context.ContainerContext
+import dev.enro.context.DestinationContext
+import dev.enro.context.RootContext
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.NoOpNavigationInterceptor
 import kotlinx.serialization.PolymorphicSerializer
@@ -32,6 +34,9 @@ public fun rememberNavigationContainer(
     filter: NavigationContainerFilter = acceptAll(),
 ): NavigationContainerState {
     val parentContext = LocalNavigationContext.current
+    require(parentContext is RootContext || parentContext is DestinationContext<*>) {
+        "NavigationContainer can only be used within a RootContext or DestinationContext"
+    }
     val controller = remember {
         requireNotNull(EnroController.instance) {
             "EnroController instance is not initialized"
@@ -65,9 +70,9 @@ public fun rememberNavigationContainer(
     }
 
     val context = remember(container, parentContext) {
-        NavigationContext.Container(
+        ContainerContext(
             container = container,
-            parentContext = parentContext,
+            parent = parentContext,
         )
     }
 
@@ -116,10 +121,10 @@ internal class NavigationContainerSaver(
     }
 
     override fun SaverScope.save(value: NavigationContainer): SavedState? {
-        val savedBackstack = value.backstack.value.map { instance ->
+        val savedBackstack = value.backstack.map { instance ->
             encodeToSavedState(
                 serializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
-                value = instance as NavigationKey.Instance<NavigationKey>,
+                value = instance,
                 configuration = controller.serializers.savedStateConfiguration
             )
         }

@@ -1,21 +1,21 @@
 package dev.enro.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
-import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.context.ContainerContext
 
 public class NavigationContainerState internal constructor(
     public val container: NavigationContainer,
     public val emptyBehavior: EmptyBehavior,
-    public val context: NavigationContext.Container
+    public val context: ContainerContext
 ) {
 
     public val key: NavigationContainer.Key = container.key
@@ -35,15 +35,12 @@ public class NavigationContainerState internal constructor(
     public var destinations: List<NavigationDestination<NavigationKey>> by mutableStateOf(emptyList())
         internal set
 
-    public var contexts: List<NavigationContext.Destination<NavigationKey>> by mutableStateOf(emptyList())
-        internal set
-
-    public val backstack: NavigationBackstack
-        @Composable
-        get() = container.backstack.collectAsState().value
+    public val backstack: NavigationBackstack by derivedStateOf {
+        container.backstack
+    }
 
     public fun execute(operation: NavigationOperation) {
-        container.execute(operation)
+        container.execute(context, operation)
     }
 
     @Deprecated("TODO BETTER DEPRECATION MESSAGE")

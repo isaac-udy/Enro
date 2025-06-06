@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -20,55 +21,57 @@ public class DoublePaneScene : NavigationSceneStrategy {
     @OptIn(ExperimentalSharedTransitionApi::class)
     @Composable
     override fun calculateScene(
-        entries: List<NavigationDestination<out NavigationKey>>,
+        entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene {
-        return object : NavigationScene {
+        return remember(entries) {
+            object : NavigationScene {
 
-            override val entries: List<NavigationDestination<out NavigationKey>> =
-                if (entries.size >= 2) entries.takeLast(2) else listOf(entries.last())
+                override val entries: List<NavigationDestination<out NavigationKey>> =
+                    if (entries.size >= 2) entries.takeLast(2) else listOf(entries.last())
 
-            override val key: Any = DoublePaneScene::class to entries.map { it.instance.id }
+                override val key: Any = DoublePaneScene::class to entries.map { it.instance.id }
 
-            override val previousEntries: List<NavigationDestination<out NavigationKey>> =
-                entries.dropLast(1)
+                override val previousEntries: List<NavigationDestination<out NavigationKey>> =
+                    entries.dropLast(1)
 
-            override val content: @Composable (() -> Unit) = {
-                val entries = this.entries.toList()
-                val width = with(LocalDensity.current) {
-                    LocalWindowInfo.current.containerSize.toSize().width.toDp()
-                }
-                Row {
-                    with(LocalNavigationSharedTransitionScope.current) {
-                        if (width > 600.dp) {
-                            // Render both destinations side by side or in some layout
-                            if (entries.size > 1) {
+                override val content: @Composable (() -> Unit) = {
+                    val entries = this.entries.toList()
+                    val width = with(LocalDensity.current) {
+                        LocalWindowInfo.current.containerSize.toSize().width.toDp()
+                    }
+                    Row {
+                        with(LocalNavigationSharedTransitionScope.current) {
+                            if (width > 600.dp) {
+                                // Render both destinations side by side or in some layout
+                                if (entries.size > 1) {
+                                    Box(
+                                        modifier = Modifier.Companion
+                                            .sharedElement(
+                                                rememberSharedContentState(key = entries.first().instance.id),
+                                                animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
+                                            )
+                                            .weight(1f)
+
+                                    ) { entries.first().content() }
+                                }
                                 Box(
                                     modifier = Modifier.Companion
                                         .sharedElement(
-                                            rememberSharedContentState(key = entries.first().instance.id),
+                                            rememberSharedContentState(key = entries.last().instance.id),
                                             animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
                                         )
                                         .weight(1f)
-
-                                ) { entries.first().content() }
+                                ) { entries.last().content() }
+                            } else {
+                                Box(
+                                    modifier = Modifier.Companion
+                                        .sharedElement(
+                                            rememberSharedContentState(key = entries.last().instance.id),
+                                            animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
+                                        )
+                                        .weight(1f)
+                                ) { entries.last().content() }
                             }
-                            Box(
-                                modifier = Modifier.Companion
-                                    .sharedElement(
-                                        rememberSharedContentState(key = entries.last().instance.id),
-                                        animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
-                                    )
-                                    .weight(1f)
-                            ) { entries.last().content() }
-                        } else {
-                            Box(
-                                modifier = Modifier.Companion
-                                    .sharedElement(
-                                        rememberSharedContentState(key = entries.last().instance.id),
-                                        animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
-                                    )
-                                    .weight(1f)
-                            ) { entries.last().content() }
                         }
                     }
                 }

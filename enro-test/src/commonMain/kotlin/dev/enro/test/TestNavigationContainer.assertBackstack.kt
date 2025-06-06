@@ -9,7 +9,7 @@ import dev.enro.NavigationContainer
 fun NavigationContainer.assertBackstackEquals(
     backstack: NavigationBackstack,
 ) {
-    val actualBackstack = this.backstack.value
+    val actualBackstack = this.backstack
     val expectedBackstack = backstack
 
     actualBackstack.size.shouldBeEqualTo(expectedBackstack.size) {
@@ -29,7 +29,7 @@ fun NavigationContainer.assertBackstackEquals(
 fun NavigationContainer.assertBackstackMatches(
     predicate: (NavigationBackstack) -> Boolean,
 ) {
-    val actualBackstack = this.backstack.value
+    val actualBackstack = this.backstack
 
     actualBackstack.shouldMatchPredicateNotNull(predicate) {
         "NavigationContainer's backstack did not match predicate\n\tActual backstack: $actualBackstack"

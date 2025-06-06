@@ -1,7 +1,6 @@
 package dev.enro.core.container
 
 import dev.enro.NavigationBackstack
-import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.asInstance
@@ -18,14 +17,6 @@ public fun NavigationContainerState.setBackstack(backstack: NavigationBackstack)
 }
 
 public fun NavigationContainerState.setBackstack(block: (NavigationBackstack) -> NavigationBackstack) {
-    execute(NavigationOperation { block(it) })
-}
-
-public fun NavigationContainer.setBackstack(backstack: NavigationBackstack) {
-    execute(NavigationOperation { backstack })
-}
-
-public fun NavigationContainer.setBackstack(block: (NavigationBackstack) -> NavigationBackstack) {
     execute(NavigationOperation { block(it) })
 }
 

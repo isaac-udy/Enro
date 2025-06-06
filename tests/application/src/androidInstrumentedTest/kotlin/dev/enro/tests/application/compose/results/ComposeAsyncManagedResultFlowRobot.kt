@@ -6,7 +6,7 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.espresso.Espresso
-import dev.enro.requireViewModel
+import dev.enro.context.requireViewModel
 import dev.enro.tests.application.waitForNavigationContext
 import org.junit.Assert.assertTrue
 

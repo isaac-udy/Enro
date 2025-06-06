@@ -43,7 +43,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Bottom Sheet Close And Present"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return BottomSheetCloseAndPresentRobot(composeRule)
@@ -53,7 +53,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Bottom Sheet Change Size"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return BottomSheetChangeSizeRobot(composeRule)
@@ -63,7 +63,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Simple Activity"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Present"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return SimpleActivityRobot(composeRule)
@@ -74,17 +74,18 @@ class SelectDestinationRobot(
             .onNode(hasText("Unbound Bottom Sheet"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Present"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return UnboundBottomSheetRobot(composeRule)
     }
 
     fun openBottomNavigation(): BottomNavigationRobot {
+        composeRule.waitForIdle()
         composeRule.onNode(hasText("Bottom Navigation"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return BottomNavigationRobot(composeRule)
@@ -94,7 +95,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Synthetic View Model Access"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return SyntheticViewModelAccessRobot(composeRule)
@@ -104,7 +105,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Find Context"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return FindContextRobot(composeRule)
@@ -114,7 +115,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Compose Embedded Result Flow"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return ComposeEmbeddedResultFlowRobot(composeRule)
@@ -124,7 +125,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Compose Managed Result Flow"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return ComposeManagedResultFlowRobot(composeRule)
@@ -134,7 +135,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Compose Async Managed Result Flow"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return ComposeAsyncManagedResultFlowRobot(composeRule)
@@ -144,7 +145,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Compose Nested Results"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return ComposeNestedResultsRobot(composeRule)
@@ -154,7 +155,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Results With Extra"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return ResultsWithExtraRobot(composeRule)
@@ -164,7 +165,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Compose Managed Results With Nested Flow And Empty Root"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
 
         return ComposeManagedResultsWithNestedFlowAndEmptyRootRobot(composeRule)
@@ -174,7 +175,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Compose Mixed Result Types"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
         return ComposeMixedResultTypesRobot(composeRule)
     }
@@ -183,7 +184,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Managed Flow In Composable"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
         return ManagedFlowInComposableRobot(composeRule)
     }
@@ -192,7 +193,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Managed Flow In Fragment"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Present"))
+            .filterToOne(hasText("Open"))
             .performClick()
         return ManagedFlowInFragmentRobot(composeRule)
     }
@@ -201,7 +202,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Compose Save Primitives"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
         return ComposeSavePrimitivesRobot(composeRule)
     }
@@ -210,7 +211,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Close Landing Page And Present"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Present"))
+            .filterToOne(hasText("Open"))
             .performClick()
         return CloseLandingPageAndPresentRobot(composeRule)
     }
@@ -219,7 +220,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Horizontal Pager"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
         return HorizontalPagerRobot(composeRule)
     }
@@ -228,7 +229,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Lazy Column"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
         return LazyColumnRobot(composeRule)
     }
@@ -237,7 +238,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Compose Animations"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Push"))
+            .filterToOne(hasText("Open"))
             .performClick()
         return ComposeAnimationsRobot(composeRule)
     }
@@ -246,7 +247,7 @@ class SelectDestinationRobot(
         composeRule.onNode(hasText("Fragment Presentation"))
             .performScrollTo()
             .onSiblings()
-            .filterToOne(hasText("Present"))
+            .filterToOne(hasText("Open"))
             .performClick()
         return FragmentPresentationRobot(composeRule)
     }

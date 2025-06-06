@@ -1,7 +1,7 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package dev.enro.test
 
-import dev.enro.core.NavigationKey
+import dev.enro.NavigationKey
 import dev.enro.result.NavigationResult
 import dev.enro.result.getResult
 

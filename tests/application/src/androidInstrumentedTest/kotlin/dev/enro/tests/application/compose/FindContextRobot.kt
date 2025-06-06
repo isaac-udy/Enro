@@ -8,9 +8,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
+import dev.enro.context.findContext
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
-import dev.enro.findChildDestinationContext
 import dev.enro.platform.navigationContext
 import dev.enro.tests.application.waitForNavigationHandle
 import kotlin.reflect.KClass
@@ -28,10 +28,10 @@ class FindContextRobot (
         }
         composeRule.waitUntil {
             // Need to wait a moment for all of the child contexts to be created in their containers
-            componentActivity.navigationContext.findChildDestinationContext<FindContext.Left.Top>() != null
-                && componentActivity.navigationContext.findChildDestinationContext<FindContext.Left.Bottom>() != null
-                && componentActivity.navigationContext.findChildDestinationContext<FindContext.Right.Top>() != null
-                && componentActivity.navigationContext.findChildDestinationContext<FindContext.Right.Bottom>() != null
+            componentActivity.navigationContext.findContext<FindContext.Left.Top>() != null
+                && componentActivity.navigationContext.findContext<FindContext.Left.Bottom>() != null
+                && componentActivity.navigationContext.findContext<FindContext.Right.Top>() != null
+                && componentActivity.navigationContext.findContext<FindContext.Right.Bottom>() != null
         }
     }
 

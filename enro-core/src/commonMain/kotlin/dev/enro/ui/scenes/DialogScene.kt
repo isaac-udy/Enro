@@ -44,10 +44,11 @@ internal class DialogScene(
 public class DialogSceneStrategy : NavigationSceneStrategy {
     @Composable
     public override fun calculateScene(
-        entries: List<NavigationDestination<out NavigationKey>>,
+        entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene? {
         val lastEntry = entries.lastOrNull()
         val dialogProperties = lastEntry?.metadata?.get(DialogPropertiesKey) as? DialogProperties
+
         return if (dialogProperties != null) {
             DialogScene(
                 key = lastEntry.instance.id,
@@ -69,7 +70,7 @@ public class DialogSceneStrategy : NavigationSceneStrategy {
          * @param dialogProperties properties that should be passed to the containing [Dialog].
          */
         public fun dialog(
-            dialogProperties: DialogProperties = DialogProperties()
+            dialogProperties: DialogProperties = DialogProperties(),
         ): Pair<String, DialogProperties> = DialogPropertiesKey to dialogProperties
     }
 }

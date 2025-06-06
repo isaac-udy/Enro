@@ -3,6 +3,7 @@ package dev.enro.ui.scenes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.Dialog
 import dev.enro.NavigationKey
+import dev.enro.compat.isLegacyPresent
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
@@ -41,12 +42,15 @@ public class DirectOverlayScene(
 public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
     @Composable
     public override fun calculateScene(
-        entries: List<NavigationDestination<out NavigationKey>>,
+        entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene? {
         val lastEntry = entries.lastOrNull()
+
         val directOverlayMetadata = lastEntry?.metadata?.get(DirectOverlayKey) as? Unit
         val isDirectOverlay = directOverlayMetadata != null
-        return if (isDirectOverlay) {
+        val isLegacyOverlay = lastEntry?.instance?.isLegacyPresent() == true
+
+        return if (isDirectOverlay || isLegacyOverlay) {
             DirectOverlayScene(
                 key = lastEntry.instance.id,
                 previousEntries = entries.dropLast(1),
@@ -56,7 +60,7 @@ public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
         } else null
     }
 
-    public companion object Companion {
+    public companion object {
         private const val DirectOverlayKey = "dev.enro.ui.scenes.DirectOverlayKey"
 
         /**

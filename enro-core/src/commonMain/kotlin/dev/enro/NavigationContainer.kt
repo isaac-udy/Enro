@@ -1,11 +1,19 @@
 package dev.enro
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
 import dev.enro.annotations.AdvancedEnroApi
+import dev.enro.context.ContainerContext
+import dev.enro.context.DestinationContext
+import dev.enro.context.RootContext
+import dev.enro.context.findContext
+import dev.enro.context.root
 import dev.enro.interceptor.AggregateNavigationInterceptor
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.result.NavigationResultChannel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 
 /**
@@ -22,8 +30,11 @@ public class NavigationContainer(
     public val controller: EnroController,
     backstack: NavigationBackstack = emptyList(),
 ) {
-    private val mutableBackstack: MutableStateFlow<NavigationBackstack> = MutableStateFlow(backstack)
-    public val backstack: StateFlow<NavigationBackstack> = mutableBackstack
+    private val mutableBackstack: MutableState<NavigationBackstack> = mutableStateOf(backstack)
+    public val backstack: NavigationBackstack by mutableBackstack
+
+    public val backstackFlow: Flow<NavigationBackstack> =
+        snapshotFlow { this.backstack }
 
     private val interceptors = mutableListOf<NavigationInterceptor>()
 
@@ -41,6 +52,7 @@ public class NavigationContainer(
 
     @AdvancedEnroApi
     public fun execute(
+        context: NavigationContext,
         operation: NavigationOperation,
     ) {
         if (executionMutex.isLocked) {
@@ -49,9 +61,12 @@ public class NavigationContainer(
                     "inside of its [NavigationInterceptor.intercept] method.")
         }
         executionMutex.tryLock(this)
+        val containerContext = findContextFrom(context)
+        requireNotNull(containerContext) {
+            "Could not find ContainerContext with id ${key.name} from context $context"
+        }
         var pendingAction: () -> Unit = {}
         runCatching transitionBlock@{
-            val backstack = backstack.value
             val interceptor = AggregateNavigationInterceptor(interceptors)
             val containerOperation = interceptor.intercept(
                 operation = operation,
@@ -71,11 +86,25 @@ public class NavigationContainer(
             }
             NavigationResultChannel.registerResults(transition)
             mutableBackstack.value = transition.targetBackstack
+            containerContext.requestActiveInRoot()
         }.apply {
             executionMutex.unlock(this@NavigationContainer)
             getOrThrow()
         }
         pendingAction()
+    }
+
+    private fun findContextFrom(
+        context: NavigationContext,
+    ): ContainerContext? {
+        when (context) {
+            is ContainerContext -> if(context.container == this) return context
+            is DestinationContext<*> -> if (context.parent.container == this) return context.parent
+            is RootContext -> {}
+        }
+        return context.root().findContext {
+            it is ContainerContext && it.container == this
+        } as? ContainerContext
     }
 
     public data class Key(val name: String) {

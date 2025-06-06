@@ -1,11 +1,11 @@
 package dev.enro.result.flow
 
-import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.asInstance
 import dev.enro.result.NavigationResultChannel
+import dev.enro.ui.NavigationContainerState
 import dev.enro.withMetadata
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -20,7 +20,7 @@ public class NavigationFlow<T> internal constructor(
     internal var onCompleted: (T) -> Unit,
 ) {
     private var steps: List<FlowStep<out Any>> = emptyList()
-    public var container: NavigationContainer? = null
+    public var container: NavigationContainerState? = null
         set(value) {
             field = value
             update()

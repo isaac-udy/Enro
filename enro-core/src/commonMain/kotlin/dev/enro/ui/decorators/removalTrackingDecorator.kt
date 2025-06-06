@@ -6,7 +6,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import dev.enro.NavigationKey
-import dev.enro.platform.EnroLog
 import dev.enro.ui.LocalNavigationContainer
 
 /**
@@ -67,7 +66,7 @@ internal fun removalTrackingDecorator(
                 val wasInComposition = removalInfo.idsInComposition.remove(id)
 
                 // Check if this destination is still in the backstack
-                val stillInBackstack = container.backstack.value.any { it.id == id }
+                val stillInBackstack = container.backstack.any { it.id == id }
 
                 // Update reference count
                 val currentCount = removalInfo.keyRefCounts[instance] ?: 1

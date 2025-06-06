@@ -3,10 +3,10 @@ package dev.enro.handle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleRegistry
-import dev.enro.NavigationContext
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.context.DestinationContext
 import dev.enro.platform.EnroLog
 
 internal class NavigationHandleImpl<T : NavigationKey>(
@@ -17,7 +17,7 @@ internal class NavigationHandleImpl<T : NavigationKey>(
     private val lifecycleRegistry = LifecycleRegistry(this)
     override val lifecycle: Lifecycle = lifecycleRegistry
 
-    private var context: NavigationContext.Destination<T>? = null
+    private var context: DestinationContext<T>? = null
     override var instance: NavigationKey.Instance<T> = instance
         private set
 
@@ -39,7 +39,7 @@ internal class NavigationHandleImpl<T : NavigationKey>(
         }
     }
 
-    internal fun bindContext(context: NavigationContext.Destination<T>) {
+    internal fun bindContext(context: DestinationContext<T>) {
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
 
         this.context?.lifecycle?.removeObserver(lifecycleObserver)
@@ -68,7 +68,8 @@ internal class NavigationHandleImpl<T : NavigationKey>(
             return
         }
 
-        context.parentContainer
-            .execute(operation)
+        context.parent
+            .container
+            .execute(context, operation)
     }
 }

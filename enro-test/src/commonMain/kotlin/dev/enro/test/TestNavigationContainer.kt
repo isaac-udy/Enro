@@ -3,8 +3,6 @@ package dev.enro.test
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
-import dev.enro.NavigationOperation
-import dev.enro.asInstance
 import dev.enro.interceptor.builder.navigationInterceptor
 
 
@@ -14,7 +12,6 @@ import dev.enro.interceptor.builder.navigationInterceptor
 fun createTestNavigationContainer(
     key: NavigationContainer.Key,
     backstack: NavigationBackstack = emptyList(),
-    parent: NavigationContainer? = null,
 ): NavigationContainer {
     val controller = EnroTest.getCurrentNavigationController()
     val container = NavigationContainer(
@@ -22,7 +19,7 @@ fun createTestNavigationContainer(
         controller = controller,
         backstack = backstack,
     )
-    container.backstack.value.forEach {
+    container.backstack.forEach {
         val currentContainer = it.metadata.get(TestNavigationContainer.MetadataKey)
         if (currentContainer != null) {
             require(currentContainer == container) {
@@ -46,27 +43,6 @@ fun createTestNavigationContainer(
         }
     })
     return container
-}
-
-/**
- * Sets the backstack of this container
- */
-fun NavigationContainer.setBackstack(backstack: NavigationBackstack) {
-    execute(NavigationOperation { backstack })
-}
-
-/**
- * Pushes a navigation key onto the backstack
- */
-fun NavigationContainer.push(key: NavigationKey) {
-    execute(NavigationOperation.open(key.asInstance()))
-}
-
-/**
- * Closes a specific instance from the backstack
- */
-fun NavigationContainer.close(instance: NavigationKey.Instance<*>) {
-    execute(NavigationOperation.close(instance))
 }
 
 /**

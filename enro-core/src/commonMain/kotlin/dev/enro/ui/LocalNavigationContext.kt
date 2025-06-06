@@ -3,13 +3,18 @@ package dev.enro.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
 import dev.enro.NavigationContext
+import dev.enro.context.RootContext
 
 public object LocalNavigationContext {
     private val LocalNavigationContext = compositionLocalOf<NavigationContext?> { null }
 
     public val current: NavigationContext
-        @Composable get() = LocalNavigationContext.current ?: findRootNavigationContext()
+        @Composable get() {
+            val current = LocalNavigationContext.current ?: findRootNavigationContext()
+            return remember { current }
+        }
 
     public infix fun provides(
         navigationContext: NavigationContext
@@ -20,4 +25,4 @@ public object LocalNavigationContext {
 }
 
 @Composable
-internal expect fun findRootNavigationContext(): NavigationContext.Root
+internal expect fun findRootNavigationContext(): RootContext
