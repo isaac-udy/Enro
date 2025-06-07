@@ -29,6 +29,7 @@ import dev.enro.result.open
 import dev.enro.result.registerForNavigationResult
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.tests.application.compose.common.TitledRow
+import dev.enro.ui.EmptyBehavior
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.destinations.EmptyNavigationKey
 import dev.enro.ui.rememberNavigationContainer
@@ -55,7 +56,10 @@ fun ComposeNestedResults() {
     )
     // TODO NEED TO SWAP CONTAINERS
     val secondary = rememberNavigationContainer(
-        backstack = listOf(EmptyNavigationKey.asInstance()),
+        backstack = listOf(),
+        emptyBehavior = EmptyBehavior.allowEmpty {
+            primary.context.requestActive()
+        },
         filter = accept {
             key(ComposeNestedResults.NestedSenderContainer)
         }
