@@ -5,7 +5,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import dev.enro.tests.application.waitForNavigationHandle
 
-class ResultsWithExtraRobot(
+class ResultsWithMetadataRobot(
     val composeRule: ComposeTestRule
 ) {
     init {
@@ -32,7 +32,7 @@ class ResultsWithExtraRobot(
         return SenderRobot(composeRule)
     }
 
-    fun assertResultIs(result: String): ResultsWithExtraRobot {
+    fun assertResultIs(result: String): ResultsWithMetadataRobot {
         composeRule.onNodeWithText("Last Result was \"$result\"")
             .assertExists()
         return this
@@ -47,11 +47,11 @@ class ResultsWithExtraRobot(
             }
         }
 
-        fun sendResult(): ResultsWithExtraRobot {
+        fun sendResult(): ResultsWithMetadataRobot {
             composeRule.onNodeWithText("Send Result")
                 .performClick()
 
-            return ResultsWithExtraRobot(composeRule)
+            return ResultsWithMetadataRobot(composeRule)
         }
     }
 }

@@ -23,11 +23,10 @@ import dev.enro.tests.application.compose.results.ComposeManagedResultFlowRobot
 import dev.enro.tests.application.compose.results.ComposeManagedResultsWithNestedFlowAndEmptyRootRobot
 import dev.enro.tests.application.compose.results.ComposeMixedResultTypesRobot
 import dev.enro.tests.application.compose.results.ComposeNestedResultsRobot
-import dev.enro.tests.application.compose.results.ResultsWithExtraRobot
+import dev.enro.tests.application.compose.results.ResultsWithMetadataRobot
 import dev.enro.tests.application.fragment.FragmentPresentationRobot
 import dev.enro.tests.application.fragment.UnboundBottomSheetRobot
 import dev.enro.tests.application.managedflow.ManagedFlowInComposableRobot
-import dev.enro.tests.application.managedflow.ManagedFlowInFragmentRobot
 
 class SelectDestinationRobot(
     private val composeRule: ComposeTestRule
@@ -151,14 +150,14 @@ class SelectDestinationRobot(
         return ComposeNestedResultsRobot(composeRule)
     }
 
-    fun openResultsWithExtra(): ResultsWithExtraRobot {
-        composeRule.onNode(hasText("Results With Extra"))
+    fun openResultsWithMetadata(): ResultsWithMetadataRobot {
+        composeRule.onNode(hasText("Results With Metadata"))
             .performScrollTo()
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
 
-        return ResultsWithExtraRobot(composeRule)
+        return ResultsWithMetadataRobot(composeRule)
     }
 
     fun openComposeManagedResultsWithNestedFlowAndEmptyRoot(): ComposeManagedResultsWithNestedFlowAndEmptyRootRobot {
@@ -187,15 +186,6 @@ class SelectDestinationRobot(
             .filterToOne(hasText("Open"))
             .performClick()
         return ManagedFlowInComposableRobot(composeRule)
-    }
-
-    fun openManagedFlowInFragment(): ManagedFlowInFragmentRobot {
-        composeRule.onNode(hasText("Managed Flow In Fragment"))
-            .performScrollTo()
-            .onSiblings()
-            .filterToOne(hasText("Open"))
-            .performClick()
-        return ManagedFlowInFragmentRobot(composeRule)
     }
 
     fun openComposeSavePrimitives(): ComposeSavePrimitivesRobot {

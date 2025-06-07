@@ -14,7 +14,7 @@ class ResultsWithExtraTest {
     @Test
     fun test() {
         SelectDestinationRobot(composeRule)
-            .openResultsWithExtra()
+            .openResultsWithMetadata()
             .assertResultIs("<No Result>")
             .requestResult_B()
             .sendResult()

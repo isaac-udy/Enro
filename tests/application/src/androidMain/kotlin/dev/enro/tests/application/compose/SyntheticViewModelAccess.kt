@@ -43,7 +43,9 @@ class ViewModelForSyntheticViewModelAccess : ViewModel() {
 @Composable
 fun SyntheticViewModelAccessDestination() {
     val navigationHandle = navigationHandle()
-    val viewModel = viewModel<ViewModelForSyntheticViewModelAccess>()
+    val viewModel = viewModel<ViewModelForSyntheticViewModelAccess> {
+        ViewModelForSyntheticViewModelAccess()
+    }
     val state by viewModel.state.collectAsState()
     TitledColumn(
         "Synthetic ViewModel Access"
