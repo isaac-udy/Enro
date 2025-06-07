@@ -8,17 +8,18 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 
 public class RootContext(
+    parent: Any,
     lifecycleOwner: LifecycleOwner,
     viewModelStoreOwner: ViewModelStoreOwner,
     defaultViewModelProviderFactory: HasDefaultViewModelProviderFactory,
     private val activeChildId: MutableState<String?>,
-) : NavigationContext<Unit, ContainerContext>(),
+) : NavigationContext<Any, ContainerContext>(),
     LifecycleOwner by lifecycleOwner,
     ViewModelStoreOwner by viewModelStoreOwner,
     HasDefaultViewModelProviderFactory by defaultViewModelProviderFactory {
 
     override val id: String = "Root"
-    override val parent: Unit = Unit
+    override val parent: Any = parent
 
     override val activeChild: ContainerContext? by derivedStateOf {
         children.firstOrNull { it.id == activeChildId.value }

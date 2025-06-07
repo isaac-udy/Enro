@@ -21,6 +21,7 @@ internal object ActivityPlugin : NavigationPlugin() {
         override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
             if (activity !is ComponentActivity) return
             activity.activityContextHolder.rootContext = RootContext(
+                parent = activity,
                 lifecycleOwner = activity,
                 viewModelStoreOwner = activity,
                 defaultViewModelProviderFactory = activity,

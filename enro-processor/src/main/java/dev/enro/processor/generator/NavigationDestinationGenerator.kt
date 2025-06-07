@@ -136,7 +136,7 @@ object NavigationDestinationGenerator {
         when {
             destination.isClass -> when {
                 destination.isFragment -> addNamedCode(
-                    "destination(fragmentDestination<%keyType:T, %destinationType:T>())",
+                    "destination(fragmentDestination(%keyType:T::class, %destinationType:T::class))",
                     formatting,
                 )
                 destination.isActivity -> addNamedCode(

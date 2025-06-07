@@ -15,6 +15,7 @@ import dev.enro.result.NavigationResultChannel.ResultIdKey
 import dev.enro.ui.LocalNavigationHandle
 import dev.enro.withMetadata
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmName
 import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KClass
 
 public class NavigationResultChannel<Result : Any> @PublishedApi internal constructor(
     @PublishedApi
@@ -52,12 +54,22 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
         @PublishedApi
         internal val activeChannels: MutableSet<Id> = mutableSetOf()
 
+
         @PublishedApi
         internal inline fun <reified T : Any> observe(
             scope: CoroutineScope,
             resultChannel: NavigationResultChannel<T>,
-        ) {
-            pendingResults
+        ) : Job {
+            return observe(T::class, scope, resultChannel)
+        }
+
+        @PublishedApi
+        internal fun <T : Any> observe(
+            resultType: KClass<T>,
+            scope: CoroutineScope,
+            resultChannel: NavigationResultChannel<T>,
+        ) : Job {
+            return pendingResults
                 .onStart {
                     require(!activeChannels.contains(resultChannel.id)) {
                         "NavigationResultChannel with id ${resultChannel.id} is already being observed"
@@ -73,7 +85,7 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
                         is NavigationResult.Delegated -> {}
                         is NavigationResult.Closed -> resultChannel.onClosed(NavigationResultScope(instance))
                         is NavigationResult.Completed -> {
-                            if (T::class == Unit::class) {
+                            if (resultType == Unit::class) {
                                 resultChannel.onCompleted(NavigationResultScope(instance), Unit as T)
                             } else {
                                 @Suppress("UNCHECKED_CAST")

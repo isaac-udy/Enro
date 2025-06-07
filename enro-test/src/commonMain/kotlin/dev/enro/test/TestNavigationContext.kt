@@ -20,6 +20,7 @@ import dev.enro.ui.NavigationDestination
 internal fun createRootContext() : RootContext {
     val owners = ContextOwners()
     return RootContext(
+        parent = Unit,
         lifecycleOwner = owners,
         viewModelStoreOwner = owners,
         defaultViewModelProviderFactory = owners,

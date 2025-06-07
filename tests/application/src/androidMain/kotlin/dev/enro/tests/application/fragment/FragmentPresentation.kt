@@ -2,6 +2,7 @@ package dev.enro.tests.application.fragment
 
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,6 +32,9 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.core.navigationHandle
 import dev.enro.core.present
 import dev.enro.core.result.registerForNavigationResult
+import dev.enro.platform.close
+import dev.enro.platform.complete
+import dev.enro.platform.navigationHandle
 import dev.enro.tests.application.R
 import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.ui.NavigationDisplay
@@ -99,6 +103,7 @@ class FragmentPresentationRoot : Fragment() {
     
     val navigation by navigationHandle<FragmentPresentation.Root>()
     val resultChannel by registerForNavigationResult<FragmentPresentation.TestResult> { result ->
+        Log.e("Enro", "$this got -> $result")
         // Update the result text when we resume
         view?.findViewById<TextView>(R.id.fragment_presentation_result_text)?.apply {
             text = "Last result: ${result.id}"
@@ -172,14 +177,19 @@ class FragmentPresentationRoot : Fragment() {
         // Display the last received result
         val resultText = TextView(requireContext()).apply {
             id = R.id.fragment_presentation_result_text
-            text = "No result received yet"
+            text = savedInstanceState?.getString("result") ?: "No result received yet"
             setPadding(16, 32, 16, 32)
         }
         layout.addView(resultText)
         
         return layout
     }
-    
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("result", view?.findViewById<TextView>(R.id.fragment_presentation_result_text)?.text.toString())
+    }
+
     private fun createButton(text: String, onClick: () -> Unit): Button {
         return Button(requireContext()).apply {
             this.text = text
@@ -287,57 +297,56 @@ class FragmentPresentationPresentable : Fragment() {
 @NavigationDestination(FragmentPresentation.PresentableActivity::class)
 class FragmentPresentationActivityPresentableActivity : androidx.appcompat.app.AppCompatActivity() {
     
-//    val navigation by navigationHandle<FragmentPresentation.PresentableActivity>()
+    val navigation by navigationHandle<FragmentPresentation.PresentableActivity>()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        TODO("ACTIVITY STUFF")
-//        val layout = LinearLayout(this).apply {
-//            orientation = LinearLayout.VERTICAL
-//            layoutParams = ViewGroup.LayoutParams(
-//                ViewGroup.LayoutParams.MATCH_PARENT,
-//                ViewGroup.LayoutParams.MATCH_PARENT
-//            )
-//            setPadding(16, 16, 16, 16)
-//            setBackgroundResource(R.color.white)
-//        }
-//
-//        // Add a title
-//        val title = TextView(this).apply {
-//            text = "Presentable Activity"
-//            textSize = 24f
-//            setPadding(16, 32, 16, 32)
-//        }
-//        layout.addView(title)
-//
-//        // Add action buttons
-//        layout.addView(Button(this).apply {
-//            text = "Close"
-//            setOnClickListener { navigation.close() }
-//            layoutParams = LinearLayout.LayoutParams(
-//                ViewGroup.LayoutParams.MATCH_PARENT,
-//                ViewGroup.LayoutParams.WRAP_CONTENT
-//            ).apply {
-//                setMargins(0, 8, 0, 8)
-//            }
-//        })
-//
-//        layout.addView(Button(this).apply {
-//            text = "Close With Result"
-//            setOnClickListener {
-//                navigation.closeWithResult(FragmentPresentation.TestResult())
-//            }
-//            layoutParams = LinearLayout.LayoutParams(
-//                ViewGroup.LayoutParams.MATCH_PARENT,
-//                ViewGroup.LayoutParams.WRAP_CONTENT
-//            ).apply {
-//                setMargins(0, 8, 0, 8)
-//            }
-//        })
-//
-//        setContentView(layout)
-//        applyInsetsForContentView()
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            setPadding(16, 16, 16, 16)
+            setBackgroundResource(R.color.white)
+        }
+
+        // Add a title
+        val title = TextView(this).apply {
+            text = "Presentable Activity"
+            textSize = 24f
+            setPadding(16, 32, 16, 32)
+        }
+        layout.addView(title)
+
+        // Add action buttons
+        layout.addView(Button(this).apply {
+            text = "Close"
+            setOnClickListener { navigation.close() }
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, 8, 0, 8)
+            }
+        })
+
+        layout.addView(Button(this).apply {
+            text = "Close With Result"
+            setOnClickListener {
+                navigation.complete(FragmentPresentation.TestResult())
+            }
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, 8, 0, 8)
+            }
+        })
+
+        setContentView(layout)
+        applyInsetsForContentView()
     }
 }
 
