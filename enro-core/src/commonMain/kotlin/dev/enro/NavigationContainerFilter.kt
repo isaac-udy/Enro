@@ -6,8 +6,13 @@ import kotlin.jvm.JvmName
  * A NavigationContainerFilter is used to determine whether or not a given [NavigationKey.Instance] should be accepted by a [NavigationContainer] to be handled/displayed by that container.
  */
 public class NavigationContainerFilter internal constructor(
-    public val accept: (NavigationKey.Instance<*>) -> Boolean
-)
+    private val block: (NavigationKey.Instance<NavigationKey>) -> Boolean
+) {
+    // validates
+    public fun accepts(instance: NavigationKey.Instance<NavigationKey>): Boolean {
+        return block(instance)
+    }
+}
 
 /**
  * A builder for creating a [NavigationContainerFilter]
@@ -42,13 +47,13 @@ public class NavigationContainerFilterBuilder internal constructor() {
     /**
      * Matches any instructions that match the provided predicate
      */
-    public fun instance(predicate: (NavigationKey.Instance<*>) -> Boolean) {
+    public fun instance(predicate: (NavigationKey.Instance<NavigationKey>) -> Boolean) {
         filters.add(NavigationContainerFilter(predicate))
     }
 
     internal fun build(): NavigationContainerFilter {
         return NavigationContainerFilter { instruction ->
-            filters.any { it.accept(instruction) }
+            filters.any { it.accepts(instruction) }
         }
     }
 }
@@ -87,6 +92,6 @@ public fun doNotAccept(block: NavigationContainerFilterBuilder.() -> Unit): Navi
         .apply(block)
         .build()
         .let { filter ->
-            NavigationContainerFilter { !filter.accept(it) }
+            NavigationContainerFilter { !filter.accepts(it) }
         }
 }

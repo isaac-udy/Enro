@@ -28,7 +28,9 @@ import kotlinx.coroutines.sync.Mutex
 public class NavigationContainer(
     public val key: Key,
     public val controller: EnroController,
+    public val filter: NavigationContainerFilter = acceptAll(),
     backstack: NavigationBackstack = emptyList(),
+
 ) {
     private val mutableBackstack: MutableState<NavigationBackstack> = mutableStateOf(backstack)
     public val backstack: NavigationBackstack by mutableBackstack
@@ -50,6 +52,10 @@ public class NavigationContainer(
 
     private val executionMutex = Mutex(false)
 
+    public fun accepts(instance: NavigationKey.Instance<NavigationKey>): Boolean {
+        return filter.accepts(instance)
+    }
+
     @AdvancedEnroApi
     public fun execute(
         context: NavigationContext,
@@ -61,40 +67,40 @@ public class NavigationContainer(
                     "inside of its [NavigationInterceptor.intercept] method.")
         }
         executionMutex.tryLock(this)
-        val contextForExecution = when {
-            context is DestinationContext<*> && context.parent.container == this -> context
-            else -> findContextFrom(context)
-        }
-        requireNotNull(contextForExecution) {
-            "Could not find ContainerContext with id ${key.name} from context $context"
-        }
         var pendingAction: () -> Unit = {}
-        runCatching transitionBlock@{
-            val interceptor = AggregateNavigationInterceptor(interceptors)
-            val containerOperation = interceptor.intercept(
-                context = contextForExecution,
-                operation = operation,
-            )
-            if (containerOperation == null) return@transitionBlock
-            val controllerOperation = controller.interceptors.intercept(
-                context = contextForExecution,
-                operation = containerOperation,
-            )
-            if (controllerOperation == null) return@transitionBlock
-
-            val transition = runCatching {
-                controllerOperation.invoke(backstack)
-            }.getOrElse {
-                if (it !is NavigationOperation.CancelWithSideEffect) throw it
-                pendingAction = it.sideEffect
-                return@transitionBlock
+        try {
+            val contextForExecution = when {
+                context is DestinationContext<*> && context.parent.container == this -> context
+                else -> findContextFrom(context)
             }
-            NavigationResultChannel.registerResults(transition)
-            mutableBackstack.value = transition.targetBackstack
-            contextForExecution.requestActiveInRoot()
-        }.apply {
-            executionMutex.unlock(this@NavigationContainer)
-            getOrThrow()
+            requireNotNull(contextForExecution) {
+                "Could not find ContainerContext with id ${key.name} from context $context"
+            }
+            runCatching transitionBlock@{
+                val interceptor = AggregateNavigationInterceptor(
+                    interceptors = interceptors + controller.interceptors,
+                )
+                val processedOperation = interceptor.intercept(
+                    context = contextForExecution,
+                    operation = operation,
+                )
+                if (processedOperation == null) return@transitionBlock
+
+                val transition = runCatching {
+                    processedOperation.invoke(backstack)
+                }.getOrElse {
+                    if (it !is NavigationOperation.CancelWithSideEffect) throw it
+                    pendingAction = it.sideEffect
+                    return@transitionBlock
+                }
+                NavigationResultChannel.registerResults(transition)
+                mutableBackstack.value = transition.targetBackstack
+                contextForExecution.requestActiveInRoot()
+            }.apply {
+                getOrThrow()
+            }
+        } finally {
+            executionMutex.unlock(this)
         }
         pendingAction()
     }
