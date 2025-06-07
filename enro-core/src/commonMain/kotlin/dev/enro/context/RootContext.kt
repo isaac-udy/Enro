@@ -6,9 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
+import dev.enro.EnroController
 
 public class RootContext(
     parent: Any,
+    override val controller: EnroController,
     lifecycleOwner: LifecycleOwner,
     viewModelStoreOwner: ViewModelStoreOwner,
     defaultViewModelProviderFactory: HasDefaultViewModelProviderFactory,

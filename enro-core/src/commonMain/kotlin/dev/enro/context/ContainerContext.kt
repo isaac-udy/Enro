@@ -5,11 +5,13 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
+import dev.enro.EnroController
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 
 public class ContainerContext(
     override val parent: NavigationContext<*, ContainerContext>,
+
     public val container: NavigationContainer,
 ) : NavigationContext<NavigationContext<*, ContainerContext>, DestinationContext<NavigationKey>>(),
     LifecycleOwner by parent,
@@ -17,6 +19,7 @@ public class ContainerContext(
     HasDefaultViewModelProviderFactory by parent {
 
     override val id: String = container.key.name
+    override val controller: EnroController = parent.controller
 
     override val activeChild: DestinationContext<NavigationKey>? by derivedStateOf {
         val childrenById = mutableChildren.associateBy { it.id }

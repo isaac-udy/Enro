@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
+import dev.enro.EnroController
 import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 
@@ -22,6 +23,8 @@ public class DestinationContext<out T : NavigationKey>(
     HasDefaultViewModelProviderFactory by defaultViewModelProviderFactory  {
 
     override val id: String get() = destination.id
+    override val controller: EnroController = parent.controller
+
     public val key: T get() = destination.key
     public val instance: NavigationKey.Instance<T> get() = destination.instance
 

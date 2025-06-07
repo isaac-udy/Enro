@@ -7,6 +7,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
+import dev.enro.EnroController
 
 public sealed interface NavigationContextBase
 public typealias AnyNavigationContext = NavigationContext<*, *>
@@ -18,6 +19,7 @@ public sealed class NavigationContext<Parent, Child : NavigationContextBase>() :
     HasDefaultViewModelProviderFactory {
 
     public abstract val id: String
+    public abstract val controller: EnroController
 
     // Returns true if this NavigationContext can be considered active within the scope of it's parent
     public val isActive: Boolean by derivedStateOf {

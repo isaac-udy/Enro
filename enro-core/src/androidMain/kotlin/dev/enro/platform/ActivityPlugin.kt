@@ -17,11 +17,31 @@ internal object ActivityPlugin : NavigationPlugin() {
     private const val ACTIVE_CONTAINER_KEY = "dev.enro.platform.ACTIVE_CONTAINER_KEY"
     private const val SAVED_INSTANCE_KEY = "dev.enro.platform.SAVED_INSTANCE_KEY"
 
-    private val callbacks = object : Application.ActivityLifecycleCallbacks {
+    private var callbacks: ActivityCallbacks? = null
+
+    override fun onAttached(controller: EnroController) {
+        val application = controller.platformReference as? Application ?: return
+        if (callbacks != null) {
+            application.unregisterActivityLifecycleCallbacks(callbacks)
+        }
+        callbacks = ActivityCallbacks(controller)
+        application.registerActivityLifecycleCallbacks(callbacks)
+    }
+
+    override fun onDetached(controller: EnroController) {
+        val application = controller.platformReference as? Application ?: return
+        application.unregisterActivityLifecycleCallbacks(callbacks)
+        callbacks = null
+    }
+
+    private class ActivityCallbacks(
+        private val controller: EnroController,
+    ): Application.ActivityLifecycleCallbacks {
         override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
             if (activity !is ComponentActivity) return
             activity.activityContextHolder.rootContext = RootContext(
                 parent = activity,
+                controller = controller,
                 lifecycleOwner = activity,
                 viewModelStoreOwner = activity,
                 defaultViewModelProviderFactory = activity,
@@ -59,16 +79,6 @@ internal object ActivityPlugin : NavigationPlugin() {
         override fun onActivityResumed(activity: Activity) {}
         override fun onActivityPaused(activity: Activity) {}
         override fun onActivityStopped(activity: Activity) {}
-    }
-
-    override fun onAttached(controller: EnroController) {
-        val application = controller.platformReference as? Application ?: return
-        application.registerActivityLifecycleCallbacks(callbacks)
-    }
-
-    override fun onDetached(controller: EnroController) {
-        val application = controller.platformReference as? Application ?: return
-        application.unregisterActivityLifecycleCallbacks(callbacks)
     }
 }
 
