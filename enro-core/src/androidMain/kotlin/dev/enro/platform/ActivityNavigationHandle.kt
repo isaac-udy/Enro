@@ -4,8 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import androidx.activity.ComponentActivity
 import dev.enro.NavigationKey
+import dev.enro.result.NavigationResult
 import dev.enro.result.NavigationResultChannel
-import dev.enro.result.setResultCompleted
 import kotlin.properties.ReadOnlyProperty
 
 public class ActivityNavigationHandle<out T: NavigationKey>(
@@ -18,14 +18,17 @@ public class ActivityNavigationHandle<out T: NavigationKey>(
 
 public fun ActivityNavigationHandle<NavigationKey>.close() {
     activity.setResult(Activity.RESULT_CANCELED, resultFromEnro())
-    NavigationResultChannel.registerResult(instance)
+    NavigationResultChannel.registerResult(
+        NavigationResult.Closed(instance),
+    )
     activity.finish()
 }
 
 public fun ActivityNavigationHandle<NavigationKey>.complete() {
     activity.setResult(Activity.RESULT_OK, resultFromEnro())
-    instance.setResultCompleted()
-    NavigationResultChannel.registerResult(instance)
+    NavigationResultChannel.registerResult(
+        NavigationResult.Completed(instance, Unit),
+    )
     activity.finish()
 }
 
@@ -40,8 +43,9 @@ public fun <R : Any> ActivityNavigationHandle<NavigationKey.WithResult<R>>.compl
 
 public fun <R : Any> ActivityNavigationHandle<NavigationKey.WithResult<R>>.complete(result: R) {
     activity.setResult(Activity.RESULT_OK, resultFromEnro())
-    instance.setResultCompleted(result)
-    NavigationResultChannel.registerResult(instance)
+    NavigationResultChannel.registerResult(
+        NavigationResult.Completed(instance, result),
+    )
     activity.finish()
 }
 

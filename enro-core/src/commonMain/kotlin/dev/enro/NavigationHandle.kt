@@ -17,20 +17,20 @@ public abstract class NavigationHandle<out T : NavigationKey> internal construct
 }
 
 public fun NavigationHandle<*>.close() {
-    execute(NavigationOperation.Companion.close(instance))
+    execute(NavigationOperation.Close(instance))
 }
 
 public fun NavigationHandle<*>.closeWithoutCallback() {
     instance.metadata.set(NavigationHandleConfiguration.OnCloseCallbacksEnabled, false)
     try {
-        execute(NavigationOperation.Companion.close(instance))
+        execute(NavigationOperation.Close(instance))
     } finally {
         instance.metadata.set(NavigationHandleConfiguration.OnCloseCallbacksEnabled, true)
     }
 }
 
 public fun NavigationHandle<*>.complete() {
-    execute(NavigationOperation.Companion.complete(instance))
+    execute(NavigationOperation.Complete(instance))
 }
 
 @JvmName("completeWithoutResult")
@@ -43,11 +43,11 @@ public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.complete(
 }
 
 public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.complete(result: R) {
-    execute(NavigationOperation.Companion.complete(instance, result))
+    execute(NavigationOperation.Complete(instance, result))
 }
 
 public fun NavigationHandle<out NavigationKey>.completeFrom(key: NavigationKey) {
-    execute(NavigationOperation.Companion.completeFrom(instance, key.asInstance()))
+    execute(NavigationOperation.CompleteFrom(instance, key.asInstance()))
 }
 
 @JvmName("completeFromGeneric")
@@ -60,18 +60,18 @@ public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.completeF
 }
 
 public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey.WithResult<R>) {
-    execute(NavigationOperation.Companion.completeFrom(instance, key.asInstance()))
+    execute(NavigationOperation.CompleteFrom(instance, key.asInstance()))
 }
 
 public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey.WithMetadata<out NavigationKey.WithResult<R>>) {
-    execute(NavigationOperation.Companion.completeFrom(instance, key.asInstance()))
+    execute(NavigationOperation.CompleteFrom(instance, key.asInstance()))
 }
 
 public fun NavigationHandle<*>.open(key: NavigationKey) {
-    execute(NavigationOperation.Companion.open(key.asInstance()))
+    execute(NavigationOperation.Open(key.asInstance()))
 }
 
 public fun NavigationHandle<*>.open(key: NavigationKey.WithMetadata<*>) {
-    execute(NavigationOperation.Companion.open(key.asInstance()))
+    execute(NavigationOperation.Open(key.asInstance()))
 }
 

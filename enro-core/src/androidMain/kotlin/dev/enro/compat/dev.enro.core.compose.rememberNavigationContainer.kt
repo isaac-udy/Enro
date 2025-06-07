@@ -91,11 +91,10 @@ public fun rememberNavigationContainer(
                 onPredictiveBackProgress = { true },
                 onEmpty = {
                     cancelAnd {
-                        container?.execute(
-                            NavigationOperation {
-                                it.dropLast(1)
-                            }
-                        )
+                        if (container == null) return@cancelAnd
+                        container.backstack.lastOrNull()?.let {
+                            container.execute(NavigationOperation.Close(it))
+                        }
                     }
                 }
             )
@@ -105,11 +104,10 @@ public fun rememberNavigationContainer(
                 onPredictiveBackProgress = { true },
                 onEmpty = {
                     cancelAnd {
-                        container?.execute(
-                            NavigationOperation {
-                                it.dropLast(1)
-                            }
-                        )
+                        if (container == null) return@cancelAnd
+                        container.backstack.lastOrNull()?.let {
+                            container.execute(NavigationOperation.Close(it))
+                        }
                     }
                 }
             )

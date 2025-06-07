@@ -17,7 +17,6 @@ import dev.enro.navigationHandle
 import dev.enro.platform.getNavigationKeyInstance
 import dev.enro.platform.isResultFromEnro
 import dev.enro.platform.putNavigationKeyInstance
-import dev.enro.result.setDelegatedResult
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.navigationDestination
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
@@ -52,8 +51,7 @@ public fun <T : NavigationKey, A : Activity> activityDestination(
                 // If the result.data is considered to be a result from Enro, that
                 // means that we've already delivered the result and we don't need to do
                 // it again, so we close here without setting any result
-                navigation.instance.setDelegatedResult(navigation.instance)
-                navigation.execute(NavigationOperation { it - navigation.instance })
+                navigation.execute(NavigationOperation.Close(navigation.instance, silent = true))
                 return@rememberLauncherForActivityResult
             }
             when (result.resultCode) {

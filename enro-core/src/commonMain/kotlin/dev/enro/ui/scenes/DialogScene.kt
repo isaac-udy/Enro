@@ -26,7 +26,7 @@ internal class DialogScene(
         val container = LocalNavigationContainer.current
         Dialog(
             onDismissRequest = {
-                container.execute(NavigationOperation.close(entry.instance))
+                container.execute(NavigationOperation.Close(entry.instance))
             },
             properties = dialogProperties,
         ) {

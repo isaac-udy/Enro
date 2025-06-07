@@ -14,6 +14,7 @@ import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.core.container.setBackstack
 import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
@@ -63,13 +64,10 @@ fun NestedContainerExampleScreen() {
 
             Button(
                 onClick = {
-                    selectedState.value.execute(NavigationOperation {
-                        val saved = savedInstance.value
-                        val current = it.last()
-                        savedInstance.value = current
-                        listOf(saved)
-                    }
-                    )
+                    val saved = savedInstance.value
+                    val current = selectedState.value.backstack.last()
+                    savedInstance.value = current
+                    selectedState.value.setBackstack(listOf(saved))
                 },
             ) {
                 Text(text = "Swap")
@@ -112,7 +110,7 @@ fun ChildKeyScreen() {
 
         Text(text = "saved: $saved")
         Button(onClick = {
-            container.execute(NavigationOperation.open(MultipleNestedContainerExample.ChildKey("inner").asInstance()))
+            container.execute(NavigationOperation.Open(MultipleNestedContainerExample.ChildKey("inner").asInstance()))
         }) {
             Text(text = "Open Child")
         }

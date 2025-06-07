@@ -109,9 +109,19 @@ fun CommonSerializationScreen() {
     TitledColumn("Common Serialization") {
         Button(
             onClick = {
-                container.execute(NavigationOperation {
-                    listOf(CommonSerialization.SerializableNavigationKey.createRandom().asInstance())
-                })
+                container.execute(
+                    NavigationOperation.AggregateOperation(
+                        container.backstack
+                        .map {
+                            NavigationOperation.Close(it)
+                        }
+                        .plus(
+                            NavigationOperation.Open(
+                                CommonSerialization.SerializableNavigationKey.createRandom().asInstance()
+                            )
+                        )
+                    )
+                )
             }
         ) {
             Text("Open Serializable")
@@ -224,6 +234,7 @@ fun CommonDisplaySerializedDataScreen() {
                                 string = encodedData.data,
                             ).toString()
                         }
+
                         is CommonSerialization.SerializedData.NavigationKeySavedState -> {
                             decodeFromSavedState(
                                 deserializer = PolymorphicSerializer(NavigationKey::class),
@@ -231,11 +242,13 @@ fun CommonDisplaySerializedDataScreen() {
                                 configuration = EnroController.savedStateConfiguration,
                             ).toString()
                         }
+
                         is CommonSerialization.SerializedData.NavigationInstanceJson -> {
                             EnroController.jsonConfiguration.decodeFromString<NavigationKey.Instance<*>>(
                                 string = encodedData.data,
                             ).toString()
                         }
+
                         is CommonSerialization.SerializedData.NavigationInstanceSavedState -> {
                             decodeFromSavedState<NavigationKey.Instance<*>>(
                                 savedState = encodedData.data,
@@ -247,8 +260,7 @@ fun CommonDisplaySerializedDataScreen() {
             ) {
                 Text("Decode")
             }
-        }
-        else {
+        } else {
             Text("Decoded:")
             Text(decodedData!!)
             Spacer(modifier = Modifier.height(16.dp))

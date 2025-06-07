@@ -51,7 +51,7 @@ public interface NavigationKey {
      * Implementing this interface allows the screen associated with this key
      * to return a typed value to its caller, enabling type-safe result handling.
      */
-    public interface WithResult<T: Any> : NavigationKey
+    public interface WithResult<out T: Any> : NavigationKey
 
     /**
      * A data class that bundles a [key] of type [T] with its associated [metadata].

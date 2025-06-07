@@ -1,12 +1,11 @@
 package dev.enro.interceptor.builder
 
+import dev.enro.NavigationContext
 import dev.enro.NavigationKey
+import dev.enro.NavigationOperation
 import dev.enro.interceptor.AggregateNavigationInterceptor
 import dev.enro.interceptor.NavigationInterceptor
-import dev.enro.interceptor.NavigationTransitionInterceptor
 import dev.enro.interceptor.NoOpNavigationInterceptor
-import dev.enro.result.NavigationResult
-import dev.enro.result.getResult
 import kotlin.reflect.KClass
 
 /**
@@ -32,7 +31,7 @@ public class NavigationInterceptorBuilder internal constructor() {
     internal val interceptors: MutableList<NavigationInterceptor> = mutableListOf()
 
     public inline fun <reified KeyType : NavigationKey> onOpened(
-        noinline block: OnNavigationKeyOpenedScope<KeyType>.() -> Unit
+        noinline block: OnNavigationKeyOpenedScope<KeyType>.() -> Unit,
     ) {
         onOpened(KeyType::class, block)
     }
@@ -42,47 +41,68 @@ public class NavigationInterceptorBuilder internal constructor() {
      */
     public fun <KeyType : NavigationKey> onOpened(
         keyType: KClass<KeyType>,
-        block: OnNavigationKeyOpenedScope<KeyType>.() -> Unit
+        block: OnNavigationKeyOpenedScope<KeyType>.() -> Unit,
     ) {
-        interceptors += NavigationTransitionInterceptor(
-            action = { transition ->
-                val instance = transition.opened.singleOrNull { keyType.isInstance(it.key) }
-                if (instance == null) continueTransition()
-
+        interceptors += object : NavigationInterceptor() {
+            override fun intercept(
+                context: NavigationContext,
+                operation: NavigationOperation.Open<NavigationKey>,
+            ): NavigationOperation? {
+                val instance = operation.instance
+                if (!keyType.isInstance(instance.key)) return operation
                 @Suppress("UNCHECKED_CAST")
                 instance as NavigationKey.Instance<KeyType>
-                OnNavigationKeyOpenedScope(
-                    transition = transition,
-                    instance = instance,
-                ).block()
+                val result = runForInterceptorBuilderResult {
+                    OnNavigationKeyOpenedScope(
+                        instance = instance,
+                    ).block()
+                }
+                return when (result) {
+                    is InterceptorBuilderResult.Cancel -> null
+                    is InterceptorBuilderResult.CancelAnd -> NavigationOperation.SideEffect(result.block)
+                    is InterceptorBuilderResult.Continue -> operation
+                    is InterceptorBuilderResult.ReplaceWith -> result.operation
+                }
             }
-        )
+        }
     }
 
     /**
      * Register an interceptor that will be called when a navigation key of KeyType is closed.
      */
     public inline fun <reified KeyType : NavigationKey> onClosed(
-        noinline block: OnNavigationKeyClosedScope<KeyType>.() -> Unit
+        noinline block: OnNavigationKeyClosedScope<KeyType>.() -> Nothing,
     ) {
         onClosed(KeyType::class, block)
     }
 
     public fun <KeyType : NavigationKey> onClosed(
         keyType: KClass<KeyType>,
-        block: OnNavigationKeyClosedScope<KeyType>.() -> Unit
+        block: OnNavigationKeyClosedScope<KeyType>.() -> Unit,
     ) {
-        interceptors += NavigationTransitionInterceptor(
-            action = { transition ->
-                val instance = transition.closed.singleOrNull { keyType.isInstance(it.key) }
-                if (instance == null) continueTransition()
-                if (instance.getResult() !is NavigationResult.Closed) continueTransition()
-
+        interceptors += object : NavigationInterceptor() {
+            override fun intercept(
+                context: NavigationContext,
+                operation: NavigationOperation.Close<NavigationKey>,
+            ): NavigationOperation? {
+                val instance = operation.instance
+                if (!keyType.isInstance(instance.key)) return operation
                 @Suppress("UNCHECKED_CAST")
                 instance as NavigationKey.Instance<KeyType>
-                OnNavigationKeyClosedScope(transition, instance).block()
+                val result = runForInterceptorBuilderResult {
+                    OnNavigationKeyClosedScope(
+                        instance = instance,
+                    ).block()
+                }
+
+                return when (result) {
+                    is InterceptorBuilderResult.Cancel -> null
+                    is InterceptorBuilderResult.CancelAnd -> NavigationOperation.SideEffect(result.block)
+                    is InterceptorBuilderResult.Continue -> operation
+                    is InterceptorBuilderResult.ReplaceWith -> result.operation
+                }
             }
-        )
+        }
     }
 
     /**
@@ -90,45 +110,37 @@ public class NavigationInterceptorBuilder internal constructor() {
      * (either opened or closed).
      */
     public inline fun <reified KeyType : NavigationKey> onCompleted(
-        noinline block: OnNavigationKeyCompletedScope<KeyType>.() -> Unit
+        noinline block: OnNavigationKeyCompletedScope<KeyType>.() -> Unit,
     ) {
         onCompleted(KeyType::class, block)
     }
 
     public fun <KeyType : NavigationKey> onCompleted(
         keyType: KClass<KeyType>,
-        block: OnNavigationKeyCompletedScope<KeyType>.() -> Unit
+        block: OnNavigationKeyCompletedScope<KeyType>.() -> Unit,
     ) {
-        interceptors += NavigationTransitionInterceptor(
-            action = { transition ->
-                val completed = (transition.closed + transition.retained)
-                    .toSet()
-                    .singleOrNull { keyType.isInstance(it.key)  }
-
-                if (completed == null) continueTransition()
+        interceptors += object : NavigationInterceptor() {
+            override fun intercept(
+                context: NavigationContext,
+                operation: NavigationOperation.Complete<NavigationKey>,
+            ): NavigationOperation? {
+                val instance = operation.instance
+                if (!keyType.isInstance(instance.key)) return operation
                 @Suppress("UNCHECKED_CAST")
-                completed as NavigationKey.Instance<KeyType>
-
-                val result = completed.getResult()
-                if (result !is NavigationResult.Completed) continueTransition()
-
-                OnNavigationKeyCompletedScope(
-                    transition = transition,
-                    instance = completed,
-                    completedResult = result,
-                ).block()
+                instance as NavigationKey.Instance<KeyType>
+                val result = runForInterceptorBuilderResult {
+                    OnNavigationKeyCompletedScope(
+                        instance = instance,
+                        data = operation.result,
+                    ).block()
+                }
+                return when (result) {
+                    is InterceptorBuilderResult.Cancel -> null
+                    is InterceptorBuilderResult.CancelAnd -> NavigationOperation.SideEffect(result.block)
+                    is InterceptorBuilderResult.Continue -> operation
+                    is InterceptorBuilderResult.ReplaceWith -> result.operation
+                }
             }
-        )
-    }
-
-    /**
-     * Register an interceptor that will be called for any navigation transition.
-     */
-    public fun onTransition(
-        block: OnNavigationTransitionScope.() -> Unit
-    ) {
-        interceptors += NavigationTransitionInterceptor { transition ->
-            OnNavigationTransitionScope(transition).block()
         }
     }
 
@@ -145,7 +157,7 @@ public class NavigationInterceptorBuilder internal constructor() {
  * Creates a NavigationInterceptor using the provided DSL block.
  */
 public fun navigationInterceptor(
-    block: NavigationInterceptorBuilder.() -> Unit
+    block: NavigationInterceptorBuilder.() -> Unit,
 ): NavigationInterceptor {
     return NavigationInterceptorBuilder().apply(block).build()
 }

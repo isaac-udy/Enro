@@ -22,10 +22,10 @@ import androidx.savedstate.serialization.encodeToSavedState
 import androidx.savedstate.serialization.serializers.SavedStateSerializer
 import dev.enro.EnroController
 import dev.enro.NavigationKey
-import dev.enro.NavigationOperation
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
 import dev.enro.core.compose.navigationHandle
+import dev.enro.core.container.setBackstack
 import dev.enro.core.requestClose
 import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
@@ -173,18 +173,18 @@ fun AndroidSerializationScreen() {
     TitledColumn("Android Serialization") {
         Button(
             onClick = {
-                container.execute(NavigationOperation {
+                container.setBackstack(
                     listOf(AndroidSerialization.ParcelableNavigationKey.createRandom().asInstance())
-                })
+                )
             }
         ) {
             Text("Open Parcelable")
         }
         Button(
             onClick = {
-                container.execute(NavigationOperation {
+                container.setBackstack(
                     listOf(AndroidSerialization.SerializableNavigationKey.createRandom().asInstance())
-                })
+                )
             }
         ) {
             Text("Open Serializable")

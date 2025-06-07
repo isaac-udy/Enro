@@ -12,6 +12,7 @@ import dev.enro.context.findContext
 import dev.enro.context.root
 import dev.enro.interceptor.AggregateNavigationInterceptor
 import dev.enro.interceptor.NavigationInterceptor
+import dev.enro.result.NavigationResult
 import dev.enro.result.NavigationResultChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
@@ -31,7 +32,7 @@ public class NavigationContainer(
     public val filter: NavigationContainerFilter = acceptAll(),
     backstack: NavigationBackstack = emptyList(),
 
-) {
+    ) {
     private val mutableBackstack: MutableState<NavigationBackstack> = mutableStateOf(backstack)
     public val backstack: NavigationBackstack by mutableBackstack
 
@@ -62,12 +63,14 @@ public class NavigationContainer(
         operation: NavigationOperation,
     ) {
         if (executionMutex.isLocked) {
-            error("NavigationContainer is currently executing an operation. " +
-                    "This is likely caused by a navigationInterceptor that is triggering another navigation operation " +
-                    "inside of its [NavigationInterceptor.intercept] method.")
+            error(
+                "NavigationContainer is currently executing an operation. " +
+                        "This is likely caused by a navigationInterceptor that is triggering another navigation operation " +
+                        "inside of its [NavigationInterceptor.intercept] method."
+            )
         }
         executionMutex.tryLock(this)
-        var pendingAction: () -> Unit = {}
+        var afterExecution: () -> Unit = {}
         try {
             val contextForExecution = when {
                 context is DestinationContext<*> && context.parent.container == this -> context
@@ -76,40 +79,92 @@ public class NavigationContainer(
             requireNotNull(contextForExecution) {
                 "Could not find ContainerContext with id ${key.name} from context $context"
             }
-            runCatching transitionBlock@{
-                val interceptor = AggregateNavigationInterceptor(
-                    interceptors = interceptors + controller.interceptors,
-                )
-                val processedOperation = interceptor.intercept(
-                    context = contextForExecution,
-                    operation = operation,
-                )
-                if (processedOperation == null) return@transitionBlock
-
-                val transition = runCatching {
-                    processedOperation.invoke(backstack)
-                }.getOrElse {
-                    if (it !is NavigationOperation.CancelWithSideEffect) throw it
-                    pendingAction = it.sideEffect
-                    return@transitionBlock
-                }
-                NavigationResultChannel.registerResults(transition)
-                mutableBackstack.value = transition.targetBackstack
-                contextForExecution.requestActiveInRoot()
-            }.apply {
-                getOrThrow()
+            val operations = when (operation) {
+                is NavigationOperation.RootOperation -> listOf(operation)
+                is NavigationOperation.AggregateOperation -> operation.operations
             }
+            val interceptor = AggregateNavigationInterceptor(
+                interceptors = interceptors + controller.interceptors.aggregateInterceptor,
+            )
+
+            val backstackById = backstack.associateBy { it.id }
+            val interceptedOperations = NavigationInterceptor
+                .processOperations(
+                    context = contextForExecution,
+                    operations = operations,
+                    interceptor = interceptor,
+                )
+                .mapNotNull {
+                    when (it) {
+                        is NavigationOperation.Open<NavigationKey> -> {
+                            if (backstackById.containsKey(it.instance.id)) {
+                                return@mapNotNull null
+                            }
+                        }
+                        is NavigationOperation.Close<NavigationKey> -> {
+                            if (!backstackById.containsKey(it.instance.id)) {
+                                return@mapNotNull null
+                            }
+                        }
+                        is NavigationOperation.Complete<NavigationKey> -> {
+                            if (!backstackById.containsKey(it.instance.id)) {
+                                return@mapNotNull null
+                            }
+                        }
+                        is NavigationOperation.SideEffect -> null
+                    }
+                    return@mapNotNull it
+                }
+
+            if (interceptedOperations.isEmpty()) return
+            val updatedBackstack = interceptedOperations.fold(backstack) { backstack, operation ->
+                when (operation) {
+                    is NavigationOperation.Close<*> -> backstack - operation.instance
+                    is NavigationOperation.Complete<*> -> backstack - operation.instance
+                    is NavigationOperation.Open<*> -> backstack + operation.instance
+                    is NavigationOperation.SideEffect -> backstack
+                }
+            }
+
+            mutableBackstack.value = updatedBackstack
+            contextForExecution.requestActiveInRoot()
+
+            afterExecution = {
+                interceptedOperations.filterIsInstance<NavigationOperation.Close<NavigationKey>>()
+                    .filter { !it.silent }
+                    .forEach {
+                        NavigationResultChannel.registerResult(
+                            NavigationResult.Closed(
+                                instance = it.instance,
+                            )
+                        )
+                    }
+
+                interceptedOperations.filterIsInstance<NavigationOperation.Complete<NavigationKey>>()
+                    .forEach {
+                        NavigationResultChannel.registerResult(
+                            NavigationResult.Completed(
+                                instance = it.instance,
+                                data = it.result,
+                            )
+                        )
+                    }
+
+                interceptedOperations.filterIsInstance<NavigationOperation.SideEffect>()
+                    .forEach { it.performSideEffect() }
+            }
+
         } finally {
             executionMutex.unlock(this)
         }
-        pendingAction()
+        afterExecution()
     }
 
     private fun findContextFrom(
         context: NavigationContext,
     ): ContainerContext? {
         when (context) {
-            is ContainerContext -> if(context.container == this) return context
+            is ContainerContext -> if (context.container == this) return context
             is DestinationContext<*> -> if (context.parent.container == this) return context.parent
             is RootContext -> {}
         }

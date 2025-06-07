@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
-import dev.enro.NavigationTransition
 import dev.enro.asInstance
 import dev.enro.getNavigationHandle
 import dev.enro.result.NavigationResult.Completed.Companion.result
@@ -20,7 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -51,11 +50,10 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
     @PublishedApi
     internal companion object {
         @PublishedApi
-        internal val pendingResults: MutableStateFlow<Set<NavigationKey.Instance<*>>> = MutableStateFlow(emptySet())
+        internal val pendingResults: MutableStateFlow<Map<Id, NavigationResult<*>>> = MutableStateFlow(emptyMap())
 
         @PublishedApi
         internal val activeChannels: MutableSet<Id> = mutableSetOf()
-
 
         @PublishedApi
         internal inline fun <reified T : Any> observe(
@@ -78,25 +76,26 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
                     }
                     activeChannels.add(resultChannel.id)
                 }
-                .mapNotNull { pendingResults ->
-                    pendingResults.firstOrNull { it.metadata.get(ResultIdKey) == resultChannel.id }
+                .map { pendingResults ->
+                    resultChannel.id to pendingResults[resultChannel.id]
                 }
-                .onEach { instance ->
-                    val result = instance.metadata.get(NavigationResult.MetadataKey)
+                .onEach { (id, result) ->
+                    if (result == null) return@onEach
+
                     when (result) {
                         is NavigationResult.Delegated -> {}
-                        is NavigationResult.Closed -> resultChannel.onClosed(NavigationResultScope(instance))
+                        is NavigationResult.Closed -> resultChannel.onClosed(NavigationResultScope(result.instance))
                         is NavigationResult.Completed -> {
                             if (resultType == Unit::class) {
-                                resultChannel.onCompleted(NavigationResultScope(instance), Unit as T)
+                                resultChannel.onCompleted(NavigationResultScope(result.instance), Unit as T)
                             } else {
                                 @Suppress("UNCHECKED_CAST")
                                 result as NavigationResult.Completed<out NavigationKey.WithResult<T>>
-                                resultChannel.onCompleted(NavigationResultScope(instance), result.result)
+                                resultChannel.onCompleted(NavigationResultScope(result.instance), result.result)
                             }
                         }
                     }
-                    pendingResults.value -= instance
+                    pendingResults.value -= id
                 }
                 .onCompletion {
                     activeChannels.remove(resultChannel.id)
@@ -105,29 +104,23 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
         }
 
         internal fun registerResult(
-            instance: NavigationKey.Instance<*>,
+            result: NavigationResult<NavigationKey>,
         ) {
-            val resultId = instance.metadata.get(ResultIdKey)
+            val resultId = result.instance.metadata.get(ResultIdKey)
             // If the NavigationKey.Instance does not have a value for ResultIdKey,
             // then there is no NavigationResultChannel that is waiting for results
             // from that NavigationKey.Instance, and we won't register the result
             if (resultId == null) {
                 return
             }
-            pendingResults.value += instance
-        }
-
-        internal fun registerResults(
-            transition: NavigationTransition,
-        ) {
-            transition.closed.forEach { registerResult(it) }
+            pendingResults.value += resultId to result
         }
     }
 }
 
 public fun <Result : Any> NavigationResultChannel<Result>.open(key: NavigationKey.WithResult<out Result>) {
     navigationHandle.execute(
-        operation = NavigationOperation.Companion.open(
+        operation = NavigationOperation.Open(
             instance = key.withMetadata(ResultIdKey, id).asInstance()
         )
     )
@@ -135,7 +128,7 @@ public fun <Result : Any> NavigationResultChannel<Result>.open(key: NavigationKe
 
 public fun <Result : Any> NavigationResultChannel<Result>.open(key: NavigationKey.WithMetadata<out NavigationKey.WithResult<out Result>>) {
     navigationHandle.execute(
-        operation = NavigationOperation.Companion.open(
+        operation = NavigationOperation.Open(
             instance = key.withMetadata(ResultIdKey, id).asInstance()
         )
     )
@@ -144,7 +137,7 @@ public fun <Result : Any> NavigationResultChannel<Result>.open(key: NavigationKe
 @JvmName("openAny")
 public fun NavigationResultChannel<Unit>.open(key: NavigationKey) {
     navigationHandle.execute(
-        operation = NavigationOperation.Companion.open(
+        operation = NavigationOperation.Open(
             instance = key.withMetadata(ResultIdKey, id).asInstance()
         )
     )
@@ -153,7 +146,7 @@ public fun NavigationResultChannel<Unit>.open(key: NavigationKey) {
 @JvmName("openAny")
 public fun NavigationResultChannel<Unit>.open(key: NavigationKey.WithMetadata<*>) {
     navigationHandle.execute(
-        operation = NavigationOperation.Companion.open(
+        operation = NavigationOperation.Open(
             instance = key.withMetadata(ResultIdKey, id).asInstance()
         )
     )

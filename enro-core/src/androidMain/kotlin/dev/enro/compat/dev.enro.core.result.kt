@@ -12,16 +12,16 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import dev.enro.ui.destinations.registerForNavigationResult as fragmentRegisterForNavigationResult
 
-public fun <R: Any> NavigationHandle<out NavigationKey.WithResult<R>>.deliverResultFromPush(
+public fun <R: Any> NavigationHandle<NavigationKey.WithResult<R>>.deliverResultFromPush(
     key: dev.enro.core.NavigationKey.SupportsPush.WithResult<R>,
 ) {
-    execute(NavigationOperation.completeFrom(instance, key.asPush()))
+    execute(NavigationOperation.CompleteFrom(instance, key.asPush()))
 }
 
-public fun <R: Any> NavigationHandle<out NavigationKey.WithResult<R>>.deliverResultFromPresent(
+public fun <R: Any> NavigationHandle<NavigationKey.WithResult<R>>.deliverResultFromPresent(
     key: dev.enro.core.NavigationKey.SupportsPresent.WithResult<R>
 ) {
-    execute(NavigationOperation.completeFrom(instance, key.asPresent()))
+    execute(NavigationOperation.CompleteFrom(instance, key.asPresent()))
 }
 
 public inline fun <reified R : Any> Fragment.registerForNavigationResult(

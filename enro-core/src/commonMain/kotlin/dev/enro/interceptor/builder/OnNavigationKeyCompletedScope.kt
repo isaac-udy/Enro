@@ -1,70 +1,61 @@
 package dev.enro.interceptor.builder
 
-import dev.enro.NavigationBackstack
 import dev.enro.NavigationKey
-import dev.enro.NavigationTransition
-import dev.enro.interceptor.NavigationTransitionInterceptor
+import dev.enro.NavigationOperation
 import dev.enro.result.NavigationResult
-import dev.enro.result.NavigationResult.Completed.Companion.result
 import dev.enro.result.NavigationResultChannel
-import dev.enro.result.clearResult
 
 /**
  * Scope for handling when a navigation key is completed (either opened or closed).
  */
-public class OnNavigationKeyCompletedScope<K : NavigationKey> @PublishedApi internal constructor(
-    public val transition: NavigationTransition,
+public class OnNavigationKeyCompletedScope<out K : NavigationKey> @PublishedApi internal constructor(
     public val instance: NavigationKey.Instance<K>,
-    internal val completedResult: NavigationResult.Completed<K>,
+    internal val data: Any?,
 ) {
-
-    /**
-     * Look at the result of the navigation key, without removing or otherwise modifying it.
-     */
-    public fun <R : Any> OnNavigationKeyCompletedScope<out NavigationKey.WithResult<R>>.peekResult(): R {
-        return completedResult.result
-    }
-
-    /**
-     * Consume the result of the navigation key, removing it from the navigation key instance, so that
-     * it cannot be consumed again.
-     */
-    public fun <R : Any> OnNavigationKeyCompletedScope<out NavigationKey.WithResult<R>>.consumeResult(): R {
-        val result = peekResult()
-        instance.clearResult()
-        return result
+    public val <R : Any> OnNavigationKeyCompletedScope<NavigationKey.WithResult<R>>.result: R get() {
+        require(data != null) {
+            "Incorrect type, but got null"
+        }
+        @Suppress("UNCHECKED_CAST")
+        return data as R
     }
 
     /**
      * Continue with the navigation as normal.
      */
     public fun continueWithComplete(): Nothing =
-        throw NavigationTransitionInterceptor.Result.Continue()
+        throw InterceptorBuilderResult.Continue()
 
     /**
      * Deliver the "complete" result, but don't actually close the screen
      */
     public fun deliverResultOnly(): Nothing {
-        NavigationResultChannel.registerResult(instance)
-        cancel()
+        cancelAnd {
+            NavigationResultChannel.registerResult(
+                NavigationResult.Completed(
+                    instance,
+                    data,
+                )
+            )
+        }
     }
 
     /**
      * Cancel the navigation entirely.
      */
     public fun cancel(): Nothing =
-        throw NavigationTransitionInterceptor.Result.Cancel()
+        throw InterceptorBuilderResult.Cancel()
 
     /**
      * Cancel the navigation and execute the provided block after the navigation is canceled.
      */
     public fun cancelAnd(block: () -> Unit): Nothing =
-        throw NavigationTransitionInterceptor.Result.CancelAnd(block)
+        throw InterceptorBuilderResult.CancelAnd(block)
 
     /**
-     * Replace the current transition with a modified one.
+     * Replace the current operation with a different operation.
      */
-    public fun replaceWith(transition: NavigationBackstack): Nothing =
-        throw NavigationTransitionInterceptor.Result.ReplaceWith(transition)
+    public fun replaceWith(operation: NavigationOperation): Nothing =
+        throw InterceptorBuilderResult.ReplaceWith(operation)
 
 }

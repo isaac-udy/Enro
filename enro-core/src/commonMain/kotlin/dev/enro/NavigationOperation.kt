@@ -1,88 +1,84 @@
 package dev.enro
 
 import dev.enro.result.NavigationResultChannel
-import dev.enro.result.setDelegatedResult
-import dev.enro.result.setResultClosed
-import dev.enro.result.setResultCompleted
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmStatic
 
-public class NavigationOperation(
-    private val operation: (backstack: NavigationBackstack) -> NavigationBackstack?,
-) {
-    public fun invoke(backstack: NavigationBackstack): NavigationTransition {
-        val updatedBackstack = operation(backstack)
-            ?: return NavigationTransition(backstack, backstack)
+public sealed class NavigationOperation {
+    public sealed class RootOperation : NavigationOperation()
 
-        return NavigationTransition(
-            currentBackstack = backstack,
-            targetBackstack = updatedBackstack,
-        )
+    public class AggregateOperation(
+        internal val operations: List<RootOperation>,
+    ) : NavigationOperation()
+
+    public class Open<out T : NavigationKey>(
+        public val instance: NavigationKey.Instance<T>,
+    ) : RootOperation()
+
+    public class Close<out T : NavigationKey>(
+        public val instance: NavigationKey.Instance<T>,
+        // A silent close indicates that after this operation is completed,
+        // any NavigationResult channels should not be notified of the close operation,
+        public val silent: Boolean = false,
+    ) : RootOperation()
+
+    public class Complete<out T : NavigationKey> private constructor(
+        public val instance: NavigationKey.Instance<T>,
+        internal val result: Any?,
+    ) : RootOperation() {
+
+        public companion object Companion {
+            @JvmStatic
+            @JvmName("complete")
+            public operator fun <T : NavigationKey> invoke(
+                instance: NavigationKey.Instance<T>,
+            ): Complete<T> {
+                return Complete(instance, null)
+            }
+
+            @JvmStatic
+            @JvmName("completeWithoutResult")
+            @Deprecated(
+                message = "A NavigationKey.WithResult should not be completed without a result, doing so will result in an error",
+                level = DeprecationLevel.ERROR,
+            )
+            public operator fun <R : Any> invoke(
+                instance: NavigationKey.Instance<NavigationKey.WithResult<R>>,
+            ): Complete<NavigationKey> {
+                error("${instance.key} is a NavigationKey.WithResult and cannot be completed without a result")
+            }
+
+            @JvmStatic
+            @JvmName("complete")
+            public operator fun <R : Any> invoke(
+                instance: NavigationKey.Instance<NavigationKey.WithResult<R>>,
+                result: R,
+            ): Complete<NavigationKey.WithResult<R>> {
+                return Complete(instance, result)
+            }
+        }
     }
 
-    internal class CancelWithSideEffect(
-        internal val sideEffect: () -> Unit
-    ) : RuntimeException()
-
-    public companion object {
-        public fun open(instance: NavigationKey.Instance<*>): NavigationOperation = NavigationOperation { backstack ->
-            backstack + instance
+    public class SideEffect(
+        private val block: () -> Unit,
+    ) : RootOperation() {
+        public fun performSideEffect() {
+            block()
         }
+    }
 
-        public fun close(instance: NavigationKey.Instance<*>): NavigationOperation = NavigationOperation { backstack ->
-            val toRemove = backstack.lastOrNull { it.id == instance.id } ?: return@NavigationOperation backstack
-            toRemove.setResultClosed()
-            return@NavigationOperation backstack - toRemove
-        }
-
-        public fun <T : NavigationKey> complete(instance: NavigationKey.Instance<T>): NavigationOperation {
-            require(instance.key !is NavigationKey.WithResult<*>) {
-                "${instance.key} is a NavigationKey.WithResult and cannot be completed without a result"
-            }
-            return NavigationOperation { backstack ->
-                instance.setResultCompleted()
-                val resultId = instance.metadata.get(NavigationResultChannel.ResultIdKey)
-                val toRemove = backstack.filter {
-                    it.id == instance.id || (it.metadata.get(NavigationResultChannel.ResultIdKey) == resultId && resultId != null)
-                }
-                return@NavigationOperation backstack - toRemove
-            }
-        }
-
-        @JvmName("completeWithoutResult")
-        @Deprecated(
-            message = "A NavigationKey.WithResult should not be completed without a result, doing so will result in an error",
-            level = DeprecationLevel.ERROR,
-        )
-        public fun <R : Any> complete(
-            instance: NavigationKey.Instance<out NavigationKey.WithResult<R>>
-        ): NavigationOperation {
-            error("${instance.key} is a NavigationKey.WithResult and cannot be completed without a result")
-        }
-
-        public fun <R : Any> complete(
-            instance: NavigationKey.Instance<out NavigationKey.WithResult<R>>,
-            result: R,
-        ): NavigationOperation = NavigationOperation { backstack ->
-            instance.setResultCompleted(result)
-
-            val resultId = instance.metadata.get(NavigationResultChannel.ResultIdKey)
-            val toRemove = backstack.filter {
-                it.id == instance.id || (it.metadata.get(NavigationResultChannel.ResultIdKey) == resultId && resultId != null)
-            }
-            return@NavigationOperation backstack - toRemove
-        }
-
+    public companion object CompleteFrom {
         @JvmName("completeFromWithoutResult")
-        public fun completeFrom(
-            instance: NavigationKey.Instance<out NavigationKey>,
-            from: NavigationKey.Instance<out NavigationKey>,
-        ): NavigationOperation = NavigationOperation { backstack ->
-            instance.setDelegatedResult(from)
-            from.metadata.set(
+        @JvmStatic
+        public operator fun invoke(
+            instance: NavigationKey.Instance<NavigationKey>,
+            completeFrom: NavigationKey.Instance<NavigationKey>,
+        ): Open<NavigationKey> {
+            completeFrom.metadata.set(
                 NavigationResultChannel.ResultIdKey,
                 instance.metadata.get(NavigationResultChannel.ResultIdKey)
             )
-            return@NavigationOperation backstack + from
+            return Open(completeFrom)
         }
 
         @Deprecated(
@@ -90,24 +86,41 @@ public class NavigationOperation(
             level = DeprecationLevel.ERROR,
         )
         @JvmName("completeFromWithoutResultDeprecated")
-        public fun <R : Any> completeFrom(
-            instance: NavigationKey.Instance<out NavigationKey.WithResult<R>>,
-            from: NavigationKey.Instance<out NavigationKey>,
+        @JvmStatic
+        public operator fun <R : Any> invoke(
+            instance: NavigationKey.Instance<NavigationKey>,
+            completeFrom: NavigationKey.Instance<NavigationKey.WithResult<R>>,
         ): NavigationOperation {
             error("Cannot completeFrom a NavigationKey.WithResult from a NavigationKey that does not also implement NavigationKey.WithResult")
         }
 
-        // TODO There's probably also a "closeAndCompleteFrom" that might be useful, for replacements and such?
-        public fun <R : Any> completeFrom(
-            instance: NavigationKey.Instance<out NavigationKey.WithResult<R>>,
-            from: NavigationKey.Instance<out NavigationKey.WithResult<R>>,
-        ): NavigationOperation = NavigationOperation { backstack ->
-            instance.setDelegatedResult(from)
-            from.metadata.set(
+        @JvmStatic
+        @JvmName("completeFrom")
+        public operator fun <R : Any> invoke(
+            instance: NavigationKey.Instance<NavigationKey.WithResult<R>>,
+            completeFrom: NavigationKey.Instance<NavigationKey.WithResult<R>>,
+        ): Open<NavigationKey.WithResult<R>> {
+            completeFrom.metadata.set(
                 NavigationResultChannel.ResultIdKey,
                 instance.metadata.get(NavigationResultChannel.ResultIdKey)
             )
-            return@NavigationOperation backstack + from
+            return Open<NavigationKey.WithResult<R>>(
+                instance = completeFrom,
+            )
+        }
+    }
+
+    public object SetBackstack {
+        public operator fun invoke(
+            currentBackstack: NavigationBackstack,
+            targetBackstack: NavigationBackstack,
+        ): AggregateOperation {
+            val transition = NavigationTransition(currentBackstack, targetBackstack)
+            val closed = transition.closed
+            val opened = transition.opened
+            return AggregateOperation(
+                closed.map { Close(it) } + opened.map { Open(it) },
+            )
         }
     }
 }

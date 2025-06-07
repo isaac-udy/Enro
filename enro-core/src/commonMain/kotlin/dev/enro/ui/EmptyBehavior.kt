@@ -1,22 +1,18 @@
 package dev.enro.ui
 
 import dev.enro.NavigationBackstack
-import dev.enro.interceptor.builder.OnNavigationTransitionScope
 import dev.enro.interceptor.builder.navigationInterceptor
-import dev.enro.result.NavigationResult
-import dev.enro.result.NavigationResultChannel
-import dev.enro.result.getResult
 
 public class EmptyBehavior internal constructor(
     private val isBackHandlerEnabled: () -> Boolean,
     private val onPredictiveBackProgress: (Float) -> Boolean,
-    private val onEmpty: OnNavigationTransitionScope.() -> Unit,
+    private val onEmpty: OnEmptyScope.() -> Unit,
 ) {
     internal val interceptor = navigationInterceptor {
-        onTransition {
-            if (transition.targetBackstack.isNotEmpty()) continueWithTransition()
-            onEmpty(this)
-        }
+//        onTransition {
+//            if (transition.targetBackstack.isNotEmpty()) continueWithTransition()
+//            onEmpty(this)
+//        }
     }
 
     internal fun isBackHandlerEnabled(backstack: NavigationBackstack): Boolean {
@@ -48,7 +44,7 @@ public class EmptyBehavior internal constructor(
         // allows an OnNavigationTransitionScope to be invoked when the container would
         // otherwise become empty
         public fun allowEmpty(
-            onEmpty: OnNavigationTransitionScope.() -> Unit = {},
+            onEmpty: OnEmptyScope.() -> Unit = {},
         ): EmptyBehavior {
             return EmptyBehavior(
                 isBackHandlerEnabled = { true },
@@ -66,10 +62,10 @@ public class EmptyBehavior internal constructor(
                 isBackHandlerEnabled = { false },
                 onPredictiveBackProgress = { false },
                 onEmpty = {
-                    transition.closed
-                        .filter { it.getResult() is NavigationResult.Completed<*> }
-                        .forEach { NavigationResultChannel.registerResult(it) }
-                    cancel()
+//                    transition.closed
+//                        .filter { it.getResult() is NavigationResult.Completed<*> }
+//                        .forEach { NavigationResultChannel.registerResult(it) }
+//                    cancel()
                 },
             )
         }
@@ -78,4 +74,9 @@ public class EmptyBehavior internal constructor(
             return preventEmpty()
         }
     }
+}
+
+public class OnEmptyScope {
+    public fun cancel() {}
+    public fun cancelAnd(block: () -> Unit) {}
 }

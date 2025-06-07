@@ -132,7 +132,6 @@ fun MultiContainerBottomNavigationScreen() {
     )
 
     Column {
-        Log.e("Enro", "Bottom navigation container ${group.activeContainer}")
         AnimatedContent(
             modifier = Modifier
                 .fillMaxWidth()

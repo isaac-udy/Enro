@@ -13,11 +13,16 @@ public fun backstackOf(vararg elements: NavigationKey.Instance<out NavigationKey
 public fun emptyBackstack(): NavigationBackstack = backstackOf()
 
 public fun NavigationContainerState.setBackstack(backstack: NavigationBackstack) {
-    execute(NavigationOperation { backstack })
+    setBackstack { backstack }
 }
 
 public fun NavigationContainerState.setBackstack(block: (NavigationBackstack) -> NavigationBackstack) {
-    execute(NavigationOperation { block(it) })
+    execute(
+        operation = NavigationOperation.SetBackstack(
+            currentBackstack = container.backstack,
+            targetBackstack = block(container.backstack),
+        )
+    )
 }
 
 public fun NavigationBackstack.push(key: NavigationKey) : NavigationBackstack {

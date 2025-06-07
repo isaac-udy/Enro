@@ -1,7 +1,7 @@
 package dev.enro.result.flow
 
-import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.NavigationKey
+import dev.enro.annotations.AdvancedEnroApi
 
 @AdvancedEnroApi
 public class FlowStepActions<T : NavigationKey.WithResult<*>>(
@@ -46,7 +46,7 @@ public class FlowStepActions<T : NavigationKey.WithResult<*>>(
         /**
          * Sets a result for the step
          */
-        public fun <R : Any> FlowStepActions<out NavigationKey.WithResult<in R>>.setResult(result: R) {
+        public fun <R : Any> FlowStepActions<out NavigationKey.WithResult<R>>.setResult(result: R) {
             setResultUnsafe(result)
         }
 
@@ -54,7 +54,7 @@ public class FlowStepActions<T : NavigationKey.WithResult<*>>(
          * Gets the current result for the step, which may be null if the result has been cleared or the step has not been
          * executed yet.
          */
-        public fun <R : Any> FlowStepActions<out NavigationKey.WithResult<out R>>.getResult(): R? {
+        public fun <R : Any> FlowStepActions<out NavigationKey.WithResult<R>>.getResult(): R? {
             val result = getResultUnsafe() ?: return null
             @Suppress("UNCHECKED_CAST")
             return result as R

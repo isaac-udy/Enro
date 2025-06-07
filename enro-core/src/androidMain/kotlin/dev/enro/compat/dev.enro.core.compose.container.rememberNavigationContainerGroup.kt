@@ -19,7 +19,6 @@ public class NavigationContainerGroup(
     public val activeContainer: NavigationContainerState by activeContainerState
 
     public fun setActive(container: NavigationContainerState) {
-        EnroLog.error("Attempt to set active container $container")
         activeContainerState.value = container
     }
 }

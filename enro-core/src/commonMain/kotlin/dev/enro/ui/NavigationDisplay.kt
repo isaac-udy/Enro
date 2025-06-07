@@ -325,10 +325,11 @@ private fun HandlePredictiveBack(
             val previousIds = scene.previousEntries
                 .map { it.instance.id }
                 .toSet()
+            val toClose = state.backstack.filter { !previousIds.contains(it.id) }
             state.execute(
-                NavigationOperation { current ->
-                    current.filter { previousIds.contains(it.id) }
-                }
+                NavigationOperation.AggregateOperation(
+                    toClose.map { NavigationOperation.Close(it) }
+                )
             )
         } finally {
             // Ensure state is cleaned up even if an error occurs
