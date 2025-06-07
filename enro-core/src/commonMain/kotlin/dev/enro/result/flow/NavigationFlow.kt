@@ -4,12 +4,11 @@ import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.asInstance
+import dev.enro.platform.EnroLog
 import dev.enro.result.NavigationResultChannel
 import dev.enro.ui.NavigationContainerState
 import dev.enro.withMetadata
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 @ExperimentalEnroApi
 public class NavigationFlow<T> internal constructor(
@@ -23,15 +22,11 @@ public class NavigationFlow<T> internal constructor(
     public var container: NavigationContainerState? = null
         set(value) {
             field = value
-            update()
+            if (value != null) update()
         }
 
     internal fun onStepCompleted(step: FlowStep<Any>, result: Any) {
-        coroutineScope.launch {
-            resultManager.set(step, result)
-            yield()
-            update()
-        }
+        resultManager.set(step, result)
     }
 
     internal fun onStepClosed(instance: NavigationKey.Instance<NavigationKey>) {
@@ -50,8 +45,10 @@ public class NavigationFlow<T> internal constructor(
             resultManager = resultManager,
             navigationFlowReference = reference
         )
-        runCatching { return@update onCompleted(flowScope.flow()) }
-            .recover {
+        runCatching {
+            EnroLog.error("Starting update", RuntimeException())
+            return@update onCompleted(flowScope.flow())
+        }.recover {
                 when (it) {
                     is NavigationFlowScope.NoResult -> {}
                     is NavigationFlowScope.Escape -> return

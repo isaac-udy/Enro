@@ -75,12 +75,12 @@ public class NavigationContainer(
                 context = contextForExecution,
                 operation = operation,
             )
-            if (containerOperation == null) return
+            if (containerOperation == null) return@transitionBlock
             val controllerOperation = controller.interceptors.intercept(
                 context = contextForExecution,
                 operation = containerOperation,
             )
-            if (controllerOperation == null) return
+            if (controllerOperation == null) return@transitionBlock
 
             val transition = runCatching {
                 controllerOperation.invoke(backstack)

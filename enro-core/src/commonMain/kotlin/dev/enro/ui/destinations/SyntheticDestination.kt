@@ -65,6 +65,6 @@ public fun <K : NavigationKey> syntheticDestination(
     return navigationDestination(
         metadata = metadata + (SyntheticDestination.SyntheticDestinationKey to SyntheticDestination(block))
     ) {
-        error("Synthetic destinations should not ever end up being rendered")
+        error("SyntheticDestination with NavigationKey ${navigation.key::class.simpleName} was rendered; SyntheticDestinations should never end up in the Composition. Something is going wrong.")
     }
 }

@@ -23,8 +23,9 @@ import dev.enro.core.close
 import dev.enro.core.closeWithResult
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.present
-import dev.enro.destination.synthetic.syntheticDestination
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDestinationProvider
+import dev.enro.ui.destinations.managedFlowDestination
 import dev.enro.ui.navigationDestination
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import kotlinx.parcelize.Parcelize
@@ -55,20 +56,20 @@ internal class UserInformationFlow : Parcelable, NavigationKey.SupportsPush.With
 
 @OptIn(ExperimentalEnroApi::class)
 @NavigationDestination(UserInformationFlow::class)
-internal val userInformationFlow = syntheticDestination<UserInformationFlow> {
-    TODO("implement managedFlowDestination")
-//    managedFlowDestination<UserInformationFlow>()
-//        .flow {
-//            val name = push { UserInformationFlow.GetName() }
-//            val email = push { UserInformationFlow.GetEmail() }
-//            val age = push { UserInformationFlow.GetAge() }
-//
-//            UserInformation(name, email, age)
-//        }
-//        .onComplete { result ->
-//            navigation.closeWithResult(result)
-//        }
-}
+internal val userInformationFlow: NavigationDestinationProvider<UserInformationFlow> =
+    managedFlowDestination<UserInformationFlow, UserInformation>(
+        flow = {
+            val name = open { UserInformationFlow.GetName() }
+            val email = open { UserInformationFlow.GetEmail() }
+            val age = open { UserInformationFlow.GetAge() }
+
+            UserInformation(
+                name = name,
+                email = email,
+                age = age
+            )
+        }
+    )
 
 @Composable
 @NavigationDestination(UserInformationFlow.GetName::class)

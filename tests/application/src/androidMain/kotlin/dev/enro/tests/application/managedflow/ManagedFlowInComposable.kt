@@ -1,18 +1,20 @@
 package dev.enro.tests.application.managedflow
 
 import android.os.Parcelable
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationDestination
+import dev.enro.asInstance
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
-import dev.enro.core.container.accept
+import dev.enro.interceptor.builder.navigationInterceptor
+import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.rememberNavigationContainer
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -26,16 +28,16 @@ object ManagedFlowInComposable : Parcelable, NavigationKey.SupportsPush {
 @Composable
 @NavigationDestination(ManagedFlowInComposable::class)
 fun ManagedFlowInComposableScreen() {
+    val navigation = navigationHandle<ManagedFlowInComposable>()
     val container = rememberNavigationContainer(
-        emptyBehavior = EmptyBehavior.CloseParent,
-        root = UserInformationFlow(),
-        filter = accept {
-            key<UserInformationFlow>()
-            key<ManagedFlowInComposable.DisplayUserInformation>()
-        },
-        interceptor = {
+        backstack = listOf(UserInformationFlow().asInstance()),
+        interceptor = navigationInterceptor {
             onCompleted<UserInformationFlow> {
-                TODO("replaceWith")
+                val result = consumeResult()
+                Log.e("Completed", result.toString())
+                cancelAnd {
+                    navigation.open(ManagedFlowInComposable.DisplayUserInformation(result))
+                }
 //                replaceCloseWith(
 //                    ManagedFlowInComposable.DisplayUserInformation(result).asPush()
 //                )

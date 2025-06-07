@@ -7,6 +7,7 @@ import dev.enro.interceptor.NavigationTransitionInterceptor
 import dev.enro.result.NavigationResult
 import dev.enro.result.NavigationResult.Completed.Companion.result
 import dev.enro.result.NavigationResultChannel
+import dev.enro.result.clearResult
 
 /**
  * Scope for handling when a navigation key is completed (either opened or closed).
@@ -17,10 +18,22 @@ public class OnNavigationKeyCompletedScope<K : NavigationKey> @PublishedApi inte
     internal val completedResult: NavigationResult.Completed<K>,
 ) {
 
-    public val <R : Any> OnNavigationKeyCompletedScope<out NavigationKey.WithResult<R>>.result: R
-        get() {
-            return completedResult.result
-        }
+    /**
+     * Look at the result of the navigation key, without removing or otherwise modifying it.
+     */
+    public fun <R : Any> OnNavigationKeyCompletedScope<out NavigationKey.WithResult<R>>.peekResult(): R {
+        return completedResult.result
+    }
+
+    /**
+     * Consume the result of the navigation key, removing it from the navigation key instance, so that
+     * it cannot be consumed again.
+     */
+    public fun <R : Any> OnNavigationKeyCompletedScope<out NavigationKey.WithResult<R>>.consumeResult(): R {
+        val result = peekResult()
+        instance.clearResult()
+        return result
+    }
 
     /**
      * Continue with the navigation as normal.
@@ -35,7 +48,6 @@ public class OnNavigationKeyCompletedScope<K : NavigationKey> @PublishedApi inte
         NavigationResultChannel.registerResult(instance)
         cancel()
     }
-
 
     /**
      * Cancel the navigation entirely.

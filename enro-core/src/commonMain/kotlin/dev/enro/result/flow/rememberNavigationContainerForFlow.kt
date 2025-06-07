@@ -8,6 +8,7 @@ import dev.enro.asInstance
 import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.result.NavigationResult
 import dev.enro.result.NavigationResultChannel
+import dev.enro.result.clearResult
 import dev.enro.result.getResult
 import dev.enro.ui.NavigationContainerState
 import dev.enro.ui.destinations.EmptyNavigationKey
@@ -35,8 +36,11 @@ public fun rememberNavigationContainerForFlow(
                     val result = instance.getResult() as? NavigationResult.Completed
                     if (result == null) continueWithComplete()
 
-                    flow.onStepCompleted(flowStep, result.data ?: Unit)
-                    cancel()
+                    cancelAnd {
+                        instance.clearResult()
+                        flow.onStepCompleted(flowStep, result.data ?: Unit)
+                        flow.update()
+                    }
                 }
                 onTransition {
                     if (transition.closed.isEmpty()) continueWithTransition()
@@ -47,14 +51,18 @@ public fun rememberNavigationContainerForFlow(
                     @Suppress("UNCHECKED_CAST")
                     val step = flowSteps.single() as FlowStep<Any>
 
-                    transition.closed.onEach {
+                    val completed = transition.closed.mapNotNull {
                         val resultId = it.metadata.get(NavigationResultChannel.ResultIdKey)
-                        if (resultId == null) return@onEach
-                        if (resultId.resultId != step.stepId) return@onEach
+                        if (resultId == null) return@mapNotNull null
+                        if (resultId.resultId != step.stepId) return@mapNotNull null
                         val result = it.getResult()
-                        if (result !is NavigationResult.Completed<*>) return@onEach
+                        if (result !is NavigationResult.Completed<*>) return@mapNotNull null
+
+                        it.clearResult()
                         flow.onStepCompleted(step, result.data ?: Unit)
-                        cancel()
+                    }
+                    if (completed.isNotEmpty()) {
+                        cancelAnd { flow.update() }
                     }
                     continueWithTransition()
                 }

@@ -4,14 +4,26 @@ import androidx.lifecycle.ViewModel
 import dev.enro.viewmodel.NavigationHandleProvider
 import dev.enro.viewmodel.navigationHandleReference
 import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KClass
 
 // TODO do we actually want this to be done with a property?
 public inline fun <reified K : NavigationKey> ViewModel.navigationHandle(
     noinline config: (NavigationHandleConfiguration<K>.() -> Unit)? = null,
 ): ReadOnlyProperty<ViewModel, NavigationHandle<K>> {
+    return navigationHandle(
+        K::class,
+        config,
+    )
+}
+
+// TODO do we actually want this to be done with a property?
+public fun <K : NavigationKey> ViewModel.navigationHandle(
+    keyType: KClass<K>,
+    config: (NavigationHandleConfiguration<K>.() -> Unit)? = null,
+): ReadOnlyProperty<ViewModel, NavigationHandle<K>> {
     val navigationHandle = getNavigationHandle()
-    require(navigationHandle.key is K) {
-        "The navigation handle key does not match the expected type. Expected ${K::class.simpleName}, but got ${navigationHandle.key::class.simpleName}"
+    require(keyType.isInstance(navigationHandle.key)) {
+        "The navigation handle key does not match the expected type. Expected ${keyType.simpleName}, but got ${navigationHandle.key::class.simpleName}"
     }
 
     if (config != null) {
@@ -29,6 +41,14 @@ public inline fun <reified K : NavigationKey> ViewModel.navigationHandle(): Read
    return navigationHandle(
        config = null,
    )
+}
+public fun <K : NavigationKey> ViewModel.navigationHandle(
+    keyType: KClass<K>,
+): ReadOnlyProperty<ViewModel, NavigationHandle<K>> {
+    return navigationHandle(
+        keyType = keyType,
+        config = null,
+    )
 }
 
 public fun ViewModel.getNavigationHandle(): NavigationHandle<NavigationKey> {

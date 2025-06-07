@@ -64,6 +64,7 @@ public inline fun <reified T: Any> EmbeddedNavigationDestination(
             }
             onCompleted<NavigationKey.WithResult<T>> {
                 if (instance.key != navigationKey) continueWithComplete()
+                val result = consumeResult()
                 cancelAnd {
                     rememberedOnResult.value.invoke(result)
                 }
