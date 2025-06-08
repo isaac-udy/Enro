@@ -15,15 +15,16 @@ import androidx.test.runner.lifecycle.Stage
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.context.DestinationContext
+import dev.enro.context.NavigationContext
 import dev.enro.context.findContext
 import dev.enro.context.getNavigationHandle
 import dev.enro.platform.navigationContext
 import kotlin.reflect.KClass
 
 fun ComposeTestRule.waitForNavigationHandle(
-    block: (NavigationHandle<NavigationKey>) -> Boolean
+    block: (NavigationHandle<NavigationKey>) -> Boolean,
 ): NavigationHandle<NavigationKey> {
-    val context = waitForNavigationContext {
+    val context = waitForDestinationContext {
         runCatching {
             it.getNavigationHandle()
                 .let(block)
@@ -33,16 +34,25 @@ fun ComposeTestRule.waitForNavigationHandle(
 }
 
 @JvmName("waitForAnyNavigationContext")
-fun ComposeTestRule.waitForNavigationContext(
-    block: (DestinationContext<NavigationKey>) -> Boolean
-) :  DestinationContext<NavigationKey> {
-    return waitForNavigationContext<NavigationKey>(block)
+fun ComposeTestRule.waitForDestinationContext(
+    block: (DestinationContext<NavigationKey>) -> Boolean,
+): DestinationContext<NavigationKey> {
+    return waitForDestinationContext<NavigationKey>(block)
 }
 
-inline fun <reified T: NavigationKey> ComposeTestRule.waitForNavigationContext(
-    noinline block: (DestinationContext<T>) -> Boolean = { true }
+inline fun <reified T : NavigationKey> ComposeTestRule.waitForDestinationContext(
+    noinline block: (DestinationContext<T>) -> Boolean = { true },
 ): DestinationContext<T> {
-    var navigationContext: DestinationContext<T>? = null
+    @Suppress("UNCHECKED_CAST")
+    return waitForNavigationContext {
+        it is DestinationContext<*> && it.key is T && block(it as DestinationContext<T>)
+    } as DestinationContext<T>
+}
+
+fun ComposeTestRule.waitForNavigationContext(
+    block: (NavigationContext<*, *>) -> Boolean = { true },
+): NavigationContext<*, *> {
+    var navigationContext: NavigationContext<*, *>? = null
     waitUntil(5_000) {
         val activity = runOnUiThread {
             ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
@@ -61,7 +71,7 @@ inline fun <reified T: NavigationKey> ComposeTestRule.waitForNavigationContext(
 
 inline fun <reified T : Fragment> ComposeTestRule.waitForFragment(
     waitForResume: Boolean = true,
-    noinline block: (T) -> Boolean = { true }
+    noinline block: (T) -> Boolean = { true },
 ): T {
     lateinit var fragment: T
     waitUntil {
@@ -102,7 +112,7 @@ fun <T : Fragment> FragmentManager.getFragment(
 
 fun ComposeTestRule.waitForText(
     text: String,
-    timeoutMillis: Long = 5000
+    timeoutMillis: Long = 5000,
 ) {
     waitUntil(timeoutMillis) {
         try {
@@ -116,7 +126,7 @@ fun ComposeTestRule.waitForText(
 
 fun ComposeTestRule.waitForViewBasedText(
     text: String,
-    timeoutMillis: Long = 5000
+    timeoutMillis: Long = 5000,
 ) {
     waitUntil(timeoutMillis) {
         try {

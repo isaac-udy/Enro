@@ -7,7 +7,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.espresso.Espresso
 import dev.enro.context.requireViewModel
-import dev.enro.tests.application.waitForNavigationContext
+import dev.enro.tests.application.waitForDestinationContext
 import org.junit.Assert.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
@@ -18,7 +18,7 @@ class ComposeAsyncManagedResultFlowRobot(
     private val maximumTimeout = 5_000L
 
     val viewModel = composeRule
-        .waitForNavigationContext<ComposeAsyncManagedResultFlow>()
+        .waitForDestinationContext<ComposeAsyncManagedResultFlow>()
         .requireViewModel<ComposeAsyncManagedResultViewModel>()
 
     fun assertStepOne(): ComposeAsyncManagedResultFlowRobot {

@@ -12,41 +12,41 @@ import dev.enro.asInstance
 class TestNavigationHandle<T : NavigationKey>(
     override val instance: NavigationKey.Instance<T>,
 ) : NavigationHandle<T>() {
-
-    private val rootContext = createRootContext()
-    private val parentContext = createContainerContext(
-        parent = rootContext,
-        container = createTestNavigationContainer(
-            key = TestNavigationContainer.parentContainer,
-            backstack = listOf(instance)
-        )
-    )
-
-    private val context = createDestinationContext(
-        parent = parentContext,
-        instance = instance,
-        metadata = emptyMap(),
-    )
-
     @PublishedApi
-    internal val navigationContainers = mutableMapOf(
-        TestNavigationContainer.parentContainer to createTestNavigationContainer(
-            key = TestNavigationContainer.parentContainer,
-            backstack = listOf(instance)
-        ),
-    )
-
-    val parentContainer = parentContext.container
+    internal val operations = mutableListOf<NavigationOperation.RootOperation>()
 
     override val lifecycle: LifecycleRegistry = LifecycleRegistry.createUnsafe(this).apply {
         currentState = Lifecycle.State.RESUMED
     }
 
+    fun clearOperationHistory() {
+        operations.clear()
+    }
+
     override fun execute(operation: NavigationOperation) {
-        require(parentContainer.backstack.any { it.id == instance.id }) {
-            "TestNavigationHandle can't execute NavigationOperation, as the associated NavigationKey.Instance has been removed from it's parent backstack."
+        val lastOperation = operations.lastOrNull()
+        when (lastOperation) {
+            is NavigationOperation.Close<*> -> {
+                require(lastOperation.instance.id != instance.id) {
+                    "Cannot execute NavigationOperation on TestNavigationHandle that is closed. If you want to continue using the TestNavigationHandle after it is closed, you need to call clearOperationHistory."
+                }
+            }
+            is NavigationOperation.Complete<*> -> {
+                require(lastOperation.instance.id != instance.id) {
+                    "Cannot execute NavigationOperation on TestNavigationHandle that is completed. If you want to continue using the TestNavigationHandle after it is completed, you need to call clearOperationHistory."
+                }
+            }
+            else -> {
+                // this is fine, continue
+            }
         }
-        parentContainer.execute(context, operation)
+        when (operation) {
+            is NavigationOperation.AggregateOperation -> operations.addAll(operation.operations)
+            is NavigationOperation.Close<*> -> operations.add(operation)
+            is NavigationOperation.Complete<*> -> operations.add(operation)
+            is NavigationOperation.Open<*> -> operations.add(operation)
+            is NavigationOperation.SideEffect -> {}
+        }
     }
 }
 

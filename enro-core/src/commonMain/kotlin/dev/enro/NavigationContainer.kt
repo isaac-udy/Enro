@@ -12,8 +12,6 @@ import dev.enro.context.findContext
 import dev.enro.context.root
 import dev.enro.interceptor.AggregateNavigationInterceptor
 import dev.enro.interceptor.NavigationInterceptor
-import dev.enro.result.NavigationResult
-import dev.enro.result.NavigationResultChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 
@@ -83,47 +81,25 @@ public class NavigationContainer(
                 is NavigationOperation.RootOperation -> listOf(operation)
                 is NavigationOperation.AggregateOperation -> operation.operations
             }
+            
             val interceptor = AggregateNavigationInterceptor(
                 interceptors = interceptors + controller.interceptors.aggregateInterceptor,
             )
 
-            val backstackById = backstack.associateBy { it.id }
             val interceptedOperations = NavigationInterceptor
                 .processOperations(
                     context = contextForExecution,
+                    backstack = backstack,
                     operations = operations,
                     interceptor = interceptor,
                 )
-                .mapNotNull {
-                    when (it) {
-                        is NavigationOperation.Open<NavigationKey> -> {
-                            if (backstackById.containsKey(it.instance.id)) {
-                                return@mapNotNull null
-                            }
-                        }
-                        is NavigationOperation.Close<NavigationKey> -> {
-                            if (!backstackById.containsKey(it.instance.id)) {
-                                return@mapNotNull null
-                            }
-                        }
-                        is NavigationOperation.Complete<NavigationKey> -> {
-                            if (!backstackById.containsKey(it.instance.id)) {
-                                return@mapNotNull null
-                            }
-                        }
-                        is NavigationOperation.SideEffect -> null
-                    }
-                    return@mapNotNull it
-                }
-
             if (interceptedOperations.isEmpty()) return
-            val updatedBackstack = interceptedOperations.fold(backstack) { backstack, operation ->
-                when (operation) {
-                    is NavigationOperation.Close<*> -> backstack - operation.instance
-                    is NavigationOperation.Complete<*> -> backstack - operation.instance
-                    is NavigationOperation.Open<*> -> backstack + operation.instance
-                    is NavigationOperation.SideEffect -> backstack
-                }
+            val updatedBackstack = interceptedOperations
+                .fold(emptyList<NavigationKey.Instance<NavigationKey>>()) { backstack, operation ->
+                    when (operation) {
+                        is NavigationOperation.Open<*> -> backstack + operation.instance
+                        else -> backstack
+                    }
             }
 
             mutableBackstack.value = updatedBackstack
@@ -131,24 +107,10 @@ public class NavigationContainer(
 
             afterExecution = {
                 interceptedOperations.filterIsInstance<NavigationOperation.Close<NavigationKey>>()
-                    .filter { !it.silent }
-                    .forEach {
-                        NavigationResultChannel.registerResult(
-                            NavigationResult.Closed(
-                                instance = it.instance,
-                            )
-                        )
-                    }
+                    .onEach { it.registerResult() }
 
                 interceptedOperations.filterIsInstance<NavigationOperation.Complete<NavigationKey>>()
-                    .forEach {
-                        NavigationResultChannel.registerResult(
-                            NavigationResult.Completed(
-                                instance = it.instance,
-                                data = it.result,
-                            )
-                        )
-                    }
+                    .onEach { it.registerResult() }
 
                 interceptedOperations.filterIsInstance<NavigationOperation.SideEffect>()
                     .forEach { it.performSideEffect() }

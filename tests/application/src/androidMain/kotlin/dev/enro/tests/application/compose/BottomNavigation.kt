@@ -1,7 +1,6 @@
 package dev.enro.tests.application.compose
 
 import android.os.Parcelable
-import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import dev.enro.NavigationOperation
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationContainerKey
 import dev.enro.core.NavigationKey
@@ -198,14 +198,7 @@ fun SingleContainerBackstackManipulationBottomNavigation() {
         root = BottomNavigation.FirstTab,
         filter = acceptNone(),
         emptyBehavior = EmptyBehavior.CloseParent,
-        animations = {
-            TODO("ANIMATIONS")
-//            direction(
-//                direction = NavigationDirection.Push,
-//                entering = fadeIn(),
-//                exiting = fadeOut(),
-//            )
-        },
+        animations = {},
     )
 
     Column {
@@ -226,12 +219,7 @@ fun SingleContainerBackstackManipulationBottomNavigation() {
                     onClick = {
                         val matchingInstruction = backstack.firstOrNull { it.key == tabKey }
                             ?: tabKey.asPush()
-
-                        container.setBackstack {
-                            it
-                                .minus(matchingInstruction)
-                                .plus(matchingInstruction)
-                        }
+                        container.execute(NavigationOperation.Open(matchingInstruction))
                     },
                     label = { Text(tabKey::class.simpleName ?: "") },
                     icon = { Text((index + 1).toString()) }

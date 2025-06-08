@@ -3,14 +3,18 @@
 package dev.enro.test
 
 import dev.enro.NavigationKey
-import dev.enro.result.NavigationResult
-import dev.enro.result.NavigationResult.Completed.Companion.result
-import dev.enro.result.getResult
+import dev.enro.NavigationOperation
 
 fun TestNavigationHandle<NavigationKey>.assertCompleted() {
-    val result = instance.getResult()
-    if (result !is NavigationResult.Completed) {
-        enroAssertionError("NavigationHandle was expected to be completed")
+    val operation = operations.lastOrNull()
+    enroAssert(operation != null) {
+        "Expected the last operation to be a complete operation, but there were no operations."
+    }
+    enroAssert(operation is NavigationOperation.Complete<*>) {
+        "Expected the last operation to be a complete operation, but it was ${operation::class.simpleName}"
+    }
+    enroAssert(operation.instance.id == instance.id) {
+        "Expected the last operation to be a complete operation for this NavigationHandle's instance, but it was for ${operation.instance.id}"
     }
 }
 
@@ -21,26 +25,33 @@ inline fun <reified R : Any> TestNavigationHandle<NavigationKey.WithResult<R>>.a
 inline fun <reified T : Any> TestNavigationHandle<NavigationKey.WithResult<T>>.assertCompleted(
     predicate: (T) -> Boolean = { true },
 ): T {
-    val result = instance.getResult()
-    if (result !is NavigationResult.Completed) {
-        enroAssertionError("NavigationHandle was expected to be completed")
+    val operation = operations.lastOrNull()
+    enroAssert(operation != null) {
+        "Expected the last operation to be a complete operation, but there were no operations."
     }
-    @Suppress("UNCHECKED_CAST")
-    result as NavigationResult.Completed<out T>
-    if (result.data !is T) {
-        enroAssertionError("NavigationHandle was expected to have result of type")
+    enroAssert(operation is NavigationOperation.Complete<*>) {
+        "Expected the last operation to be a complete operation, but it was ${operation::class.simpleName}"
     }
-    val typedResult = result.result
-
-    if (!predicate(typedResult)) {
-        enroAssertionError("NavigationHandle result did not match the provided predicate")
+    enroAssert(operation.instance.id == instance.id) {
+        "Expected the last operation to be a complete operation for this NavigationHandle's instance, but it was for ${operation.instance.id}"
     }
-    return typedResult
+    val result = operation.result
+    enroAssert(result != null) {
+        "Expected the last operation to be a complete operation with a result, but it contained a null result"
+    }
+    enroAssert(result is T) {
+        "Expected the last operation to be a complete operation with a result of type ${T::class.simpleName}, but it was ${result::class.simpleName}"
+    }
+    enroAssert(predicate(result)) {
+        "Expected the last operation to be a complete operation with a result that matches the predicate, but it did not"
+    }
+    return result
 }
 
 fun TestNavigationHandle<*>.assertNotCompleted() {
-    val result = instance.getResult()
-    if (result is NavigationResult.Completed) {
-        enroAssertionError("NavigationHandle was expected to not be completed")
+    val last = operations.lastOrNull()
+    if (last !is NavigationOperation.Complete<*>) return
+    require(last.instance.id != instance.id) {
+        "Expected the last operation to not be a complete operation for instance ${instance.id}"
     }
 }

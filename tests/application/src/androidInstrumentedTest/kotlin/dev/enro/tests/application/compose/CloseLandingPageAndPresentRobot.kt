@@ -3,14 +3,16 @@ package dev.enro.tests.application.compose
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.performClick
+import dev.enro.context.RootContext
+import dev.enro.tests.application.waitForNavigationContext
 import dev.enro.tests.application.waitForNavigationHandle
 
 class CloseLandingPageAndPresentRobot(
     private val composeRule: ComposeTestRule
 ) {
     init {
-        composeRule.waitForNavigationHandle {
-            it.key is CloseLandingPageAndPresent
+        composeRule.waitForNavigationContext {
+            it is RootContext && it.parent is CloseRootAndPresentActivity
         }
     }
 

@@ -1,5 +1,7 @@
 package dev.enro
 
+import dev.enro.annotations.AdvancedEnroApi
+import dev.enro.result.NavigationResult
 import dev.enro.result.NavigationResultChannel
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
@@ -20,12 +22,39 @@ public sealed class NavigationOperation {
         // A silent close indicates that after this operation is completed,
         // any NavigationResult channels should not be notified of the close operation,
         public val silent: Boolean = false,
-    ) : RootOperation()
+    ) : RootOperation() {
+
+        // Registers the close operation with the NavigationResultChannel associated with this instance,
+        // which will allow any registerForNavigationResult callbacks to be executed
+        // Note, if "silent" is true, no result will be delivered
+        @AdvancedEnroApi
+        public fun registerResult() {
+            if (silent) return
+            NavigationResultChannel.registerResult(
+                NavigationResult.Closed(
+                    instance = instance,
+                )
+            )
+        }
+    }
 
     public class Complete<out T : NavigationKey> private constructor(
         public val instance: NavigationKey.Instance<T>,
+        @PublishedApi
         internal val result: Any?,
     ) : RootOperation() {
+        // Registers the complete operation with the NavigationResultChannel associated with this instance,
+        // which will allow any registerForNavigationResult callbacks to be executed
+        // Note, if "silent" is true, no result will be delivered
+        @AdvancedEnroApi
+        public fun registerResult() {
+            NavigationResultChannel.registerResult(
+                NavigationResult.Completed(
+                    instance = instance,
+                    data = result,
+                )
+            )
+        }
 
         public companion object Companion {
             @JvmStatic
@@ -116,10 +145,8 @@ public sealed class NavigationOperation {
             targetBackstack: NavigationBackstack,
         ): AggregateOperation {
             val transition = NavigationTransition(currentBackstack, targetBackstack)
-            val closed = transition.closed
-            val opened = transition.opened
             return AggregateOperation(
-                closed.map { Close(it) } + opened.map { Open(it) },
+                transition.targetBackstack.map { Open(it) } + transition.closed.map { Close(it) },
             )
         }
     }

@@ -1,7 +1,7 @@
 package dev.enro.test
 
 import androidx.lifecycle.ViewModel
-import dev.enro.core.NavigationKey
+import dev.enro.NavigationKey
 import kotlin.reflect.KClass
 
 

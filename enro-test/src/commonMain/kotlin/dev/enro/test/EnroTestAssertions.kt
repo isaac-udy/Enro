@@ -1,5 +1,7 @@
 package dev.enro.test
 
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.jvm.JvmName
 
 class EnroTestAssertionException(message: String) : AssertionError(message)
@@ -7,6 +9,17 @@ class EnroTestAssertionException(message: String) : AssertionError(message)
 @PublishedApi
 internal fun enroAssertionError(message: String): Nothing {
     throw EnroTestAssertionException(message)
+}
+
+@OptIn(ExperimentalContracts::class)
+@PublishedApi
+internal fun enroAssert(condition: Boolean, lazyMessage: () -> String) {
+    contract {
+        returns() implies condition
+    }
+    if (!condition) {
+        throw EnroTestAssertionException(lazyMessage())
+    }
 }
 
 data class EnroAssertionContext(

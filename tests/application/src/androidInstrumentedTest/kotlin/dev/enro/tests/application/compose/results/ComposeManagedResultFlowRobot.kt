@@ -7,14 +7,14 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onSiblings
 import androidx.compose.ui.test.performClick
-import dev.enro.tests.application.waitForNavigationContext
+import dev.enro.tests.application.waitForDestinationContext
 
 @OptIn(ExperimentalTestApi::class)
 class ComposeManagedResultFlowRobot(
     private val composeRule: ComposeTestRule
 ) {
     init {
-        composeRule.waitForNavigationContext<ComposeManagedResultFlow>()
+        composeRule.waitForDestinationContext<ComposeManagedResultFlow>()
     }
 
     fun assertFirstResultActive(): FirstResultRobot {
@@ -59,7 +59,7 @@ class ComposeManagedResultFlowRobot(
         private val composeRule: ComposeTestRule
     ) {
         init {
-            composeRule.waitForNavigationContext {
+            composeRule.waitForDestinationContext {
                 it.instance.key is ComposeManagedResultFlow.FirstResult
             }
         }
@@ -85,7 +85,7 @@ class ComposeManagedResultFlowRobot(
         private val composeRule: ComposeTestRule
     ) {
         init {
-            composeRule.waitForNavigationContext<ComposeManagedResultFlow.PresentedResult>()
+            composeRule.waitForDestinationContext<ComposeManagedResultFlow.PresentedResult>()
         }
 
         fun continueA(): ComposeManagedResultFlowRobot {
@@ -109,7 +109,7 @@ class ComposeManagedResultFlowRobot(
         private val composeRule: ComposeTestRule
     ) {
         init {
-            composeRule.waitForNavigationContext {
+            composeRule.waitForDestinationContext {
                 it.instance.key is ComposeManagedResultFlow.SecondResult
             }
         }
@@ -135,7 +135,7 @@ class ComposeManagedResultFlowRobot(
         val composeRule: ComposeTestRule,
     ) {
         init {
-            composeRule.waitForNavigationContext<ComposeManagedResultFlow.TransientResult>()
+            composeRule.waitForDestinationContext<ComposeManagedResultFlow.TransientResult>()
         }
 
         fun continueA(): ComposeManagedResultFlowRobot {
@@ -159,7 +159,7 @@ class ComposeManagedResultFlowRobot(
         val composeRule: ComposeTestRule,
     ) {
         init {
-            composeRule.waitForNavigationContext<ComposeManagedResultFlow.ThirdResult>()
+            composeRule.waitForDestinationContext<ComposeManagedResultFlow.ThirdResult>()
         }
 
         fun continueA(): ComposeManagedResultFlowRobot {
@@ -184,7 +184,7 @@ class ComposeManagedResultFlowRobot(
     ) {
 
         init {
-            composeRule.waitForNavigationContext {
+            composeRule.waitForDestinationContext {
                 it.destination.instance.key is ComposeManagedResultFlow.FinalScreen
             }
         }

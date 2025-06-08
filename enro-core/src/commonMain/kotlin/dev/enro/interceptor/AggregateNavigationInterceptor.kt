@@ -1,5 +1,6 @@
 package dev.enro.interceptor
 
+import dev.enro.NavigationBackstack
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
@@ -15,8 +16,8 @@ internal class AggregateNavigationInterceptor(
     ): NavigationOperation? {
         return interceptors.fold(operation) { currentOperation, interceptor ->
             val result = interceptor.intercept(
-                context,
-                currentOperation,
+                context = context,
+                operation = currentOperation,
             )
             if (result == null) return null
             if (result !is NavigationOperation.Open<*>) return result
@@ -31,8 +32,8 @@ internal class AggregateNavigationInterceptor(
     ): NavigationOperation? {
         return interceptors.fold(operation) { currentOperation, interceptor ->
             val result = interceptor.intercept(
-                context,
-                currentOperation,
+                context = context,
+                operation = currentOperation,
             )
             if (result == null) return null
             if (result !is NavigationOperation.Close<*>) return result
@@ -47,13 +48,27 @@ internal class AggregateNavigationInterceptor(
     ): NavigationOperation? {
         return interceptors.fold(operation) { currentOperation, interceptor ->
             val result = interceptor.intercept(
-                context,
-                currentOperation,
+                context = context,
+                operation = currentOperation,
             )
             if (result == null) return null
             if (result !is NavigationOperation.Complete<*>) return result
             if (result.instance.id != operation.instance.id) return result
             return@fold result
+        }
+    }
+
+    override fun beforeIntercept(
+        context: NavigationContext,
+        backstack: NavigationBackstack,
+        operations: List<NavigationOperation.RootOperation>,
+    ): List<NavigationOperation.RootOperation> {
+        return interceptors.fold(operations) { currentOperations, interceptor ->
+            interceptor.beforeIntercept(
+                context = context,
+                backstack = backstack,
+                operations = currentOperations,
+            )
         }
     }
 

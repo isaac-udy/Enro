@@ -20,15 +20,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
+import dev.enro.asInstance
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.compose.dialog.BottomSheetDestination
 import dev.enro.core.compose.navigationHandle
-import dev.enro.core.compose.rememberNavigationContainer
-import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.present
 import dev.enro.core.push
 import dev.enro.tests.application.activity.applyInsetsForContentView
+import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.rememberNavigationContainer
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -41,10 +42,9 @@ class CloseRootAndPresentActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val container = rememberNavigationContainer(
-                root = LandingPageDestination(),
-                emptyBehavior = EmptyBehavior.CloseParent,
+                backstack = listOf(LandingPageDestination().asInstance()),
             )
-            container.Render()
+            NavigationDisplay(container)
         }
         applyInsetsForContentView()
     }

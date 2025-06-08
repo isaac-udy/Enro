@@ -24,19 +24,17 @@ import dev.enro.NavigationKey
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
-import dev.enro.asInstance
 import dev.enro.close
 import dev.enro.complete
 import dev.enro.navigationHandle
 import dev.enro.result.flow.NavigationFlowReference
 import dev.enro.result.flow.registerForFlowResult
+import dev.enro.result.flow.rememberNavigationContainerForFlow
 import dev.enro.result.flow.rememberNavigationFlowReference
 import dev.enro.result.flow.requireStep
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.ui.NavigationDisplay
-import dev.enro.ui.destinations.EmptyNavigationKey
 import dev.enro.ui.navigationDestination
-import dev.enro.ui.rememberNavigationContainer
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.viewmodel.createEnroViewModel
 import dev.enro.withMetadata
@@ -117,8 +115,8 @@ fun ComposeManagedResultFlowScreen(viewModel: ComposeManagedResultViewModel = vi
         ComposeManagedResultViewModel()
     }
 }) {
-    val container = rememberNavigationContainer(
-        backstack = listOf(EmptyNavigationKey.asInstance()),
+    val container = rememberNavigationContainerForFlow(
+        flow = viewModel.resultFlow,
     )
     Box(modifier = Modifier.fillMaxSize()) {
         NavigationDisplay(container)

@@ -1,5 +1,6 @@
 package dev.enro.core.compose
 
+import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentCompositeKeyHash
 import dev.enro.NavigationBackstack
@@ -7,6 +8,9 @@ import dev.enro.NavigationContainer
 import dev.enro.NavigationOperation
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
+import dev.enro.context.ContainerContext
+import dev.enro.context.DestinationContext
+import dev.enro.context.RootContext
 import dev.enro.core.asPush
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.NavigationInstructionFilter
@@ -14,7 +18,7 @@ import dev.enro.core.container.acceptAll
 import dev.enro.core.container.backstackOf
 import dev.enro.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.interceptor.builder.navigationInterceptor
-import dev.enro.ui.LocalNavigationContainer
+import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.NavigationContainerState
 import dev.enro.ui.EmptyBehavior as NewEmptyBehavior
 import dev.enro.ui.rememberNavigationContainer as newRememberNavigationContainer
@@ -71,7 +75,7 @@ public fun rememberNavigationContainer(
     animations: NavigationAnimationOverrideBuilder.() -> Unit = {},
     filter: NavigationInstructionFilter = acceptAll(),
 ): NavigationContainerState {
-    val container = runCatching { LocalNavigationContainer.current }.getOrNull()
+    val parentContext = LocalNavigationContext.current
     return newRememberNavigationContainer(
         key = key,
         backstack = initialBackstack,
@@ -80,8 +84,11 @@ public fun rememberNavigationContainer(
                 isBackHandlerEnabled = { true },
                 onPredictiveBackProgress = { true },
                 onEmpty = {
-                    val cancel = emptyBehavior.onEmpty()
-                    if (cancel) cancel()
+                    val keepActive = emptyBehavior.onEmpty()
+                    return@NewEmptyBehavior when(keepActive) {
+                        true -> NewEmptyBehavior.Result.Cancel()
+                        else -> NewEmptyBehavior.Result.Continue()
+                    }
                 }
             )
 
@@ -90,10 +97,23 @@ public fun rememberNavigationContainer(
                 isBackHandlerEnabled = { true },
                 onPredictiveBackProgress = { true },
                 onEmpty = {
-                    cancelAnd {
-                        if (container == null) return@cancelAnd
-                        container.backstack.lastOrNull()?.let {
-                            container.execute(NavigationOperation.Close(it))
+                    NewEmptyBehavior.Result.CancelAnd {
+                        when (parentContext) {
+                            is ContainerContext -> {
+                                val parentContainer = parentContext.container
+                                parentContainer.backstack.lastOrNull()?.let {
+                                    parentContainer.execute(parentContext, NavigationOperation.Close(it))
+                                }
+                            }
+                            is DestinationContext<*> -> {
+                                val parentContainer = parentContext.parent.container
+                                parentContainer.backstack.lastOrNull()?.let {
+                                    parentContainer.execute(parentContext, NavigationOperation.Close(it))
+                                }
+                            }
+                            is RootContext -> {
+                                (parentContext.parent as? Activity)?.finish()
+                            }
                         }
                     }
                 }
@@ -103,10 +123,23 @@ public fun rememberNavigationContainer(
                 isBackHandlerEnabled = { true },
                 onPredictiveBackProgress = { true },
                 onEmpty = {
-                    cancelAnd {
-                        if (container == null) return@cancelAnd
-                        container.backstack.lastOrNull()?.let {
-                            container.execute(NavigationOperation.Close(it))
+                    NewEmptyBehavior.Result.CancelAnd {
+                        when (parentContext) {
+                            is ContainerContext -> {
+                                val parentContainer = parentContext.container
+                                parentContainer.backstack.lastOrNull()?.let {
+                                    parentContainer.execute(parentContext, NavigationOperation.Close(it))
+                                }
+                            }
+                            is DestinationContext<*> -> {
+                                val parentContainer = parentContext.parent.container
+                                parentContainer.backstack.lastOrNull()?.let {
+                                    parentContainer.execute(parentContext, NavigationOperation.Close(it))
+                                }
+                            }
+                            is RootContext -> {
+                                (parentContext.parent as? Activity)?.finish()
+                            }
                         }
                     }
                 }

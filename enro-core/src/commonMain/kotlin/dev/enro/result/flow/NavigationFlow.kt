@@ -4,7 +4,6 @@ import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.asInstance
-import dev.enro.platform.EnroLog
 import dev.enro.result.NavigationResultChannel
 import dev.enro.ui.NavigationContainerState
 import dev.enro.withMetadata
@@ -46,7 +45,6 @@ public class NavigationFlow<T> internal constructor(
             navigationFlowReference = reference
         )
         runCatching {
-            EnroLog.error("Starting update", RuntimeException())
             return@update onCompleted(flowScope.flow())
         }.recover {
                 when (it) {
