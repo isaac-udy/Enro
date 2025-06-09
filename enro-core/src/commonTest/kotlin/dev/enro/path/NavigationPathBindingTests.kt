@@ -1,6 +1,6 @@
-package dev.enro.core.path
+package dev.enro.path
 
-import dev.enro.core.NavigationKey
+import dev.enro.NavigationKey
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
