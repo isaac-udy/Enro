@@ -118,15 +118,16 @@ internal class NavigationContainerSaver(
     private val controller: EnroController,
 ) : Saver<NavigationContainer, SavedState> {
     override fun restore(value: SavedState): NavigationContainer? {
-        val restoredBackstack = value.read {
-            getSavedStateList(BackstackKey).map {
-                decodeFromSavedState(
-                    deserializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
-                    savedState = it,
-                    configuration = controller.serializers.savedStateConfiguration,
-                )
+        val restoredBackstack = value
+            .read {
+                getSavedStateList(BackstackKey).map {
+                    decodeFromSavedState(
+                        deserializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
+                        savedState = it,
+                        configuration = controller.serializers.savedStateConfiguration,
+                    )
+                }
             }
-        }
         return NavigationContainer(
             key = key,
             controller = controller,

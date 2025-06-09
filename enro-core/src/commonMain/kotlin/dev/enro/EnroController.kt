@@ -1,6 +1,7 @@
 package dev.enro
 
 import androidx.savedstate.serialization.SavedStateConfiguration
+import dev.enro.context.RootContext
 import dev.enro.controller.NavigationModule
 import dev.enro.controller.repository.BindingRepository
 import dev.enro.controller.repository.InterceptorRepository
@@ -18,6 +19,7 @@ public class EnroController {
     internal val serializers = SerializerRepository()
     internal val interceptors = InterceptorRepository()
     internal val paths = PathRepository()
+    internal val roots = mutableListOf<RootContext>()
 
     internal fun addModule(module: NavigationModule) {
         plugins.addPlugins(module.plugins)
@@ -38,6 +40,14 @@ public class EnroController {
         instance = this
         platformReference = reference
         plugins.onAttached(this)
+    }
+
+    public fun registerRoot(root: RootContext) {
+        roots.add(root)
+    }
+
+    public fun unregisterRoot(root: RootContext) {
+        roots.remove(root)
     }
 
     // This method is called by the test module to install/uninstall Enro from test applications

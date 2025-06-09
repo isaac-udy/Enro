@@ -3,8 +3,9 @@ package dev.enro.tests.application.compose.results
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import dev.enro.tests.application.waitForNavigationContext
 import dev.enro.tests.application.waitForNavigationHandle
-import dev.enro.tests.application.compose.results.ComposeEmbeddedResultFlow
+import dev.enro.ui.destinations.getNavigationKeyInstance
 
 class ComposeEmbeddedResultFlowRobot(
     private val composeRule: ComposeTestRule
@@ -102,8 +103,8 @@ class ComposeEmbeddedResultFlowRobot(
             return ActivityRobot("$currentResult-> act y")
         }
 
-        fun finish(): RootRobot {
-            composeRule.onNodeWithText("Finish")
+        fun complete(): RootRobot {
+            composeRule.onNodeWithText("Complete")
                 .performClick()
             return RootRobot()
         }
@@ -146,8 +147,8 @@ class ComposeEmbeddedResultFlowRobot(
             return ActivityRobot("$currentResult-> act y")
         }
 
-        fun finish(): RootRobot {
-            composeRule.onNodeWithText("Finish")
+        fun complete(): RootRobot {
+            composeRule.onNodeWithText("Complete")
                 .performClick()
             return RootRobot()
         }
@@ -157,8 +158,10 @@ class ComposeEmbeddedResultFlowRobot(
         private val currentResult: String
     ) {
         init {
-            composeRule.waitForNavigationHandle {
-                it.key is ComposeEmbeddedResultFlow.Activity && (it.key as ComposeEmbeddedResultFlow.Activity).currentResult == currentResult
+            composeRule.waitForNavigationContext {
+                val parent = it.parent as? ComposeEmbeddedResultFlowActivity ?: return@waitForNavigationContext false
+                val instance = parent.intent.getNavigationKeyInstance() ?: return@waitForNavigationContext false
+                (instance.key as? ComposeEmbeddedResultFlow.Activity)?.currentResult == currentResult
             }
         }
 
@@ -176,8 +179,8 @@ class ComposeEmbeddedResultFlowRobot(
             return ActivityRobot("$currentResult-> act y")
         }
 
-        fun finish(): RootRobot {
-            composeRule.onNodeWithText("Finish")
+        fun complete(): RootRobot {
+            composeRule.onNodeWithText("Complete")
                 .performClick()
             return RootRobot()
         }

@@ -360,7 +360,6 @@ fun FindContextDialog() {
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
                             val id = selectedId.toIntOrNull()
-                            Log.e("FindContext", "Finding context:\n${context.root().getDebugString()}")
                             val foundContext = context.root().findDestinationContext<dev.enro.NavigationKey> {
                                 val key = it.key as? FindContext.HasId
                                 key != null && key::class == selectedType && (id == null || key.id == id)

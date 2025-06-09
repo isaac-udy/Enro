@@ -2,7 +2,6 @@ package dev.enro.tests.application.fragment
 
 import android.os.Bundle
 import android.os.Parcelable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -103,7 +102,6 @@ class FragmentPresentationRoot : Fragment() {
     
     val navigation by navigationHandle<FragmentPresentation.Root>()
     val resultChannel by registerForNavigationResult<FragmentPresentation.TestResult> { result ->
-        Log.e("Enro", "$this got -> $result")
         // Update the result text when we resume
         view?.findViewById<TextView>(R.id.fragment_presentation_result_text)?.apply {
             text = "Last result: ${result.id}"

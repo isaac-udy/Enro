@@ -35,7 +35,7 @@ import dev.enro.closeWithoutCallback
 import dev.enro.complete
 import dev.enro.completeFrom
 import dev.enro.configure
-import dev.enro.controller.NavigationControllerConfiguration
+import dev.enro.controller.NavigationComponentConfiguration
 import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.result.flow.registerForFlowResult
@@ -53,7 +53,7 @@ import kotlinx.serialization.Serializable
 
 
 @NavigationComponent
-object NavigationComponent : NavigationControllerConfiguration()
+object NavigationComponent : NavigationComponentConfiguration()
 
 
 @Serializable

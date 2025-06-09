@@ -244,13 +244,13 @@ fun CommonDisplaySerializedDataScreen() {
                         }
 
                         is CommonSerialization.SerializedData.NavigationInstanceJson -> {
-                            EnroController.jsonConfiguration.decodeFromString<NavigationKey.Instance<*>>(
+                            EnroController.jsonConfiguration.decodeFromString<NavigationKey.Instance<NavigationKey>>(
                                 string = encodedData.data,
                             ).toString()
                         }
 
                         is CommonSerialization.SerializedData.NavigationInstanceSavedState -> {
-                            decodeFromSavedState<NavigationKey.Instance<*>>(
+                            decodeFromSavedState<NavigationKey.Instance<NavigationKey>>(
                                 savedState = encodedData.data,
                                 configuration = EnroController.savedStateConfiguration,
                             ).toString()

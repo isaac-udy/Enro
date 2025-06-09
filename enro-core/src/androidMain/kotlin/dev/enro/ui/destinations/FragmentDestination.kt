@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,41 +43,44 @@ public fun <T : NavigationKey, F : Fragment> fragmentDestination(
     arguments: NavigationDestinationScope<T>.() -> Bundle = { Bundle() },
 ): NavigationDestinationProvider<T> {
     return navigationDestination(metadata) {
-        var fragment: F? by remember {
-            mutableStateOf(null)
-        }
-        if (fragmentType.isSubclassOf(DialogFragment::class)) {
-            AndroidDialogFragment(
-                clazz = fragmentType.java as Class<DialogFragment>,
-                tag = navigation.id,
-                fragmentState = rememberFragmentState(),
-                arguments = arguments().apply {
-                    putNavigationKeyInstance(navigation.instance)
-                },
-            ) { f ->
-                fragment = f as F
+        key(navigation.id) {
+            var fragment: F? by remember {
+                mutableStateOf(null)
             }
-        } else {
-            AndroidFragment(
-                clazz = fragmentType.java,
-                modifier = Modifier.fillMaxSize(),
-                fragmentState = rememberFragmentState(),
-                arguments = arguments().apply {
-                    putNavigationKeyInstance(navigation.instance)
-                },
-            ) { f ->
-                fragment = f
+            val fragmentState = rememberFragmentState()
+            if (fragmentType.isSubclassOf(DialogFragment::class)) {
+                AndroidDialogFragment(
+                    clazz = fragmentType.java as Class<DialogFragment>,
+                    tag = navigation.id,
+                    fragmentState = fragmentState,
+                    arguments = arguments().apply {
+                        putNavigationKeyInstance(navigation.instance)
+                    },
+                ) { f ->
+                    fragment = f as F
+                }
+            } else {
+                AndroidFragment(
+                    clazz = fragmentType.java,
+                    modifier = Modifier.fillMaxSize(),
+                    fragmentState = fragmentState,
+                    arguments = arguments().apply {
+                        putNavigationKeyInstance(navigation.instance)
+                    },
+                ) { f ->
+                    fragment = f
+                }
             }
-        }
-        DisposableEffect(fragment) {
-            val fragment = fragment
-            if (fragment == null) return@DisposableEffect onDispose { }
-            val navigation = fragment.fragmentContextHolder.navigationHandle
-            @Suppress("UNCHECKED_CAST")
-            navigation as FragmentNavigationHandle<T>
-            navigation.bind(this@navigationDestination)
-            onDispose {
-                navigation.unbind()
+            DisposableEffect(fragment) {
+                val fragment = fragment
+                if (fragment == null) return@DisposableEffect onDispose { }
+                val navigation = fragment.fragmentContextHolder.navigationHandle
+                @Suppress("UNCHECKED_CAST")
+                navigation as FragmentNavigationHandle<T>
+                navigation.bind(this@navigationDestination)
+                onDispose {
+                    navigation.unbind()
+                }
             }
         }
     }

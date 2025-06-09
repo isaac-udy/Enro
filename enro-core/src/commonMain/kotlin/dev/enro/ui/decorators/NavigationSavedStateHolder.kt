@@ -3,7 +3,6 @@ package dev.enro.ui.decorators
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
@@ -22,8 +21,8 @@ import androidx.savedstate.write
 public class NavigationSavedStateHolder(
     savedState: SavedState
 ) {
-    private val savedStateRegistryMap = mutableStateMapOf<String, DestinationSavedStateRegistry>()
-    private val saveableStateRegistryMap = mutableStateMapOf<String, DestinationSaveableStateRegistry>()
+    private val savedStateRegistryMap = mutableMapOf<String, DestinationSavedStateRegistry>()
+    private val saveableStateRegistryMap = mutableMapOf<String, DestinationSaveableStateRegistry>()
     private var savedState by mutableStateOf(savedState)
 
     /**
@@ -57,7 +56,12 @@ public class NavigationSavedStateHolder(
 
         val registry = remember(destinationId, savedState) {
             val saved = savedState.read {
-                getSavedStateOrNull(destinationId + "_saveable")?.toMap()
+                getSavedStateOrNull(destinationId + "_saveable")?.read {
+                    toMap().mapNotNull { (k, v) ->
+                        if (v !is List<*>) return@mapNotNull null
+                        k to (v as List<Any?>)
+                    }.toMap()
+                }
             }
             savedState.write {
                 remove(destinationId + "_saveable")
@@ -65,7 +69,9 @@ public class NavigationSavedStateHolder(
             saveableStateRegistryMap.getOrPut(destinationId) {
                 DestinationSaveableStateRegistry(
                     restoredValues = saved,
-                    canBeSaved = { parentSaveableStateRegistry?.canBeSaved(it) == true},
+                    canBeSaved = {
+                        parentSaveableStateRegistry?.canBeSaved(it) ?: true
+                    },
                 )
             }
         }
@@ -74,9 +80,9 @@ public class NavigationSavedStateHolder(
 
     @Composable
     internal fun DestinationDisposedEffect(destinationId: String) {
+        val savedStateRegistry = savedStateRegistryMap[destinationId]
+        savedStateRegistry?.lifecycle?.currentState = Lifecycle.State.RESUMED
         DisposableEffect(destinationId, savedState) {
-            val savedStateRegistry = savedStateRegistryMap[destinationId]
-            savedStateRegistry?.lifecycle?.currentState = Lifecycle.State.RESUMED
             onDispose {
                 savedStateRegistry?.lifecycle?.currentState = Lifecycle.State.CREATED
             }
@@ -136,8 +142,6 @@ public class NavigationSavedStateHolder(
      */
     public fun removeState(destinationId: String) {
         savedStateRegistryMap[destinationId]?.let {
-            val state = savedState()
-            it.savedStateRegistryController.performSave(state)
             it.lifecycle.currentState = Lifecycle.State.DESTROYED
         }
         savedStateRegistryMap.remove(destinationId)
@@ -162,4 +166,4 @@ public class NavigationSavedStateHolder(
     }
 }
 
-internal expect fun SavedState.toMap(): Map<String, List<Any?>>?
+

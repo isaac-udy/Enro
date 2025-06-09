@@ -2,6 +2,7 @@ package dev.enro.processor.generator
 
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.getAllSuperTypes
+import com.google.devtools.ksp.getKotlinClassByName
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -10,13 +11,18 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.LambdaTypeName
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationComponent
 import dev.enro.processor.domain.GeneratedModuleReference
+import dev.enro.processor.extensions.ClassNames
 import dev.enro.processor.extensions.EnroLocation
 
 object NavigationComponentGenerator {
@@ -28,6 +34,10 @@ object NavigationComponentGenerator {
         resolverBindings: List<KSDeclaration>,
         resolverModules: List<KSDeclaration>,
     ) {
+        val isIos = resolver.getKotlinClassByName("platform.UIKit.UIApplication") != null
+        val isDesktop = resolver.getKotlinClassByName("androidx.compose.ui.window.ApplicationScope") != null
+        val isAndroid = resolver.getKotlinClassByName("android.app.Application") != null
+
         if (declaration !is KSClassDeclaration) {
             val message = "@NavigationComponent can only be applied to objects"
             environment.logger.error(message, declaration)
@@ -37,13 +47,7 @@ object NavigationComponentGenerator {
         val isObject = declaration.classKind == ClassKind.OBJECT
         val isNavigationComponentConfiguration = declaration
             .getAllSuperTypes()
-            .any { it.declaration.qualifiedName?.asString() == "dev.enro.controller.NavigationControllerConfiguration" }
-
-        val isLegacyComponent = declaration
-            .getAllSuperTypes()
-            .any { it.declaration.qualifiedName?.asString() == "dev.enro.core.NavigationComponentConfiguration" }
-
-        if (isLegacyComponent) return
+            .any { it.declaration.qualifiedName?.asString() == "dev.enro.controller.NavigationComponentConfiguration" }
 
         if (!isObject) {
             val message = "@NavigationComponent can only be applied to objects"
@@ -100,28 +104,204 @@ object NavigationComponentGenerator {
             )
             .build()
 
-        FileSpec
+        // Generate extension function for installing navigation controller
+        val functionName = "installNavigationController"
+        val (platformParameterName, addPlatformParameter) = createPlatformApplicationReferenceParameter(
+            resolver,
+        )
+        val callNavigationComponentConfigModule = when {
+            isNavigationComponentConfiguration -> "module(${declaration.simpleName.asString()}.module)"
+            else -> ""
+        }
+
+        val extensionFunction = FunSpec.builder(functionName)
+            .addModifiers(
+                when {
+                    // on Desktop the application should be installed through the Composable
+                    // extension function, which is added later, so we make this function private
+                    isDesktop -> KModifier.PRIVATE
+                    else -> KModifier.PUBLIC
+                }
+            )
+            .returns(ClassNames.Kotlin.navigationController)
+            .addPlatformParameter()
+            .addParameter(
+                ParameterSpec.builder(
+                    "block",
+                    LambdaTypeName.get(
+                        receiver = ClassName("dev.enro.controller", "NavigationModule.BuilderScope"),
+                        returnType = ClassNames.Kotlin.unit
+                    )
+                )
+                    .defaultValue("{}")
+                    .build()
+            )
+            .addCode(
+                CodeBlock.of(
+                    """
+                        val controller = internalCreateEnroController(
+                            builder = {
+                                ${generatedComponent.name}().apply { invoke() }
+                                block()
+                            }
+                        )
+                        controller.install($platformParameterName)
+                        return controller
+                    """.trimIndent()
+                )
+            )
+            .receiver(
+                ClassName(
+                    declaration.packageName.asString(),
+                    declaration.simpleName.asString()
+                )
+            )
+            .build()
+
+        val desktopFunction = when {
+            !isDesktop -> null
+            else -> extensionFunction.toBuilder("rememberNavigationController")
+                .apply { modifiers.clear() }
+                .apply {
+                    val updatedParameters =
+                        parameters.filterNot { it.name == platformParameterName }
+                    parameters.clear()
+                    parameters.addAll(updatedParameters)
+                }
+                .addModifiers(KModifier.PUBLIC)
+                .addAnnotation(ClassNames.Kotlin.composable)
+                .clearBody()
+                .addCode(
+                    CodeBlock.of(
+                        """
+                        return androidx.compose.runtime.remember {
+                            installNavigationController(
+                                $platformParameterName = Unit,
+                                block = block,
+                            )
+                        }
+                    """.trimIndent()
+                    )
+                )
+                .build()
+        }
+
+        val fileSpec = FileSpec
             .builder(
                 declaration.packageName.asString(),
                 requireNotNull(generatedComponent.name)
             )
-            .addType(generatedComponent)
-            .addImport("dev.enro.controller", "NavigationModule")
-            .build()
-            .writeTo(
-                codeGenerator = environment.codeGenerator,
-                dependencies = Dependencies(
-                    aggregating = true,
-                    sources = (resolverModules + resolverBindings).mapNotNull { it.containingFile }
-                        .plus(listOfNotNull(declaration.containingFile))
-                        .toTypedArray()
-                )
+            .addAnnotation(
+                AnnotationSpec.builder(Suppress::class)
+                    .addMember("\"INVISIBLE_REFERENCE\", \"INVISIBLE_MEMBER\"")
+                    .build()
             )
+            .addImport("dev.enro.controller", "NavigationModule")
+            .addImport(
+                packageName = "dev.enro.controller",
+                names = arrayOf("internalCreateEnroController"),
+            )
+            .addType(generatedComponent)
+            .addFunction(extensionFunction)
+            .let {
+                if (desktopFunction == null) return@let it
+                it.addFunction(desktopFunction)
+            }
+            .let {
+                if (!isIos) return@let it
+                it.addFunction(
+                    extensionFunction
+                        .toBuilder(functionName)
+                        .apply {
+                            val newParameter = ParameterSpec
+                                .builder(
+                                    "enro",
+                                    ClassNames.Kotlin.enroIosExtensions,
+                                )
+                                .defaultValue("%T", ClassNames.Kotlin.enroIosExtensions)
+                                .build()
+                            parameters.add(5, newParameter)
+                        }
+                        .build()
+                )
+            }
+            .build()
+
+        fileSpec.writeTo(
+            codeGenerator = environment.codeGenerator,
+            dependencies = Dependencies(
+                aggregating = true,
+                sources = (resolverModules + resolverBindings).mapNotNull { it.containingFile }
+                    .plus(listOfNotNull(declaration.containingFile))
+                    .toTypedArray()
+            )
+        )
         environment.codeGenerator
             .associateWithClasses(
                 classes = modules.map { it.declaration },
                 packageName = declaration.packageName.asString(),
                 fileName = requireNotNull(generatedComponent.name),
             )
+    }
+
+    @OptIn(KspExperimental::class)
+    fun createPlatformApplicationReferenceParameter(
+        resolver: Resolver,
+    ): Pair<String, FunSpec.Builder.() -> FunSpec.Builder> {
+        val androidApplication = resolver.getKotlinClassByName("android.app.Application")
+        val desktopApplication =
+            resolver.getKotlinClassByName("androidx.compose.ui.window.ApplicationScope")
+        val webDocument = resolver.getKotlinClassByName("org.w3c.dom.Document")
+        val iosApplication = resolver.getKotlinClassByName("platform.UIKit.UIApplication")
+
+        when {
+            androidApplication != null -> {
+                return "application" to {
+                    addParameter(
+                        ParameterSpec.builder(
+                            "application",
+                            androidApplication.toClassName(),
+                        ).build()
+                    )
+                }
+            }
+
+            desktopApplication != null -> {
+                return "ignored" to {
+                    addParameter(
+                        ParameterSpec.builder(
+                            "ignored",
+                            ClassNames.Kotlin.unit,
+                        ).build()
+                    )
+                }
+            }
+
+            webDocument != null -> {
+                return "document" to {
+                    addParameter(
+                        ParameterSpec.builder(
+                            "document",
+                            webDocument.toClassName(),
+                        ).build()
+                    )
+                }
+            }
+
+            iosApplication != null -> {
+                return "application" to {
+                    addParameter(
+                        ParameterSpec.builder(
+                            "application",
+                            iosApplication.toClassName(),
+                        ).build()
+                    )
+                }
+            }
+
+            else -> {
+                error("Unsupported platform!")
+            }
+        }
     }
 }

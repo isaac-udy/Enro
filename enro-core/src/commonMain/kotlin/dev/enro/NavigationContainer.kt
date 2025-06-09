@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import dev.enro.annotations.AdvancedEnroApi
+import dev.enro.context.AnyNavigationContext
 import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.context.RootContext
@@ -14,6 +15,7 @@ import dev.enro.interceptor.AggregateNavigationInterceptor
 import dev.enro.interceptor.NavigationInterceptor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
+
 
 /**
  * A NavigationContainer is an identifiable backstack (using navigation container key), which
@@ -101,7 +103,7 @@ public class NavigationContainer(
     //  performed by the navigation handle to find a container
     @AdvancedEnroApi
     public fun execute(
-        context: NavigationContext,
+        context: AnyNavigationContext,
         operation: NavigationOperation,
     ) {
         if (executionMutex.isLocked) {
@@ -115,6 +117,7 @@ public class NavigationContainer(
         var afterExecution: () -> Unit = {}
         try {
             val containerContext = when {
+                context is ContainerContext && context.container == this -> context
                 context is DestinationContext<*> && context.parent.container == this -> context.parent
                 else -> findContextFrom(context)
             }
@@ -184,7 +187,7 @@ public class NavigationContainer(
     }
 
     private fun findContextFrom(
-        context: NavigationContext,
+        context: AnyNavigationContext,
     ): ContainerContext? {
         when (context) {
             is ContainerContext -> if (context.container == this) return context
@@ -231,4 +234,3 @@ public class NavigationContainer(
         }
     }
 }
-

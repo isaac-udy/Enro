@@ -5,6 +5,7 @@ import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.context.ContainerContext
 import dev.enro.platform.EnroLog
+import dev.enro.result.NavigationResultChannel
 
 /**
  * A NavigationInterceptor is a class that can intercept a navigation transition and
@@ -106,6 +107,7 @@ public abstract class NavigationInterceptor {
 
             val openedIds = mutableSetOf<String>()
             val closedIds = mutableSetOf<String>()
+            val completedResultIds = mutableSetOf<NavigationResultChannel.Id?>()
             val filteredResult = result.mapNotNull {
                 when (it) {
                     is NavigationOperation.Close<NavigationKey> -> {
@@ -119,6 +121,7 @@ public abstract class NavigationInterceptor {
                     }
                     is NavigationOperation.Complete<NavigationKey> -> {
                         closedIds.add(it.instance.id)
+                        completedResultIds.add(it.instance.metadata.get(NavigationResultChannel.ResultIdKey))
                         if (!backstackById.containsKey(it.instance.id)) {
                             EnroLog.warn(
                                 "Attempted to complete a NavigationKey.Instance that was not on the backstack: ${it.instance}."
@@ -139,6 +142,10 @@ public abstract class NavigationInterceptor {
             // Add all non-opened operations as Open operations at the start of the list
             val updatedBackstack = containerContext.container.backstack
                 .mapNotNull {
+                    val resultId = it.metadata.get(NavigationResultChannel.ResultIdKey)
+                    if (resultId != null && completedResultIds.contains(resultId)) {
+                        return@mapNotNull null
+                    }
                     if (openedIds.contains(it.id)) return@mapNotNull null
                     if (closedIds.contains(it.id)) return@mapNotNull null
                     return@mapNotNull NavigationOperation.Open(it)

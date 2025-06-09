@@ -115,7 +115,6 @@ fun ComposeEmbeddedResultFlowRoot() {
 @Composable
 fun ComposeEmbeddedResultFlowInsideContainer() {
     val navigation = navigationHandle<ComposeEmbeddedResultFlow.InsideContainer>()
-
     TitledColumn(title = "Embedded Result Flow Inside Container") {
         Button(onClick = {
             navigation.deliverResultFromPush(
@@ -167,7 +166,7 @@ fun ComposeEmbeddedResultFlowInsideContainer() {
         Button(onClick = {
             navigation.closeWithResult(navigation.key.currentResult)
         }) {
-            Text("Finish")
+            Text("Complete")
         }
     }
 }
@@ -213,7 +212,7 @@ fun ComposeEmbeddedResultFlowOutsideContainerContainer() {
         Button(onClick = {
             navigation.closeWithResult(navigation.key.currentResult)
         }) {
-            Text("Finish")
+            Text("Complete")
         }
     }
 }

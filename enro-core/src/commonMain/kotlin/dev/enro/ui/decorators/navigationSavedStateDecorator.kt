@@ -33,7 +33,9 @@ import dev.enro.NavigationKey
 public fun rememberSavedStateDecorator(
     navigationSavedStateHolder: NavigationSavedStateHolder,
 ): NavigationDestinationDecorator<NavigationKey> = remember(navigationSavedStateHolder) {
-    savedStateDecorator(navigationSavedStateHolder)
+    savedStateDecorator(
+        navigationSavedStateHolder,
+    )
 }
 
 /**
@@ -45,17 +47,16 @@ internal fun savedStateDecorator(
     navigationSavedStateHolder: NavigationSavedStateHolder,
 ): NavigationDestinationDecorator<NavigationKey> {
     return navigationDestinationDecorator<NavigationKey>(
-        onRemove = { instance -> },
+        onRemove = { instance ->
+            val id = instance.id
+            navigationSavedStateHolder.removeState(id)
+        },
         decorator = { destination ->
             val instance = destination.instance
             val id = instance.id
 
             val childRegistry = navigationSavedStateHolder.getSavedStateRegistry(id)
-
-            val saveableRegistry = navigationSavedStateHolder.getSaveableStateRegistry(
-                destinationId = id,
-            )
-
+            val saveableRegistry = navigationSavedStateHolder.getSaveableStateRegistry(id)
             CompositionLocalProvider(
                 LocalSavedStateRegistryOwner provides childRegistry,
                 LocalSaveableStateRegistry provides saveableRegistry.saveableStateRegistry
@@ -95,6 +96,7 @@ internal class DestinationSaveableStateRegistry(
     private var restoredValues: Map<String, List<Any?>>?,
     internal val canBeSaved: (Any) -> Boolean,
 ) {
+
     val saveableStateRegistry: SaveableStateRegistry by lazy {
         SaveableStateRegistry(
             restoredValues = restoredValues

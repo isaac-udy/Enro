@@ -16,13 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
-import dev.enro.annotations.NavigationDestination
 import dev.enro.annotations.PlatformDestination
-import dev.enro.core.close
-import dev.enro.core.closeWithResult
-import dev.enro.core.compose.navigationHandle
+import dev.enro.close
+import dev.enro.complete
+import dev.enro.navigationHandle
 
-@NavigationDestination(ComposeManagedResultFlow.PresentedResult::class)
+//@NavigationDestination(ComposeManagedResultFlow.PresentedResult::class)
 @PlatformDestination
 @Composable
 fun PresentedResultScreenForDesktop() {
@@ -50,11 +49,11 @@ fun PresentedResultScreenForDesktop() {
                     style = MaterialTheme.typography.h6
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { navigation.closeWithResult("A") }) {
+                Button(onClick = { navigation.complete("A") }) {
                     Text("Continue (A)")
                 }
 
-                Button(onClick = { navigation.closeWithResult("B") }) {
+                Button(onClick = { navigation.complete("B") }) {
                     Text("Continue (B)")
                 }
             }

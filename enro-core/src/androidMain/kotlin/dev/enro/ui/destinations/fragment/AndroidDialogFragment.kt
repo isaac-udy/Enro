@@ -48,9 +48,6 @@ internal fun <T : DialogFragment> AndroidDialogFragment(
                     setArguments(arguments)
                     val transaction = fragmentManager
                         .beginTransaction()
-                        .runOnCommit {
-                            EnroLog.error("Committing $tag")
-                        }
                         .add(this, tag)
 
                     if (fragmentManager.isStateSaved) {

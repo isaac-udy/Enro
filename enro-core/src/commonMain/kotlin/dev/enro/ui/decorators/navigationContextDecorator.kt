@@ -7,7 +7,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.NavigationContext
@@ -16,6 +18,8 @@ import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.handle.NavigationHandleHolder
 import dev.enro.handle.NavigationHandleImpl
+import dev.enro.result.NavigationResult
+import dev.enro.result.NavigationResultChannel
 import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.LocalNavigationHandle
 
@@ -100,6 +104,20 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
             LocalNavigationHandle provides navigationHandleHolder.navigationHandle,
         ) {
             destination.content()
+        }
+
+        // TODO this appears to work, but probably not ideal
+        DisposableEffect(LocalLifecycleOwner.current.lifecycle.currentStateAsState().value == Lifecycle.State.RESUMED) {
+            val resultId = destination.instance.metadata.get(NavigationResultChannel.ResultIdKey)
+            val pendingResults = NavigationResultChannel.pendingResults.value
+            if (resultId != null && pendingResults[resultId] is NavigationResult.Completed<*>) {
+                context.parent.container.setBackstackDirect(
+                    context.parent.container.backstack.filter {
+                        it.metadata.get(NavigationResultChannel.ResultIdKey) != resultId
+                    }
+                )
+            }
+            onDispose {  }
         }
     }
 }

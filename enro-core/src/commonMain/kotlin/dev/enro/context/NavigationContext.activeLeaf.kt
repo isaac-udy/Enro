@@ -7,3 +7,11 @@ public fun AnyNavigationContext.activeLeaf(): NavigationContext<*, *> {
         is DestinationContext<*> -> activeChild?.activeLeaf() ?: this
     }
 }
+
+public fun AnyNavigationContext.activeLeafDestination(): DestinationContext<*>? {
+    return when(this) {
+        is RootContext -> activeChild?.activeLeafDestination()
+        is ContainerContext -> activeChild?.activeLeafDestination()
+        is DestinationContext<*> -> activeChild?.activeLeafDestination() ?: this
+    }
+}

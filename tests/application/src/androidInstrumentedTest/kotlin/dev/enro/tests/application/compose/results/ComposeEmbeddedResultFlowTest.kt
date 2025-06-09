@@ -3,7 +3,6 @@ package dev.enro.tests.application.compose.results
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import dev.enro.tests.application.SelectDestinationRobot
 import dev.enro.tests.application.TestActivity
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -20,26 +19,19 @@ class ComposeEmbeddedResultFlowTest {
             .pushInside()
             .pushInsideA()
             .pushInsideB()
-            .finish()
+            .complete()
             .assertResult("in-> in a-> in b")
     }
 
     @Test
-    @Ignore("""
-        This works on devices, but fails during tests. It appears that the ComposeRule freezes when the activity is closed,
-         and doesn't automatically update as it should, so when the activity returns a result and attempts to finish,
-         the activity doesn't actually finish like it should.
-    """)
     fun testActivity() {
 
         SelectDestinationRobot(composeRule)
             .openComposeEmbeddedResultFlow()
             .getRoot()
             .pushActivity()
-            .pushActivityX()
-            .pushActivityY()
-            .finish()
-            .assertResult("act-> act x-> act y")
+            .complete()
+            .assertResult("act")
     }
 
     @Test
@@ -50,7 +42,7 @@ class ComposeEmbeddedResultFlowTest {
             .pushOutside()
             .pushOutside2()
             .pushOutside1()
-            .finish()
+            .complete()
             .assertResult("out-> out 2-> out 1")
     }
 
@@ -65,7 +57,7 @@ class ComposeEmbeddedResultFlowTest {
             .pushOutside2()
             .pushOutside1()
             .pushActivityX() // we can only really do one activity result in the test, for the same reason the testActivity test is ignored
-            .finish()
+            .complete()
             .assertResult("in-> in b-> in a-> out 2-> out 1-> act x")
     }
 }

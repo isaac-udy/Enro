@@ -1,12 +1,9 @@
 package dev.enro.result
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.asInstance
-import dev.enro.getNavigationHandle
 import dev.enro.result.NavigationResult.Completed.Companion.result
 import dev.enro.result.NavigationResultChannel.ResultIdKey
 import dev.enro.withMetadata
@@ -20,7 +17,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmName
-import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 
 public class NavigationResultChannel<Result : Any> @PublishedApi internal constructor(
@@ -34,18 +30,17 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
     internal val onCompleted: NavigationResultScope<NavigationKey>.(Result) -> Unit,
 ) {
     @Serializable
-    @PublishedApi
-    internal data class Id(
+    public data class Id(
         val ownerId: String,
         val resultId: String
     )
 
     internal object ResultIdKey : NavigationKey.MetadataKey<Id?>(null)
 
-    @PublishedApi
-    internal companion object {
-        @PublishedApi
-        internal val pendingResults: MutableStateFlow<Map<Id, NavigationResult<*>>> = MutableStateFlow(emptyMap())
+//    @PublishedApi
+    public companion object {
+//        @PublishedApi
+        public val pendingResults: MutableStateFlow<Map<Id, NavigationResult<*>>> = MutableStateFlow(emptyMap())
 
         @PublishedApi
         internal val activeChannels: MutableSet<Id> = mutableSetOf()

@@ -41,8 +41,6 @@ internal object PreviouslyActiveContainerInterceptor : NavigationInterceptor() {
             is RootContext -> return operation
         }
         if (activeContainerId == containerContext.id) return operation
-        EnroLog.error("Setting active container id: $activeContainerId")
-        EnroLog.error(fromContext.root().getDebugString())
         return operation.apply {
             instance.metadata.set(PreviouslyActiveContainer, activeContainerId)
         }
