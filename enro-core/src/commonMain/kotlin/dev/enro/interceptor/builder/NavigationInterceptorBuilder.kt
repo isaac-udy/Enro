@@ -3,6 +3,7 @@ package dev.enro.interceptor.builder
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.context.ContainerContext
 import dev.enro.interceptor.AggregateNavigationInterceptor
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.NoOpNavigationInterceptor
@@ -45,7 +46,8 @@ public class NavigationInterceptorBuilder internal constructor() {
     ) {
         interceptors += object : NavigationInterceptor() {
             override fun intercept(
-                context: NavigationContext,
+                fromContext: NavigationContext,
+                containerContext: ContainerContext,
                 operation: NavigationOperation.Open<NavigationKey>,
             ): NavigationOperation? {
                 val instance = operation.instance
@@ -82,7 +84,8 @@ public class NavigationInterceptorBuilder internal constructor() {
     ) {
         interceptors += object : NavigationInterceptor() {
             override fun intercept(
-                context: NavigationContext,
+                fromContext: NavigationContext,
+                containerContext: ContainerContext,
                 operation: NavigationOperation.Close<NavigationKey>,
             ): NavigationOperation? {
                 val instance = operation.instance
@@ -122,7 +125,8 @@ public class NavigationInterceptorBuilder internal constructor() {
     ) {
         interceptors += object : NavigationInterceptor() {
             override fun intercept(
-                context: NavigationContext,
+                fromContext: NavigationContext,
+                containerContext: ContainerContext,
                 operation: NavigationOperation.Complete<NavigationKey>,
             ): NavigationOperation? {
                 val instance = operation.instance

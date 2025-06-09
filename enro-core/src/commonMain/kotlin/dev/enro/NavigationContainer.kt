@@ -110,12 +110,15 @@ public class NavigationContainer(
         executionMutex.tryLock(this)
         var afterExecution: () -> Unit = {}
         try {
-            val contextForExecution = when {
-                context is DestinationContext<*> && context.parent.container == this -> context
+            val containerContext = when {
+                context is DestinationContext<*> && context.parent.container == this -> context.parent
                 else -> findContextFrom(context)
             }
-            requireNotNull(contextForExecution) {
+            requireNotNull(containerContext) {
                 "Could not find ContainerContext with id ${key.name} from context $context"
+            }
+            require(containerContext.container == this) {
+                "ContainerContext with id ${key.name} is not part of this NavigationContainer"
             }
             val operations = when (operation) {
                 is NavigationOperation.RootOperation -> listOf(operation)
@@ -128,8 +131,8 @@ public class NavigationContainer(
 
             val interceptedOperations = NavigationInterceptor
                 .processOperations(
-                    context = contextForExecution,
-                    backstack = backstack,
+                    fromContext = context,
+                    containerContext = containerContext,
                     operations = operations,
                     interceptor = interceptor,
                 )
@@ -153,7 +156,7 @@ public class NavigationContainer(
 
             if (!isPreventEmpty) {
                 mutableBackstack.value = updatedBackstack
-                contextForExecution.requestActiveInRoot()
+                containerContext.requestActiveInRoot()
             }
 
             afterExecution = {

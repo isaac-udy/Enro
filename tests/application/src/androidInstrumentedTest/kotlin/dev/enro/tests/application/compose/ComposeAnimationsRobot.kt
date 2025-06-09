@@ -21,17 +21,17 @@ class ComposeAnimationsRobot(
     }
 
     fun navigateToPushWithSlide(): PushWithSlideRobot {
-        composeRule.onNode(hasText("Push (with slide)")).performClick()
+        composeRule.onNode(hasText("Open (with slide)")).performClick()
         return PushWithSlideRobot(composeRule)
     }
 
     fun navigateToPushWithAnimatedSquare(): PushWithAnimatedSquareRobot {
-        composeRule.onNode(hasText("Push (with animated square)")).performClick()
+        composeRule.onNode(hasText("Open (with animated square)")).performClick()
         return PushWithAnimatedSquareRobot(composeRule)
     }
 
     fun openDialog(): DialogRobot {
-        composeRule.onNode(hasText("Dialog")).performClick()
+        composeRule.onNode(hasText("Open Dialog")).performClick()
         return DialogRobot(composeRule)
     }
 }
@@ -87,8 +87,7 @@ class DialogRobot(
 
     @OptIn(ExperimentalTestApi::class)
     fun verifyDialogVisible(): DialogRobot {
-        composeRule.waitUntilExactlyOneExists(hasText("Dialog"))
-        composeRule.onNode(hasText("Dialog")).assertExists()
+        composeRule.onNode(hasText("Dialog Title")).assertExists()
         return this
     }
 

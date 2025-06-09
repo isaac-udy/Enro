@@ -18,10 +18,11 @@ internal class SyntheticDestination<K : NavigationKey>(
 
         val interceptor = object : NavigationInterceptor() {
             override fun intercept(
-                context: NavigationContext,
+                fromContext: NavigationContext,
+                containerContext: ContainerContext,
                 operation: NavigationOperation.Open<NavigationKey>,
             ): NavigationOperation? {
-                val controller = context.controller
+                val controller = fromContext.controller
                 val bindings = controller.bindings.bindingFor(instance = operation.instance)
                 if (bindings.provider.metadata[SyntheticDestinationKey] == null) return operation
 
@@ -31,7 +32,7 @@ internal class SyntheticDestination<K : NavigationKey>(
                 return NavigationOperation.SideEffect{
                     synthetic.block(
                         SyntheticDestinationScope(
-                            context = context,
+                            context = fromContext,
                             instance = operation.instance,
                         )
                     )

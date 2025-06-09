@@ -1,9 +1,9 @@
 package dev.enro.interceptor
 
-import dev.enro.NavigationBackstack
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.context.ContainerContext
 import dev.enro.platform.EnroLog
 
 /**
@@ -15,8 +15,8 @@ public abstract class NavigationInterceptor {
     // Allows the entire list of operations to be intercepted before
     // any individual operation is intercepted.
     public open fun beforeIntercept(
-        context: NavigationContext,
-        backstack: NavigationBackstack,
+        fromContext: NavigationContext,
+        containerContext: ContainerContext,
         operations: List<NavigationOperation.RootOperation>,
     ) : List<NavigationOperation.RootOperation> {
         return operations
@@ -24,35 +24,40 @@ public abstract class NavigationInterceptor {
 
     // Intercept an individual open operation
     public open fun intercept(
-        context: NavigationContext,
+        fromContext: NavigationContext,
+        containerContext: ContainerContext,
         operation: NavigationOperation.Open<NavigationKey>,
     ): NavigationOperation? { return operation }
 
     // Intercept an individual close operation
     public open fun intercept(
-        context: NavigationContext,
+        fromContext: NavigationContext,
+        containerContext: ContainerContext,
         operation: NavigationOperation.Close<NavigationKey>,
     ): NavigationOperation? { return operation }
 
     // Intercept an individual complete operation
     public open fun intercept(
-        context: NavigationContext,
+        fromContext: NavigationContext,
+        containerContext: ContainerContext,
         operation: NavigationOperation.Complete<NavigationKey>,
     ): NavigationOperation? { return operation }
 
     public companion object {
         public fun processOperations(
-            context: NavigationContext,
-            backstack: NavigationBackstack,
+            fromContext: NavigationContext,
+            containerContext: ContainerContext,
             operations: List<NavigationOperation.RootOperation>,
             interceptor: NavigationInterceptor,
         ): List<NavigationOperation.RootOperation> {
             val result = mutableListOf<NavigationOperation.RootOperation>()
-            // TODO empty behaviour is not doing what I want it to do because it's preventing the other
-            //  operations from actually executing
-            val toProcess = interceptor.beforeIntercept(context, backstack, operations).toMutableList()
+            val toProcess = interceptor.beforeIntercept(
+                fromContext = fromContext,
+                containerContext = containerContext,
+                operations = operations,
+            ).toMutableList()
 
-            val backstackById = backstack.associateBy { it.id }
+            val backstackById = containerContext.container.backstack.associateBy { it.id }
             while (toProcess.isNotEmpty()) {
                 val operation = toProcess.removeFirst()
                 val intercepted = when (operation) {
@@ -61,10 +66,22 @@ public abstract class NavigationInterceptor {
                     // indicates that the goal of the operation is to re-order the backstack
                     is NavigationOperation.Open<*> -> when {
                         backstackById.containsKey(operation.instance.id) -> operation
-                        else -> interceptor.intercept(context, operation)
+                        else -> interceptor.intercept(
+                            fromContext = fromContext,
+                            containerContext = containerContext,
+                            operation = operation,
+                        )
                     }
-                    is NavigationOperation.Close<*> -> interceptor.intercept(context, operation)
-                    is NavigationOperation.Complete<*> -> interceptor.intercept(context, operation)
+                    is NavigationOperation.Close<*> -> interceptor.intercept(
+                        fromContext = fromContext,
+                        containerContext = containerContext,
+                        operation = operation,
+                    )
+                    is NavigationOperation.Complete<*> -> interceptor.intercept(
+                        fromContext = fromContext,
+                        containerContext = containerContext,
+                        operation = operation,
+                    )
                     else -> operation
                 }
 
@@ -120,7 +137,7 @@ public abstract class NavigationInterceptor {
             }
 
             // Add all non-opened operations as Open operations at the start of the list
-            val updatedBackstack = backstack
+            val updatedBackstack = containerContext.container.backstack
                 .mapNotNull {
                     if (openedIds.contains(it.id)) return@mapNotNull null
                     if (closedIds.contains(it.id)) return@mapNotNull null

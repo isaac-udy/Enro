@@ -96,20 +96,20 @@ fun ComposeAnimationsRoot() {
         Button(onClick = {
             navigation.push(ComposeAnimations.PushWithSlide)
         }) {
-            Text(text = "Push (with slide)")
+            Text(text = "Open (with slide)")
         }
 
         Button(onClick = {
             navigation.push(ComposeAnimations.PushWithAnimatedSquare)
         }) {
-            Text(text = "Push (with animated square)")
+            Text(text = "Open (with animated square)")
         }
 
 
         Button(onClick = {
             navigation.present(ComposeAnimations.Dialog)
         }) {
-            Text(text = "Dialog")
+            Text(text = "Open Dialog")
         }
     }
 }
@@ -185,7 +185,7 @@ fun ComposeAnimationsDialogDestination() = DialogDestination {
             exit = fadeOut(defaultSpec()) + slideOutVertically(defaultSpec()) { it / 2 },
         ) {
             TitledColumn(
-                title = "Dialog",
+                title = "Dialog Title",
                 modifier = Modifier.heightIn(max = 256.dp)
             ) {
                 Button(onClick = {

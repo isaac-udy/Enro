@@ -1,9 +1,9 @@
 package dev.enro.interceptor
 
-import dev.enro.NavigationBackstack
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.context.ContainerContext
 
 internal class AggregateNavigationInterceptor(
     interceptors: List<NavigationInterceptor>,
@@ -11,12 +11,14 @@ internal class AggregateNavigationInterceptor(
     private val interceptors = interceptors.flatMap { it.flatten() }
 
     override fun intercept(
-        context: NavigationContext,
+        fromContext: NavigationContext,
+        containerContext: ContainerContext,
         operation: NavigationOperation.Open<NavigationKey>,
     ): NavigationOperation? {
         return interceptors.fold(operation) { currentOperation, interceptor ->
             val result = interceptor.intercept(
-                context = context,
+                fromContext = fromContext,
+                containerContext = containerContext,
                 operation = currentOperation,
             )
             if (result == null) return null
@@ -27,12 +29,14 @@ internal class AggregateNavigationInterceptor(
     }
 
     override fun intercept(
-        context: NavigationContext,
+        fromContext: NavigationContext,
+        containerContext: ContainerContext,
         operation: NavigationOperation.Close<NavigationKey>,
     ): NavigationOperation? {
         return interceptors.fold(operation) { currentOperation, interceptor ->
             val result = interceptor.intercept(
-                context = context,
+                fromContext = fromContext,
+                containerContext = containerContext,
                 operation = currentOperation,
             )
             if (result == null) return null
@@ -43,12 +47,14 @@ internal class AggregateNavigationInterceptor(
     }
 
     override fun intercept(
-        context: NavigationContext,
+        fromContext: NavigationContext,
+        containerContext: ContainerContext,
         operation: NavigationOperation.Complete<NavigationKey>,
     ): NavigationOperation? {
         return interceptors.fold(operation) { currentOperation, interceptor ->
             val result = interceptor.intercept(
-                context = context,
+                fromContext = fromContext,
+                containerContext = containerContext,
                 operation = currentOperation,
             )
             if (result == null) return null
@@ -59,14 +65,14 @@ internal class AggregateNavigationInterceptor(
     }
 
     override fun beforeIntercept(
-        context: NavigationContext,
-        backstack: NavigationBackstack,
+        fromContext: NavigationContext,
+        containerContext: ContainerContext,
         operations: List<NavigationOperation.RootOperation>,
     ): List<NavigationOperation.RootOperation> {
         return interceptors.fold(operations) { currentOperations, interceptor ->
             interceptor.beforeIntercept(
-                context = context,
-                backstack = backstack,
+                fromContext = fromContext,
+                containerContext = containerContext,
                 operations = currentOperations,
             )
         }

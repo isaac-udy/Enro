@@ -86,11 +86,13 @@ fun FindContextDestination() {
     val navigation = navigationHandle()
     val left = rememberNavigationContainer(
         root = FindContext.Left,
-        emptyBehavior = EmptyBehavior.CloseParent
+        emptyBehavior = EmptyBehavior.CloseParent,
+        filter = accept { key<FindContext.Left>() }
     )
     val right = rememberNavigationContainer(
         root = FindContext.Right,
-        emptyBehavior = EmptyBehavior.CloseParent
+        emptyBehavior = EmptyBehavior.CloseParent,
+        filter = accept { key<FindContext.Right>() }
     )
     Box {
         Row {
