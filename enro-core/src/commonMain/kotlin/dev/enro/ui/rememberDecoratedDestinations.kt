@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import dev.enro.EnroController
 import dev.enro.NavigationKey
+import dev.enro.ui.decorators.NavigationSavedStateHolder
 import dev.enro.ui.decorators.decorateNavigationDestination
 import dev.enro.ui.decorators.rememberLifecycleDecorator
 import dev.enro.ui.decorators.rememberMovableContentDecorator
@@ -26,12 +27,13 @@ import dev.enro.ui.decorators.rememberViewModelStoreDecorator
 internal fun rememberDecoratedDestinations(
     controller: EnroController,
     backstack: List<NavigationKey.Instance<*>>,
+    savedStateHolder: NavigationSavedStateHolder,
     isSettled: Boolean,
 ): List<NavigationDestination<NavigationKey>> {
     // Create decorators that wrap destinations with additional functionality
     val decorators = listOf(
         rememberMovableContentDecorator(),  // Preserves content across recompositions
-        rememberSavedStateDecorator(),      // Manages saved instance state
+        rememberSavedStateDecorator(savedStateHolder),      // Manages saved instance state
         rememberViewModelStoreDecorator(),  // Provides ViewModelStore for each destination
         rememberLifecycleDecorator(backstack, isSettled),  // Manages lifecycle state
         rememberNavigationContextDecorator(),  // Provides navigation context

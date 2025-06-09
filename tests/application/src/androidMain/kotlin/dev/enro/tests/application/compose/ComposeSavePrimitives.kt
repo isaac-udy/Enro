@@ -1,6 +1,7 @@
 package dev.enro.tests.application.compose
 
 import android.os.Bundle
+import android.os.Parcel
 import android.os.Parcelable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
@@ -16,6 +17,8 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
+import dev.enro.core.container.emptyBackstack
+import dev.enro.core.container.setBackstack
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 import kotlin.random.Random
@@ -55,20 +58,19 @@ fun ComposeSavePrimitivesScreen() {
     TitledColumn("Compose Save Primitives") {
         if (savedBundle.value == null) {
             Button(onClick = {
-                TODO("SAVE/RESTORE CONTAINERS")
-                // We're going to force the container state to be fully serialized into a byte array
-                // and then back again into a bundle, so that the restoration is "real", as opposed
-                // to when a bundle isn't actually saved, where some references can be retained
-//                val parcel = Parcel.obtain()
-//                container.save().writeToParcel(parcel, 0)
-//                val savedParcel = Parcel.obtain().apply {
-//                    unmarshall(parcel.marshall(), 0, parcel.dataSize())
-//                }
-//                savedParcel.setDataPosition(0)
-//                val savedState =
-//                    savedParcel.readBundle(ComposeSavePrimitives::class.java.classLoader)
-//                savedBundle.value = savedState
-//                container.setBackstack(emptyBackstack())
+//                 We're going to force the container state to be fully serialized into a byte array
+//                 and then back again into a bundle, so that the restoration is "real", as opposed
+//                 to when a bundle isn't actually saved, where some references can be retained
+                val parcel = Parcel.obtain()
+                container.saveState().writeToParcel(parcel, 0)
+                val savedParcel = Parcel.obtain().apply {
+                    unmarshall(parcel.marshall(), 0, parcel.dataSize())
+                }
+                savedParcel.setDataPosition(0)
+                val savedState =
+                    savedParcel.readBundle(ComposeSavePrimitives::class.java.classLoader)
+                savedBundle.value = savedState
+                container.setBackstack(emptyBackstack())
             }) {
                 Text("Save State")
             }
@@ -76,8 +78,7 @@ fun ComposeSavePrimitivesScreen() {
             Button(onClick = {
                 val bundle = savedBundle.value
                 savedBundle.value = null
-                TODO("SAVE/RESTORE CONTAINERS")
-//                container.restore(bundle!!)
+                container.restoreState(bundle!!)
             }) {
                 Text("Restore State")
             }

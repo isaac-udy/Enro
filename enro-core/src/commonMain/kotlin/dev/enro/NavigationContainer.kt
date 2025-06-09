@@ -71,6 +71,10 @@ public class NavigationContainer(
         }
     }
 
+    internal fun setBackstackDirect(backstack: NavigationBackstack) {
+        mutableBackstack.value = backstack
+    }
+
     private val executionMutex = Mutex(false)
 
     // TODO Need to add documentation to explain what is accepted -> close/completes for instances in the backstack,

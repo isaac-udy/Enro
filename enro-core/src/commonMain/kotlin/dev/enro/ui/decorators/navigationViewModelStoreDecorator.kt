@@ -72,6 +72,7 @@ internal fun viewModelStoreDecorator(
     shouldRemoveStoreOwner: () -> Boolean,
 ): NavigationDestinationDecorator<NavigationKey> {
     val storage = viewModelStore.getOrCreateViewModelStoreStorage()
+
     return navigationDestinationDecorator(
         onRemove = { instance ->
             if (shouldRemoveStoreOwner()) {
@@ -131,8 +132,8 @@ private class DestinationViewModelStoreOwner(
         }
 
     init {
-        require(lifecycle.currentState == Lifecycle.State.INITIALIZED) {
-            "The Lifecycle state is already beyond INITIALIZED. The " +
+        require(lifecycle.currentState == Lifecycle.State.INITIALIZED || lifecycle.currentState == Lifecycle.State.CREATED) {
+            "The Lifecycle state is already beyond CREATED. The " +
                     "ViewModelStoreDecorator requires adding the " +
                     "SavedStateDecorator to ensure support for " +
                     "SavedStateHandles."

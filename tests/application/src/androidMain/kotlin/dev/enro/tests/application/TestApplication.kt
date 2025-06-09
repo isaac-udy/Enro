@@ -19,6 +19,7 @@ import dev.enro.tests.application.compose.results.ComposeEmbeddedResultFlow
 import dev.enro.tests.application.fragment.FragmentPresentation
 import dev.enro.tests.application.fragment.UnboundBottomSheet
 import dev.enro.tests.application.managedflow.ManagedFlowInComposable
+import dev.enro.tests.application.savedstate.SavedStateDestination
 import dev.enro.tests.application.serialization.AndroidSerialization
 
 class TestApplication : Application() {
@@ -77,6 +78,7 @@ class TestApplication : Application() {
             LazyColumn,
             ManagedFlowInComposable,
             PictureInPicture,
+            SavedStateDestination,
             SimpleActivity,
             SyntheticViewModelAccess,
             UnboundBottomSheet,

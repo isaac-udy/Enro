@@ -6,16 +6,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.savedstate.SavedState
+import androidx.savedstate.read
+import androidx.savedstate.serialization.decodeFromSavedState
+import androidx.savedstate.serialization.encodeToSavedState
+import androidx.savedstate.write
+import dev.enro.EnroController
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.context.ContainerContext
+import dev.enro.ui.decorators.NavigationSavedStateHolder
+import kotlinx.serialization.PolymorphicSerializer
 
 public class NavigationContainerState internal constructor(
     public val container: NavigationContainer,
     public val emptyBehavior: EmptyBehavior,
-    public val context: ContainerContext
+    public val context: ContainerContext,
+    public val savedStateHolder: NavigationSavedStateHolder,
 ) {
 
     public val key: NavigationContainer.Key = container.key
@@ -41,6 +50,34 @@ public class NavigationContainerState internal constructor(
 
     public fun execute(operation: NavigationOperation) {
         container.execute(context, operation)
+    }
+
+    public fun saveState(): SavedState {
+        val savedBackstack = container.backstack.map { instance ->
+            encodeToSavedState(
+                serializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
+                value = instance,
+                configuration =  EnroController.instance!!.serializers.savedStateConfiguration
+            )
+        }
+        return savedStateHolder.saveState().also {
+            it.write {
+                putSavedStateList("backstack", savedBackstack)
+            }
+        }
+    }
+    public fun restoreState(savedState: SavedState) {
+        val restoredBackstack = savedState.read {
+            getSavedStateList("backstack").map {
+                decodeFromSavedState(
+                    deserializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
+                    savedState = it,
+                    configuration = EnroController.instance!!.serializers.savedStateConfiguration,
+                )
+            }
+        }
+        savedStateHolder.restoreState(savedState)
+        container.setBackstackDirect(restoredBackstack)
     }
 
     @Deprecated("TODO BETTER DEPRECATION MESSAGE")

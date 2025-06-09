@@ -23,6 +23,7 @@ import dev.enro.context.DestinationContext
 import dev.enro.context.RootContext
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.NoOpNavigationInterceptor
+import dev.enro.ui.decorators.NavigationSavedStateHolder
 import kotlinx.serialization.PolymorphicSerializer
 
 @Composable
@@ -54,7 +55,6 @@ public fun rememberNavigationContainer(
             backstack = backstack,
         )
     }
-
     DisposableEffect(container, filter) {
         container.setFilter(filter)
         onDispose {
@@ -90,16 +90,23 @@ public fun rememberNavigationContainer(
             parentContext.unregisterChild(context)
         }
     }
+    val savedState = rememberSaveable(
+        saver = NavigationSavedStateHolder.Saver
+    ) {
+        NavigationSavedStateHolder(savedState())
+    }
     val containerState = remember(container) {
         NavigationContainerState(
             container = container,
             emptyBehavior = emptyBehavior,
             context = context,
+            savedStateHolder = savedState,
         )
     }
     val destinations = rememberDecoratedDestinations(
         controller = controller,
         backstack = containerState.backstack,
+        savedStateHolder = savedState,
         isSettled = containerState.isSettled,
     )
     containerState.destinations = destinations

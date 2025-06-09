@@ -16,14 +16,12 @@ import dev.enro.NavigationKey
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
-import dev.enro.asInstance
 import dev.enro.complete
 import dev.enro.completeFrom
 import dev.enro.navigationHandle
 import dev.enro.result.flow.registerForFlowResult
+import dev.enro.result.flow.rememberNavigationContainerForFlow
 import dev.enro.tests.application.compose.common.TitledColumn
-import dev.enro.ui.destinations.EmptyNavigationKey
-import dev.enro.ui.rememberNavigationContainer
 import dev.enro.viewmodel.createEnroViewModel
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
@@ -65,7 +63,7 @@ object ComposeManagedResultsWithNestedFlowAndEmptyRoot : NavigationKey.WithResul
     ) : ViewModel() {
         private val navigation by navigationHandle<ComposeManagedResultsWithNestedFlowAndEmptyRoot>()
 
-        private val flow by registerForFlowResult(
+        val flow by registerForFlowResult(
             flow = {
                 val started = async { getAsyncStarter() }
                 val nestedResult = open { NestedFlow() }
@@ -96,15 +94,15 @@ internal fun ComposeManagedResultsWithNestedFlowAndEmptyRootDestination(
         }
     }
 ) {
-    val container = rememberNavigationContainer(
-        backstack = listOf(EmptyNavigationKey.asInstance())
+    val container = rememberNavigationContainerForFlow(
+        flow = viewModel.flow
     )
     TitledColumn(
         title = "Results with Nested Flow and Empty Root"
     ) {
         Box(Modifier.fillMaxSize()) {
             container.Render()
-            if (container.backstack.firstOrNull()?.key is EmptyNavigationKey) {
+            if (container.backstack.isEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
         }

@@ -9,8 +9,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
-import dev.enro.core.requestClose
-import dev.enro.navigationHandle
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
 
@@ -24,9 +22,8 @@ class SimpleActivityImpl : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            val navigation = navigationHandle<NavigationKey>()
             TitledColumn(title = "Simple Activity") {
-                Button(onClick = { navigation.requestClose() }) {
+                Button(onClick = { finish() }) {
                     Text(text = "Close Activity")
                 }
             }
