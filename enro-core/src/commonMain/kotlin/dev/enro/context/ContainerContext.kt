@@ -21,20 +21,31 @@ public class ContainerContext(
     override val controller: EnroController = parent.controller
 
     override val activeChild: DestinationContext<NavigationKey>? by derivedStateOf {
-        val childrenById = mutableChildren.associateBy { it.id }
         val backstack = container.backstack
         for (index in container.backstack.indices.reversed()) {
             val instance = backstack[index]
-            childrenById[instance.id]?.let { return@derivedStateOf it }
+            mutableChildren[instance.id]
+                ?.takeIf { it.isVisible }
+                ?.let { return@derivedStateOf it.child }
         }
         return@derivedStateOf null
     }
 
     override fun registerChild(child: DestinationContext<NavigationKey>) {
-        mutableChildren.add(child)
+        mutableChildren[child.id] = ChildState(child, false)
     }
 
     override fun unregisterChild(child: DestinationContext<NavigationKey>) {
-        mutableChildren.remove(child)
+        mutableChildren.remove(child.id)
+    }
+
+    override fun registerVisibility(
+        child: DestinationContext<NavigationKey>,
+        isVisible: Boolean,
+    ) {
+        val current = mutableChildren[child.id]
+        if (current == null) return
+        if (current.isVisible == isVisible) return
+        mutableChildren[child.id] = ChildState(child, isVisible)
     }
 }

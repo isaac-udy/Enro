@@ -80,7 +80,9 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
         }
         DisposableEffect(parentContext, context) {
             parentContext.registerChild(context)
+            parentContext.registerVisibility(context, true)
             onDispose {
+                parentContext.registerVisibility(context, false)
                 parentContext.unregisterChild(context)
             }
         }

@@ -33,8 +33,6 @@ import androidx.compose.ui.util.fastForEachReversed
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
-import dev.enro.context.ContainerContext
-import dev.enro.context.NavigationContext
 import dev.enro.platform.EnroLog
 import dev.enro.ui.animation.rememberTransitionCompat
 import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
@@ -100,10 +98,9 @@ public fun NavigationDisplay(
     },
 ) {
     DisposableEffect(state) {
-        EnroLog.error("Enro: active from disposable effect ${state.key} and active is ${parent.activeChild?.id}")
+        state.context.parent.registerVisibility(state.context, true)
         onDispose {
-            state.isVisible = false
-            EnroLog.error("Enro: dispose from disposable effect ${state.key} and active is ${parent.activeChild?.id}")
+            state.context.parent.registerVisibility(state.context, false)
         }
     }
     // Create and remember the state that tracks the display's internal state
