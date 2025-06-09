@@ -8,7 +8,7 @@ import dev.enro.complete
 import dev.enro.open
 import dev.enro.withMetadata
 import kotlin.properties.ReadOnlyProperty
-import dev.enro.ui.destinations.navigationHandle as fragmentNavigationHandle
+import dev.enro.navigationHandle as fragmentNavigationHandle
 
 public typealias NavigationHandle = dev.enro.NavigationHandle<out NavigationKey>
 public typealias TypedNavigationHandle<T> =  dev.enro.NavigationHandle<T>

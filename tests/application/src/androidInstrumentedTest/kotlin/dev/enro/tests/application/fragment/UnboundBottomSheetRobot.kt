@@ -16,14 +16,6 @@ class UnboundBottomSheetRobot(
 ) {
     private val fragment = composeRule.waitForFragment<UnboundBottomSheetFragment>()
 
-    fun closeWithEnro() {
-        composeRule.onNode(hasText("Close with Enro"))
-            .performClick()
-        composeRule.waitUntil(5_000) {
-            !fragment.isAdded && fragment.activity == null
-        }
-    }
-
     fun dismiss() {
         composeRule.onNode(hasText("Dismiss"))
             .performClick()

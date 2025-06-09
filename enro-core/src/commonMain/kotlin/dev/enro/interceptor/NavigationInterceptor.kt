@@ -48,6 +48,8 @@ public abstract class NavigationInterceptor {
             interceptor: NavigationInterceptor,
         ): List<NavigationOperation.RootOperation> {
             val result = mutableListOf<NavigationOperation.RootOperation>()
+            // TODO empty behaviour is not doing what I want it to do because it's preventing the other
+            //  operations from actually executing
             val toProcess = interceptor.beforeIntercept(context, backstack, operations).toMutableList()
 
             val backstackById = backstack.associateBy { it.id }

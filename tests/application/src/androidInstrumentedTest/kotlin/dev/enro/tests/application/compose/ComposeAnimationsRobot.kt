@@ -1,10 +1,10 @@
 package dev.enro.tests.application.compose
 
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.performClick
 import dev.enro.tests.application.waitForNavigationHandle
-import dev.enro.tests.application.compose.ComposeAnimations
 
 class ComposeAnimationsRobot(
     private val composeRule: ComposeTestRule
@@ -85,7 +85,9 @@ class DialogRobot(
         }
     }
 
+    @OptIn(ExperimentalTestApi::class)
     fun verifyDialogVisible(): DialogRobot {
+        composeRule.waitUntilExactlyOneExists(hasText("Dialog"))
         composeRule.onNode(hasText("Dialog")).assertExists()
         return this
     }

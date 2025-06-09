@@ -44,7 +44,9 @@ public inline fun <reified T : NavigationKey.WithResult<R>, R : Any> managedFlow
     return managedFlowDestination(
         keyType = T::class,
         flow = flow,
-        onCompleted = { navigation.complete(it) }
+        onCompleted = {
+            navigation.complete(it)
+        }
     )
 }
 

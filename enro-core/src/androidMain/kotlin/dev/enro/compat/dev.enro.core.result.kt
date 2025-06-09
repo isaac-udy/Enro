@@ -10,7 +10,7 @@ import dev.enro.core.compose.NavigationResultChannelCompat
 import dev.enro.result.NavigationResultScope
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
-import dev.enro.ui.destinations.registerForNavigationResult as fragmentRegisterForNavigationResult
+import dev.enro.result.registerForNavigationResult as fragmentRegisterForNavigationResult
 
 public fun <R: Any> NavigationHandle<NavigationKey.WithResult<R>>.deliverResultFromPush(
     key: dev.enro.core.NavigationKey.SupportsPush.WithResult<R>,

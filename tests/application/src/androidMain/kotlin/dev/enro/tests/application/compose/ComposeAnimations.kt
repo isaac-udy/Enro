@@ -1,7 +1,6 @@
 package dev.enro.tests.application.compose
 
 import android.os.Parcelable
-import android.view.Window
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.animateDp
@@ -10,6 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,14 +18,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogWindowProvider
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.annotations.NavigationDestination
 import dev.enro.core.NavigationKey
@@ -40,6 +37,7 @@ import dev.enro.core.requestClose
 import dev.enro.destination.compose.OverrideNavigationAnimations
 import dev.enro.destination.compose.navigationTransition
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -80,11 +78,12 @@ fun ComposeAnimationsDestination() {
 //            )
         }
     )
-    Box(
+    NavigationDisplay(
+        state = container,
         modifier = Modifier.fillMaxSize(),
-    ) {
-        container.Render()
-    }
+        transitionSpec = { fadeIn(defaultSpec()) togetherWith fadeOut() },
+        popTransitionSpec = { fadeIn(defaultSpec()) togetherWith fadeOut() },
+    )
 }
 
 @NavigationDestination(ComposeAnimations.Root::class)
@@ -197,10 +196,4 @@ fun ComposeAnimationsDialogDestination() = DialogDestination {
             }
         }
     }
-}
-
-@ReadOnlyComposable
-@Composable
-fun getDialogWindow(): Window {
-    return requireNotNull((LocalView.current.parent as? DialogWindowProvider)?.window)
 }

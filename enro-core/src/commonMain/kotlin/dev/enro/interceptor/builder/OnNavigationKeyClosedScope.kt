@@ -7,6 +7,7 @@ import dev.enro.NavigationOperation
  * Scope for handling when a navigation key is closed.
  */
 public class OnNavigationKeyClosedScope<K : NavigationKey> @PublishedApi internal constructor(
+    public val isSilent: Boolean,
     public val instance: NavigationKey.Instance<K>,
 ) {
     public val key: K get() = instance.key

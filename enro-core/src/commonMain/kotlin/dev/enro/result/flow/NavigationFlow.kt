@@ -21,7 +21,7 @@ public class NavigationFlow<T> internal constructor(
     public var container: NavigationContainerState? = null
         set(value) {
             field = value
-            if (value != null) update()
+            if (value != null && (steps.isEmpty() || value.backstack.isEmpty())) update()
         }
 
     internal fun onStepCompleted(step: FlowStep<Any>, result: Any) {
@@ -29,9 +29,9 @@ public class NavigationFlow<T> internal constructor(
     }
 
     internal fun onStepClosed(instance: NavigationKey.Instance<NavigationKey>) {
-        resultManager.clear(
-            instance.metadata.get(FlowStep.MetadataKey) as? FlowStep<Any> ?: return
-        )
+        val step = instance.metadata.get(FlowStep.MetadataKey)
+        if (step == null) return
+        resultManager.clear(step)
     }
 
     /**
@@ -47,37 +47,69 @@ public class NavigationFlow<T> internal constructor(
         runCatching {
             return@update onCompleted(flowScope.flow())
         }.recover {
-                when (it) {
-                    is NavigationFlowScope.NoResult -> {}
-                    is NavigationFlowScope.Escape -> return
-                    else -> throw it
-                }
+            when (it) {
+                is NavigationFlowScope.NoResult -> {}
+                is NavigationFlowScope.Escape -> return
+                else -> throw it
             }
+        }
             .getOrThrow()
 
+        val oldSteps = steps
         steps = flowScope.steps
-
         val container = container ?: return
-        val existingSteps = container.backstack.associateBy { it.id }
-        val openOperations = steps
+
+        val existingInstances = container.backstack
+            .mapNotNull { instance ->
+                val step = instance.metadata.get(FlowStep.MetadataKey) ?: return@mapNotNull null
+                step to instance
+            }
+            .groupBy { it.first.stepId }
+            .mapValues { it.value.lastOrNull() }
+
+        val updatedBackstack = steps
+            .filterIndexed { index, flowStep ->
+                if (index == steps.lastIndex) return@filterIndexed true
+                !flowStep.isTransient
+            }
             .map { step ->
-                existingSteps[step.stepId] ?:
-                    step.key
-                        .withMetadata(FlowStep.MetadataKey, step)
-                        .withMetadata(NavigationFlowReference.MetadataKey, this)
-                        .withMetadata(
-                            NavigationResultChannel.ResultIdKey, NavigationResultChannel.Id(
-                                ownerId = "NavigationFlow",
-                                resultId = step.stepId,
-                            )
+                val existingStep = existingInstances[step.stepId]?.second?.takeIf {
+                    oldSteps
+                        .firstOrNull { it.stepId == step.stepId }
+                        ?.dependsOn == step.dependsOn
+                }
+                existingStep ?: step.key
+                    .withMetadata(FlowStep.MetadataKey, step)
+                    .withMetadata(NavigationFlowReference.MetadataKey, this)
+                    .withMetadata(
+                        NavigationResultChannel.ResultIdKey, NavigationResultChannel.Id(
+                            ownerId = "NavigationFlow",
+                            resultId = step.stepId,
                         )
-                        .asInstance()
-                        .copy(id = step.stepId)
+                    )
+                    .asInstance()
+                    .apply {
+                        metadata.addFrom(step.metadata)
+                    }
+                    .copy(id = step.stepId)
             }
-            .map {
-                NavigationOperation.Open(it)
-            }
-        container.execute(NavigationOperation.AggregateOperation(openOperations))
+
+        container.execute(
+            NavigationOperation.AggregateOperation(
+                NavigationOperation
+                    .SetBackstack(
+                        currentBackstack = container.backstack,
+                        targetBackstack = updatedBackstack,
+                    )
+                    .operations
+                    .map {
+                        when (it) {
+                            is NavigationOperation.Close<*> -> it.copy(silent = true)
+                            else -> it
+                        }
+                    }
+            )
+        )
     }
 
     @PublishedApi

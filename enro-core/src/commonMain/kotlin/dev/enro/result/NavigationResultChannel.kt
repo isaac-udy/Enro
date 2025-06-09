@@ -1,9 +1,5 @@
 package dev.enro.result
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.currentCompositeKeyHash
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.enro.NavigationHandle
@@ -13,7 +9,6 @@ import dev.enro.asInstance
 import dev.enro.getNavigationHandle
 import dev.enro.result.NavigationResult.Completed.Companion.result
 import dev.enro.result.NavigationResultChannel.ResultIdKey
-import dev.enro.ui.LocalNavigationHandle
 import dev.enro.withMetadata
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -156,133 +151,4 @@ public class NavigationResultScope<Key : NavigationKey> @PublishedApi internal c
     public val instance: NavigationKey.Instance<Key>,
 ) {
     public val key: Key get() = instance.key
-}
-
-// TODO this needs much more documentation, it's too complex, maybe a separate file
-@Composable
-public inline fun <reified R : Any> registerForNavigationResult(
-    noinline onClosed: NavigationResultScope<out NavigationKey.WithResult<out R>>.() -> Unit = {},
-    noinline onCompleted: NavigationResultScope<out NavigationKey.WithResult<out R>>.(R) -> Unit,
-): NavigationResultChannel<R> {
-    val hashKey = currentCompositeKeyHash
-    val navigationHandle = LocalNavigationHandle.current
-    val channel = remember(hashKey) {
-        NavigationResultChannel<R>(
-            id = NavigationResultChannel.Id(
-                ownerId = navigationHandle.id,
-                resultId = hashKey.toString(),
-            ),
-            navigationHandle = navigationHandle,
-            onClosed = {
-                @Suppress("UNCHECKED_CAST")
-                this as NavigationResultScope<out NavigationKey.WithResult<out R>>
-                onClosed(this)
-            },
-            onCompleted = {
-                @Suppress("UNCHECKED_CAST")
-                this as NavigationResultScope<out NavigationKey.WithResult<out R>>
-                onCompleted(it)
-            }
-        )
-    }
-    LaunchedEffect(hashKey) {
-        NavigationResultChannel.observe(this, channel)
-    }
-    return channel
-}
-
-// TODO this needs much more documentation, it's too complex, maybe a separate file
-@Composable
-public fun registerForNavigationResult(
-    onClosed: NavigationResultScope<out NavigationKey>.() -> Unit = {},
-    onCompleted: NavigationResultScope<out NavigationKey>.() -> Unit,
-): NavigationResultChannel<Unit> {
-    val hashKey = currentCompositeKeyHash
-    val navigationHandle = LocalNavigationHandle.current
-    val channel = remember(hashKey) {
-        NavigationResultChannel<Unit>(
-            id = NavigationResultChannel.Id(
-                ownerId = navigationHandle.id,
-                resultId = hashKey.toString(),
-            ),
-            navigationHandle = navigationHandle,
-            onClosed = onClosed,
-            onCompleted = {
-                onCompleted()
-            }
-        )
-    }
-    LaunchedEffect(hashKey) {
-        NavigationResultChannel.observe<Unit>(this, channel)
-    }
-    @Suppress("UNCHECKED_CAST")
-    return channel
-}
-
-public inline fun <reified R : Any> ViewModel.registerForNavigationResult(
-    noinline onClosed: NavigationResultScope<out NavigationKey.WithResult<out R>>.() -> Unit = {},
-    noinline onCompleted: NavigationResultScope<out NavigationKey.WithResult<out R>>.(R) -> Unit,
-): ReadOnlyProperty<ViewModel, NavigationResultChannel<R>> {
-    return registerForNavigationResult(
-        resultType = R::class,
-        onClosed = onClosed,
-        onCompleted = onCompleted,
-    )
-}
-
-public fun <R : Any> ViewModel.registerForNavigationResult(
-    resultType: KClass<R>,
-    onClosed: NavigationResultScope<NavigationKey.WithResult<R>>.() -> Unit = {},
-    onCompleted: NavigationResultScope<NavigationKey.WithResult<R>>.(R) -> Unit,
-): ReadOnlyProperty<ViewModel, NavigationResultChannel<R>> {
-    val navigation = getNavigationHandle()
-    val scope = viewModelScope
-    @Suppress("UNCHECKED_CAST")
-    val channel = NavigationResultChannel<R>(
-        id = NavigationResultChannel.Id(
-            ownerId = navigation.id,
-            resultId = onClosed::class.qualifiedName + onCompleted::class.qualifiedName,
-        ),
-        onClosed = {
-            this as NavigationResultScope<NavigationKey.WithResult<R>>
-            onClosed()
-        },
-        onCompleted = {
-            this as NavigationResultScope<NavigationKey.WithResult<R>>
-            onCompleted(it)
-        },
-        navigationHandle = navigation,
-    )
-    NavigationResultChannel.observe(resultType, scope, channel)
-    return ReadOnlyProperty { vm, _ ->
-        require(vm === this)
-        channel
-    }
-}
-
-public fun ViewModel.registerForNavigationResult(
-    onClosed: NavigationResultScope<out NavigationKey>.() -> Unit = {},
-    onCompleted: NavigationResultScope<out NavigationKey>.() -> Unit,
-): ReadOnlyProperty<ViewModel, NavigationResultChannel<Unit>> {
-    val navigation = getNavigationHandle()
-    val scope = viewModelScope
-    @Suppress("UNCHECKED_CAST")
-    val channel = NavigationResultChannel<Unit>(
-        id = NavigationResultChannel.Id(
-            ownerId = navigation.id,
-            resultId = onClosed::class.qualifiedName + onCompleted::class.qualifiedName,
-        ),
-        onClosed = {
-            onClosed()
-        },
-        onCompleted = {
-            onCompleted()
-        },
-        navigationHandle = navigation,
-    )
-    NavigationResultChannel.observe(Unit::class, scope, channel)
-    return ReadOnlyProperty { vm, _ ->
-        require(vm === this)
-        channel
-    }
 }

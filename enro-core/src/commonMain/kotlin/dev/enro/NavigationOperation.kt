@@ -13,11 +13,11 @@ public sealed class NavigationOperation {
         internal val operations: List<RootOperation>,
     ) : NavigationOperation()
 
-    public class Open<out T : NavigationKey>(
+    public data class Open<out T : NavigationKey>(
         public val instance: NavigationKey.Instance<T>,
     ) : RootOperation()
 
-    public class Close<out T : NavigationKey>(
+    public data class Close<out T : NavigationKey>(
         public val instance: NavigationKey.Instance<T>,
         // A silent close indicates that after this operation is completed,
         // any NavigationResult channels should not be notified of the close operation,
@@ -38,7 +38,8 @@ public sealed class NavigationOperation {
         }
     }
 
-    public class Complete<out T : NavigationKey> private constructor(
+    @ConsistentCopyVisibility
+    public data class Complete<out T : NavigationKey> private constructor(
         public val instance: NavigationKey.Instance<T>,
         @PublishedApi
         internal val result: Any?,

@@ -31,8 +31,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dev.enro.annotations.NavigationDestination
-import dev.enro.context.findActiveContext
-import dev.enro.context.findContext
+import dev.enro.context.findActiveDestinationContext
+import dev.enro.context.findDestinationContext
 import dev.enro.context.getDebugString
 import dev.enro.context.root
 import dev.enro.core.NavigationKey
@@ -343,8 +343,8 @@ fun FindContextDialog() {
                             // Find the "FindContext" root first, because that won't be active if the FindContext
                             // dialog is currently active, and then find the active child within that context
                             val foundContext = context.root()
-                                .findContext<FindContext>()
-                                ?.findActiveContext<dev.enro.NavigationKey> {
+                                .findDestinationContext<FindContext>()
+                                ?.findActiveDestinationContext<dev.enro.NavigationKey> {
                                     val key = it.key as? FindContext.HasId
                                     key != null && key::class == selectedType && (id == null || key.id == id)
                                 }
@@ -359,7 +359,7 @@ fun FindContextDialog() {
                         onClick = {
                             val id = selectedId.toIntOrNull()
                             Log.e("FindContext", "Finding context:\n${context.root().getDebugString()}")
-                            val foundContext = context.root().findContext<dev.enro.NavigationKey> {
+                            val foundContext = context.root().findDestinationContext<dev.enro.NavigationKey> {
                                 val key = it.key as? FindContext.HasId
                                 key != null && key::class == selectedType && (id == null || key.id == id)
                             }

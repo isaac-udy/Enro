@@ -12,7 +12,7 @@ public sealed interface FlowStepConfiguration {
 
 @Serializable
 @ConsistentCopyVisibility
-public data class FlowStep<Result : Any> private constructor(
+public data class FlowStep<out Result : Any> private constructor(
     @PublishedApi internal val stepId: String,
     @PublishedApi internal val key: @Contextual NavigationKey,
     @PublishedApi internal val metadata: NavigationKey.Metadata,

@@ -55,10 +55,17 @@ public fun rememberNavigationContainer(
         )
     }
 
-    DisposableEffect(container, emptyBehavior) {
-        container.addInterceptor(emptyBehavior.interceptor)
+    DisposableEffect(container, filter) {
+        container.setFilter(filter)
         onDispose {
-            container.removeInterceptor(emptyBehavior.interceptor)
+            container.clearFilter(filter)
+        }
+    }
+
+    DisposableEffect(container, emptyBehavior) {
+        container.addEmptyInterceptor(emptyBehavior.interceptor)
+        onDispose {
+            container.removeEmptyInterceptor(emptyBehavior.interceptor)
         }
     }
 

@@ -14,13 +14,13 @@ import dev.enro.ui.scenes.DialogSceneStrategy.Companion.dialog
 /** An [NavigationScene.Overlay] that renders an [entry] within a [Dialog]. */
 internal class DialogScene(
     override val key: Any,
-    override val previousEntries: List<NavigationDestination<out NavigationKey>>,
-    override val overlaidEntries: List<NavigationDestination<out NavigationKey>>,
-    private val entry: NavigationDestination<out NavigationKey>,
+    override val previousEntries: List<NavigationDestination<NavigationKey>>,
+    override val overlaidEntries: List<NavigationDestination<NavigationKey>>,
+    private val entry: NavigationDestination<NavigationKey>,
     private val dialogProperties: DialogProperties,
 ) : NavigationScene.Overlay {
 
-    override val entries: List<NavigationDestination<out NavigationKey>> = listOf(entry)
+    override val entries: List<NavigationDestination<NavigationKey>> = listOf(entry)
 
     override val content: @Composable (() -> Unit) = {
         val container = LocalNavigationContainer.current

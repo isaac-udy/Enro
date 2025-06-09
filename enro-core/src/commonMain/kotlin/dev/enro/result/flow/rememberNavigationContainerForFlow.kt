@@ -4,10 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import dev.enro.NavigationKey
-import dev.enro.asInstance
 import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.ui.NavigationContainerState
-import dev.enro.ui.destinations.EmptyNavigationKey
 import dev.enro.ui.rememberNavigationContainer
 
 @Composable
@@ -15,12 +13,12 @@ public fun rememberNavigationContainerForFlow(
     flow: NavigationFlow<*>,
 ): NavigationContainerState {
     return rememberNavigationContainer(
-        backstack = listOf(EmptyNavigationKey.asInstance()),
+        backstack = listOf(),
         interceptor = remember {
             navigationInterceptor {
                 onClosed<NavigationKey> {
                     val flowStep = instance.metadata.get(FlowStep.MetadataKey) as? FlowStep<Any>
-                    if (flowStep != null) {
+                    if (flowStep != null && !isSilent) {
                         flow.onStepClosed(instance)
                     }
                     continueWithClose()

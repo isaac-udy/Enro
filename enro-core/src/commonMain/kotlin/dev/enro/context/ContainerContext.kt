@@ -11,7 +11,6 @@ import dev.enro.NavigationKey
 
 public class ContainerContext(
     override val parent: NavigationContext<*, ContainerContext>,
-
     public val container: NavigationContainer,
 ) : NavigationContext<NavigationContext<*, ContainerContext>, DestinationContext<NavigationKey>>(),
     LifecycleOwner by parent,

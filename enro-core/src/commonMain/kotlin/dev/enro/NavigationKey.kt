@@ -176,6 +176,11 @@ public interface NavigationKey {
             transientMap.putAll(other.transientMap)
         }
 
+        public fun addFrom(other: Metadata) {
+            map.putAll(other.map)
+            transientMap.putAll(other.transientMap)
+        }
+
         public fun copy(): Metadata {
             return Metadata().apply {
                 setFrom(this@Metadata)

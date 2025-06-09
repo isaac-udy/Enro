@@ -19,6 +19,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateListOf
@@ -32,6 +33,8 @@ import androidx.compose.ui.util.fastForEachReversed
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.context.ContainerContext
+import dev.enro.context.NavigationContext
 import dev.enro.platform.EnroLog
 import dev.enro.ui.animation.rememberTransitionCompat
 import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
@@ -96,6 +99,13 @@ public fun NavigationDisplay(
         )
     },
 ) {
+    DisposableEffect(state) {
+        EnroLog.error("Enro: active from disposable effect ${state.key} and active is ${parent.activeChild?.id}")
+        onDispose {
+            state.isVisible = false
+            EnroLog.error("Enro: dispose from disposable effect ${state.key} and active is ${parent.activeChild?.id}")
+        }
+    }
     // Create and remember the state that tracks the display's internal state
     val sceneState = remember { NavigationSceneState() }
 
@@ -115,7 +125,7 @@ public fun NavigationDisplay(
 
     // Set up predictive back gesture handling
     HandlePredictiveBack(
-        scene = scene,
+        scene = overlayScenes.lastOrNull() ?: scene,
         state = state,
     )
 
@@ -148,7 +158,7 @@ public fun NavigationDisplay(
         transition = transition,
         sceneKey = sceneKey,
         state = state,
-        scene = scene,
+        scene = overlayScenes.lastOrNull() ?: scene,
         sceneStrategy = sceneStrategy,
         scenes = sceneState.scenes
     )
@@ -459,10 +469,16 @@ private fun TransitionAnimationEffect(
     scenes: MutableMap<SceneKey, NavigationScene>,
 ) {
     if (state.inPredictiveBack) {
+        if (scene is NavigationScene.Overlay) return
         // During predictive back, create a "peek" scene showing the previous destinations
-        val peekScene = sceneStrategy.calculateSceneWithSinglePaneFallback(
+        var peekScene = sceneStrategy.calculateSceneWithSinglePaneFallback(
             scene.previousEntries,
         )
+        while (peekScene is NavigationScene.Overlay) {
+            peekScene = sceneStrategy.calculateSceneWithSinglePaneFallback(
+                peekScene.previousEntries,
+            )
+        }
         val peekSceneKey = SceneKey(
             sceneType = peekScene::class,
             key = peekScene.key,

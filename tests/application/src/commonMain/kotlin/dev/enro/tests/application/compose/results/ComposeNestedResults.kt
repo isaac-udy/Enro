@@ -31,7 +31,6 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.tests.application.compose.common.TitledRow
 import dev.enro.ui.EmptyBehavior
 import dev.enro.ui.NavigationDisplay
-import dev.enro.ui.destinations.EmptyNavigationKey
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
@@ -144,7 +143,8 @@ fun ComposeNestedResultsReceiver() {
 @Composable
 fun ComposeNestedResultsNestedSenderContainer() {
     val container = rememberNavigationContainer(
-        backstack = listOf(EmptyNavigationKey.asInstance()),
+        backstack = listOf(),
+        emptyBehavior = EmptyBehavior.closeParent(),
         filter = accept {
             key(ComposeNestedResults.Sender)
         },

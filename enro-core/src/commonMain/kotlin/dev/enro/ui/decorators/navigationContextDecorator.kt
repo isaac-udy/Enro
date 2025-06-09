@@ -15,6 +15,7 @@ import dev.enro.NavigationKey
 import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.handle.NavigationHandleHolder
+import dev.enro.handle.NavigationHandleImpl
 import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.LocalNavigationHandle
 
@@ -83,7 +84,13 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
                 parentContext.unregisterChild(context)
             }
         }
-        navigationHandleHolder.bindContext(context)
+
+        val navigationHandle = remember(navigationHandleHolder){
+            val navigationHandle = navigationHandleHolder.navigationHandle
+            require(navigationHandle is NavigationHandleImpl<NavigationKey>)
+            navigationHandle.bindContext(context)
+            return@remember navigationHandle
+        }
 
         // Provide navigation-specific composition locals
         CompositionLocalProvider(

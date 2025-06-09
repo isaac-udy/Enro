@@ -1,55 +1,23 @@
 package dev.enro.ui
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import dev.enro.NavigationBackstack
-import dev.enro.NavigationContext
-import dev.enro.NavigationKey
-import dev.enro.NavigationOperation
-import dev.enro.interceptor.NavigationInterceptor
+import dev.enro.NavigationContainer
+import dev.enro.NavigationTransition
+import dev.enro.close
+import dev.enro.navigationHandle
 
 public class EmptyBehavior internal constructor(
     private val isBackHandlerEnabled: () -> Boolean,
     private val onPredictiveBackProgress: (Float) -> Boolean,
-    private val onEmpty: () -> EmptyBehavior.Result,
+    private val onEmpty: Scope.() -> NavigationContainer.EmptyInterceptor.Result,
 ) {
-    internal val interceptor = object : NavigationInterceptor() {
-        override fun beforeIntercept(
-            context: NavigationContext,
-            backstack: NavigationBackstack,
-            operations: List<NavigationOperation.RootOperation>,
-        ): List<NavigationOperation.RootOperation> {
-            val toCloseOrComplete = mutableSetOf<String>()
-            val toOpen = mutableSetOf<String>()
-            for (operation in operations) {
-                when (operation) {
-                    is NavigationOperation.Close<*> -> toCloseOrComplete.add(operation.instance.id)
-                    is NavigationOperation.Complete<*> -> toCloseOrComplete.add(operation.instance.id)
-                    is NavigationOperation.Open<*> -> toOpen.add(operation.instance.id)
-                    else -> continue
-                }
-            }
-
-            if (toCloseOrComplete.isEmpty()) return operations
-            if (toOpen.isNotEmpty()) return operations
-
-            val willBecomeEmpty = backstack.all { it.id in toCloseOrComplete }
-            if (!willBecomeEmpty) return operations
-            val shouldClose = onEmpty()
-
-            return when (shouldClose) {
-                is Result.Cancel -> {
-                    operations.filterIsInstance<NavigationOperation.Complete<NavigationKey>>()
-                        .onEach { it.registerResult() }
-
-                    emptyList()
-                }
-                is Result.CancelAnd -> {
-                    operations.filterIsInstance<NavigationOperation.Complete<NavigationKey>>()
-                        .onEach { it.registerResult() }
-
-                    listOf(NavigationOperation.SideEffect(shouldClose.block))
-                }
-                else -> operations
-            }
+    internal val interceptor = object : NavigationContainer.EmptyInterceptor() {
+        override fun onEmpty(
+            transition: NavigationTransition,
+        ): Result {
+            return this@EmptyBehavior.onEmpty(Scope(transition))
         }
     }
 
@@ -68,13 +36,21 @@ public class EmptyBehavior internal constructor(
     }
 
     public class Scope internal constructor(
-        public val backstack: NavigationBackstack,
-    )
+        public val transition: NavigationTransition,
+    ) {
+        public fun allowEmpty(): NavigationContainer.EmptyInterceptor.Result {
+            return NavigationContainer.EmptyInterceptor.Result.AllowEmpty
+        }
 
-    internal sealed class Result {
-        class Continue : Result()
-        class Cancel : Result()
-        class CancelAnd(val block: () -> Unit) : Result()
+        public fun denyEmpty(): NavigationContainer.EmptyInterceptor.Result {
+            return NavigationContainer.EmptyInterceptor.Result.DenyEmpty {}
+        }
+
+        public fun denyEmptyAnd(block: () -> Unit): NavigationContainer.EmptyInterceptor.Result {
+            return NavigationContainer.EmptyInterceptor.Result.DenyEmpty(
+                block = block
+            )
+        }
     }
 
     public companion object {
@@ -89,7 +65,7 @@ public class EmptyBehavior internal constructor(
                 onPredictiveBackProgress = { true },
                 onEmpty = {
                     onEmpty()
-                    Result.Continue()
+                    allowEmpty()
                 },
             )
         }
@@ -100,8 +76,22 @@ public class EmptyBehavior internal constructor(
             return EmptyBehavior(
                 isBackHandlerEnabled = { false },
                 onPredictiveBackProgress = { false },
-                onEmpty = { Result.Cancel() },
+                onEmpty = { denyEmpty() },
             )
+        }
+
+        @Composable
+        public fun closeParent(): EmptyBehavior {
+            val navigation = navigationHandle()
+            return remember(navigation) {
+                EmptyBehavior(
+                    isBackHandlerEnabled = { true },
+                    onPredictiveBackProgress = { true },
+                    onEmpty = {
+                        denyEmptyAnd { navigation.close() }
+                    },
+                )
+            }
         }
 
         public fun default(): EmptyBehavior {

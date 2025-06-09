@@ -39,9 +39,6 @@ class UnboundBottomSheetFragment : BottomSheetDialogFragment() {
             setContent {
                 MaterialTheme {
                     TitledColumn(title = "Unbound BottomSheet Fragment") {
-                        Button(onClick = { TODO("Implement...") }) {
-                            Text("Close with Enro")
-                        }
                         Button(onClick = { dismiss() }) {
                             Text("Dismiss")
                         }

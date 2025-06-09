@@ -91,6 +91,7 @@ public class NavigationInterceptorBuilder internal constructor() {
                 instance as NavigationKey.Instance<KeyType>
                 val result = runForInterceptorBuilderResult {
                     OnNavigationKeyClosedScope(
+                        isSilent = operation.silent,
                         instance = instance,
                     ).block()
                 }

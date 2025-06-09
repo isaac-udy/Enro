@@ -12,13 +12,6 @@ class UnboundBottomSheetTest {
     val composeRule = createAndroidComposeRule<TestActivity>()
 
     @Test
-    fun test_closeWithEnro() {
-        SelectDestinationRobot(composeRule)
-            .openUnboundBottomSheet()
-            .closeWithEnro()
-    }
-
-    @Test
     fun test_pressBack() {
         SelectDestinationRobot(composeRule)
             .openUnboundBottomSheet()

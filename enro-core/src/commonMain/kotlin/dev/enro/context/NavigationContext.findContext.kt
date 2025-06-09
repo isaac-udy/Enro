@@ -33,7 +33,7 @@ public fun AnyNavigationContext.findActiveContext(
 }
 
 @Suppress("UNCHECKED_CAST")
-public inline fun <reified T: NavigationKey> AnyNavigationContext.findContext(
+public inline fun <reified T: NavigationKey> AnyNavigationContext.findDestinationContext(
     crossinline predicate: (DestinationContext<T>) -> Boolean = { true },
 ): DestinationContext<T>? {
     return findContext {
@@ -42,7 +42,7 @@ public inline fun <reified T: NavigationKey> AnyNavigationContext.findContext(
 }
 
 @Suppress("UNCHECKED_CAST")
-public inline fun <reified T: NavigationKey> AnyNavigationContext.findActiveContext(
+public inline fun <reified T: NavigationKey> AnyNavigationContext.findActiveDestinationContext(
     crossinline predicate: (DestinationContext<T>) -> Boolean = { true },
 ): DestinationContext<T>? {
     return findActiveContext {
@@ -51,19 +51,19 @@ public inline fun <reified T: NavigationKey> AnyNavigationContext.findActiveCont
     } as? DestinationContext<T>
 }
 
-public inline fun <reified T : NavigationKey> AnyNavigationContext.findContext(
+public inline fun <reified T : NavigationKey> AnyNavigationContext.findDestinationContext(
     key: T,
-): AnyNavigationContext? = findContext<T> {
+): AnyNavigationContext? = findDestinationContext<T> {
     it.key == key
 }
 
-public inline fun <reified T : NavigationKey> AnyNavigationContext.findActiveContext(
+public inline fun <reified T : NavigationKey> AnyNavigationContext.findActiveDestinationContext(
     key: T,
-): AnyNavigationContext? = findActiveContext<T> {
+): AnyNavigationContext? = findActiveDestinationContext<T> {
     it.key == key
 }
 
-public fun AnyNavigationContext.findContext(
+public fun AnyNavigationContext.findContainerContext(
     key: NavigationContainer.Key,
 ): AnyNavigationContext? {
     return findContext {
@@ -71,7 +71,7 @@ public fun AnyNavigationContext.findContext(
     }
 }
 
-public fun AnyNavigationContext.findActiveContext(
+public fun AnyNavigationContext.findActiveContainerContext(
     key: NavigationContainer.Key,
 ): AnyNavigationContext? {
     return findActiveContext {

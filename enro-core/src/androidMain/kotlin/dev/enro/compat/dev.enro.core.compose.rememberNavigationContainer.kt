@@ -86,8 +86,8 @@ public fun rememberNavigationContainer(
                 onEmpty = {
                     val keepActive = emptyBehavior.onEmpty()
                     return@NewEmptyBehavior when(keepActive) {
-                        true -> NewEmptyBehavior.Result.Cancel()
-                        else -> NewEmptyBehavior.Result.Continue()
+                        true -> denyEmpty()
+                        else -> allowEmpty()
                     }
                 }
             )
@@ -97,7 +97,7 @@ public fun rememberNavigationContainer(
                 isBackHandlerEnabled = { true },
                 onPredictiveBackProgress = { true },
                 onEmpty = {
-                    NewEmptyBehavior.Result.CancelAnd {
+                    denyEmptyAnd {
                         when (parentContext) {
                             is ContainerContext -> {
                                 val parentContainer = parentContext.container
@@ -123,7 +123,7 @@ public fun rememberNavigationContainer(
                 isBackHandlerEnabled = { true },
                 onPredictiveBackProgress = { true },
                 onEmpty = {
-                    NewEmptyBehavior.Result.CancelAnd {
+                    denyEmptyAnd {
                         when (parentContext) {
                             is ContainerContext -> {
                                 val parentContainer = parentContext.container

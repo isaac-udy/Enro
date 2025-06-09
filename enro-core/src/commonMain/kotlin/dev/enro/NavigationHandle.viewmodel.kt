@@ -6,7 +6,6 @@ import dev.enro.viewmodel.navigationHandleReference
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 
-// TODO do we actually want this to be done with a property?
 public inline fun <reified K : NavigationKey> ViewModel.navigationHandle(
     noinline config: (NavigationHandleConfiguration<K>.() -> Unit)? = null,
 ): ReadOnlyProperty<ViewModel, NavigationHandle<K>> {
@@ -16,7 +15,6 @@ public inline fun <reified K : NavigationKey> ViewModel.navigationHandle(
     )
 }
 
-// TODO do we actually want this to be done with a property?
 public fun <K : NavigationKey> ViewModel.navigationHandle(
     keyType: KClass<K>,
     config: (NavigationHandleConfiguration<K>.() -> Unit)? = null,

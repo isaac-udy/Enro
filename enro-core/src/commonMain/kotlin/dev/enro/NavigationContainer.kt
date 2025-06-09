@@ -27,10 +27,8 @@ import kotlinx.coroutines.sync.Mutex
 public class NavigationContainer(
     public val key: Key,
     public val controller: EnroController,
-    public val filter: NavigationContainerFilter = acceptAll(),
     backstack: NavigationBackstack = emptyList(),
-
-    ) {
+) {
     private val mutableBackstack: MutableState<NavigationBackstack> = mutableStateOf(backstack)
     public val backstack: NavigationBackstack by mutableBackstack
 
@@ -38,6 +36,8 @@ public class NavigationContainer(
         snapshotFlow { this.backstack }
 
     private val interceptors = mutableListOf<NavigationInterceptor>()
+    private val emptyInterceptors = mutableListOf<EmptyInterceptor>()
+    private var filter = acceptNone()
 
     @AdvancedEnroApi
     public fun addInterceptor(interceptor: NavigationInterceptor) {
@@ -49,12 +49,52 @@ public class NavigationContainer(
         interceptors.remove(interceptor)
     }
 
-    private val executionMutex = Mutex(false)
-
-    public fun accepts(instance: NavigationKey.Instance<NavigationKey>): Boolean {
-        return filter.accepts(instance)
+    @AdvancedEnroApi
+    public fun addEmptyInterceptor(interceptor: EmptyInterceptor) {
+        emptyInterceptors.add(interceptor)
     }
 
+    @AdvancedEnroApi
+    public fun removeEmptyInterceptor(interceptor: EmptyInterceptor) {
+        emptyInterceptors.remove(interceptor)
+    }
+
+    @AdvancedEnroApi
+    public fun setFilter(filter: NavigationContainerFilter) {
+        this.filter = filter
+    }
+
+    @AdvancedEnroApi
+    public fun clearFilter(filter: NavigationContainerFilter) {
+        if (this.filter == filter) {
+            this.filter = acceptNone()
+        }
+    }
+
+    private val executionMutex = Mutex(false)
+
+    // TODO Need to add documentation to explain what is accepted -> close/completes for instances in the backstack,
+    //  or opens which are accepted by the filter
+    public fun accepts(operation: NavigationOperation): Boolean {
+        val operations = when(operation) {
+            is NavigationOperation.AggregateOperation -> operation.operations
+            is NavigationOperation.RootOperation -> listOf(operation)
+        }
+        val ids = backstack.map { it.id }.toSet()
+        operations.forEach {
+            val isValid = when (it) {
+                is NavigationOperation.Close<*> -> ids.contains(it.instance.id)
+                is NavigationOperation.Complete<*> -> ids.contains(it.instance.id)
+                is NavigationOperation.Open<*> -> filter.accepts(it.instance)
+                is NavigationOperation.SideEffect -> true
+            }
+            if (!isValid) return false
+        }
+        return true
+    }
+
+    // TODO This skips the accept checking, need to add documentation to explain that accept checking is
+    //  performed by the navigation handle to find a container
     @AdvancedEnroApi
     public fun execute(
         context: NavigationContext,
@@ -81,7 +121,7 @@ public class NavigationContainer(
                 is NavigationOperation.RootOperation -> listOf(operation)
                 is NavigationOperation.AggregateOperation -> operation.operations
             }
-            
+
             val interceptor = AggregateNavigationInterceptor(
                 interceptors = interceptors + controller.interceptors.aggregateInterceptor,
             )
@@ -100,10 +140,21 @@ public class NavigationContainer(
                         is NavigationOperation.Open<*> -> backstack + operation.instance
                         else -> backstack
                     }
-            }
+                }
 
-            mutableBackstack.value = updatedBackstack
-            contextForExecution.requestActiveInRoot()
+            val isBecomingEmpty = backstack.isNotEmpty() && updatedBackstack.isEmpty()
+            val emptyInterceptorResults = when (isBecomingEmpty) {
+                true -> emptyInterceptors.map { emptyInterceptor ->
+                    emptyInterceptor.onEmpty(NavigationTransition(backstack, updatedBackstack))
+                }
+                else -> listOf(EmptyInterceptor.Result.AllowEmpty)
+            }
+            val isPreventEmpty = emptyInterceptorResults.any { it is EmptyInterceptor.Result.DenyEmpty }
+
+            if (!isPreventEmpty) {
+                mutableBackstack.value = updatedBackstack
+                contextForExecution.requestActiveInRoot()
+            }
 
             afterExecution = {
                 interceptedOperations.filterIsInstance<NavigationOperation.Close<NavigationKey>>()
@@ -113,7 +164,10 @@ public class NavigationContainer(
                     .onEach { it.registerResult() }
 
                 interceptedOperations.filterIsInstance<NavigationOperation.SideEffect>()
-                    .forEach { it.performSideEffect() }
+                    .onEach { it.performSideEffect() }
+
+                emptyInterceptorResults.filterIsInstance<EmptyInterceptor.Result.DenyEmpty>()
+                    .onEach { it.performSideEffect() }
             }
 
         } finally {
@@ -139,6 +193,34 @@ public class NavigationContainer(
         @Deprecated("TODO BETTER DEPRECATION MESSAGE")
         public companion object {
             public fun FromName(name: String): Key = Key(name)
+        }
+    }
+
+    public abstract class EmptyInterceptor {
+
+        public fun allowEmpty(): Result {
+            return Result.AllowEmpty
+        }
+
+        public fun denyEmpty(): Result {
+            return Result.DenyEmpty {}
+        }
+
+        public fun denyEmptyAnd(block: () -> Unit): Result {
+            return Result.DenyEmpty(
+                block = block
+            )
+        }
+
+        public abstract fun onEmpty(transition: NavigationTransition): Result
+
+        public sealed interface Result {
+            public object AllowEmpty : Result
+            public class DenyEmpty(private val block: () -> Unit) : Result {
+                internal fun performSideEffect() {
+                    block()
+                }
+            }
         }
     }
 }

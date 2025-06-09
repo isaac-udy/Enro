@@ -12,8 +12,6 @@ import dev.enro.platform.EnroLog
 internal class NavigationHandleImpl<T : NavigationKey>(
     instance: NavigationKey.Instance<T>,
 ) : NavigationHandle<T>() {
-
-
     private val lifecycleRegistry = LifecycleRegistry(this)
     override val lifecycle: Lifecycle = lifecycleRegistry
 
@@ -41,7 +39,9 @@ internal class NavigationHandleImpl<T : NavigationKey>(
 
     internal fun bindContext(context: DestinationContext<T>) {
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
-
+        require(context.destination.instance.id == id) {
+            "Cannot bind NavigationContext with instance ${context.destination.instance} to NavigationHandle with instance ${instance}"
+        }
         this.context?.lifecycle?.removeObserver(lifecycleObserver)
         this.context = context
         this.instance = context.destination.instance
@@ -67,8 +67,14 @@ internal class NavigationHandleImpl<T : NavigationKey>(
             EnroLog.warn("NavigationHandle with instance $instance has no context")
             return
         }
-
-        context.parent
+        val containerContext = findContainerForOperation(
+            fromContext = context.parent,
+            operation = operation,
+        )
+        requireNotNull(containerContext) {
+            "Could not find a valid container for the navigation operation: $operation from context with instance: ${context.destination.instance}"
+        }
+        containerContext
             .container
             .execute(context, operation)
     }
