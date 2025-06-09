@@ -57,11 +57,13 @@ public sealed class NavigationContext<Parent, Child : NavigationContextBase>() :
             is ContainerContext -> {
                 parent.setActiveContainer(this)
             }
+
             is DestinationContext<*> -> {
                 // if a destination is requested to become active, we request that the parent container
                 // becomes active
                 parent.requestActive()
             }
+
             is RootContext -> {
                 // RootContext does not have ability to request active
             }
@@ -77,29 +79,40 @@ public sealed class NavigationContext<Parent, Child : NavigationContextBase>() :
             is ContainerContext -> {
                 parent.requestActiveInRoot()
             }
+
             is DestinationContext<*> -> {
                 parent.requestActiveInRoot()
             }
+
             is RootContext -> {
                 // RootContext does not have ability to request active
             }
         }
     }
 
-    public data class ChildState<NavigationContextBase>(
+    protected data class ChildState<NavigationContextBase>(
         val child: NavigationContextBase,
         val isVisible: Boolean,
+        val registrationOrder: Long,
     )
 
+    internal companion object {
+        internal var registrationOrderCounter = 0L
+    }
+
     public sealed class WithContainerChildren<Parent>(
-        private val activeChildId: MutableState<String?>
+        private val activeChildId: MutableState<String?>,
     ) : NavigationContext<Parent, ContainerContext>() {
         override val activeChild: ContainerContext? by derivedStateOf {
             mutableChildren[activeChildId.value]?.child
         }
 
         override fun registerChild(child: ContainerContext) {
-            mutableChildren[child.id] = ChildState(child, false)
+            mutableChildren[child.id] = ChildState(
+                child = child,
+                isVisible = false,
+                registrationOrder = registrationOrderCounter++,
+            )
             if (activeChildId.value == null) {
                 activeChildId.value = child.id
             }
@@ -108,9 +121,11 @@ public sealed class NavigationContext<Parent, Child : NavigationContextBase>() :
         override fun unregisterChild(child: ContainerContext) {
             mutableChildren.remove(child.id)
             if (activeChildId.value == child.id) {
-                activeChildId.value = mutableChildren.values.firstOrNull {
-                    it.isVisible
-                }?.child?.id
+                activeChildId.value = mutableChildren.values
+                    .sortedBy { it.registrationOrder }
+                    .firstOrNull {
+                        it.isVisible
+                    }?.child?.id
             }
         }
 
@@ -121,7 +136,11 @@ public sealed class NavigationContext<Parent, Child : NavigationContextBase>() :
             val current = mutableChildren[child.id]
             if (current == null) return
             if (current.isVisible == isVisible) return
-            mutableChildren[child.id] = ChildState(child, isVisible)
+            mutableChildren[child.id] = ChildState(
+                child = child,
+                isVisible = isVisible,
+                registrationOrder = current.registrationOrder
+            )
 
             val currentlyActive = mutableChildren[activeChildId.value]
             if (currentlyActive == null || !currentlyActive.isVisible) {
@@ -130,9 +149,14 @@ public sealed class NavigationContext<Parent, Child : NavigationContextBase>() :
                 }
             }
             if (!isVisible && activeChildId.value == child.id) {
-                activeChildId.value = mutableChildren.values.firstOrNull {
-                    it.isVisible
-                }?.child?.id
+                val visibleChild = mutableChildren.values
+                    .sortedBy { it.registrationOrder }
+                    .firstOrNull {
+                        it.isVisible
+                    }?.child
+                if (visibleChild != null) {
+                    activeChildId.value = visibleChild.id
+                }
             }
         }
 

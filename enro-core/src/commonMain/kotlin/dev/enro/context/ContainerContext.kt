@@ -32,7 +32,11 @@ public class ContainerContext(
     }
 
     override fun registerChild(child: DestinationContext<NavigationKey>) {
-        mutableChildren[child.id] = ChildState(child, false)
+        mutableChildren[child.id] = ChildState(
+            child = child,
+            isVisible = false,
+            registrationOrder = 0, // registration order doesn't matter for Destinations
+        )
     }
 
     override fun unregisterChild(child: DestinationContext<NavigationKey>) {
@@ -46,6 +50,10 @@ public class ContainerContext(
         val current = mutableChildren[child.id]
         if (current == null) return
         if (current.isVisible == isVisible) return
-        mutableChildren[child.id] = ChildState(child, isVisible)
+        mutableChildren[child.id] = ChildState(
+            child = child,
+            isVisible = isVisible,
+            registrationOrder = 0, // registration order doesn't matter for Destinations
+        )
     }
 }

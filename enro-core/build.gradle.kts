@@ -22,6 +22,9 @@ kotlin {
             implementation(libs.kotlin.reflect)
             implementation(libs.thauvin.urlencoder)
         }
+        commonTest.dependencies {
+            implementation(project(":enro-test"))
+        }
         androidMain.dependencies {
             implementation(libs.androidx.core)
             implementation(libs.androidx.appcompat)
