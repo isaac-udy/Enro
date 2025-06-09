@@ -5,6 +5,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import dev.enro.NavigationKey
 import dev.enro.interceptor.builder.navigationInterceptor
+import dev.enro.result.NavigationResultChannel
 import dev.enro.ui.NavigationContainerState
 import dev.enro.ui.rememberNavigationContainer
 
@@ -25,6 +26,11 @@ public fun rememberNavigationContainerForFlow(
                 }
                 onCompleted<NavigationKey> {
                     val flowStep = instance.metadata.get(FlowStep.MetadataKey) as? FlowStep<Any>
+                        ?: instance.metadata.get(NavigationResultChannel.ResultIdKey)?.let { resultId ->
+                            flow.getSteps().firstOrNull {
+                                it.stepId == resultId.resultId
+                            }
+                        }
                     if (flowStep == null) continueWithComplete()
                     cancelAnd {
                         flow.onStepCompleted(flowStep, data ?: Unit)
