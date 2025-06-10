@@ -2,8 +2,6 @@ package dev.enro.ui.decorators
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateRegistry
@@ -108,15 +106,6 @@ internal class DestinationSaveableStateRegistry(
 
     fun performSave(): Map<String, List<Any?>> {
         return saveableStateRegistry.performSave()
-            .mapValues {
-                it.value.map {
-                    if (it is MutableState<*>) {
-                        mutableStateOf(it.value)
-                    } else {
-                        it
-                    }
-                }
-            }
     }
 }
 

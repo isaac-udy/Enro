@@ -1,7 +1,6 @@
 package dev.enro.tests.application
 
 import android.app.Application
-import dev.enro.controller.internalCreateEnroController
 import dev.enro.tests.application.activity.PictureInPicture
 import dev.enro.tests.application.activity.SimpleActivity
 import dev.enro.tests.application.compose.BottomNavigation
@@ -84,8 +83,6 @@ class TestApplication : Application() {
             UnboundBottomSheet,
         )
 
-        internalCreateEnroController {
-            NavigationComponentNavigation().apply { invoke() }
-        }.install(this)
+        NavigationComponent.installNavigationController(this)
     }
 }
