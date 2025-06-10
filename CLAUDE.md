@@ -25,5 +25,4 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 - This is a navigation framework for Kotlin multiplatform (focusing on Android)
-- Core components include: NavigationKey, NavigationInstruction, NavigationContext
-- Tests should use the EnroTest utilities for testing navigation
+- Core components include: NavigationKey, NavigationHandle, NavigationContainer, NavigationOperation, NavigationContext
