@@ -33,10 +33,7 @@ import dev.enro.complete
 import dev.enro.navigationHandle
 import dev.enro.result.flow.getNavigationFlow
 import dev.enro.result.flow.getStep
-import dev.enro.tests.application.samples.loan.GetLoanAmount
 import dev.enro.tests.application.samples.loan.GetLoanPurposeScreen
-import dev.enro.tests.application.samples.loan.GetLoanTerm
-import dev.enro.tests.application.samples.loan.GetPrimaryApplicantInfo
 import dev.enro.tests.application.samples.loan.GetRepaymentFrequencyScreen
 import dev.enro.tests.application.samples.loan.GetRepaymentTypeScreen
 import dev.enro.tests.application.samples.loan.LoanApplicationSummary

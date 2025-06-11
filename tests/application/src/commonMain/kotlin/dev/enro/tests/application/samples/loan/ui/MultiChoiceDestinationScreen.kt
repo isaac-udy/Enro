@@ -1,6 +1,7 @@
 package dev.enro.tests.application.samples.loan.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,9 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
@@ -26,6 +32,7 @@ import dev.enro.navigationHandle
 fun MultiChoiceDestinationScreen() {
     val navigation = navigationHandle<MultiChoiceDestination<MultiChoiceDestination.Item>>()
     val destination = navigation.key
+    var selectedItem by rememberSaveable { mutableStateOf<MultiChoiceDestination.Item?>(null) }
 
     Column(
         modifier = Modifier
@@ -34,8 +41,16 @@ fun MultiChoiceDestinationScreen() {
             .padding(16.dp)
     ) {
         Text(
-            text = "Select an option",
+            text = destination.title,
             style = MaterialTheme.typography.headlineMedium
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = destination.subtitle,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -44,9 +59,28 @@ fun MultiChoiceDestinationScreen() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(destination.items) { item ->
+                val isSelected = selectedItem?.title == item.title
                 Card(
-                    onClick = { navigation.complete(item) },
-                    modifier = Modifier.fillMaxWidth()
+                    onClick = {
+                        selectedItem = item
+                        navigation.complete(item)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (isSelected) {
+                                Modifier.border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = CardDefaults.shape
+                                )
+                            } else Modifier
+                        ),
+                    colors = if (isSelected) {
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    } else CardDefaults.cardColors()
                 ) {
                     Row(
                         modifier = Modifier
@@ -55,7 +89,12 @@ fun MultiChoiceDestinationScreen() {
                     ) {
                         Text(
                             text = item.title,
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = if (isSelected) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            }
                         )
                     }
                 }

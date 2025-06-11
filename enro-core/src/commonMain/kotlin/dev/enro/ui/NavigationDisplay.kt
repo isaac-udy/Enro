@@ -137,10 +137,17 @@ public fun NavigationDisplay(
     )
 
     // Determine if this is a pop (back) navigation
-    val isPop = isPop(
-        remember(transition.currentState) { state.destinations.toList() }.map { it.instance.id },
-        state.destinations.map { it.instance.id }
-    )
+    val lastBackstackIds = remember { mutableStateOf(listOf<String>()) }
+    val currentBackstackIds = state.backstack.map { it.id }
+    val isPop = remember(currentBackstackIds) {
+        val isPop = isPop(
+            lastBackstackIds.value,
+            currentBackstackIds
+        )
+        println("isPop: $isPop $lastBackstackIds -> $currentBackstackIds")
+        lastBackstackIds.value = currentBackstackIds
+        return@remember isPop
+    }
 
     // Calculate z-indices for proper layering during transitions
     val zIndices = updateZIndices(

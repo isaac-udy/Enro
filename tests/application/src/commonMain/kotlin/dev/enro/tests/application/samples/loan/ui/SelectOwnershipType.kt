@@ -20,6 +20,8 @@ sealed class OwnershipOption : MultiChoiceDestination.Item() {
 }
 
 val SelectOwnershipType = MultiChoiceDestination<OwnershipOption>(
+    title = "Who's applying?",
+    subtitle = "Will this loan be in your name only or with others?",
     items = listOf(
         OwnershipOption.Sole(),
         OwnershipOption.Partner(),

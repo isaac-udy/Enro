@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MultiChoiceDestination<T: MultiChoiceDestination.Item>(
+    val title: String,
+    val subtitle: String,
     val items: List<@Polymorphic T>,
 ) : NavigationKey.WithResult<T> {
 

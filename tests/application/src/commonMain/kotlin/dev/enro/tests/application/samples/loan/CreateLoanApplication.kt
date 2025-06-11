@@ -1,8 +1,10 @@
 package dev.enro.tests.application.samples.loan
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -29,6 +31,10 @@ import dev.enro.result.flow.NavigationFlowReference
 import dev.enro.result.flow.registerForFlowResult
 import dev.enro.result.flow.rememberNavigationContainerForFlow
 import dev.enro.tests.application.samples.loan.domain.LoanApplication
+import dev.enro.tests.application.samples.loan.ui.GetLoanAmount
+import dev.enro.tests.application.samples.loan.ui.GetLoanTerm
+import dev.enro.tests.application.samples.loan.ui.GetOtherApplicants
+import dev.enro.tests.application.samples.loan.ui.GetPrimaryApplicantInfo
 import dev.enro.tests.application.samples.loan.ui.MultiChoiceDestination
 import dev.enro.tests.application.samples.loan.ui.OwnershipOption
 import dev.enro.tests.application.samples.loan.ui.SelectOwnershipType
@@ -38,21 +44,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 object CreateLoanApplication : NavigationKey.WithResult<LoanApplication>
-
-@Serializable
-object GetPrimaryApplicantInfo : NavigationKey.WithResult<LoanApplication.Applicant>
-
-@Serializable
-object GetOtherApplicants : NavigationKey.WithResult<List<LoanApplication.Applicant>>
-
-@Serializable
-object GetApplicantInfo : NavigationKey.WithResult<LoanApplication.Applicant>
-
-@Serializable
-object GetLoanAmount : NavigationKey.WithResult<Int>
-
-@Serializable
-object GetLoanTerm : NavigationKey.WithResult<Int>
 
 @Serializable
 data class LoanApplicationSummary(
@@ -118,6 +109,8 @@ sealed class RepaymentTypeOption : MultiChoiceDestination.Item() {
 }
 
 val GetRepaymentFrequencyScreen = MultiChoiceDestination(
+    title = "Payment schedule",
+    subtitle = "How often would you like to make payments?",
     items = listOf(
         RepaymentFrequencyOption.Fortnightly(),
         RepaymentFrequencyOption.Monthly(),
@@ -126,6 +119,8 @@ val GetRepaymentFrequencyScreen = MultiChoiceDestination(
 )
 
 val GetLoanPurposeScreen = MultiChoiceDestination(
+    title = "What's it for?",
+    subtitle = "What are you planning to use this loan for?",
     items = listOf(
         LoanPurposeOption.Car(),
         LoanPurposeOption.Property()
@@ -133,6 +128,8 @@ val GetLoanPurposeScreen = MultiChoiceDestination(
 )
 
 val GetPropertyPurposeScreen = MultiChoiceDestination(
+    title = "Property type",
+    subtitle = "Will you live in it or rent it out?",
     items = listOf(
         PropertyPurposeOption.Investment(),
         PropertyPurposeOption.OwnerOccupied()
@@ -140,14 +137,12 @@ val GetPropertyPurposeScreen = MultiChoiceDestination(
 )
 
 val GetRepaymentTypeScreen = MultiChoiceDestination(
+    title = "Repayment style",
+    subtitle = "How would you like to structure your repayments?",
     items = listOf(
         RepaymentTypeOption.PrincipalAndInterest(),
         RepaymentTypeOption.InterestOnly()
     )
-)
-
-data class CreateLoanApplicationState(
-    val progress: Float = 0f
 )
 
 class LoanApplicationFlowViewModel : ViewModel() {
@@ -265,7 +260,9 @@ fun CreateLoanApplicationScreen() {
             }
         }
     ) {
-        NavigationDisplay(flowContainer)
+        Box(Modifier.padding(it)) {
+            NavigationDisplay(flowContainer)
+        }
     }
 }
 
@@ -294,4 +291,3 @@ private fun progressForBackstack(
     }
     return progress.value
 }
-
