@@ -3,6 +3,7 @@ package dev.enro.result.flow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import dev.enro.NavigationContainerFilter
 import dev.enro.NavigationKey
 import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.result.NavigationResultChannel
@@ -15,6 +16,10 @@ public fun rememberNavigationContainerForFlow(
 ): NavigationContainerState {
     return rememberNavigationContainer(
         backstack = listOf(),
+        filter = NavigationContainerFilter(
+            fromChildrenOnly = true,
+            block = { true },
+        ),
         interceptor = remember {
             navigationInterceptor {
                 onClosed<NavigationKey> {

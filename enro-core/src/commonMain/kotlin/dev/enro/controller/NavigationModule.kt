@@ -50,8 +50,14 @@ public class NavigationModule @PublishedApi internal constructor() {
 
         public inline fun <reified K: NavigationKey> destination(
             destination: NavigationDestinationProvider<K>,
+            isPlatformOverride: Boolean = false
         ) {
-            binding(binding = NavigationBinding.create<K>(destination))
+            binding(
+                binding = NavigationBinding.create<K>(
+                    provider = destination,
+                    isPlatformOverride = isPlatformOverride,
+                )
+            )
         }
 
         public fun path(path: NavigationPathBinding<*>) {

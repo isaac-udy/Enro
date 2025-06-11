@@ -1,9 +1,8 @@
 package dev.enro.controller.repository
 
 import dev.enro.EnroController
-import dev.enro.NavigationContainer
 import dev.enro.NavigationHandle
-import dev.enro.NavigationTransition
+import dev.enro.context.RootContext
 import dev.enro.plugin.NavigationPlugin
 
 internal class PluginRepository {
@@ -43,8 +42,12 @@ internal class PluginRepository {
         attachedController = null
     }
 
-    fun onTransitionApplied(container: NavigationContainer, transition: NavigationTransition) {
-        plugins.forEach { it.onTransitionApplied(container, transition) }
+    fun onRootContextAttached(context: RootContext) {
+        plugins.forEach { it.onRootContextAttached(context) }
+    }
+
+    fun onRootContextDetached(context: RootContext) {
+        plugins.forEach { it.onRootContextDetached(context) }
     }
 
     fun onOpened(navigationHandle: NavigationHandle<*>) {

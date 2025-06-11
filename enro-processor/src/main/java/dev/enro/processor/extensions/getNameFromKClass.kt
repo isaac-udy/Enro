@@ -19,6 +19,6 @@ internal fun getNameFromKClass(block: () -> KClass<*>) : String {
         is MirroredTypeException -> {
             ClassName.get(exception.typeMirror).toString()
         }
-        else -> error("getNameFromKClass did not throw an exception as expected")
+        else -> throw exception!!//error("getNameFromKClass did not throw an exception as expected")
     }
 }

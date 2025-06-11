@@ -55,6 +55,7 @@ internal class NavigationHandleImpl<T : NavigationKey>(
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
         context?.lifecycle?.removeObserver(lifecycleObserver)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        context?.controller?.plugins?.onClosed(this)
         context = null
     }
 

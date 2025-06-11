@@ -13,7 +13,7 @@ internal fun findContainerForOperation(
 ): ContainerContext? {
     return findContainer(
         fromContext = fromContext,
-        predicate = { container -> container.accepts(operation) }
+        predicate = { container -> container.accepts(fromContext, operation) }
     )
 }
 

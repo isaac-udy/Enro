@@ -48,6 +48,7 @@ compose-foundation = "androidx.compose.foundation:foundation:1.8.2"
 compose-foundationLayout = "androidx.compose.foundation:foundation-layout:1.8.2"
 compose-ui = "androidx.compose.ui:ui:1.8.2"
 compose-uiTooling = "androidx.compose.ui:ui-tooling:1.8.2"
+compose-ui-backhandler = "org.jetbrains.compose.ui:ui-backhandler:1.8.1"
 compose-preview = "androidx.compose.ui:ui-tooling-preview:1.8.2"
 compose-runtime = "androidx.compose.runtime:runtime:1.8.2"
 compose-livedata = "androidx.compose.runtime:runtime-livedata:1.8.2"
@@ -56,6 +57,7 @@ compose-material3 = "androidx.compose.material:material3:1.7.8"
 compose-lifecycle = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:2.9.0"
 compose-bundle = "org.jetbrains.androidx.core:core-bundle:1.0.1"
 compose-viewmodel = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0"
+
 
 compose-accompanist-systemUiController = "com.google.accompanist:accompanist-systemuicontroller:0.27.0"
 

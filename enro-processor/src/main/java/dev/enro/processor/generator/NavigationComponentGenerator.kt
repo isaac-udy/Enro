@@ -115,14 +115,7 @@ object NavigationComponentGenerator {
         }
 
         val extensionFunction = FunSpec.builder(functionName)
-            .addModifiers(
-                when {
-                    // on Desktop the application should be installed through the Composable
-                    // extension function, which is added later, so we make this function private
-                    isDesktop -> KModifier.PRIVATE
-                    else -> KModifier.PUBLIC
-                }
-            )
+            .addModifiers(KModifier.PUBLIC)
             .returns(ClassNames.Kotlin.navigationController)
             .addPlatformParameter()
             .addParameter(

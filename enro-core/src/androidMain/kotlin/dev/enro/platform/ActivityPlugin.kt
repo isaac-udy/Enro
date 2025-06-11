@@ -39,7 +39,8 @@ internal object ActivityPlugin : NavigationPlugin() {
     ): Application.ActivityLifecycleCallbacks {
         override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
             if (activity !is ComponentActivity) return
-            activity.activityContextHolder.rootContext = RootContext(
+            val rootContext = RootContext(
+                id = (activity::class.simpleName ?: "UnknownActivity")+"@${activity.hashCode()}",
                 parent = activity,
                 controller = controller,
                 lifecycleOwner = activity,
@@ -47,6 +48,8 @@ internal object ActivityPlugin : NavigationPlugin() {
                 defaultViewModelProviderFactory = activity,
                 activeChildId = mutableStateOf(savedInstanceState?.getString(ACTIVE_CONTAINER_KEY))
             )
+            activity.activityContextHolder.rootContext = rootContext
+            controller.rootContextRegistry.register(rootContext)
             val instance = activity.intent.getNavigationKeyInstance()
                 ?: savedInstanceState?.getNavigationKeyInstance()
                 ?: NavigationKey.Instance(DefaultActivityNavigationKey)
@@ -71,6 +74,10 @@ internal object ActivityPlugin : NavigationPlugin() {
 
         override fun onActivityDestroyed(activity: Activity) {
             if (activity !is ComponentActivity) return
+            val rootContext = activity.activityContextHolder.rootContext
+            if (rootContext != null) {
+                controller.rootContextRegistry.unregister(rootContext)
+            }
             activity.activityContextHolder.rootContext = null
             activity.activityContextHolder.navigationHandle = null
         }

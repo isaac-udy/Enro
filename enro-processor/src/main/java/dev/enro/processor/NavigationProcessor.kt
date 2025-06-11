@@ -22,6 +22,11 @@ class NavigationProcessor(
         val destinations = resolver
             .getSymbolsWithAnnotation(ClassNames.Kotlin.navigationDestination.canonicalName)
             .filterIsInstance<KSDeclaration>()
+            .plus(
+                resolver
+                    .getSymbolsWithAnnotation(ClassNames.Kotlin.navigationDestinationPlatformOverride.canonicalName)
+                    .filterIsInstance<KSDeclaration>()
+            )
 
         val bindings = resolver
             .getSymbolsWithAnnotation(ClassNames.Kotlin.generatedNavigationBinding.canonicalName)

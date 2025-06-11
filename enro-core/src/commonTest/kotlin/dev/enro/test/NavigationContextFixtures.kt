@@ -14,6 +14,7 @@ object NavigationContextFixtures {
     fun createRootContext(): RootContext {
         val owners = TestLifecycleAndViewModelStoreOwner()
         return RootContext(
+            id = "TestRootContext",
             parent = Unit,
             controller = EnroTest.getCurrentNavigationController(),
             lifecycleOwner = owners,

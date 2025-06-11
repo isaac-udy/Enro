@@ -132,27 +132,30 @@ object NavigationDestinationGenerator {
                 "INVALID_DESTINATION"
             }
         }
-
+        val platformOverride = when(destination.isPlatformOverride) {
+            true -> ", isPlatformOverride = true"
+            else -> ""
+        }
         when {
             destination.isClass -> when {
                 destination.isFragment -> addNamedCode(
-                    "destination(fragmentDestination(%keyType:T::class, %destinationType:T::class))",
+                    "destination(fragmentDestination(%keyType:T::class, %destinationType:T::class)$platformOverride)",
                     formatting,
                 )
                 destination.isActivity -> addNamedCode(
-                    "destination(activityDestination(%keyType:T::class, %destinationType:T::class))",
+                    "destination(activityDestination(%keyType:T::class, %destinationType:T::class)$platformOverride)",
                     formatting,
                 )
                 else ->  environment.logger.error(
-                    "${destination.declaration.qualifiedName?.asString()} is not a valid enro3 class destination."
+                    "${destination.declaration.qualifiedName?.asString()} is not a valid enro class destination."
                 )
             }
             destination.isProperty -> addNamedCode(
-                "destination($destinationName)",
+                "destination($destinationName$platformOverride)",
                 formatting,
             )
             destination.isComposable -> addNamedCode(
-                "destination(navigationDestination<%keyType:T> { $destinationName() })",
+                "destination(navigationDestination<%keyType:T> { $destinationName() }$platformOverride)",
                 formatting,
             )
             else -> {

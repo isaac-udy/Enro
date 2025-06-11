@@ -81,17 +81,28 @@ public class NavigationContainer(
 
     // TODO Need to add documentation to explain what is accepted -> close/completes for instances in the backstack,
     //  or opens which are accepted by the filter
-    public fun accepts(operation: NavigationOperation): Boolean {
+    public fun accepts(fromContext: AnyNavigationContext, operation: NavigationOperation): Boolean {
         val operations = when(operation) {
             is NavigationOperation.AggregateOperation -> operation.operations
             is NavigationOperation.RootOperation -> listOf(operation)
         }
+
+        var isFromChild = false
+        var currentContext = fromContext as AnyNavigationContext
+        while (currentContext !is RootContext) {
+            isFromChild = currentContext is ContainerContext && currentContext.container.key == key
+            if (isFromChild) break
+            currentContext = currentContext.parent as AnyNavigationContext
+        }
+
         val ids = backstack.map { it.id }.toSet()
         operations.forEach {
             val isValid = when (it) {
                 is NavigationOperation.Close<*> -> ids.contains(it.instance.id)
                 is NavigationOperation.Complete<*> -> ids.contains(it.instance.id)
-                is NavigationOperation.Open<*> -> filter.accepts(it.instance)
+                is NavigationOperation.Open<*> -> {
+                    filter.accepts(it.instance) && (!filter.fromChildrenOnly || isFromChild)
+                }
                 is NavigationOperation.SideEffect -> true
             }
             if (!isValid) return false

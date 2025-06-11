@@ -6,6 +6,7 @@ import kotlin.jvm.JvmName
  * A NavigationContainerFilter is used to determine whether or not a given [NavigationKey.Instance] should be accepted by a [NavigationContainer] to be handled/displayed by that container.
  */
 public class NavigationContainerFilter internal constructor(
+    internal val fromChildrenOnly: Boolean = false,
     private val block: (NavigationKey.Instance<NavigationKey>) -> Boolean
 ) {
     // validates
@@ -48,11 +49,15 @@ public class NavigationContainerFilterBuilder internal constructor() {
      * Matches any instructions that match the provided predicate
      */
     public fun instance(predicate: (NavigationKey.Instance<NavigationKey>) -> Boolean) {
-        filters.add(NavigationContainerFilter(predicate))
+        filters.add(
+            NavigationContainerFilter(fromChildrenOnly = false, block = predicate)
+        )
     }
 
     internal fun build(): NavigationContainerFilter {
-        return NavigationContainerFilter { instruction ->
+        return NavigationContainerFilter(
+            fromChildrenOnly = false,
+        ) { instruction ->
             filters.any { it.accepts(instruction) }
         }
     }

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.EnroController
 
 public class RootContext(
+    override val id: String,
     override val parent: Any,
     override val controller: EnroController,
     lifecycleOwner: LifecycleOwner,
@@ -18,5 +19,4 @@ public class RootContext(
     ViewModelStoreOwner by viewModelStoreOwner,
     HasDefaultViewModelProviderFactory by defaultViewModelProviderFactory {
 
-    override val id: String = "Root"
 }

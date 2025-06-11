@@ -97,6 +97,8 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
             navigationHandle.bindContext(context)
             return@remember navigationHandle
         }
+        val isActiveInRoot = context.isActiveInRoot
+        val isFirstOpen = rememberSaveable { mutableStateOf(true) }
 
         // Provide navigation-specific composition locals
         CompositionLocalProvider(
@@ -104,6 +106,16 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
             LocalNavigationHandle provides navigationHandleHolder.navigationHandle,
         ) {
             destination.content()
+            DisposableEffect(isActiveInRoot) {
+                if (isFirstOpen.value) {
+                    context.controller.plugins.onOpened(navigationHandle)
+                }
+                isFirstOpen.value = false
+                if (isActiveInRoot) {
+                    context.controller.plugins.onActive(navigationHandle)
+                }
+                onDispose {}
+            }
         }
 
         // TODO this appears to work, but probably not ideal

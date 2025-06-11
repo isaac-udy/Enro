@@ -2,9 +2,10 @@ package dev.enro.result.flow
 
 import dev.enro.NavigationKey
 import dev.enro.annotations.AdvancedEnroApi
+import kotlin.jvm.JvmName
 
 @AdvancedEnroApi
-public class FlowStepActions<T : NavigationKey.WithResult<*>>(
+public class FlowStepActions<T : NavigationKey>(
     private val flow: NavigationFlow<*>,
     private val resultManager: FlowResultManager,
     private val step: FlowStep<out Any>,
@@ -63,12 +64,26 @@ public class FlowStepActions<T : NavigationKey.WithResult<*>>(
 }
 
 @AdvancedEnroApi
+@JvmName("getStepTyped")
 public inline fun <reified T : NavigationKey.WithResult<*>> NavigationFlow<*>.getStep(
     block: (T) -> Boolean = { true },
 ): FlowStepActions<T>? {
     return getSteps()
         .firstOrNull {
             it.key is T && block(it.key)
+        }
+        ?.let {
+            FlowStepActions(this, getResultManager(), it)
+        }
+}
+
+@AdvancedEnroApi
+public fun NavigationFlow<*>.getStep(
+    block: (NavigationKey) -> Boolean = { true },
+): FlowStepActions<NavigationKey>? {
+    return getSteps()
+        .firstOrNull {
+            block(it.key)
         }
         ?.let {
             FlowStepActions(this, getResultManager(), it)

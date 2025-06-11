@@ -38,6 +38,8 @@ import dev.enro.tests.application.compose.results.ComposeManagedResultsWithNeste
 import dev.enro.tests.application.compose.results.ComposeMixedResultTypes
 import dev.enro.tests.application.compose.results.ComposeNestedResults
 import dev.enro.tests.application.compose.results.ResultsWithMetadata
+import dev.enro.tests.application.samples.loan.CreateLoanApplication
+import dev.enro.tests.application.samples.recipes.RecipesHome
 import dev.enro.tests.application.serialization.CommonSerialization
 import dev.enro.tests.application.window.SimpleWindow
 import kotlinx.serialization.Serializable
@@ -60,6 +62,8 @@ internal class SelectDestination(
                 HorizontalPager,
                 ResultsWithMetadata,
                 SimpleWindow,
+                RecipesHome,
+                CreateLoanApplication
             )
 
             mutableStateOf(

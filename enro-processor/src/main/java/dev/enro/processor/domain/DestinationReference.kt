@@ -1,7 +1,6 @@
 package dev.enro.processor.domain
 
 import com.google.devtools.ksp.KspExperimental
-import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -11,9 +10,7 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.ksp.toAnnotationSpec
 import com.squareup.kotlinpoet.ksp.toClassName
-import dev.enro.annotations.NavigationDestination
 import dev.enro.processor.extensions.ClassNames
-import dev.enro.processor.extensions.getNameFromKClass
 
 @OptIn(KspExperimental::class)
 class DestinationReference(
@@ -37,7 +34,8 @@ class DestinationReference(
 
     val isProperty = declaration is KSPropertyDeclaration && run {
         val type = (declaration as KSPropertyDeclaration).type.resolve()
-        val providerType = resolver.getClassDeclarationByName("dev.enro.ui.NavigationDestinationProvider")!!.asStarProjectedType()
+        val providerType =
+            resolver.getClassDeclarationByName("dev.enro.ui.NavigationDestinationProvider")!!.asStarProjectedType()
         providerType.isAssignableFrom(type.starProjection())
     }
 
@@ -63,18 +61,39 @@ class DestinationReference(
             ?.resolve()
             ?.starProjection()
     }
-    
+
     val isFunction = declaration is KSFunctionDeclaration
 
     val isComposable = declaration is KSFunctionDeclaration && declaration.annotations
         .any { it.shortName.asString() == "Composable" }
 
-    val annotation = declaration.getAnnotationsByType(NavigationDestination::class)
-        .firstOrNull()
+    var isPlatformOverride = false
+        private set
+
+    val annotation = declaration
+        .annotations.firstOrNull {
+            val names = listOf("NavigationDestination", "PlatformOverride")
+            val isValid = it.shortName.getShortName() in names
+            if (!isValid) return@firstOrNull false
+            val qualifiedName = it.annotationType.resolve().declaration.qualifiedName?.asString()
+            if (qualifiedName == null) return@firstOrNull false
+            if (it.shortName.getShortName() == "PlatformOverride") {
+                isPlatformOverride = true
+            }
+            return@firstOrNull qualifiedName in listOf(
+                "dev.enro.annotations.NavigationDestination",
+                "dev.enro.annotations.NavigationDestination.PlatformOverride"
+            )
+        }
         ?: error("${declaration.simpleName} is not annotated with @NavigationDestination")
 
-    val keyType =
-        requireNotNull(resolver.getClassDeclarationByName(getNameFromKClass { annotation.key }))
+    val keyType: KSClassDeclaration = run {
+        requireNotNull(
+            annotation.arguments.first { it.name?.asString() == "key" }
+                .let { it.value as KSType }
+                .declaration as KSClassDeclaration
+        )
+    }
 
     val keyIsKotlinSerializable = keyType.annotations
         .any { it.toAnnotationSpec().typeName == ClassNames.Kotlin.kotlinxSerializable }
