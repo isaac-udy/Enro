@@ -4,10 +4,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.FrameWindowScope
 
 public fun createRootWindow(
+    windowConfiguration: RootWindow.() -> RootWindow.WindowConfiguration? = { null },
     content: @Composable RootWindowScope.() -> Unit,
 ): RootWindow {
     return object : RootWindow() {
         val self = this
+
+        init {
+            val windowConfiguration = windowConfiguration(this)
+            if (windowConfiguration != null) {
+                this.windowConfiguration = windowConfiguration
+            }
+        }
 
         @Composable
         override fun FrameWindowScope.Content() {
@@ -21,10 +29,14 @@ public fun createRootWindow(
     }
 }
 
-public class RootWindowScope internal constructor(
+public open class RootWindowScope internal constructor(
     private val rootWindow: RootWindow,
     private val frameWindowScope: FrameWindowScope,
 ) : FrameWindowScope by frameWindowScope {
+
+    public constructor(
+        rootWindow: RootWindowScope,
+    ) : this(rootWindow.rootWindow, rootWindow)
 
     public val backDispatcher: EnroBackDispatcher
         get() = rootWindow.backDispatcher

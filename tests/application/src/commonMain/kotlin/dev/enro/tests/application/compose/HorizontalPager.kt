@@ -48,7 +48,7 @@ fun HorizontalPagerCrossFadeScreen() {
     val parentContext = LocalNavigationContext.current
     val pageOne = rememberNavigationContainer(
         key = NavigationContainer.Key("Page One Container"),
-        backstack = listOf(HorizontalPager.PageTwo("Root").asInstance()),
+        backstack = listOf(HorizontalPager.PageOne("Root").asInstance()),
         filter = accept { key<HorizontalPager.PageOne>() }
     )
     val pageTwo = rememberNavigationContainer(

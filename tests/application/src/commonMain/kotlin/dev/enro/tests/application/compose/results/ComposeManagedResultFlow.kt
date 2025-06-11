@@ -35,7 +35,7 @@ import dev.enro.result.flow.requireStep
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.navigationDestination
-import dev.enro.ui.scenes.DirectOverlaySceneStrategy
+import dev.enro.ui.scenes.directOverlay
 import dev.enro.viewmodel.createEnroViewModel
 import dev.enro.withMetadata
 import kotlinx.serialization.Serializable
@@ -140,7 +140,7 @@ fun FirstResultScreen() {
 
 @NavigationDestination(ComposeManagedResultFlow.PresentedResult::class)
 internal val presentedResultScreen = navigationDestination<ComposeManagedResultFlow.PresentedResult>(
-    metadata = mapOf(DirectOverlaySceneStrategy.overlay())
+    metadata = { directOverlay() }
 ) {
     val navigation = navigationHandle<ComposeManagedResultFlow.PresentedResult>()
     Dialog(onDismissRequest = { navigation.close() }) {

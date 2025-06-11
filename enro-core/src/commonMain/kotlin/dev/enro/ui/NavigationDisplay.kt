@@ -8,15 +8,9 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.SeekableTransitionState
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -77,25 +71,7 @@ public fun NavigationDisplay(
     },
     contentAlignment: Alignment = Alignment.TopStart,
     sizeTransform: SizeTransform? = null,
-    transitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
-        ContentTransform(
-            targetContentEnter = fadeIn(spring(stiffness = Spring.StiffnessMedium)) + slideInHorizontally { it / 3 },
-            initialContentExit = slideOutHorizontally { -it / 4 },
-        )
-    },
-    popTransitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
-        ContentTransform(
-            targetContentEnter = slideInHorizontally { -it / 4 },
-            initialContentExit = fadeOut(spring(stiffness = Spring.StiffnessMedium)) + slideOutHorizontally { it / 3 },
-        )
-    },
-    predictivePopTransitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = popTransitionSpec,
-    containerTransitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
-        ContentTransform(
-            targetContentEnter = fadeIn(spring(stiffness = Spring.StiffnessMedium)),
-            initialContentExit = fadeOut(),
-        )
-    },
+    animations: NavigationAnimations = NavigationAnimations.Default,
 ) {
     DisposableEffect(state) {
         state.context.parent.registerVisibility(state.context, true)
@@ -117,6 +93,7 @@ public fun NavigationDisplay(
         sceneType = scene::class,
         key = scene.key,
         containerKey = state.container.key,
+        visible = scene.entries.map { it.instance },
     )
     sceneState.scenes[sceneKey] = scene
 
@@ -144,7 +121,6 @@ public fun NavigationDisplay(
             lastBackstackIds.value,
             currentBackstackIds
         )
-        println("isPop: $isPop $lastBackstackIds -> $currentBackstackIds")
         lastBackstackIds.value = currentBackstackIds
         return@remember isPop
     }
@@ -168,13 +144,13 @@ public fun NavigationDisplay(
     )
 
     // Select the appropriate transition spec based on navigation type
-    val contentTransform: AnimatedContentTransitionScope<SceneKey>.() -> ContentTransform = {
+    val contentTransform: AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform = {
         val isDifferentContainer = initialState.containerKey != targetState.containerKey
         when {
-            isDifferentContainer -> containerTransitionSpec(this)
-            state.inPredictiveBack -> predictivePopTransitionSpec(this)
-            isPop -> popTransitionSpec(this)
-            else -> transitionSpec(this)
+            isDifferentContainer -> animations.containerTransitionSpec(this)
+            state.inPredictiveBack -> animations.predictivePopTransitionSpec(this)
+            isPop -> animations.popTransitionSpec(this)
+            else -> animations.transitionSpec(this)
         }
     }
     // Render the navigation content
@@ -352,6 +328,11 @@ private fun HandlePredictiveBack(
     }
 }
 
+public interface SceneTransitionData {
+    public val containerKey: NavigationContainer.Key
+    public val visible: List<NavigationKey.Instance<NavigationKey>>
+}
+
 /**
  * A key that uniquely identifies a scene instance.
  * Combines the scene's type (KClass) with its instance key.
@@ -359,8 +340,9 @@ private fun HandlePredictiveBack(
 private data class SceneKey(
     val sceneType: KClass<*>,
     val key: Any,
-    val containerKey: NavigationContainer.Key,
-)
+    override val containerKey: NavigationContainer.Key,
+    override val visible: List<NavigationKey.Instance<NavigationKey>>,
+) : SceneTransitionData
 
 /**
  * Calculates which destinations should be rendered in each scene.
@@ -487,6 +469,7 @@ private fun TransitionAnimationEffect(
             sceneType = peekScene::class,
             key = peekScene.key,
             containerKey = state.key,
+            visible = peekScene.entries.map { it.instance },
         )
         scenes[peekSceneKey] = peekScene
 
@@ -551,7 +534,7 @@ private fun RenderMainContent(
     scenes: Map<SceneKey, NavigationScene>,
     sceneToRenderableDestinationMap: Map<SceneKey, Set<String>>,
     zIndices: Map<SceneKey, Float>,
-    contentTransform: AnimatedContentTransitionScope<SceneKey>.() -> ContentTransform,
+    contentTransform: AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform,
     contentAlignment: Alignment,
     modifier: Modifier,
     sizeTransform: SizeTransform?,

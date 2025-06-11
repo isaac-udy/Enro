@@ -28,16 +28,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.complete
 import dev.enro.navigationHandle
+import dev.enro.result.flow.NavigationFlowReference
 import dev.enro.result.flow.getNavigationFlow
 import dev.enro.result.flow.getStep
-import dev.enro.tests.application.samples.loan.GetLoanPurposeScreen
-import dev.enro.tests.application.samples.loan.GetRepaymentFrequencyScreen
-import dev.enro.tests.application.samples.loan.GetRepaymentTypeScreen
-import dev.enro.tests.application.samples.loan.LoanApplicationSummary
 import dev.enro.tests.application.samples.loan.domain.LoanApplication
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class LoanApplicationSummary(
+    val application: LoanApplication,
+    val flowReference: NavigationFlowReference,
+) : NavigationKey.WithResult<LoanApplication>
 
 @NavigationDestination(LoanApplicationSummary::class)
 @Composable

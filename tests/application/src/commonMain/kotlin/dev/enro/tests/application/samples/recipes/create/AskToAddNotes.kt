@@ -9,7 +9,7 @@ import dev.enro.close
 import dev.enro.complete
 import dev.enro.navigationHandle
 import dev.enro.ui.navigationDestination
-import dev.enro.ui.scenes.DirectOverlaySceneStrategy
+import dev.enro.ui.scenes.directOverlay
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -17,9 +17,9 @@ object AskToAddNotes : NavigationKey.WithResult<Boolean>
 
 @NavigationDestination(AskToAddNotes::class)
 val askToAddNotesDialog = navigationDestination<AskToAddNotes>(
-    metadata = mapOf(
-        DirectOverlaySceneStrategy.overlay()
-    )
+    metadata = {
+        directOverlay()
+    }
 ) {
     val navigation = navigationHandle<AskToAddNotes>()
 

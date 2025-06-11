@@ -9,7 +9,6 @@ import dev.enro.ui.LocalNavigationContainer
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
-import dev.enro.ui.scenes.DialogSceneStrategy.Companion.dialog
 
 /** An [NavigationScene.Overlay] that renders an [entry] within a [Dialog]. */
 internal class DialogScene(
@@ -69,8 +68,14 @@ public class DialogSceneStrategy : NavigationSceneStrategy {
          *
          * @param dialogProperties properties that should be passed to the containing [Dialog].
          */
-        public fun dialog(
+        public fun dialogMetadata(
             dialogProperties: DialogProperties = DialogProperties(),
         ): Pair<String, DialogProperties> = DialogPropertiesKey to dialogProperties
     }
+}
+
+public fun NavigationDestination.MetadataBuilder<*>.dialog(
+    dialogProperties: DialogProperties = DialogProperties(),
+) {
+    add(DialogSceneStrategy.dialogMetadata(dialogProperties))
 }

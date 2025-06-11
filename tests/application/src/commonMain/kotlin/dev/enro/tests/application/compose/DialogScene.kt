@@ -15,7 +15,7 @@ import dev.enro.close
 import dev.enro.complete
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.ui.navigationDestination
-import dev.enro.ui.scenes.DialogSceneStrategy
+import dev.enro.ui.scenes.dialog
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -23,9 +23,7 @@ object DialogScene : NavigationKey
 
 @NavigationDestination(DialogScene::class)
 val dialogScene = navigationDestination<DialogScene>(
-    metadata = mapOf(
-        DialogSceneStrategy.dialog()
-    )
+    metadata = { dialog() }
 ) {
     Card {
         TitledColumn(

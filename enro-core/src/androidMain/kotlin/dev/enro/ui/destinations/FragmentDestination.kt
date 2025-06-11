@@ -15,6 +15,7 @@ import androidx.fragment.compose.AndroidFragment
 import androidx.fragment.compose.rememberFragmentState
 import dev.enro.NavigationKey
 import dev.enro.platform.putNavigationKeyInstance
+import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.NavigationDestinationScope
 import dev.enro.ui.destinations.fragment.AndroidDialogFragment
@@ -25,7 +26,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
 public inline fun <reified T : NavigationKey, reified F : Fragment> fragmentDestination(
-    metadata: Map<String, Any> = emptyMap(),
+    noinline metadata: NavigationDestination.MetadataBuilder<T>.() -> Unit = {},
     noinline arguments: NavigationDestinationScope<T>.() -> Bundle = { Bundle() },
 ): NavigationDestinationProvider<T> {
     return fragmentDestination(
@@ -39,7 +40,7 @@ public inline fun <reified T : NavigationKey, reified F : Fragment> fragmentDest
 public fun <T : NavigationKey, F : Fragment> fragmentDestination(
     keyType: KClass<T>,
     fragmentType: KClass<F>,
-    metadata: Map<String, Any> = emptyMap(),
+    metadata: NavigationDestination.MetadataBuilder<T>.() -> Unit = {},
     arguments: NavigationDestinationScope<T>.() -> Bundle = { Bundle() },
 ): NavigationDestinationProvider<T> {
     return navigationDestination(metadata) {

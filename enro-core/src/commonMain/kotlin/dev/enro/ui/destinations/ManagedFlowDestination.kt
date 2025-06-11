@@ -65,7 +65,7 @@ public fun <T : NavigationKey, R : Any> managedFlowDestination(
     flow: NavigationFlowScope.() -> R,
     onCompleted: ManagedFlowDestinationScope<T>.(R) -> Unit,
 ): NavigationDestinationProvider<T> {
-    return navigationDestination(emptyMap()) {
+    return navigationDestination {
         ManagedFlowDestinationContent(
             keyType = keyType,
             flow = flow,
@@ -79,7 +79,7 @@ public fun <T : NavigationKey.WithResult<R>, R : Any> managedFlowDestination(
     keyType: KClass<out NavigationKey.WithResult<R>>,
     flow: NavigationFlowScope.() -> R,
 ): NavigationDestinationProvider<T> {
-    return navigationDestination(emptyMap()) {
+    return navigationDestination {
         ManagedFlowDestinationContent(
             keyType = keyType,
             flow = flow,

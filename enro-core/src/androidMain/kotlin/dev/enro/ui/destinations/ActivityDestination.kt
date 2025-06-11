@@ -17,14 +17,16 @@ import dev.enro.navigationHandle
 import dev.enro.platform.getNavigationKeyInstance
 import dev.enro.platform.isResultFromEnro
 import dev.enro.platform.putNavigationKeyInstance
+import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.navigationDestination
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
+import dev.enro.ui.scenes.directOverlay
 import kotlinx.coroutines.delay
 import kotlin.reflect.KClass
 
 public inline fun <reified T : NavigationKey, reified A : Activity> activityDestination(
-    metadata: Map<String, Any> = emptyMap(),
+    metadata: NavigationDestination.MetadataBuilder<T>.() -> Unit = {},
 ): NavigationDestinationProvider<T> {
     return activityDestination(T::class, A::class, metadata)
 }
@@ -32,10 +34,13 @@ public inline fun <reified T : NavigationKey, reified A : Activity> activityDest
 public fun <T : NavigationKey, A : Activity> activityDestination(
     keyType: KClass<T>,
     activityType: KClass<A>,
-    metadata: Map<String, Any> = emptyMap(),
+    metadata: NavigationDestination.MetadataBuilder<T>.() -> Unit = {},
 ): NavigationDestinationProvider<T> {
     return navigationDestination(
-        metadata + mapOf(DirectOverlaySceneStrategy.overlay()),
+        metadata = {
+            metadata.invoke(this)
+            directOverlay()
+        }
     ) {
         val navigation = navigationHandle(keyType)
         val context = LocalContext.current

@@ -10,13 +10,17 @@ import dev.enro.NavigationKey
 import dev.enro.navigationHandle
 
 public open class NavigationDestinationProvider<T : NavigationKey>(
-    public val metadata: Map<String, Any> = emptyMap(),
+    private val metadata:  NavigationDestination.MetadataBuilder<T>.() -> Unit = {},
     private val content: @Composable NavigationDestinationScope<T>.() -> Unit,
 ) {
+    public fun peekMetadata(instance: NavigationKey.Instance<T>): Map<String, Any> {
+        return NavigationDestination.MetadataBuilder(instance).apply(metadata).build()
+    }
+
     public fun create(instance: NavigationKey.Instance<T>): NavigationDestination<T> {
         return NavigationDestination.create(
             instance = instance,
-            metadata = metadata,
+            metadata = NavigationDestination.MetadataBuilder(instance).apply(metadata).build(),
             content = content,
         )
     }
@@ -30,6 +34,27 @@ public data class NavigationDestination<out T : NavigationKey> private construct
 ) {
     public val id: String get() = instance.id
     public val key: T get() = instance.key
+
+    public class MetadataBuilder<T : NavigationKey> internal constructor(
+        public val instance: NavigationKey.Instance<T>,
+    ) {
+        public val key: T get() = instance.key
+
+        private val builder: MutableMap<String, Any> = mutableMapOf()
+
+        public fun add(key: String, value: Any) {
+            builder[key] = value
+        }
+        public fun add(metadata: Pair<String, Any>) {
+            builder[metadata.first] = metadata.second
+        }
+
+        public fun addAll(metadata: Map<String, Any>) {
+            builder.putAll(metadata)
+        }
+
+        internal fun build(): Map<String, Any> = builder.toMap()
+    }
 
     public companion object {
         @OptIn(ExperimentalSharedTransitionApi::class)
@@ -87,8 +112,8 @@ public class NavigationDestinationScope<T : NavigationKey>(
 // We probably want to get rid of push/present and let scenes handle those
 
 public fun <T: NavigationKey> navigationDestination(
-    metadata: Map<String, Any> = emptyMap(),
-    content: @Composable NavigationDestinationScope<T>.() -> Unit
+    metadata: NavigationDestination.MetadataBuilder<T>.() -> Unit = { },
+    content: @Composable NavigationDestinationScope<T>.() -> Unit,
 ): NavigationDestinationProvider<T> {
     return NavigationDestinationProvider(metadata, content)
 }

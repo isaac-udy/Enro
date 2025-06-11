@@ -23,13 +23,13 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.close
 import dev.enro.complete
 import dev.enro.ui.navigationDestination
-import dev.enro.ui.scenes.DirectOverlaySceneStrategy
+import dev.enro.ui.scenes.directOverlay
 
 @NavigationDestination.PlatformOverride(ComposeManagedResultFlow.PresentedResult::class)
 internal val presentedResultScreenForDesktop = navigationDestination<ComposeManagedResultFlow.PresentedResult>(
-    metadata = mapOf(
-        DirectOverlaySceneStrategy.overlay()
-    )
+    metadata = {
+        directOverlay()
+    }
 ) {
     val targetAlpha = remember { mutableFloatStateOf(0f) }
     Box(

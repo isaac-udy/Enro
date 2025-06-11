@@ -7,6 +7,7 @@ import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.context.RootContext
 import dev.enro.interceptor.NavigationInterceptor
+import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.navigationDestination
 
@@ -24,10 +25,11 @@ internal class SyntheticDestination<K : NavigationKey>(
             ): NavigationOperation? {
                 val controller = fromContext.controller
                 val bindings = controller.bindings.bindingFor(instance = operation.instance)
-                if (bindings.provider.metadata[SyntheticDestinationKey] == null) return operation
+                val syntheticDestination = bindings.provider.peekMetadata(operation.instance)[SyntheticDestinationKey]
+                if (syntheticDestination == null) return operation
 
                 @Suppress("UNCHECKED_CAST")
-                val synthetic = requireNotNull(bindings.provider.metadata[SyntheticDestinationKey]) as SyntheticDestination<NavigationKey>
+                val synthetic = requireNotNull(syntheticDestination) as SyntheticDestination<NavigationKey>
                 // TODO! Make the synthetic execute in-line during the transition???
                 return NavigationOperation.SideEffect{
                     synthetic.block(
@@ -57,11 +59,14 @@ public class SyntheticDestinationScope<K : NavigationKey>(
 }
 
 public fun <K : NavigationKey> syntheticDestination(
-    metadata: Map<String, Any> = emptyMap(),
+    metadata: NavigationDestination.MetadataBuilder<K>.() -> Unit = {},
     block: SyntheticDestinationScope<K>.() -> Unit
 ) : NavigationDestinationProvider<K> {
     return navigationDestination(
-        metadata = metadata + (SyntheticDestination.SyntheticDestinationKey to SyntheticDestination(block))
+        metadata = {
+            metadata.invoke(this)
+            add(SyntheticDestination.SyntheticDestinationKey to SyntheticDestination(block))
+        }
     ) {
         error("SyntheticDestination with NavigationKey ${navigation.key::class.simpleName} was rendered; SyntheticDestinations should never end up in the Composition. Something is going wrong.")
     }

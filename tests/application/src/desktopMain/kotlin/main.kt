@@ -15,11 +15,11 @@ import dev.enro.controller.NavigationComponentConfiguration
 import dev.enro.desktop.RootWindow
 import dev.enro.desktop.openWindow
 import dev.enro.tests.application.SelectDestination
-import dev.enro.tests.application.samples.loan.LoanPurposeOption
-import dev.enro.tests.application.samples.loan.PropertyPurposeOption
-import dev.enro.tests.application.samples.loan.RepaymentFrequencyOption
-import dev.enro.tests.application.samples.loan.RepaymentTypeOption
+import dev.enro.tests.application.samples.loan.ui.LoanPurposeOption
 import dev.enro.tests.application.samples.loan.ui.OwnershipOption
+import dev.enro.tests.application.samples.loan.ui.PropertyPurposeOption
+import dev.enro.tests.application.samples.loan.ui.RepaymentFrequencyOption
+import dev.enro.tests.application.samples.loan.ui.RepaymentTypeOption
 import dev.enro.ui.EnroApplicationContent
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer

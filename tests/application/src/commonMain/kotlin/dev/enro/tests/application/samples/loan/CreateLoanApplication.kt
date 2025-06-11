@@ -27,16 +27,23 @@ import dev.enro.NavigationOperation
 import dev.enro.annotations.NavigationDestination
 import dev.enro.complete
 import dev.enro.navigationHandle
-import dev.enro.result.flow.NavigationFlowReference
 import dev.enro.result.flow.registerForFlowResult
 import dev.enro.result.flow.rememberNavigationContainerForFlow
 import dev.enro.tests.application.samples.loan.domain.LoanApplication
 import dev.enro.tests.application.samples.loan.ui.GetLoanAmount
+import dev.enro.tests.application.samples.loan.ui.GetLoanPurposeScreen
 import dev.enro.tests.application.samples.loan.ui.GetLoanTerm
 import dev.enro.tests.application.samples.loan.ui.GetOtherApplicants
 import dev.enro.tests.application.samples.loan.ui.GetPrimaryApplicantInfo
-import dev.enro.tests.application.samples.loan.ui.MultiChoiceDestination
+import dev.enro.tests.application.samples.loan.ui.GetPropertyPurposeScreen
+import dev.enro.tests.application.samples.loan.ui.GetRepaymentFrequencyScreen
+import dev.enro.tests.application.samples.loan.ui.GetRepaymentTypeScreen
+import dev.enro.tests.application.samples.loan.ui.LoanApplicationSummary
+import dev.enro.tests.application.samples.loan.ui.LoanPurposeOption
 import dev.enro.tests.application.samples.loan.ui.OwnershipOption
+import dev.enro.tests.application.samples.loan.ui.PropertyPurposeOption
+import dev.enro.tests.application.samples.loan.ui.RepaymentFrequencyOption
+import dev.enro.tests.application.samples.loan.ui.RepaymentTypeOption
 import dev.enro.tests.application.samples.loan.ui.SelectOwnershipType
 import dev.enro.ui.NavigationDisplay
 import dev.enro.viewmodel.createEnroViewModel
@@ -44,106 +51,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 object CreateLoanApplication : NavigationKey.WithResult<LoanApplication>
-
-@Serializable
-data class LoanApplicationSummary(
-    val application: LoanApplication,
-    val flowReference: NavigationFlowReference,
-) : NavigationKey.WithResult<LoanApplication>
-
-@Serializable
-sealed class RepaymentFrequencyOption : MultiChoiceDestination.Item() {
-    @Serializable
-    class Fortnightly : RepaymentFrequencyOption() {
-        override val title: String = "Fortnightly"
-    }
-
-    @Serializable
-    class Monthly : RepaymentFrequencyOption() {
-        override val title: String = "Monthly"
-    }
-
-    @Serializable
-    class Quarterly : RepaymentFrequencyOption() {
-        override val title: String = "Quarterly"
-    }
-}
-
-@Serializable
-sealed class LoanPurposeOption : MultiChoiceDestination.Item() {
-    @Serializable
-    class Car : LoanPurposeOption() {
-        override val title: String = "Car"
-    }
-
-    @Serializable
-    class Property : LoanPurposeOption() {
-        override val title: String = "Property"
-    }
-}
-
-@Serializable
-sealed class PropertyPurposeOption : MultiChoiceDestination.Item() {
-    @Serializable
-    class Investment : PropertyPurposeOption() {
-        override val title: String = "Investment"
-    }
-
-    @Serializable
-    class OwnerOccupied : PropertyPurposeOption() {
-        override val title: String = "Owner Occupied"
-    }
-}
-
-@Serializable
-sealed class RepaymentTypeOption : MultiChoiceDestination.Item() {
-    @Serializable
-    class PrincipalAndInterest : RepaymentTypeOption() {
-        override val title: String = "Principal and Interest"
-    }
-
-    @Serializable
-    class InterestOnly : RepaymentTypeOption() {
-        override val title: String = "Interest Only"
-    }
-}
-
-val GetRepaymentFrequencyScreen = MultiChoiceDestination(
-    title = "Payment schedule",
-    subtitle = "How often would you like to make payments?",
-    items = listOf(
-        RepaymentFrequencyOption.Fortnightly(),
-        RepaymentFrequencyOption.Monthly(),
-        RepaymentFrequencyOption.Quarterly()
-    )
-)
-
-val GetLoanPurposeScreen = MultiChoiceDestination(
-    title = "What's it for?",
-    subtitle = "What are you planning to use this loan for?",
-    items = listOf(
-        LoanPurposeOption.Car(),
-        LoanPurposeOption.Property()
-    )
-)
-
-val GetPropertyPurposeScreen = MultiChoiceDestination(
-    title = "Property type",
-    subtitle = "Will you live in it or rent it out?",
-    items = listOf(
-        PropertyPurposeOption.Investment(),
-        PropertyPurposeOption.OwnerOccupied()
-    )
-)
-
-val GetRepaymentTypeScreen = MultiChoiceDestination(
-    title = "Repayment style",
-    subtitle = "How would you like to structure your repayments?",
-    items = listOf(
-        RepaymentTypeOption.PrincipalAndInterest(),
-        RepaymentTypeOption.InterestOnly()
-    )
-)
 
 class LoanApplicationFlowViewModel : ViewModel() {
     private val navigation by navigationHandle<CreateLoanApplication>()
@@ -268,11 +175,11 @@ fun CreateLoanApplicationScreen() {
 
 @Composable
 private fun progressForBackstack(
-    backstack: NavigationBackstack
+    backstack: NavigationBackstack,
 ): Float {
     val top = backstack.lastOrNull()
     val progress = remember { mutableStateOf(0f) }
-    val updatedProgress = when(top?.key) {
+    val updatedProgress = when (top?.key) {
         GetPrimaryApplicantInfo -> 0f
         SelectOwnershipType -> 0.2f
         GetOtherApplicants -> 0.3f

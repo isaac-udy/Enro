@@ -72,3 +72,7 @@ public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
         public fun overlay(): Pair<String, Unit> = DirectOverlayKey to Unit
     }
 }
+
+public fun NavigationDestination.MetadataBuilder<*>.directOverlay() {
+    add(DirectOverlaySceneStrategy.overlay())
+}

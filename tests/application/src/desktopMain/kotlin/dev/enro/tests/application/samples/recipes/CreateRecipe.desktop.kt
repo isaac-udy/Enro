@@ -5,13 +5,13 @@ import androidx.compose.ui.window.Window
 import dev.enro.annotations.NavigationDestination
 import dev.enro.close
 import dev.enro.ui.navigationDestination
-import dev.enro.ui.scenes.DirectOverlaySceneStrategy
+import dev.enro.ui.scenes.directOverlay
 
 @NavigationDestination.PlatformOverride(CreateRecipe::class)
 val createRecipeDesktopDestination = navigationDestination<CreateRecipe>(
-    metadata = mapOf(
-        DirectOverlaySceneStrategy.overlay()
-    )
+    metadata = {
+        directOverlay()
+    }
 ) {
     val destination = remember { createRecipeDestination.create(navigation.instance) }
     Window(

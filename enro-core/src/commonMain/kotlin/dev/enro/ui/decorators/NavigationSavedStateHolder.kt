@@ -146,6 +146,10 @@ public class NavigationSavedStateHolder(
         }
         savedStateRegistryMap.remove(destinationId)
         saveableStateRegistryMap.remove(destinationId)
+        savedState.write {
+            remove(destinationId+"_saved")
+            remove(destinationId+"_saveable")
+        }
     }
 
     /**
