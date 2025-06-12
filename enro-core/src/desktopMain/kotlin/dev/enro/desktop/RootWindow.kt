@@ -34,7 +34,6 @@ import dev.enro.asInstance
 import dev.enro.context.RootContext
 import dev.enro.handle.RootNavigationHandle
 import dev.enro.handle.getOrCreateNavigationHandleHolder
-import dev.enro.platform.EnroLog
 import dev.enro.ui.LocalNavigationHandle
 import dev.enro.ui.LocalRootContext
 import kotlinx.serialization.Serializable
@@ -93,7 +92,7 @@ public open class RootWindow(
     private val activeChildId = mutableStateOf<String?>(null)
 
     public val context: RootContext = RootContext(
-        id = (this::class.qualifiedName ?: "UnkownRootWindow") + "$@${hashCode()}",
+        id = (this::class.qualifiedName ?: "RootWindow") + "$@${hashCode()}",
         parent = this,
         controller = controller,
         lifecycleOwner = this,
@@ -120,8 +119,6 @@ public open class RootWindow(
                             val navigationHandle = RootNavigationHandle(instance)
                             holder.navigationHandle = navigationHandle
                             navigationHandle.bindContext(context)
-
-                            EnroLog.error("Created RootNavigationHandle in $context")
                             holder.navigationHandle
                         }
 

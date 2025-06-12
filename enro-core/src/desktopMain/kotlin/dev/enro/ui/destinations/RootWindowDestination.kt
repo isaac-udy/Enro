@@ -1,12 +1,14 @@
 package dev.enro.ui.destinations
 
 import androidx.compose.runtime.Composable
+import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.context.RootContext
 import dev.enro.desktop.RootWindow
 import dev.enro.desktop.RootWindowScope
 import dev.enro.desktop.createRootWindow
 import dev.enro.desktop.openWindow
+import dev.enro.navigationHandle
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.navigationDestination
 import kotlin.reflect.KClass
@@ -38,7 +40,7 @@ public object RootWindowDestination {
                 windowConfiguration = windowConfiguration,
             ) {
                 RootWindowDestinationScope(
-                    instance = instance,
+                    navigation = navigationHandle<NavigationKey>(),
                     rootWindowScope = this,
                 ).content()
             }
@@ -76,9 +78,10 @@ public fun <T : NavigationKey> rootWindowDestination(
 }
 
 public class RootWindowDestinationScope<T : NavigationKey>(
-    public val instance: NavigationKey.Instance<T>,
+    public val navigation: NavigationHandle<T>,
     private val rootWindowScope: RootWindowScope,
 ) : RootWindowScope(rootWindowScope) {
+    public val instance: NavigationKey.Instance<T> get() = navigation.instance
     public val key: T get() = instance.key
     public val id: String get() = instance.id
 }

@@ -37,7 +37,6 @@ internal fun <T : DialogFragment> AndroidDialogFragment(
     val context = LocalContext.current
     DisposableEffect(fragmentManager, clazz, fragmentState) {
         var removeEvenIfStateIsSaved = false
-        EnroLog.error("Adding with current state ${fragmentManager.findFragmentByTag(tag)}")
         val fragment = fragmentManager.findFragmentByTag(tag)
             ?: fragmentManager.fragmentFactory
                 .instantiate(context.classLoader, clazz.name)
@@ -74,7 +73,6 @@ internal fun <T : DialogFragment> AndroidDialogFragment(
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         onDispose {
             val state = fragmentManager.saveFragmentInstanceState(fragment)
-            EnroLog.error("Removing with current state ${fragment}")
             fragmentState.state.value = state
             if (removeEvenIfStateIsSaved) {
                 // The Fragment was added when the state was saved and
