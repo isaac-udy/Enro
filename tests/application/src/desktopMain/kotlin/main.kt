@@ -9,24 +9,15 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.application
-import dev.enro.annotations.NavigationComponent
 import dev.enro.asInstance
-import dev.enro.controller.NavigationComponentConfiguration
 import dev.enro.desktop.RootWindow
 import dev.enro.desktop.openWindow
 import dev.enro.tests.application.SelectDestination
 import dev.enro.tests.application.TestApplicationComponent
-import dev.enro.tests.application.samples.loan.ui.LoanPurposeOption
-import dev.enro.tests.application.samples.loan.ui.OwnershipOption
-import dev.enro.tests.application.samples.loan.ui.PropertyPurposeOption
-import dev.enro.tests.application.samples.loan.ui.RepaymentFrequencyOption
-import dev.enro.tests.application.samples.loan.ui.RepaymentTypeOption
+import dev.enro.tests.application.installNavigationController
 import dev.enro.ui.EnroApplicationContent
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 
 fun main() {
     val controller = TestApplicationComponent.installNavigationController(Unit)

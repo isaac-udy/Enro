@@ -31,7 +31,6 @@ class TestApplication : Application() {
             BottomSheetCloseAndPresent,
             CloseLandingPageAndPresent,
             ComposeAnimations,
-            ComposeEmbeddedResultFlow,
             ComposeSavePrimitives,
             ComposeStability,
             EmbeddedDestination,

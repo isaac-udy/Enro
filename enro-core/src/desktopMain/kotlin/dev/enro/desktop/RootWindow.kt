@@ -29,11 +29,21 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.EnroController
+import dev.enro.NavigationKey
+import dev.enro.asInstance
 import dev.enro.context.RootContext
+import dev.enro.handle.RootNavigationHandle
+import dev.enro.handle.getOrCreateNavigationHandleHolder
+import dev.enro.platform.EnroLog
+import dev.enro.ui.LocalNavigationHandle
 import dev.enro.ui.LocalRootContext
+import kotlinx.serialization.Serializable
 
+// TODO need to make RootWindow accept NavigationKey type as generic arg?
 @Stable
-public open class RootWindow() : LifecycleOwner,
+public open class RootWindow(
+    private val instance: NavigationKey.Instance<NavigationKey>? = null
+) : LifecycleOwner,
     ViewModelStoreOwner,
     HasDefaultViewModelProviderFactory {
 
@@ -56,7 +66,12 @@ public open class RootWindow() : LifecycleOwner,
         get() = lifecycleRegistry
 
     private var windowViewModelStoreOwner: ViewModelStoreOwner? = null
-    override val viewModelStore: ViewModelStore = ViewModelStore()
+    override val viewModelStore: ViewModelStore
+        get() {
+            return requireNotNull(windowViewModelStoreOwner) {
+                "windowViewModelStoreOwner has not been initialized yet"
+            }.viewModelStore
+        }
     override val defaultViewModelCreationExtras: CreationExtras
         get() {
             val windowViewModelStoreOwner = requireNotNull(windowViewModelStoreOwner) {
@@ -93,17 +108,27 @@ public open class RootWindow() : LifecycleOwner,
             if (controller.rootContextRegistry.getAllContexts().contains(context)) {
                 val movableContent = remember {
                     movableContentOf { windowScope: FrameWindowScope ->
-                        windowViewModelStoreOwner = LocalViewModelStoreOwner.current
-                        val localLifecycleState = LocalLifecycleOwner.current
-                            .lifecycle
-                            .currentStateFlow
-                            .collectAsState()
-                            .value
-                        lifecycleRegistry.currentState = localLifecycleState
+                        val viewModelStoreOwner = LocalViewModelStoreOwner.current
+                        requireNotNull(viewModelStoreOwner) {
+                            "No ViewModelStoreOwner was provided for the RootWindow."
+                        }
+                        windowViewModelStoreOwner = viewModelStoreOwner
+                        // Get or create the NavigationHandleHolder for this destination
+                        val navigationHandle = remember(viewModelStoreOwner) {
+                            val instance = instance ?: DefaultRootWindowNavigationKey.asInstance()
+                            val holder = viewModelStoreOwner.getOrCreateNavigationHandleHolder(instance)
+                            val navigationHandle = RootNavigationHandle(instance)
+                            holder.navigationHandle = navigationHandle
+                            navigationHandle.bindContext(context)
+
+                            EnroLog.error("Created RootNavigationHandle in $context")
+                            holder.navigationHandle
+                        }
 
                         CompositionLocalProvider(
                             LocalRootContext provides context,
                             LocalBackGestureDispatcher provides backDispatcher,
+                            LocalNavigationHandle provides navigationHandle,
                         ) {
                             windowScope.Content()
                         }
@@ -124,6 +149,14 @@ public open class RootWindow() : LifecycleOwner,
                     onKeyEvent = windowConfiguration.onKeyEvent,
                     onCloseRequest = windowConfiguration.onCloseRequest,
                 ) {
+                    val localLifecycleState = LocalLifecycleOwner.current
+                        .lifecycle
+                        .currentStateFlow
+                        .collectAsState()
+                        .value
+
+                    lifecycleRegistry.currentState = localLifecycleState
+
                     movableContent.invoke(this)
                 }
 
@@ -165,3 +198,6 @@ public open class RootWindow() : LifecycleOwner,
         val onCloseRequest: () -> Unit,
     )
 }
+
+@Serializable
+internal object DefaultRootWindowNavigationKey : NavigationKey

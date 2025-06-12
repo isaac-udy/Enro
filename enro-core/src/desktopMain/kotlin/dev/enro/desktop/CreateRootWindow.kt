@@ -2,12 +2,14 @@ package dev.enro.desktop
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.FrameWindowScope
+import dev.enro.NavigationKey
 
-public fun createRootWindow(
+public fun <T: NavigationKey> createRootWindow(
+    instance: NavigationKey.Instance<T>,
     windowConfiguration: RootWindow.() -> RootWindow.WindowConfiguration? = { null },
     content: @Composable RootWindowScope.() -> Unit,
 ): RootWindow {
-    return object : RootWindow() {
+    return object : RootWindow(instance) {
         val self = this
 
         init {

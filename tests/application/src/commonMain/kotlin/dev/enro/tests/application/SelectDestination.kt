@@ -33,6 +33,7 @@ import dev.enro.tests.application.compose.ComposeSharedElementTransitions
 import dev.enro.tests.application.compose.DialogScene
 import dev.enro.tests.application.compose.HorizontalPager
 import dev.enro.tests.application.compose.results.ComposeAsyncManagedResultFlow
+import dev.enro.tests.application.compose.results.ComposeEmbeddedResultFlow
 import dev.enro.tests.application.compose.results.ComposeManagedResultFlow
 import dev.enro.tests.application.compose.results.ComposeManagedResultsWithNestedFlowAndEmptyRoot
 import dev.enro.tests.application.compose.results.ComposeMixedResultTypes
@@ -53,6 +54,7 @@ internal class SelectDestination(
             val commonDestinations = listOf<NavigationKey>(
                 CommonSerialization,
                 ComposeAsyncManagedResultFlow,
+                ComposeEmbeddedResultFlow,
                 ComposeManagedResultFlow,
                 ComposeManagedResultsWithNestedFlowAndEmptyRoot,
                 ComposeMixedResultTypes,
