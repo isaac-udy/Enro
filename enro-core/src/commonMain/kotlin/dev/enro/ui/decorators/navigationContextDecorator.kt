@@ -11,14 +11,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
-import dev.enro.handle.NavigationHandleHolder
-import dev.enro.handle.NavigationHandleImpl
-import dev.enro.result.NavigationResult
+import dev.enro.handle.DestinationNavigationHandle
+import dev.enro.handle.getOrCreateNavigationHandleHolder
 import dev.enro.result.NavigationResultChannel
 import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.LocalNavigationHandle
@@ -63,11 +61,8 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
         }
 
         // Get or create the NavigationHandleHolder for this destination
-        @Suppress("UNCHECKED_CAST")
-        val navigationHandleHolder = viewModel<NavigationHandleHolder<NavigationKey>>(
-            viewModelStoreOwner = viewModelStoreOwner,
-        ) {
-            NavigationHandleHolder(instance = destination.instance as NavigationKey.Instance<NavigationKey>)
+        val navigationHandleHolder = remember(viewModelStoreOwner) {
+            viewModelStoreOwner.getOrCreateNavigationHandleHolder(destination.instance)
         }
 
         val activeContainerId = rememberSaveable { mutableStateOf<String?>(null) }
@@ -93,7 +88,7 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
 
         val navigationHandle = remember(navigationHandleHolder){
             val navigationHandle = navigationHandleHolder.navigationHandle
-            require(navigationHandle is NavigationHandleImpl<NavigationKey>)
+            require(navigationHandle is DestinationNavigationHandle<NavigationKey>)
             navigationHandle.bindContext(context)
             return@remember navigationHandle
         }
@@ -121,8 +116,7 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
         // TODO this appears to work, but probably not ideal
         DisposableEffect(LocalLifecycleOwner.current.lifecycle.currentStateAsState().value == Lifecycle.State.RESUMED) {
             val resultId = destination.instance.metadata.get(NavigationResultChannel.ResultIdKey)
-            val pendingResults = NavigationResultChannel.pendingResults.value
-            if (resultId != null && pendingResults[resultId] is NavigationResult.Completed<*>) {
+            if (resultId != null && NavigationResultChannel.hasCompletedResultFor(destination.instance)) {
                 context.parent.container.setBackstackDirect(
                     context.parent.container.backstack.filter {
                         it.metadata.get(NavigationResultChannel.ResultIdKey) != resultId

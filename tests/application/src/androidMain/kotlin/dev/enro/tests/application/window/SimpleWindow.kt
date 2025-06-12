@@ -15,11 +15,12 @@ import dev.enro.tests.application.compose.common.TitledColumn
 
 @NavigationDestination(SimpleWindow::class)
 class SimpleWindowActivity : ComponentActivity() {
+    private val navigation by navigationHandle<NavigationKey>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            val navigation = navigationHandle<NavigationKey>()
             TitledColumn(title = "Simple Window") {
                 Button(onClick = { navigation.requestClose() }) {
                     Text(text = "Close Window")

@@ -9,12 +9,19 @@ import dev.enro.result.NavigationResultChannel.ResultIdKey
 import dev.enro.withMetadata
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.take
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
@@ -37,9 +44,9 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
 
     internal object ResultIdKey : NavigationKey.MetadataKey<Id?>(null)
 
-//    @PublishedApi
+    //    @PublishedApi
     public companion object {
-//        @PublishedApi
+        //        @PublishedApi
         public val pendingResults: MutableStateFlow<Map<Id, NavigationResult<*>>> = MutableStateFlow(emptyMap())
 
         @PublishedApi
@@ -49,7 +56,7 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
         internal inline fun <reified T : Any> observe(
             scope: CoroutineScope,
             resultChannel: NavigationResultChannel<T>,
-        ) : Job {
+        ): Job {
             return observe(T::class, scope, resultChannel)
         }
 
@@ -58,7 +65,7 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
             resultType: KClass<T>,
             scope: CoroutineScope,
             resultChannel: NavigationResultChannel<T>,
-        ) : Job {
+        ): Job {
             return pendingResults
                 .onStart {
                     require(!activeChannels.contains(resultChannel.id)) {
@@ -69,6 +76,7 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
                 .map { pendingResults ->
                     resultChannel.id to pendingResults[resultChannel.id]
                 }
+                .distinctUntilChanged()
                 .onEach { (id, result) ->
                     if (result == null) return@onEach
 
@@ -104,6 +112,38 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
                 return
             }
             pendingResults.value += resultId to result
+        }
+
+        internal fun hasCompletedResultFor(
+            instance: NavigationKey.Instance<*>,
+        ): Boolean {
+            val resultId = instance.metadata.get(ResultIdKey)
+            val pendingResults = pendingResults.value
+            return resultId != null && pendingResults[resultId] is NavigationResult.Completed<*>
+        }
+
+        // Returns a flow that will emit a single Unit value whenever a
+        // NavigationResult.Completed is registered for the resultId associated with the
+        // NavigationKey.Instance passed as a parameter, but only if the result did not
+        // come from the instance itself (i.e. it launched another destination
+        // as completeFrom, and that destination returned a result)
+        internal fun completedFromSignalFor(
+            instance: NavigationKey.Instance<*>,
+        ): Flow<Unit> {
+            val resultId = instance.metadata.get(ResultIdKey)
+            if (resultId == null) return emptyFlow()
+            return pendingResults
+                .mapNotNull { pendingResults ->
+                    pendingResults[resultId]
+                }
+                .distinctUntilChanged()
+                .filterIsInstance<NavigationResult.Completed<NavigationKey>>()
+                .distinctUntilChanged()
+                .filter {
+                    it.instance.id != instance.id
+                }
+                .map { }
+                .take(1)
         }
     }
 }

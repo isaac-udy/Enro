@@ -29,13 +29,9 @@ import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.closeWithResult
 import dev.enro.core.compose.dialog.DialogDestination
-import dev.enro.core.compose.navigationHandle
-import dev.enro.core.navigationHandle
 import dev.enro.core.present
 import dev.enro.core.result.registerForNavigationResult
-import dev.enro.platform.close
-import dev.enro.platform.complete
-import dev.enro.platform.navigationHandle
+import dev.enro.navigationHandle
 import dev.enro.tests.application.R
 import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.ui.NavigationDisplay
@@ -335,7 +331,7 @@ class FragmentPresentationActivityPresentableActivity : androidx.appcompat.app.A
         layout.addView(Button(this).apply {
             text = "Close With Result"
             setOnClickListener {
-                navigation.complete(FragmentPresentation.TestResult())
+                navigation.closeWithResult(FragmentPresentation.TestResult())
             }
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,

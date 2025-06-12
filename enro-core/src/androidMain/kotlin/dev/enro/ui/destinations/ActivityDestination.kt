@@ -3,24 +3,11 @@ package dev.enro.ui.destinations
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.platform.LocalContext
 import dev.enro.NavigationKey
-import dev.enro.NavigationOperation
-import dev.enro.close
-import dev.enro.complete
-import dev.enro.navigationHandle
 import dev.enro.platform.getNavigationKeyInstance
-import dev.enro.platform.isResultFromEnro
 import dev.enro.platform.putNavigationKeyInstance
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.navigationDestination
-import dev.enro.ui.scenes.directOverlay
-import kotlinx.coroutines.delay
 import kotlin.reflect.KClass
 
 public inline fun <reified T : NavigationKey, reified A : Activity> activityDestination(): NavigationDestinationProvider<T> {
@@ -33,48 +20,15 @@ public fun <T : NavigationKey, A : Activity> activityDestination(
 ): NavigationDestinationProvider<T> {
     return navigationDestination(
         metadata = {
-            directOverlay()
+            add(ActivityTypeKey to activityType)
+            rootContextDestination()
         }
     ) {
-        val navigation = navigationHandle(keyType)
-        val context = LocalContext.current
-
-        val wasLaunched = rememberSaveable {
-            mutableStateOf(false)
-        }
-
-        val launcher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartActivityForResult(),
-        ) { result ->
-            if (result.data?.isResultFromEnro() == true) {
-                // If the result.data is considered to be a result from Enro, that
-                // means that we've already delivered the result and we don't need to do
-                // it again, so we close here without setting any result
-                navigation.execute(NavigationOperation.Close(navigation.instance, silent = true))
-                return@rememberLauncherForActivityResult
-            }
-            when (result.resultCode) {
-                Activity.RESULT_OK -> navigation.complete()
-                else -> navigation.close()
-            }
-        }
-
-        val intent = rememberSaveable {
-            Intent(context, activityType.java)
-                .putNavigationKeyInstance(navigation.instance)
-        }
-
-        LaunchedEffect(Unit) {
-            if (wasLaunched.value) {
-                delay(1000)
-                error("Activity destination was not completed or closed within one second after resuming the destination from the back stack.")
-            }
-            wasLaunched.value = true
-            launcher.launch(intent)
-        }
+        error("activityDestination should not be rendered directly. If you are reaching this, please report this as a bug.")
     }
 }
 
+internal const val ActivityTypeKey = "dev.enro.ui.destinations.ActivityDestinationKey"
 private const val IntentInstanceKey = "dev.enro.ui.destinations.ActivityDestination.IntentInstanceKey"
 
 public fun Intent.putNavigationKeyInstance(instance: NavigationKey.Instance<*>): Intent {

@@ -1,5 +1,6 @@
 package dev.enro.core
 
+import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
@@ -8,7 +9,8 @@ import dev.enro.complete
 import dev.enro.open
 import dev.enro.withMetadata
 import kotlin.properties.ReadOnlyProperty
-import dev.enro.navigationHandle as fragmentNavigationHandle
+import kotlin.reflect.KClass
+import dev.enro.navigationHandle as androidNavigationHandle
 
 public typealias NavigationHandle = dev.enro.NavigationHandle<out NavigationKey>
 public typealias TypedNavigationHandle<T> =  dev.enro.NavigationHandle<T>
@@ -46,8 +48,22 @@ public fun <R: Any> dev.enro.NavigationHandle<out NavigationKey.WithResult<R>>.c
     complete(result)
 }
 
-
-public fun <T : NavigationKey> Fragment.navigationHandle() : ReadOnlyProperty<Fragment, NavigationHandle<T>> {
-    return fragmentNavigationHandle()
+public inline fun <reified T : NavigationKey> Fragment.navigationHandle() : ReadOnlyProperty<Fragment, NavigationHandle<T>> {
+    return navigationHandle(T::class)
 }
 
+public fun <T : NavigationKey> Fragment.navigationHandle(
+    keyType: KClass<T>
+) : ReadOnlyProperty<Fragment, NavigationHandle<T>> {
+    return androidNavigationHandle(keyType)
+}
+
+public inline fun <reified T : NavigationKey> ComponentActivity.navigationHandle() : ReadOnlyProperty<ComponentActivity, NavigationHandle<T>> {
+    return navigationHandle(T::class)
+}
+
+public fun <T : NavigationKey> ComponentActivity.navigationHandle(
+    keyType: KClass<T>
+) : ReadOnlyProperty<ComponentActivity, NavigationHandle<T>> {
+    return androidNavigationHandle(keyType)
+}

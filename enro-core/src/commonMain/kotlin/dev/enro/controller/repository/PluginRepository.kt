@@ -3,7 +3,6 @@ package dev.enro.controller.repository
 import dev.enro.EnroController
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
-import dev.enro.context.RootContext
 import dev.enro.plugin.NavigationPlugin
 import dev.enro.ui.NavigationDestination
 
@@ -42,14 +41,6 @@ internal class PluginRepository {
         if (attachedController == null) return
         plugins.forEach { it.onDetached(controller) }
         attachedController = null
-    }
-
-    fun onRootContextAttached(context: RootContext) {
-        plugins.forEach { it.onRootContextAttached(context) }
-    }
-
-    fun onRootContextDetached(context: RootContext) {
-        plugins.forEach { it.onRootContextDetached(context) }
     }
 
     fun onOpened(navigationHandle: NavigationHandle<*>) {

@@ -20,9 +20,7 @@ public class EnroController {
     internal val interceptors = InterceptorRepository()
     internal val paths = PathRepository()
 
-    internal val rootContextRegistry: RootContextRegistry = RootContextRegistry(
-        pluginRepository = plugins,
-    )
+    internal val rootContextRegistry: RootContextRegistry = RootContextRegistry()
 
     internal fun addModule(module: NavigationModule) {
         plugins.addPlugins(module.plugins)

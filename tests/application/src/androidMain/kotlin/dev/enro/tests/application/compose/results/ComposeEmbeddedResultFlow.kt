@@ -2,7 +2,6 @@ package dev.enro.tests.application.compose.results
 
 import android.os.Bundle
 import android.os.Parcelable
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -25,11 +24,9 @@ import dev.enro.core.compose.registerForNavigationResult
 import dev.enro.core.compose.rememberNavigationContainer
 import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.accept
+import dev.enro.core.navigationHandle
 import dev.enro.core.result.deliverResultFromPresent
 import dev.enro.core.result.deliverResultFromPush
-import dev.enro.platform.close
-import dev.enro.platform.complete
-import dev.enro.platform.navigationHandle
 import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.parcelize.Parcelize
@@ -77,16 +74,9 @@ fun ComposeEmbeddedResultFlowRoot() {
     var lastResult by rememberSaveable {
         mutableStateOf("(none)")
     }
-    val resultChannel = registerForNavigationResult<String>(
-        onClosed = {
-            Log.e("Enro", "Result: closed from $key")
-            lastResult = "(closed)"
-        },
-        onCompleted = {
-            Log.e("Enro", "Result: $it from $key")
-            lastResult = it
-        }
-    )
+    val resultChannel = registerForNavigationResult<String> {
+        lastResult = it
+    }
 
     TitledColumn(title = "Embedded Result Flow") {
         Text("Last Result: $lastResult")
@@ -115,6 +105,7 @@ fun ComposeEmbeddedResultFlowRoot() {
 @Composable
 fun ComposeEmbeddedResultFlowInsideContainer() {
     val navigation = navigationHandle<ComposeEmbeddedResultFlow.InsideContainer>()
+
     TitledColumn(title = "Embedded Result Flow Inside Container") {
         Button(onClick = {
             navigation.deliverResultFromPush(
@@ -166,7 +157,7 @@ fun ComposeEmbeddedResultFlowInsideContainer() {
         Button(onClick = {
             navigation.closeWithResult(navigation.key.currentResult)
         }) {
-            Text("Complete")
+            Text("Finish")
         }
     }
 }
@@ -212,7 +203,7 @@ fun ComposeEmbeddedResultFlowOutsideContainerContainer() {
         Button(onClick = {
             navigation.closeWithResult(navigation.key.currentResult)
         }) {
-            Text("Complete")
+            Text("Finish")
         }
     }
 }
@@ -237,14 +228,25 @@ class ComposeEmbeddedResultFlowActivity : AppCompatActivity() {
     private fun Content() {
         TitledColumn(title = "Embedded Result Flow Activity") {
             Button(onClick = {
-                navigation.close()
+                navigation.deliverResultFromPresent(
+                    ComposeEmbeddedResultFlow.Activity(navigation.key.currentResult + "-> act x")
+                )
             }) {
-                Text("Close")
+                Text("Navigate Activity (x)")
             }
+
             Button(onClick = {
-                navigation.complete(navigation.key.currentResult)
+                navigation.deliverResultFromPresent(
+                    ComposeEmbeddedResultFlow.Activity(navigation.key.currentResult + "-> act y")
+                )
             }) {
-                Text("Complete")
+                Text("Navigate Activity (y)")
+            }
+
+            Button(onClick = {
+                navigation.closeWithResult(navigation.key.currentResult)
+            }) {
+                Text("Finish")
             }
         }
     }

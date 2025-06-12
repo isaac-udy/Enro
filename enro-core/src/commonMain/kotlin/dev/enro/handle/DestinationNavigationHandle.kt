@@ -9,7 +9,7 @@ import dev.enro.NavigationOperation
 import dev.enro.context.DestinationContext
 import dev.enro.platform.EnroLog
 
-internal class NavigationHandleImpl<T : NavigationKey>(
+internal class DestinationNavigationHandle<T : NavigationKey>(
     instance: NavigationKey.Instance<T>,
 ) : NavigationHandle<T>() {
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -53,10 +53,12 @@ internal class NavigationHandleImpl<T : NavigationKey>(
 
     internal fun onDestroy() {
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
-        context?.lifecycle?.removeObserver(lifecycleObserver)
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        context?.controller?.plugins?.onClosed(this)
-        context = null
+        context?.let { context ->
+            this.context = null
+            context.lifecycle.removeObserver(lifecycleObserver)
+            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+            context.controller.plugins.onClosed(this)
+        }
     }
 
     override fun execute(

@@ -4,11 +4,13 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableStateOf
 import dev.enro.EnroController
 import dev.enro.NavigationKey
 import dev.enro.context.RootContext
+import dev.enro.handle.RootNavigationHandle
+import dev.enro.handle.getNavigationHandleHolder
+import dev.enro.handle.getOrCreateNavigationHandleHolder
 import dev.enro.plugin.NavigationPlugin
 import dev.enro.ui.destinations.getNavigationKeyInstance
 import kotlinx.serialization.Serializable
@@ -49,45 +51,29 @@ internal object ActivityPlugin : NavigationPlugin() {
                 defaultViewModelProviderFactory = activity,
                 activeChildId = mutableStateOf(savedInstanceState?.getString(ACTIVE_CONTAINER_KEY))
             )
-            activity.activityContextHolder.rootContext = rootContext
-            controller.rootContextRegistry.register(rootContext)
             val instance = activity.intent.getNavigationKeyInstance()
                 ?: savedInstanceState?.getNavigationKeyInstance()
                 ?: NavigationKey.Instance(DefaultActivityNavigationKey)
 
-            activity.activityContextHolder.navigationHandle = ActivityNavigationHandle(
-                activity = activity,
-                instance = instance,
-            )
-            activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-
+            val navigationHandleHolder = activity.getOrCreateNavigationHandleHolder(instance)
+            navigationHandleHolder.navigationHandle = RootNavigationHandle(instance = instance).apply {
+                bindContext(rootContext)
             }
         }
 
         override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
             if (activity !is ComponentActivity) return
-            val context = activity.activityContextHolder.rootContext
-            if (context != null) {
-                outState.putString(ACTIVE_CONTAINER_KEY, context.activeChild?.id)
+            val navigationHandle = activity.getNavigationHandleHolder().navigationHandle
+            require(navigationHandle is RootNavigationHandle) {
+                "Expected Activity $activity to have a RootNavigationHandle but was $navigationHandle"
             }
-            val instance = activity.activityContextHolder.navigationHandle?.instance
-            if (instance != null) {
-                outState.putNavigationKeyInstance(instance)
-            }
+            outState.putString(ACTIVE_CONTAINER_KEY, navigationHandle.context?.activeChild?.id)
+            outState.putNavigationKeyInstance(navigationHandle.instance)
         }
 
-        override fun onActivityDestroyed(activity: Activity) {
-            if (activity !is ComponentActivity) return
-            val rootContext = activity.activityContextHolder.rootContext
-            if (rootContext != null) {
-                controller.rootContextRegistry.unregister(rootContext)
-            }
-            activity.activityContextHolder.rootContext = null
-            activity.activityContextHolder.navigationHandle = null
-        }
-
-        override fun onActivityStarted(activity: Activity) {}
+        override fun onActivityDestroyed(activity: Activity) {}
         override fun onActivityResumed(activity: Activity) {}
+        override fun onActivityStarted(activity: Activity) {}
         override fun onActivityPaused(activity: Activity) {}
         override fun onActivityStopped(activity: Activity) {}
     }
