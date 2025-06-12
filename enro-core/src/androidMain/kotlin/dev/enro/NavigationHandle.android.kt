@@ -3,9 +3,10 @@ package dev.enro
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.handle.getNavigationHandleHolder
+import dev.enro.platform.getNavigationKeyInstance
+import dev.enro.ui.destinations.fragment.FragmentNavigationHandle
+import dev.enro.ui.destinations.fragment.fragmentContextHolder
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 
@@ -16,9 +17,24 @@ public inline fun <reified T : NavigationKey> Fragment.navigationHandle(): ReadO
 public fun <T : NavigationKey> Fragment.navigationHandle(
     keyType: KClass<T>,
 ): ReadOnlyProperty<Fragment, NavigationHandle<T>> {
-    val navigationHandle by lazyNavigationHandle(keyType)
-    return ReadOnlyProperty { activity, _ ->
-        navigationHandle
+    return ReadOnlyProperty<Fragment, NavigationHandle<T>> { fragment, _ ->
+        require(lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+            "NavigationHandle can only be accessed after the Activity is in the CREATED state."
+        }
+        val holder = fragment.fragmentContextHolder
+        val navigation = holder.navigationHandle
+        val delegate = navigation.delegate
+        if (delegate is FragmentNavigationHandle.NotInitialized<NavigationKey>) {
+            fragment.arguments?.getNavigationKeyInstance()?.let {
+                delegate.instance = it
+                navigation.instance = it
+            }
+        }
+        require(keyType.isInstance(navigation.instance.key)) {
+            error("Expected NavigationHandle for ${keyType.qualifiedName}, but found ${navigation.instance.key::class.simpleName}")
+        }
+        @Suppress("UNCHECKED_CAST")
+        return@ReadOnlyProperty navigation as NavigationHandle<T>
     }
 }
 
@@ -29,16 +45,7 @@ public inline fun <reified T : NavigationKey> ComponentActivity.navigationHandle
 public fun <T : NavigationKey> ComponentActivity.navigationHandle(
     keyType: KClass<T>,
 ): ReadOnlyProperty<ComponentActivity, NavigationHandle<T>> {
-    val navigationHandle by lazyNavigationHandle(keyType)
-    return ReadOnlyProperty { activity, _ ->
-        navigationHandle
-    }
-}
-
-private fun <T, K : NavigationKey> T.lazyNavigationHandle(
-    keyType: KClass<K>,
-): Lazy<NavigationHandle<K>> where T : LifecycleOwner, T : ViewModelStoreOwner {
-    return lazy {
+    val navigationHandle by lazy {
         require(lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
             "NavigationHandle can only be accessed after the Activity is in the CREATED state."
         }
@@ -47,6 +54,9 @@ private fun <T, K : NavigationKey> T.lazyNavigationHandle(
             error("Expected NavigationHandle for ${keyType.qualifiedName}, but found ${navigation.instance.key::class.simpleName}")
         }
         @Suppress("UNCHECKED_CAST")
-        return@lazy navigation as NavigationHandle<K>
+        return@lazy navigation as NavigationHandle<T>
+    }
+    return ReadOnlyProperty { activity, _ ->
+        navigationHandle
     }
 }

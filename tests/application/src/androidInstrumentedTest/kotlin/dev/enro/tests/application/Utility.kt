@@ -14,8 +14,10 @@ import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
+import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.context.NavigationContext
+import dev.enro.context.RootContext
 import dev.enro.context.findContext
 import dev.enro.context.getNavigationHandle
 import dev.enro.platform.navigationContext
@@ -24,9 +26,9 @@ import kotlin.reflect.KClass
 fun ComposeTestRule.waitForNavigationHandle(
     block: (NavigationHandle<NavigationKey>) -> Boolean,
 ): NavigationHandle<NavigationKey> {
-    val context = waitForDestinationContext {
+    val context = waitForNavigationContext {
         runCatching {
-            it.getNavigationHandle()
+            it.getNavigationHandle<NavigationKey>()
                 .let(block)
         }.getOrNull() == true
     }
@@ -66,7 +68,13 @@ fun ComposeTestRule.waitForNavigationContext(
         }
         false
     }
-    return navigationContext!!
+
+    return when (val navigationContext = navigationContext) {
+        null -> error("Unable to find navigation context")
+        is ContainerContext -> navigationContext.parent
+        is DestinationContext<*> -> navigationContext
+        is RootContext -> navigationContext
+    }
 }
 
 inline fun <reified T : Fragment> ComposeTestRule.waitForFragment(
