@@ -32,6 +32,9 @@ allprojects {
             substitute(module("dev.enro:enro-test"))
                 .using(project(":enro-test"))
 
+            substitute(module("dev.enro:enro-compat"))
+                .using(project(":enro-compat"))
+
             substitute(module("dev.enro:enro-annotations"))
                 .using(project(":enro-annotations"))
 

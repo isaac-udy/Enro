@@ -45,6 +45,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation("dev.enro:enro:${project.enroVersionName}")
+            implementation("dev.enro:enro-compat:${project.enroVersionName}")
             implementation(libs.kotlinx.serialization)
             implementation(libs.compose.lifecycle)
         }

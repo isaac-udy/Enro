@@ -1,0 +1,44 @@
+plugins {
+    id("com.google.devtools.ksp")
+    id("configure-library")
+    id("configure-publishing")
+    id("configure-compose")
+    kotlin("plugin.serialization")
+}
+
+kotlin {
+    sourceSets {
+        desktopMain.dependencies {
+            implementation(libs.compose.ui.backhandler)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.coroutines.swing)
+        }
+        commonMain.dependencies {
+            api(project(":enro-core"))
+            implementation(libs.compose.viewmodel)
+            implementation(libs.compose.lifecycle)
+            implementation(libs.androidx.savedState)
+            implementation(libs.androidx.savedState.compose)
+            implementation(libs.kotlinx.serialization)
+            implementation(libs.kotlin.reflect)
+            implementation(libs.thauvin.urlencoder)
+        }
+        commonTest.dependencies {
+            implementation(project(":enro-test"))
+        }
+        androidMain.dependencies {
+            implementation(libs.androidx.core)
+            implementation(libs.androidx.appcompat)
+            implementation(libs.androidx.fragment)
+            implementation(libs.androidx.fragment.compose)
+            implementation(libs.androidx.activity)
+            implementation(libs.androidx.recyclerview)
+            implementation(libs.androidx.lifecycle.process)
+            implementation(libs.kotlin.reflect)
+        }
+
+        frontendJsMain.dependencies {
+            implementation(libs.kotlin.js)
+        }
+    }
+}
