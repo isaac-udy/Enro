@@ -69,9 +69,6 @@ public class NavigationSavedStateHolder(
             saveableStateRegistryMap.getOrPut(destinationId) {
                 DestinationSaveableStateRegistry(
                     restoredValues = saved,
-                    canBeSaved = {
-                        parentSaveableStateRegistry?.canBeSaved(it) ?: true
-                    },
                 )
             }
         }

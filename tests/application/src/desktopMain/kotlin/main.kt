@@ -15,6 +15,7 @@ import dev.enro.controller.NavigationComponentConfiguration
 import dev.enro.desktop.RootWindow
 import dev.enro.desktop.openWindow
 import dev.enro.tests.application.SelectDestination
+import dev.enro.tests.application.TestApplicationComponent
 import dev.enro.tests.application.samples.loan.ui.LoanPurposeOption
 import dev.enro.tests.application.samples.loan.ui.OwnershipOption
 import dev.enro.tests.application.samples.loan.ui.PropertyPurposeOption
@@ -27,32 +28,8 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
-@NavigationComponent
-object ExampleApplicationNavigation : NavigationComponentConfiguration()
-
 fun main() {
-    val controller = ExampleApplicationNavigation.installNavigationController(Unit) {
-        serializersModule(SerializersModule {
-            polymorphic(Any::class) {
-                subclass(LoanPurposeOption.Car::class)
-                subclass(LoanPurposeOption.Property::class)
-
-                subclass(OwnershipOption.Other::class)
-                subclass(OwnershipOption.Partner::class)
-                subclass(OwnershipOption.Sole::class)
-
-                subclass(PropertyPurposeOption.Investment::class)
-                subclass(PropertyPurposeOption.OwnerOccupied::class)
-
-                subclass(RepaymentFrequencyOption.Fortnightly::class)
-                subclass(RepaymentFrequencyOption.Monthly::class)
-                subclass(RepaymentFrequencyOption.Quarterly::class)
-
-                subclass(RepaymentTypeOption.InterestOnly::class)
-                subclass(RepaymentTypeOption.PrincipalAndInterest::class)
-            }
-        })
-    }
+    val controller = TestApplicationComponent.installNavigationController(Unit)
     controller.openWindow(TestApplicationWindow())
     application {
         EnroApplicationContent(controller)

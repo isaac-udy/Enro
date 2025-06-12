@@ -92,15 +92,16 @@ internal class DestinationSavedStateRegistry(
  */
 internal class DestinationSaveableStateRegistry(
     private var restoredValues: Map<String, List<Any?>>?,
-    internal val canBeSaved: (Any) -> Boolean,
 ) {
 
     val saveableStateRegistry: SaveableStateRegistry by lazy {
         SaveableStateRegistry(
             restoredValues = restoredValues
         ) {
-            // Check if value can be saved to Bundle
-            canBeSaved(it)
+            // TODO we currently save all things, because we need to do this for savedState and @Serializable,
+            //  but it would be really good if we could tell if something was @Serializable, and possibly
+            //  delegate the "can save" to a parent
+            true
         }
     }
 

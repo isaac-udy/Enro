@@ -6,7 +6,9 @@ import android.os.Parcelable
 import androidx.core.os.BundleCompat
 import androidx.savedstate.serialization.serializers.ParcelableSerializer
 import dev.enro.NavigationKey
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
@@ -22,12 +24,26 @@ import kotlin.reflect.KClass
 
 @PublishedApi
 internal actual inline fun <reified T : NavigationKey> serializerForNavigationKey(): KSerializer<T> {
-    val serializer = runCatching { serializer<T>() }
+    val serializer = runCatching { defaultSerializer<T>() }
         .getOrNull()
     if (serializer != null) {
         return serializer
     }
     return SerializerForParcelableNavigationKey(T::class)
+}
+
+@PublishedApi
+@OptIn(ExperimentalSerializationApi::class)
+internal inline fun <reified T: NavigationKey> defaultSerializer(): KSerializer<T> {
+    val it = serializer(
+        kClass = T::class,
+        typeArgumentsSerializers = T::class.typeParameters.map {
+            PolymorphicSerializer(Any::class)
+        },
+        isNullable = false
+    )
+    @Suppress("UNCHECKED_CAST")
+    return it as KSerializer<T>
 }
 
 

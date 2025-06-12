@@ -22,43 +22,6 @@ import dev.enro.tests.application.savedstate.SavedStateDestination
 import dev.enro.tests.application.serialization.AndroidSerialization
 
 class TestApplication : Application() {
-//    override val navigationController = EnroComponent.installNavigationController(
-//        application = this,
-//        backConfiguration = EnroBackConfiguration.Predictive,
-//    ) {
-//        plugin(TestApplicationPlugin)
-//        composeEnvironment { content ->
-//            val navigationContext = navigationContext
-//            val isRoot = remember(navigationContext) {
-//                val parent = navigationContext.parentContext?.parentContext
-//                return@remember parent == null || parent.contextReference is Activity
-//            }
-//            if (isRoot) {
-//                MaterialTheme {
-//                    Box(modifier = Modifier.fillMaxSize()) {
-//                        Box(
-//                            modifier = Modifier.fillMaxSize(1f)
-//                                .windowInsetsPadding(WindowInsets.navigationBars)
-//                                .windowInsetsPadding(WindowInsets.statusBars)
-//                        ) {
-//                            content()
-//                        }
-//                    }
-//                }
-//            }
-//            else {
-//                content()
-//            }
-//        }
-//
-//        /**
-//         * The following plugin is installed specifically to support the example in
-//         *  [dev.enro.tests.application.fragment.FragmentSharedElementDestination], which has an example of
-//         *  shared element transitions between a Fragment and Composable NavigationDestination
-//         */
-//        plugin(FragmentSharedElements.composeCompatibilityPlugin)
-//    }
-
     override fun onCreate() {
         super.onCreate()
         SelectDestination.registerSelectableDestinations(
@@ -83,6 +46,6 @@ class TestApplication : Application() {
             UnboundBottomSheet,
         )
 
-        NavigationComponent.installNavigationController(this)
+        TestApplicationComponent.installNavigationController(this)
     }
 }

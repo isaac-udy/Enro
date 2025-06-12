@@ -1,14 +1,14 @@
 package dev.enro.tests.application.samples.loan.ui
 
 import dev.enro.NavigationKey
-import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class MultiChoiceDestination<T: MultiChoiceDestination.Item>(
     val title: String,
     val subtitle: String,
-    val items: List<@Polymorphic T>,
+    @Contextual val items: List<T>,
 ) : NavigationKey.WithResult<T> {
 
     @Serializable
