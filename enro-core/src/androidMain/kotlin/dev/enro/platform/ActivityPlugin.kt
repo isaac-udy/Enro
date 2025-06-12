@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableStateOf
 import dev.enro.EnroController
 import dev.enro.NavigationKey
@@ -58,6 +59,9 @@ internal object ActivityPlugin : NavigationPlugin() {
                 activity = activity,
                 instance = instance,
             )
+            activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+
+            }
         }
 
         override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {

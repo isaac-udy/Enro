@@ -35,6 +35,27 @@ public data class NavigationDestination<out T : NavigationKey> private construct
     public val id: String get() = instance.id
     public val key: T get() = instance.key
 
+    /**
+     * Creates a copy of this NavigationDestination with updated metadata.
+     * 
+     * This function preserves the exact same instance and content references from the original
+     * NavigationDestination, only replacing the metadata map. This is useful for plugins or
+     * other components that need to enhance or modify the metadata associated with a destination
+     * without affecting its core behavior or content.
+     *
+     * @param metadata The new metadata map to use in the copied NavigationDestination
+     * @return A new NavigationDestination with the same instance and content, but updated metadata
+     */
+    internal fun copy(
+        metadata: Map<String, Any>,
+    ): NavigationDestination<T> {
+        return NavigationDestination(
+            instance = instance,
+            metadata = metadata,
+            content = content,
+        )
+    }
+
     public class MetadataBuilder<T : NavigationKey> internal constructor(
         public val instance: NavigationKey.Instance<T>,
     ) {
@@ -58,7 +79,7 @@ public data class NavigationDestination<out T : NavigationKey> private construct
 
     public companion object {
         @OptIn(ExperimentalSharedTransitionApi::class)
-        public fun <T: NavigationKey> create(
+        internal fun <T: NavigationKey> create(
             instance: NavigationKey.Instance<T>,
             metadata: Map<String, Any> = emptyMap(),
             content: @Composable NavigationDestinationScope<T>.() -> Unit,

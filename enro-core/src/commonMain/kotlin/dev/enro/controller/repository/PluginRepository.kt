@@ -2,8 +2,10 @@ package dev.enro.controller.repository
 
 import dev.enro.EnroController
 import dev.enro.NavigationHandle
+import dev.enro.NavigationKey
 import dev.enro.context.RootContext
 import dev.enro.plugin.NavigationPlugin
+import dev.enro.ui.NavigationDestination
 
 internal class PluginRepository {
     private val plugins: MutableList<NavigationPlugin> = mutableListOf()
@@ -60,5 +62,14 @@ internal class PluginRepository {
 
     fun onClosed(navigationHandle: NavigationHandle<*>) {
         plugins.forEach { it.onClosed(navigationHandle) }
+    }
+
+    fun onDestinationCreated(
+        destination: NavigationDestination<NavigationKey>,
+        additionalMetadata: MutableMap<String, Any?>,
+    ) {
+        plugins.forEach {
+            it.onDestinationCreated(destination, additionalMetadata)
+        }
     }
 }

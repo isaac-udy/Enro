@@ -5,7 +5,7 @@ public typealias AnyOpenInstruction = NavigationInstructionOpen
 public typealias OpenPushInstruction = NavigationInstructionOpen
 public typealias OpenPresentInstruction = NavigationInstructionOpen
 
-public typealias NavigationInstructionOpen = dev.enro.NavigationKey.Instance<NavigationKey>
+public typealias NavigationInstructionOpen = dev.enro.NavigationKey.Instance<dev.enro.NavigationKey>
 
 @Deprecated("Use dev.enro.NavigationKey.Instance instead")
 public object NavigationInstruction {
@@ -16,3 +16,8 @@ public object NavigationInstruction {
         return key.asPresent()
     }
 }
+
+public val AnyOpenInstruction.navigationDirection: NavigationDirection
+    get() {
+        return metadata.get(NavigationDirection.MetadataKey) ?: NavigationDirection.Push
+    }

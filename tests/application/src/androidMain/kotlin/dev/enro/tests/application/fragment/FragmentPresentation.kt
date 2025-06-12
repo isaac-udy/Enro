@@ -21,12 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.closeWithResult
+import dev.enro.core.compose.dialog.DialogDestination
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.navigationHandle
 import dev.enro.core.present
@@ -352,9 +354,9 @@ class FragmentPresentationActivityPresentableActivity : androidx.appcompat.app.A
 @NavigationDestination(FragmentPresentation.PresentableDialogComposable::class)
 fun FragmentPresentationDialogComposable() {
     val navigation = navigationHandle<FragmentPresentation.PresentableDialogComposable>()
-    
-    dev.enro.core.compose.dialog.DialogDestination {
-        androidx.compose.ui.window.Dialog(
+
+    DialogDestination {
+        Dialog(
             onDismissRequest = { navigation.close() }
         ) {
             Column(

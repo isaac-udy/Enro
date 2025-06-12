@@ -16,6 +16,7 @@ kotlin {
 
 dependencies {
     implementation("dev.enro:enro:${project.enroVersionName}")
+    implementation("dev.enro:enro-compat:${project.enroVersionName}")
     if (project.hasProperty("enroExampleUseKapt")) {
         kapt("dev.enro:enro-processor:${project.enroVersionName}")
     }

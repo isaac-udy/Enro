@@ -13,6 +13,9 @@ import dev.enro.navigationHandle as fragmentNavigationHandle
 public typealias NavigationHandle = dev.enro.NavigationHandle<out NavigationKey>
 public typealias TypedNavigationHandle<T> =  dev.enro.NavigationHandle<T>
 
+public val NavigationHandle<*>.instruction: AnyOpenInstruction
+    get() = this.instance
+
 public fun dev.enro.NavigationHandle<*>.present(key: dev.enro.core.NavigationKey.SupportsPresent) {
     open(
         key.withMetadata(

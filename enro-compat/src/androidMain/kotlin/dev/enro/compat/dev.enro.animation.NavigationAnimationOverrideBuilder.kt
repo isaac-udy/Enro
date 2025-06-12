@@ -1,3 +1,0 @@
-package dev.enro.animation
-
-public class NavigationAnimationOverrideBuilder

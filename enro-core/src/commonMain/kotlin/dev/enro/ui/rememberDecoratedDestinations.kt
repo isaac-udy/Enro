@@ -54,9 +54,7 @@ internal fun rememberDecoratedDestinations(
             .map { instance ->
                 decoratedDestinations.getOrPut(instance.id) {
                     // Find the navigation binding for this instance and create the destination
-                    val binding = controller.bindings.bindingFor(instance)
-                    val destination = binding.provider.create(instance)
-
+                    val destination = controller.bindings.destinationFor(instance)
                     decorateNavigationDestination(
                         destination = destination,
                         decorators = decoratorsWithRemovalTracking,

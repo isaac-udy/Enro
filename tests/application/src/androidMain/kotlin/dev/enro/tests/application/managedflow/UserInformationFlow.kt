@@ -27,7 +27,7 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.destinations.managedFlowDestination
 import dev.enro.ui.navigationDestination
-import dev.enro.ui.scenes.DirectOverlaySceneStrategy
+import dev.enro.ui.scenes.directOverlay
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -225,7 +225,9 @@ internal fun GetAgeScreen() {
 
 @NavigationDestination(UserInformationFlow.ErrorDialog::class)
 internal val errorDialogScreen = navigationDestination<UserInformationFlow.ErrorDialog>(
-    metadata = mapOf(DirectOverlaySceneStrategy.overlay()),
+    metadata = {
+        directOverlay()
+    },
 ) {
     val navigation = navigationHandle<UserInformationFlow.ErrorDialog>()
     AlertDialog(

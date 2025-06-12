@@ -24,6 +24,7 @@ import dev.enro.annotations.GeneratedNavigationComponent
 import dev.enro.processor.domain.GeneratedModuleReference
 import dev.enro.processor.extensions.ClassNames
 import dev.enro.processor.extensions.EnroLocation
+import dev.enro.processor.extensions.chainIf
 
 object NavigationComponentGenerator {
     @OptIn(KspExperimental::class)
@@ -129,19 +130,41 @@ object NavigationComponentGenerator {
                     .defaultValue("{}")
                     .build()
             )
-            .addCode(
-                CodeBlock.of(
+            .chainIf(isAndroid) {
+                addCode(
                     """
-                        val controller = internalCreateEnroController(
-                            builder = {
-                                ${generatedComponent.name}().apply { invoke() }
-                                block()
-                            }
-                        )
-                        controller.install($platformParameterName)
-                        return controller
-                    """.trimIndent()
+                        // If we're installing in an Android context, we know that we
+                        // can use Log.e, so we force EnroLog to use Android Logs during
+                        // installation so we log anything that happens during installation,
+                        // and we then reset the "force" afterwards.
+                        // It's important to reset it, as we might be running in a Robolectric
+                        // test, and other non-Robolectric tests might need to use the default logging.
+                        dev.enro.platform.EnroLog.forceAndroidLogs = true
+                    """.trimIndent() + "\n"
                 )
+            }
+            .addCode(
+                """
+                    val controller = internalCreateEnroController(
+                        builder = {
+                            ${generatedComponent.name}().apply { invoke() }
+                            block()
+                        }
+                    )
+                    controller.install($platformParameterName)
+                """.trimIndent() + "\n"
+            )
+            .chainIf(isAndroid) {
+                addCode(
+                    """
+                        dev.enro.platform.EnroLog.forceAndroidLogs = false
+                    """.trimIndent() + "\n"
+                )
+            }
+            .addCode(
+                """
+                    return controller
+                """.trimIndent()
             )
             .receiver(
                 ClassName(

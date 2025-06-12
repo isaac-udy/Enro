@@ -1,7 +1,6 @@
 package dev.enro.tests.application.compose
 
 import android.os.Parcelable
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +32,6 @@ import androidx.compose.ui.window.Dialog
 import dev.enro.annotations.NavigationDestination
 import dev.enro.context.findActiveDestinationContext
 import dev.enro.context.findDestinationContext
-import dev.enro.context.getDebugString
 import dev.enro.context.root
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.dialog.DialogDestination

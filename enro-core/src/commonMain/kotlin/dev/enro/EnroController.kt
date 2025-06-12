@@ -15,7 +15,7 @@ public class EnroController {
     internal val isDebug = false
     internal var platformReference: Any? = null
     internal val plugins = PluginRepository()
-    internal val bindings = BindingRepository()
+    internal val bindings = BindingRepository(plugins)
     internal val serializers = SerializerRepository()
     internal val interceptors = InterceptorRepository()
     internal val paths = PathRepository()

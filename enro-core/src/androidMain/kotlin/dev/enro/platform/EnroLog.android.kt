@@ -8,10 +8,12 @@ import dev.enro.EnroController
 internal actual object EnroLog {
     private const val LOG_TAG = "Enro"
 
+    internal var forceAndroidLogs = false
+
     // Enabled/disabled by EnroTest
     @Suppress("MemberVisibilityCanBePrivate")
     internal val usePrint
-        get() = EnroController.instance?.platformReference !is Application
+        get() = !forceAndroidLogs && EnroController.instance?.platformReference !is Application
 
     actual fun debug(message: String) {
         if (usePrint) {

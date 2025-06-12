@@ -37,6 +37,7 @@ import dev.enro.core.requestClose
 import dev.enro.destination.compose.OverrideNavigationAnimations
 import dev.enro.destination.compose.navigationTransition
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationAnimations
 import dev.enro.ui.NavigationDisplay
 import kotlinx.parcelize.Parcelize
 
@@ -67,22 +68,14 @@ fun ComposeAnimationsDestination() {
         filter = accept {
             key { it::class.java.enclosingClass == ComposeAnimations::class.java }
         },
-        animations = {
-            TODO("ANIMATIONS")
-//            direction(
-//                direction = NavigationDirection.Push,
-//                entering = fadeIn(defaultSpec()),
-//                exiting = fadeOut(defaultSpec()),
-//                returnEntering = fadeIn(defaultSpec()),
-//                returnExiting = fadeOut(defaultSpec()),
-//            )
-        }
     )
     NavigationDisplay(
         state = container,
         modifier = Modifier.fillMaxSize(),
-        transitionSpec = { fadeIn(defaultSpec()) togetherWith fadeOut() },
-        popTransitionSpec = { fadeIn(defaultSpec()) togetherWith fadeOut() },
+        animations = NavigationAnimations(
+            transitionSpec = { fadeIn(defaultSpec()) togetherWith fadeOut() },
+            popTransitionSpec = { fadeIn(defaultSpec()) togetherWith fadeOut() }
+        ),
     )
 }
 

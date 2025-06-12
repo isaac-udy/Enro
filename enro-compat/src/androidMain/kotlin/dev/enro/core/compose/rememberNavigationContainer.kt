@@ -66,6 +66,7 @@ public fun rememberNavigationContainer(
 
 @Composable
 @AdvancedEnroApi
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @JvmName("rememberNavigationContainerWithBackstack")
 public fun rememberNavigationContainer(
     key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@${currentCompositeKeyHash}"),

@@ -1,6 +1,5 @@
 package dev.enro.core.compose.dialog
 
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
@@ -19,14 +18,8 @@ import androidx.compose.runtime.setValue
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.close
 import dev.enro.navigationHandle
-import dev.enro.ui.LocalNavigationAnimatedVisibilityScope
 import dev.enro.ui.LocalNavigationContainer
 import kotlinx.coroutines.isActive
-
-@Composable
-public fun DialogDestination(content: @Composable AnimatedVisibilityScope.() -> Unit) {
-    content(LocalNavigationAnimatedVisibilityScope.current)
-}
 
 @Composable
 @AdvancedEnroApi

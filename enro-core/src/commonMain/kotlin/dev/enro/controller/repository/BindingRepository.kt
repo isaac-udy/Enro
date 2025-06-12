@@ -2,9 +2,12 @@ package dev.enro.controller.repository
 
 import dev.enro.NavigationBinding
 import dev.enro.NavigationKey
+import dev.enro.ui.NavigationDestination
 import kotlin.reflect.KClass
 
-internal class BindingRepository {
+internal class BindingRepository(
+    private val plugins: PluginRepository,
+) {
     private val bindingsByKeyType = mutableMapOf<KClass<*>, NavigationBinding<*>>()
     private val originalBindingsByKeyType = mutableMapOf<KClass<*>, NavigationBinding<*>>()
 
@@ -64,7 +67,7 @@ internal class BindingRepository {
     fun <K : NavigationKey> bindingFor(
         instance: NavigationKey.Instance<K>,
     ): NavigationBinding<K> {
-        val binding =  when {
+        val binding = when {
             NavigationBinding.usesOriginalBinding(instance) ->
                 originalBindingsByKeyType[instance.key::class]
                     ?: bindingsByKeyType[instance.key::class]
@@ -75,5 +78,33 @@ internal class BindingRepository {
         return requireNotNull(binding) {
             "No binding found for ${instance.key::class.qualifiedName}"
         } as NavigationBinding<K>
+    }
+
+    fun <K : NavigationKey> destinationFor(
+        instance: NavigationKey.Instance<K>,
+    ): NavigationDestination<K> {
+        // Create the destination, and allow plugins to intercept and add
+        val binding = bindingFor(instance)
+        val destination = binding.provider.create(instance)
+
+        val additionalMetadata = mutableMapOf<String, Any?>()
+        plugins.onDestinationCreated(
+            destination = destination,
+            additionalMetadata = additionalMetadata,
+        )
+        if (additionalMetadata.isEmpty()) return destination
+
+        val updatedMetadata = (destination.metadata + additionalMetadata)
+            .mapNotNull { (key, value) ->
+                when (value) {
+                    null -> null
+                    else -> key to value
+                }
+            }
+            .toMap()
+
+        return destination.copy(
+            metadata = updatedMetadata,
+        )
     }
 }

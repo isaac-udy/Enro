@@ -1,3 +1,4 @@
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package dev.enro.core
 
 import android.content.Intent

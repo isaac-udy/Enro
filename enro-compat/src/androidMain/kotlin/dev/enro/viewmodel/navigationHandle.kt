@@ -8,7 +8,6 @@ import kotlin.properties.ReadOnlyProperty
 import dev.enro.navigationHandle as realNavigationHandle
 
 
-// TODO do we actually want this to be done with a property?
 public inline fun <reified K : NavigationKey> ViewModel.navigationHandle(
     noinline config: (NavigationHandleConfiguration<K>.() -> Unit)? = null,
 ): ReadOnlyProperty<ViewModel, NavigationHandle<K>> {
