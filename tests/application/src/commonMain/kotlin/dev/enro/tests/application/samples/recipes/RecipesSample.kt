@@ -9,10 +9,10 @@ import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 @Serializable
-object RecipesHome : NavigationKey
+object RecipesSample : NavigationKey
 
 @Composable
-@NavigationDestination(RecipesHome::class)
+@NavigationDestination(RecipesSample::class)
 fun RecipesHomeScreen() {
     val container = rememberNavigationContainer(
         backstack = listOf(RecipeList.asInstance()),

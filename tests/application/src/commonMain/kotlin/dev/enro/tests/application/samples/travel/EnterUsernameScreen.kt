@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -43,11 +45,15 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.close
 import dev.enro.navigationHandle
 import dev.enro.open
+import dev.enro.tests.application.samples.travel.data.TravelUserRepository
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-object EnterUsernameScreen : NavigationKey
+class EnterUsernameScreen(
+    val firstName: String,
+    val lastName: String,
+) : NavigationKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +69,7 @@ fun EnterUsernameScreenDestination() {
         if (username.length >= 3) {
             isChecking = true
             delay(500) // Simulate API call
-            isAvailable = !listOf("admin", "user", "test", "traveler").contains(username.lowercase())
+            isAvailable = !TravelUserRepository.instance.isUsernameTaken(username)
             isChecking = false
         } else {
             isAvailable = false
@@ -86,7 +92,8 @@ fun EnterUsernameScreenDestination() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -95,7 +102,7 @@ fun EnterUsernameScreenDestination() {
                 progress = { 0.5f },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 48.dp),
+                    .padding(bottom = 48.dp, top = 24.dp),
             )
 
             // Header
@@ -221,7 +228,15 @@ fun EnterUsernameScreenDestination() {
 
             // Continue button
             Button(
-                onClick = { navigation.open(EnterPasswordScreen) },
+                onClick = {
+                    navigation.open(
+                        EnterPasswordScreen(
+                            firstName = navigation.key.firstName,
+                            lastName = navigation.key.lastName,
+                            username = username
+                        )
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -229,13 +244,6 @@ fun EnterUsernameScreenDestination() {
             ) {
                 Text("Continue", fontSize = 18.sp)
             }
-
-            Text(
-                text = "Step 2 of 4",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 16.dp, bottom = 32.dp)
-            )
         }
     }
 }

@@ -2,13 +2,14 @@ package dev.enro.tests.application.samples.travel
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -17,12 +18,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,6 +42,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.closeAndReplaceWith
 import dev.enro.navigationHandle
 import dev.enro.open
+import dev.enro.tests.application.samples.travel.data.TravelUserRepository
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -53,6 +56,13 @@ fun LoginScreenDestination() {
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    var showError by rememberSaveable { mutableStateOf(false) }
+
+    // Add some demo users on first launch
+    LaunchedEffect(Unit) {
+        TravelUserRepository.instance.registerUser("Demo", "User", "demo", "password")
+        TravelUserRepository.instance.registerUser("Travel", "Explorer", "explorer", "password")
+    }
 
     Scaffold(
         topBar = {
@@ -65,7 +75,8 @@ fun LoginScreenDestination() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 32.dp),
+                .padding(horizontal = 32.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -74,20 +85,6 @@ fun LoginScreenDestination() {
                 text = "🏝️",
                 fontSize = 72.sp,
                 modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            Text(
-                text = "Welcome Back!",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            Text(
-                text = "Your next adventure awaits",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 32.dp)
             )
 
             // Username field
@@ -128,8 +125,12 @@ fun LoginScreenDestination() {
             // Login button
             Button(
                 onClick = {
-                    // For demo purposes, just navigate to home
-                    navigation.closeAndReplaceWith(Home)
+                    // Attempt login
+                    if (TravelUserRepository.instance.login(username, password)) {
+                        navigation.closeAndReplaceWith(Home(user = username))
+                    } else {
+                        showError = true
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -139,22 +140,39 @@ fun LoginScreenDestination() {
                 Text("Start Exploring 🗺️", fontSize = 16.sp)
             }
 
+            // Error message
+            if (showError && username.isNotBlank()) {
+                Text(
+                    text = "Invalid username or password",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // Sign up section
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
                     text = "New to TravelBuddy?",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                TextButton(
-                    onClick = { navigation.open(RegistrationOverview) }
+                OutlinedButton(
+                    onClick = { navigation.open(RegistrationOverview) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
                 ) {
-                    Text("Sign Up", fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Create Account",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

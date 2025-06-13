@@ -50,10 +50,10 @@ import dev.enro.viewmodel.createEnroViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
-object CreateLoanApplication : NavigationKey.WithResult<LoanApplication>
+object CreateLoanSample : NavigationKey.WithResult<LoanApplication>
 
 class LoanApplicationFlowViewModel : ViewModel() {
-    private val navigation by navigationHandle<CreateLoanApplication>()
+    private val navigation by navigationHandle<CreateLoanSample>()
 
     val flow by registerForFlowResult(
         flow = {
@@ -136,7 +136,7 @@ class LoanApplicationFlowViewModel : ViewModel() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@NavigationDestination(CreateLoanApplication::class)
+@NavigationDestination(CreateLoanSample::class)
 @Composable
 fun CreateLoanApplicationScreen() {
     val viewModel = viewModel<LoanApplicationFlowViewModel> {

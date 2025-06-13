@@ -7,8 +7,8 @@ import dev.enro.desktop.RootWindow
 import dev.enro.ui.EmbeddedDestination
 import dev.enro.ui.destinations.rootWindowDestination
 
-@NavigationDestination.PlatformOverride(CreateLoanApplication::class)
-val createLoanApplicationWindow = rootWindowDestination<CreateLoanApplication>(
+@NavigationDestination.PlatformOverride(CreateLoanSample::class)
+val createLoanApplicationWindow = rootWindowDestination<CreateLoanSample>(
     windowConfiguration = {
         RootWindow.WindowConfiguration(
             title = "Create Loan Application",

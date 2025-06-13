@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -68,7 +70,8 @@ fun EnterNameScreenDestination() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -77,7 +80,7 @@ fun EnterNameScreenDestination() {
                 progress = { 0.25f },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 48.dp),
+                    .padding(bottom = 48.dp, top = 24.dp),
             )
 
             // Header
@@ -133,7 +136,7 @@ fun EnterNameScreenDestination() {
                         .fillMaxWidth()
                         .padding(bottom = 32.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
                     )
                 ) {
                     Row(
@@ -148,7 +151,7 @@ fun EnterNameScreenDestination() {
                         Text(
                             text = "Nice to meet you, $firstName!",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
                 }
@@ -158,7 +161,14 @@ fun EnterNameScreenDestination() {
 
             // Continue button
             Button(
-                onClick = { navigation.open(EnterUsernameScreen) },
+                onClick = {
+                    navigation.open(
+                        EnterUsernameScreen(
+                            firstName = firstName,
+                            lastName = lastName
+                        )
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -166,13 +176,6 @@ fun EnterNameScreenDestination() {
             ) {
                 Text("Continue", fontSize = 18.sp)
             }
-
-            Text(
-                text = "Step 1 of 4",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 16.dp, bottom = 32.dp)
-            )
         }
     }
 }

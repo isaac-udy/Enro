@@ -9,10 +9,10 @@ import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 @Serializable
-class TravelApplication : NavigationKey
+object TravelSample : NavigationKey
 
 @Composable
-@NavigationDestination(TravelApplication::class)
+@NavigationDestination(TravelSample::class)
 fun TravelApplicationDestination() {
     val container = rememberNavigationContainer(
         backstack = listOf(LoginScreen.asInstance()),

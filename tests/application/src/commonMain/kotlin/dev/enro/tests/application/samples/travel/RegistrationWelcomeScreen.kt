@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,11 +44,17 @@ import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.navigationHandle
 import dev.enro.open
+import dev.enro.tests.application.samples.travel.data.TravelUserRepository
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-object RegistrationWelcomeScreen : NavigationKey
+class RegistrationWelcomeScreen(
+    val firstName: String,
+    val lastName: String,
+    val username: String,
+    val password: String,
+) : NavigationKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,9 +63,19 @@ fun RegistrationWelcomeScreenDestination() {
     val navigation = navigationHandle<RegistrationWelcomeScreen>()
     var showContent by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        // Register the user
+        TravelUserRepository.instance.registerUser(
+            firstName = navigation.key.firstName,
+            lastName = navigation.key.lastName,
+            username = navigation.key.username,
+            password = navigation.key.password
+        )
+    }
+
     // Animate content appearance
     LaunchedEffect(Unit) {
-        delay(300)
+        delay(1)
         showContent = true
     }
 
@@ -78,7 +96,8 @@ fun RegistrationWelcomeScreenDestination() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -87,7 +106,7 @@ fun RegistrationWelcomeScreenDestination() {
                 progress = { 1f },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 48.dp),
+                    .padding(bottom = 48.dp, top = 24.dp),
             )
 
             AnimatedVisibility(
@@ -185,23 +204,13 @@ fun RegistrationWelcomeScreenDestination() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Button(
-                        onClick = { navigation.open(Home) },
+                        onClick = { navigation.open(Home(user = navigation.key.username)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
                     ) {
                         Text("Start Exploring 🚀", fontSize = 18.sp)
                     }
-
-                    Text(
-                        text = "Step 4 of 4 - Complete! ✨",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 32.dp)
-                    )
                 }
             }
         }

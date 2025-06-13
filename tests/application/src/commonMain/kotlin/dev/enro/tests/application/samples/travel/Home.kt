@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +42,8 @@ import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.closeAndReplaceWith
 import dev.enro.navigationHandle
+import dev.enro.tests.application.samples.travel.data.TravelDestinationRepository
+import dev.enro.tests.application.samples.travel.data.TravelUserRepository
 import dev.enro.tests.application.samples.travel.domain.TravelDestination
 import kotlinx.serialization.Serializable
 
@@ -56,22 +59,8 @@ fun HomeDestination() {
     val navigation = navigationHandle<Home>()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    val travelDestinations = remember {
-        listOf(
-            TravelDestination("🗼", "Paris", "City of lights and romance", "★★★★★"),
-            TravelDestination("🏝️", "Bali", "Tropical paradise awaits", "★★★★☆"),
-            TravelDestination("🗽", "New York", "The city that never sleeps", "★★★★★"),
-            TravelDestination("🏔️", "Swiss Alps", "Mountain adventure calling", "★★★★☆"),
-            TravelDestination("🏛️", "Rome", "Ancient history comes alive", "★★★★★"),
-            TravelDestination("🌸", "Tokyo", "Modern meets traditional", "★★★★☆"),
-            TravelDestination("🏖️", "Maldives", "Crystal clear waters", "★★★★★"),
-            TravelDestination("🦁", "Safari Kenya", "Wildlife adventure", "★★★★☆"),
-            TravelDestination("🌉", "San Francisco", "Golden Gate beauty", "★★★★☆"),
-            TravelDestination("🏰", "Edinburgh", "Medieval charm", "★★★★☆"),
-            TravelDestination("🎭", "Rio de Janeiro", "Carnival and beaches", "★★★★★"),
-            TravelDestination("🕌", "Istanbul", "Where continents meet", "★★★★☆")
-        )
-    }
+    // Get destinations from repository
+    val travelDestinations by TravelDestinationRepository.instance.destinations.collectAsState()
 
     Scaffold(
         topBar = {
@@ -160,6 +149,7 @@ fun HomeDestination() {
                 TextButton(
                     onClick = {
                         showLogoutDialog = false
+                        TravelUserRepository.instance.logout()
                         navigation.closeAndReplaceWith(LoginScreen)
                     }
                 ) {

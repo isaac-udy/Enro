@@ -8,8 +8,8 @@ import dev.enro.close
 import dev.enro.open
 import dev.enro.ui.destinations.rootWindowDestination
 
-@NavigationDestination.PlatformOverride(RecipesHome::class)
-val recipesHome = rootWindowDestination<RecipesHome> {
+@NavigationDestination.PlatformOverride(RecipesSample::class)
+val recipesHome = rootWindowDestination<RecipesSample> {
     MenuBar {
         Menu("Recipes", 'R', true) {
             Item("Add Recipe", onClick = {
