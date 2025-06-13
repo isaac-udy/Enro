@@ -29,7 +29,7 @@ public fun <R : Any> ViewModel.registerForNavigationResult(
     @Suppress("UNCHECKED_CAST")
     val channel = NavigationResultChannel<R>(
         id = NavigationResultChannel.Id(
-            ownerId = navigation.id,
+            ownerId = navigation.instance.id,
             resultId = onClosed::class.qualifiedName + onCompleted::class.qualifiedName,
         ),
         onClosed = {
@@ -58,7 +58,7 @@ public fun ViewModel.registerForNavigationResult(
     @Suppress("UNCHECKED_CAST")
     val channel = NavigationResultChannel<Unit>(
         id = NavigationResultChannel.Id(
-            ownerId = navigation.id,
+            ownerId = navigation.instance.id,
             resultId = onClosed::class.qualifiedName + onCompleted::class.qualifiedName,
         ),
         onClosed = {

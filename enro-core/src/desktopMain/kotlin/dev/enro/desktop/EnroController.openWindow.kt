@@ -1,9 +1,10 @@
 package dev.enro.desktop
 
 import dev.enro.EnroController
+import dev.enro.NavigationKey
 
 public fun EnroController.openWindow(
-    window: RootWindow,
+    window: RootWindow<NavigationKey>,
 ) {
     rootContextRegistry.register(window.context)
 }

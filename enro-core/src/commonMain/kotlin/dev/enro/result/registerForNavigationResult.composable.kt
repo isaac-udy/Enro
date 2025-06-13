@@ -19,7 +19,7 @@ public inline fun <reified R : Any> registerForNavigationResult(
     val channel = remember(hashKey) {
         NavigationResultChannel<R>(
             id = NavigationResultChannel.Id(
-                ownerId = navigationHandle.id,
+                ownerId = navigationHandle.instance.id,
                 resultId = hashKey.toString(),
             ),
             navigationHandle = navigationHandle,
@@ -52,7 +52,7 @@ public fun registerForNavigationResult(
     val channel = remember(hashKey) {
         NavigationResultChannel<Unit>(
             id = NavigationResultChannel.Id(
-                ownerId = navigationHandle.id,
+                ownerId = navigationHandle.instance.id,
                 resultId = hashKey.toString(),
             ),
             navigationHandle = navigationHandle,

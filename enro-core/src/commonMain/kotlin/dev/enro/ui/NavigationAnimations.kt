@@ -29,6 +29,9 @@ public data class NavigationAnimations(
             initialContentExit = fadeOut(),
         )
     },
+    // If this is set to true, transitions to-and-from an empty backstack will use the container transform,
+    // instead of the normal transitionSpec/popTransitionSpec.
+    val emptyUsesContainerTransition: Boolean,
 ) {
     public companion object {
         public val Default: NavigationAnimations = NavigationAnimations(
@@ -52,10 +55,11 @@ public data class NavigationAnimations(
             },
             containerTransitionSpec = {
                 ContentTransform(
-                    targetContentEnter = fadeIn(spring(stiffness = Spring.StiffnessMedium)),
+                    targetContentEnter = fadeIn(),
                     initialContentExit = fadeOut(),
                 )
             },
+            emptyUsesContainerTransition = true,
         )
     }
 }

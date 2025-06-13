@@ -11,7 +11,11 @@ public sealed class NavigationOperation {
 
     public class AggregateOperation(
         internal val operations: List<RootOperation>,
-    ) : NavigationOperation()
+    ) : NavigationOperation() {
+        internal constructor(
+            vararg operations: RootOperation,
+        ) : this(operations.toList())
+    }
 
     public data class Open<out T : NavigationKey>(
         public val instance: NavigationKey.Instance<T>,

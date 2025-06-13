@@ -6,8 +6,6 @@ import kotlin.jvm.JvmName
 
 public abstract class NavigationHandle<out T : NavigationKey> internal constructor() : LifecycleOwner {
     public abstract val instance: NavigationKey.Instance<T>
-
-    public val id: String get() = instance.id
     public val key: T get() = instance.key
 
     @AdvancedEnroApi
@@ -38,15 +36,15 @@ public fun NavigationHandle<*>.complete() {
     message = "A NavigationKey.WithResult should not be completed without a result, doing so will result in an error",
     level = DeprecationLevel.ERROR,
 )
-public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.complete() {
+public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.complete() {
     error("${instance.key} is a NavigationKey.WithResult and cannot be completed without a result")
 }
 
-public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.complete(result: R) {
+public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.complete(result: R) {
     execute(NavigationOperation.Complete(instance, result))
 }
 
-public fun NavigationHandle<out NavigationKey>.completeFrom(key: NavigationKey) {
+public fun NavigationHandle<NavigationKey>.completeFrom(key: NavigationKey) {
     execute(NavigationOperation.CompleteFrom(instance, key.asInstance()))
 }
 
@@ -55,15 +53,15 @@ public fun NavigationHandle<out NavigationKey>.completeFrom(key: NavigationKey) 
     message = "A NavigationKey.WithResult cannot complete from a NavigationKey that does not have a result",
     level = DeprecationLevel.ERROR,
 )
-public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey) {
+public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey) {
     error("${instance.key} is a NavigationKey.WithResult and cannot complete from a NavigationKey that does not have a result")
 }
 
-public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey.WithResult<R>) {
+public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey.WithResult<R>) {
     execute(NavigationOperation.CompleteFrom(instance, key.asInstance()))
 }
 
-public fun <R : Any> NavigationHandle<out NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey.WithMetadata<out NavigationKey.WithResult<R>>) {
+public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey.WithMetadata<NavigationKey.WithResult<R>>) {
     execute(NavigationOperation.CompleteFrom(instance, key.asInstance()))
 }
 
@@ -75,3 +73,60 @@ public fun NavigationHandle<*>.open(key: NavigationKey.WithMetadata<*>) {
     execute(NavigationOperation.Open(key.asInstance()))
 }
 
+public fun NavigationHandle<*>.closeAndReplaceWith(key: NavigationKey) {
+    execute(
+        NavigationOperation.AggregateOperation(
+            NavigationOperation.Close(instance),
+            NavigationOperation.Open(key.asInstance()),
+        )
+    )
+}
+
+public fun NavigationHandle<*>.closeAndReplaceWith(key: NavigationKey.WithMetadata<*>) {
+    execute(
+        NavigationOperation.AggregateOperation(
+            NavigationOperation.Close(instance),
+            NavigationOperation.Open(key.asInstance()),
+        )
+    )
+}
+
+public fun NavigationHandle<NavigationKey>.closeAndCompleteFrom(key: NavigationKey) {
+    execute(
+        NavigationOperation.AggregateOperation(
+            NavigationOperation.Close(instance),
+            NavigationOperation.CompleteFrom(instance, key.asInstance())
+        )
+    )
+}
+
+@JvmName("closeAndCompleteFromGeneric")
+@Deprecated(
+    message = "A NavigationKey.WithResult cannot complete from a NavigationKey that does not have a result",
+    level = DeprecationLevel.ERROR,
+)
+public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.closeAndCompleteFrom(key: NavigationKey) {
+    error("${instance.key} is a NavigationKey.WithResult and cannot complete from a NavigationKey that does not have a result")
+}
+
+public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.closeAndCompleteFrom(
+    key: NavigationKey.WithResult<R>,
+) {
+    execute(
+        NavigationOperation.AggregateOperation(
+            NavigationOperation.Close(instance),
+            NavigationOperation.CompleteFrom(instance, key.asInstance())
+        )
+    )
+}
+
+public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.closeAndCompleteFrom(
+    key: NavigationKey.WithMetadata<NavigationKey.WithResult<R>>,
+) {
+    execute(
+        NavigationOperation.AggregateOperation(
+            NavigationOperation.Close(instance),
+            NavigationOperation.CompleteFrom(instance, key.asInstance())
+        )
+    )
+}

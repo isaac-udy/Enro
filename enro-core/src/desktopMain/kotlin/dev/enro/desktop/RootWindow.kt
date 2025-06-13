@@ -3,6 +3,7 @@ package dev.enro.desktop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -10,7 +11,6 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.backhandler.LocalBackGestureDispatcher
 import androidx.compose.ui.graphics.painter.Painter
@@ -29,32 +29,28 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.EnroController
+import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
-import dev.enro.asInstance
+import dev.enro.close
 import dev.enro.context.RootContext
 import dev.enro.handle.RootNavigationHandle
 import dev.enro.handle.getOrCreateNavigationHandleHolder
 import dev.enro.ui.LocalNavigationHandle
 import dev.enro.ui.LocalRootContext
-import kotlinx.serialization.Serializable
 
-// TODO need to make RootWindow accept NavigationKey type as generic arg?
 @Stable
-public open class RootWindow(
-    private val instance: NavigationKey.Instance<NavigationKey>? = null
+public class RootWindow<out T: NavigationKey> internal constructor(
+    private val instance: NavigationKey.Instance<T>,
+    windowConfiguration: RootWindow<T>.() -> WindowConfiguration = { WindowConfiguration() },
+    private val content: @Composable RootWindowScope<T>.() -> Unit,
 ) : LifecycleOwner,
     ViewModelStoreOwner,
     HasDefaultViewModelProviderFactory {
 
     public val backDispatcher: EnroBackDispatcher = EnroBackDispatcher()
-    public var windowConfiguration: WindowConfiguration by mutableStateOf(
-        WindowConfiguration(
-            onCloseRequest = {
-                close()
-            }
-        )
+    private val windowConfiguration: WindowConfiguration by mutableStateOf(
+        windowConfiguration()
     )
-        protected set
 
     public val controller: EnroController = requireNotNull(EnroController.instance) {
         "EnroController instance has not been initialized yet. Make sure you have installed the EnroController before instantiating a RootWindow."
@@ -92,7 +88,7 @@ public open class RootWindow(
     private val activeChildId = mutableStateOf<String?>(null)
 
     public val context: RootContext = RootContext(
-        id = (this::class.qualifiedName ?: "RootWindow") + "$@${hashCode()}",
+        id = "RootWindow(${instance.key::class.simpleName})" + "$@${hashCode()}",
         parent = this,
         controller = controller,
         lifecycleOwner = this,
@@ -104,6 +100,9 @@ public open class RootWindow(
     @OptIn(ExperimentalComposeUiApi::class)
     internal val movableWindowContent = movableContentOf {
         key(context.id) {
+            val lazyRootWindowScope = remember<MutableState<RootWindowScope<T>?>> {
+                mutableStateOf(null)
+            }
             if (controller.rootContextRegistry.getAllContexts().contains(context)) {
                 val movableContent = remember {
                     movableContentOf { windowScope: FrameWindowScope ->
@@ -114,12 +113,21 @@ public open class RootWindow(
                         windowViewModelStoreOwner = viewModelStoreOwner
                         // Get or create the NavigationHandleHolder for this destination
                         val navigationHandle = remember(viewModelStoreOwner) {
-                            val instance = instance ?: DefaultRootWindowNavigationKey.asInstance()
+                            val instance = instance
                             val holder = viewModelStoreOwner.getOrCreateNavigationHandleHolder(instance)
                             val navigationHandle = RootNavigationHandle(instance)
                             holder.navigationHandle = navigationHandle
                             navigationHandle.bindContext(context)
                             holder.navigationHandle
+                        }
+                        val rootWindowScope = remember(navigationHandle) {
+                            val scope = RootWindowScope<T>(
+                                rootWindow = this,
+                                navigation = navigationHandle as RootNavigationHandle<T>,
+                                frameWindowScope = windowScope,
+                            )
+                            lazyRootWindowScope.value = scope
+                            return@remember scope
                         }
 
                         CompositionLocalProvider(
@@ -127,24 +135,33 @@ public open class RootWindow(
                             LocalBackGestureDispatcher provides backDispatcher,
                             LocalNavigationHandle provides navigationHandle,
                         ) {
-                            windowScope.Content()
+                            rootWindowScope.content()
                         }
                     }
                 }
                 Window(
-                    state = windowConfiguration.state,
-                    visible = windowConfiguration.visible,
-                    title = windowConfiguration.title,
-                    icon = windowConfiguration.icon,
-                    transparent = windowConfiguration.transparent,
-                    undecorated = windowConfiguration.undecorated,
-                    resizable = windowConfiguration.resizable,
-                    enabled = windowConfiguration.enabled,
-                    focusable = windowConfiguration.focusable,
-                    alwaysOnTop = windowConfiguration.alwaysOnTop,
-                    onPreviewKeyEvent = windowConfiguration.onPreviewKeyEvent,
-                    onKeyEvent = windowConfiguration.onKeyEvent,
-                    onCloseRequest = windowConfiguration.onCloseRequest,
+                    state = this.windowConfiguration.state,
+                    visible = this.windowConfiguration.visible,
+                    title = this.windowConfiguration.title,
+                    icon = this.windowConfiguration.icon,
+                    transparent = this.windowConfiguration.transparent,
+                    undecorated = this.windowConfiguration.undecorated,
+                    resizable = this.windowConfiguration.resizable,
+                    enabled = this.windowConfiguration.enabled,
+                    focusable = this.windowConfiguration.focusable,
+                    alwaysOnTop = this.windowConfiguration.alwaysOnTop,
+                    onPreviewKeyEvent = {
+                        val scope = lazyRootWindowScope.value ?: return@Window false
+                        this.windowConfiguration.onPreviewKeyEvent(scope, it)
+                    },
+                    onKeyEvent = {
+                        val scope = lazyRootWindowScope.value ?: return@Window false
+                        this.windowConfiguration.onKeyEvent(scope, it)
+                    },
+                    onCloseRequest = {
+                        val scope = lazyRootWindowScope.value ?: return@Window
+                        this.windowConfiguration.onCloseRequest(scope)
+                    },
                 ) {
                     val localLifecycleState = LocalLifecycleOwner.current
                         .lifecycle
@@ -168,16 +185,6 @@ public open class RootWindow(
         }
     }
 
-    @Composable
-    protected open fun FrameWindowScope.Content() {
-    }
-
-    public fun close() {
-        controller.rootContextRegistry.unregister(context)
-        // De-registering the window is handled by the Disposable effect in Composition
-    }
-
-
     public data class WindowConfiguration(
         val state: WindowState = WindowState(),
         val visible: Boolean = true,
@@ -190,11 +197,24 @@ public open class RootWindow(
         val enabled: Boolean = true,
         val focusable: Boolean = true,
         val alwaysOnTop: Boolean = false,
-        val onPreviewKeyEvent: (KeyEvent) -> Boolean = { false },
-        val onKeyEvent: (KeyEvent) -> Boolean = { false },
-        val onCloseRequest: () -> Unit,
+        val onPreviewKeyEvent: RootWindowScope<NavigationKey>.(KeyEvent) -> Boolean = { false },
+        val onKeyEvent: RootWindowScope<NavigationKey>.(KeyEvent) -> Boolean = { false },
+        val onCloseRequest: RootWindowScope<NavigationKey>.() -> Unit = { navigation.close() },
     )
 }
 
-@Serializable
-internal object DefaultRootWindowNavigationKey : NavigationKey
+public class RootWindowScope<out T: NavigationKey> internal constructor(
+    private val rootWindow: RootWindow<T>,
+    public val navigation: NavigationHandle<T>,
+    private val frameWindowScope: FrameWindowScope,
+) : FrameWindowScope by frameWindowScope {
+
+    public val instance: NavigationKey.Instance<T>
+        get() = navigation.instance
+
+    public val key: T
+        get() = navigation.key
+
+    public val backDispatcher: EnroBackDispatcher
+        get() = rootWindow.backDispatcher
+}

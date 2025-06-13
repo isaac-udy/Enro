@@ -14,7 +14,7 @@ internal actual fun <T : NavigationKey> RootNavigationHandle<T>.handleNavigation
     operation: NavigationOperation,
     context: RootContext,
 ): Boolean {
-    val window = requireNotNull(context.parent as? RootWindow) {
+    val window = requireNotNull(context.parent as? RootWindow<NavigationKey>) {
         "The context parent must be a RootWindow. Found: ${context.parent::class.simpleName}"
     }
     val operations = when(operation) {
@@ -42,7 +42,7 @@ internal actual fun <T : NavigationKey> RootNavigationHandle<T>.handleNavigation
             NavigationResultChannel.registerResult(
                 NavigationResult.Completed(instance, complete.result),
             )
-            window.close()
+            context.controller.rootContextRegistry.unregister(window.context)
         }
         close != null -> {
             if (!close.silent) {
@@ -50,7 +50,7 @@ internal actual fun <T : NavigationKey> RootNavigationHandle<T>.handleNavigation
                     NavigationResult.Closed(instance),
                 )
             }
-            window.close()
+            context.controller.rootContextRegistry.unregister(window.context)
         }
         else -> {}
     }

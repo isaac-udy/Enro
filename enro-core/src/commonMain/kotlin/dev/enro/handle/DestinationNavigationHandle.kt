@@ -39,7 +39,7 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
 
     internal fun bindContext(context: DestinationContext<T>) {
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
-        require(context.destination.instance.id == id) {
+        require(context.destination.instance.id == instance.id) {
             "Cannot bind NavigationContext with instance ${context.destination.instance} to NavigationHandle with instance ${instance}"
         }
         this.context?.lifecycle?.removeObserver(lifecycleObserver)

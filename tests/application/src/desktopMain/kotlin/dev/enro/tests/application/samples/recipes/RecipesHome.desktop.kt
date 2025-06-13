@@ -4,6 +4,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.MenuBar
 import dev.enro.annotations.NavigationDestination
+import dev.enro.close
 import dev.enro.open
 import dev.enro.ui.destinations.rootWindowDestination
 
@@ -16,7 +17,7 @@ val recipesHome = rootWindowDestination<RecipesHome> {
             })
             Separator()
             Item("Back", shortcut = KeyShortcut(Key.LeftBracket, meta = true), onClick = { backDispatcher.onBack() })
-            Item("Exit", shortcut = KeyShortcut(Key.W, meta = true), onClick = { close() })
+            Item("Exit", shortcut = KeyShortcut(Key.W, meta = true), onClick = { navigation.close() })
         }
     }
     RecipesHomeScreen()

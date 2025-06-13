@@ -146,8 +146,15 @@ public fun NavigationDisplay(
     // Select the appropriate transition spec based on navigation type
     val contentTransform: AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform = {
         val isDifferentContainer = initialState.containerKey != targetState.containerKey
+        val useContainerTransition = when {
+            isDifferentContainer -> true
+            !animations.emptyUsesContainerTransition -> false
+            initialState.visible.isEmpty() && targetState.visible.isNotEmpty() -> true
+            initialState.visible.isNotEmpty() && targetState.visible.isEmpty() -> true
+            else -> false
+        }
         when {
-            isDifferentContainer -> animations.containerTransitionSpec(this)
+            useContainerTransition -> animations.containerTransitionSpec(this)
             state.inPredictiveBack -> animations.predictivePopTransitionSpec(this)
             isPop -> animations.popTransitionSpec(this)
             else -> animations.transitionSpec(this)
