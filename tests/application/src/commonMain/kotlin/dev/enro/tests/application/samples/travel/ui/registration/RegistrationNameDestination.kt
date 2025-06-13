@@ -1,4 +1,4 @@
-package dev.enro.tests.application.samples.travel
+package dev.enro.tests.application.samples.travel.ui.registration
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -44,15 +44,14 @@ import dev.enro.open
 import kotlinx.serialization.Serializable
 
 @Serializable
-object EnterNameScreen : NavigationKey
+object RegistrationNameDestination : NavigationKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@NavigationDestination(EnterNameScreen::class)
-fun EnterNameScreenDestination() {
-    val navigation = navigationHandle<EnterNameScreen>()
-    var firstName by rememberSaveable { mutableStateOf("") }
-    var lastName by rememberSaveable { mutableStateOf("") }
+@NavigationDestination(RegistrationNameDestination::class)
+fun RegistrationNameScreen() {
+    val navigation = navigationHandle<RegistrationNameDestination>()
+    var fullName by rememberSaveable { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -104,24 +103,12 @@ fun EnterNameScreenDestination() {
                 modifier = Modifier.padding(bottom = 40.dp)
             )
 
-            // Input fields
+            // Input field
             OutlinedTextField(
-                value = firstName,
-                onValueChange = { firstName = it },
-                label = { Text("First name") },
-                placeholder = { Text("Enter your first name") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
-            )
-
-            OutlinedTextField(
-                value = lastName,
-                onValueChange = { lastName = it },
-                label = { Text("Last name") },
-                placeholder = { Text("Enter your last name") },
+                value = fullName,
+                onValueChange = { fullName = it },
+                label = { Text("Full name") },
+                placeholder = { Text("Enter your full name") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 32.dp),
@@ -130,13 +117,13 @@ fun EnterNameScreenDestination() {
             )
 
             // Encouragement message
-            if (firstName.isNotBlank()) {
+            if (fullName.isNotBlank()) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 32.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
                     )
                 ) {
                     Row(
@@ -149,9 +136,9 @@ fun EnterNameScreenDestination() {
                             modifier = Modifier.padding(end = 12.dp)
                         )
                         Text(
-                            text = "Nice to meet you, $firstName!",
+                            text = "Nice to meet you, ${fullName.split(" ").firstOrNull() ?: fullName}!",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
                 }
@@ -163,19 +150,21 @@ fun EnterNameScreenDestination() {
             Button(
                 onClick = {
                     navigation.open(
-                        EnterUsernameScreen(
-                            firstName = firstName,
-                            lastName = lastName
+                        RegistrationUsernameDestination(
+                            firstName = fullName.split(" ").firstOrNull() ?: fullName,
+                            lastName = fullName.split(" ").drop(1).joinToString(" ")
                         )
                     )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                enabled = firstName.isNotBlank() && lastName.isNotBlank()
+                enabled = fullName.isNotBlank()
             ) {
                 Text("Continue", fontSize = 18.sp)
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

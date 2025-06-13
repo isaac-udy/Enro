@@ -48,15 +48,15 @@ import dev.enro.tests.application.samples.travel.domain.TravelDestination
 import kotlinx.serialization.Serializable
 
 @Serializable
-class Home(
+class HomeDestination(
     val user: String,
 ) : NavigationKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@NavigationDestination(Home::class)
-fun HomeDestination() {
-    val navigation = navigationHandle<Home>()
+@NavigationDestination(HomeDestination::class)
+fun HomeScreen() {
+    val navigation = navigationHandle<HomeDestination>()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     // Get destinations from repository
@@ -150,7 +150,7 @@ fun HomeDestination() {
                     onClick = {
                         showLogoutDialog = false
                         TravelUserRepository.instance.logout()
-                        navigation.closeAndReplaceWith(LoginScreen)
+                        navigation.closeAndReplaceWith(LoginDestination)
                     }
                 ) {
                     Text("Log Out")

@@ -1,4 +1,4 @@
-package dev.enro.tests.application.samples.travel
+package dev.enro.tests.application.samples.travel.ui.registration
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -50,16 +50,16 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-class EnterUsernameScreen(
+class RegistrationUsernameDestination(
     val firstName: String,
     val lastName: String,
 ) : NavigationKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@NavigationDestination(EnterUsernameScreen::class)
+@NavigationDestination(RegistrationUsernameDestination::class)
 fun EnterUsernameScreenDestination() {
-    val navigation = navigationHandle<EnterUsernameScreen>()
+    val navigation = navigationHandle<RegistrationUsernameDestination>()
     var username by rememberSaveable { mutableStateOf("") }
     var isChecking by remember { mutableStateOf(false) }
     var isAvailable by remember { mutableStateOf(false) }
@@ -230,7 +230,7 @@ fun EnterUsernameScreenDestination() {
             Button(
                 onClick = {
                     navigation.open(
-                        EnterPasswordScreen(
+                        RegistrationPasswordDestination(
                             firstName = navigation.key.firstName,
                             lastName = navigation.key.lastName,
                             username = username
@@ -244,6 +244,8 @@ fun EnterUsernameScreenDestination() {
             ) {
                 Text("Continue", fontSize = 18.sp)
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

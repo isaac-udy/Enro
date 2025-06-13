@@ -1,6 +1,7 @@
-package dev.enro.tests.application.samples.travel
+package dev.enro.tests.application.samples.travel.ui.registration
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -52,7 +53,7 @@ import dev.enro.open
 import kotlinx.serialization.Serializable
 
 @Serializable
-class EnterPasswordScreen(
+class RegistrationPasswordDestination(
     val firstName: String,
     val lastName: String,
     val username: String,
@@ -65,9 +66,9 @@ data class PasswordRequirement(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@NavigationDestination(EnterPasswordScreen::class)
+@NavigationDestination(RegistrationPasswordDestination::class)
 fun EnterPasswordScreenDestination() {
-    val navigation = navigationHandle<EnterPasswordScreen>()
+    val navigation = navigationHandle<RegistrationPasswordDestination>()
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -75,7 +76,7 @@ fun EnterPasswordScreenDestination() {
 
     val requirements = remember {
         listOf(
-            PasswordRequirement("At least 8 characters") { it.length >= 8 },
+            PasswordRequirement("At least 6 characters") { it.length >= 6 },
             PasswordRequirement("Contains uppercase letter") { it.any { c -> c.isUpperCase() } },
             PasswordRequirement("Contains lowercase letter") { it.any { c -> c.isLowerCase() } },
             PasswordRequirement("Contains a number") { it.any { c -> c.isDigit() } },
@@ -84,7 +85,7 @@ fun EnterPasswordScreenDestination() {
     }
 
     val passwordsMatch = password.isNotEmpty() && password == confirmPassword
-    val allRequirementsMet = requirements.all { it.check(password) }
+    val threePlusRequirementsMet = requirements.count { it.check(password) } >= 3
 
     Scaffold(
         topBar = {
@@ -182,13 +183,18 @@ fun EnterPasswordScreenDestination() {
             )
 
             // Password match indicator
-            if (confirmPassword.isNotEmpty()) {
-                Text(
-                    text = if (passwordsMatch) "✅ Passwords match" else "❌ Passwords don't match",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (passwordsMatch) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
+            Box(
+                modifier = Modifier
+                    .height(48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (confirmPassword.isNotEmpty()) {
+                    Text(
+                        text = if (passwordsMatch) "✅ Passwords match" else "❌ Passwords don't match",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (passwordsMatch) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                    )
+                }
             }
 
             // Password requirements
@@ -205,7 +211,7 @@ fun EnterPasswordScreenDestination() {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Password requirements:",
+                        text = "Password requirements (3/5 required):",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -226,7 +232,7 @@ fun EnterPasswordScreenDestination() {
             Button(
                 onClick = {
                     navigation.open(
-                        RegistrationWelcomeScreen(
+                        RegistrationSuccessfulDestination(
                             firstName = navigation.key.firstName,
                             lastName = navigation.key.lastName,
                             username = navigation.key.username,
@@ -237,10 +243,12 @@ fun EnterPasswordScreenDestination() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                enabled = allRequirementsMet && passwordsMatch
+                enabled = threePlusRequirementsMet && passwordsMatch
             ) {
                 Text("Create Account", fontSize = 18.sp)
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

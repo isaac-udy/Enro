@@ -1,4 +1,4 @@
-package dev.enro.tests.application.samples.travel
+package dev.enro.tests.application.samples.travel.ui.registration
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.RepeatMode
@@ -23,7 +23,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -42,14 +41,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
+import dev.enro.closeAndReplaceWith
 import dev.enro.navigationHandle
-import dev.enro.open
+import dev.enro.tests.application.samples.travel.HomeDestination
+import dev.enro.tests.application.samples.travel.LoginDestination
 import dev.enro.tests.application.samples.travel.data.TravelUserRepository
+import dev.enro.ui.LocalNavigationContainer
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-class RegistrationWelcomeScreen(
+class RegistrationSuccessfulDestination(
     val firstName: String,
     val lastName: String,
     val username: String,
@@ -58,10 +60,28 @@ class RegistrationWelcomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@NavigationDestination(RegistrationWelcomeScreen::class)
-fun RegistrationWelcomeScreenDestination() {
-    val navigation = navigationHandle<RegistrationWelcomeScreen>()
+@NavigationDestination(RegistrationSuccessfulDestination::class)
+fun RegistrationSuccessfulScreen() {
+    val navigation = navigationHandle<RegistrationSuccessfulDestination>()
     var showContent by remember { mutableStateOf(false) }
+    val container = LocalNavigationContainer.current
+
+    LaunchedEffect(container ) {
+        // When the RegistrationSuccessfulDestination is launched,
+        // we're going to update the parent container's backstack to
+        // drop any of the previous registration/login destinations
+        container.updateBackstack { backstack ->
+            backstack.filterNot { instance ->
+                listOf(
+                    LoginDestination::class,
+                    RegistrationOverviewDestination::class,
+                    RegistrationNameDestination::class,
+                    RegistrationUsernameDestination::class,
+                    RegistrationPasswordDestination::class
+                ).contains(instance.key::class)
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         // Register the user
@@ -101,17 +121,10 @@ fun RegistrationWelcomeScreenDestination() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Progress indicator - Complete!
-            LinearProgressIndicator(
-                progress = { 1f },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 48.dp, top = 24.dp),
-            )
-
             AnimatedVisibility(
                 visible = showContent,
-                enter = fadeIn(animationSpec = tween(500)) + scaleIn(animationSpec = tween(500))
+                enter = fadeIn(animationSpec = tween(500)) + scaleIn(animationSpec = tween(500)),
+                modifier = Modifier.padding(top = 48.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -204,7 +217,7 @@ fun RegistrationWelcomeScreenDestination() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Button(
-                        onClick = { navigation.open(Home(user = navigation.key.username)) },
+                        onClick = { navigation.closeAndReplaceWith(HomeDestination(user = navigation.key.username)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
@@ -213,6 +226,7 @@ fun RegistrationWelcomeScreenDestination() {
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

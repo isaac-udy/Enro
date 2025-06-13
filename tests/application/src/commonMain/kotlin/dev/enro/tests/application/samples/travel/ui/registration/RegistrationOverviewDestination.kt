@@ -1,4 +1,4 @@
-package dev.enro.tests.application.samples.travel
+package dev.enro.tests.application.samples.travel.ui.registration
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,13 +38,13 @@ import dev.enro.open
 import kotlinx.serialization.Serializable
 
 @Serializable
-object RegistrationOverview : NavigationKey
+object RegistrationOverviewDestination : NavigationKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@NavigationDestination(RegistrationOverview::class)
-fun RegistrationOverviewDestination() {
-    val navigation = navigationHandle<RegistrationOverview>()
+@NavigationDestination(RegistrationOverviewDestination::class)
+fun RegistrationOverviewScreen() {
+    val navigation = navigationHandle<RegistrationOverviewDestination>()
 
     Scaffold(
         topBar = {
@@ -69,7 +69,7 @@ fun RegistrationOverviewDestination() {
         ) {
             // Welcome emoji and title
             Text(
-                text = "✈️",
+                text = "🛫",
                 fontSize = 72.sp,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
@@ -130,7 +130,7 @@ fun RegistrationOverviewDestination() {
 
             // Continue button
             Button(
-                onClick = { navigation.open(EnterNameScreen) },
+                onClick = { navigation.open(RegistrationNameDestination) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
@@ -145,6 +145,8 @@ fun RegistrationOverviewDestination() {
             ) {
                 Text("Maybe Later")
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

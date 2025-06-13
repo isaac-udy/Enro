@@ -22,7 +22,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.enro.NavigationKey
@@ -43,16 +43,17 @@ import dev.enro.closeAndReplaceWith
 import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.tests.application.samples.travel.data.TravelUserRepository
+import dev.enro.tests.application.samples.travel.ui.registration.RegistrationOverviewDestination
 import kotlinx.serialization.Serializable
 
 @Serializable
-object LoginScreen : NavigationKey
+object LoginDestination : NavigationKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@NavigationDestination(LoginScreen::class)
-fun LoginScreenDestination() {
-    val navigation = navigationHandle<LoginScreen>()
+@NavigationDestination(LoginDestination::class)
+fun LoginScreen() {
+    val navigation = navigationHandle<LoginDestination>()
     var username by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -64,13 +65,7 @@ fun LoginScreenDestination() {
         TravelUserRepository.instance.registerUser("Travel", "Explorer", "explorer", "password")
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("✈️ TravelBuddy") }
-            )
-        }
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -84,6 +79,13 @@ fun LoginScreenDestination() {
             Text(
                 text = "🏝️",
                 fontSize = 72.sp,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            Text(
+                text = "TravelBuddy",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -127,7 +129,7 @@ fun LoginScreenDestination() {
                 onClick = {
                     // Attempt login
                     if (TravelUserRepository.instance.login(username, password)) {
-                        navigation.closeAndReplaceWith(Home(user = username))
+                        navigation.closeAndReplaceWith(HomeDestination(user = username))
                     } else {
                         showError = true
                     }
@@ -163,7 +165,7 @@ fun LoginScreenDestination() {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 OutlinedButton(
-                    onClick = { navigation.open(RegistrationOverview) },
+                    onClick = { navigation.open(RegistrationOverviewDestination) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp)

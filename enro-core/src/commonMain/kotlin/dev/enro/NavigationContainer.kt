@@ -210,6 +210,10 @@ public class NavigationContainer(
         } as? ContainerContext
     }
 
+    public fun updateBackstack(context: ContainerContext, block: (NavigationBackstack) -> NavigationBackstack) {
+        execute(context, NavigationOperation.SetBackstack(backstack, block(backstack)))
+    }
+
     public data class Key(val name: String) {
         @Deprecated("TODO BETTER DEPRECATION MESSAGE")
         public companion object {

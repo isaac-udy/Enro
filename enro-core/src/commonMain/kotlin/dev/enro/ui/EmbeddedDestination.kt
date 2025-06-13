@@ -45,7 +45,7 @@ public fun EmbeddedDestination(
 
 @Composable
 @ExperimentalEnroApi
-public inline fun <reified T: Any> EmbeddedDestination(
+public inline fun <reified T : Any> EmbeddedDestination(
     instance: NavigationKey.Instance<NavigationKey.WithResult<T>>,
     noinline onClosed: (() -> Unit),
     modifier: Modifier = Modifier,
@@ -79,3 +79,5 @@ public inline fun <reified T: Any> EmbeddedDestination(
         NavigationDisplay(container)
     }
 }
+
+

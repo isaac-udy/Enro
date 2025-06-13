@@ -94,6 +94,7 @@ public fun NavigationDisplay(
         key = scene.key,
         containerKey = state.container.key,
         visible = scene.entries.map { it.instance },
+        previouslyVisible = scene.previousEntries.map { it.instance },
     )
     sceneState.scenes[sceneKey] = scene
 
@@ -338,6 +339,7 @@ private fun HandlePredictiveBack(
 public interface SceneTransitionData {
     public val containerKey: NavigationContainer.Key
     public val visible: List<NavigationKey.Instance<NavigationKey>>
+    public val previouslyVisible: List<NavigationKey.Instance<NavigationKey>>
 }
 
 /**
@@ -349,6 +351,7 @@ private data class SceneKey(
     val key: Any,
     override val containerKey: NavigationContainer.Key,
     override val visible: List<NavigationKey.Instance<NavigationKey>>,
+    override val previouslyVisible: List<NavigationKey.Instance<NavigationKey>>,
 ) : SceneTransitionData
 
 /**
@@ -477,6 +480,7 @@ private fun TransitionAnimationEffect(
             key = peekScene.key,
             containerKey = state.key,
             visible = peekScene.entries.map { it.instance },
+            previouslyVisible = peekScene.previousEntries.map { it.instance },
         )
         scenes[peekSceneKey] = peekScene
 

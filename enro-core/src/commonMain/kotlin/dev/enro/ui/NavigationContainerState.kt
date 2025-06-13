@@ -48,6 +48,10 @@ public class NavigationContainerState internal constructor(
         container.backstack
     }
 
+    public fun updateBackstack(block: (NavigationBackstack) -> NavigationBackstack) {
+        container.updateBackstack(context, block)
+    }
+
     public fun execute(operation: NavigationOperation) {
         container.execute(context, operation)
     }
@@ -66,6 +70,7 @@ public class NavigationContainerState internal constructor(
             }
         }
     }
+
     public fun restoreState(savedState: SavedState) {
         val restoredBackstack = savedState.read {
             getSavedStateList("backstack").map {
