@@ -40,6 +40,7 @@ import dev.enro.tests.application.compose.results.ComposeMixedResultTypes
 import dev.enro.tests.application.compose.results.ComposeNestedResults
 import dev.enro.tests.application.compose.results.ResultsWithMetadata
 import dev.enro.tests.application.samples.loan.CreateLoanApplication
+import dev.enro.tests.application.samples.travel.LoginScreen
 import dev.enro.tests.application.samples.recipes.RecipesHome
 import dev.enro.tests.application.serialization.CommonSerialization
 import dev.enro.tests.application.window.SimpleWindow
@@ -65,6 +66,7 @@ internal class SelectDestination(
                 ResultsWithMetadata,
                 SimpleWindow,
                 RecipesHome,
+                LoginScreen,
                 CreateLoanApplication
             )
 
