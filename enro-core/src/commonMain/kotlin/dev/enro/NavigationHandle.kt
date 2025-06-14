@@ -1,10 +1,13 @@
 package dev.enro
 
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.SavedStateHandle
 import dev.enro.annotations.AdvancedEnroApi
 import kotlin.jvm.JvmName
 
 public abstract class NavigationHandle<out T : NavigationKey> internal constructor() : LifecycleOwner {
+    public abstract val savedStateHandle: SavedStateHandle
+
     public abstract val instance: NavigationKey.Instance<T>
     public val key: T get() = instance.key
 

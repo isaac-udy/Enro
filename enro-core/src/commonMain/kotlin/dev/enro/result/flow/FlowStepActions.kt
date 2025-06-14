@@ -28,7 +28,7 @@ public class FlowStepActions<T : NavigationKey>(
      */
     public fun clearResult() {
         resultManager
-            .clear(step)
+            .clear(step.stepId)
     }
 
     /**

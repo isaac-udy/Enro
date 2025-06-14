@@ -120,7 +120,6 @@ internal class ManagedFlowViewModel<T : NavigationKey, R : Any>(
     private val navigation by navigationHandle(keyType)
 
     internal val flow by registerForFlowResult(
-        isManuallyStarted = true,
         flow = flowDefinition,
         onCompleted = { result ->
             onCompleted(ManagedFlowDestinationScope(navigation), result)

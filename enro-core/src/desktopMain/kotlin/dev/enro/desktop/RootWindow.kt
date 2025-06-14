@@ -26,6 +26,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.EnroController
@@ -114,11 +115,16 @@ public class RootWindow<out T: NavigationKey> internal constructor(
                         // Get or create the NavigationHandleHolder for this destination
                         val navigationHandle = remember(viewModelStoreOwner) {
                             val instance = instance
-                            val holder = viewModelStoreOwner.getOrCreateNavigationHandleHolder(instance)
-                            val navigationHandle = RootNavigationHandle(instance)
-                            holder.navigationHandle = navigationHandle
+                            val holder = viewModelStoreOwner.getOrCreateNavigationHandleHolder {
+                                RootNavigationHandle(
+                                    instance = instance,
+                                    savedStateHandle = createSavedStateHandle(),
+                                )
+                            }
+                            val navigationHandle = holder.navigationHandle
+                            require(navigationHandle is RootNavigationHandle)
                             navigationHandle.bindContext(context)
-                            holder.navigationHandle
+                            return@remember navigationHandle
                         }
                         val rootWindowScope = remember(navigationHandle) {
                             val scope = RootWindowScope<T>(

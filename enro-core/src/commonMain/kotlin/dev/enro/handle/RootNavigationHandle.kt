@@ -3,20 +3,20 @@ package dev.enro.handle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.lifecycleScope
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
-import dev.enro.close
 import dev.enro.context.RootContext
 import dev.enro.platform.EnroLog
 import dev.enro.result.NavigationResultChannel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
 internal class RootNavigationHandle<T : NavigationKey>(
     instance: NavigationKey.Instance<T>,
+    override val savedStateHandle: SavedStateHandle,
 ) : NavigationHandle<T>() {
     private val lifecycleRegistry = LifecycleRegistry(this)
     override val lifecycle: Lifecycle = lifecycleRegistry

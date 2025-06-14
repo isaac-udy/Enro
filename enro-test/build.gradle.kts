@@ -22,6 +22,8 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.compose.lifecycle)
             implementation(libs.androidx.viewmodel)
+            implementation(libs.compose.viewmodel)
+            implementation(libs.androidx.savedState)
             api("dev.enro:enro-core:${project.enroVersionName}")
         }
         androidMain.dependencies {

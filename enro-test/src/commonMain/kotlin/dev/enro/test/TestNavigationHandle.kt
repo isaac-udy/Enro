@@ -4,6 +4,7 @@ package dev.enro.test
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.SavedStateHandle
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
@@ -11,6 +12,7 @@ import dev.enro.asInstance
 
 class TestNavigationHandle<T : NavigationKey>(
     override val instance: NavigationKey.Instance<T>,
+    override val savedStateHandle: SavedStateHandle = SavedStateHandle(),
 ) : NavigationHandle<T>() {
     @PublishedApi
     internal val operations = mutableListOf<NavigationOperation.RootOperation>()

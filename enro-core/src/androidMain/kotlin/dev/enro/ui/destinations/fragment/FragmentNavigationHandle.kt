@@ -2,6 +2,7 @@ package dev.enro.ui.destinations.fragment
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.SavedStateHandle
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
@@ -13,6 +14,8 @@ import dev.enro.ui.NavigationDestinationScope
 internal class FragmentNavigationHandle<T : NavigationKey>() : NavigationHandle<T>() {
     internal var delegate: NavigationHandle<T> = NotInitialized()
     override lateinit var instance: NavigationKey.Instance<T>
+    override val savedStateHandle: SavedStateHandle
+        get() = delegate.savedStateHandle
 
     @AdvancedEnroApi
     override fun execute(operation: NavigationOperation) {
@@ -31,6 +34,7 @@ internal class FragmentNavigationHandle<T : NavigationKey>() : NavigationHandle<
     }
 
     internal class NotInitialized<T : NavigationKey>() : NavigationHandle<T>() {
+        override val savedStateHandle: SavedStateHandle = SavedStateHandle()
         override lateinit var instance: NavigationKey.Instance<T>
 
         override val lifecycle: Lifecycle = object : Lifecycle() {

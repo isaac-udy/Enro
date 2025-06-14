@@ -5,6 +5,7 @@ import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.createSavedStateHandle
 import dev.enro.EnroController
 import dev.enro.NavigationKey
 import dev.enro.context.RootContext
@@ -55,10 +56,15 @@ internal object ActivityPlugin : NavigationPlugin() {
                 ?: savedInstanceState?.getNavigationKeyInstance()
                 ?: NavigationKey.Instance(DefaultActivityNavigationKey)
 
-            val navigationHandleHolder = activity.getOrCreateNavigationHandleHolder(instance)
-            navigationHandleHolder.navigationHandle = RootNavigationHandle(instance = instance).apply {
-                bindContext(rootContext)
+            val navigationHandleHolder = activity.getOrCreateNavigationHandleHolder {
+                RootNavigationHandle(
+                    instance = instance,
+                    savedStateHandle = createSavedStateHandle(),
+                )
             }
+            val navigationHandle = navigationHandleHolder.navigationHandle
+            require(navigationHandle is RootNavigationHandle)
+            navigationHandle.bindContext(rootContext)
         }
 
         override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {

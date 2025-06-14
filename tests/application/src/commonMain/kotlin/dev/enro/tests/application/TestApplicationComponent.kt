@@ -3,6 +3,7 @@ package dev.enro.tests.application
 import dev.enro.annotations.NavigationComponent
 import dev.enro.controller.NavigationComponentConfiguration
 import dev.enro.controller.createNavigationModule
+import dev.enro.tests.application.samples.loan.domain.LoanApplication
 import dev.enro.tests.application.samples.loan.ui.LoanPurposeOption
 import dev.enro.tests.application.samples.loan.ui.OwnershipOption
 import dev.enro.tests.application.samples.loan.ui.PropertyPurposeOption
@@ -35,6 +36,19 @@ object TestApplicationComponent : NavigationComponentConfiguration(
 
                 subclass(RepaymentTypeOption.InterestOnly::class)
                 subclass(RepaymentTypeOption.PrincipalAndInterest::class)
+
+                subclass(LoanApplication.Applicant::class)
+                subclass(LoanApplication.Ownership.Sole::class)
+                subclass(LoanApplication.Ownership.Joint::class)
+                subclass(LoanApplication.RepaymentFrequency.Fortnightly::class)
+                subclass(LoanApplication.RepaymentFrequency.Monthly::class)
+                subclass(LoanApplication.RepaymentFrequency.Quarterly::class)
+                subclass(LoanApplication.LoanPurpose.Car::class)
+                subclass(LoanApplication.LoanPurpose.Property::class)
+                subclass(LoanApplication.PropertyPurpose.Investment::class)
+                subclass(LoanApplication.PropertyPurpose.OwnerOccupied::class)
+                subclass(LoanApplication.RepaymentType.PrincipalAndInterest::class)
+                subclass(LoanApplication.RepaymentType.InterestOnly::class)
             }
 
             // Common Serialization Serializers

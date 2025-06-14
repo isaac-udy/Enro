@@ -18,7 +18,7 @@ public data class FlowStep<out Result : Any> private constructor(
     @PublishedApi internal val metadata: NavigationKey.Metadata,
     @PublishedApi internal val dependsOn: Long,
     @PublishedApi internal val configuration: Set<FlowStepConfiguration>,
-) : NavigationKey.WithResult<Result> {
+) {
 
     internal constructor(
         stepId: String,
@@ -70,9 +70,8 @@ public data class FlowStep<out Result : Any> private constructor(
         return result
     }
 
-    public companion object {
-    }
-    public object MetadataKey : NavigationKey.MetadataKey<FlowStep<*>?>(null) {}
+    public companion object {}
+    public object FlowStepIdKey : NavigationKey.MetadataKey<String?>(null) {}
 }
 
 internal val FlowStep<*>.isTransient: Boolean

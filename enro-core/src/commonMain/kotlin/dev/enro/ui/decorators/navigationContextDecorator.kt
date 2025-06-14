@@ -10,6 +10,7 @@ import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
@@ -60,11 +61,6 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
             "ViewModelStoreOwner must implement HasDefaultViewModelProviderFactory"
         }
 
-        // Get or create the NavigationHandleHolder for this destination
-        val navigationHandleHolder = remember(viewModelStoreOwner) {
-            viewModelStoreOwner.getOrCreateNavigationHandleHolder(destination.instance)
-        }
-
         val activeContainerId = rememberSaveable { mutableStateOf<String?>(null) }
         // Create the navigation context for this destination
         val context = remember(parentContext, destination) {
@@ -77,6 +73,20 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
                 parent = parentContext,
             )
         }
+        // Get or create the NavigationHandleHolder for this destination
+        val navigationHandle = remember(context) {
+            val holder = context.getOrCreateNavigationHandleHolder {
+                DestinationNavigationHandle(
+                    instance = destination.instance,
+                    savedStateHandle = createSavedStateHandle(),
+                )
+            }
+            val navigationHandle = holder.navigationHandle
+            require(navigationHandle is DestinationNavigationHandle)
+            return@remember navigationHandle
+        }
+        navigationHandle.bindContext(context)
+
         DisposableEffect(parentContext, context) {
             parentContext.registerChild(context)
             parentContext.registerVisibility(context, true)
@@ -86,19 +96,13 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
             }
         }
 
-        val navigationHandle = remember(navigationHandleHolder){
-            val navigationHandle = navigationHandleHolder.navigationHandle
-            require(navigationHandle is DestinationNavigationHandle<NavigationKey>)
-            navigationHandle.bindContext(context)
-            return@remember navigationHandle
-        }
         val isActiveInRoot = context.isActiveInRoot
         val isFirstOpen = rememberSaveable { mutableStateOf(true) }
 
         // Provide navigation-specific composition locals
         CompositionLocalProvider(
             LocalNavigationContext provides context,
-            LocalNavigationHandle provides navigationHandleHolder.navigationHandle,
+            LocalNavigationHandle provides navigationHandle,
         ) {
             destination.content()
             DisposableEffect(isActiveInRoot) {

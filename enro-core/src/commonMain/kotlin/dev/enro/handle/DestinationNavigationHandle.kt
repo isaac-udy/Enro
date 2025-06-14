@@ -3,6 +3,7 @@ package dev.enro.handle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.SavedStateHandle
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
@@ -11,6 +12,7 @@ import dev.enro.platform.EnroLog
 
 internal class DestinationNavigationHandle<T : NavigationKey>(
     instance: NavigationKey.Instance<T>,
+    override val savedStateHandle: SavedStateHandle,
 ) : NavigationHandle<T>() {
     private val lifecycleRegistry = LifecycleRegistry(this)
     override val lifecycle: Lifecycle = lifecycleRegistry
@@ -28,9 +30,11 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
             Lifecycle.Event.ON_CREATE -> {
                 // No op: ON_CREATE is handled through the bindContext function
             }
+
             Lifecycle.Event.ON_DESTROY -> {
                 // No op: ON_DESTROY is handled through the onDestroy function
             }
+
             Lifecycle.Event.ON_ANY -> {
                 // No op
             }
@@ -38,6 +42,7 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
     }
 
     internal fun bindContext(context: DestinationContext<T>) {
+        if (this.context === context) return
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
         require(context.destination.instance.id == instance.id) {
             "Cannot bind NavigationContext with instance ${context.destination.instance} to NavigationHandle with instance ${instance}"
@@ -67,7 +72,17 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
         val context = context
         if (context == null) {
-            EnroLog.warn("NavigationHandle with instance $instance has no context")
+            EnroLog.warn("NavigationHandle with instance $instance has no context, ignoring operation: $operation")
+            return
+        }
+        val isInBackstack = context.parent.container.backstack.any { it.id == context.destination.instance.id }
+        if (!isInBackstack) {
+            // Some destinations (particularly overlay destinations that have animations) may not enter the
+            // DESTROYED state immediately after being removed from their parent container, so they may still
+            // receive NavigationOperations. An example is a Dialog's scrim being tapped multiple times during the
+            // dismiss animation. In these cases, we want to ignore the operations. We print a warning here,
+            // so that it's visible to developers, but this should not necessarily raise concerns.
+            EnroLog.warn("NavigationHandle with instance $instance is not in it's parent's backstack, ignoring operation: $operation")
             return
         }
         val containerContext = findContainerForOperation(

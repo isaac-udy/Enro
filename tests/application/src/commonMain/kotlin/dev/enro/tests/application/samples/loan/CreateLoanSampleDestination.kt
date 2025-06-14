@@ -17,7 +17,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -178,7 +178,7 @@ private fun progressForBackstack(
     backstack: NavigationBackstack,
 ): Float {
     val top = backstack.lastOrNull()
-    val progress = remember { mutableStateOf(0f) }
+    val progress = rememberSaveable { mutableStateOf(0f) }
     val updatedProgress = when (top?.key) {
         GetPrimaryApplicantInfo -> 0f
         SelectOwnershipType -> 0.2f

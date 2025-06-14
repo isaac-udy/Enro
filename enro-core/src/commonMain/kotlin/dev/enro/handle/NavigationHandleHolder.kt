@@ -3,8 +3,10 @@ package dev.enro.handle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -18,10 +20,11 @@ import dev.enro.platform.EnroLog
 
 @PublishedApi
 internal class NavigationHandleHolder<T : NavigationKey>(
-    instance: NavigationKey.Instance<T>
+    navigationHandle: NavigationHandle<T>,
 ) : ViewModel() {
     @PublishedApi
-    internal var navigationHandle: NavigationHandle<T> by mutableStateOf(DestinationNavigationHandle(instance))
+    internal var navigationHandle: NavigationHandle<T> by mutableStateOf(navigationHandle)
+        private set
 
     override fun onCleared() {
         when (val impl = navigationHandle) {
@@ -36,6 +39,8 @@ internal class NavigationHandleHolder<T : NavigationKey>(
     private class ClearedNavigationHandle<T: NavigationKey>(
         override val instance: NavigationKey.Instance<T>
     ) : NavigationHandle<T>() {
+        override val savedStateHandle: SavedStateHandle = SavedStateHandle()
+
         override val lifecycle: Lifecycle = object : Lifecycle() {
             override val currentState: State = State.DESTROYED
             override fun addObserver(observer: LifecycleObserver) {}
@@ -52,16 +57,16 @@ internal class NavigationHandleHolder<T : NavigationKey>(
 
 @PublishedApi
 internal fun <T: NavigationKey> ViewModelStoreOwner.getOrCreateNavigationHandleHolder(
-    instance: NavigationKey.Instance<T>,
+    createNavigationHandle: CreationExtras.() -> NavigationHandle<T>,
 ): NavigationHandleHolder<T> {
     return ViewModelProvider.create(
         owner = this,
         factory = viewModelFactory {
             addInitializer(NavigationHandleHolder::class) {
-                NavigationHandleHolder(instance)
+                NavigationHandleHolder(createNavigationHandle())
             }
         },
-        extras = CreationExtras.Empty,
+        extras = (this as HasDefaultViewModelProviderFactory).defaultViewModelCreationExtras,
     ).get<NavigationHandleHolder<T>>()
 }
 

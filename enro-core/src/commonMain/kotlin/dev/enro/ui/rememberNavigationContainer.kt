@@ -45,7 +45,7 @@ public fun rememberNavigationContainer(
             save = { container ->
                 container.backstack.map {
                     encodeToSavedState(
-//                        serializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
+                        serializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
                         value = it,
                         configuration = controller.serializers.savedStateConfiguration
                     )
