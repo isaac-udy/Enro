@@ -17,7 +17,7 @@ class SimpleActivityRobot(
     }
 
     fun close() {
-        composeRule.onNode(hasText("Close Activity"))
+        composeRule.onNode(hasText("Finish"))
             .performClick()
     }
 }

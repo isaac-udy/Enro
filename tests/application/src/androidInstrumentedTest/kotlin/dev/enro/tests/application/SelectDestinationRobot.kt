@@ -7,7 +7,6 @@ import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onSiblings
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import dev.enro.tests.application.activity.SimpleActivityRobot
 import dev.enro.tests.application.compose.BottomNavigationRobot
@@ -69,9 +68,7 @@ class SelectDestinationRobot(
     }
 
     fun openUnboundBottomSheet(): UnboundBottomSheetRobot {
-        composeRule
-            .onNode(hasText("Unbound Bottom Sheet"))
-            .performScrollTo()
+        scrollTo("Unbound Bottom Sheet")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -80,7 +77,6 @@ class SelectDestinationRobot(
     }
 
     fun openBottomNavigation(): BottomNavigationRobot {
-        composeRule.waitForIdle()
         scrollTo("Bottom Navigation")
             .onSiblings()
             .filterToOne(hasText("Open"))
