@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,7 +23,6 @@ import androidx.savedstate.serialization.encodeToSavedState
 import androidx.savedstate.serialization.serializers.SavedStateSerializer
 import dev.enro.EnroController
 import dev.enro.NavigationKey
-import dev.enro.NavigationOperation
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
 import dev.enro.close
@@ -29,7 +30,6 @@ import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.ui.NavigationDisplay
-import dev.enro.ui.destinations.EmptyNavigationKey
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
@@ -56,6 +56,71 @@ object CommonSerialization : NavigationKey {
                         long = Random.nextLong(),
                     ),
                 )
+            }
+        }
+    }
+
+    @Serializable
+    data class SerializableGenericNavigationKey<T : SerializableGenericNavigationKey.ContentData>(
+        val typeName: String,
+        val data: List<T>,
+    ) : NavigationKey {
+        @Serializable
+        abstract class ContentData
+
+        @Serializable
+        sealed class GenericContentOne : ContentData() {
+            @Serializable
+            data class DataOne(
+                val value: String,
+            ) : GenericContentOne()
+
+            @Serializable
+            data class DataTwo(
+                val value: Int,
+            ) : GenericContentOne()
+        }
+
+        @Serializable
+        sealed class GenericContentTwo : ContentData() {
+            @Serializable
+            data class DataOne(
+                val value: String,
+            ) : GenericContentTwo()
+
+            @Serializable
+            data class DataTwo(
+                val value: Int,
+            ) : GenericContentTwo()
+        }
+
+        companion object {
+            fun createRandom(): SerializableGenericNavigationKey<*> {
+                val selectedType = listOf(GenericContentOne::class, GenericContentTwo::class).random()
+                @Suppress("RemoveExplicitTypeArguments") // being explicit
+                return when (selectedType) {
+                    GenericContentOne::class -> SerializableGenericNavigationKey<GenericContentOne>(
+                        typeName = selectedType.qualifiedName!!,
+                        data = List(Random.nextInt(10)) {
+                            GenericContentOne.DataOne(Uuid.random().toString())
+                        }.plus(
+                            List(Random.nextInt(10)) {
+                                GenericContentOne.DataTwo(Random.nextInt())
+                            }
+                        ).shuffled()
+                    )
+                    GenericContentTwo::class -> SerializableGenericNavigationKey<GenericContentTwo>(
+                        typeName = selectedType.qualifiedName!!,
+                        data = List(Random.nextInt(10)) {
+                            GenericContentTwo.DataOne(Uuid.random().toString())
+                        }.plus(
+                            List(Random.nextInt(10)) {
+                                GenericContentTwo.DataTwo(Random.nextInt())
+                            }
+                        ).shuffled()
+                    )
+                    else -> error("Unknown type")
+                }
             }
         }
     }
@@ -103,28 +168,33 @@ data class CommonSerializableData(
 @Composable
 fun CommonSerializationScreen() {
     val container = rememberNavigationContainer(
-        backstack = listOf(EmptyNavigationKey.asInstance())
+        backstack = emptyList()
     )
 
-    TitledColumn("Common Serialization") {
+    TitledColumn(
+        title = "Common Serialization",
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
         Button(
             onClick = {
-                container.execute(
-                    NavigationOperation.AggregateOperation(
-                        container.backstack
-                        .map {
-                            NavigationOperation.Close(it)
-                        }
-                        .plus(
-                            NavigationOperation.Open(
-                                CommonSerialization.SerializableNavigationKey.createRandom().asInstance()
-                            )
-                        )
-                    )
-                )
+                container.updateBackstack {
+                    listOf(CommonSerialization.SerializableNavigationKey.createRandom().asInstance())
+                }
             }
         ) {
             Text("Open Serializable")
+        }
+
+        Button(
+            onClick = {
+                container.updateBackstack {
+                    listOf(CommonSerialization.SerializableGenericNavigationKey.createRandom().asInstance())
+                }
+            }
+        ) {
+            Text("Open Generic Serializable")
         }
         Box(
             modifier = Modifier
@@ -205,6 +275,91 @@ fun CommonSerializableNavigationKeyScreen() {
     }
 }
 
+
+@NavigationDestination(CommonSerialization.SerializableGenericNavigationKey::class)
+@Composable
+fun GenericSerializableNavigationKeyScreen() {
+    val navigation = navigationHandle<CommonSerialization.SerializableGenericNavigationKey<out CommonSerialization.SerializableGenericNavigationKey.ContentData>>()
+    TitledColumn("Generic Serializable Navigation Key") {
+        Text("Generic Data:")
+        Text(
+            modifier = Modifier.padding(start = 8.dp),
+            style = MaterialTheme.typography.labelSmall,
+            text = "Type: ${navigation.key.typeName}"
+        )
+        navigation.key.data.forEach {
+            Text(
+                modifier = Modifier.padding(start = 8.dp),
+                style = MaterialTheme.typography.labelSmall,
+                text = it.toString()
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                navigation.open(
+                    CommonSerialization.DisplaySerializedData(
+                        CommonSerialization.SerializedData.NavigationKeyJson(
+                            data = EnroController.jsonConfiguration.encodeToString(
+                                PolymorphicSerializer(NavigationKey::class),
+                                navigation.key
+                            )
+                        )
+                    )
+                )
+            }
+        ) {
+            Text("NavigationKey as Json")
+        }
+
+        Button(
+            onClick = {
+                navigation.open(
+                    CommonSerialization.DisplaySerializedData(
+                        CommonSerialization.SerializedData.NavigationKeySavedState(
+                            data = encodeToSavedState<NavigationKey>(
+                                PolymorphicSerializer(NavigationKey::class),
+                                navigation.key,
+                                EnroController.savedStateConfiguration
+                            )
+                        )
+                    )
+                )
+            }
+        ) {
+            Text("NavigationKey as SavedState")
+        }
+
+        Button(
+            onClick = {
+                navigation.open(
+                    CommonSerialization.DisplaySerializedData(
+                        CommonSerialization.SerializedData.NavigationInstanceJson(
+                            data = EnroController.jsonConfiguration.encodeToString(navigation.instance)
+                        )
+                    )
+                )
+            }
+        ) {
+            Text("NavigationInstruction as Json")
+        }
+
+        Button(
+            onClick = {
+                navigation.open(
+                    CommonSerialization.DisplaySerializedData(
+                        CommonSerialization.SerializedData.NavigationInstanceSavedState(
+                            data = encodeToSavedState(navigation.instance, EnroController.savedStateConfiguration)
+                        )
+                    )
+                )
+            }
+        ) {
+            Text("NavigationInstruction as SavedState")
+        }
+    }
+}
+
 @NavigationDestination(CommonSerialization.DisplaySerializedData::class)
 @Composable
 fun CommonDisplaySerializedDataScreen() {
@@ -213,7 +368,6 @@ fun CommonDisplaySerializedDataScreen() {
     var decodedData by remember { mutableStateOf<String?>(null) }
     TitledColumn(
         title = "Serialized Data",
-        modifier = Modifier.verticalScroll(rememberScrollState()),
     ) {
         if (decodedData == null) {
             Text("Encoded:")

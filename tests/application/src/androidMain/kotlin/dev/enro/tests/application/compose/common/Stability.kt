@@ -24,7 +24,7 @@ fun Stability(
     val viewModelStore = LocalViewModelStoreOwner.current?.viewModelStore
 
     val stabilityContent = buildString {
-        appendLine("navigationId: ${rawNavigationHandle.id}")
+        appendLine("navigationId: ${rawNavigationHandle.instance.id}")
         appendLine("navigationHashCode: ${rawNavigationHandle.hashCode()}")
         appendLine("viewModelId: ${viewModel.id}")
         appendLine("viewModelHashCode: ${viewModel.hashCode()}")

@@ -7,6 +7,20 @@ sealed class RepaymentFrequencyOption : MultiChoiceDestination.Item() {
     @Serializable
     class Fortnightly : RepaymentFrequencyOption() {
         override val title: String = "Fortnightly"
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Fortnightly
+
+            return title == other.title
+        }
+
+        override fun hashCode(): Int {
+            return title.hashCode()
+        }
+
+
     }
 
     @Serializable

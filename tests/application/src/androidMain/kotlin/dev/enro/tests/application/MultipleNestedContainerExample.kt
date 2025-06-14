@@ -102,7 +102,7 @@ fun ChildKeyScreen() {
     TitledColumn(
         title = "Child Key",
     ) {
-        Text(text = "id: ${navigation.id}")
+        Text(text = "id: ${navigation.instance.id}")
         Text(text = "name: ${navigation.key.name}")
 
         Text(text = "viewModel id: ${viewModel.id}")

@@ -1,11 +1,14 @@
 package dev.enro.tests.application
 
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.filterToOne
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onSiblings
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import dev.enro.tests.application.activity.SimpleActivityRobot
 import dev.enro.tests.application.compose.BottomNavigationRobot
 import dev.enro.tests.application.compose.BottomSheetChangeSizeRobot
@@ -39,8 +42,7 @@ class SelectDestinationRobot(
     }
 
     fun openBottomSheetCloseAndPresent(): BottomSheetCloseAndPresentRobot {
-        composeRule.onNode(hasText("Bottom Sheet Close And Present"))
-            .performScrollTo()
+        scrollTo("Bottom Sheet Close And Present")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -49,8 +51,7 @@ class SelectDestinationRobot(
     }
 
     fun openBottomSheetChangeSize(): BottomSheetChangeSizeRobot {
-        composeRule.onNode(hasText("Bottom Sheet Change Size"))
-            .performScrollTo()
+        scrollTo("Bottom Sheet Change Size")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -59,8 +60,7 @@ class SelectDestinationRobot(
     }
 
     fun openSimpleActivity(): SimpleActivityRobot {
-        composeRule.onNode(hasText("Simple Activity"))
-            .performScrollTo()
+        scrollTo("Simple Activity")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -81,8 +81,7 @@ class SelectDestinationRobot(
 
     fun openBottomNavigation(): BottomNavigationRobot {
         composeRule.waitForIdle()
-        composeRule.onNode(hasText("Bottom Navigation"))
-            .performScrollTo()
+        scrollTo("Bottom Navigation")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -91,8 +90,7 @@ class SelectDestinationRobot(
     }
 
     fun openSyntheticViewModelAccess(): SyntheticViewModelAccessRobot {
-        composeRule.onNode(hasText("Synthetic View Model Access"))
-            .performScrollTo()
+        scrollTo("Synthetic View Model Access")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -101,8 +99,7 @@ class SelectDestinationRobot(
     }
 
     fun openFindContext(): FindContextRobot {
-        composeRule.onNode(hasText("Find Context"))
-            .performScrollTo()
+        scrollTo("Find Context")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -111,8 +108,7 @@ class SelectDestinationRobot(
     }
 
     fun openComposeEmbeddedResultFlow(): ComposeEmbeddedResultFlowRobot {
-        composeRule.onNode(hasText("Compose Embedded Result Flow"))
-            .performScrollTo()
+        scrollTo("Compose Embedded Result Flow")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -121,8 +117,7 @@ class SelectDestinationRobot(
     }
 
     fun openComposeManagedResultFlow(): ComposeManagedResultFlowRobot {
-        composeRule.onNode(hasText("Compose Managed Result Flow"))
-            .performScrollTo()
+        scrollTo("Compose Managed Result Flow")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -131,8 +126,7 @@ class SelectDestinationRobot(
     }
 
     fun openComposeAsyncManagedResultFlow(): ComposeAsyncManagedResultFlowRobot {
-        composeRule.onNode(hasText("Compose Async Managed Result Flow"))
-            .performScrollTo()
+        scrollTo("Compose Async Managed Result Flow")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -141,8 +135,7 @@ class SelectDestinationRobot(
     }
 
     fun openComposeNestedResults(): ComposeNestedResultsRobot {
-        composeRule.onNode(hasText("Compose Nested Results"))
-            .performScrollTo()
+        scrollTo("Compose Nested Results")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -151,8 +144,7 @@ class SelectDestinationRobot(
     }
 
     fun openResultsWithMetadata(): ResultsWithMetadataRobot {
-        composeRule.onNode(hasText("Results With Metadata"))
-            .performScrollTo()
+        scrollTo("Results With Metadata")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -161,8 +153,7 @@ class SelectDestinationRobot(
     }
 
     fun openComposeManagedResultsWithNestedFlowAndEmptyRoot(): ComposeManagedResultsWithNestedFlowAndEmptyRootRobot {
-        composeRule.onNode(hasText("Compose Managed Results With Nested Flow And Empty Root"))
-            .performScrollTo()
+        scrollTo("Compose Managed Results With Nested Flow And Empty Root")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -171,8 +162,7 @@ class SelectDestinationRobot(
     }
 
     fun openComposeMixedResultTypes(): ComposeMixedResultTypesRobot {
-        composeRule.onNode(hasText("Compose Mixed Result Types"))
-            .performScrollTo()
+        scrollTo("Compose Mixed Result Types")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -180,8 +170,7 @@ class SelectDestinationRobot(
     }
 
     fun openManagedFlowInComposable(): ManagedFlowInComposableRobot {
-        composeRule.onNode(hasText("Managed Flow In Composable"))
-            .performScrollTo()
+        scrollTo("Managed Flow In Composable")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -189,44 +178,39 @@ class SelectDestinationRobot(
     }
 
     fun openComposeSavePrimitives(): ComposeSavePrimitivesRobot {
-        composeRule.onNode(hasText("Compose Save Primitives"))
-            .performScrollTo()
+        scrollTo("Compose Save Primitives")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
         return ComposeSavePrimitivesRobot(composeRule)
     }
-    
+
     fun openCloseLandingPageAndPresent(): CloseLandingPageAndPresentRobot {
-        composeRule.onNode(hasText("Close Landing Page And Present"))
-            .performScrollTo()
+        scrollTo("Close Landing Page And Present")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
         return CloseLandingPageAndPresentRobot(composeRule)
     }
-    
+
     fun openHorizontalPager(): HorizontalPagerRobot {
-        composeRule.onNode(hasText("Horizontal Pager"))
-            .performScrollTo()
+        scrollTo("Horizontal Pager")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
         return HorizontalPagerRobot(composeRule)
     }
-    
+
     fun openLazyColumn(): LazyColumnRobot {
-        composeRule.onNode(hasText("Lazy Column"))
-            .performScrollTo()
+        scrollTo("Lazy Column")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
         return LazyColumnRobot(composeRule)
     }
-    
+
     fun openComposeAnimations(): ComposeAnimationsRobot {
-        composeRule.onNode(hasText("Compose Animations"))
-            .performScrollTo()
+        scrollTo("Compose Animations")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
@@ -234,11 +218,17 @@ class SelectDestinationRobot(
     }
     
     fun openFragmentPresentation(): FragmentPresentationRobot {
-        composeRule.onNode(hasText("Fragment Presentation"))
-            .performScrollTo()
+        scrollTo("Fragment Presentation")
             .onSiblings()
             .filterToOne(hasText("Open"))
             .performClick()
         return FragmentPresentationRobot(composeRule)
     }
+
+    fun scrollTo(text: String): SemanticsNodeInteraction {
+        composeRule.onNodeWithTag("SelectDestinationLazyColumn")
+            .performScrollToNode(hasText(text))
+        return composeRule.onNode(hasText(text))
+    }
+
 }

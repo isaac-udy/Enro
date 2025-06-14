@@ -44,7 +44,7 @@ public fun <T : NavigationKey, F : Fragment> fragmentDestination(
     arguments: NavigationDestinationScope<T>.() -> Bundle = { Bundle() },
 ): NavigationDestinationProvider<T> {
     return navigationDestination(metadata) {
-        key(navigation.id) {
+        key(navigation.instance.id) {
             var fragment: F? by remember {
                 mutableStateOf(null)
             }
@@ -52,7 +52,7 @@ public fun <T : NavigationKey, F : Fragment> fragmentDestination(
             if (fragmentType.isSubclassOf(DialogFragment::class)) {
                 AndroidDialogFragment(
                     clazz = fragmentType.java as Class<DialogFragment>,
-                    tag = navigation.id,
+                    tag = navigation.instance.id,
                     fragmentState = fragmentState,
                     arguments = arguments().apply {
                         putNavigationKeyInstance(navigation.instance)

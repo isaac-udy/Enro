@@ -19,8 +19,8 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.enro.annotations.NavigationDestination
 import dev.enro.NavigationKey
+import dev.enro.annotations.NavigationDestination
 import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.ui.navigationDestination
@@ -84,7 +84,7 @@ fun Stability(
     val viewModelStore = LocalViewModelStoreOwner.current?.viewModelStore
 
     val stabilityContent = buildString {
-        appendLine("navigationId: ${rawNavigationHandle.id}")
+        appendLine("navigationId: ${rawNavigationHandle.instance.id}")
         appendLine("navigationHashCode: ${rawNavigationHandle.hashCode()}")
         appendLine("viewModelId: ${viewModel.id}")
         appendLine("viewModelHashCode: ${viewModel.hashCode()}")

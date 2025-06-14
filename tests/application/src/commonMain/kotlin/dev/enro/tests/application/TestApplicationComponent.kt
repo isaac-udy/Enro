@@ -8,6 +8,7 @@ import dev.enro.tests.application.samples.loan.ui.OwnershipOption
 import dev.enro.tests.application.samples.loan.ui.PropertyPurposeOption
 import dev.enro.tests.application.samples.loan.ui.RepaymentFrequencyOption
 import dev.enro.tests.application.samples.loan.ui.RepaymentTypeOption
+import dev.enro.tests.application.serialization.CommonSerialization
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -16,6 +17,7 @@ import kotlinx.serialization.modules.subclass
 object TestApplicationComponent : NavigationComponentConfiguration(
     module = createNavigationModule {
         serializersModule(SerializersModule {
+            // Loan Sample Serializers
             polymorphic(Any::class) {
                 subclass(LoanPurposeOption.Car::class)
                 subclass(LoanPurposeOption.Property::class)
@@ -33,6 +35,14 @@ object TestApplicationComponent : NavigationComponentConfiguration(
 
                 subclass(RepaymentTypeOption.InterestOnly::class)
                 subclass(RepaymentTypeOption.PrincipalAndInterest::class)
+            }
+
+            // Common Serialization Serializers
+            polymorphic(Any::class) {
+                subclass(CommonSerialization.SerializableGenericNavigationKey.GenericContentOne.DataOne::class)
+                subclass(CommonSerialization.SerializableGenericNavigationKey.GenericContentOne.DataTwo::class)
+                subclass(CommonSerialization.SerializableGenericNavigationKey.GenericContentTwo.DataOne::class)
+                subclass(CommonSerialization.SerializableGenericNavigationKey.GenericContentTwo.DataTwo::class)
             }
         })
     }

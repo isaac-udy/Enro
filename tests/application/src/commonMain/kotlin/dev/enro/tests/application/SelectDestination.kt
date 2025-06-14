@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
@@ -82,7 +83,8 @@ fun SelectDestinationScreen() {
 
     TitledLazyColumn(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .testTag("SelectDestinationLazyColumn"),
         title = "Select Destination"
     ) {
         item {
@@ -137,7 +139,9 @@ fun SelectableDestinationCard(
         ) {
             Text(
                 text = selectableDestination.title,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .weight(1f),
                 style = MaterialTheme.typography.labelLarge,
             )
 

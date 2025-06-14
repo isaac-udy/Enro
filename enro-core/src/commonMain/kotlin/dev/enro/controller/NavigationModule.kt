@@ -65,7 +65,7 @@ public class NavigationModule @PublishedApi internal constructor() {
         }
 
         public fun serializersModule(serializersModule: SerializersModule) {
-            module.serializers += serializersModule
+            module.serializers = module.serializers + serializersModule
         }
 
         public fun module(module: NavigationModule) {

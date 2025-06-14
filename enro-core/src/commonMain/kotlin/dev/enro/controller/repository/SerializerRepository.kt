@@ -19,7 +19,6 @@ import dev.enro.serialization.WrappedSet
 import dev.enro.serialization.WrappedShort
 import dev.enro.serialization.WrappedString
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.NothingSerializer
 import kotlinx.serialization.json.Json
@@ -28,7 +27,6 @@ import kotlinx.serialization.modules.contextual
 import kotlinx.serialization.modules.plus
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
-import kotlinx.serialization.serializer
 
 internal class SerializerRepository {
     @OptIn(ExperimentalSerializationApi::class)
@@ -53,15 +51,6 @@ internal class SerializerRepository {
                 subclass(FlowStep.serializer(NothingSerializer()))
                 subclass(NavigationResultChannel.Id.serializer())
             }
-            polymorphicDefaultSerializer(Any::class) {
-                println("Can't serialize $it")
-                serializer(it::class, emptyList(), false)
-            }
-            polymorphicDefaultDeserializer(Any::class) {
-                if (it == null) return@polymorphicDefaultDeserializer null
-                println("Can't serialize $it")
-                serializer(it::class, emptyList(), false) as KSerializer<Any>
-            }
             contextual<NavigationKey.Instance<NavigationKey>>(
                 NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class))
             )
@@ -70,7 +59,7 @@ internal class SerializerRepository {
 
     var savedStateConfiguration: SavedStateConfiguration =
         SavedStateConfiguration {
-            serializersModule += this@SerializerRepository.serializersModule
+            serializersModule = this@SerializerRepository.serializersModule
             classDiscriminatorMode = ClassDiscriminatorMode.ALL_OBJECTS
         }
         private set
@@ -78,10 +67,9 @@ internal class SerializerRepository {
     @OptIn(ExperimentalSerializationApi::class)
     var jsonConfiguration: Json =
         Json {
-            serializersModule += this@SerializerRepository.serializersModule
+            serializersModule = this@SerializerRepository.serializersModule
             classDiscriminatorMode = kotlinx.serialization.json.ClassDiscriminatorMode.ALL_JSON_OBJECTS
             ignoreUnknownKeys = true
-            allowStructuredMapKeys = true
         }
         private set
 
@@ -90,10 +78,10 @@ internal class SerializerRepository {
     ) {
         this.serializersModule += serializersModule
         this.savedStateConfiguration = SavedStateConfiguration(from = savedStateConfiguration) {
-            this.serializersModule += serializersModule
+            this@SavedStateConfiguration.serializersModule = this@SerializerRepository.serializersModule
         }
         this.jsonConfiguration = Json(from = jsonConfiguration) {
-            this.serializersModule += serializersModule
+            this@Json.serializersModule = this@SerializerRepository.serializersModule
         }
     }
 }

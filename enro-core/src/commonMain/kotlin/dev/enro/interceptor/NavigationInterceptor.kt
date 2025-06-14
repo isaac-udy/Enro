@@ -60,7 +60,7 @@ public abstract class NavigationInterceptor {
 
             val backstackById = containerContext.container.backstack.associateBy { it.id }
             while (toProcess.isNotEmpty()) {
-                val operation = toProcess.removeFirst()
+                val operation = toProcess.removeAt(0)
                 val intercepted = when (operation) {
                     // If we're getting an Open operation and the backstack already contains
                     // an instance with that id, we skip running the interceptor because this

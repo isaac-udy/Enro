@@ -14,7 +14,7 @@ object TestApplicationPlugin : EnroPlugin() {
 
     override fun onClosed(navigationHandle: NavigationHandle) {
         val current = activeHandleRef.get() ?: return
-        if (current.id == navigationHandle.id) {
+        if (current.instance.id == navigationHandle.instance.id) {
             activeHandleRef.clear()
         }
     }

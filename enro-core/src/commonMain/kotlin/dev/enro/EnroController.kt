@@ -57,16 +57,18 @@ public class EnroController {
     public companion object {
         internal var instance: EnroController? = null
             private set
+
         internal fun requireInstance(): EnroController {
             return instance ?: error("EnroController has not been installed")
         }
+
         public val jsonConfiguration: Json get() {
-            val instance = instance ?: return Json
+            val instance = requireInstance()
             return instance.serializers.jsonConfiguration
         }
 
         public val savedStateConfiguration: SavedStateConfiguration get() {
-            val instance = instance ?: return SavedStateConfiguration.DEFAULT
+            val instance = requireInstance()
             return instance.serializers.savedStateConfiguration
         }
     }

@@ -147,7 +147,10 @@ object NavigationComponentGenerator {
                 """
                     val controller = internalCreateEnroController(
                         builder = {
-                            ${generatedComponent.name}().apply { invoke() }
+                            ${generatedComponent.name}().apply { 
+                                module(module)
+                                invoke() 
+                            }
                             block()
                         }
                     )

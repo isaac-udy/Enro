@@ -4,7 +4,6 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.performClick
 import dev.enro.tests.application.waitForNavigationHandle
-import dev.enro.tests.application.compose.BottomSheetCloseAndPresent
 
 class BottomSheetCloseAndPresentBottomSheetRobot(
     private val composeRule: ComposeTestRule
@@ -19,7 +18,7 @@ class BottomSheetCloseAndPresentBottomSheetRobot(
             .performClick()
 
         composeRule.waitForNavigationHandle {
-            it.key is BottomSheetCloseAndPresent.BottomSheet && it.id != navigation.id
+            it.key is BottomSheetCloseAndPresent.BottomSheet && it.instance.id != navigation.instance.id
         }
         return BottomSheetCloseAndPresentBottomSheetRobot(composeRule)
     }

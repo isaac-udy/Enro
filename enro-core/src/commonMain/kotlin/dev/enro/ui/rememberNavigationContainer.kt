@@ -7,10 +7,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.savedstate.savedState
+import androidx.savedstate.serialization.decodeFromSavedState
+import androidx.savedstate.serialization.encodeToSavedState
 import dev.enro.EnroController
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationContainerFilter
+import dev.enro.NavigationKey
 import dev.enro.acceptAll
 import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
@@ -18,6 +21,7 @@ import dev.enro.context.RootContext
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.NoOpNavigationInterceptor
 import dev.enro.ui.decorators.NavigationSavedStateHolder
+import kotlinx.serialization.PolymorphicSerializer
 
 @Composable
 public fun rememberNavigationContainer(
@@ -39,9 +43,22 @@ public fun rememberNavigationContainer(
     val container = rememberSaveable(
         saver = Saver(
             save = { container ->
-                container.backstack
+                container.backstack.map {
+                    encodeToSavedState(
+//                        serializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
+                        value = it,
+                        configuration = controller.serializers.savedStateConfiguration
+                    )
+                }
             },
-            restore = { backstack ->
+            restore = { savedBackstack ->
+                val backstack = savedBackstack.map {
+                    decodeFromSavedState(
+                        deserializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
+                        savedState = it,
+                        configuration = controller.serializers.savedStateConfiguration
+                    )
+                }
                 NavigationContainer(
                     key = key,
                     controller = controller,
