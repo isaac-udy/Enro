@@ -53,7 +53,6 @@ fun ComposeNestedResults() {
         backstack = listOf(ComposeNestedResults.Receiver.asInstance()),
         filter = acceptNone(),
     )
-    // TODO NEED TO SWAP CONTAINERS
     val secondary = rememberNavigationContainer(
         backstack = listOf(),
         emptyBehavior = EmptyBehavior.allowEmpty {
@@ -68,30 +67,33 @@ fun ComposeNestedResults() {
     }
     if (isLandscape) {
         TitledRow(title = "Compose Nested Results") {
-            Box(modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()) {
-                primary.Render()
-            }
-            Box(modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()) {
-                secondary.Render()
-            }
+            NavigationDisplay(
+                state = primary,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+            )
+            NavigationDisplay(
+                state = secondary,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+            )
         }
-    }
-    else {
+    } else {
         TitledColumn(title = "Compose Nested Results") {
-            Box(modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()) {
-                primary.Render()
-            }
-            Box(modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()) {
-                secondary.Render()
-            }
+            NavigationDisplay(
+                state = primary,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            )
+            NavigationDisplay(
+                state = secondary,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            )
         }
     }
 }
@@ -160,14 +162,14 @@ fun ComposeNestedResultsNestedSenderContainer() {
 @Composable
 fun ComposeNestedResultsSender() {
     val navigation = navigationHandle<ComposeNestedResults.Sender>()
-    TitledColumn(title = "Sender")  {
+    TitledColumn(title = "Sender") {
         Button(onClick = { navigation.complete("A") }) {
             Text(text = "Send A")
         }
         Button(onClick = { navigation.complete("B") }) {
             Text(text = "Send B")
         }
-        Button(onClick = { navigation.close() } ) {
+        Button(onClick = { navigation.close() }) {
             Text(text = "Close")
         }
     }
