@@ -62,16 +62,15 @@ public class NavigationFlow<T> internal constructor(
             resultManager = resultManager,
             navigationFlowReference = reference
         )
-        runCatching {
-            return@update onCompleted(flowScope.flow())
+        val result = runCatching {
+            flowScope.flow()
         }.recover {
             when (it) {
-                is NavigationFlowScope.NoResult -> {}
+                is NavigationFlowScope.NoResult -> null
                 is NavigationFlowScope.Escape -> return
                 else -> throw it
             }
-        }
-            .getOrThrow()
+        }.getOrThrow()
 
         val oldSteps = steps
         steps = flowScope.steps
@@ -90,6 +89,10 @@ public class NavigationFlow<T> internal constructor(
             // is being restored from a saved state. If we're being restored from a saved state,
             // we don't actually want to change what's in the backstack, we just want to make sure
             // that the steps list is up to date, so we can return here after the steps list is updated
+            return
+        }
+        if (result != null) {
+            onCompleted(result)
             return
         }
 
