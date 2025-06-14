@@ -48,7 +48,14 @@ jobs:
           PUBLISH_SIGNING_KEY_ID: ${{ secrets.PUBLISH_SIGNING_KEY_ID }}
           PUBLISH_SIGNING_KEY_PASSWORD: ${{ secrets.PUBLISH_SIGNING_KEY_PASSWORD }}
           PUBLISH_SIGNING_KEY_LOCATION: ${{ secrets.PUBLISH_SIGNING_KEY_LOCATION }}
-        run: ./gradlew :enro-processor:publishMavenPublicationToSonatypeRepository :enro-annotations:publishDesktopPublicationToSonatypeRepository publishKotlinMultiplatformPublicationToSonatypeRepository publishAndroidReleasePublicationToSonatypeRepository --no-parallel -Dorg.gradle.workers.max=1 # publishAllPublicationsToGitHubPackagesRepository
+        run: ./gradlew \
+          :enro-processor:publishMavenPublicationToSonatypeRepository \
+          :enro-annotations:publishAndroidReleasePublicationToSonatypeRepository \
+          :enro-annotations:publishDesktopPublicationToSonatypeRepository \
+          publishKotlinMultiplatformPublicationToSonatypeRepository \
+          publishAndroidReleasePublicationToSonatypeRepository \
+          publishDesktopPublicationToSonatypeRepository \
+          --no-parallel -Dorg.gradle.workers.max=1
 
       - name: Update Repo
         uses: EndBug/add-and-commit@v5
