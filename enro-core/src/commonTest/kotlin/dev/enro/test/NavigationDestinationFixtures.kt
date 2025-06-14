@@ -13,12 +13,13 @@ private const val TEST_OWNERS = "dev.enro.test.NavigationDestinationFixtures.TES
 object NavigationDestinationFixtures {
     fun <T : NavigationKey> create(
         key: T,
-        metadata: Map<String, Any> = emptyMap(),
+        metadata: NavigationDestination.MetadataBuilder<T>.() -> Unit = { },
     ): NavigationDestination<T> {
         return navigationDestination<T>(
-            metadata = metadata.plus(
-                TEST_OWNERS to TestLifecycleAndViewModelStoreOwner()
-            ),
+            metadata = {
+                apply(metadata)
+                add(TEST_OWNERS to TestLifecycleAndViewModelStoreOwner())
+            },
             content = {
                 // Test NavigationDestination doesn't have any content
             }

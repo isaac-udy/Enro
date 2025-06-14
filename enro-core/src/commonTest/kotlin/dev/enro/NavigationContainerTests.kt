@@ -4,7 +4,6 @@ import dev.enro.context.ContainerContext
 import dev.enro.context.NavigationContext
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.builder.navigationInterceptor
-import dev.enro.test.EnroTest
 import dev.enro.test.NavigationContextFixtures
 import dev.enro.test.NavigationDestinationFixtures
 import dev.enro.test.NavigationKeyFixtures
@@ -18,11 +17,9 @@ class NavigationContainerTests {
 
     @Test
     fun `NavigationContainer accepts operations for keys in its backstack`() = runEnroTest {
-        val controller = EnroTest.getCurrentNavigationController()
-        val container = NavigationContainer(
-            key = NavigationContainer.Key("test"),
-            controller = controller,
-        )
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
 
         val key1 = NavigationKeyFixtures.SimpleKey()
         val instance1 = key1.asInstance()
@@ -30,46 +27,157 @@ class NavigationContainerTests {
         val instance2 = key2.asInstance()
 
         // Empty container should not accept close operations
-        assertFalse(container.accepts(NavigationOperation.Close(instance1)))
-        assertFalse(container.accepts(NavigationOperation.Complete(instance1)))
+        assertFalse(container.accepts(containerContext, NavigationOperation.Close(instance1)))
+        assertFalse(container.accepts(containerContext, NavigationOperation.Complete(instance1)))
 
         // Add instances to backstack
         container.setBackstackDirect(listOf(instance1, instance2))
 
         // Container should accept operations for instances in backstack
-        assertTrue(container.accepts(NavigationOperation.Close(instance1)))
-        assertTrue(container.accepts(NavigationOperation.Close(instance2)))
-        assertTrue(container.accepts(NavigationOperation.Complete(instance1)))
-        assertTrue(container.accepts(NavigationOperation.Complete(instance2)))
+        assertTrue(container.accepts(containerContext, NavigationOperation.Close(instance1)))
+        assertTrue(container.accepts(containerContext, NavigationOperation.Close(instance2)))
+        assertTrue(container.accepts(containerContext, NavigationOperation.Complete(instance1)))
+        assertTrue(container.accepts(containerContext, NavigationOperation.Complete(instance2)))
 
         // Container should not accept operations for instances not in backstack
         val key3 = NavigationKeyFixtures.SimpleKey()
         val instance3 = key3.asInstance()
-        assertFalse(container.accepts(NavigationOperation.Close(instance3)))
-        assertFalse(container.accepts(NavigationOperation.Complete(instance3)))
+        assertFalse(container.accepts(containerContext, NavigationOperation.Close(instance3)))
+        assertFalse(container.accepts(containerContext, NavigationOperation.Complete(instance3)))
     }
 
     @Test
     fun `NavigationContainer accepts open operations based on filter`() = runEnroTest {
-        val controller = EnroTest.getCurrentNavigationController()
-        val container = NavigationContainer(
-            key = NavigationContainer.Key("test"),
-            controller = controller,
-        )
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
 
         val key1 = NavigationKeyFixtures.SimpleKey()
         val instance1 = key1.asInstance()
 
         // By default, container accepts no open operations
-        assertFalse(container.accepts(NavigationOperation.Open(instance1)))
+        assertFalse(container.accepts(containerContext, NavigationOperation.Open(instance1)))
 
         // Set filter to accept all
         container.setFilter(acceptAll())
-        assertTrue(container.accepts(NavigationOperation.Open(instance1)))
+        assertTrue(container.accepts(containerContext, NavigationOperation.Open(instance1)))
 
         // Set filter to accept none
         container.setFilter(acceptNone())
-        assertFalse(container.accepts(NavigationOperation.Open(instance1)))
+        assertFalse(container.accepts(containerContext, NavigationOperation.Open(instance1)))
+    }
+
+    @Test
+    fun `NavigationContainer with fromChildrenOnly filter accepts operations from child contexts`() = runEnroTest {
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+
+        // Create a child destination context under this container
+        val key = NavigationKeyFixtures.SimpleKey()
+        val destination = NavigationDestinationFixtures.create(key)
+        val childDestinationContext = NavigationContextFixtures.createDestinationContext(containerContext, destination)
+
+        // Set filter with fromChildrenOnly = true
+        val filter = NavigationContainerFilter(fromChildrenOnly = true) { true }
+        container.setFilter(filter)
+
+        val instance = NavigationKeyFixtures.SimpleKey().asInstance()
+
+        // Operation from child context should be accepted
+        assertTrue(container.accepts(childDestinationContext, NavigationOperation.Open(instance)))
+        assertTrue(container.accepts(containerContext, NavigationOperation.Open(instance)))
+    }
+
+    @Test
+    fun `NavigationContainer with fromChildrenOnly filter rejects operations from non-child contexts`() = runEnroTest {
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+
+        // Create another container and destination context (not a child of our container)
+        val otherContainerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val key = NavigationKeyFixtures.SimpleKey()
+        val destination = NavigationDestinationFixtures.create(key)
+        val nonChildDestinationContext =
+            NavigationContextFixtures.createDestinationContext(otherContainerContext, destination)
+
+        // Set filter with fromChildrenOnly = true
+        val filter = NavigationContainerFilter(fromChildrenOnly = true) { true }
+        container.setFilter(filter)
+
+        val instance = NavigationKeyFixtures.SimpleKey().asInstance()
+
+        // Operation from non-child context should be rejected
+        assertFalse(container.accepts(nonChildDestinationContext, NavigationOperation.Open(instance)))
+        assertFalse(container.accepts(otherContainerContext, NavigationOperation.Open(instance)))
+        assertFalse(container.accepts(rootContext, NavigationOperation.Open(instance)))
+    }
+
+    @Test
+    fun `NavigationContainer with fromChildrenOnly false accepts operations from any context`() = runEnroTest {
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+
+        // Create contexts at different levels
+        val key = NavigationKeyFixtures.SimpleKey()
+        val destination = NavigationDestinationFixtures.create(key)
+        val childDestinationContext = NavigationContextFixtures.createDestinationContext(containerContext, destination)
+
+        val otherContainerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val nonChildDestinationContext =
+            NavigationContextFixtures.createDestinationContext(otherContainerContext, destination)
+
+        // Set filter with fromChildrenOnly = false (default)
+        val filter = NavigationContainerFilter(fromChildrenOnly = false) { true }
+        container.setFilter(filter)
+
+        val instance = NavigationKeyFixtures.SimpleKey().asInstance()
+
+        // Operations from all contexts should be accepted
+        assertTrue(container.accepts(childDestinationContext, NavigationOperation.Open(instance)))
+        assertTrue(container.accepts(containerContext, NavigationOperation.Open(instance)))
+        assertTrue(container.accepts(nonChildDestinationContext, NavigationOperation.Open(instance)))
+        assertTrue(container.accepts(otherContainerContext, NavigationOperation.Open(instance)))
+        assertTrue(container.accepts(rootContext, NavigationOperation.Open(instance)))
+    }
+
+    @Test
+    fun `NavigationContainer with fromChildrenOnly filter and predicate applies both conditions`() = runEnroTest {
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+
+        val key = NavigationKeyFixtures.SimpleKey()
+        val destination = NavigationDestinationFixtures.create(key)
+        val childDestinationContext = NavigationContextFixtures.createDestinationContext(containerContext, destination)
+
+        val otherContainerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val nonChildDestinationContext =
+            NavigationContextFixtures.createDestinationContext(otherContainerContext, destination)
+
+        val acceptedKey = NavigationKeyFixtures.SimpleKey()
+        val rejectedKey = NavigationKeyFixtures.SimpleKey()
+
+        // Set filter with fromChildrenOnly = true and a key predicate
+        val filter = NavigationContainerFilter(fromChildrenOnly = true) { it.key == acceptedKey }
+        container.setFilter(filter)
+
+        val acceptedInstance = acceptedKey.asInstance()
+        val rejectedInstance = rejectedKey.asInstance()
+
+        // Child context with accepted key should be accepted
+        assertTrue(container.accepts(childDestinationContext, NavigationOperation.Open(acceptedInstance)))
+
+        // Child context with rejected key should be rejected
+        assertFalse(container.accepts(childDestinationContext, NavigationOperation.Open(rejectedInstance)))
+
+        // Non-child context with accepted key should be rejected
+        assertFalse(container.accepts(nonChildDestinationContext, NavigationOperation.Open(acceptedInstance)))
+
+        // Non-child context with rejected key should be rejected
+        assertFalse(container.accepts(nonChildDestinationContext, NavigationOperation.Open(rejectedInstance)))
     }
 
     @Test
