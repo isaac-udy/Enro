@@ -16,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.testTag
 import dev.enro.NavigationKey
 import dev.enro.accept
 import dev.enro.acceptNone
@@ -67,21 +68,34 @@ fun ComposeNestedResults() {
     }
     if (isLandscape) {
         TitledRow(title = "Compose Nested Results") {
-            NavigationDisplay(
-                state = primary,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
-            )
-            NavigationDisplay(
-                state = secondary,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
-            )
+            Box(
+                modifier = Modifier.weight(1f)
+            ) {
+                NavigationDisplay(
+                    state = primary,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
+                )
+            }
+            Box(
+                modifier = Modifier.weight(1f)
+            ) {
+                NavigationDisplay(
+                    state = secondary,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
+                )
+            }
         }
     } else {
-        TitledColumn(title = "Compose Nested Results") {
+        TitledColumn(
+            title = "Compose Nested Results",
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .testTag("ComposeNestedResultsColumn")
+        ) {
             NavigationDisplay(
                 state = primary,
                 modifier = Modifier
@@ -111,7 +125,7 @@ fun ComposeNestedResultsReceiver() {
             result = it
         }
     )
-    TitledColumn(title = "Receiver", modifier = Modifier.verticalScroll(rememberScrollState())) {
+    TitledColumn(title = "Receiver") {
         Text(text = "Current Result: $result")
         val captionSize = MaterialTheme.typography.caption.fontSize * 0.8f
         Text(

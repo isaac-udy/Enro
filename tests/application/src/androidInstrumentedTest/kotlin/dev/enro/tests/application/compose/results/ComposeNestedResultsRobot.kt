@@ -1,9 +1,12 @@
 package dev.enro.tests.application.compose.results
 
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.test.espresso.Espresso
 import dev.enro.tests.application.waitForNavigationHandle
 
@@ -106,6 +109,11 @@ class ComposeNestedResultsRobot(
         }
 
         fun closeWithButton(): ReceiverRobot {
+            runCatching {
+                composeRule.onNodeWithTag("ComposeNestedResultsColumn")
+                    .performScrollToNode(hasText("Close"))
+            }
+
             composeRule.onNodeWithText("Close")
                 .performClick()
 
