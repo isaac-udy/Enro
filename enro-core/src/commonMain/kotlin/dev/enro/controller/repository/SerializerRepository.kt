@@ -21,6 +21,7 @@ import dev.enro.serialization.WrappedString
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.NothingSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
@@ -33,6 +34,7 @@ internal class SerializerRepository {
     var serializersModule =
         SerializersModule {
             polymorphic(Any::class) {
+                subclass(Unit.serializer())
                 subclass(WrappedBoolean.serializer())
                 subclass(WrappedDouble.serializer())
                 subclass(WrappedFloat.serializer())
