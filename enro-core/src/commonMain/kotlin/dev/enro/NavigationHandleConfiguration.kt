@@ -3,14 +3,15 @@ package dev.enro
 import dev.enro.interceptor.builder.OnNavigationKeyClosedScope
 import dev.enro.interceptor.builder.navigationInterceptor
 
-private typealias OnCloseCallback = OnNavigationKeyClosedScope<*>.() -> Unit
+private typealias OnCloseCallback<T> = OnNavigationKeyClosedScope<T>.() -> Unit
 public class NavigationHandleConfiguration<T : NavigationKey>(
     public val navigation: NavigationHandle<T>,
 ) {
     private val closeables: MutableList<AutoCloseable> = mutableListOf()
 
+    // TODO: Add documentation here
     public fun onCloseRequested(
-        callback: OnCloseCallback
+        callback: OnCloseCallback<T>,
     ) {
         @Suppress("USELESS_CAST")
         val callbacks = navigation.instance.metadata
@@ -18,13 +19,14 @@ public class NavigationHandleConfiguration<T : NavigationKey>(
             .plus(callback)
 
         @Suppress("UNCHECKED_CAST")
-        navigation.instance.metadata.set(OnCloseCallbacks, callbacks)
+        navigation.instance.metadata.set(OnCloseCallbacks, callbacks as List<OnCloseCallback<*>>)
         closeables.add(AutoCloseable {
             val callbacks = navigation.instance.metadata
                 .get(OnCloseCallbacks)
                 .minus(callback)
 
-            navigation.instance.metadata.set(OnCloseCallbacks, callbacks)
+            @Suppress("UNCHECKED_CAST")
+            navigation.instance.metadata.set(OnCloseCallbacks, callbacks as List<OnCloseCallback<*>>)
         })
     }
 
@@ -39,7 +41,7 @@ public class NavigationHandleConfiguration<T : NavigationKey>(
     }
 
     internal object OnCloseCallbacks :
-        NavigationKey.TransientMetadataKey<List<OnCloseCallback>>(emptyList())
+        NavigationKey.TransientMetadataKey<List<OnCloseCallback<*>>>(emptyList())
 
     internal object OnCloseCallbacksEnabled
         : NavigationKey.TransientMetadataKey<Boolean>(true)

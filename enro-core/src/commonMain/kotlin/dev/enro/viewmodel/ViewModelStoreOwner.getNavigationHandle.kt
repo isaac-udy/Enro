@@ -6,13 +6,11 @@ import dev.enro.NavigationKey
 import dev.enro.handle.getNavigationHandleHolder
 import kotlin.reflect.KClass
 
-@PublishedApi
-internal inline fun <reified K: NavigationKey> ViewModelStoreOwner.getNavigationHandle(): NavigationHandle<K> {
+public inline fun <reified K: NavigationKey> ViewModelStoreOwner.getNavigationHandle(): NavigationHandle<K> {
     return getNavigationHandle(K::class)
 }
 
-@PublishedApi
-internal fun <K: NavigationKey> ViewModelStoreOwner.getNavigationHandle(
+public fun <K: NavigationKey> ViewModelStoreOwner.getNavigationHandle(
     keyType: KClass<K>,
 ): NavigationHandle<K> {
     val navigationHandle = getNavigationHandleHolder().navigationHandle

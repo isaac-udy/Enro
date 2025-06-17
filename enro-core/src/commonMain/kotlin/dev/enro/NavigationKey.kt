@@ -105,9 +105,11 @@ public interface NavigationKey {
     @Serializable(with = Metadata.Serializer::class)
     public class Metadata internal constructor(
         @PublishedApi
-        internal val map: MutableMap<String, Any> = mutableMapOf(),
-        internal val transientMap: MutableMap<String, Any> = mutableMapOf(),
+        internal val map: MutableMap<String, Any>,
+        internal val transientMap: MutableMap<String, Any>,
     ) {
+        public constructor() : this(mutableMapOf(), mutableMapOf())
+
         public object Serializer : KSerializer<Metadata> {
             private val innerSerializer = MapSerializer(String.serializer(), PolymorphicSerializer(Any::class))
             override val descriptor: SerialDescriptor = innerSerializer.descriptor
@@ -252,7 +254,7 @@ public fun <T, K : NavigationKey> NavigationKey.WithMetadata<K>.withMetadata(
 ): NavigationKey.WithMetadata<K> {
     return NavigationKey.WithMetadata(
         key = this@withMetadata.key,
-        metadata = metadata.apply {
+        metadata = metadata.copy().apply {
             set(key, value)
         },
     )

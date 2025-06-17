@@ -21,3 +21,7 @@ public val AnyOpenInstruction.navigationDirection: NavigationDirection
     get() {
         return metadata.get(NavigationDirection.MetadataKey) ?: NavigationDirection.Push
     }
+
+internal fun AnyOpenInstruction.setNavigationDirection(navigationDirection: NavigationDirection) {
+    metadata.set(NavigationDirection.MetadataKey, navigationDirection)
+}

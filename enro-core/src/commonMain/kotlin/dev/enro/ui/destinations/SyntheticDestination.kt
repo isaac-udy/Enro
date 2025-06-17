@@ -4,8 +4,6 @@ import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.context.ContainerContext
-import dev.enro.context.DestinationContext
-import dev.enro.context.RootContext
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationDestinationProvider
@@ -42,20 +40,6 @@ internal class SyntheticDestination<K : NavigationKey>(
             }
         }
     }
-}
-
-public class SyntheticDestinationScope<K : NavigationKey>(
-    public val context: NavigationContext,
-    public val instance: NavigationKey.Instance<K>,
-) {
-    public val key: K = instance.key
-
-    public val destinationContext: DestinationContext<NavigationKey>?
-        get() = when(context) {
-            is DestinationContext<*> -> context
-            is ContainerContext -> context.activeChild
-            is RootContext -> context.activeChild?.activeChild
-        }
 }
 
 public fun <K : NavigationKey> syntheticDestination(

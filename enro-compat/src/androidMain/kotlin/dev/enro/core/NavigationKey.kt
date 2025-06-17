@@ -36,3 +36,17 @@ public fun  <T : NavigationKey.SupportsPresent> T.asPresent(): dev.enro.Navigati
         NavigationDirection.Present,
     ).asInstance()
 }
+
+public fun <T: NavigationKey, M> T.withExtra(
+    key: dev.enro.NavigationKey.MetadataKey<M>,
+    value: M,
+): dev.enro.NavigationKey.WithMetadata<T> {
+    return withMetadata(key, value)
+}
+
+public fun <T: NavigationKey, M> dev.enro.NavigationKey.WithMetadata<T>.withExtra(
+    key: dev.enro.NavigationKey.MetadataKey<M>,
+    value: M,
+): dev.enro.NavigationKey.WithMetadata<T> {
+    return withMetadata(key, value)
+}

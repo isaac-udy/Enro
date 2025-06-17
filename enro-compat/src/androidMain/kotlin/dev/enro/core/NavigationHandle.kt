@@ -1,12 +1,16 @@
 package dev.enro.core
 
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.closeWithoutCallback
 import dev.enro.complete
 import dev.enro.open
+import dev.enro.viewmodel.getNavigationHandle
 import dev.enro.withMetadata
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -66,4 +70,20 @@ public fun <T : NavigationKey> ComponentActivity.navigationHandle(
     keyType: KClass<T>
 ) : ReadOnlyProperty<ComponentActivity, NavigationHandle<T>> {
     return androidNavigationHandle(keyType)
+}
+
+public fun ViewModelStoreOwner.getNavigationHandle(): NavigationHandle<NavigationKey> {
+    return getNavigationHandle(NavigationKey::class)
+}
+
+public fun View.getNavigationHandle(): NavigationHandle<NavigationKey>? =
+    findViewTreeViewModelStoreOwner()?.getNavigationHandle()
+
+public fun View.requireNavigationHandle(): NavigationHandle<NavigationKey> {
+    if (!isAttachedToWindow) {
+        error("$this is not attached to any Window, which is required to retrieve a NavigationHandle")
+    }
+    val viewModelStoreOwner = findViewTreeViewModelStoreOwner()
+        ?: error("Could not find ViewTreeViewModelStoreOwner for $this, which is required to retrieve a NavigationHandle")
+    return viewModelStoreOwner.getNavigationHandle()
 }
