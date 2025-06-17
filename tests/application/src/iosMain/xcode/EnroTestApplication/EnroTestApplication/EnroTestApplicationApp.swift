@@ -49,8 +49,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //                )
 //            }
 //        )
-        MainViewControllerKt.install(
-            navigationModule: NavigationComponentNavigation()
+        TestApplicationComponent.shared.installNavigationController(
+            application: application,
+            block: { scope in }
         )
         return true
     }

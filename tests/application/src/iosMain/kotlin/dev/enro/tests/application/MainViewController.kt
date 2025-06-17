@@ -3,25 +3,16 @@
 
 package dev.enro.tests.application
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.ComposeUIViewController
-import dev.enro.core.NavigationKey
-import dev.enro.asInstance
 import dev.enro.controller.NavigationModuleAction
 import dev.enro.controller.internalCreateEnroController
-import dev.enro.ui.NavigationDisplay
-import dev.enro.ui.rememberNavigationContainer
+import dev.enro.platform.EnroUIViewController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import platform.UIKit.UIApplication
 import platform.UIKit.UISceneActivationStateForegroundActive
 import platform.UIKit.UISceneActivationStateForegroundInactive
@@ -29,9 +20,6 @@ import platform.UIKit.UIView
 import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowScene
-
-@Serializable
-object MainView : NavigationKey.SupportsPresent
 
 fun install(navigationModule: NavigationModuleAction) {
     internalCreateEnroController {
@@ -68,28 +56,13 @@ fun install(navigationModule: NavigationModuleAction) {
     }
 }
 
-fun CreateMainViewController(): UIViewController = ComposeUIViewController {
+fun CreateMainViewController(): UIViewController = EnroUIViewController {
     MainViewController()
 }
 
 @Composable
 fun MainViewController() {
-    runCatching {
-        val container = rememberNavigationContainer(
-            backstack = listOf(ListKey().asInstance()),
-        )
-        MaterialTheme {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colors.background)
-            ) {
-                NavigationDisplay(
-                    state = container,
-                )
-            }
-        }
-    }.onFailure { it.printStackTrace() }
+    Text("Hello, iOS!")
 //    val navigation = navigationHandle()
 //    val navigationContext = navigationContext
 //    val container = rememberNavigationContainer(

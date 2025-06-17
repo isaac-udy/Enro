@@ -1,27 +1,32 @@
-package dev.enrolegacy.destination.ios
+package dev.enro.platform
 
-import dev.enro.core.NavigationInstruction
+import dev.enro.context.RootContext
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIViewController
 import platform.objc.OBJC_ASSOCIATION_RETAIN_NONATOMIC
 import platform.objc.objc_getAssociatedObject
 import platform.objc.objc_setAssociatedObject
 
-@OptIn(ExperimentalForeignApi::class)
-private val NavigationInstructionKey = kotlinx.cinterop.staticCFunction<Unit> {}
+public val UIViewController.navigationContext: RootContext
+    get() {
+        return internalNavigationContext ?: error("")
+    }
 
 @OptIn(ExperimentalForeignApi::class)
-public var UIViewController.navigationInstruction: NavigationInstruction.Open<*>?
+private val UIViewControllerNavigationContextKey = kotlinx.cinterop.staticCFunction<Unit> {}
+
+@OptIn(ExperimentalForeignApi::class)
+internal var UIViewController.internalNavigationContext: RootContext?
     get() {
         return objc_getAssociatedObject(
             this,
-            NavigationInstructionKey
-        ) as? NavigationInstruction.Open<*>
+            UIViewControllerNavigationContextKey
+        ) as? RootContext?
     }
     set(value) {
         objc_setAssociatedObject(
             `object` = this,
-            key = NavigationInstructionKey,
+            key = UIViewControllerNavigationContextKey,
             value = value,
             policy = OBJC_ASSOCIATION_RETAIN_NONATOMIC
         )

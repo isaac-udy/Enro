@@ -226,24 +226,24 @@ object NavigationComponentGenerator {
                 if (desktopFunction == null) return@let it
                 it.addFunction(desktopFunction)
             }
-            .let {
-                if (!isIos) return@let it
-                it.addFunction(
-                    extensionFunction
-                        .toBuilder(functionName)
-                        .apply {
-                            val newParameter = ParameterSpec
-                                .builder(
-                                    "enro",
-                                    ClassNames.Kotlin.enroIosExtensions,
-                                )
-                                .defaultValue("%T", ClassNames.Kotlin.enroIosExtensions)
-                                .build()
-                            parameters.add(5, newParameter)
-                        }
-                        .build()
-                )
-            }
+//            .let {
+//                if (!isIos) return@let it
+//                it.addFunction(
+//                    extensionFunction
+//                        .toBuilder(functionName)
+//                        .apply {
+//                            val newParameter = ParameterSpec
+//                                .builder(
+//                                    "enro",
+//                                    ClassNames.Kotlin.enroIosExtensions,
+//                                )
+//                                .defaultValue("%T", ClassNames.Kotlin.enroIosExtensions)
+//                                .build()
+//                            parameters.add(2, newParameter)
+//                        }
+//                        .build()
+//                )
+//            }
             .build()
 
         fileSpec.writeTo(
