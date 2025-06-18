@@ -94,6 +94,7 @@ public data class NavigationDestination<out T : NavigationKey> private construct
                     val sharedTransitionScope = LocalNavigationSharedTransitionScope.current
                     val scope = remember(animatedVisibilityScope, sharedTransitionScope) {
                         NavigationDestinationScope(
+                            destinationMetadata = metadata,
                             navigation = navigation,
                             animatedVisibilityScope = animatedVisibilityScope,
                             sharedTransitionScope = sharedTransitionScope
@@ -125,6 +126,7 @@ public data class NavigationDestination<out T : NavigationKey> private construct
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 public class NavigationDestinationScope<T : NavigationKey>(
+    public val destinationMetadata: Map<String, Any>,
     public val navigation: NavigationHandle<T>,
     private val animatedVisibilityScope: AnimatedVisibilityScope,
     private val sharedTransitionScope: SharedTransitionScope,
