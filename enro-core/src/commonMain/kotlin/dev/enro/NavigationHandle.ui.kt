@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 @JvmName("untypedNavigationHandle")
 @Composable
-public fun navigationHandle(): NavigationHandle<out NavigationKey> {
+public fun navigationHandle(): NavigationHandle<NavigationKey> {
     return navigationHandle<NavigationKey>()
 }
 

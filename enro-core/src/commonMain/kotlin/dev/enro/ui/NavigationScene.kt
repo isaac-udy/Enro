@@ -6,8 +6,8 @@ import dev.enro.NavigationKey
 
 public interface NavigationScene {
     public val key: Any
-    public val entries: List<NavigationDestination<out NavigationKey>>
-    public val previousEntries: List<NavigationDestination<out NavigationKey>>
+    public val entries: List<NavigationDestination<NavigationKey>>
+    public val previousEntries: List<NavigationDestination<NavigationKey>>
     public val content: @Composable () -> Unit
 
     /**
@@ -28,7 +28,7 @@ public interface NavigationScene {
          *
          * This *must* always be a non-empty list to correctly display entries below the overlay.
          */
-        public val overlaidEntries: List<NavigationDestination<out NavigationKey>>
+        public val overlaidEntries: List<NavigationDestination<NavigationKey>>
     }
 }
 
