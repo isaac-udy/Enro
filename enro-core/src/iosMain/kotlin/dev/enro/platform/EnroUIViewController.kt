@@ -8,8 +8,22 @@ import androidx.compose.ui.uikit.ComposeUIViewControllerConfiguration
 import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.window.ComposeUIViewController
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.SAVED_STATE_REGISTRY_OWNER_KEY
+import androidx.lifecycle.VIEW_MODEL_STORE_OWNER_KEY
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.enableSavedStateHandles
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.savedstate.SavedStateRegistry
+import androidx.savedstate.SavedStateRegistryController
+import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.EnroController
 import dev.enro.NavigationKey
 import dev.enro.asInstance
@@ -22,6 +36,30 @@ public fun EnroUIViewController(
     configure: ComposeUIViewControllerConfiguration.() -> Unit = {},
     content: @Composable () -> Unit,
 ): UIViewController {
+    val owners = object : SavedStateRegistryOwner, ViewModelStoreOwner, HasDefaultViewModelProviderFactory {
+        private val savedStateRegistryController = SavedStateRegistryController.create(this)
+        override val savedStateRegistry: SavedStateRegistry =
+            savedStateRegistryController.savedStateRegistry
+        override val viewModelStore: ViewModelStore = ViewModelStore()
+        private val lifecycleRegistry = LifecycleRegistry(this)
+        override val lifecycle: Lifecycle get() = lifecycleRegistry
+        val self = this
+        init {
+            enableSavedStateHandles()
+            savedStateRegistryController.performRestore(null)
+            lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+        }
+        override val defaultViewModelProviderFactory: ViewModelProvider.Factory get() {
+            return viewModelFactory {  }
+        }
+
+        override val defaultViewModelCreationExtras: CreationExtras get() {
+            return MutableCreationExtras().apply {
+                set(SAVED_STATE_REGISTRY_OWNER_KEY, self)
+                set(VIEW_MODEL_STORE_OWNER_KEY, self)
+            }
+        }
+    }
     return ComposeUIViewController(
         configure,
     ) {
@@ -44,7 +82,7 @@ public fun EnroUIViewController(
                 controller = enroController,
                 lifecycleOwner = lifecycleOwner,
                 viewModelStoreOwner = viewModelStoreOwner,
-                defaultViewModelProviderFactory = viewModelStoreOwner as HasDefaultViewModelProviderFactory,
+                defaultViewModelProviderFactory = owners ,
                 activeChildId = activeChildId,
             ).apply {
                 viewController.internalNavigationContext = this

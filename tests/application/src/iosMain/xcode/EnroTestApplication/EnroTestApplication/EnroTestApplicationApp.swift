@@ -11,51 +11,28 @@ import UIKit
 import EnroTestsApplication
 
 // Commented out since we're using UIKit AppDelegate approach
-//@main
-//struct EnroTestApplicationApp: App {
-//    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-//
-//    var body: some Scene {
-//        WindowGroup {
-//            MainViewControllerView()
-//        }
-//    }
-//}
-
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+struct EnroTestApplicationApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-//        SelectDestination_iosKt.registerIosDestinations()
-//        EnroComponent.shared.installNavigationController(
-//            application: application,
-//            root: NavigationInstruction.companion.Present(navigationKey: MainView.shared),
-//            strictMode: false,
-//            useLegacyContainerPresentBehavior: false,
-//            backConfiguration: Enro.shared.backConfiguration.Default,
-//            block: { scope in
-//                Enro.shared.addUIViewControllerNavigationBinding(
-//                    scope: scope,
-//                    keyType: NativeSwiftUIView.self,
-//                    constructDestination: {
-//                        UIHostingController(rootView: NativeSwiftUIViewDestination())
-//                    }
-//                )
-//                
-//                Enro.shared.addUIViewControllerNavigationBinding(
-//                    scope: scope,
-//                    keyType: NativeUIViewController.self,
-//                    constructDestination: { CodeBasedViewController() }
-//                )
-//            }
-//        )
-        TestApplicationComponent.shared.installNavigationController(
-            application: application,
-            block: { scope in }
-        )
-        return true
-    }
+   var body: some Scene {
+       WindowGroup {
+           MainViewControllerView()
+       }
+   }
 }
+
+// @main
+ class AppDelegate: UIResponder, UIApplicationDelegate {
+
+     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+         TestApplicationComponent.shared.installNavigationController(
+             application: application,
+             block: { scope in }
+         )
+         return true
+     }
+ }
 
 
 struct NativeSwiftUIViewDestination: View {
