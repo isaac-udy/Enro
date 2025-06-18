@@ -3,9 +3,9 @@ package dev.enro.ui.destinations
 import androidx.compose.runtime.Composable
 import dev.enro.NavigationKey
 import dev.enro.context.RootContext
-import dev.enro.desktop.RootWindow
-import dev.enro.desktop.RootWindowScope
-import dev.enro.desktop.openWindow
+import dev.enro.platform.desktop.RootWindow
+import dev.enro.platform.desktop.RootWindowScope
+import dev.enro.platform.desktop.openWindow
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.navigationDestination
 import kotlin.reflect.KClass

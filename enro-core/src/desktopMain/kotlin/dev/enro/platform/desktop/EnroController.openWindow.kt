@@ -1,4 +1,4 @@
-package dev.enro.desktop
+package dev.enro.platform.desktop
 
 import dev.enro.EnroController
 import dev.enro.NavigationKey

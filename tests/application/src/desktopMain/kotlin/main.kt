@@ -9,9 +9,9 @@ import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.application
 import dev.enro.asInstance
 import dev.enro.close
-import dev.enro.desktop.GenericRootWindow
-import dev.enro.desktop.RootWindow
-import dev.enro.desktop.openWindow
+import dev.enro.platform.desktop.GenericRootWindow
+import dev.enro.platform.desktop.RootWindow
+import dev.enro.platform.desktop.openWindow
 import dev.enro.tests.application.SelectDestination
 import dev.enro.tests.application.TestApplicationComponent
 import dev.enro.tests.application.installNavigationController

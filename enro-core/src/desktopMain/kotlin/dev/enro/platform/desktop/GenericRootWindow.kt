@@ -1,9 +1,9 @@
-package dev.enro.desktop
+package dev.enro.platform.desktop
 
 import androidx.compose.runtime.Composable
 import dev.enro.NavigationKey
 import dev.enro.asInstance
-import dev.enro.desktop.RootWindow.WindowConfiguration
+import dev.enro.platform.desktop.RootWindow.WindowConfiguration
 import kotlinx.serialization.Serializable
 
 

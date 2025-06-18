@@ -3,7 +3,7 @@ package dev.enro.handle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.context.RootContext
-import dev.enro.desktop.RootWindow
+import dev.enro.platform.desktop.RootWindow
 import dev.enro.result.NavigationResult
 import dev.enro.result.NavigationResultChannel
 import dev.enro.ui.destinations.RootWindowDestination

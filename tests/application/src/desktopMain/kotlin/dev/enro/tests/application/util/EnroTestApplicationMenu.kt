@@ -5,7 +5,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.MenuBar
 import dev.enro.close
-import dev.enro.desktop.RootWindowScope
+import dev.enro.platform.desktop.RootWindowScope
 
 @Composable
 fun RootWindowScope<*>.EnroTestApplicationMenu() {

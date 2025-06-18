@@ -1,4 +1,4 @@
-package dev.enro.desktop
+package dev.enro.platform.desktop
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -38,6 +38,7 @@ import dev.enro.handle.RootNavigationHandle
 import dev.enro.handle.getOrCreateNavigationHandleHolder
 import dev.enro.ui.LocalNavigationHandle
 import dev.enro.ui.LocalRootContext
+import dev.enro.viewmodel.EnroWrappedViewModelStoreOwner
 
 @Stable
 public class RootWindow<out T: NavigationKey> internal constructor(
@@ -61,7 +62,7 @@ public class RootWindow<out T: NavigationKey> internal constructor(
     override val lifecycle: Lifecycle
         get() = lifecycleRegistry
 
-    private var windowViewModelStoreOwner: ViewModelStoreOwner? = null
+    private var windowViewModelStoreOwner: EnroWrappedViewModelStoreOwner? = null
     override val viewModelStore: ViewModelStore
         get() {
             return requireNotNull(windowViewModelStoreOwner) {
@@ -72,18 +73,16 @@ public class RootWindow<out T: NavigationKey> internal constructor(
         get() {
             val windowViewModelStoreOwner = requireNotNull(windowViewModelStoreOwner) {
                 "windowViewModelStoreOwner has not been initialized yet"
-            } as? HasDefaultViewModelProviderFactory
-            return windowViewModelStoreOwner?.defaultViewModelCreationExtras ?: CreationExtras.Empty
+            }
+            return windowViewModelStoreOwner.defaultViewModelCreationExtras
         }
 
     override val defaultViewModelProviderFactory: ViewModelProvider.Factory
         get() {
             val windowViewModelStoreOwner = requireNotNull(windowViewModelStoreOwner) {
                 "windowViewModelStoreOwner has not been initialized yet"
-            } as? HasDefaultViewModelProviderFactory
-            return windowViewModelStoreOwner?.defaultViewModelProviderFactory ?: error(
-                "windowViewModelStoreOwner does not have a defaultViewModelProviderFactory"
-            )
+            }
+            return windowViewModelStoreOwner.defaultViewModelProviderFactory
         }
 
     private val activeChildId = mutableStateOf<String?>(null)
@@ -107,9 +106,16 @@ public class RootWindow<out T: NavigationKey> internal constructor(
             if (controller.rootContextRegistry.getAllContexts().contains(context)) {
                 val movableContent = remember {
                     movableContentOf { windowScope: FrameWindowScope ->
-                        val viewModelStoreOwner = LocalViewModelStoreOwner.current
-                        requireNotNull(viewModelStoreOwner) {
+                        val localViewModelStoreOwner = LocalViewModelStoreOwner.current
+                        requireNotNull(localViewModelStoreOwner) {
                             "No ViewModelStoreOwner was provided for the RootWindow."
+                        }
+                        val viewModelStoreOwner = remember(localViewModelStoreOwner) {
+                            EnroWrappedViewModelStoreOwner(
+                                controller = controller,
+                                viewModelStoreOwner = localViewModelStoreOwner,
+                                savedStateRegistryOwner = null,
+                            )
                         }
                         windowViewModelStoreOwner = viewModelStoreOwner
                         // Get or create the NavigationHandleHolder for this destination

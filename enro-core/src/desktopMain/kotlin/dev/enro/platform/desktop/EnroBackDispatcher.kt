@@ -1,4 +1,4 @@
-package dev.enro.desktop
+package dev.enro.platform.desktop
 
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.backhandler.BackGestureDispatcher

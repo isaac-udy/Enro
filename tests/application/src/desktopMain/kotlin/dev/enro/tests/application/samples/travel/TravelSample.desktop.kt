@@ -5,7 +5,8 @@ import androidx.compose.ui.window.WindowState
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asCommonDestination
 import dev.enro.close
-import dev.enro.desktop.RootWindow
+import dev.enro.complete
+import dev.enro.platform.desktop.RootWindow
 import dev.enro.tests.application.util.EnroTestApplicationMenu
 import dev.enro.ui.EmbeddedDestination
 import dev.enro.ui.destinations.rootWindowDestination
@@ -27,5 +28,6 @@ val travelSampleDesktopWindow = rootWindowDestination<TravelSampleDestination>(
     EmbeddedDestination(
         instance = instance.asCommonDestination(),
         onClosed = navigation::close,
+        onCompleted = navigation::complete,
     )
 }

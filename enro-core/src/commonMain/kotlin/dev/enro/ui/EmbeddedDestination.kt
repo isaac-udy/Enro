@@ -13,7 +13,8 @@ import dev.enro.interceptor.builder.navigationInterceptor
 @ExperimentalEnroApi
 public fun EmbeddedDestination(
     instance: NavigationKey.Instance<NavigationKey>,
-    onClosed: (() -> Unit),
+    onClosed: () -> Unit,
+    onCompleted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val rememberedOnClosed = rememberUpdatedState(onClosed)
@@ -47,12 +48,12 @@ public fun EmbeddedDestination(
 @ExperimentalEnroApi
 public inline fun <reified T : Any> EmbeddedDestination(
     instance: NavigationKey.Instance<NavigationKey.WithResult<T>>,
-    noinline onClosed: (() -> Unit),
+    noinline onClosed: () -> Unit,
+    noinline onCompleted: (T) -> Unit,
     modifier: Modifier = Modifier,
-    noinline onResult: (T) -> Unit = {},
 ) {
     val rememberedOnClosed = rememberUpdatedState(onClosed)
-    val rememberedOnResult = rememberUpdatedState(onResult)
+    val rememberedOnResult = rememberUpdatedState(onCompleted)
 
     val container = rememberNavigationContainer(
         backstack = listOf(instance),

@@ -3,7 +3,8 @@ package dev.enro.tests.application.samples.loan
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asCommonDestination
 import dev.enro.close
-import dev.enro.desktop.RootWindow
+import dev.enro.complete
+import dev.enro.platform.desktop.RootWindow
 import dev.enro.ui.EmbeddedDestination
 import dev.enro.ui.destinations.rootWindowDestination
 
@@ -18,6 +19,7 @@ val createLoanApplicationWindow = rootWindowDestination<CreateLoanSampleDestinat
 ) {
     EmbeddedDestination(
         instance = instance.asCommonDestination(),
-        onClosed = { navigation.close() }
+        onClosed = { navigation.close() },
+        onCompleted = { result -> navigation.complete(result) }
     )
 }
