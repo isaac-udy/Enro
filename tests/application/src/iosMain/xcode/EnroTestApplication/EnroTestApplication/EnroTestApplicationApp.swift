@@ -25,7 +25,11 @@ struct EnroTestApplicationApp: App {
 // @main
  class AppDelegate: UIResponder, UIApplicationDelegate {
 
-     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+     func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+     ) -> Bool {
+         SelectDestination_iosKt.registerIosDestinations()
          TestApplicationComponent.shared.installNavigationController(
              application: application,
              block: { scope in }
