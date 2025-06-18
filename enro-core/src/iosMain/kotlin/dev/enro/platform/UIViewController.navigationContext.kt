@@ -9,7 +9,7 @@ import platform.objc.objc_setAssociatedObject
 
 public val UIViewController.navigationContext: RootContext
     get() {
-        return internalNavigationContext ?: error("")
+        return internalNavigationContext ?: error("UIViewController $this is not an EnroUIViewController, and does not have a navigation context.")
     }
 
 @OptIn(ExperimentalForeignApi::class)
