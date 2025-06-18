@@ -9,8 +9,8 @@ import kotlin.reflect.KClass
 
 
 public inline fun <reified R : Any> ViewModel.registerForNavigationResult(
-    noinline onClosed: NavigationResultScope<out NavigationKey.WithResult<out R>>.() -> Unit = {},
-    noinline onCompleted: NavigationResultScope<out NavigationKey.WithResult<out R>>.(R) -> Unit,
+    noinline onClosed: NavigationResultScope<out NavigationKey.WithResult<R>>.() -> Unit = {},
+    noinline onCompleted: NavigationResultScope<out NavigationKey.WithResult<R>>.(R) -> Unit,
 ): ReadOnlyProperty<ViewModel, NavigationResultChannel<R>> {
     return registerForNavigationResult(
         resultType = R::class,
