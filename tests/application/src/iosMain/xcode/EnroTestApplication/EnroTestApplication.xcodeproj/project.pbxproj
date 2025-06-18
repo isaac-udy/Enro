@@ -455,6 +455,7 @@
 				DEVELOPMENT_TEAM = 43275F8MNR;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../../../../../../tests/application/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)\"";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/EnroTestApplication/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -488,6 +489,7 @@
 				DEVELOPMENT_TEAM = 43275F8MNR;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../../../../../../tests/application/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)\"";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/EnroTestApplication/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
