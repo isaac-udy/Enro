@@ -38,25 +38,25 @@ public fun EnroUIViewController(
         }
         val viewController = LocalUIViewController.current
         val lifecycleOwner = LocalLifecycleOwner.current
-        val viewModelStoreOwner = requireNotNull(LocalViewModelStoreOwner.current) {
+        val localViewModelStoreOwner = requireNotNull(LocalViewModelStoreOwner.current) {
             "LocalViewModelStoreOwner is not provided. Ensure that the composable is hosted within a ViewModelStoreOwner."
         }
-        val wrappedViewModelStoreOwner = remember(viewModelStoreOwner) {
+        val viewModelStoreOwner = remember(localViewModelStoreOwner) {
             EnroWrappedViewModelStoreOwner(
                 controller = enroController,
-                viewModelStoreOwner = viewModelStoreOwner,
+                viewModelStoreOwner = localViewModelStoreOwner,
                 savedStateRegistryOwner = null
             )
         }
         val activeChildId = remember { mutableStateOf<String?>(null) }
-        val (context, navigationHandle) = remember(wrappedViewModelStoreOwner) {
+        val (context, navigationHandle) = remember(viewModelStoreOwner) {
             val context = RootContext(
                 id = "UIViewController(${instance.key::class.simpleName})" + "$@${viewController.hashCode()}",
                 parent = viewController,
                 controller = enroController,
                 lifecycleOwner = lifecycleOwner,
-                viewModelStoreOwner = wrappedViewModelStoreOwner,
-                defaultViewModelProviderFactory = wrappedViewModelStoreOwner,
+                viewModelStoreOwner = viewModelStoreOwner,
+                defaultViewModelProviderFactory = viewModelStoreOwner,
                 activeChildId = activeChildId,
             )
             viewController.internalNavigationContext = context
@@ -85,7 +85,7 @@ public fun EnroUIViewController(
         CompositionLocalProvider(
             LocalNavigationContext provides context,
             LocalNavigationHandle provides navigationHandle,
-            LocalViewModelStoreOwner provides wrappedViewModelStoreOwner,
+            LocalViewModelStoreOwner provides viewModelStoreOwner,
         ) {
             content()
         }

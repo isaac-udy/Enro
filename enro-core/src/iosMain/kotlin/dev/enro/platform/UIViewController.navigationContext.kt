@@ -1,5 +1,6 @@
 package dev.enro.platform
 
+import dev.enro.context.AnyNavigationContext
 import dev.enro.context.RootContext
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIViewController
@@ -7,7 +8,7 @@ import platform.objc.OBJC_ASSOCIATION_RETAIN_NONATOMIC
 import platform.objc.objc_getAssociatedObject
 import platform.objc.objc_setAssociatedObject
 
-public val UIViewController.navigationContext: RootContext
+public val UIViewController.navigationContext: AnyNavigationContext
     get() {
         return internalNavigationContext ?: error("UIViewController $this is not an EnroUIViewController, and does not have a navigation context.")
     }
@@ -16,7 +17,7 @@ public val UIViewController.navigationContext: RootContext
 private val UIViewControllerNavigationContextKey = kotlinx.cinterop.staticCFunction<Unit> {}
 
 @OptIn(ExperimentalForeignApi::class)
-internal var UIViewController.internalNavigationContext: RootContext?
+internal var UIViewController.internalNavigationContext: AnyNavigationContext?
     get() {
         return objc_getAssociatedObject(
             this,
