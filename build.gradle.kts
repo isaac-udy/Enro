@@ -66,3 +66,30 @@ tasks.register("updateVersion") {
         versionPropertiesFile.writeText("versionName=$versionName\nversionCode=$versionCode")
     }
 }
+
+tasks.register("publishEnroLocal") {
+    group = "publishing"
+    description = "Publishes Enro libraries to Maven Local"
+
+    doLast {
+        exec {
+            workingDir = rootProject.projectDir
+            commandLine(
+                "./gradlew",
+                ":enro-processor:publishMavenPublicationToMavenLocal",
+                ":enro-annotations:publishAndroidReleasePublicationToMavenLocal",
+                ":enro-annotations:publishDesktopPublicationToMavenLocal",
+
+                "publishKotlinMultiplatformPublicationToMavenLocal",
+                "publishAndroidReleasePublicationToMavenLocal",
+                "publishDesktopPublicationToMavenLocal",
+//                "publishFrontendJsPublicationToMavenLocal",
+                "publishIosArm64PublicationToMavenLocal",
+                "publishIosSimulatorArm64PublicationToMavenLocal",
+                "publishIosX64PublicationToMavenLocal",
+
+                "--no-parallel", "-Dorg.gradle.workers.max=1"
+            )
+        }
+    }
+}

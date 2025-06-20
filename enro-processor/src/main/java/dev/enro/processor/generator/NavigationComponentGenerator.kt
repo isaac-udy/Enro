@@ -35,9 +35,9 @@ object NavigationComponentGenerator {
         resolverBindings: List<KSDeclaration>,
         resolverModules: List<KSDeclaration>,
     ) {
-        val isIos = resolver.getKotlinClassByName("platform.UIKit.UIApplication") != null
-        val isDesktop = resolver.getKotlinClassByName("androidx.compose.ui.window.ApplicationScope") != null
-        val isAndroid = resolver.getKotlinClassByName("android.app.Application") != null
+        val isIos = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformIOS") != null
+        val isDesktop = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformDesktop") != null
+        val isAndroid = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformAndroid") != null
 
         if (declaration !is KSClassDeclaration) {
             val message = "@NavigationComponent can only be applied to objects"
