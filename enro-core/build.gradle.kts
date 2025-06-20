@@ -9,7 +9,7 @@ plugins {
 kotlin {
     sourceSets {
         desktopMain.dependencies {
-            implementation(libs.compose.ui.backhandler)
+            api(libs.compose.ui.backhandler)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.coroutines.swing)
         }
