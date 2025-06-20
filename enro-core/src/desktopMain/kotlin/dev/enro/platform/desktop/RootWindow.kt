@@ -146,6 +146,7 @@ public class RootWindow<out T: NavigationKey> internal constructor(
                             LocalRootContext provides context,
                             LocalBackGestureDispatcher provides backDispatcher,
                             LocalNavigationHandle provides navigationHandle,
+                            LocalViewModelStoreOwner provides viewModelStoreOwner,
                         ) {
                             rootWindowScope.content()
                         }
