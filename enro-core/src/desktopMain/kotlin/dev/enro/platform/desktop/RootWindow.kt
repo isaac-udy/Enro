@@ -183,8 +183,11 @@ public class RootWindow<out T: NavigationKey> internal constructor(
                         .value
 
                     lifecycleRegistry.currentState = localLifecycleState
-
-                    movableContent.invoke(this)
+                    CompositionLocalProvider(
+                        LocalRootFrame provides window,
+                    ) {
+                        movableContent.invoke(this)
+                    }
                 }
 
                 DisposableEffect(Unit) {
