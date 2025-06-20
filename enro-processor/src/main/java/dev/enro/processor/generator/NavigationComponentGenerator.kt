@@ -268,13 +268,17 @@ object NavigationComponentGenerator {
         resolver: Resolver,
     ): Pair<String, FunSpec.Builder.() -> FunSpec.Builder> {
         val androidApplication = resolver.getKotlinClassByName("android.app.Application")
-        val desktopApplication =
-            resolver.getKotlinClassByName("androidx.compose.ui.window.ApplicationScope")
         val webDocument = resolver.getKotlinClassByName("org.w3c.dom.Document")
         val iosApplication = resolver.getKotlinClassByName("platform.UIKit.UIApplication")
 
+        val isIos = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformIOS") != null
+        val isDesktop = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformDesktop") != null
+        val isAndroid = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformAndroid") != null
+        val isWeb = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformFrontendJs") != null
+
+
         when {
-            androidApplication != null -> {
+            isAndroid && androidApplication != null -> {
                 return "application" to {
                     addParameter(
                         ParameterSpec.builder(
@@ -285,7 +289,7 @@ object NavigationComponentGenerator {
                 }
             }
 
-            desktopApplication != null -> {
+            isDesktop -> {
                 return "ignored" to {
                     addParameter(
                         ParameterSpec.builder(
@@ -296,7 +300,7 @@ object NavigationComponentGenerator {
                 }
             }
 
-            webDocument != null -> {
+            isWeb && webDocument != null -> {
                 return "document" to {
                     addParameter(
                         ParameterSpec.builder(
@@ -307,7 +311,7 @@ object NavigationComponentGenerator {
                 }
             }
 
-            iosApplication != null -> {
+            isIos && iosApplication != null  -> {
                 return "application" to {
                     addParameter(
                         ParameterSpec.builder(
