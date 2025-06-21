@@ -36,8 +36,9 @@ internal actual val platformNavigationModule: NavigationModule = createNavigatio
  * the compatibility layer is active.
  */
 private fun NavigationModule.BuilderScope.applyCompatModule() {
-    val compatClass = Class.forName("dev.enro.compat.EnroCompat")
-        ?: return
+    val compatClass = runCatching { Class.forName("dev.enro.compat.EnroCompat") }
+        .getOrNull() ?: return
+
     val compat = compatClass.constructors.first().newInstance()
     val compatModule = compatClass.declaredFields
         .first { it.name == "compatModule" }
