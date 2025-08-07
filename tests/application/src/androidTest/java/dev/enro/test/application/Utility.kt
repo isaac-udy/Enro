@@ -1,6 +1,7 @@
 package dev.enro.test.application
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -29,7 +30,11 @@ fun ComposeTestRule.waitForNavigationContext(
     block: (NavigationContext<*>) -> Boolean
 ): NavigationContext<*> {
     var navigationContext: NavigationContext<*>? = null
-    waitUntil(5_000) {
+    waitUntil(10_000) {
+        // fetch the root semantics nodes to cause the Compose test rule to refresh content,
+        // as it appears sometimes external changes don't properly cause the content to refresh
+        onAllNodes(isRoot()).fetchSemanticsNodes()
+
         val activity = runOnIdle {
             runOnUiThread {
                 ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED)
