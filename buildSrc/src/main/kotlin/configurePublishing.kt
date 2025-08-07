@@ -74,8 +74,6 @@ private fun Project.configurePublishing(
             System.getenv("PUBLISH_SIGNING_KEY_LOCATION") ?: "MISSING"
         )
     }
-    extraProperties["mavenCentralUsername"] = localProperties["sonatypeUser"].toString()
-    extraProperties["mavenCentralPassword"] = localProperties["sonatypePassword"].toString()
     extraProperties["signing.keyId"] = localProperties["signingKeyId"]
     extraProperties["signing.password"] = localProperties["signingKeyPassword"]
     extraProperties["signing.secretKeyRingFile"] = localProperties["signingKeyLocation"]
