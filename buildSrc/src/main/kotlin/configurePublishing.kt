@@ -2,7 +2,6 @@
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
-import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -38,47 +37,6 @@ private fun Project.configurePublishing(
     val versionCode = versionProperties.getProperty("versionCode").toInt()
     val versionName = versionProperties.getProperty("versionName")
 
-    val localProperties = Properties()
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        localProperties.load(FileInputStream(rootProject.file("local.properties")))
-    } else {
-        localProperties.setProperty(
-            "githubUser",
-            System.getenv("PUBLISH_GITHUB_USER") ?: "MISSING"
-        )
-        localProperties.setProperty(
-            "githubToken",
-            System.getenv("PUBLISH_GITHUB_TOKEN") ?: "MISSING"
-        )
-
-        localProperties.setProperty(
-            "sonatypeUser",
-            System.getenv("PUBLISH_SONATYPE_USER") ?: "MISSING"
-        )
-        localProperties.setProperty(
-            "sonatypePassword",
-            System.getenv("PUBLISH_SONATYPE_PASSWORD") ?: "MISSING"
-        )
-
-        localProperties.setProperty(
-            "signingKeyId",
-            System.getenv("PUBLISH_SIGNING_KEY_ID") ?: "MISSING"
-        )
-        localProperties.setProperty(
-            "signingKeyPassword",
-            System.getenv("PUBLISH_SIGNING_KEY_PASSWORD") ?: "MISSING"
-        )
-        localProperties.setProperty(
-            "signingKeyLocation",
-            System.getenv("PUBLISH_SIGNING_KEY_LOCATION") ?: "MISSING"
-        )
-    }
-
-    extraProperties["signing.keyId"] = localProperties["signingKeyId"]
-    extraProperties["signing.password"] = localProperties["signingKeyPassword"]
-    extraProperties["signing.secretKeyRingFile"] = localProperties["signingKeyLocation"]
-
     afterEvaluate {
         group = groupName
         version = versionName
@@ -86,7 +44,7 @@ private fun Project.configurePublishing(
         extensions.configure<MavenPublishBaseExtension> {
             publishToMavenCentral(automaticRelease = false)
 
-            if (localProperties["signingKeyId"] != null && localProperties["signingKeyId"] != "MISSING") {
+            if (System.getenv("ORG_GRADLE_PROJECT_mavenCentralUsername") != null) {
                 signAllPublications()
             }
 
@@ -116,15 +74,6 @@ private fun Project.configurePublishing(
                 }
             }
         }
-
-        // Set up sonatype credentials
-        System.setProperty("mavenCentralUsername", localProperties["sonatypeUser"].toString())
-        System.setProperty("mavenCentralPassword", localProperties["sonatypePassword"].toString())
-
-        // Set up signing properties
-        extraProperties["signing.keyId"] = localProperties["signingKeyId"]
-        extraProperties["signing.password"] = localProperties["signingKeyPassword"]
-        extraProperties["signing.secretKeyRingFile"] = localProperties["signingKeyLocation"]
     }
 
     afterEvaluate {

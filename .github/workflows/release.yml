@@ -48,7 +48,13 @@ jobs:
           PUBLISH_SIGNING_KEY_ID: ${{ secrets.PUBLISH_SIGNING_KEY_ID }}
           PUBLISH_SIGNING_KEY_PASSWORD: ${{ secrets.PUBLISH_SIGNING_KEY_PASSWORD }}
           PUBLISH_SIGNING_KEY_LOCATION: ${{ secrets.PUBLISH_SIGNING_KEY_LOCATION }}
-        run: ./gradlew publishToMavenCentral --no-parallel -Pcom.vanniktech.maven.publish.useBuildService=false --stacktrace --continue
+
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.PUBLISH_SONATYPE_USER }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.PUBLISH_SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.PUBLISH_SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.PUBLISH_SIGNING_KEY_LITERAL}}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.PUBLISH_SIGNING_KEY_PASSWORD }}
+        run: ./gradlew publishToMavenCentral --no-parallel --stacktrace --continue
 
       - name: Update Repo
         uses: EndBug/add-and-commit@v5
