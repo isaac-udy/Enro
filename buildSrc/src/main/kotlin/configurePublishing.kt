@@ -1,13 +1,7 @@
 
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.gradle.api.Project
-import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.tasks.javadoc.Javadoc
-import org.gradle.external.javadoc.JavadocMemberLevel
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import java.io.FileInputStream
 import java.util.Properties
@@ -84,25 +78,6 @@ private fun Project.configurePublishing(
     extraProperties["signing.keyId"] = localProperties["signingKeyId"]
     extraProperties["signing.password"] = localProperties["signingKeyPassword"]
     extraProperties["signing.secretKeyRingFile"] = localProperties["signingKeyLocation"]
-
-    if (isAndroid) {
-        // The vanniktech plugin automatically configures Android publishing
-        // No manual configuration needed
-    } else {
-        extensions.configure<JavaPluginExtension> {
-            withJavadocJar()
-            withSourcesJar()
-        }
-        val java = extensions.getByType<JavaPluginExtension>()
-        val mainSrc = java.sourceSets["main"]
-        tasks.withType<Javadoc> {
-            source = mainSrc.allJava
-            classpath = configurations.getByName("compileClasspath")
-            options {
-                setMemberLevel(JavadocMemberLevel.PUBLIC)
-            }
-        }
-    }
 
     afterEvaluate {
         group = groupName
