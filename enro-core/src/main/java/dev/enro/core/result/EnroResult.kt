@@ -18,6 +18,10 @@ internal class EnroResult: EnroPlugin() {
         controllerBindings[navigationController] = this
     }
 
+    override fun onDetached(navigationController: NavigationController) {
+        controllerBindings.remove(navigationController)
+    }
+
     override fun onActive(navigationHandle: NavigationHandle) {
         channels.values
             .filter { channel ->
