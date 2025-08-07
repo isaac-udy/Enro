@@ -94,7 +94,7 @@ internal class ComposableDestinationOwner(
     internal fun save(): Bundle {
         if (lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) return Bundle()
         return Bundle().also {
-            savedStateRegistry.performSave(it)
+            savedStateRegistryOwner.savedStateController.performSave(it)
             onNavigationContextSaved(
                 context = destination.context,
                 outState = it
@@ -177,6 +177,9 @@ internal class ComposableDestinationOwner(
             lifecycleRegistry.currentState = minOf(parentLifecycle, targetLifecycle)
 
             onDispose {
+                if (lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) {
+                    return@onDispose
+                }
                 when {
                     isActive -> {}
                     isInBackstack -> lifecycleRegistry.currentState = Lifecycle.State.CREATED

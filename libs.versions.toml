@@ -1,7 +1,7 @@
 [versions]
 [libraries]
 android-gradle = "com.android.tools.build:gradle:8.12.0"
-
+compose-gradle = "org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.1.10"
 emulator-wtf-gradle = "wtf.emulator:gradle-plugin:0.19.3"
 
 androidx-core = "androidx.core:core-ktx:1.16.0"
@@ -36,9 +36,9 @@ compose-accompanist-systemUiController = "com.google.accompanist:accompanist-sys
 compose-materialIcons = "androidx.compose.material:material-icons-core:1.7.8"
 compose-materialIconsExtended = "androidx.compose.material:material-icons-extended:1.7.8"
 
-kotlin-gradle = "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20"
-kotlin-stdLib = "org.jetbrains.kotlin:kotlin-stdlib:2.1.20"
-kotlin-reflect = "org.jetbrains.kotlin:kotlin-reflect:2.1.20"
+kotlin-gradle = "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.10"
+kotlin-stdLib = "org.jetbrains.kotlin:kotlin-stdlib:2.1.10"
+kotlin-reflect = "org.jetbrains.kotlin:kotlin-reflect:2.1.10"
 
 hilt-gradle = "com.google.dagger:hilt-android-gradle-plugin:2.57"
 hilt-android = "com.google.dagger:hilt-android:2.57"

@@ -7,6 +7,7 @@ plugins {
     id("kotlin-android")
     id("kotlin-parcelize")
     id("wtf.emulator.gradle")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 configureAndroidLibrary("dev.enro")
 configureCompose()

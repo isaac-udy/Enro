@@ -7,6 +7,7 @@ import org.gradle.kotlin.dsl.the
 
 fun Project.configureCompose() {
     val libs = the<LibrariesForLibs>()
+    plugins.apply("org.jetbrains.kotlin.plugin.compose")
     extensions.configure<BaseExtension> {
         buildFeatures.compose = true
         composeOptions {

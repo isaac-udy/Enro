@@ -4,6 +4,7 @@ repositories {
     mavenLocal()
     google()
     mavenCentral()
+    gradlePluginPortal()
 }
 
 plugins {
@@ -24,6 +25,7 @@ dependencies {
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
 
     implementation(libs.android.gradle)
+    implementation(libs.compose.gradle)
     implementation(libs.kotlin.gradle)
     implementation(libs.emulator.wtf.gradle)
     implementation(libs.processing.javaPoet) // https://github.com/google/dagger/issues/3068

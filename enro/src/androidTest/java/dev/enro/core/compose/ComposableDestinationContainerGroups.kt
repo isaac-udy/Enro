@@ -109,8 +109,9 @@ class ComposableDestinationContainerGroups {
         composeContentRule.onNodeWithText("Third Tab Screen").assertDoesNotExist()
     }
 
+    // whenComposableDestinationIsLaunchedWithContainerGroup_andSecondaryContainerSelected_andActivityIsRecreated_thenActiveContainerRemainsActive
     @Test
-    fun whenComposableDestinationIsLaunchedWithContainerGroup_andSecondaryContainerSelected_andActivityIsRecreated_thenActiveContainerRemainsActive() {
+    fun containerGroupSurvivesActivityRecreation() {
         val root = launchComposable(Destinations.RootDestination)
         runBlocking { composeContentRule.awaitIdle() }
         expectComposableContext<Destinations.FirstTab>()

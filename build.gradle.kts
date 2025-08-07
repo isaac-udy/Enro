@@ -6,10 +6,12 @@ buildscript {
         mavenLocal()
         google()
         mavenCentral()
+        gradlePluginPortal()
     }
     dependencies {
         classpath(libs.android.gradle)
         classpath(libs.kotlin.gradle)
+        classpath(libs.compose.gradle)
         classpath(libs.processing.ksp.gradle)
         classpath(libs.hilt.gradle)
         classpath(libs.emulator.wtf.gradle)
