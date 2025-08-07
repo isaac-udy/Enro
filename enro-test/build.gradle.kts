@@ -9,7 +9,7 @@ configureAndroidPublishing("dev.enro:enro-test")
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(JvmTarget.JVM_11)
         freeCompilerArgs.add("-Xfriend-paths=../enro-core/src/main")
     }
 }

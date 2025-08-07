@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 fun Project.configureExplicitApi() {
     tasks.withType<KotlinCompile>() {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
+            jvmTarget.set(JvmTarget.JVM_11)
             freeCompilerArgs.add("-Xexplicit-api=strict")
         }
     }

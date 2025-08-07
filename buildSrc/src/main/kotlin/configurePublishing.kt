@@ -86,7 +86,7 @@ private fun Project.configurePublishing(
         extensions.configure<MavenPublishBaseExtension> {
             publishToMavenCentral(automaticRelease = false)
 
-            if (localProperties["signingKeyId"] != "MISSING") {
+            if (localProperties["signingKeyId"] != null && localProperties["signingKeyId"] != "MISSING") {
                 signAllPublications()
             }
 
