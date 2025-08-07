@@ -49,8 +49,8 @@ jobs:
           PUBLISH_SIGNING_KEY_PASSWORD: ${{ secrets.PUBLISH_SIGNING_KEY_PASSWORD }}
           PUBLISH_SIGNING_KEY_LOCATION: ${{ secrets.PUBLISH_SIGNING_KEY_LOCATION }}
         run: ./gradlew publishToMavenCentral \
-          -PmavenCentralUsername=${{ secrets.PUBLISH_SONATYPE_USER }} \
-          -PmavenCentralPassword=${{ secrets.PUBLISH_SONATYPE_PASSWORD }} \
+          -PmavenCentralUsername="${{ secrets.PUBLISH_SONATYPE_USER }}" \
+          -PmavenCentralPassword="${{ secrets.PUBLISH_SONATYPE_PASSWORD }}" \
           --no-parallel \
           --stacktrace \
           --continue
