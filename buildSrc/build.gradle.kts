@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.android.gradle)
     implementation(libs.compose.gradle)
     implementation(libs.kotlin.gradle)
+    implementation(libs.vanniktech.publish.gradle)
     implementation(libs.emulator.wtf.gradle)
     implementation(libs.processing.javaPoet) // https://github.com/google/dagger/issues/3068
 }

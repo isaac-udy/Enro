@@ -1,25 +1,15 @@
-import com.android.build.gradle.LibraryExtension
-import groovy.namespace.QName
-import groovy.util.Node
-import groovy.util.NodeList
+
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.external.javadoc.JavadocMemberLevel
-import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getByName
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
-import org.gradle.plugins.signing.SigningExtension
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import java.io.FileInputStream
-import java.net.URI
 import java.util.Properties
 
 fun Project.configureAndroidPublishing(
@@ -40,7 +30,7 @@ private fun Project.configurePublishing(
     isAndroid: Boolean,
     groupAndModuleName: String,
 ) {
-    plugins.apply("maven-publish")
+    plugins.apply("com.vanniktech.maven.publish")
     plugins.apply("signing")
 
     val splitName = groupAndModuleName.split(":")
@@ -54,55 +44,50 @@ private fun Project.configurePublishing(
     val versionCode = versionProperties.getProperty("versionCode").toInt()
     val versionName = versionProperties.getProperty("versionName")
 
-    val privateProperties = Properties()
-    val privatePropertiesFile = rootProject.file("private.properties")
-    if (privatePropertiesFile.exists()) {
-        privateProperties.load(FileInputStream(rootProject.file("private.properties")))
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(FileInputStream(rootProject.file("local.properties")))
     } else {
-        privateProperties.setProperty(
+        localProperties.setProperty(
             "githubUser",
             System.getenv("PUBLISH_GITHUB_USER") ?: "MISSING"
         )
-        privateProperties.setProperty(
+        localProperties.setProperty(
             "githubToken",
             System.getenv("PUBLISH_GITHUB_TOKEN") ?: "MISSING"
         )
 
-        privateProperties.setProperty(
+        localProperties.setProperty(
             "sonatypeUser",
             System.getenv("PUBLISH_SONATYPE_USER") ?: "MISSING"
         )
-        privateProperties.setProperty(
+        localProperties.setProperty(
             "sonatypePassword",
             System.getenv("PUBLISH_SONATYPE_PASSWORD") ?: "MISSING"
         )
 
-        privateProperties.setProperty(
+        localProperties.setProperty(
             "signingKeyId",
             System.getenv("PUBLISH_SIGNING_KEY_ID") ?: "MISSING"
         )
-        privateProperties.setProperty(
+        localProperties.setProperty(
             "signingKeyPassword",
             System.getenv("PUBLISH_SIGNING_KEY_PASSWORD") ?: "MISSING"
         )
-        privateProperties.setProperty(
+        localProperties.setProperty(
             "signingKeyLocation",
             System.getenv("PUBLISH_SIGNING_KEY_LOCATION") ?: "MISSING"
         )
     }
 
-    extraProperties["signing.keyId"] = privateProperties["signingKeyId"]
-    extraProperties["signing.password"] = privateProperties["signingKeyPassword"]
-    extraProperties["signing.secretKeyRingFile"] = privateProperties["signingKeyLocation"]
+    extraProperties["signing.keyId"] = localProperties["signingKeyId"]
+    extraProperties["signing.password"] = localProperties["signingKeyPassword"]
+    extraProperties["signing.secretKeyRingFile"] = localProperties["signingKeyLocation"]
 
     if (isAndroid) {
-        extensions.configure<LibraryExtension> {
-            publishing {
-                singleVariant("release") {
-                    withSourcesJar()
-                }
-            }
-        }
+        // The vanniktech plugin automatically configures Android publishing
+        // No manual configuration needed
     } else {
         extensions.configure<JavaPluginExtension> {
             withJavadocJar()
@@ -123,73 +108,48 @@ private fun Project.configurePublishing(
         group = groupName
         version = versionName
 
-        extensions.configure<PublishingExtension> {
-            publications.create<MavenPublication>("release") {
-                if (isAndroid) {
-                    from(components.getByName("release"))
-                } else {
-                    from(components.getByName("java"))
-                }
+        extensions.configure<MavenPublishBaseExtension> {
+            publishToMavenCentral(automaticRelease = false)
 
-                groupId = groupName
-                artifactId = moduleName
-                version = versionName
-
-                pom {
-                    name.set(moduleName)
-                    description.set("A component of Enro, a small navigation library for Android")
-                    url.set("https://github.com/isaac-udy/Enro")
-                    licenses {
-                        license {
-                            name.set("Enro License")
-                            url.set("https://github.com/isaac-udy/Enro/blob/main/LICENSE")
-                        }
-                    }
-                    developers {
-                        developer {
-                            id.set("isaac.udy")
-                            name.set("Isaac Udy")
-                            email.set("isaac.udy@gmail.com")
-                        }
-                    }
-                    scm {
-                        connection.set("scm:git:github.com/isaac-udy/Enro.git")
-                        developerConnection.set("scm:git:ssh://github.com/isaac-udy/Enro.git")
-                        url.set("https://github.com/isaac-udy/Enro/tree/main")
-                    }
-                }
+            if (localProperties["signingKeyId"] != "MISSING") {
+                signAllPublications()
             }
 
-            repositories {
-                maven {
-                    name = "GitHubPackages"
-                    url = uri("https://maven.pkg.github.com/isaac-udy/Enro")
-                    credentials {
-                        username = privateProperties["githubUser"].toString()
-                        password = privateProperties["githubToken"].toString()
+            coordinates(groupName, moduleName, versionName)
+
+            pom {
+                name.set(moduleName)
+                description.set("A component of Enro, a small navigation library for Android")
+                url.set("https://github.com/isaac-udy/Enro")
+                licenses {
+                    license {
+                        name.set("Enro License")
+                        url.set("https://github.com/isaac-udy/Enro/blob/main/LICENSE")
                     }
                 }
-            }
-
-            repositories {
-                maven {
-                    // This is an arbitrary name, you may also use "mavencentral" or
-                    // any other name that's descriptive for you
-                    name = "sonatype"
-                    url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-                    credentials {
-                        username = privateProperties["sonatypeUser"].toString()
-                        password = privateProperties["sonatypePassword"].toString()
+                developers {
+                    developer {
+                        id.set("isaac.udy")
+                        name.set("Isaac Udy")
+                        email.set("isaac.udy@gmail.com")
                     }
+                }
+                scm {
+                    connection.set("scm:git:github.com/isaac-udy/Enro.git")
+                    developerConnection.set("scm:git:ssh://github.com/isaac-udy/Enro.git")
+                    url.set("https://github.com/isaac-udy/Enro/tree/main")
                 }
             }
         }
 
-        if (privateProperties["signingKeyId"] != "MISSING") {
-            extensions.configure<SigningExtension> {
-                sign(extensions.getByType<PublishingExtension>().publications)
-            }
-        }
+        // Set up sonatype credentials
+        System.setProperty("mavenCentralUsername", localProperties["sonatypeUser"].toString())
+        System.setProperty("mavenCentralPassword", localProperties["sonatypePassword"].toString())
+
+        // Set up signing properties
+        extraProperties["signing.keyId"] = localProperties["signingKeyId"]
+        extraProperties["signing.password"] = localProperties["signingKeyPassword"]
+        extraProperties["signing.secretKeyRingFile"] = localProperties["signingKeyLocation"]
     }
 
     afterEvaluate {
@@ -204,7 +164,7 @@ private fun Project.configurePublishing(
         tasks.findByName("publish")
             ?.dependsOn("publishToMavenLocal")
 
-        tasks.findByName("publishAllPublicationsToSonatypeRepository")
+        tasks.findByName("publishToMavenCentral")
             ?.dependsOn("publishToMavenLocal")
     }
 }

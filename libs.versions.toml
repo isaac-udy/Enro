@@ -2,6 +2,7 @@
 [libraries]
 android-gradle = "com.android.tools.build:gradle:8.12.0"
 compose-gradle = "org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.1.10"
+vanniktech-publish-gradle = "com.vanniktech.maven.publish:com.vanniktech.maven.publish.gradle.plugin:0.34.0"
 emulator-wtf-gradle = "wtf.emulator:gradle-plugin:0.19.3"
 
 androidx-core = "androidx.core:core-ktx:1.16.0"

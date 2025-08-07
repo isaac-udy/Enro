@@ -12,6 +12,7 @@ buildscript {
         classpath(libs.android.gradle)
         classpath(libs.kotlin.gradle)
         classpath(libs.compose.gradle)
+        classpath(libs.vanniktech.publish.gradle)
         classpath(libs.processing.ksp.gradle)
         classpath(libs.hilt.gradle)
         classpath(libs.emulator.wtf.gradle)
