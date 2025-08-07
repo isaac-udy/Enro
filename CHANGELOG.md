@@ -1,7 +1,7 @@
 # Changelog
 
-## 2.9.0 (Unreleased)
-
+## 2.8.4
+* Updated dependencies
 
 ## 2.8.3
 * Resolved a bug with animation changes to `BottomSheetDestination` that caused animation snapping for these destinations
