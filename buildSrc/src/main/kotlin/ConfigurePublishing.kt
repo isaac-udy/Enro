@@ -88,30 +88,6 @@ class ConfigurePublishing : Plugin<Project> {
                         url.set("https://github.com/isaac-udy/Enro/tree/main")
                     }
                 }
-
-                pom {
-                    name.set(moduleName)
-                    description.set("A component of Enro, a small navigation library for Android")
-                    url.set("https://github.com/isaac-udy/Enro")
-                    licenses {
-                        license {
-                            name.set("Enro License")
-                            url.set("https://github.com/isaac-udy/Enro/blob/main/LICENSE")
-                        }
-                    }
-                    developers {
-                        developer {
-                            id.set("isaac.udy")
-                            name.set("Isaac Udy")
-                            email.set("isaac.udy@gmail.com")
-                        }
-                    }
-                    scm {
-                        connection.set("scm:git:github.com/isaac-udy/Enro.git")
-                        developerConnection.set("scm:git:ssh://github.com/isaac-udy/Enro.git")
-                        url.set("https://github.com/isaac-udy/Enro/tree/main")
-                    }
-                }
             }
         }
     }

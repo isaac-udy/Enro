@@ -50,7 +50,7 @@ internal fun Project.configureKotlinMultiplatform(
         if (android) {
             androidTarget {
                 compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_21)
+                    jvmTarget.set(JvmTarget.JVM_11)
                     freeCompilerArgs.addAll(
                         "-P",
                         "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=dev.enro.annotations.Parcelize"
@@ -64,7 +64,7 @@ internal fun Project.configureKotlinMultiplatform(
         if (desktop) {
             jvm("desktop") {
                 compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_21)
+                    jvmTarget.set(JvmTarget.JVM_11)
                     freeCompilerArgs.addAll("-Xexpect-actual-classes")
                     optIn.addAll(*optIns)
                 }
@@ -162,8 +162,8 @@ internal fun Project.configureKotlinMultiplatform(
                 }
             }
             compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_21
-                targetCompatibility = JavaVersion.VERSION_21
+                sourceCompatibility = JavaVersion.VERSION_11
+                targetCompatibility = JavaVersion.VERSION_11
             }
         }
     }

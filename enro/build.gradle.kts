@@ -25,7 +25,7 @@ android {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
+        jvmTarget.set(JvmTarget.JVM_11)
         freeCompilerArgs.add("-Xfriend-paths=../enro-core/src/main")
     }
 }
