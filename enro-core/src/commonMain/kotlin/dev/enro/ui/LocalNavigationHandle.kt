@@ -7,7 +7,7 @@ import dev.enro.NavigationKey
 
 // TODO update to work like LocalNavigationContext, and look for root context
 @PublishedApi
-internal val LocalNavigationHandle: ProvidableCompositionLocal<NavigationHandle<out NavigationKey>> =
+internal val LocalNavigationHandle: ProvidableCompositionLocal<NavigationHandle<NavigationKey>> =
     staticCompositionLocalOf {
         error("No LocalNavigationHandle")
     }

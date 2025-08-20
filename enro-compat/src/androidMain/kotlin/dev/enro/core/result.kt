@@ -13,13 +13,13 @@ import kotlin.reflect.KClass
 import dev.enro.result.registerForNavigationResult as fragmentRegisterForNavigationResult
 
 public fun <R: Any> NavigationHandle<NavigationKey.WithResult<R>>.deliverResultFromPush(
-    key: dev.enro.core.NavigationKey.SupportsPush.WithResult<R>,
+    key: dev.enro.core.NavigationKey.SupportsPush.WithResult<out R>,
 ) {
     execute(NavigationOperation.CompleteFrom(instance, key.asPush()))
 }
 
 public fun <R: Any> NavigationHandle<NavigationKey.WithResult<R>>.deliverResultFromPresent(
-    key: dev.enro.core.NavigationKey.SupportsPresent.WithResult<R>
+    key: dev.enro.core.NavigationKey.SupportsPresent.WithResult<out R>
 ) {
     execute(NavigationOperation.CompleteFrom(instance, key.asPresent()))
 }
@@ -39,6 +39,9 @@ public fun <R : Any> Fragment.registerForNavigationResult(
 ) : ReadOnlyProperty<Fragment, NavigationResultChannelCompat<R>> {
     val channel = fragmentRegisterForNavigationResult(resultType, onClosed, onCompleted)
     return ReadOnlyProperty { fragment, prop ->
-        NavigationResultChannelCompat(channel.getValue(fragment, prop))
+        NavigationResultChannelCompat(
+            channel.provideDelegate(fragment, prop)
+                .getValue(fragment, prop)
+        )
     }
 }

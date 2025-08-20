@@ -28,12 +28,14 @@ import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.platform.EnroLog
+import dev.enro.requestClose
 import dev.enro.ui.animation.rememberTransitionCompat
 import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
 import dev.enro.ui.scenes.DialogSceneStrategy
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import dev.enro.ui.scenes.calculateSceneWithSinglePaneFallback
+import dev.enro.viewmodel.getNavigationHandle
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
@@ -323,12 +325,13 @@ private fun HandlePredictiveBack(
             val previousIds = scene.previousEntries
                 .map { it.instance.id }
                 .toSet()
-            val toClose = state.backstack.filter { !previousIds.contains(it.id) }
-            state.execute(
-                NavigationOperation.AggregateOperation(
-                    toClose.map { NavigationOperation.Close(it) }
-                )
-            )
+
+            val toCloseDestinations = state.context.children.filter {
+                !previousIds.contains(it.id)
+            }
+            toCloseDestinations.forEach {
+                it.getNavigationHandle<NavigationKey>().requestClose()
+            }
         } finally {
             // Ensure state is cleaned up even if an error occurs
             state.inPredictiveBack = false

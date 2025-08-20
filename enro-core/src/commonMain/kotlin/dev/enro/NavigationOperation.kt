@@ -12,7 +12,7 @@ public sealed class NavigationOperation {
     public class AggregateOperation(
         internal val operations: List<RootOperation>,
     ) : NavigationOperation() {
-        internal constructor(
+        public constructor(
             vararg operations: RootOperation,
         ) : this(operations.toList())
     }

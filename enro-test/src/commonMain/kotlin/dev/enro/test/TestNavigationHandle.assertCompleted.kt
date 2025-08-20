@@ -5,7 +5,7 @@ package dev.enro.test
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 
-fun TestNavigationHandle<NavigationKey>.assertCompleted() {
+fun TestNavigationHandle<out NavigationKey>.assertCompleted() {
     val operation = operations.lastOrNull()
     enroAssert(operation != null) {
         "Expected the last operation to be a complete operation, but there were no operations."
@@ -18,11 +18,11 @@ fun TestNavigationHandle<NavigationKey>.assertCompleted() {
     }
 }
 
-inline fun <reified R : Any> TestNavigationHandle<NavigationKey.WithResult<R>>.assertCompleted(expected: R) {
+inline fun <reified R : Any> TestNavigationHandle<out NavigationKey.WithResult<R>>.assertCompleted(expected: R) {
     assertCompleted { it == expected }
 }
 
-inline fun <reified T : Any> TestNavigationHandle<NavigationKey.WithResult<T>>.assertCompleted(
+inline fun <reified T : Any> TestNavigationHandle<out NavigationKey.WithResult<T>>.assertCompleted(
     predicate: (T) -> Boolean = { true },
 ): T {
     val operation = operations.lastOrNull()

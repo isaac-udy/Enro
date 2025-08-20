@@ -24,7 +24,6 @@ internal fun findContainer(
     alreadyVisitedContainers: Set<NavigationContainer.Key> = emptySet()
 ): ContainerContext? {
     val visited = alreadyVisitedContainers.toMutableSet()
-
     // TODO isVisible
     val containerContext = fromContext
         .getActiveChildContainers(exclude = visited)

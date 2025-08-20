@@ -1,5 +1,6 @@
 package dev.enro.ui.destinations
 
+import dev.enro.EnroController
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
@@ -9,36 +10,45 @@ import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.navigationDestination
 
-internal class SyntheticDestination<K : NavigationKey>(
+public class SyntheticDestination<K : NavigationKey>(
     internal val block: SyntheticDestinationScope<K>.() -> Unit,
 ) {
-    companion object {
-        const val SyntheticDestinationKey = "dev.enro.ui.destinations.SyntheticDestinationKey"
+    public companion object {
+        internal const val SyntheticDestinationKey = "dev.enro.ui.destinations.SyntheticDestinationKey"
 
-        val interceptor = object : NavigationInterceptor() {
+        internal val interceptor = object : NavigationInterceptor() {
             override fun intercept(
                 fromContext: NavigationContext,
                 containerContext: ContainerContext,
                 operation: NavigationOperation.Open<NavigationKey>,
             ): NavigationOperation? {
-                val controller = fromContext.controller
-                val bindings = controller.bindings.bindingFor(instance = operation.instance)
-                val syntheticDestination = bindings.provider.peekMetadata(operation.instance)[SyntheticDestinationKey]
-                if (syntheticDestination == null) return operation
-
-                @Suppress("UNCHECKED_CAST")
-                val synthetic = requireNotNull(syntheticDestination) as SyntheticDestination<NavigationKey>
-                // TODO! Make the synthetic execute in-line during the transition???
+                if (!isSyntheticDestination(operation.instance)) return operation
                 return NavigationOperation.SideEffect{
-                    synthetic.block(
-                        SyntheticDestinationScope(
-                            context = fromContext,
-                            instance = operation.instance,
-                        )
+                    executeSynthetic(
+                        fromContext = fromContext,
+                        instance = operation.instance
                     )
                 }
             }
         }
+
+        public fun executeSynthetic(
+            fromContext: NavigationContext,
+            instance: NavigationKey.Instance<NavigationKey>,
+        ) {
+            val controller = fromContext.controller
+            val bindings = controller.bindings.bindingFor(instance = instance)
+            val syntheticDestination = bindings.provider.peekMetadata(instance)[SyntheticDestinationKey]
+            @Suppress("UNCHECKED_CAST")
+            val synthetic = requireNotNull(syntheticDestination) as SyntheticDestination<NavigationKey>
+            synthetic.block(
+                SyntheticDestinationScope(
+                    context = fromContext,
+                    instance = instance,
+                )
+            )
+        }
+
     }
 }
 
@@ -55,3 +65,14 @@ public fun <K : NavigationKey> syntheticDestination(
         error("SyntheticDestination with NavigationKey ${navigation.key::class.simpleName} was rendered; SyntheticDestinations should never end up in the Composition. Something is going wrong.")
     }
 }
+
+public fun isSyntheticDestination(
+    instance: NavigationKey.Instance<*>
+): Boolean {
+    return EnroController.instance?.bindings?.bindingFor(instance)
+        ?.provider
+        ?.peekMetadata(instance)
+        ?.contains(SyntheticDestination.SyntheticDestinationKey)
+        ?: false
+}
+

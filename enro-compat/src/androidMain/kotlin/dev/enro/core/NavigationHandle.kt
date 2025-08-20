@@ -7,13 +7,14 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
-import dev.enro.closeWithoutCallback
 import dev.enro.complete
 import dev.enro.open
 import dev.enro.viewmodel.getNavigationHandle
 import dev.enro.withMetadata
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
+import dev.enro.requestClose as realRequestClose
+import dev.enro.close as realClose
 import dev.enro.navigationHandle as androidNavigationHandle
 
 public typealias NavigationHandle = dev.enro.NavigationHandle<out NavigationKey>
@@ -41,11 +42,11 @@ public fun dev.enro.NavigationHandle<*>.push(key: dev.enro.core.NavigationKey.Su
 }
 
 public fun dev.enro.NavigationHandle<*>.close() {
-    closeWithoutCallback()
+    realClose()
 }
 
 public fun dev.enro.NavigationHandle<*>.requestClose() {
-    close()
+    realRequestClose()
 }
 
 public fun <R: Any> dev.enro.NavigationHandle<out NavigationKey.WithResult<R>>.closeWithResult(result: R) {

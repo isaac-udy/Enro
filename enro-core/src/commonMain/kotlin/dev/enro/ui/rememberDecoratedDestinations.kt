@@ -31,13 +31,16 @@ internal fun rememberDecoratedDestinations(
     isSettled: Boolean,
 ): List<NavigationDestination<NavigationKey>> {
     // Create decorators that wrap destinations with additional functionality
+    val controllerDecorators = remember {
+        controller.decorators.getDecorators()
+    }
     val decorators = listOf(
         rememberMovableContentDecorator(),  // Preserves content across recompositions
         rememberSavedStateDecorator(savedStateHolder),      // Manages saved instance state
         rememberViewModelStoreDecorator(),  // Provides ViewModelStore for each destination
         rememberLifecycleDecorator(backstack, isSettled),  // Manages lifecycle state
         rememberNavigationContextDecorator(),  // Provides navigation context
-    )
+    ).plus(controllerDecorators)
 
     // Add removal tracking decorator last to ensure it tracks all other decorators
     val decoratorsWithRemovalTracking = decorators + rememberRemovalTrackingDecorator(decorators)

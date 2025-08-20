@@ -34,7 +34,7 @@ public open class NavigationFlowScope internal constructor(
     )
 
     public inline fun <reified T : Any> openWithMetadata(
-        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithMetadata<NavigationKey.WithResult<T>>,
+        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithMetadata<out NavigationKey.WithResult<T>>,
     ): T = step(
         block = block,
     )

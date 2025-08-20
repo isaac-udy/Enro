@@ -1,6 +1,7 @@
 package dev.enro.core.compose.container
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -8,6 +9,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import dev.enro.context.ContainerContext
+import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.NavigationContainerState
 
 
@@ -19,6 +22,7 @@ public class NavigationContainerGroup(
 
     public fun setActive(container: NavigationContainerState) {
         activeContainerState.value = container
+        container.context.requestActive()
     }
 }
 
@@ -47,6 +51,14 @@ public fun rememberNavigationContainerGroup(
             activeContainer,
             containers.toList(),
         )
+    }
+    val locallyActiveChild = LocalNavigationContext.current.activeChild
+    LaunchedEffect(locallyActiveChild) {
+        if (locallyActiveChild !is ContainerContext) return@LaunchedEffect
+        if (locallyActiveChild != group.activeContainer.context) {
+            containers.firstOrNull { it.context == locallyActiveChild }
+                ?.let { group.setActive(it) }
+        }
     }
     return group
 }

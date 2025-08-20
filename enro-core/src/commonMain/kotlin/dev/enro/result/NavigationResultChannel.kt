@@ -4,6 +4,7 @@ import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.asInstance
+import dev.enro.platform.EnroLog
 import dev.enro.result.NavigationResult.Completed.Companion.result
 import dev.enro.result.NavigationResultChannel.ResultIdKey
 import dev.enro.withMetadata
@@ -66,6 +67,7 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
             scope: CoroutineScope,
             resultChannel: NavigationResultChannel<T>,
         ): Job {
+            EnroLog.error("Starting observe", IllegalStateException())
             return pendingResults
                 .onStart {
                     require(!activeChannels.contains(resultChannel.id)) {

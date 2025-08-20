@@ -11,6 +11,5 @@ internal val defaultNavigationModule = createNavigationModule {
     interceptor(RootDestinationInterceptor)
     interceptor(SyntheticDestination.interceptor)
     interceptor(PreviouslyActiveContainerInterceptor)
-    interceptor(NavigationHandleConfiguration.onCloseCallbackInterceptor)
     destination<EmptyNavigationKey>(emptyDestination())
 }
