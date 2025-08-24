@@ -1,4 +1,4 @@
-package dev.enro.test
+package dev.enro.test.fixtures
 
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.Lifecycle

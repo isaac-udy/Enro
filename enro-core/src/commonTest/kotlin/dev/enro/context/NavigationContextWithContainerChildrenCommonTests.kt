@@ -1,6 +1,6 @@
 package dev.enro.context
 
-import dev.enro.test.NavigationContextFixtures
+import dev.enro.test.fixtures.NavigationContextFixtures
 import dev.enro.test.runEnroTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

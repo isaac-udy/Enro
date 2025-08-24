@@ -1,4 +1,4 @@
-package dev.enro.test
+package dev.enro.test.fixtures
 
 import androidx.compose.runtime.mutableStateOf
 import dev.enro.NavigationContainer
@@ -7,6 +7,7 @@ import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.context.NavigationContext
 import dev.enro.context.RootContext
+import dev.enro.test.EnroTest
 import dev.enro.ui.NavigationDestination
 import kotlin.uuid.Uuid
 

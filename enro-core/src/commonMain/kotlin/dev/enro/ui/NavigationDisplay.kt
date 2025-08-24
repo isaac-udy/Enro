@@ -10,6 +10,7 @@ import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -26,10 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
-import dev.enro.NavigationOperation
 import dev.enro.platform.EnroLog
 import dev.enro.requestClose
-import dev.enro.ui.animation.rememberTransitionCompat
 import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
 import dev.enro.ui.scenes.DialogSceneStrategy
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
@@ -108,7 +107,7 @@ public fun NavigationDisplay(
 
     // Create the transition state that manages animations between scenes
     val transitionState = remember { SeekableTransitionState(sceneKey) }
-    val transition = rememberTransitionCompat(transitionState, label = sceneKey.toString())
+    val transition = rememberTransition(transitionState, label = sceneKey.toString())
 
     // Calculate which destinations should be rendered in each scene
     val sceneToRenderableDestinationMap = calculateSceneToRenderableDestinationMap(

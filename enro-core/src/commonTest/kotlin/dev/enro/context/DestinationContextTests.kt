@@ -1,7 +1,7 @@
 package dev.enro.context
 
-import dev.enro.test.NavigationContextFixtures
-import dev.enro.test.NavigationDestinationFixtures
+import dev.enro.test.fixtures.NavigationContextFixtures
+import dev.enro.test.fixtures.NavigationDestinationFixtures
 import dev.enro.test.NavigationKeyFixtures
 
 class DestinationContextTests {
