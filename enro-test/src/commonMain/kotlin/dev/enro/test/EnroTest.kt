@@ -43,6 +43,9 @@ object EnroTest {
             navigationController?.uninstall()
         }
         navigationController = null
+
+        @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+        dev.enro.viewmodel.NavigationHandleProvider.clearAllForTest()
     }
 
     fun getCurrentNavigationController(): EnroController {

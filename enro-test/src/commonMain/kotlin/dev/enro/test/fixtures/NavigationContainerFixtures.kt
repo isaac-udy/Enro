@@ -23,6 +23,8 @@ import dev.enro.ui.decorators.NavigationSavedStateHolder
 import kotlin.uuid.Uuid
 
 object NavigationContainerFixtures {
+    internal object ContainerFixtureKey : NavigationKey.TransientMetadataKey<NavigationContainerState?>(null)
+
     fun create(
         parentContext: NavigationContext = NavigationContextFixtures.createRootContext(),
         key: NavigationContainer.Key = NavigationContainer.Key("TestNavigationContainer@${Uuid.random()}"),
@@ -46,9 +48,6 @@ object NavigationContainerFixtures {
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         container.addEmptyInterceptor(emptyBehavior.interceptor)
         container.addInterceptor(interceptor)
-        container.addInterceptor(navigationInterceptor {
-
-        })
 
         val context = ContainerContext(
             container = container,
@@ -61,6 +60,14 @@ object NavigationContainerFixtures {
             emptyBehavior = emptyBehavior,
             context = context,
             savedStateHolder = savedState,
+        )
+        container.addInterceptor(
+            navigationInterceptor {
+                onOpened<NavigationKey> {
+                    instance.metadata.set(ContainerFixtureKey, containerState)
+                    continueWithOpen()
+                }
+            }
         )
         return containerState
     }
@@ -101,8 +108,8 @@ object NavigationContainerFixtures {
                     }
                 }
             }
-        ).apply {
-            val state = this
+        ).also {
+            val state = it
             flow.container = state
         }
     }

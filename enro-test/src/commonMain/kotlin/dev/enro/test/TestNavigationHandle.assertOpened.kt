@@ -26,3 +26,10 @@ inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(
 ): NavigationKey.Instance<T> {
     return assertOpened<T> { it.key == key }
 }
+
+fun TestNavigationHandle<*>.assertNoneOpened() {
+    val openInstructions = operations.filterIsInstance<NavigationOperation.Open<*>>()
+    if (openInstructions.isNotEmpty()) {
+        enroAssertionError("NavigationHandle should not have executed any NavigationInstruction.Open, but NavigationInstruction.Open instructions were found")
+    }
+}

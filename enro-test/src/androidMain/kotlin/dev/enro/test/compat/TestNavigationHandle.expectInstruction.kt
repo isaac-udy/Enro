@@ -56,8 +56,11 @@ fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
  * NavigationKey [key], and then returns that NavigationInstruction.
  */
 @Deprecated("Use assertOpened instead")
-inline fun <reified T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(key: T): NavigationKey.Instance<T> {
-    return expectOpenInstruction(T::class) { it == key }
+fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
+    key: T,
+    disambiguation: Unit = Unit // to differentiate from the other expectOpenInstruction method
+): NavigationKey.Instance<T> {
+    return expectOpenInstruction(key::class) { it == key }
 }
 
 /**
@@ -65,6 +68,8 @@ inline fun <reified T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruc
  * which matches the provided filter, and then returns that NavigationInstruction.
  */
 @Deprecated("Use assertOpened instead")
-inline fun <reified T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(noinline filter: (T) -> Boolean = { true }): NavigationKey.Instance<T> {
+inline fun <reified T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
+    noinline filter: (T) -> Boolean = { true }
+): NavigationKey.Instance<T> {
     return expectOpenInstruction(T::class, filter)
 }
