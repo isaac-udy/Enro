@@ -20,7 +20,7 @@ import dev.enro.context.ContainerContext
 import dev.enro.ui.decorators.NavigationSavedStateHolder
 import kotlinx.serialization.PolymorphicSerializer
 
-public class NavigationContainerState internal constructor(
+public class NavigationContainerState(
     public val container: NavigationContainer,
     public val emptyBehavior: EmptyBehavior,
     public val context: ContainerContext,

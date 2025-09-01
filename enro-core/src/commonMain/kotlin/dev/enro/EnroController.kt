@@ -4,6 +4,7 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import dev.enro.context.RootContextRegistry
 import dev.enro.controller.NavigationModule
 import dev.enro.controller.repository.BindingRepository
+import dev.enro.controller.repository.DecoratorRepository
 import dev.enro.controller.repository.InterceptorRepository
 import dev.enro.controller.repository.PathRepository
 import dev.enro.controller.repository.PluginRepository
@@ -19,6 +20,7 @@ public class EnroController {
     internal val bindings = BindingRepository(plugins)
     internal val serializers = SerializerRepository()
     internal val interceptors = InterceptorRepository()
+    internal val decorators = DecoratorRepository()
     internal val paths = PathRepository()
     internal val viewModelRepository = ViewModelRepository()
 
@@ -29,6 +31,7 @@ public class EnroController {
         bindings.addNavigationBindings(module.bindings)
         interceptors.addInterceptors(module.interceptors)
         paths.addPaths(module.paths)
+        decorators.addDecorators(module.decorators)
         serializers.registerSerializersModule(module.serializers)
         serializers.registerSerializersModule(module.serializersForBindings)
     }

@@ -4,8 +4,8 @@ import dev.enro.context.ContainerContext
 import dev.enro.context.NavigationContext
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.builder.navigationInterceptor
-import dev.enro.test.NavigationContextFixtures
-import dev.enro.test.NavigationDestinationFixtures
+import dev.enro.test.fixtures.NavigationContextFixtures
+import dev.enro.test.fixtures.NavigationDestinationFixtures
 import dev.enro.test.NavigationKeyFixtures
 import dev.enro.test.runEnroTest
 import kotlin.test.Test

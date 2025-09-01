@@ -32,7 +32,7 @@ private val optIns = arrayOf(
 internal fun Project.configureKotlinMultiplatform(
     android: Boolean = true,
     ios: Boolean = true,
-    frontendJs: Boolean = true,
+    wasmJs: Boolean = true,
     desktop: Boolean = true,
 ) {
 
@@ -71,8 +71,8 @@ internal fun Project.configureKotlinMultiplatform(
             }
         }
 
-        if (frontendJs) {
-            wasmJs("frontendJs") {
+        if (wasmJs) {
+            wasmJs {
                 moduleName = project.projectName.camelCase
                 browser {
                     commonWebpackConfig {

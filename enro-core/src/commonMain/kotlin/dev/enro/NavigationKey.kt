@@ -51,7 +51,7 @@ public interface NavigationKey {
      * Implementing this interface allows the screen associated with this key
      * to return a typed value to its caller, enabling type-safe result handling.
      */
-    public interface WithResult<out T: Any> : NavigationKey
+    public interface WithResult<T: Any> : NavigationKey
 
     /**
      * A data class that bundles a [key] of type [T] with its associated [metadata].
@@ -78,6 +78,12 @@ public interface NavigationKey {
         public val id: String = Uuid.random().toString(),
         public val metadata: Metadata = Metadata(),
     ) {
+        @Deprecated(
+            "Use 'key' instead of 'navigationKey'",
+            level = DeprecationLevel.WARNING,
+        )
+        public val navigationKey: T get() = key
+
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false

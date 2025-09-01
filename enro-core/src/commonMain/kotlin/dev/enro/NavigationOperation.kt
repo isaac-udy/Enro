@@ -12,7 +12,7 @@ public sealed class NavigationOperation {
     public class AggregateOperation(
         internal val operations: List<RootOperation>,
     ) : NavigationOperation() {
-        internal constructor(
+        public constructor(
             vararg operations: RootOperation,
         ) : this(operations.toList())
     }
@@ -50,7 +50,6 @@ public sealed class NavigationOperation {
     ) : RootOperation() {
         // Registers the complete operation with the NavigationResultChannel associated with this instance,
         // which will allow any registerForNavigationResult callbacks to be executed
-        // Note, if "silent" is true, no result will be delivered
         @AdvancedEnroApi
         public fun registerResult() {
             NavigationResultChannel.registerResult(

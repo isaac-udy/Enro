@@ -1,5 +1,5 @@
 import java.io.FileInputStream
-import java.util.*
+import java.util.Properties
 
 buildscript {
     repositories {
@@ -43,6 +43,18 @@ allprojects {
 
             substitute(module("dev.enro:enro"))
                 .using(project(":enro"))
+        }
+    }
+}
+
+subprojects {
+    afterEvaluate {
+        tasks.register("continuousIntegration") {
+            val continuousIntegration = this
+            tasks.findByName("lintDebug")?.let { continuousIntegration.dependsOn(it) }
+            tasks.findByName("testDebugUnitTest")?.let { continuousIntegration.dependsOn(it) }
+            tasks.findByName("desktopTest")?.let { continuousIntegration.dependsOn(it) }
+            tasks.findByName("testDebugWithEmulatorWtf")?.let { continuousIntegration.dependsOn(it) }
         }
     }
 }

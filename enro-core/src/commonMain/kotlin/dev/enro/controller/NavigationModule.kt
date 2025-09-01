@@ -1,5 +1,6 @@
 package dev.enro.controller
 
+import androidx.compose.runtime.Composable
 import dev.enro.NavigationBinding
 import dev.enro.NavigationKey
 import dev.enro.interceptor.NavigationInterceptor
@@ -8,6 +9,8 @@ import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.path.NavigationPathBinding
 import dev.enro.plugin.NavigationPlugin
 import dev.enro.ui.NavigationDestinationProvider
+import dev.enro.ui.decorators.NavigationDestinationDecorator
+import dev.enro.ui.decorators.navigationDestinationDecorator
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.plus
@@ -15,6 +18,7 @@ import kotlinx.serialization.modules.plus
 public class NavigationModule @PublishedApi internal constructor() {
     internal val plugins: MutableList<NavigationPlugin> = mutableListOf()
     internal val bindings: MutableList<NavigationBinding<*>> = mutableListOf()
+    internal val decorators: MutableList<() -> NavigationDestinationDecorator<NavigationKey>> = mutableListOf()
     internal val interceptors: MutableList<NavigationInterceptor> = mutableListOf()
     internal val paths: MutableList<NavigationPathBinding<*>> = mutableListOf()
     internal var serializers: SerializersModule = EmptySerializersModule()
@@ -48,6 +52,25 @@ public class NavigationModule @PublishedApi internal constructor() {
             module.bindings.add(binding)
         }
 
+        public fun decorator(decorator: () -> NavigationDestinationDecorator<NavigationKey>) {
+            module.decorators.add(decorator)
+        }
+
+        @Deprecated(
+            message = "Use 'decorator' instead, and provide a full NavigationDestinationDecorator"
+        )
+        public fun composeEnvironment(
+            block: @Composable (content: @Composable () -> Unit) -> Unit
+        ) {
+            decorator {
+                navigationDestinationDecorator { destination ->
+                    block {
+                        destination.content()
+                    }
+                }
+            }
+        }
+
         public inline fun <reified K: NavigationKey> destination(
             destination: NavigationDestinationProvider<K>,
             isPlatformOverride: Boolean = false
@@ -72,6 +95,7 @@ public class NavigationModule @PublishedApi internal constructor() {
             this.module.plugins.addAll(module.plugins)
             this.module.bindings.addAll(module.bindings)
             this.module.interceptors.addAll(module.interceptors)
+            this.module.decorators.addAll(module.decorators)
             this.module.paths.addAll(module.paths)
             this.module.serializers += module.serializers
         }

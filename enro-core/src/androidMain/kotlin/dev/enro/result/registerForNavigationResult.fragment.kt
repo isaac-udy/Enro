@@ -8,6 +8,7 @@ import dev.enro.NavigationKey
 import dev.enro.platform.getNavigationKeyInstance
 import dev.enro.ui.destinations.fragment.fragmentContextHolder
 import kotlinx.coroutines.Job
+import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 
@@ -15,7 +16,7 @@ import kotlin.reflect.KClass
 public inline fun <reified R : Any> Fragment.registerForNavigationResult(
     noinline onClosed: NavigationResultScope<out NavigationKey.WithResult<R>>.() -> Unit = {},
     noinline onCompleted: NavigationResultScope<out NavigationKey.WithResult<R>>.(R) -> Unit,
-): ReadOnlyProperty<Fragment, NavigationResultChannel<R>> {
+): PropertyDelegateProvider<Fragment, ReadOnlyProperty<Fragment, NavigationResultChannel<R>>>  {
     return registerForNavigationResult(R::class, onClosed, onCompleted)
 }
 
@@ -24,29 +25,33 @@ public fun <R : Any> Fragment.registerForNavigationResult(
     resultType: KClass<R>,
     onClosed: NavigationResultScope<out NavigationKey.WithResult<R>>.() -> Unit = {},
     onCompleted: NavigationResultScope<out NavigationKey.WithResult<R>>.(R) -> Unit,
-): ReadOnlyProperty<Fragment, NavigationResultChannel<R>> {
-    val lazyResultChannel = lazy {
-        val id = arguments?.getNavigationKeyInstance()?.id ?: TODO()
-        NavigationResultChannel<R>(
-            id = NavigationResultChannel.Id(
-                ownerId = id,
-                resultId = onCompleted::class.java.name,
-            ),
-            onClosed = onClosed as NavigationResultScope<NavigationKey>.() -> Unit,
-            onCompleted = onCompleted as NavigationResultScope<NavigationKey>.(R) -> Unit,
-            navigationHandle = fragmentContextHolder.navigationHandle,
-        )
-    }
-    var job: Job? = null
-    lifecycle.addObserver(LifecycleEventObserver { _, event ->
-        if (event == Lifecycle.Event.ON_RESUME) {
-            job = NavigationResultChannel.observe(resultType, lifecycleScope, lazyResultChannel.value)
+): PropertyDelegateProvider<Fragment, ReadOnlyProperty<Fragment, NavigationResultChannel<R>>> {
+    return PropertyDelegateProvider<Fragment, ReadOnlyProperty<Fragment, NavigationResultChannel<R>>> { thisRef, property ->
+        val resultId = "${thisRef::class.java.name}.${property.name}"
+        val lazyResultChannel = lazy {
+            val id = arguments?.getNavigationKeyInstance()?.id ?: TODO()
+            NavigationResultChannel<R>(
+                id = NavigationResultChannel.Id(
+                    ownerId = id,
+                    resultId = resultId,
+                ),
+                onClosed = onClosed as NavigationResultScope<NavigationKey>.() -> Unit,
+                onCompleted = onCompleted as NavigationResultScope<NavigationKey>.(R) -> Unit,
+                navigationHandle = fragmentContextHolder.navigationHandle,
+            )
         }
-        if (event == Lifecycle.Event.ON_PAUSE) {
-            job?.cancel()
+        var job: Job? = null
+        lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                job = NavigationResultChannel.observe(resultType, lifecycleScope, lazyResultChannel.value)
+            }
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                job?.cancel()
+            }
+        })
+
+        ReadOnlyProperty<Fragment, NavigationResultChannel<R>> { _, _ ->
+            lazyResultChannel.value
         }
-    })
-    return ReadOnlyProperty<Fragment, NavigationResultChannel<R>> { _, _ ->
-        lazyResultChannel.value
     }
 }

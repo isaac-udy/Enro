@@ -1,11 +1,16 @@
 package dev.enro
 
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.SavedStateHandle
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.interceptor.builder.OnNavigationKeyClosedScope
 import dev.enro.interceptor.builder.navigationInterceptor
+import dev.enro.platform.EnroLog
 
-private typealias OnCloseCallback<T> = OnNavigationKeyClosedScope<T>.() -> Unit
+private typealias OnCloseCallback<T> = NavigationHandle<T>.() -> Unit
+
 public class NavigationHandleConfiguration<T : NavigationKey>(
-    public val navigation: NavigationHandle<T>,
+    private val navigation: NavigationHandle<T>,
 ) {
     private val closeables: MutableList<AutoCloseable> = mutableListOf()
 
@@ -43,20 +48,19 @@ public class NavigationHandleConfiguration<T : NavigationKey>(
     internal object OnCloseCallbacks :
         NavigationKey.TransientMetadataKey<List<OnCloseCallback<*>>>(emptyList())
 
-    internal object OnCloseCallbacksEnabled
-        : NavigationKey.TransientMetadataKey<Boolean>(true)
-
     internal companion object {
-        internal val onCloseCallbackInterceptor = navigationInterceptor {
-            onClosed<NavigationKey> {
-                val onCloseRequestedCallbacks = instance.metadata.get(OnCloseCallbacks)
-                val enabled = instance.metadata.get(OnCloseCallbacksEnabled)
-                if (enabled) {
-                    onCloseRequestedCallbacks.forEach {
-                        it(this)
-                    }
+        internal fun <T : NavigationKey> onCloseRequested(
+            navigation: NavigationHandle<T>
+        ) {
+            val callbacks = navigation.instance.metadata.get(OnCloseCallbacks) as List<OnCloseCallback<T>>
+            if (callbacks.isEmpty()) {
+                navigation.execute(NavigationOperation.Close(navigation.instance))
+            } else {
+                val callback = callbacks.last()
+                if (callbacks.size > 1) {
+                    EnroLog.warn("Multiple onCloseRequested callbacks have been registered for NavigationHandle with key ${navigation.key}, the last registered callback will be used.")
                 }
-                continueWithClose()
+                callback.invoke(navigation)
             }
         }
     }

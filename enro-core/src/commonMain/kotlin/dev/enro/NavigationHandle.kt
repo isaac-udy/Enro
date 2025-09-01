@@ -11,23 +11,20 @@ public abstract class NavigationHandle<out T : NavigationKey> internal construct
     public abstract val instance: NavigationKey.Instance<T>
     public val key: T get() = instance.key
 
-    @AdvancedEnroApi
+    @Deprecated("Use instance")
+    public val instruction: NavigationKey.Instance<T> get() = instance
+
     public abstract fun execute(
         operation: NavigationOperation,
     )
 }
 
-public fun NavigationHandle<*>.close() {
-    execute(NavigationOperation.Close(instance))
+public fun NavigationHandle<*>.requestClose() {
+    NavigationHandleConfiguration.onCloseRequested(this)
 }
 
-public fun NavigationHandle<*>.closeWithoutCallback() {
-    instance.metadata.set(NavigationHandleConfiguration.OnCloseCallbacksEnabled, false)
-    try {
-        execute(NavigationOperation.Close(instance))
-    } finally {
-        instance.metadata.set(NavigationHandleConfiguration.OnCloseCallbacksEnabled, true)
-    }
+public fun NavigationHandle<*>.close() {
+    execute(NavigationOperation.Close(instance))
 }
 
 public fun NavigationHandle<*>.complete() {

@@ -4,12 +4,10 @@ plugins {
     id("com.google.devtools.ksp")
     id("configure-library")
     id("kotlin-kapt")
-    id("wtf.emulator.gradle")
     id("configure-publishing")
     id("configure-compose")
     kotlin("plugin.serialization")
 }
-configureEmulatorWtf(numShards = 4)
 
 android {
     lint {

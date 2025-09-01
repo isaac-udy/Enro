@@ -35,4 +35,6 @@ public class SyntheticDestinationScope<K : NavigationKey>(
     public val navigationContext: AnyNavigationContext
         get() = context
 
+    @Deprecated("Use instance")
+    public val instruction: NavigationKey.Instance<K> = instance
 }

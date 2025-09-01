@@ -96,7 +96,12 @@ class DestinationReference(
     }
 
     val keyIsKotlinSerializable = keyType.annotations
-        .any { it.toAnnotationSpec().typeName == ClassNames.Kotlin.kotlinxSerializable }
+        .any {
+            // Some annotations may not be resolvable, so we're going to runCatching with this
+            runCatching {
+                it.toAnnotationSpec().typeName == ClassNames.Kotlin.kotlinxSerializable
+            }.getOrElse { false }
+        }
 
     val bindingName = requireNotNull(declaration.qualifiedName).asString()
         .replace(".", "_")

@@ -274,7 +274,7 @@ object NavigationComponentGenerator {
         val isIos = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformIOS") != null
         val isDesktop = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformDesktop") != null
         val isAndroid = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformAndroid") != null
-        val isWeb = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformFrontendJs") != null
+        val isWeb = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformWasmJs") != null
 
 
         when {

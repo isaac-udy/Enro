@@ -12,11 +12,11 @@ import dev.enro.withMetadata
 @Composable
 public inline fun <reified R : Any> registerForNavigationResult(
     noinline onClosed: NavigationResultScope<out NavigationKey.WithResult<out R>>.() -> Unit = {},
-    noinline onCompleted: NavigationResultScope<out NavigationKey.WithResult<out R>>.(R) -> Unit,
+    noinline onResult: NavigationResultScope<out NavigationKey.WithResult<out R>>.(R) -> Unit,
 ): NavigationResultChannelCompat<R> {
     val channel = dev.enro.result.registerForNavigationResult(
         onClosed = onClosed,
-        onCompleted = onCompleted,
+        onCompleted = onResult,
     )
     return remember(channel) {
         NavigationResultChannelCompat(channel)
@@ -27,7 +27,7 @@ public class NavigationResultChannelCompat<R : Any>(
     private val channel: NavigationResultChannel<R>
 ) {
     public fun push(
-        key: dev.enro.core.NavigationKey.SupportsPush.WithResult<R>,
+        key: dev.enro.core.NavigationKey.SupportsPush.WithResult<out R>,
     ) {
         channel.open(
             key.withMetadata(NavigationDirection.MetadataKey, NavigationDirection.Push)
@@ -35,7 +35,7 @@ public class NavigationResultChannelCompat<R : Any>(
     }
 
     public fun present(
-        key: dev.enro.core.NavigationKey.SupportsPresent.WithResult<R>,
+        key: dev.enro.core.NavigationKey.SupportsPresent.WithResult<out R>,
     ) {
         channel.open(
             key.withMetadata(NavigationDirection.MetadataKey, NavigationDirection.Present)
