@@ -2,6 +2,19 @@ package dev.enro.core
 
 import dev.enro.NavigationBackstack
 
+public fun dev.enro.NavigationHandle<*>.onContainer(
+    key: NavigationContainerKey,
+    block: OnActiveContainerScope.() -> Unit
+) {
+
+}
+
+public fun dev.enro.NavigationHandle<*>.onParentContainer(
+    block: OnActiveContainerScope.() -> Unit
+) {
+
+}
+
 public fun dev.enro.NavigationHandle<*>.onActiveContainer(
     block: OnActiveContainerScope.() -> Unit
 ) {

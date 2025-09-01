@@ -15,7 +15,7 @@ fun TestNavigationHandle<NavigationKey>.assertClosed() {
     enroAssert(last is NavigationOperation.Close<*>) {
         "Expected the last operation to be a close operation, but was ${last::class.simpleName}"
     }
-    require(last.instance.id == instance.id) {
+    enroAssert(last.instance.id == instance.id) {
         "Expected the last operation to be a close operation for this NavigationHandle's instance ${instance.id}, but was ${last.instance.id}"
     }
 }
@@ -23,7 +23,7 @@ fun TestNavigationHandle<NavigationKey>.assertClosed() {
 fun TestNavigationHandle<NavigationKey>.assertNotClosed() {
     val last = operations.lastOrNull()
     if (last !is NavigationOperation.Close<*>) return
-    require(last.instance.id != instance.id) {
+    enroAssert(last.instance.id != instance.id) {
         "Expected the last operation to not be a close operation for instance ${instance.id}"
     }
 }

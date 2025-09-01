@@ -67,7 +67,6 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
             scope: CoroutineScope,
             resultChannel: NavigationResultChannel<T>,
         ): Job {
-            EnroLog.error("Starting observe", IllegalStateException())
             return pendingResults
                 .onStart {
                     require(!activeChannels.contains(resultChannel.id)) {

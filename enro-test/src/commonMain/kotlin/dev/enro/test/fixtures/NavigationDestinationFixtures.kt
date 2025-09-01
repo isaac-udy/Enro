@@ -1,4 +1,4 @@
-package dev.enro.test
+package dev.enro.test.fixtures
 
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.LifecycleOwner
@@ -8,7 +8,7 @@ import dev.enro.asInstance
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.navigationDestination
 
-private const val TEST_OWNERS = "dev.enro.test.NavigationDestinationFixtures.TEST_OWNERS"
+private const val TEST_OWNERS = "dev.enro.test.fixtures.NavigationDestinationFixtures.TEST_OWNERS"
 
 object NavigationDestinationFixtures {
     fun <T : NavigationKey> create(

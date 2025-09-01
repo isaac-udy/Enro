@@ -8,8 +8,8 @@ import dev.enro.complete
 import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.navigationHandle
 import dev.enro.result.NavigationResultChannel
-import dev.enro.test.NavigationContextFixtures
 import dev.enro.test.assertCompleted
+import dev.enro.test.fixtures.NavigationContextFixtures
 import dev.enro.test.putNavigationHandleForViewModel
 import dev.enro.test.runEnroTest
 import dev.enro.ui.EmptyBehavior

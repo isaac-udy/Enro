@@ -3,6 +3,7 @@ package dev.enro.result.flow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.lifecycle.ViewModel
 import dev.enro.NavigationContainer
 import dev.enro.NavigationContainerFilter
 import dev.enro.NavigationKey
@@ -33,11 +34,12 @@ public fun rememberNavigationContainerForFlow(
                 }
                 onCompleted<NavigationKey> {
                     val stepId = instance.metadata.get(FlowStep.FlowStepIdKey)
-                        ?: instance.metadata.get(NavigationResultChannel.ResultIdKey)?.let { resultId ->
-                            flow.getSteps()
-                                .firstOrNull { it.stepId == resultId.resultId }
-                                ?.stepId
-                        }
+                        ?: instance.metadata.get(NavigationResultChannel.ResultIdKey)
+                            ?.let { resultId ->
+                                flow.getSteps()
+                                    .firstOrNull { it.stepId == resultId.resultId }
+                                    ?.stepId
+                            }
                     if (stepId == null) continueWithComplete()
                     cancelAnd {
                         flow.onStepCompleted(stepId, data ?: Unit)
@@ -57,3 +59,13 @@ public fun rememberNavigationContainerForFlow(
     }
 }
 
+@Composable
+public fun rememberNavigationContainerForFlow(
+    viewModel: ViewModel,
+): NavigationContainerState {
+    return rememberNavigationContainerForFlow(
+        flow = remember(viewModel) {
+            viewModel.navigationFlow ?: error("No NavigationFlow found on ViewModel $viewModel")
+        }
+    )
+}

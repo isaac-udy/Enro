@@ -23,7 +23,7 @@ public class NavigationFlow<T> internal constructor(
 
     private val resultManager = FlowResultManager.create(navigationHandle)
 
-    public var container: NavigationContainerState? = null
+    internal var container: NavigationContainerState? = null
         set(value) {
             if (field == value) return
             field = value
