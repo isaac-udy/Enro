@@ -92,7 +92,7 @@ kotlin {
             implementation(libs.testing.androidx.compose)
         }
 
-        frontendJsMain.dependencies {
+        wasmJsMain.dependencies {
             implementation(npm("@js-joda/core", "5.6.5"))
         }
 //        iosX64Main {
@@ -124,7 +124,7 @@ dependencies {
         add("kspCommonMainMetadata", enroProcessor)
         add("kspAndroid", enroProcessor)
         add("kspDesktop", enroProcessor)
-        add("kspFrontendJs", enroProcessor)
+        add("kspWasmJs", enroProcessor)
         add("kspIosX64", enroProcessor)
         add("kspIosArm64", enroProcessor)
         add("kspIosSimulatorArm64", enroProcessor)

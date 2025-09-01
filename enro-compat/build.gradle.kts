@@ -37,7 +37,7 @@ kotlin {
             implementation(libs.kotlin.reflect)
         }
 
-        frontendJsMain.dependencies {
+        wasmJsMain.dependencies {
             implementation(libs.kotlin.js)
         }
     }
