@@ -59,7 +59,7 @@ public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
     }
 
     public companion object {
-        private const val DirectOverlayKey = "dev.enro.ui.scenes.DirectOverlayKey"
+        internal const val DirectOverlayKey = "dev.enro.ui.scenes.DirectOverlayKey"
 
         /**
          * Function to create a metadata map with dialog properties to mark this entry as something that
@@ -73,4 +73,8 @@ public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
 
 public fun NavigationDestination.MetadataBuilder<*>.directOverlay() {
     add(DirectOverlaySceneStrategy.overlay())
+}
+
+public fun NavigationDestination<*>.isDirectOverlay(): Boolean {
+    return metadata[DirectOverlaySceneStrategy.DirectOverlayKey] != null
 }
