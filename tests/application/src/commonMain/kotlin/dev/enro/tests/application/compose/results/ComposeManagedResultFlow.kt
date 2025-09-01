@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
@@ -61,12 +62,16 @@ data object ComposeManagedResultFlow : NavigationKey {
     internal class ThirdResult : NavigationKey.WithResult<String>
 
     @Serializable
+    internal class ConfirmThirdResultScreen(
+        val result: String,
+    ) : NavigationKey
+
+    @Serializable
     internal class FinalScreen(
         val navigationFlowReference: NavigationFlowReference,
         val text: String,
     ) : NavigationKey.WithResult<Unit>
 }
-
 
 class ComposeManagedResultViewModel : ViewModel() {
 
@@ -74,22 +79,29 @@ class ComposeManagedResultViewModel : ViewModel() {
 
     val resultFlow by registerForFlowResult(
         flow = {
-            val firstResult = open { ComposeManagedResultFlow.FirstResult() }
-            val presentedResult = open { ComposeManagedResultFlow.PresentedResult() }
-            val secondResult = openWithMetadata {
-                // We're using extras here as a simple way to test that pushWithExtras/NavigationKey.withExtra work within
-                // managed flows - this extra is verified by the associated tests, but has no real impact on the flow itself
+            val firstResult = open(ComposeManagedResultFlow.FirstResult())
+            val presentedResult = open(ComposeManagedResultFlow.PresentedResult())
+
+            // We're using extras here as a simple way to test that pushWithExtras/NavigationKey.withExtra work within
+            // managed flows - this extra is verified by the associated tests, but has no real impact on the flow itself
+            val secondResult = open(
                 ComposeManagedResultFlow.SecondResult()
-                    .withMetadata(ComposeManagedResultFlow.SecondResult.MetadataKey, ComposeManagedResultFlow.hashCode())
-            }
-            val transientResult = open {
+                    .withMetadata(
+                        ComposeManagedResultFlow.SecondResult.MetadataKey,
+                        ComposeManagedResultFlow.hashCode()
+                    )
+            )
+            val transientResult = open(ComposeManagedResultFlow.TransientResult()) {
                 transient()
                 dependsOn(secondResult)
-                ComposeManagedResultFlow.TransientResult()
             }
-            val thirdResult = open { ComposeManagedResultFlow.ThirdResult() }
+            val thirdResult = open(ComposeManagedResultFlow.ThirdResult())
 
-            open {
+            open(ComposeManagedResultFlow.ConfirmThirdResultScreen(thirdResult)) {
+                alwaysAfterPreviousStep()
+            }
+
+            open(
                 ComposeManagedResultFlow.FinalScreen(
                     navigationFlowReference = navigationFlowReference,
                     text = """
@@ -100,7 +112,7 @@ class ComposeManagedResultViewModel : ViewModel() {
                         Third Result: $thirdResult
                     """.trimIndent()
                 )
-            }
+            )
         },
         onCompleted = {
             navigation.close()
@@ -110,11 +122,13 @@ class ComposeManagedResultViewModel : ViewModel() {
 
 @NavigationDestination(ComposeManagedResultFlow::class)
 @Composable
-fun ComposeManagedResultFlowScreen(viewModel: ComposeManagedResultViewModel = viewModel {
-    createEnroViewModel {
-        ComposeManagedResultViewModel()
-    }
-}) {
+fun ComposeManagedResultFlowScreen(
+    viewModel: ComposeManagedResultViewModel = viewModel {
+        createEnroViewModel {
+            ComposeManagedResultViewModel()
+        }
+    },
+) {
     val container = rememberNavigationContainerForFlow(
         flow = viewModel.resultFlow,
     )
@@ -139,33 +153,34 @@ fun FirstResultScreen() {
 }
 
 @NavigationDestination(ComposeManagedResultFlow.PresentedResult::class)
-internal val presentedResultScreen = navigationDestination<ComposeManagedResultFlow.PresentedResult>(
-    metadata = { directOverlay() }
-) {
-    val navigation = navigationHandle<ComposeManagedResultFlow.PresentedResult>()
-    Dialog(onDismissRequest = { navigation.close() }) {
-        Card {
-            Column(
-                Modifier
-                    .background(MaterialTheme.colors.background)
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "Presented",
-                    style = MaterialTheme.typography.h6
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { navigation.complete("A") }) {
-                    Text("Continue (A)")
-                }
+internal val presentedResultScreen =
+    navigationDestination<ComposeManagedResultFlow.PresentedResult>(
+        metadata = { directOverlay() }
+    ) {
+        val navigation = navigationHandle<ComposeManagedResultFlow.PresentedResult>()
+        Dialog(onDismissRequest = { navigation.close() }) {
+            Card {
+                Column(
+                    Modifier
+                        .background(MaterialTheme.colors.background)
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Presented",
+                        style = MaterialTheme.typography.h6
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { navigation.complete("A") }) {
+                        Text("Continue (A)")
+                    }
 
-                Button(onClick = { navigation.complete("B") }) {
-                    Text("Continue (B)")
+                    Button(onClick = { navigation.complete("B") }) {
+                        Text("Continue (B)")
+                    }
                 }
             }
         }
     }
-}
 
 @NavigationDestination(ComposeManagedResultFlow.SecondResult::class)
 @Composable
@@ -220,6 +235,30 @@ fun ThirdResultScreen() {
         }
     }
 }
+
+@NavigationDestination(ComposeManagedResultFlow.ConfirmThirdResultScreen::class)
+internal val confirmThirdResultScreen =
+    navigationDestination<ComposeManagedResultFlow.ConfirmThirdResultScreen>(
+        metadata = { directOverlay() }
+    ) {
+        AlertDialog(
+            title = { Text("Confirm Third Result") },
+            text = {
+                Text("You set the result to ${navigation.key.result}.\n\nDo you want to continue?")
+            },
+            onDismissRequest = { navigation.close() },
+            confirmButton = {
+                Button(onClick = { navigation.complete() }) {
+                    Text("Continue")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { navigation.close() }) {
+                    Text("Close")
+                }
+            },
+        )
+    }
 
 @NavigationDestination(ComposeManagedResultFlow.FinalScreen::class)
 @Composable

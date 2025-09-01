@@ -66,9 +66,9 @@ object ComposeManagedResultsWithNestedFlowAndEmptyRoot : NavigationKey.WithResul
         val flow by registerForFlowResult(
             flow = {
                 val started = async { getAsyncStarter() }
-                val nestedResult = open { NestedFlow() }
-                val secondResult = open { StepTwo() }
-                val finalResult = open { FinalScreen() }
+                val nestedResult = open(NestedFlow())
+                val secondResult = open(StepTwo())
+                val finalResult = open(FinalScreen())
                 return@registerForFlowResult "$started\n$nestedResult\n$secondResult\n$finalResult"
             },
             onCompleted = { result ->
@@ -92,7 +92,7 @@ internal fun ComposeManagedResultsWithNestedFlowAndEmptyRootDestination(
                 savedStateHandle = createSavedStateHandle(),
             )
         }
-    }
+    },
 ) {
     val container = rememberNavigationContainerForFlow(
         flow = viewModel.flow
@@ -127,7 +127,8 @@ internal fun CmrwnfNestedFlowDestination() {
 @Composable
 @NavigationDestination(ComposeManagedResultsWithNestedFlowAndEmptyRoot.NestedFlow.StepOne::class)
 internal fun CmrwnfNestedStepOneDestination() {
-    val navigation = navigationHandle<ComposeManagedResultsWithNestedFlowAndEmptyRoot.NestedFlow.StepOne>()
+    val navigation =
+        navigationHandle<ComposeManagedResultsWithNestedFlowAndEmptyRoot.NestedFlow.StepOne>()
     TitledColumn(
         title = "Nested Step One"
     ) {
@@ -142,7 +143,8 @@ internal fun CmrwnfNestedStepOneDestination() {
 @Composable
 @NavigationDestination(ComposeManagedResultsWithNestedFlowAndEmptyRoot.NestedFlow.StepTwo::class)
 internal fun CmrwnfNestedStepTwoDestination() {
-    val navigation = navigationHandle<ComposeManagedResultsWithNestedFlowAndEmptyRoot.NestedFlow.StepTwo>()
+    val navigation =
+        navigationHandle<ComposeManagedResultsWithNestedFlowAndEmptyRoot.NestedFlow.StepTwo>()
     TitledColumn(
         title = "Nested Step Two"
     ) {

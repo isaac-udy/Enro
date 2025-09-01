@@ -31,17 +31,17 @@ public class NavigationFlow<T> internal constructor(
             update(fromContainerChange = true)
         }
 
-    internal fun onStepCompleted(stepId: String, result: Any) {
-        val step = steps.firstOrNull { it.stepId == stepId }
+    internal fun onStepCompleted(id: FlowStep.Id<*>, result: Any) {
+        val step = steps.firstOrNull { it.id == id }
         if (step == null) {
-            EnroLog.error("Received result for id $stepId, but no active steps had that id")
+            EnroLog.error("Received result for id ${id.value}, but no active steps had that id")
         }
         step as FlowStep<Any>
         resultManager.set(step, result)
     }
 
-    internal fun onStepClosed(stepId: String) {
-        resultManager.clear(stepId)
+    internal fun onStepClosed(id: FlowStep.Id<*>) {
+        resultManager.clear(id)
     }
 
     /**
@@ -74,11 +74,16 @@ public class NavigationFlow<T> internal constructor(
 
         val oldSteps = steps
         steps = flowScope.steps
+        println("\nSTEPS")
+        steps.forEach {
+            println(it)
+        }
+        println("-----")
         val container = container ?: return
 
         val existingInstances = container.backstack
             .mapNotNull { instance ->
-                val step = instance.metadata.get(FlowStep.FlowStepIdKey) ?: return@mapNotNull null
+                val step = instance.flowStepId ?: return@mapNotNull null
                 step to instance
             }
             .groupBy { it.first }
@@ -102,25 +107,25 @@ public class NavigationFlow<T> internal constructor(
                 !flowStep.isTransient
             }
             .map { step ->
-                val existingStep = existingInstances[step.stepId]?.second?.takeIf {
+                val existingStep = existingInstances[step.id]?.second?.takeIf {
                     oldSteps
-                        .firstOrNull { it.stepId == step.stepId }
+                        .firstOrNull { it.id == step.id }
                         ?.dependsOn == step.dependsOn
                 }
                 existingStep ?: step.key
-                    .withMetadata(FlowStep.FlowStepIdKey, step.stepId)
+                    .withMetadata(FlowStep.Id.MetadataKey, step.id.value)
                     .withMetadata(NavigationFlowReference.MetadataKey, this)
                     .withMetadata(
                         NavigationResultChannel.ResultIdKey, NavigationResultChannel.Id(
                             ownerId = "NavigationFlow",
-                            resultId = step.stepId,
+                            resultId = step.id.value,
                         )
                     )
                     .asInstance()
                     .apply {
                         metadata.addFrom(step.metadata)
                     }
-                    .copy(id = step.stepId)
+                    .copy(id = step.id.value)
             }
 
         container.execute(
@@ -142,7 +147,7 @@ public class NavigationFlow<T> internal constructor(
     }
 
     @PublishedApi
-    internal fun getSteps(): List<FlowStep<out Any>> = steps
+    internal fun getSteps(): List<FlowStep<Any>> = steps
 
     @PublishedApi
     internal fun getResultManager(): FlowResultManager = resultManager

@@ -19,11 +19,12 @@ import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
+import kotlin.uuid.Uuid
 
 public class FlowResultManager private constructor(
     private val savedStateHandle: SavedStateHandle,
 ) {
-    private val results = mutableStateMapOf<String, FlowStepResult<Any>>()
+    private val results = mutableStateMapOf<FlowStep.Id<*>, FlowStepResult<Any>>()
         .also { results ->
             savedStateHandle.setSavedStateProvider("results") {
                 encodeFlowResults(results)
@@ -33,12 +34,12 @@ public class FlowResultManager private constructor(
             results.putAll(restoredResults)
         }
 
-    private val defaultsInitialised = mutableSetOf<String>()
+    private val defaultsInitialised = mutableSetOf<FlowStep.Id<*>>()
         .also { defaultsInitialised ->
             savedStateHandle.setSavedStateProvider("defaults") {
                 encodeToSavedState(
                     serializer = ListSerializer(String.serializer()),
-                    value = defaultsInitialised.toList(),
+                    value = defaultsInitialised.toList().map { it.value },
                     configuration = EnroController.savedStateConfiguration,
                 )
             }
@@ -48,52 +49,57 @@ public class FlowResultManager private constructor(
                 deserializer = ListSerializer(String.serializer()),
                 configuration = EnroController.savedStateConfiguration,
             )
-            defaultsInitialised.addAll(restoredDefaults)
+            defaultsInitialised.addAll(restoredDefaults.map { FlowStep.Id<NavigationKey>(it) })
         }
 
     @PublishedApi
     internal val suspendingResults: SnapshotStateMap<String, SuspendingStepResult> = mutableStateMapOf()
 
-
     public fun <T : Any> get(step: FlowStep<T>): T? {
-        val completedStep = results[step.stepId] ?: return null
+        val completedStep = results[step.id] ?: return null
         val result = completedStep.result as? T
         if (step.dependsOn != completedStep.dependsOn) {
-            results.remove(step.stepId)
+            results.remove(step.id)
             return null
         }
         return result
     }
 
     public fun <T : Any> set(step: FlowStep<T>, result: T) {
-        results[step.stepId] = FlowStepResult(
-            stepId = step.stepId,
+        results[step.id] = FlowStepResult(
+            id = step.id,
             result = result,
             dependsOn = step.dependsOn,
+            instanceId = Uuid.random().toString(),
         )
     }
 
     public fun <T : Any> setDefault(step: FlowStep<T>, result: T) {
-        if (defaultsInitialised.contains(step.stepId)) return
-        defaultsInitialised.add(step.stepId)
+        if (defaultsInitialised.contains(step.id)) return
+        defaultsInitialised.add(step.id)
         set(step, result)
     }
 
-    public fun clear(stepId: String) {
-        results.remove(stepId)
+    public fun clear(id: FlowStep.Id<*>) {
+        results.remove(id)
+    }
+
+    public fun getResultInstanceId(id: FlowStep.Id<*>): String? {
+        return results[id]?.instanceId
     }
 
     @Serializable
     @PublishedApi
     internal class FlowStepResult<out T : Any>(
-        val stepId: String,
+        val id: FlowStep.Id<*>,
         val result: T,
         val dependsOn: Long,
+        val instanceId: String,
     )
 
     @PublishedApi
     internal class SuspendingStepResult(
-        val stepId: String,
+        val id: FlowStep.Id<*>,
         val result: Deferred<Any?>,
         val job: Job,
         val dependsOn: Long,
@@ -120,7 +126,7 @@ public class FlowResultManager private constructor(
 }
 
 private fun encodeFlowResults(
-    results: Map<String, FlowResultManager.FlowStepResult<Any>>,
+    results: Map<FlowStep.Id<*>, FlowResultManager.FlowStepResult<Any>>,
 ): SavedState {
     // TODO: Provide an option to set "filterMissingSerializers" to true, which might be useful in some cases.
     //  it's probably also useful to clear the "forward" steps of the missing serializers, so that if something
@@ -130,9 +136,10 @@ private fun encodeFlowResults(
     val wrappedResults = results.values
         .map {
             FlowStepResult(
-                stepId = it.stepId,
+                id = it.id,
                 result = it.result.wrapForSerialization(),
                 dependsOn = it.dependsOn,
+                instanceId = it.instanceId,
             )
         }
         .let { wrappedResults ->
@@ -154,17 +161,18 @@ private fun encodeFlowResults(
     )
 }
 
-private fun decodeFlowResults(savedState: SavedState): Map<String, FlowStepResult<Any>> {
+private fun decodeFlowResults(savedState: SavedState): Map<FlowStep.Id<*>, FlowStepResult<Any>> {
     val restoredResults = decodeFromSavedState(
         savedState = savedState,
         deserializer = ListSerializer(FlowStepResult.serializer(PolymorphicSerializer(Any::class))),
         configuration = EnroController.savedStateConfiguration,
     )
     return restoredResults.associate {
-        it.stepId to FlowStepResult(
-            stepId = it.stepId,
+        it.id to FlowStepResult(
+            id = it.id,
             result = it.result.unwrapForSerialization(),
             dependsOn = it.dependsOn,
+            instanceId = it.instanceId,
         )
     }
 }

@@ -58,7 +58,7 @@ object ComposeAsyncManagedResultFlow : NavigationKey {
     @Serializable
     internal class FinalScreen(
         val data: String,
-    ) : NavigationKey.WithResult<Unit>
+    ) : NavigationKey
 
     object MetadataKey : NavigationKey.MetadataKey<Int>(0)
 }
@@ -94,7 +94,7 @@ class ComposeAsyncManagedResultViewModel : ViewModel() {
                 state.update { it.copy(initialData = AsyncData.Loaded(data)) }
                 return@async data
             }
-            val firstStep = open { ComposeAsyncManagedResultFlow.StepResult("One") }
+            val firstStep = open (ComposeAsyncManagedResultFlow.StepResult("One"))
             val firstStepAsync = async(firstStep) {
                 state.update { it.copy(dataAfterStepOne = AsyncData.Loading()) }
                 val data = loadSuspendingData(firstStep)
@@ -102,12 +102,12 @@ class ComposeAsyncManagedResultViewModel : ViewModel() {
                 return@async data
             }
 
-            val secondStep = openWithMetadata {
+            val secondStep = open(
                 // We're using extras here as a simple way to test that pushWithExtras/NavigationKey.withExtra work within
                 // managed flows - this extra is verified by the associated tests, but has no real impact on the flow itself
                 ComposeAsyncManagedResultFlow.StepResult("Two")
                     .withMetadata(ComposeAsyncManagedResultFlow.MetadataKey, ComposeAsyncManagedResultFlow.hashCode())
-            }
+            )
             val secondStepAsync = async(firstStep, secondStep) {
                 state.update { it.copy(dataAfterStepTwo = AsyncData.Loading()) }
                 val data = loadSuspendingData(secondStep)
@@ -115,7 +115,7 @@ class ComposeAsyncManagedResultViewModel : ViewModel() {
                 return@async data
             }
 
-            open {
+            open(
                 ComposeAsyncManagedResultFlow.FinalScreen(
                     data = """
                         Initial Data: $initialData
@@ -125,7 +125,7 @@ class ComposeAsyncManagedResultViewModel : ViewModel() {
                             After: $secondStepAsync
                     """.trimIndent()
                 )
-            }
+            )
         },
         onCompleted = {
             navigation.close()
@@ -250,7 +250,7 @@ fun ComposeAsyncManagedResultFlowFinalScreenScreen() {
     TitledColumn(title = "Final Screen") {
         Text("Data: ${navigation.key.data}")
 
-        Button(onClick = { navigation.complete(Unit) }) {
+        Button(onClick = { navigation.complete() }) {
             Text("Finish")
         }
     }

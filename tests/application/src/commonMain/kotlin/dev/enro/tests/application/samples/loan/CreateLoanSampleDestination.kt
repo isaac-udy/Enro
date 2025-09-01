@@ -57,28 +57,28 @@ class LoanApplicationFlowViewModel : ViewModel() {
 
     val flow by registerForFlowResult(
         flow = {
-            val applicant = open { GetPrimaryApplicantInfo }
-            val ownershipType = open { SelectOwnershipType }
+            val applicant = open(GetPrimaryApplicantInfo)
+            val ownershipType = open(SelectOwnershipType)
             val ownership = when (ownershipType) {
                 is OwnershipOption.Sole -> LoanApplication.Ownership.Sole()
                 is OwnershipOption.Partner -> LoanApplication.Ownership.Joint(
                     listOf(LoanApplication.Applicant("${applicant.name}'s partner"))
                 )
+
                 is OwnershipOption.Other -> {
-                    val otherApplicants = open { GetOtherApplicants }
+                    val otherApplicants = open(GetOtherApplicants)
                     LoanApplication.Ownership.Joint(otherApplicants.toMutableList())
                 }
             }
-            val amount = open { GetLoanAmount }
-            val term = open { GetLoanTerm }
+            val amount = open(GetLoanAmount)
+            val term = open(GetLoanTerm)
 
-            val loanPurposeOption = open { GetLoanPurposeScreen }
+            val loanPurposeOption = open(GetLoanPurposeScreen)
             val loanPurpose = when (loanPurposeOption) {
                 is LoanPurposeOption.Car -> LoanApplication.LoanPurpose.Car()
                 is LoanPurposeOption.Property -> {
-                    val propertyPurposeOption = open {
-                        dependsOn(loanPurposeOption)
-                        GetPropertyPurposeScreen
+                    val propertyPurposeOption = open(GetPropertyPurposeScreen) {
+                        alwaysAfterPreviousStep()
                     }
                     val propertyPurpose = when (propertyPurposeOption) {
                         is PropertyPurposeOption.Investment -> LoanApplication.PropertyPurpose.Investment()
@@ -93,19 +93,19 @@ class LoanApplicationFlowViewModel : ViewModel() {
 
             val repaymentType = when {
                 interestOnlyAvailable -> {
-                    val repaymentTypeOption = open {
-                        dependsOn(interestOnlyAvailable)
-                        GetRepaymentTypeScreen
+                    val repaymentTypeOption = open(GetRepaymentTypeScreen) {
+                        alwaysAfterPreviousStep()
                     }
                     when (repaymentTypeOption) {
                         is RepaymentTypeOption.PrincipalAndInterest -> LoanApplication.RepaymentType.PrincipalAndInterest()
                         is RepaymentTypeOption.InterestOnly -> LoanApplication.RepaymentType.InterestOnly()
                     }
                 }
+
                 else -> LoanApplication.RepaymentType.PrincipalAndInterest()
             }
 
-            val repaymentFrequencyOption = open { GetRepaymentFrequencyScreen }
+            val repaymentFrequencyOption = open(GetRepaymentFrequencyScreen)
             val repaymentFrequency = when (repaymentFrequencyOption) {
                 is RepaymentFrequencyOption.Fortnightly -> LoanApplication.RepaymentFrequency.Fortnightly()
                 is RepaymentFrequencyOption.Monthly -> LoanApplication.RepaymentFrequency.Monthly()
@@ -122,12 +122,12 @@ class LoanApplicationFlowViewModel : ViewModel() {
                 purpose = loanPurpose,
             )
 
-            open {
+            open(
                 LoanApplicationSummary(
                     application = application,
                     flowReference = navigationFlowReference,
                 )
-            }
+            )
         },
         onCompleted = { result ->
             navigation.complete(result)
@@ -153,9 +153,18 @@ fun CreateLoanApplicationScreen() {
                     navigationIcon = {
                         if (flowContainer.backstack.size > 1) {
                             IconButton(
-                                onClick = { flowContainer.execute(NavigationOperation.Close(flowContainer.backstack.last())) }
+                                onClick = {
+                                    flowContainer.execute(
+                                        NavigationOperation.Close(
+                                            flowContainer.backstack.last()
+                                        )
+                                    )
+                                }
                             ) {
-                                Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
+                                Icon(
+                                    Icons.AutoMirrored.Default.ArrowBack,
+                                    contentDescription = "Back"
+                                )
                             }
                         }
                     }

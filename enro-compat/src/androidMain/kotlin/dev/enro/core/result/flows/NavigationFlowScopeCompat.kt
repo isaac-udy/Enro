@@ -2,8 +2,9 @@ package dev.enro.core.result.flows
 
 import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
-import dev.enro.result.flow.FlowStepBuilderScope
+import dev.enro.result.flow.FlowStepOptions
 import dev.enro.result.flow.NavigationFlowScope
+import dev.enro.result.flow.default
 import dev.enro.withMetadata
 
 public class NavigationFlowScope(
@@ -13,54 +14,71 @@ public class NavigationFlowScope(
     public inline fun <reified T : Any> push(
         noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.SupportsPush.WithResult<T>,
     ): T {
-        return wrapped.openWithMetadata(
-            block = {
-                block().withMetadata(
-                    NavigationDirection.MetadataKey,
-                    NavigationDirection.Push,
-                )
+        val builder = FlowStepBuilderScope<T>()
+        val key = builder.block()
+        return wrapped.open(key) {
+            builder.dependencies.forEach {
+                dependsOn(it)
             }
-        )
+            builder.defaultResult?.let { default(it) }
+            if (builder.configuration.contains(FlowStepOptions.Transient)) {
+                transient()
+            }
+        }
     }
 
     public inline fun <reified T : Any> pushWithExtras(
         noinline block: FlowStepBuilderScope<T>.() -> dev.enro.NavigationKey.WithMetadata<out NavigationKey.SupportsPush.WithResult<T>>,
     ): T {
-        return wrapped.openWithMetadata(
-            block = {
-                block().withMetadata(
-                    NavigationDirection.MetadataKey,
-                    NavigationDirection.Push,
-                )
+        val builder = FlowStepBuilderScope<T>()
+        val key = builder.block()
+        return wrapped.open(key) {
+            builder.dependencies.forEach {
+                dependsOn(it)
             }
-        )
+            builder.defaultResult?.let { default(it) }
+            if (builder.configuration.contains(FlowStepOptions.Transient)) {
+                transient()
+            }
+        }
     }
 
     public inline fun <reified T : Any> present(
         noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.SupportsPresent.WithResult<T>,
     ): T {
-        return wrapped.openWithMetadata(
-            block = {
-                val key = block()
-                key.withMetadata(
-                    NavigationDirection.MetadataKey,
-                    NavigationDirection.Present,
-                )
-            }
+        val builder = FlowStepBuilderScope<T>()
+        val key = builder.block().withMetadata(
+            NavigationDirection.MetadataKey,
+            NavigationDirection.Present,
         )
+        return wrapped.open(key) {
+            builder.dependencies.forEach {
+                dependsOn(it)
+            }
+            builder.defaultResult?.let { default(it) }
+            if (builder.configuration.contains(FlowStepOptions.Transient)) {
+                transient()
+            }
+        }
     }
 
     public inline fun <reified T : Any> presentWithExtras(
         noinline block: FlowStepBuilderScope<T>.() -> dev.enro.NavigationKey.WithMetadata<NavigationKey.SupportsPresent.WithResult<T>>,
     ): T {
-        return wrapped.openWithMetadata(
-            block = {
-                block().withMetadata(
-                    NavigationDirection.MetadataKey,
-                    NavigationDirection.Present,
-                )
-            }
+        val builder = FlowStepBuilderScope<T>()
+        val key = builder.block().withMetadata(
+            NavigationDirection.MetadataKey,
+            NavigationDirection.Present,
         )
+        return wrapped.open(key) {
+            builder.dependencies.forEach {
+                dependsOn(it)
+            }
+            builder.defaultResult?.let { default(it) }
+            if (builder.configuration.contains(FlowStepOptions.Transient)) {
+                transient()
+            }
+        }
     }
 
     /**

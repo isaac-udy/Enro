@@ -48,6 +48,12 @@ class ComposeManagedResultFlowTest {
             .continueA()
             .assertThirdResultActive()
             .continueA()
+            .assertConfirmThirdResultActive()
+            .close()
+            .assertThirdResultActive()
+            .continueA()
+            .assertConfirmThirdResultActive()
+            .cont()
 
             .assertFinalScreenActive()
             .assertResultState(
@@ -61,6 +67,9 @@ class ComposeManagedResultFlowTest {
             .editThird()
             .assertThirdResultActive()
             .continueB()
+            .assertConfirmThirdResultActive()
+            .cont()
+
             .assertFinalScreenActive()
             .assertResultState(third = "B")
 

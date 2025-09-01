@@ -49,6 +49,12 @@ class ComposeManagedResultFlowRobot(
         return ThirdResultRobot(composeRule)
     }
 
+    fun assertConfirmThirdResultActive(): ConfirmThirdResultRobot {
+        composeRule.onNodeWithText("Confirm Third Result")
+            .assertExists()
+        return ConfirmThirdResultRobot(composeRule)
+    }
+
     fun assertFinalScreenActive(): FinalScreenRobot {
         composeRule.onNodeWithText("Final Screen")
             .assertExists()
@@ -174,6 +180,30 @@ class ComposeManagedResultFlowRobot(
             composeRule.onNodeWithText("Third Result")
                 .onSiblings()
                 .filterToOne(hasText("Continue (B)"))
+                .performClick()
+            return ComposeManagedResultFlowRobot(composeRule)
+        }
+    }
+
+    class ConfirmThirdResultRobot(
+        val composeRule: ComposeTestRule,
+    ) {
+        init {
+            composeRule.waitForDestinationContext<ComposeManagedResultFlow.ConfirmThirdResultScreen>()
+        }
+
+        fun cont(): ComposeManagedResultFlowRobot {
+            composeRule.onNodeWithText("Confirm Third Result")
+                .onSiblings()
+                .filterToOne(hasText("Continue"))
+                .performClick()
+            return ComposeManagedResultFlowRobot(composeRule)
+        }
+
+        fun close(): ComposeManagedResultFlowRobot {
+            composeRule.onNodeWithText("Confirm Third Result")
+                .onSiblings()
+                .filterToOne(hasText("Close"))
                 .performClick()
             return ComposeManagedResultFlowRobot(composeRule)
         }

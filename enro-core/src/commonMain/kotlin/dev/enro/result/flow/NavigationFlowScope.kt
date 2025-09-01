@@ -2,6 +2,7 @@ package dev.enro.result.flow
 
 import dev.enro.NavigationKey
 import dev.enro.annotations.AdvancedEnroApi
+import dev.enro.withMetadata
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,26 +19,52 @@ public open class NavigationFlowScope internal constructor(
     internal val resultManager: FlowResultManager,
     public val navigationFlowReference: NavigationFlowReference,
     @PublishedApi
-    internal val steps: MutableList<FlowStep<out Any>> = mutableListOf(),
+    internal val steps: MutableList<FlowStep<Any>> = mutableListOf(),
     @PublishedApi
     internal val suspendingSteps: MutableList<String> = mutableListOf(),
 ) {
 
-    public inline fun <reified T : Any> open(
-        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithResult<T>,
-    ): T = step(
-        block = object : FlowStepLambda<T> {
-            override fun FlowStepBuilderScope<T>.invoke(): NavigationKey.WithResult<T> {
-                return block()
-            }
-        },
-    )
+    public inline fun <reified K : NavigationKey> open(
+        key: K,
+        noinline block: FlowStepDefinition.ConfigurationScope<K>.() -> Unit = {},
+    ) {
+        return open(key.withMetadata(), block)
+    }
 
-    public inline fun <reified T : Any> openWithMetadata(
-        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithMetadata<out NavigationKey.WithResult<T>>,
-    ): T = step(
-        block = block,
-    )
+    public inline fun <reified K : NavigationKey> open(
+        key: NavigationKey.WithMetadata<K>,
+        noinline block: FlowStepDefinition.ConfigurationScope<K>.() -> Unit = {},
+    ) {
+        return step(
+            stepDefinition = object : FlowStepDefinition<K, Unit>() {
+                override val keyWithMetadata = key
+                override val result = Unit::class
+
+                init { ConfigurationScope<K>(this).block() }
+            },
+        )
+    }
+
+    public inline fun <reified K: NavigationKey.WithResult<R>, reified R : Any> open(
+        key: K,
+        noinline block: FlowStepDefinition.ConfigurationScope<K>.() -> Unit = {},
+    ): R {
+        return open(key.withMetadata(), block)
+    }
+
+    public inline fun <reified K: NavigationKey.WithResult<R>, reified R : Any> open(
+        key: NavigationKey.WithMetadata<K>,
+        noinline block: FlowStepDefinition.ConfigurationScope<K>.() -> Unit = {},
+    ): R {
+        return step(
+            stepDefinition = object : FlowStepDefinition<K, R>() {
+                override val keyWithMetadata = key
+                override val result = R::class
+
+                init { ConfigurationScope<K>(this).block() }
+            },
+        )
+    }
 
     /**
      * See documentation on the other [async] function for more information on how this function works.
@@ -112,7 +139,7 @@ public open class NavigationFlowScope internal constructor(
             flow.update()
         }
         resultManager.suspendingResults[stepId] = FlowResultManager.SuspendingStepResult(
-            stepId = stepId,
+            id = FlowStep.Id<NavigationKey>(stepId),
             result = deferredResult,
             job = job,
             dependsOn = dependencyHash,
@@ -122,40 +149,12 @@ public open class NavigationFlowScope internal constructor(
     }
 
     @PublishedApi
-    internal inline fun <reified T : Any> step(
-        block: FlowStepLambda<T>,
-    ): T {
-        val baseId = block::class.qualifiedName ?: block::class.toString()
-        val count = steps.count { it.stepId.startsWith(baseId) }
-        val builder = FlowStepBuilder<T>()
-        val key = block.run { builder.scope.invoke() }
-        val step = builder.build(
-            stepId = "$baseId@$count",
-            navigationKey = key,
-        )
-        val defaultResult = builder.getDefaultResult()
-        if (defaultResult != null) {
-            resultManager.setDefault(step, defaultResult)
-        }
-        steps.add(step)
-        val result = resultManager.get(step)
-        return result ?: throw NoResult(step)
-    }
-
-    @PublishedApi
     @JvmName("stepWithMetadata")
-    internal inline fun <reified T : Any> step(
-        noinline block: FlowStepBuilderScope<T>.() -> NavigationKey.WithMetadata<out NavigationKey.WithResult<T>>,
-    ): T {
-        val baseId = block::class.qualifiedName ?: block::class.toString()
-        val count = steps.count { it.stepId.startsWith(baseId) }
-        val builder = FlowStepBuilder<T>()
-        val key = builder.scope.run(block)
-        val step = builder.build(
-            stepId = "$baseId@$count",
-            navigationKey = key,
-        )
-        val defaultResult = builder.getDefaultResult()
+    internal inline fun <reified T : NavigationKey, R : Any> step(
+        stepDefinition: FlowStepDefinition<T, R>,
+    ): R {
+        val step = stepDefinition.buildStep(this)
+        val defaultResult = stepDefinition.defaultResult
         if (defaultResult != null) {
             resultManager.setDefault(step, defaultResult)
         }
@@ -173,10 +172,4 @@ public open class NavigationFlowScope internal constructor(
 
     @PublishedApi
     internal class Escape : RuntimeException()
-}
-
-// TODO create a re-usable identifiable lambda class for more than just flow steps
-@PublishedApi
-internal interface FlowStepLambda<T : Any> {
-    fun FlowStepBuilderScope<T>.invoke(): NavigationKey.WithResult<T>
 }

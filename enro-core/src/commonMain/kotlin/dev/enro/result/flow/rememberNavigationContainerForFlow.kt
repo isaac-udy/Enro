@@ -26,19 +26,19 @@ public fun rememberNavigationContainerForFlow(
         interceptor = remember {
             navigationInterceptor {
                 onClosed<NavigationKey> {
-                    val stepId = instance.metadata.get(FlowStep.FlowStepIdKey)
+                    val stepId = instance.flowStepId
                     if (stepId != null && !isSilent) {
                         flow.onStepClosed(stepId)
                     }
                     continueWithClose()
                 }
                 onCompleted<NavigationKey> {
-                    val stepId = instance.metadata.get(FlowStep.FlowStepIdKey)
+                    val stepId = instance.flowStepId
                         ?: instance.metadata.get(NavigationResultChannel.ResultIdKey)
                             ?.let { resultId ->
                                 flow.getSteps()
-                                    .firstOrNull { it.stepId == resultId.resultId }
-                                    ?.stepId
+                                    .firstOrNull { it.id.value == resultId.resultId }
+                                    ?.id
                             }
                     if (stepId == null) continueWithComplete()
                     cancelAnd {

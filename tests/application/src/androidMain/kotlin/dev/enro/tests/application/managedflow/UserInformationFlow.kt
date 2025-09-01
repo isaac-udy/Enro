@@ -38,7 +38,8 @@ internal data class UserInformation(
 ) : Parcelable
 
 @Parcelize
-internal class UserInformationFlow : Parcelable, NavigationKey.SupportsPush.WithResult<UserInformation> {
+internal class UserInformationFlow : Parcelable,
+    NavigationKey.SupportsPush.WithResult<UserInformation> {
     @Parcelize
     internal class GetName : Parcelable, NavigationKey.SupportsPush.WithResult<String>
 
@@ -50,7 +51,7 @@ internal class UserInformationFlow : Parcelable, NavigationKey.SupportsPush.With
 
     @Parcelize
     internal class ErrorDialog(
-        internal val message: String
+        internal val message: String,
     ) : Parcelable, NavigationKey.SupportsPresent
 }
 
@@ -59,9 +60,9 @@ internal class UserInformationFlow : Parcelable, NavigationKey.SupportsPush.With
 internal val userInformationFlow: NavigationDestinationProvider<UserInformationFlow> =
     managedFlowDestination<UserInformationFlow, UserInformation>(
         flow = {
-            val name = open { UserInformationFlow.GetName() }
-            val email = open { UserInformationFlow.GetEmail() }
-            val age = open { UserInformationFlow.GetAge() }
+            val name = open(UserInformationFlow.GetName())
+            val email = open(UserInformationFlow.GetEmail())
+            val age = open(UserInformationFlow.GetAge())
 
             UserInformation(
                 name = name,

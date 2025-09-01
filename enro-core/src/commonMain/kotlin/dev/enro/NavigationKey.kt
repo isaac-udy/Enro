@@ -59,7 +59,7 @@ public interface NavigationKey {
      * metadata, before it's resolved into a [NavigationKey.Instance] by the navigation system.
      */
     @ConsistentCopyVisibility
-    public data class WithMetadata<T : NavigationKey> internal constructor(
+    public data class WithMetadata<out T : NavigationKey> internal constructor(
         val key: T,
         val metadata: Metadata,
     )

@@ -18,13 +18,13 @@ object CreateRecipe : NavigationKey.WithResult<Recipe>
 @NavigationDestination(CreateRecipe::class)
 val createRecipeDestination = managedFlowDestination<CreateRecipe, Recipe>(
     flow = {
-        val title = open { EnterTitle }
-        val description = open { EnterDescription }
-        val cookingTimeMinutes = open { EnterCookingTime }
-        val servings = open { EnterServings }
-        val ingredients = open { AddIngredients }
-        val instructions = open { AddSteps }
-        val notes = open { EnterDescription }
+        val title = open(EnterTitle)
+        val description = open(EnterDescription)
+        val cookingTimeMinutes = open(EnterCookingTime)
+        val servings = open(EnterServings)
+        val ingredients = open(AddIngredients)
+        val instructions = open(AddSteps)
+        val notes = open(EnterDescription)
 
         Recipe(
             id = Uuid.random().toString(),

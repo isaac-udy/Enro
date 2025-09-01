@@ -14,8 +14,8 @@ import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.NoOpNavigationInterceptor
 import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.result.NavigationResultChannel
-import dev.enro.result.flow.FlowStep
 import dev.enro.result.flow.NavigationFlow
+import dev.enro.result.flow.flowStepId
 import dev.enro.test.EnroTest
 import dev.enro.ui.EmptyBehavior
 import dev.enro.ui.NavigationContainerState
@@ -87,19 +87,19 @@ object NavigationContainerFixtures {
             },
             interceptor = navigationInterceptor {
                 onClosed<NavigationKey> {
-                    val stepId = instance.metadata.get(FlowStep.FlowStepIdKey)
+                    val stepId = instance.flowStepId
                     if (stepId != null && !isSilent) {
                         flow.onStepClosed(stepId)
                     }
                     continueWithClose()
                 }
                 onCompleted<NavigationKey> {
-                    val stepId = instance.metadata.get(FlowStep.FlowStepIdKey)
+                    val stepId = instance.flowStepId
                         ?: instance.metadata.get(NavigationResultChannel.ResultIdKey)
                             ?.let { resultId ->
                                 flow.getSteps()
-                                    .firstOrNull { it.stepId == resultId.resultId }
-                                    ?.stepId
+                                    .firstOrNull { it.id.value == resultId.resultId }
+                                    ?.id
                             }
                     if (stepId == null) continueWithComplete()
                     cancelAnd {

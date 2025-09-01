@@ -1,10 +1,16 @@
-package dev.enro.result.flow
+package dev.enro.core.result.flows
 
-import dev.enro.NavigationKey
+import dev.enro.result.flow.FlowStepOptions
 
-public class FlowStepBuilderScope<T : Any> @PublishedApi internal constructor(
-    private val builder: FlowStepBuilder<T>,
-) {
+@Deprecated("This class is no longer used and will be removed in a future release.")
+public class FlowStepBuilderScope<T : Any> @PublishedApi internal constructor() {
+    @PublishedApi
+    internal var defaultResult: T? = null
+    @PublishedApi
+    internal val dependencies: MutableList<Any?> = mutableListOf()
+    @PublishedApi
+    internal val configuration: MutableSet<FlowStepOptions> = mutableSetOf()
+
     /**
      * Configure this step to be considered a "transient" step in the flow. This means that the step will be:
      * a) skipped when navigating back
@@ -27,7 +33,7 @@ public class FlowStepBuilderScope<T : Any> @PublishedApi internal constructor(
      *      c. If B does not have a [dependsOn] value, B will be skipped
      */
     public fun transient() {
-        builder.addConfigurationItem(FlowStepConfiguration.Transient)
+        configuration.add(FlowStepOptions.Transient)
     }
 
     /**
@@ -45,7 +51,9 @@ public class FlowStepBuilderScope<T : Any> @PublishedApi internal constructor(
      * and the user will be moved back to D.
      */
     public fun dependsOn(vararg any: Any?) {
-        builder.addDependencies(*any)
+        any.forEach {
+            dependencies.add(it)
+        }
     }
 
     /**
@@ -60,72 +68,6 @@ public class FlowStepBuilderScope<T : Any> @PublishedApi internal constructor(
      * or the backstack was manipulated to jump back to any of the previous steps, those steps would be available for editing.
      */
     public fun default(result: T) {
-        builder.setDefault(result)
-    }
-}
-
-public class FlowStepBuilder<T : Any> @PublishedApi internal constructor(
-    private val dependencies: MutableList<Any?> = mutableListOf(),
-    private var defaultValue: T? = null,
-    private var configuration: MutableList<FlowStepConfiguration> = mutableListOf(),
-) {
-    @PublishedApi
-    internal val scope: FlowStepBuilderScope<T> = FlowStepBuilderScope(this)
-
-    internal fun addDependencies(vararg any: Any?) {
-        dependencies.addAll(any.toList())
-    }
-
-    internal fun setDefault(result: T?) {
-        defaultValue = result
-    }
-
-    internal fun addConfigurationItem(item: FlowStepConfiguration) {
-        configuration.add(item)
-    }
-
-    @PublishedApi
-    internal fun build(
-        stepId: String,
-        navigationKey: NavigationKey,
-    ): FlowStep<T> = FlowStep(
-        stepId = stepId,
-        key = navigationKey,
-        dependsOn = dependencies.toList(),
-        configuration = configuration.toSet(),
-    )
-
-    @PublishedApi
-    internal fun build(
-        stepId: String,
-        navigationKey: NavigationKey.WithMetadata<out NavigationKey>,
-    ): FlowStep<T> = FlowStep(
-        stepId = stepId,
-        key = navigationKey,
-        dependsOn = dependencies.toList(),
-        configuration = configuration.toSet(),
-    )
-
-    @PublishedApi
-    internal fun getDefaultResult(): T? = defaultValue
-
-    internal fun copy(): FlowStepBuilder<T> {
-        return FlowStepBuilder(
-            dependencies = dependencies.toMutableList(),
-            defaultValue = defaultValue,
-            configuration = configuration.toMutableList(),
-        )
-    }
-}
-
-public fun <T : Any> FlowStepBuilder<T>.withDefault(result: T): FlowStepBuilder<T> {
-    return copy().apply {
-        setDefault(result)
-    }
-}
-
-public fun <T : Any> FlowStepBuilder<T>.withDependency(any: Any?): FlowStepBuilder<T> {
-    return copy().apply {
-        addDependencies(any)
+        defaultResult = result
     }
 }
