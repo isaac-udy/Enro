@@ -215,8 +215,8 @@ public class NavigationContainer(
     }
 
     public data class Key(val name: String) {
-        @Deprecated("TODO BETTER DEPRECATION MESSAGE")
         public companion object {
+            @Deprecated("Use NavigationContainer.Key(name) instead")
             public fun FromName(name: String): Key = Key(name)
         }
     }
