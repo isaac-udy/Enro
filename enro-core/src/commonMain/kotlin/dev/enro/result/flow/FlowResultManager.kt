@@ -94,6 +94,10 @@ public class FlowResultManager private constructor(
         val id: FlowStep.Id<*>,
         val result: T,
         val dependsOn: Long,
+        // instanceId is should be set to a random UUID whenever a new result is set for a
+        // particular step. It is used by FlowStepOptions.AlwaysAfterPrevious to determine if
+        // the previous step has published a new result, even when the result itself is the same
+        // as the previous result
         val instanceId: String,
     )
 
