@@ -85,12 +85,14 @@ public val <T : NavigationKey> NavigationKey.Instance<T>.flowStepId: FlowStep.Id
     }
 
 public inline fun <reified T : NavigationKey> flowStepId(): FlowStep.Id<T> {
-    val provider = object : FlowStepIdProvider<T> {
-        override val type: KClass<T> = T::class
+    val provider = object : FlowStepIdProvider<T>(T::class) {
+        override val id: String get() = this::class.toString().removePrefix("class ")
     }
-    return FlowStep.Id(requireNotNull(provider::class.qualifiedName))
+    return FlowStep.Id(provider.id)
 }
 
-internal interface FlowStepIdProvider<T : NavigationKey> {
-    val type: KClass<T>
+public abstract class FlowStepIdProvider<T : NavigationKey> @PublishedApi internal constructor(
+    @PublishedApi internal val type: KClass<T>
+) {
+    public abstract val id: String
 }

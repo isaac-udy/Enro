@@ -51,7 +51,45 @@ public abstract class FlowStepDefinition<T : NavigationKey, R : Any> @PublishedA
         @PublishedApi internal val definition: FlowStepDefinition<T, *>,
     ) {
         public val key: T get() = definition.keyWithMetadata.key
-
+        
+        /**
+         * Sets an exact FlowStep.Id for this flow step. FlowStep.Id instances must be unique within a flow,
+         * and re-using a FlowStep.Id will result in an exception being thrown when the flow is built.
+         *
+         * Setting a FlowStep.Id is useful when you want to get a reference to a flow step using
+         * [NavigationFlow.getStep] or [NavigationFlow.requireStep], to perform actions on the step,
+         * such as [FlowStepReference.editStep] or [FlowStepReference.clearResult].
+         *
+         * FlowStep.Id instances can be created using the [flowStepId] function.
+         *
+         * Example:
+         *
+         * ```
+         *
+         * val firstStepId = flowStepId<FirstStepScreen>()
+         * val secondStepId = flowStepId<SecondStepScreen>()
+         *
+         * val flow = registerForFlowResult {
+         *     val firstResult = open(FirstStepScreen) {
+         *         id(firstStepId)
+         *     }
+         *     val secondResult = open(SecondStepScreen) {
+         *         id(secondStepId)
+         *     }
+         *     ...
+         * }
+         *
+         * fun onEditFirstStep() {
+         *     flow.getStep(firstStepId)?.editStep()
+         * }
+         *
+         * fun onEditSecondStep() {
+         *     flow.getStep(secondStepId)?.editStep()
+         * }
+         *
+         * ```
+         *
+         */
         public fun id(id: FlowStep.Id<T>) {
             definition.providedId = id
         }
