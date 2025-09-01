@@ -21,6 +21,7 @@ public fun EmbeddedDestination(
 
     val container = rememberNavigationContainer(
         backstack = listOf(instance),
+        filter = acceptNone(),
         interceptor = navigationInterceptor {
             onOpened<NavigationKey> {
                 cancel()
@@ -37,7 +38,7 @@ public fun EmbeddedDestination(
                     rememberedOnClosed.value.invoke()
                 }
             }
-        }
+        },
     )
     Box(modifier = modifier) {
         NavigationDisplay(container)
