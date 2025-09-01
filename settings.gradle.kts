@@ -7,7 +7,6 @@ include(":enro-lint")
 include(":enro")
 include(":enro-core")
 include(":enro-compat")
-include(":enro:hilt-test")
 include(":tests:application")
 include(":tests:module-one")
 
