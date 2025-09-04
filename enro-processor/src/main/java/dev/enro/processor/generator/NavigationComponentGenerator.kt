@@ -2,23 +2,13 @@ package dev.enro.processor.generator
 
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.getAllSuperTypes
-import com.google.devtools.ksp.getKotlinClassByName
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
-import com.squareup.kotlinpoet.AnnotationSpec
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.CodeBlock
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.LambdaTypeName
-import com.squareup.kotlinpoet.ParameterSpec
-import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.ksp.toClassName
+import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationComponent
 import dev.enro.processor.domain.GeneratedModuleReference
@@ -35,9 +25,10 @@ object NavigationComponentGenerator {
         resolverBindings: List<KSDeclaration>,
         resolverModules: List<KSDeclaration>,
     ) {
-        val isIos = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformIOS") != null
-        val isDesktop = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformDesktop") != null
-        val isAndroid = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformAndroid") != null
+        val platform = ResolverPlatform.getPlatform(resolver)
+        val isIos = platform is ResolverPlatform.Ios
+        val isDesktop = platform is ResolverPlatform.JvmDesktop
+        val isAndroid = platform is ResolverPlatform.Android
 
         if (declaration !is KSClassDeclaration) {
             val message = "@NavigationComponent can only be applied to objects"
@@ -107,13 +98,7 @@ object NavigationComponentGenerator {
 
         // Generate extension function for installing navigation controller
         val functionName = "installNavigationController"
-        val (platformParameterName, addPlatformParameter) = createPlatformApplicationReferenceParameter(
-            resolver,
-        )
-        val callNavigationComponentConfigModule = when {
-            isNavigationComponentConfiguration -> "module(${declaration.simpleName.asString()}.module)"
-            else -> ""
-        }
+        val (platformParameterName, addPlatformParameter) = createPlatformApplicationReferenceParameter(platform)
 
         val extensionFunction = FunSpec.builder(functionName)
             .addModifiers(KModifier.PUBLIC)
@@ -265,31 +250,21 @@ object NavigationComponentGenerator {
 
     @OptIn(KspExperimental::class)
     fun createPlatformApplicationReferenceParameter(
-        resolver: Resolver,
+        resolverPlatform: ResolverPlatform
     ): Pair<String, FunSpec.Builder.() -> FunSpec.Builder> {
-        val androidApplication = resolver.getKotlinClassByName("android.app.Application")
-        val webDocument = resolver.getKotlinClassByName("org.w3c.dom.Document")
-        val iosApplication = resolver.getKotlinClassByName("platform.UIKit.UIApplication")
-
-        val isIos = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformIOS") != null
-        val isDesktop = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformDesktop") != null
-        val isAndroid = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformAndroid") != null
-        val isWeb = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformWasmJs") != null
-
-
         when {
-            isAndroid && androidApplication != null -> {
+            resolverPlatform is ResolverPlatform.Android -> {
                 return "application" to {
                     addParameter(
                         ParameterSpec.builder(
                             "application",
-                            androidApplication.toClassName(),
+                            resolverPlatform.androidApplicationClassName,
                         ).build()
                     )
                 }
             }
 
-            isDesktop -> {
+            resolverPlatform is ResolverPlatform.JvmDesktop -> {
                 return "ignored" to {
                     addParameter(
                         ParameterSpec.builder(
@@ -300,23 +275,23 @@ object NavigationComponentGenerator {
                 }
             }
 
-            isWeb && webDocument != null -> {
+            resolverPlatform is ResolverPlatform.WasmJs -> {
                 return "document" to {
                     addParameter(
                         ParameterSpec.builder(
                             "document",
-                            webDocument.toClassName(),
+                            resolverPlatform.webDocumentClassName,
                         ).build()
                     )
                 }
             }
 
-            isIos && iosApplication != null  -> {
+            resolverPlatform is ResolverPlatform.Ios -> {
                 return "application" to {
                     addParameter(
                         ParameterSpec.builder(
                             "application",
-                            iosApplication.toClassName(),
+                            resolverPlatform.uiApplicationClassName,
                         ).build()
                     )
                 }
