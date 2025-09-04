@@ -6,7 +6,6 @@ import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFile
 import dev.enro.annotations.GeneratedNavigationBinding
 import dev.enro.annotations.GeneratedNavigationModule
 import dev.enro.processor.extensions.EnroLocation
@@ -40,18 +39,6 @@ class GeneratedModuleReference(
             )
         }
     }
-
-    // containingFiles from references from other gradle modules will
-    // return null here, so we're going to filter nulls here.
-    // This means that sources may be an empty list, but that is expected in some cases.
-    val sources: List<KSFile> = listOf(declaration.containingFile)
-        .plus(
-            bindings.map {
-                val bindingDeclaration = requireNotNull(resolver.getClassDeclarationByName(it.binding))
-                bindingDeclaration.containingFile
-            }
-        )
-        .filterNotNull()
 
     companion object {
         fun load(resolver: Resolver): List<GeneratedModuleReference> {
