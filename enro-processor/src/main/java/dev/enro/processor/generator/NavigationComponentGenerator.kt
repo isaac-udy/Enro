@@ -3,7 +3,6 @@ package dev.enro.processor.generator
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.processing.Dependencies
-import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -11,7 +10,7 @@ import com.google.devtools.ksp.symbol.KSDeclaration
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationComponent
-import dev.enro.processor.domain.GeneratedModuleReference
+import dev.enro.processor.domain.GeneratedBindingReference
 import dev.enro.processor.extensions.ClassNames
 import dev.enro.processor.extensions.EnroLocation
 import dev.enro.processor.extensions.chainIf
@@ -20,11 +19,9 @@ object NavigationComponentGenerator {
     @OptIn(KspExperimental::class)
     fun generate(
         environment: SymbolProcessorEnvironment,
-        resolver: Resolver,
         platform: ResolverPlatform,
         declaration: KSDeclaration,
-        resolverBindings: List<KSDeclaration>,
-        resolverModules: List<KSDeclaration>,
+        bindings: List<GeneratedBindingReference>,
     ) {
         val isIos = platform is ResolverPlatform.Ios
         val isDesktop = platform is ResolverPlatform.JvmDesktop
@@ -54,14 +51,8 @@ object NavigationComponentGenerator {
             error(message)
         }
 
-        val modules = GeneratedModuleReference.load(resolver)
-        val bindings = modules.flatMap { it.bindings }
-
-        val moduleNames = modules.joinToString(separator = ",\n") {
-            "${it.qualifiedName}::class"
-        }
         val bindingNames = bindings.joinToString(separator = ",\n") {
-            "${it.binding}::class"
+            "${it.qualifiedName}::class"
         }
 
         val generatedName = "${declaration.simpleName.asString()}Navigation"
@@ -69,7 +60,6 @@ object NavigationComponentGenerator {
             .addAnnotation(
                 AnnotationSpec.builder(GeneratedNavigationComponent::class.java)
                     .addMember("bindings = [\n$bindingNames\n]")
-                    .addMember("modules = [\n$moduleNames\n]")
                     .build()
             )
             .addModifiers(KModifier.PUBLIC)
@@ -87,7 +77,7 @@ object NavigationComponentGenerator {
                                 "%T().apply { invoke() }",
                                 ClassName(
                                     EnroLocation.GENERATED_PACKAGE,
-                                    it.binding.split(".").last()
+                                    it.qualifiedName.split(".").last()
                                 )
                             )
                         }
@@ -211,41 +201,17 @@ object NavigationComponentGenerator {
                 if (desktopFunction == null) return@let it
                 it.addFunction(desktopFunction)
             }
-//            .let {
-//                if (!isIos) return@let it
-//                it.addFunction(
-//                    extensionFunction
-//                        .toBuilder(functionName)
-//                        .apply {
-//                            val newParameter = ParameterSpec
-//                                .builder(
-//                                    "enro",
-//                                    ClassNames.Kotlin.enroIosExtensions,
-//                                )
-//                                .defaultValue("%T", ClassNames.Kotlin.enroIosExtensions)
-//                                .build()
-//                            parameters.add(2, newParameter)
-//                        }
-//                        .build()
-//                )
-//            }
             .build()
 
         fileSpec.writeTo(
             codeGenerator = environment.codeGenerator,
             dependencies = Dependencies(
                 aggregating = true,
-                sources = (resolverModules + resolverBindings).mapNotNull { it.containingFile }
+                sources = bindings.mapNotNull { it.containingFile }
                     .plus(listOfNotNull(declaration.containingFile))
                     .toTypedArray()
             )
         )
-        environment.codeGenerator
-            .associateWithClasses(
-                classes = modules.map { it.declaration },
-                packageName = declaration.packageName.asString(),
-                fileName = requireNotNull(generatedComponent.name),
-            )
     }
 
     @OptIn(KspExperimental::class)

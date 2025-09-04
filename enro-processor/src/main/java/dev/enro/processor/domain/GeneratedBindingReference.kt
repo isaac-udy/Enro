@@ -1,19 +1,28 @@
 package dev.enro.processor.domain
 
-sealed interface GeneratedBindingReference {
-    val binding: String
-    val destination: String
-    val navigationKey: String
+import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFile
+import dev.enro.annotations.GeneratedNavigationBinding
 
-    class Kotlin(
-        override val binding: String,
-        override val destination: String,
-        override val navigationKey: String,
-    ) : GeneratedBindingReference
-
-    class Java(
-        override val binding: String,
-        override val destination: String,
-        override val navigationKey: String,
-    ) : GeneratedBindingReference
+@ConsistentCopyVisibility
+data class GeneratedBindingReference private constructor(
+    val qualifiedName: String,
+    val destination: String,
+    val navigationKey: String,
+    val containingFile: KSFile?,
+) {
+    companion object {
+        @OptIn(KspExperimental::class)
+        fun fromDeclaration(binding: KSClassDeclaration): GeneratedBindingReference {
+            val bindingAnnotation = binding.getAnnotationsByType(GeneratedNavigationBinding::class).first()
+            return GeneratedBindingReference(
+                qualifiedName = binding.qualifiedName!!.asString(),
+                destination = bindingAnnotation.destination,
+                navigationKey = bindingAnnotation.navigationKey,
+                containingFile = binding.containingFile,
+            )
+        }
+    }
 }

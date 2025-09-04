@@ -6,5 +6,4 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.CLASS)
 public annotation class GeneratedNavigationComponent(
     val bindings: Array<KClass<out Any>>,
-    val modules: Array<KClass<out Any>>
 )

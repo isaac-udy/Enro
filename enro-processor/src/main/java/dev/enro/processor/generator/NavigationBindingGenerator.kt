@@ -14,27 +14,27 @@ import dev.enro.processor.domain.DestinationReference
 import dev.enro.processor.extensions.EnroLocation
 import dev.enro.processor.extensions.toDisplayString
 
-object NavigationDestinationGenerator {
+object NavigationBindingGenerator {
 
     @OptIn(KspExperimental::class)
     fun generate(
         environment: SymbolProcessorEnvironment,
         resolver: Resolver,
-        declaration: KSDeclaration,
+        destinationDeclaration: KSDeclaration,
     ) {
-        val destination = DestinationReference(resolver, declaration)
+        val destination = DestinationReference(resolver, destinationDeclaration)
 
         if (destination.isProperty) {
             val propertyClassDeclaration = destination.keyTypeFromPropertyProvider
             if (propertyClassDeclaration == null) {
-                environment.logger.error("Cannot find property type for ${declaration.simpleName.asString()}")
+                environment.logger.error("Cannot find property type for ${destinationDeclaration.simpleName.asString()}")
                 return
             }
             val propertyType = propertyClassDeclaration
             if (!destination.keyType.asStarProjectedType().isAssignableFrom(propertyType)) {
                 environment.logger.error(
-                    message = "${declaration.simpleName.asString()} is annotated with @NavigationDestination(${destination.keyType.toDisplayString()}::class) but is a NavigationDestinationProvider<${propertyType.toDisplayString()}>",
-                    symbol = declaration,
+                    message = "${destinationDeclaration.simpleName.asString()} is annotated with @NavigationDestination(${destination.keyType.toDisplayString()}::class) but is a NavigationDestinationProvider<${propertyType.toDisplayString()}>",
+                    symbol = destinationDeclaration,
                 )
                 return
             }
@@ -49,7 +49,7 @@ object NavigationDestinationGenerator {
                 AnnotationSpec.builder(GeneratedNavigationBinding::class.java)
                     .addMember(
                         "destination = %L",
-                        CodeBlock.of("\"${requireNotNull(declaration.qualifiedName).asString()}\"")
+                        CodeBlock.of("\"${requireNotNull(destinationDeclaration.qualifiedName).asString()}\"")
                     )
                     .addMember(
                         "navigationKey = %L",
@@ -74,9 +74,9 @@ object NavigationDestinationGenerator {
             .builder(EnroLocation.GENERATED_PACKAGE, requireNotNull(typeSpec.name))
             .addType(typeSpec)
             .addImport(
-                declaration.packageName.asString(),
-                requireNotNull(declaration.qualifiedName).asString()
-                    .removePrefix(declaration.packageName.asString())
+                destinationDeclaration.packageName.asString(),
+                requireNotNull(destinationDeclaration.qualifiedName).asString()
+                    .removePrefix(destinationDeclaration.packageName.asString())
             )
             .addImport("dev.enro.controller", "NavigationModule")
             .addImport("dev.enro.ui", "navigationDestination")
@@ -91,7 +91,7 @@ object NavigationDestinationGenerator {
                 codeGenerator = environment.codeGenerator,
                 dependencies = Dependencies(
                     aggregating = false,
-                    sources = arrayOf(requireNotNull(declaration.containingFile)),
+                    sources = arrayOf(requireNotNull(destinationDeclaration.containingFile)),
                 )
             )
     }
