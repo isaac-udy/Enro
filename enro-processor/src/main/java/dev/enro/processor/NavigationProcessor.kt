@@ -11,6 +11,7 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import dev.enro.annotations.GeneratedNavigationBinding
+import dev.enro.processor.domain.ComponentReference
 import dev.enro.processor.domain.GeneratedBindingReference
 import dev.enro.processor.extensions.ClassNames
 import dev.enro.processor.extensions.EnroLocation
@@ -26,7 +27,7 @@ class NavigationProcessor(
 
     private var platform: ResolverPlatform? = null
 
-    private val componentsToProcess = mutableMapOf<String, KSDeclaration>()
+    private val componentsToProcess = mutableMapOf<String, ComponentReference>()
     private val generatedBindings = mutableMapOf<String, GeneratedBindingReference>()
 
     @OptIn(KspExperimental::class)
@@ -76,7 +77,7 @@ class NavigationProcessor(
                     environment.logger.error(error, it)
                     error(error)
                 }
-                componentsToProcess[name] = it
+                componentsToProcess[name] = ComponentReference.fromDeclaration(environment, it)
             }
 
         // Whenever we see a class, function or property annotated with NavigationDestination, we're going to grab tha
@@ -113,7 +114,7 @@ class NavigationProcessor(
             NavigationComponentGenerator.generate(
                 environment = environment,
                 platform = requireNotNull(platform),
-                declaration = it,
+                component = it,
                 bindings = generatedBindings.values.toList(),
             )
         }

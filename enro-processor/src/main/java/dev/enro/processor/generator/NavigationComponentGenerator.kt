@@ -10,52 +10,31 @@ import com.google.devtools.ksp.symbol.KSDeclaration
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationComponent
+import dev.enro.processor.domain.ComponentReference
 import dev.enro.processor.domain.GeneratedBindingReference
 import dev.enro.processor.extensions.ClassNames
 import dev.enro.processor.extensions.EnroLocation
 import dev.enro.processor.extensions.chainIf
 
 object NavigationComponentGenerator {
+
     @OptIn(KspExperimental::class)
     fun generate(
         environment: SymbolProcessorEnvironment,
         platform: ResolverPlatform,
-        declaration: KSDeclaration,
+        component: ComponentReference,
         bindings: List<GeneratedBindingReference>,
     ) {
         val isIos = platform is ResolverPlatform.Ios
         val isDesktop = platform is ResolverPlatform.JvmDesktop
         val isAndroid = platform is ResolverPlatform.Android
 
-        if (declaration !is KSClassDeclaration) {
-            val message = "@NavigationComponent can only be applied to objects"
-            environment.logger.error(message, declaration)
-            error(message)
-        }
-
-        val isObject = declaration.classKind == ClassKind.OBJECT
-        val isNavigationComponentConfiguration = declaration
-            .getAllSuperTypes()
-            .any { it.declaration.qualifiedName?.asString() == "dev.enro.controller.NavigationComponentConfiguration" }
-
-        if (!isObject) {
-            val message = "@NavigationComponent can only be applied to objects"
-            environment.logger.error(message, declaration)
-            error(message)
-        }
-
-        if (!isNavigationComponentConfiguration) {
-            val message = "@NavigationComponent can only be applied to objects that extend " +
-                    "NavigationComponentConfiguration"
-            environment.logger.error(message, declaration)
-            error(message)
-        }
 
         val bindingNames = bindings.joinToString(separator = ",\n") {
             "${it.qualifiedName}::class"
         }
 
-        val generatedName = "${declaration.simpleName.asString()}Navigation"
+        val generatedName = "${component.simpleName}Navigation"
         val generatedComponent = TypeSpec.classBuilder(generatedName)
             .addAnnotation(
                 AnnotationSpec.builder(GeneratedNavigationComponent::class.java)
@@ -144,12 +123,7 @@ object NavigationComponentGenerator {
                     return controller
                 """.trimIndent()
             )
-            .receiver(
-                ClassName(
-                    declaration.packageName.asString(),
-                    declaration.simpleName.asString()
-                )
-            )
+            .receiver(component.className)
             .build()
 
         val desktopFunction = when {
@@ -182,7 +156,7 @@ object NavigationComponentGenerator {
 
         val fileSpec = FileSpec
             .builder(
-                declaration.packageName.asString(),
+                component.className.packageName,
                 requireNotNull(generatedComponent.name)
             )
             .addAnnotation(
@@ -208,7 +182,7 @@ object NavigationComponentGenerator {
             dependencies = Dependencies(
                 aggregating = true,
                 sources = bindings.mapNotNull { it.containingFile }
-                    .plus(listOfNotNull(declaration.containingFile))
+                    .plus(listOfNotNull(component.containingFile))
                     .toTypedArray()
             )
         )
