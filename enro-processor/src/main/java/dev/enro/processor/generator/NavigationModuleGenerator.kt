@@ -17,7 +17,6 @@ object NavigationModuleGenerator {
         bindings: List<KSDeclaration>,
         destinations: Sequence<KSDeclaration>,
     ) {
-        if (bindings.isEmpty()) return
         val moduleId = bindings
             .map { requireNotNull(it.qualifiedName).asString() }
             .toModuleId()
