@@ -54,6 +54,6 @@ object NavigationModuleGenerator {
     }
 
     private fun getModuleName(moduleId: String): String {
-        return "_dev_enro3_processor_ModuleSentinel_$moduleId"
+        return "_dev_enro_processor_ModuleSentinel_$moduleId"
     }
 }
