@@ -6,8 +6,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import dev.enro.annotations.GeneratedNavigationBinding
 
-@ConsistentCopyVisibility
-data class GeneratedBindingReference private constructor(
+data class GeneratedBindingReference(
     val qualifiedName: String,
     val destination: String,
     val navigationKey: String,
