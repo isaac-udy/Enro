@@ -48,7 +48,7 @@ jobs:
           PUBLISH_SIGNING_KEY_ID: ${{ secrets.PUBLISH_SIGNING_KEY_ID }}
           PUBLISH_SIGNING_KEY_PASSWORD: ${{ secrets.PUBLISH_SIGNING_KEY_PASSWORD }}
           PUBLISH_SIGNING_KEY_LOCATION: ${{ secrets.PUBLISH_SIGNING_KEY_LOCATION }}
-        run: ./gradlew publishAndroidReleasePublicationToMavenCentralRepository publishDesktopPublicationToMavenCentralRepository publishIosArm64PublicationToMavenCentralRepository publishIosSimulatorArm64PublicationToMavenCentralRepository publishIosX64PublicationToMavenCentralRepository publishKotlinMultiplatformPublicationToMavenCentralRepository -PmavenCentralUsername="${{ secrets.PUBLISH_SONATYPE_USER }}" -PmavenCentralPassword="${{ secrets.PUBLISH_SONATYPE_PASSWORD }}" --no-parallel --stacktrace --continue
+        run: ./gradlew publishAndroidReleasePublicationToMavenCentralRepository publishDesktopPublicationToMavenCentralRepository publishIosArm64PublicationToMavenCentralRepository publishIosSimulatorArm64PublicationToMavenCentralRepository publishIosX64PublicationToMavenCentralRepository publishKotlinMultiplatformPublicationToMavenCentralRepository :enro-processor:publishMavenPublicationToMavenCentralRepository -PmavenCentralUsername="${{ secrets.PUBLISH_SONATYPE_USER }}" -PmavenCentralPassword="${{ secrets.PUBLISH_SONATYPE_PASSWORD }}" --no-parallel --stacktrace --continue
 
       - name: Update Repo
         uses: EndBug/add-and-commit@v5
