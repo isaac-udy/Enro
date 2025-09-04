@@ -11,6 +11,7 @@ import dev.enro.processor.extensions.ClassNames
 import dev.enro.processor.generator.NavigationComponentGenerator
 import dev.enro.processor.generator.NavigationDestinationGenerator
 import dev.enro.processor.generator.NavigationModuleGenerator
+import dev.enro.processor.generator.ResolverPlatform
 
 class NavigationProcessor(
     private val environment: SymbolProcessorEnvironment
@@ -78,6 +79,7 @@ class NavigationProcessor(
             NavigationComponentGenerator.generate(
                 environment = environment,
                 resolver = resolver,
+                platform = ResolverPlatform.getPlatform(resolver),
                 declaration = it,
                 resolverModules = modules.toList(),
                 resolverBindings = destinations.toList(),

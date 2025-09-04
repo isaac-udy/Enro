@@ -21,11 +21,11 @@ object NavigationComponentGenerator {
     fun generate(
         environment: SymbolProcessorEnvironment,
         resolver: Resolver,
+        platform: ResolverPlatform,
         declaration: KSDeclaration,
         resolverBindings: List<KSDeclaration>,
         resolverModules: List<KSDeclaration>,
     ) {
-        val platform = ResolverPlatform.getPlatform(resolver)
         val isIos = platform is ResolverPlatform.Ios
         val isDesktop = platform is ResolverPlatform.JvmDesktop
         val isAndroid = platform is ResolverPlatform.Android
