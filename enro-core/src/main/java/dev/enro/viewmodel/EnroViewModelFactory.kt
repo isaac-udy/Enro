@@ -38,6 +38,29 @@ internal class EnroViewModelFactory(
         return create(modelClass, CreationExtras.Empty)
     }
 
+    override fun <T : ViewModel> create(
+        modelClass: KClass<T>,
+        extras: CreationExtras,
+    ): T {
+        val mutableCreationExtras = MutableCreationExtras(extras)
+        EnroViewModelNavigationHandleProvider.put(modelClass.java, navigationHandle)
+        val viewModel = try {
+            if (mutableCreationExtras[ViewModelProvider.NewInstanceFactory.VIEW_MODEL_KEY] == null) {
+                mutableCreationExtras[ViewModelProvider.NewInstanceFactory.VIEW_MODEL_KEY] = getDefaultKey(modelClass)
+            }
+            delegate.create(modelClass, mutableCreationExtras) as T
+        } catch (ex: RuntimeException) {
+            if (ex is EnroException) throw ex
+            throw EnroException.CouldNotCreateEnroViewModel(
+                "Failed to created ${modelClass.simpleName} using factory ${delegate::class.java.name}.\n",
+                ex
+            )
+        }
+        viewModel.setNavigationHandleTag(navigationHandle)
+        EnroViewModelNavigationHandleProvider.clear(modelClass.java)
+        return viewModel
+    }
+
     companion object {
         /**
          * See [androidx.lifecycle.viewmodel.internal.ViewModelProviders]
