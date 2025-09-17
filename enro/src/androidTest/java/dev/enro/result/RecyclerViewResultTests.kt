@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -190,6 +192,16 @@ class RecyclerViewResultActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(recyclerView)
+        ViewCompat.setOnApplyWindowInsetsListener(recyclerView) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(
+                insets.left,
+                insets.top,
+                insets.right,
+                insets.bottom,
+            )
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     fun setupItems(size: Int) {
