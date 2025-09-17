@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.6
+* Updated dependencies
+* Updated EnroViewModelFactory to provide an implementation for `create(KClass, CreationExtras)`
+
 ## 2.8.5
 * Updated dependencies
 
