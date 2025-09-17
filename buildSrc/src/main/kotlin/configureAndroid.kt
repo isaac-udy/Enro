@@ -45,10 +45,10 @@ private fun Project.commonAndroidConfig(
 
     extensions.configure<BaseExtension> {
         this@configure.namespace = namespace
-        compileSdkVersion(35)
+        compileSdkVersion(36)
         defaultConfig {
             minSdk = 21
-            targetSdk = 34
+            targetSdk = 36
             versionCode = versionProperties.getProperty("versionCode").toInt()
             versionName = versionProperties.getProperty("versionName")
 
