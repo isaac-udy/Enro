@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.8.7
+* Update bindToNavigationHandle to allow providing of the parentContainer as an argument
+
 ## 2.8.6
 * Updated dependencies
 * Updated EnroViewModelFactory to provide an implementation for `create(KClass, CreationExtras)`
