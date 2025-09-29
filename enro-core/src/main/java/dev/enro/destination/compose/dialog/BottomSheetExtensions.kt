@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.core.compose.OverrideNavigationAnimations
 import dev.enro.core.compose.navigationHandle
+import dev.enro.core.container.NavigationContainer
 import dev.enro.core.parentContainer
 import dev.enro.core.requestClose
 import kotlinx.coroutines.isActive
@@ -28,17 +29,18 @@ import kotlinx.coroutines.isActive
 
 @Composable
 @AdvancedEnroApi
-public fun ModalBottomSheetState.bindToNavigationHandle(): ModalBottomSheetState {
+public fun ModalBottomSheetState.bindToNavigationHandle(
+    parentContainer: NavigationContainer = requireNotNull(dev.enro.core.parentContainer) {
+        "Failed to bind ModalBottomSheetState to NavigationHandle: parentContainer was not found"
+    },
+): ModalBottomSheetState {
     val navigationHandle = navigationHandle()
 
-    val parent = requireNotNull(parentContainer) {
-        "Failed to bind ModalBottomSheetState to NavigationHandle: parentContainer was not found"
-    }
     val isInBackstack by remember {
-        derivedStateOf { parent.backstack.any { it.instructionId == navigationHandle.id } }
+        derivedStateOf { parentContainer.backstack.any { it.instructionId == navigationHandle.id } }
     }
     val isActive by remember {
-        derivedStateOf { parent.backstack.active?.instructionId == navigationHandle.id }
+        derivedStateOf { parentContainer.backstack.active?.instructionId == navigationHandle.id }
     }
     var isInitialised by remember {
         mutableStateOf(false)
@@ -101,7 +103,7 @@ public fun BottomSheetDestination(
                 }
             },
             skipHalfExpanded = skipHalfExpanded,
-        ).bindToNavigationHandle()
+        ).bindToNavigationHandle(container)
 
         SideEffect {
             hasBeenDisplayed = hasBeenDisplayed || bottomSheetState.isVisible
