@@ -1,167 +1,286 @@
 [![Maven Central](https://img.shields.io/maven-central/v/dev.enro/enro.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22dev.enro%22)
-> **Note**
->
-> Please see the [CHANGELOG](./CHANGELOG.md) to understand the latest changes in Enro
 
 # Enro 🗺️
 ### [enro.dev](https://enro.dev)
 
-Enro is a powerful navigation library based on a simple idea; screens within an application should behave like functions.
+**A declarative, type-safe navigation library for Kotlin Multiplatform**
 
-### Gradle quick-start
-Enro is published to [Maven Central](https://search.maven.org/). Make sure your project includes the mavenCentral() repository, and then include the following in your module's build.gradle:
+Enro is a powerful navigation library built on a simple idea: screens should behave like functions.
+Define a contract with parameters and optional results, navigate declaratively, and let Enro handle
+the complexity.
+
+Currently supporting: **Android** • **iOS** (experimental) • **Desktop** (experimental) • **Web/WASM
+** (experimental)
+
+## Why Enro?
+
+- **🎯 Type-Safe Navigation** - NavigationKeys define screens like function signatures, with
+  compile-time safety for parameters and results
+- **🔄 Result Handling** - First-class support for screens that return results, with type-safe result
+  channels
+- **🎨 Compose-First** - Built for Jetpack/Multiplatform Compose, with support for Fragments and
+  Activities on Android
+- **🌐 Multiplatform Ready** - Shared navigation logic across all platforms with Kotlin Multiplatform
+- **🎬 Scene-Based Rendering** - Automatic handling of dialogs, overlays, and multi-pane layouts with
+  navigation scenes
+- **🧩 Flexible Architecture** - Powerful features like navigation flows, interceptors, decorators,
+  and container-based navigation
+
+## Quick Start
+
+### Installation
 
 ```kotlin
+// build.gradle.kts
 dependencies {
-    implementation("dev.enro:enro:2.7.0")
-    ksp("dev.enro:enro-processor:2.7.0") // both kapt and ksp are supported
-    testImplementation("dev.enro:enro-test:2.7.0")
+    implementation("dev.enro:enro:3.0.0-alpha05")
+    ksp("dev.enro:enro-processor:3.0.0-alpha05")
 }
 ```
 
-# Introduction
-This introduction is designed to give a brief overview of how Enro works. It doesn't contain all the information you might need to know to get Enro installed in an application, or provide specific details about each of the topics covered. For this information please refer to the other documentation, such as:
-* [Installing Enro](https://enro.dev/docs/installing-enro.html)
-* [Navigation Keys](https://enro.dev/docs/navigation-keys.html)
-* [FAQ](https://enro.dev/docs/frequently-asked-questions.html)
+### Setup
 
-## NavigationKeys
-Building a screen using Enro begins with defining a `NavigationKey`. A `NavigationKey` can be thought of like the function signature or interface for a screen. Just like a function signature, a `NavigationKey` represents a contract. By invoking the contract, and providing the requested parameters, an action will occur and you may (or may not) receive a result.
+1. Define a NavigationComponent:
 
-Here's an example of two `NavigationKey`s that you might find in an Enro application:
 ```kotlin
+@NavigationComponent
+object MyNavigationComponent : NavigationComponentConfiguration()
+```
 
-@Parcelize
-data class ShowUserProfile(
-   val userId: UserId
-) : NavigationKey.SupportsPush
+2. Install Enro in your application:
 
-@Parcelize
+**Android:**
+
+```kotlin
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        MyNavigationComponent.installNavigationController(this)
+    }
+}
+```
+
+**iOS, Desktop, Web:** See [Installation Guide](https://enro.dev/docs/installing-enro.html)
+
+## Core Concepts
+
+### NavigationKeys
+
+NavigationKeys are the contracts for your screens. They define the parameters required to open a
+screen and optionally the result type it returns.
+
+```kotlin
+@Serializable
+data class UserProfile(
+    val userId: String
+) : NavigationKey
+
+@Serializable
 data class SelectDate(
-   val minDate: LocalDate? = null,
-   val maxDate: LocalDate? = null,
-) : NavigationKey.SupportsPresent.WithResult<LocalDate>
-
+    val minDate: LocalDate? = null,
+    val maxDate: LocalDate? = null,
+) : NavigationKey.WithResult<LocalDate>
 ```
 
-If you think of the `NavigationKey`s as function signatures, they could look something like this:
+### NavigationDestinations
+
+Create destinations for your NavigationKeys using Composables, Fragments, or Activities:
+
+**Composable:**
+
 ```kotlin
-
-fun showUserProfile(userId: UserId): Unit
-fun selectDate(minDate: LocalDate? = null, maxDate: LocalDate? = null): LocalDate
-
-```
-
-## NavigationHandles
-Once you've defined the `NavigationKey` for a screen, you'll want to use it. In any Activity, Fragment or Composable, you will be able to get access to a `NavigationHandle`, which allows you to perform navigation. The syntax is slightly different for each type of screen.
-
-### In a Fragment or Activity:
-```kotlin
-
-class ExampleFragment : Fragment() {
-   val selectDate by registerForNavigationResult<LocalDate> { selectedDate: LocalDate -> 
-     /* do something! */ 
-   }
-   
-   fun onSelectDateButtonPressed() = selectDate.present(
-     SelectDate(maxDate = LocalDate.now())
-   )
-   
-   fun onProfileButtonPressed() {
-      getNavigationHandle().push(
-         ShowUserProfile(userId = /* ... */)
-      )
-   }
-}
-
-```
-
-### In a Composable:
-```kotlin
-
 @Composable
-fun ExampleComposable() {
-   val navigation = navigationHandle()
-   val selectDate = registerForNavigationResult<LocalDate> { selectedDate: LocalDate -> 
-        /* do something! */ 
-   }
-   
-   Button(onClick = {
-      selectDate.present(
-         SelectDate(maxDate = LocalDate.now())
-      )
-   }) { /* ... */ }
-
-   Button(onClick = {
-      navigation.push(
-         ShowUserProfile(userId = /* ... */)
-      )
-   }) { /* ... */ }
+@NavigationDestination(UserProfile::class)
+fun UserProfileScreen() {
+    val navigation = navigationHandle<UserProfile>()
+    
+    // Access parameters
+    Text("User: ${navigation.key.userId}")
+    
+    Button(onClick = { navigation.close() }) {
+        Text("Close")
+    }
 }
-
 ```
 
-## NavigationDestinations
-You might have noticed that we've defined our `ExampleFragment` and `ExampleComposable` in the example above before we've even begun to think about how we're going to implement the `ShowUserProfile` and `SelectDate` destinations. That's because implementing a `NavigationDestination` in Enro is the least interesting part of the process. All you need to do to make this application complete is to build an Activity, Fragment or Composable, and mark it as the `NavigationDestination` for a particular `NavigationKey`.
+**With Results:**
 
-The recommended approach to mark an Activity, Fragment or Composable as a `NavigationDestination` is to use the Enro annotation processor and the `@NavigationDestination` annotation.
-
-### In a Fragment or Activity:
 ```kotlin
-
-@NavigationDestination(ShowUserProfile::class)
-class ProfileFragment : Fragment {
-   // providing a type to `by navigationHandle<T>()` gives you access to the NavigationKey 
-   // used to open this destination, and you can use this to read the 
-   // arguments for the destination
-    val navigation by navigationHandle<ShowProfile>() 
-}
-
-```
-
-### In a Composable:
-```kotlin
-
 @Composable
 @NavigationDestination(SelectDate::class)
-fun SelectDateComposable() { 
-   // providing a type to `navigationHandle<T>()` gives you access to the NavigationKey 
-   // used to open this destination, and you can use this to read the 
-   // arguments for the destination
-   val navigation = navigationHandle<SelectDate>()
-   // ...
-   Button(onClick = {
-       navigation.closeWithResult( /* pass a local date here to return that as a result */ )
-   }) { /* ... */ }
+fun DatePickerScreen() {
+    val navigation = navigationHandle<SelectDate>()
+    
+    DatePicker(
+        minDate = navigation.key.minDate,
+        maxDate = navigation.key.maxDate,
+        onDateSelected = { date ->
+            navigation.complete(date) // Return the result
+        }
+    )
 }
-
 ```
 
-### Without annotation processing:
-If you'd prefer to avoid annotation processing, you can use a DSL to define these bindings when creating your application (see [here]() for more information):
+**As Dialog:**
+
 ```kotlin
-
-// this needs to be registered with your application
-val exampleNavigationComponent = createNavigationComponent {
-   fragmentDestination<ShowProfile, ProfileFragment>() 
-   composableDestination<SelectDate> { SelectDateComposable() }
+@NavigationDestination(ConfirmDialog::class)
+val confirmDialog = navigationDestination<ConfirmDialog>(
+    metadata = { dialog() } // Renders as a dialog
+) {
+    AlertDialog(
+        title = { Text("Confirm Action") },
+        text = { Text(navigation.key.message) },
+        onDismissRequest = { navigation.close() },
+        confirmButton = {
+            Button(onClick = { navigation.complete(true) }) {
+                Text("Confirm")
+            }
+        }
+    )
 }
-
 ```
 
-# Applications using Enro
+### Navigation
+
+Navigate between screens using NavigationHandles:
+
+```kotlin
+@Composable
+fun MyScreen() {
+    val navigation = navigationHandle()
+    
+    // Open a screen
+    Button(onClick = { 
+        navigation.open(UserProfile(userId = "123"))
+    }) {
+        Text("Open Profile")
+    }
+}
+```
+
+### Result Handling
+
+Register for results from other screens:
+
+```kotlin
+@Composable
+fun MyScreen() {
+    val selectDate = registerForNavigationResult<LocalDate>(
+        onClosed = { /* User cancelled */ },
+        onCompleted = { date ->
+            // Use the selected date
+        }
+    )
+    
+    Button(onClick = {
+        selectDate.open(SelectDate(maxDate = LocalDate.now()))
+    }) {
+        Text("Select Date")
+    }
+}
+```
+
+### Navigation Containers
+
+Create nested navigation hierarchies with containers:
+
+```kotlin
+@Composable
+fun MainScreen() {
+    val container = rememberNavigationContainer(
+        backstack = listOf(HomeScreen.asInstance()),
+        emptyBehavior = EmptyBehavior.closeParent(),
+        filter = accept { /* Define what this container accepts */ }
+    )
+    
+    NavigationDisplay(container)
+}
+```
+
+### Navigation Flows
+
+Build multi-step flows with automatic backstack management:
+
+```kotlin
+class OnboardingViewModel : ViewModel() {
+    private val navigation by navigationHandle<OnboardingFlow>()
+    
+    val flow by registerForFlowResult(
+        flow = {
+            val name = open(EnterName())
+            val email = open(EnterEmail())
+            val preferences = open(SelectPreferences())
+            
+            open(Summary(name, email, preferences))
+        },
+        onCompleted = {
+            navigation.close()
+        }
+    )
+}
+```
+
+## Advanced Features
+
+- **Scenes** - Automatic handling of dialogs, bottom sheets, and multi-pane layouts
+- **Interceptors** - Modify or intercept navigation operations globally
+- **Decorators** - Wrap destinations with additional UI or behavior
+- **Path-Based Navigation** - Deep linking and web URL support
+- **Shared Element Transitions** - Smooth animations between screens
+- **ViewModel Integration** - Scoped ViewModels with navigation awareness
+- **Testing Support** - Comprehensive testing utilities via `enro-test`
+
+## Documentation
+
+- [Getting Started](https://enro.dev/docs/getting-started.html)
+- [NavigationKeys](https://enro.dev/docs/navigation-keys.html)
+- [NavigationDestinations](https://enro.dev/docs/navigation-destinations.html)
+- [Navigation Flows](https://enro.dev/docs/navigation-flows.html)
+- [FAQ](https://enro.dev/docs/frequently-asked-questions.html)
+- [Changelog](./CHANGELOG.md)
+
+## Applications Using Enro
+
 <p align="center">
     <a href="https://www.splitwise.com/">
-        <img width="100px" src="resources/splitwise-icon.png" />
+        <img width="100px" src="resources/splitwise-icon.png" alt="Splitwise" />
     </a>
    &nbsp;
    &nbsp;
     <a href="https://play.google.com/store/apps/details?id=com.beyondbudget">
-        <img width="100px" src="resources/beyond-budget-icon.png" />
+        <img width="100px" src="resources/beyond-budget-icon.png" alt="Beyond Budget" />
     </a>
 </p>
 
+## Migrating from 2.x
+
+Enro 3.0 introduces Kotlin Multiplatform support and some API changes. Key changes:
+
+- NavigationKeys now use `@Serializable` instead of `@Parcelize`
+- `SupportsPush`/`SupportsPresent` interfaces have been removed (use `NavigationKey` or
+  `NavigationKey.WithResult<T>`)
+- Navigation is now unified through `open()` instead of separate `push()`/`present()` methods
+- Scenes determine rendering behavior (dialogs, overlays, etc.) via metadata instead of interfaces
+
+See the [CHANGELOG](./CHANGELOG.md) for a complete list of changes.
+
+## License
+
+```
+Copyright 2022 Isaac Udy
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
 ---
-
-*"The novices’ eyes followed the wriggling path up from the well as it swept a great meandering arc around the hillside. Its stones were green with moss and beset with weeds. Where the path disappeared through the gate they noticed that it joined a second track of bare earth, where the grass appeared to have been trampled so often that it ceased to grow. The dusty track ran straight from the gate to the well, marred only by a fresh set of sandal-prints that went down, and then up, and ended at the feet of the young monk who had fetched their water." - [The Garden Path](http://thecodelesscode.com/case/156)*
-
