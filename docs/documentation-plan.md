@@ -7,10 +7,13 @@ organized by priority and complexity.
 
 ### 1. Getting Started Guide
 
-**Status:** Partially exists (installation.md in ghpages)
-**Needs Update:** Full rewrite for 3.x changes
-**Content:**
+**Status:** Complete
+**Files:**
 
+- [installation.md](installation.md)
+- [basic-concepts.md](basic-concepts.md)
+
+**Completed Content:**
 - Installation steps for all platforms (Android, iOS, Desktop, Web/WASM)
 - Basic NavigationComponent setup
 - Creating first NavigationKey
@@ -20,10 +23,10 @@ organized by priority and complexity.
 
 ### 2. NavigationKeys Documentation
 
-**Status:** Exists (navigation-keys.md in ghpages-old) but outdated
-**Needs Update:** Major rewrite for 3.x
-**Content:**
+**Status:** Complete
+**File:** [navigation-keys.md](navigation-keys.md)
 
+**Completed Content:**
 - Defining NavigationKeys with `@Serializable`
 - Using `NavigationKey.WithResult<T>` for screens that return results
 - NavigationKey.Metadata system and MetadataKeys
@@ -34,10 +37,10 @@ organized by priority and complexity.
 
 ### 3. NavigationDestinations Documentation
 
-**Status:** Exists (navigation-destinations.md in ghpages-old) but outdated
-**Needs Update:** Major rewrite for 3.x
-**Content:**
+**Status:** Complete
+**File:** [navigation-destinations.md](navigation-destinations.md)
 
+**Completed Content:**
 - Using `@NavigationDestination` annotation
 - Creating Composable destinations
 - Creating Fragment destinations (Android via enro-compat)
@@ -49,9 +52,10 @@ organized by priority and complexity.
 
 ### 4. Navigation Operations
 
-**Status:** Needs creation
-**Content:**
+**Status:** Complete
+**File:** [navigation-operations.md](navigation-operations.md)
 
+**Completed Content:**
 - The unified `open()` operation
 - Understanding `close()`, `complete()`, and `completeFrom()`
 - NavigationOperation types (Open, Close, Complete, CompleteFrom, SideEffect, SetBackstack)
@@ -61,9 +65,10 @@ organized by priority and complexity.
 
 ### 5. Result Handling
 
-**Status:** Partial documentation exists, needs major update
-**Content:**
+**Status:** Complete
+**File:** [result-handling.md](result-handling.md)
 
+**Completed Content:**
 - `registerForNavigationResult` in Composables
 - `registerForNavigationResult` in ViewModels
 - `registerForNavigationResult` in Fragments (via enro-compat)
@@ -76,7 +81,7 @@ organized by priority and complexity.
 
 ### 6. Navigation Scenes
 
-**Status:** New feature, needs comprehensive documentation
+**Status:** Needs creation
 **Content:**
 
 - What are NavigationScenes and why they exist
@@ -90,7 +95,7 @@ organized by priority and complexity.
 
 ### 7. Navigation Containers
 
-**Status:** Major changes from 2.x, needs comprehensive rewrite
+**Status:** Needs comprehensive documentation
 **Content:**
 
 - `rememberNavigationContainer` API
@@ -208,7 +213,6 @@ organized by priority and complexity.
 
 - EnroTest setup
 - `runEnroTest` helper
-- EnroTestRule (if applicable)
 - Mocking navigation
 - Testing navigation flows
 - Testing result handling
@@ -312,8 +316,8 @@ The test application has excellent examples that should be documented:
 ### Current State:
 
 - Documentation site exists at enro.dev
-- Old 2.x docs in docs/ghpages-old
-- New structure being built in docs/ghpages
+- Old 2.x docs in ghpages-old
+- New structure being built in ghpages
 
 ### Recommendations:
 
@@ -340,25 +344,25 @@ The test application has excellent examples that should be documented:
 
 6. Navigation Scenes
 7. Navigation Containers
-8. Multiplatform Support
-9. Serialization System
-10. Migration Guide (comprehensive)
+8. Navigation Flows
+9. Multiplatform Support
+10. Serialization System
 
 ### Phase 3 (Feature deep-dives):
 
-11. Navigation Flows
-12. ViewModels and Navigation
+11. ViewModels and Navigation
+12. Fragment and Activity Support (enro-compat)
 13. Testing with Enro
-14. Fragment and Activity Support (enro-compat)
+14. Path-Based Navigation / Deep Linking
 
 ### Phase 4 (Advanced features):
 
 15. Navigation Interceptors
 16. Destination Decorators
-17. Path-Based Navigation
-18. Animation and Transitions
-19. Advanced Container Features
-20. Navigation Plugins
+17. Animation and Transitions
+18. Advanced Container Features
+19. Navigation Plugins
+20. EnroController Configuration
 
 ## Notes for Documentation Authors:
 
