@@ -6,20 +6,25 @@ import org.gradle.kotlin.dsl.the
 
 class ConfigureMultiplatformLibrary : Plugin<Project> {
     override fun apply(project: Project) {
-        project.configureMultiplatformLibrary()
+        project.configureMultiplatformLibrary(js = false)
     }
 }
 
-internal fun Project.configureMultiplatformLibrary() {
+class ConfigureMultiplatformLibraryWithJs : Plugin<Project> {
+    override fun apply(project: Project) {
+        project.configureMultiplatformLibrary(js = true)
+    }
+}
+
+internal fun Project.configureMultiplatformLibrary(
+    js: Boolean,
+) {
     val libs = project.the<LibrariesForLibs>()
     project.plugins.apply("com.android.library")
-    project.configureKotlinMultiplatform()
+    project.configureKotlinMultiplatform(js = js)
 
     val androidExtension = project.extensions.getByType(LibraryExtension::class.java)
     androidExtension.apply {
-        buildFeatures {
-            buildConfig = true
-        }
         defaultConfig {
             minSdk = libs.versions.android.minSdk.get().toInt()
         }

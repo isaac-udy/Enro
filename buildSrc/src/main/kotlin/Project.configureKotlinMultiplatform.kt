@@ -27,12 +27,14 @@ private val optIns = arrayOf(
     "kotlin.uuid.ExperimentalUuidApi",
     "kotlin.io.encoding.ExperimentalEncodingApi",
     "kotlin.experimental.ExperimentalObjCName",
+    "kotlinx.serialization.ExperimentalSerializationApi",
 )
 
 internal fun Project.configureKotlinMultiplatform(
     android: Boolean = true,
     ios: Boolean = true,
     wasmJs: Boolean = true,
+    js: Boolean = true,
     desktop: Boolean = true,
 ) {
 
@@ -96,6 +98,28 @@ internal fun Project.configureKotlinMultiplatform(
                 }
             }
         }
+
+        if (js) {
+            js {
+                nodejs()
+                binaries.executable()
+                compilations["main"].packageJson {
+                    main = "$projectName-backend.js"
+                    description = "Cloud Functions for Firebase"
+                    version = "1.0.0"
+                    customField("engines", mapOf("node" to "22"))
+                    private = true
+                }
+                compilerOptions {
+                    sourceMap.set(true)
+                    sourceMapEmbedSources.set(JsSourceMapEmbedMode.SOURCE_MAP_SOURCE_CONTENT_ALWAYS)
+                }
+                compilerOptions.sourceMap.set(true)
+                compilerOptions.sourceMapEmbedSources.set(JsSourceMapEmbedMode.SOURCE_MAP_SOURCE_CONTENT_ALWAYS)
+            }
+        }
+
+
         if (ios) {
             listOf(
                 iosX64(),

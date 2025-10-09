@@ -25,7 +25,7 @@ kotlin {
             implementation(libs.androidx.viewmodel)
             implementation(libs.compose.viewmodel)
             implementation(libs.androidx.savedState)
-            api("dev.enro:enro-core:${project.enroVersionName}")
+            api("dev.enro:enro-runtime:${project.enroVersionName}")
         }
         androidMain.dependencies {
 

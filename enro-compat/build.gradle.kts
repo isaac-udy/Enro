@@ -14,7 +14,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.swing)
         }
         commonMain.dependencies {
-            api(project(":enro-core"))
+            api(project(":enro-runtime"))
             implementation(libs.compose.viewmodel)
             implementation(libs.compose.lifecycle)
             implementation(libs.androidx.savedState)
