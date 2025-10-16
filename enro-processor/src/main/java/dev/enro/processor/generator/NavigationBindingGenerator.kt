@@ -1,15 +1,25 @@
 package dev.enro.processor.generator
 
 import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.getConstructors
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSDeclaration
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
+import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.GeneratedNavigationBinding
+import dev.enro.annotations.NavigationPath
 import dev.enro.processor.domain.DestinationReference
 import dev.enro.processor.extensions.EnroLocation
 import dev.enro.processor.extensions.toDisplayString
@@ -66,6 +76,10 @@ object NavigationBindingGenerator {
                         environment = environment,
                         destination = destination,
                     )
+                    .addPathBinding(
+                        environment = environment,
+                        destination = destination,
+                    )
                     .build()
             )
             .build()
@@ -80,6 +94,8 @@ object NavigationBindingGenerator {
             )
             .addImport("dev.enro.controller", "NavigationModule")
             .addImport("dev.enro.ui", "navigationDestination")
+            .addImport("dev.enro.path", "NavigationPathBinding")
+            .addImport("dev.enro.path", "createPathBinding")
             .apply {
                 when {
                     destination.isActivity -> addImport("dev.enro.ui.destinations", "activityDestination")
@@ -161,4 +177,78 @@ object NavigationBindingGenerator {
 
         return this
     }
+
+    @OptIn(KspExperimental::class, ExperimentalEnroApi::class)
+    private fun FunSpec.Builder.addPathBinding(
+        environment: SymbolProcessorEnvironment,
+        destination: DestinationReference,
+    ): FunSpec.Builder {
+        val navigationPaths = destination.keyType.getAnnotationsByType(NavigationPath::class)
+            .map { it to destination.keyType.primaryConstructor }
+            .plus(
+                destination.keyType.getConstructors()
+                    .flatMap { constructor ->
+                        constructor.getAnnotationsByType(NavigationPath::class).toList().map {
+                            it to constructor
+                        }
+                    }
+            )
+            .toList()
+
+        if (navigationPaths.isEmpty()) return this
+        environment.logger.warn("Found ${navigationPaths.size} NavigationPath annotations on ${destination.keyType.simpleName.asString()}")
+        navigationPaths.forEach { (path, constructor) ->
+            val pattern = path.pattern
+            val constructorReference = when {
+                constructor == null -> "{ %T }"
+                else -> { "::%T" }
+            }
+
+            addCode("\n")
+            val params = pathPatternToParameterNames(pattern)
+
+            val typeName = destination.keyType.asStarProjectedType().toTypeName()
+            val paramTypeArray = params.map { typeName }.toTypedArray()
+            val paramReferences = params.map { "%T::$it" }.joinToString("\n") {
+                "                        $it,"
+            }
+
+            addCode(
+                """
+                path(
+                    NavigationPathBinding.createPathBinding(
+                        pattern = %S,${"\n"}$paramReferences
+                        constructor = $constructorReference
+                    )
+                )
+               """.trimIndent(),
+                pattern,
+                *paramTypeArray,
+                typeName,
+            )
+        }
+        return this
+    }
+}
+
+private fun pathPatternToParameterNames(pattern: String): List<String> {
+    val split = pattern.split("?", limit = 2)
+    val path = split[0]
+    val query = if (split.size > 1) split[1] else null
+    val pathParameters = path
+        .split("/")
+        .filter { it.startsWith("{") && it.endsWith("}") }
+
+    val queryParameters = query?.split("&")
+        .orEmpty()
+        .mapNotNull { it.split("=", limit = 2).getOrNull(1) }
+        .filter { it.startsWith("{") && it.endsWith("}") }
+
+    return (pathParameters + queryParameters)
+        .map {
+            it.removePrefix("{")
+                .removeSuffix("}")
+                .removeSuffix("?")
+        }
+        .filter { it.isNotEmpty() }
 }

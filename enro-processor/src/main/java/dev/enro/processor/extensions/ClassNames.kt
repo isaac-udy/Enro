@@ -19,6 +19,7 @@ object ClassNames {
             "NavigationModuleScope"
         )
         val navigationDestination = ClassName("dev.enro.annotations", "NavigationDestination")
+        val navigationPath = ClassName("dev.enro.annotations", "NavigationPath")
         val navigationDestinationPlatformOverride = ClassName("dev.enro.annotations", "NavigationDestination", "PlatformOverride")
         val navigationComponent = ClassName("dev.enro.annotations", "NavigationComponent")
         val generatedNavigationBinding = ClassName("dev.enro.annotations", "GeneratedNavigationBinding")
