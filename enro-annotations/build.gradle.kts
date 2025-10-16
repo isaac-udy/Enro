@@ -1,4 +1,4 @@
 plugins {
-    id("configure-library")
+    id("configure-library-with-js")
     id("configure-publishing")
 }

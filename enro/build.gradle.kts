@@ -34,7 +34,8 @@ kotlin {
 
         }
         commonMain.dependencies {
-            api("dev.enro:enro-core:${project.enroVersionName}")
+            api("dev.enro:enro-common:${project.enroVersionName}")
+            api("dev.enro:enro-runtime:${project.enroVersionName}")
             api("dev.enro:enro-annotations:${project.enroVersionName}")
         }
 

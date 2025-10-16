@@ -5,10 +5,10 @@ import org.gradle.api.Project
  * available are `packageName`, `camelCase`, and `pascalCase`.
  *
  * Examples:
- * `:enro-core`
- * - packageName: `dev.enro.core`
- * - camelCase: `enroCore`
- * - pascalCase: `EnroCore`
+ * `:enro-runtime`
+ * - packageName: `dev.enro.runtime`
+ * - camelCase: `enroRuntime`
+ * - pascalCase: `EnroRuntime`
  *
  * `:enro:platforms:android-fragment`
  * - packageName: `dev.enro.platforms.android.fragment`
@@ -25,7 +25,7 @@ class ProjectName(projectPath: String) {
      * If the project path starts with "enro", it will be replaced with "dev.enro".
      *
      * Examples:
-     * `:enro-core` -> `dev.enro.core`
+     * `:enro-runtime` -> `dev.enro.runtime`
      * `:enro:platforms:android-fragment` -> `dev.enro.platforms.android.fragment`
      * `:tests:application` -> `dev.enro.tests.application`
      */
@@ -46,7 +46,7 @@ class ProjectName(projectPath: String) {
      * removed, and the first letter of each word capitalized.
      *
      * Examples:
-     * `:enro-core` -> `enroCore`
+     * `:enro-runtime` -> `enroRuntime`
      * `:enro:platforms:android-fragment` -> `enroPlatformsAndroidFragment`
      */
     val camelCase = packageName
@@ -68,7 +68,7 @@ class ProjectName(projectPath: String) {
      * capitalized.
      *
      * Examples:
-     * `:enro-core` -> `EnroCore`
+     * `:enro-runtime` -> `EnroRuntime`
      * `:enro:platforms:android-fragment` -> `EnroPlatformsAndroidFragment`
      */
     val pascalCase = camelCase
@@ -80,7 +80,7 @@ class ProjectName(projectPath: String) {
      * This is a kebabCase version of the project's package name; it is the package name with dots replaced with dashes.
      *
      * Examples:
-     * `:enro-core` -> `enro-core`
+     * `:enro-runtime` -> `enro-runtime`
      * `:enro:platforms:android-fragment` -> `enro-platforms-core-fragment`
      */
     val kebabCase = packageName

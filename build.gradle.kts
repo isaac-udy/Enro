@@ -26,8 +26,11 @@ allprojects {
 
     configurations.all {
         resolutionStrategy.dependencySubstitution {
-            substitute(module("dev.enro:enro-core"))
-                .using(project(":enro-core"))
+            substitute(module("dev.enro:enro-common"))
+                .using(project(":enro-common"))
+
+            substitute(module("dev.enro:enro-runtime"))
+                .using(project(":enro-runtime"))
 
             substitute(module("dev.enro:enro-test"))
                 .using(project(":enro-test"))
