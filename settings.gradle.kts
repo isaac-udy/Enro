@@ -1,5 +1,3 @@
-rootProject.name = "Enro"
-
 include(":enro-processor")
 include(":enro-annotations")
 include(":enro-test")
