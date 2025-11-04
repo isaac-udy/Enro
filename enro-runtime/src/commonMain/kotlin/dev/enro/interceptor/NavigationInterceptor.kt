@@ -1,5 +1,6 @@
 package dev.enro.interceptor
 
+import androidx.compose.runtime.Stable
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
@@ -12,6 +13,7 @@ import dev.enro.result.NavigationResultChannel
  * return a modified navigation backstack that will be used as the "to" property
  * of the final transition.
  */
+@Stable
 public abstract class NavigationInterceptor {
     // Allows the entire list of operations to be intercepted before
     // any individual operation is intercepted.

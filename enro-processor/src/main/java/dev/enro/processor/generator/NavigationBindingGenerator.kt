@@ -6,6 +6,7 @@ import com.google.devtools.ksp.getConstructors
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
@@ -184,7 +185,11 @@ object NavigationBindingGenerator {
         destination: DestinationReference,
     ): FunSpec.Builder {
         val navigationPaths = destination.keyType.getAnnotationsByType(NavigationPath::class)
-            .map { it to destination.keyType.primaryConstructor }
+            .map {
+                val isObject = destination.keyType.classKind == ClassKind.OBJECT
+                val constructor = if (isObject) null else destination.keyType.primaryConstructor
+                return@map it to constructor
+            }
             .plus(
                 destination.keyType.getConstructors()
                     .flatMap { constructor ->
@@ -196,7 +201,6 @@ object NavigationBindingGenerator {
             .toList()
 
         if (navigationPaths.isEmpty()) return this
-        environment.logger.warn("Found ${navigationPaths.size} NavigationPath annotations on ${destination.keyType.simpleName.asString()}")
         navigationPaths.forEach { (path, constructor) ->
             val pattern = path.pattern
             val constructorReference = when {

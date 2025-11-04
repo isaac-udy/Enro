@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import dev.enro.NavigationContainer
 import dev.enro.NavigationContainerFilter
 import dev.enro.NavigationKey
+import dev.enro.emptyBackstack
 import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.result.NavigationResultChannel
 import dev.enro.ui.NavigationContainerState
@@ -18,7 +19,7 @@ public fun rememberNavigationContainerForFlow(
 ): NavigationContainerState {
     return rememberNavigationContainer(
         key = NavigationContainer.Key("NavigationFlow"),
-        backstack = listOf(),
+        backstack = emptyBackstack(),
         filter = NavigationContainerFilter(
             fromChildrenOnly = true,
             block = { true },

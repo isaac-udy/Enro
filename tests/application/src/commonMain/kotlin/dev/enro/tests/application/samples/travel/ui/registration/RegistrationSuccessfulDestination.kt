@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
+import dev.enro.asBackstack
 import dev.enro.closeAndReplaceWith
 import dev.enro.navigationHandle
 import dev.enro.tests.application.samples.travel.HomeDestination
@@ -71,15 +72,17 @@ fun RegistrationSuccessfulScreen() {
         // we're going to update the parent container's backstack to
         // drop any of the previous registration/login destinations
         container.updateBackstack { backstack ->
-            backstack.filterNot { instance ->
-                listOf(
-                    LoginDestination::class,
-                    RegistrationOverviewDestination::class,
-                    RegistrationNameDestination::class,
-                    RegistrationUsernameDestination::class,
-                    RegistrationPasswordDestination::class
-                ).contains(instance.key::class)
-            }
+            backstack
+                .filterNot { instance ->
+                    listOf(
+                        LoginDestination::class,
+                        RegistrationOverviewDestination::class,
+                        RegistrationNameDestination::class,
+                        RegistrationUsernameDestination::class,
+                        RegistrationPasswordDestination::class
+                    ).contains(instance.key::class)
+                }
+                .asBackstack()
         }
     }
 

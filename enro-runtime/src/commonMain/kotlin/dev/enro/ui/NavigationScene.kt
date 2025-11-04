@@ -1,9 +1,12 @@
 package dev.enro.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import dev.enro.NavigationKey
 
-
+@Immutable
+@Stable
 public interface NavigationScene {
     public val key: Any
     public val entries: List<NavigationDestination<NavigationKey>>

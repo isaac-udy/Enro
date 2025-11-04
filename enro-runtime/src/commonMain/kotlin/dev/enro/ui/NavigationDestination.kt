@@ -4,6 +4,8 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
@@ -26,6 +28,8 @@ public open class NavigationDestinationProvider<T : NavigationKey>(
     }
 }
 
+@Stable
+@Immutable
 @ConsistentCopyVisibility
 public data class NavigationDestination<out T : NavigationKey> private constructor(
     public val instance: NavigationKey.Instance<T>,

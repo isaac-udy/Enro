@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
+import dev.enro.asBackstack
 import dev.enro.platform.EnroLog
 import dev.enro.requestClose
 import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
@@ -312,7 +313,7 @@ private fun HandlePredictiveBack(
                 state.inPredictiveBack = true
                 val isProgressConsumed = state.emptyBehavior
                     .onPredictiveBackProgress(
-                        backstack = scene.previousEntries.map { it.instance },
+                        backstack = scene.previousEntries.map { it.instance }.asBackstack(),
                         progress = value.progress
                     )
                 if (!isProgressConsumed) {

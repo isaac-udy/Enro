@@ -3,11 +3,13 @@ package dev.enro.core.compose
 import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentCompositeKeyHash
+import androidx.compose.runtime.currentCompositeKeyHashCode
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationOperation
 import dev.enro.animation.NavigationAnimationOverrideBuilder
 import dev.enro.annotations.AdvancedEnroApi
+import dev.enro.asBackstack
 import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.context.RootContext
@@ -26,7 +28,7 @@ import dev.enro.ui.rememberNavigationContainer as newRememberNavigationContainer
 
 @Composable
 public fun rememberNavigationContainer(
-    key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@${currentCompositeKeyHash}"),
+    key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@$currentCompositeKeyHashCode"),
     root: dev.enro.core.NavigationKey.SupportsPush,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
@@ -56,7 +58,7 @@ public fun rememberNavigationContainer(
         key = key,
         initialBackstack = initialBackstack.map {
             it.asPush()
-        },
+        }.asBackstack(),
         emptyBehavior = emptyBehavior,
         interceptor = interceptor,
         animations = animations,

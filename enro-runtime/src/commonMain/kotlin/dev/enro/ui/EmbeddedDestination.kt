@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import dev.enro.NavigationKey
 import dev.enro.acceptNone
 import dev.enro.annotations.ExperimentalEnroApi
+import dev.enro.backstackOf
 import dev.enro.interceptor.builder.navigationInterceptor
 
 @Composable
@@ -20,7 +21,7 @@ public fun EmbeddedDestination(
     val rememberedOnClosed = rememberUpdatedState(onClosed)
 
     val container = rememberNavigationContainer(
-        backstack = listOf(instance),
+        backstack = backstackOf(instance),
         filter = acceptNone(),
         interceptor = navigationInterceptor {
             onOpened<NavigationKey> {
@@ -57,7 +58,7 @@ public inline fun <reified T : Any> EmbeddedDestination(
     val rememberedOnResult = rememberUpdatedState(onCompleted)
 
     val container = rememberNavigationContainer(
-        backstack = listOf(instance),
+        backstack = backstackOf(instance),
         filter = acceptNone(),
         interceptor = navigationInterceptor {
             onOpened<NavigationKey> {

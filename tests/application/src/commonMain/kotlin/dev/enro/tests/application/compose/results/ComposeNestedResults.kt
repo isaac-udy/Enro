@@ -22,6 +22,7 @@ import dev.enro.accept
 import dev.enro.acceptNone
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.close
 import dev.enro.complete
 import dev.enro.navigationHandle
@@ -51,11 +52,11 @@ object ComposeNestedResults : NavigationKey {
 @Composable
 fun ComposeNestedResults() {
     val primary = rememberNavigationContainer(
-        backstack = listOf(ComposeNestedResults.Receiver.asInstance()),
+        backstack = backstackOf(ComposeNestedResults.Receiver.asInstance()),
         filter = acceptNone(),
     )
     val secondary = rememberNavigationContainer(
-        backstack = listOf(),
+        backstack = backstackOf(),
         emptyBehavior = EmptyBehavior.allowEmpty {
             primary.context.requestActive()
         },
@@ -159,7 +160,7 @@ fun ComposeNestedResultsReceiver() {
 @Composable
 fun ComposeNestedResultsNestedSenderContainer() {
     val container = rememberNavigationContainer(
-        backstack = listOf(),
+        backstack = backstackOf(),
         emptyBehavior = EmptyBehavior.closeParent(),
         filter = accept {
             key(ComposeNestedResults.Sender)

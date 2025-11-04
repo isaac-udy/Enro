@@ -14,6 +14,7 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
+import dev.enro.asBackstack
 import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.handle.DestinationNavigationHandle
@@ -124,7 +125,7 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
                 context.parent.container.setBackstackDirect(
                     context.parent.container.backstack.filter {
                         it.metadata.get(NavigationResultChannel.ResultIdKey) != resultId
-                    }
+                    }.asBackstack()
                 )
             }
             onDispose {  }

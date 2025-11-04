@@ -29,7 +29,7 @@ import kotlinx.coroutines.sync.Mutex
 public class NavigationContainer(
     public val key: Key,
     public val controller: EnroController,
-    backstack: NavigationBackstack = emptyList(),
+    backstack: NavigationBackstack = emptyBackstack(),
 ) {
     private val mutableBackstack: MutableState<NavigationBackstack> = mutableStateOf(backstack)
     public val backstack: NavigationBackstack by mutableBackstack
@@ -162,6 +162,7 @@ public class NavigationContainer(
                         else -> backstack
                     }
                 }
+                .asBackstack()
 
             val isBecomingEmpty = backstack.isNotEmpty() && updatedBackstack.isEmpty()
             val emptyInterceptorResults = when (isBecomingEmpty) {

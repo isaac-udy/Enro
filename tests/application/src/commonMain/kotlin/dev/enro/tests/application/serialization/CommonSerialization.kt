@@ -25,7 +25,9 @@ import dev.enro.EnroController
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.close
+import dev.enro.emptyBackstack
 import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
@@ -168,7 +170,7 @@ data class CommonSerializableData(
 @Composable
 fun CommonSerializationScreen() {
     val container = rememberNavigationContainer(
-        backstack = emptyList()
+        backstack = emptyBackstack()
     )
 
     TitledColumn(
@@ -180,7 +182,7 @@ fun CommonSerializationScreen() {
         Button(
             onClick = {
                 container.updateBackstack {
-                    listOf(CommonSerialization.SerializableNavigationKey.createRandom().asInstance())
+                    backstackOf(CommonSerialization.SerializableNavigationKey.createRandom().asInstance())
                 }
             }
         ) {
@@ -190,7 +192,7 @@ fun CommonSerializationScreen() {
         Button(
             onClick = {
                 container.updateBackstack {
-                    listOf(CommonSerialization.SerializableGenericNavigationKey.createRandom().asInstance())
+                    backstackOf(CommonSerialization.SerializableGenericNavigationKey.createRandom().asInstance())
                 }
             }
         ) {

@@ -2,7 +2,9 @@ package dev.enro.ui.decorators
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
@@ -18,6 +20,7 @@ import androidx.savedstate.write
  * A holder that manages both SavedStateRegistry and SaveableStateRegistry for navigation destinations.
  * This allows external control over saving and restoring state for all destinations.
  */
+@Stable
 public class NavigationSavedStateHolder(
     savedState: SavedState
 ) {

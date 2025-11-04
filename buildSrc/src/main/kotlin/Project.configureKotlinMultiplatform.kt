@@ -75,7 +75,7 @@ internal fun Project.configureKotlinMultiplatform(
 
         if (wasmJs) {
             wasmJs {
-                moduleName = project.projectName.camelCase
+                outputModuleName.set(project.projectName.camelCase)
                 browser {
                     commonWebpackConfig {
                         outputFileName = "${project.projectName.camelCase}.js"

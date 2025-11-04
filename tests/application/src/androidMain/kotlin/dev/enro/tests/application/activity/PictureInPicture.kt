@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.push
@@ -41,7 +42,7 @@ class PictureInPictureActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val container = rememberNavigationContainer(
-                backstack = listOf(PictureInPicture.FirstChild().asInstance()),
+                backstack = backstackOf(PictureInPicture.FirstChild().asInstance()),
             )
             Box(
                 modifier = Modifier.fillMaxSize()

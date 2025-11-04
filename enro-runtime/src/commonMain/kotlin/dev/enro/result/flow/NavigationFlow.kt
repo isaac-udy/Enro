@@ -4,6 +4,7 @@ import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.annotations.ExperimentalEnroApi
+import dev.enro.asBackstack
 import dev.enro.asInstance
 import dev.enro.platform.EnroLog
 import dev.enro.result.NavigationResultChannel
@@ -127,6 +128,7 @@ public class NavigationFlow<T> internal constructor(
                     }
                     .copy(id = step.id.value)
             }
+            .asBackstack()
 
         container.execute(
             NavigationOperation.AggregateOperation(

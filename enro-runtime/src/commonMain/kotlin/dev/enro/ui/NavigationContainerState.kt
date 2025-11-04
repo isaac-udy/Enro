@@ -1,6 +1,7 @@
 package dev.enro.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -16,6 +17,7 @@ import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.asBackstack
 import dev.enro.context.ContainerContext
 import dev.enro.ui.decorators.NavigationSavedStateHolder
 import kotlinx.serialization.PolymorphicSerializer
@@ -63,7 +65,7 @@ public class NavigationContainerState(
                 value = instance,
                 configuration =  EnroController.instance!!.serializers.savedStateConfiguration
             )
-        }
+        }.toList()
         return savedStateHolder.saveState().also {
             it.write {
                 putSavedStateList("backstack", savedBackstack)
@@ -82,7 +84,7 @@ public class NavigationContainerState(
             }
         }
         savedStateHolder.restoreState(savedState)
-        container.setBackstackDirect(restoredBackstack)
+        container.setBackstackDirect(restoredBackstack.asBackstack())
     }
 
     @Deprecated("TODO BETTER DEPRECATION MESSAGE")
