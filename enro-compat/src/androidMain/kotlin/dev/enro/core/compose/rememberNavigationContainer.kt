@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.currentCompositeKeyHashCode
+import androidx.compose.runtime.saveable.rememberSaveable
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationOperation
@@ -22,13 +23,16 @@ import dev.enro.interceptor.builder.NavigationInterceptorBuilder
 import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.NavigationContainerState
+import kotlin.uuid.Uuid
 import dev.enro.ui.EmptyBehavior as NewEmptyBehavior
 import dev.enro.ui.rememberNavigationContainer as newRememberNavigationContainer
 
 
 @Composable
 public fun rememberNavigationContainer(
-    key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@$currentCompositeKeyHashCode"),
+    key: NavigationContainer.Key = rememberSaveable(saver = NavigationContainer.Key.Saver) {
+        NavigationContainer.Key("NavigationContainer@${Uuid.random()}")
+    },
     root: dev.enro.core.NavigationKey.SupportsPush,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
@@ -47,7 +51,9 @@ public fun rememberNavigationContainer(
 
 @Composable
 public fun rememberNavigationContainer(
-    key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@${currentCompositeKeyHash}"),
+    key: NavigationContainer.Key = rememberSaveable(saver = NavigationContainer.Key.Saver) {
+        NavigationContainer.Key("NavigationContainer@${Uuid.random()}")
+    },
     initialBackstack: List<dev.enro.core.NavigationKey.SupportsPush> = emptyList(),
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},
@@ -71,7 +77,9 @@ public fun rememberNavigationContainer(
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @JvmName("rememberNavigationContainerWithBackstack")
 public fun rememberNavigationContainer(
-    key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@${currentCompositeKeyHash}"),
+    key: NavigationContainer.Key = rememberSaveable(saver = NavigationContainer.Key.Saver) {
+        NavigationContainer.Key("NavigationContainer@${Uuid.random()}")
+    },
     initialBackstack: NavigationBackstack,
     emptyBehavior: EmptyBehavior,
     interceptor: NavigationInterceptorBuilder.() -> Unit = {},

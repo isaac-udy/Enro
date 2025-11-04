@@ -24,10 +24,13 @@ import dev.enro.interceptor.NoOpNavigationInterceptor
 import dev.enro.ui.decorators.NavigationSavedStateHolder
 import kotlinx.serialization.PolymorphicSerializer
 import kotlin.jvm.JvmName
+import kotlin.uuid.Uuid
 
 @Composable
 public fun rememberNavigationContainer(
-    key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@${currentCompositeKeyHash}"),
+    key: NavigationContainer.Key = rememberSaveable(saver = NavigationContainer.Key.Saver) {
+        NavigationContainer.Key("NavigationContainer@${Uuid.random()}")
+    },
     backstack: NavigationBackstack,
     emptyBehavior: EmptyBehavior = EmptyBehavior.preventEmpty(),
     interceptor: NavigationInterceptor = NoOpNavigationInterceptor,
@@ -139,7 +142,9 @@ public fun rememberNavigationContainer(
 @Composable
 @JvmName("rememberNavigationContainerListBackstack")
 public fun rememberNavigationContainer(
-    key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@${currentCompositeKeyHash}"),
+    key: NavigationContainer.Key = rememberSaveable(saver = NavigationContainer.Key.Saver) {
+        NavigationContainer.Key("NavigationContainer@${Uuid.random()}")
+    },
     backstack: List<NavigationKey.Instance<*>>,
     emptyBehavior: EmptyBehavior = EmptyBehavior.preventEmpty(),
     interceptor: NavigationInterceptor = NoOpNavigationInterceptor,

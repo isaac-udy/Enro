@@ -1,8 +1,11 @@
 package dev.enro
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.snapshotFlow
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.context.AnyNavigationContext
@@ -15,6 +18,7 @@ import dev.enro.interceptor.AggregateNavigationInterceptor
 import dev.enro.interceptor.NavigationInterceptor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.serialization.Serializable
 
 
 /**
@@ -215,10 +219,18 @@ public class NavigationContainer(
         execute(context, NavigationOperation.SetBackstack(backstack, block(backstack)))
     }
 
+    @Stable
+    @Immutable
+    @Serializable
     public data class Key(val name: String) {
         public companion object {
             @Deprecated("Use NavigationContainer.Key(name) instead")
             public fun FromName(name: String): Key = Key(name)
+        }
+
+        public object Saver : androidx.compose.runtime.saveable.Saver<Key, String> {
+            override fun restore(value: String): Key = Key(value)
+            override fun SaverScope.save(value: Key): String = value.name
         }
     }
 
