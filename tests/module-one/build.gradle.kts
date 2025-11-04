@@ -5,7 +5,6 @@ plugins {
     id("com.android.library")
     id("kotlin-android")
     id("kotlin-parcelize")
-    id("kotlin-kapt")
     id("configure-compose")
 }
 configureAndroidLibrary("dev.enro.tests.moduleone")
@@ -17,12 +16,7 @@ kotlin {
 dependencies {
     implementation("dev.enro:enro:${project.enroVersionName}")
     implementation("dev.enro:enro-compat:${project.enroVersionName}")
-    if (project.hasProperty("enroExampleUseKapt")) {
-        kapt("dev.enro:enro-processor:${project.enroVersionName}")
-    }
-    else {
-        ksp("dev.enro:enro-processor:${project.enroVersionName}")
-    }
+    ksp("dev.enro:enro-processor:${project.enroVersionName}")
 
     lintChecks(project(":enro-lint"))
 

@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id("com.google.devtools.ksp")
     id("configure-library")
-    id("kotlin-kapt")
     id("configure-publishing")
     id("configure-compose")
     kotlin("plugin.serialization")
@@ -84,5 +83,4 @@ kotlin {
 // it's a bit gross but I can't figure out how to get it to work otherwise
 dependencies {
     lintPublish(project(":enro-lint"))
-    kaptAndroidTest("dev.enro:enro-processor:${project.enroVersionName}")
 }
