@@ -2,14 +2,14 @@
 agp = "8.13.0"
 android-compileSdk = "36"
 android-minSdk = "21"
-android-targetSdk = "35"
-kotlin = "2.2.20"
-compose-plugin = "1.9.2"
+android-targetSdk = "36"
+kotlin = "2.2.21"
+compose-plugin = "1.9.3"
 kotlinx-serialization = "1.9.0"
 maven-publish = "0.34.0"
 ksp = "2.2.20-2.0.3"
 kotlinx-coroutines = "1.10.2"
-kotlin-js = "2025.11.1" # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
+kotlin-js = "2025.11.5" # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -27,37 +27,37 @@ androidx-constraintlayout = "androidx.constraintlayout:constraintlayout:2.2.1"
 androidx-fragment = "androidx.fragment:fragment-ktx:1.8.9"
 androidx-fragment-compose = "androidx.fragment:fragment-compose:1.8.9"
 androidx-recyclerview = "androidx.recyclerview:recyclerview:1.4.0"
-androidx-splashscreen = "androidx.core:core-splashscreen:1.0.1"
+androidx-splashscreen = "androidx.core:core-splashscreen:1.2.0"
 
 # Used for interoperability testing in the main Enro test suite
-androidx-navigation-fragment = "androidx.navigation:navigation-fragment-ktx:2.9.5"
-androidx-navigation-ui = "androidx.navigation:navigation-ui-ktx:2.9.5"
-androidx-navigation-event = "androidx.navigationevent:navigationevent:1.0.0-beta01"
+androidx-navigation-fragment = "androidx.navigation:navigation-fragment-ktx:2.9.6"
+androidx-navigation-ui = "androidx.navigation:navigation-ui-ktx:2.9.6"
+androidx-navigation-event = "androidx.navigationevent:navigationevent:1.0.0-rc01"
 
 androidx-activity = "androidx.activity:activity-ktx:1.11.0"
 compose-activity = "androidx.activity:activity-compose:1.11.0"
 
-androidx-viewmodel = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel:2.9.5"
+androidx-viewmodel = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel:2.9.6"
 androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.9.4"
 
-androidx-savedState = "org.jetbrains.androidx.savedstate:savedstate:1.3.4"
-androidx-savedState-compose = "org.jetbrains.androidx.savedstate:savedstate-compose:1.3.5"
+androidx-savedState = "org.jetbrains.androidx.savedstate:savedstate:1.3.6"
+androidx-savedState-compose = "org.jetbrains.androidx.savedstate:savedstate-compose:1.3.6"
 
 compose-compiler = "androidx.compose.compiler:compiler:1.5.15"
 compose-foundation = "androidx.compose.foundation:foundation:1.9.4"
 compose-foundationLayout = "androidx.compose.foundation:foundation-layout:1.9.4"
 compose-ui = "androidx.compose.ui:ui:1.9.4"
 compose-uiTooling = "androidx.compose.ui:ui-tooling:1.9.4"
-compose-ui-backhandler = "org.jetbrains.compose.ui:ui-backhandler:1.9.2"
+compose-ui-backhandler = "org.jetbrains.compose.ui:ui-backhandler:1.9.3"
 compose-preview = "androidx.compose.ui:ui-tooling-preview:1.9.4"
 compose-runtime = "androidx.compose.runtime:runtime:1.9.4"
 compose-runtimeAnnotation = "androidx.compose.runtime:runtime-annotation:1.9.4"
 compose-livedata = "androidx.compose.runtime:runtime-livedata:1.9.4"
 compose-material = "androidx.compose.material:material:1.9.4"
 compose-material3 = "androidx.compose.material:material3:1.7.8"
-compose-lifecycle = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:2.9.5"
+compose-lifecycle = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:2.9.6"
 compose-bundle = "org.jetbrains.androidx.core:core-bundle:1.0.1"
-compose-viewmodel = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.5"
+compose-viewmodel = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.6"
 
 
 compose-accompanist-systemUiController = "com.google.accompanist:accompanist-systemuicontroller:0.36.0"
@@ -65,7 +65,7 @@ compose-accompanist-systemUiController = "com.google.accompanist:accompanist-sys
 compose-materialIcons = "androidx.compose.material:material-icons-core:1.7.8"
 compose-materialIconsExtended = "androidx.compose.material:material-icons-extended:1.7.8"
 
-kotlin-stdLib = "org.jetbrains.kotlin:kotlin-stdlib:2.2.20"
+kotlin-stdLib = "org.jetbrains.kotlin:kotlin-stdlib:2.2.21"
 kotlin-reflect = "org.jetbrains.kotlin:kotlin-reflect:2.2.0"
 kotlin-js = { module = "org.jetbrains.kotlin-wrappers:kotlin-js", version.ref = "kotlin-js" }
 
