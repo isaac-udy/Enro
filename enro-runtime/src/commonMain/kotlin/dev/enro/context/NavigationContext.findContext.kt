@@ -53,28 +53,28 @@ public inline fun <reified T: NavigationKey> AnyNavigationContext.findActiveDest
 
 public inline fun <reified T : NavigationKey> AnyNavigationContext.findDestinationContext(
     key: T,
-): AnyNavigationContext? = findDestinationContext<T> {
+): DestinationContext<T>? = findDestinationContext<T> {
     it.key == key
 }
 
 public inline fun <reified T : NavigationKey> AnyNavigationContext.findActiveDestinationContext(
     key: T,
-): AnyNavigationContext? = findActiveDestinationContext<T> {
+): DestinationContext<T>? = findActiveDestinationContext<T> {
     it.key == key
 }
 
 public fun AnyNavigationContext.findContainerContext(
     key: NavigationContainer.Key,
-): AnyNavigationContext? {
+): ContainerContext? {
     return findContext {
         it is ContainerContext && it.container.key == key
-    }
+    } as? ContainerContext
 }
 
 public fun AnyNavigationContext.findActiveContainerContext(
     key: NavigationContainer.Key,
-): AnyNavigationContext? {
+): ContainerContext? {
     return findActiveContext {
         it is ContainerContext && it.container.key == key
-    }
+    } as? ContainerContext
 }
