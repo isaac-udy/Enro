@@ -1,10 +1,14 @@
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
     id("configure-application")
     id("com.google.devtools.ksp")
     id("wtf.emulator.gradle")
     id("kotlin-kapt")
+    id("dev.enro.gradle")
     kotlin("plugin.serialization")
 }
 
@@ -131,4 +135,15 @@ dependencies {
     }
 
     lintChecks(project(":enro-lint"))
+}
+
+afterEvaluate {
+    tasks.named("kspDebugKotlinAndroid") {
+        dependsOn("generateActualResourceCollectorsForAndroidMain")
+        dependsOn("generateComposeResClass")
+        dependsOn("generateExpectResourceCollectorsForCommonMain")
+        dependsOn("generateResourceAccessorsForAndroidDebug")
+        dependsOn("generateResourceAccessorsForAndroidMain")
+        dependsOn("generateResourceAccessorsForCommonMain")
+    }
 }

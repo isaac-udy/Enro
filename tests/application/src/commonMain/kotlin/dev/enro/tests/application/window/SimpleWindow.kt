@@ -5,5 +5,5 @@ import dev.enro.annotations.NavigationPath
 import kotlinx.serialization.Serializable
 
 @Serializable
-@NavigationPath("/simple-window")
+//@NavigationPath("/simple-window")
 object SimpleWindow : NavigationKey

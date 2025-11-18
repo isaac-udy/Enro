@@ -1,3 +1,4 @@
+include(":enro-compiler-plugin")
 include(":enro-processor")
 include(":enro-annotations")
 include(":enro-test")
@@ -16,3 +17,5 @@ dependencyResolutionManagement {
         }
     }
 }
+
+includeBuild("enro-compiler-plugin-gradle")

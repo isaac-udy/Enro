@@ -18,7 +18,7 @@ import kotlinx.browser.window
 import kotlinx.serialization.Serializable
 
 @Serializable
-@NavigationPath("/")
+//@NavigationPath("/")
 object ExampleApplicationWindow : NavigationKey.SupportsPresent
 
 @NavigationDestination(ExampleApplicationWindow::class)

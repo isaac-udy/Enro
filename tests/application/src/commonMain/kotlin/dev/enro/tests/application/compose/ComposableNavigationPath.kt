@@ -10,14 +10,14 @@ import dev.enro.tests.application.compose.common.TitledColumn
 import kotlinx.serialization.Serializable
 
 @Serializable
-@NavigationPath("/composable-with-path/{id}?name={name}&title={title?}")
+//@NavigationPath("/composable-with-path/{id}?name={name}&title={title?}")
 data class ComposableNavigationPath(
     val id: String,
     val name: String,
     val title: String? = null,
 ) : NavigationKey {
 
-    @NavigationPath("/composable-with-path?title={title?}")
+//    @NavigationPath("/composable-with-path?title={title?}")
     constructor(
         title: String?,
     ): this(

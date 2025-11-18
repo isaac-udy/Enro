@@ -15,7 +15,7 @@ dependencies {
     implementation(libs.processing.incremental)
     kapt(libs.processing.incrementalProcessor)
 
-    implementation(libs.processing.autoService)
+    compileOnly(libs.processing.autoService)
     kapt(libs.processing.autoService)
 
     implementation("dev.enro:enro-annotations:${project.enroVersionName}")

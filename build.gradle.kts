@@ -44,6 +44,9 @@ allprojects {
             substitute(module("dev.enro:enro-processor"))
                 .using(project(":enro-processor"))
 
+            substitute(module("dev.enro:enro-compiler-plugin"))
+                .using(project(":enro-compiler-plugin"))
+
             substitute(module("dev.enro:enro"))
                 .using(project(":enro"))
         }
