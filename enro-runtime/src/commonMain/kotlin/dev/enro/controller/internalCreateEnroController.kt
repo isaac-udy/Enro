@@ -4,7 +4,7 @@ import dev.enro.EnroController
 import dev.enro.platform.platformNavigationModule
 
 // Marked as internal, but is used in generated code with a @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-internal fun internalCreateEnroController(
+public fun internalCreateEnroController(
     builder: NavigationModule.BuilderScope.() -> Unit = {},
 ) : EnroController {
     val module = createNavigationModule(builder)

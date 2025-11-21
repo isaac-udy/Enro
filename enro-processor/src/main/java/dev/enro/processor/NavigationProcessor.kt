@@ -7,6 +7,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
+import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
@@ -44,7 +45,8 @@ class NavigationProcessor(
                     declaration.isAnnotationPresent(GeneratedNavigationBinding::class)
                 }
                 .toList()
-                .map { declaration ->
+                .mapNotNull { declaration ->
+                    if (declaration.classKind == ClassKind.OBJECT) return@mapNotNull null
                     GeneratedBindingReference.fromDeclaration(declaration).let { binding ->
                         generatedBindings[binding.qualifiedName] = binding
                     }
@@ -57,7 +59,8 @@ class NavigationProcessor(
             .getSymbolsWithAnnotation(ClassNames.Kotlin.generatedNavigationBinding.canonicalName)
             .toList()
             .filterIsInstance<KSClassDeclaration>()
-            .onEach { declaration ->
+            .mapNotNull { declaration ->
+                if (declaration.classKind == ClassKind.OBJECT) return@mapNotNull null
                 GeneratedBindingReference.fromDeclaration(declaration).let { binding ->
                     generatedBindings[binding.qualifiedName] = binding
                 }

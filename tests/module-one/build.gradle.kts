@@ -7,6 +7,7 @@ plugins {
     id("kotlin-parcelize")
     id("kotlin-kapt")
     id("configure-compose")
+    id("dev.enro.gradle")
 }
 configureAndroidLibrary("dev.enro.tests.moduleone")
 
