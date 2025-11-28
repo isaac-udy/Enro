@@ -37,6 +37,7 @@ import dev.enro.tests.application.compose.results.ResultsWithMetadata
 import dev.enro.tests.application.samples.SelectSampleDestination
 import dev.enro.tests.application.serialization.CommonSerialization
 import dev.enro.tests.application.window.SimpleWindow
+import dev.enro.ui.navigationDestination
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -76,8 +77,12 @@ internal class SelectDestination() : NavigationKey {
     }
 }
 
-@Composable
 @NavigationDestination(SelectDestination::class)
+internal val selectDestination = navigationDestination<SelectDestination> {
+    SelectDestinationScreen()
+}
+
+@Composable
 fun SelectDestinationScreen() {
     val destinations = SelectDestination.selectableDestinations.value
 

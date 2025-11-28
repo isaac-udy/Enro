@@ -3,6 +3,7 @@ package dev.enro.ui
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import dev.enro.NavigationHandle
@@ -139,4 +140,13 @@ public fun <T: NavigationKey> navigationDestination(
     content: @Composable NavigationDestinationScope<T>.() -> Unit,
 ): NavigationDestinationProvider<T> {
     return NavigationDestinationProvider(metadata, content)
+}
+
+public fun <T: NavigationKey> _navigationDestination(
+    content: @Composable () -> Unit,
+): NavigationDestinationProvider<T> {
+    return NavigationDestinationProvider(
+        metadata = { },
+        content = { content() }
+    )
 }

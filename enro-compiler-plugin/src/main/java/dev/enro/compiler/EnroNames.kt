@@ -42,6 +42,11 @@ object EnroNames {
                 uiPackage,
                 Name.identifier("NavigationDestinationProvider")
             )
+
+            val navigationDestinationScope = ClassId(
+                uiPackage,
+                Name.identifier("NavigationDestinationScope")
+            )
         }
     }
 
