@@ -1,10 +1,7 @@
 package dev.enro.compiler.fir
 
-import dev.enro.annotations.NavigationDestination
 import dev.enro.compiler.EnroLogger
 import dev.enro.compiler.fir.generators.NavigationBindingGenerator
-import dev.enro.compiler.utils.getAnnotation
-import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
@@ -17,12 +14,9 @@ import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtensi
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
-import org.jetbrains.kotlin.fir.declarations.getKClassArgument
 import org.jetbrains.kotlin.fir.expressions.FirStatement
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
-import org.jetbrains.kotlin.fir.resolve.typeResolver
-import org.jetbrains.kotlin.name.Name
 
 class EnroFirExtensionRegistrar(
     private val logger: EnroLogger,

@@ -70,9 +70,9 @@ class InstallNavigationControllerTransformer(
                             // Add bind calls for each binding function
                             bindFunctions.forEach { bindFunction ->
                                 val bindingObjectType = bindFunction.owner.parameters[0].type.classOrFail
-                                val bindingFunctionId = EnroNames.Generated.bindFunction(
-                                    bindingObjectType.owner.classId
-                                )
+                                val bindingObjectClassId = bindingObjectType.owner.classId
+                                    ?: error("Couldn't find classId for $bindingObjectType")
+                                val bindingFunctionId = EnroNames.Generated.bindFunction(bindingObjectClassId)
                                 val bindMethod = bindingObjectType.functions.single {
                                     bindingFunctionId == it.owner.callableId
                                 }

@@ -8,9 +8,9 @@ public annotation class GeneratedNavigationBinding(
     val bindingType: Int = 0,
 ) {
     public sealed interface BindingType {
-        public class Class : BindingType
-        public class Function : BindingType
-        public class Property : BindingType
+        public data object Class : BindingType
+        public data object Function : BindingType
+        public data object Property : BindingType
 
         public companion object {
             public const val CLASS: Int = 0
@@ -19,9 +19,9 @@ public annotation class GeneratedNavigationBinding(
 
             public fun fromInt(value: Int): BindingType {
                 return when (value) {
-                    CLASS -> Class()
-                    FUNCTION -> Function()
-                    PROPERTY -> Property()
+                    CLASS -> Class
+                    FUNCTION -> Function
+                    PROPERTY -> Property
                     else -> throw IllegalArgumentException("Unknown binding type: $value")
                 }
             }

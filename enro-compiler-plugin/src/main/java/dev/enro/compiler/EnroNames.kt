@@ -20,6 +20,13 @@ object EnroNames {
         val navigationModule =  ClassId(controllerPackage, Name.identifier("NavigationModule"))
         val navigationModuleBuilderScope = navigationModule.createNestedClassId(Name.identifier("BuilderScope"))
 
+        object NavigationModuleBuilderScope {
+            val destinationFunction = CallableId(
+                classId = navigationModuleBuilderScope,
+                callableName = Name.identifier("destination"),
+            )
+        }
+
         val internalCreateEnroController = CallableId(
             packageName = controllerPackage,
             callableName = Name.identifier("internalCreateEnroController"),
@@ -28,6 +35,14 @@ object EnroNames {
         val enroController = ClassId(rootPackage, Name.identifier("EnroController"))
 
         val navigationKey = ClassId(rootPackage, Name.identifier("NavigationKey"))
+
+        object Ui {
+            val uiPackage = rootPackage.child(Name.identifier("ui"))
+            val navigationDestinationProvider = ClassId(
+                uiPackage,
+                Name.identifier("NavigationDestinationProvider")
+            )
+        }
     }
 
     object Annotations {
@@ -40,14 +55,8 @@ object EnroNames {
         val generatedPackage = FqName("enro_generated_bindings")
 
         fun bindFunction(
-            classId: ClassId?,
+            classId: ClassId,
         ): CallableId {
-            if (classId == null) {
-                return CallableId(
-                    packageName = generatedPackage,
-                    callableName = Name.identifier("bindForMissingClassId"),
-                )
-            }
             return CallableId(
                 classId = classId,
                 callableName = Name.identifier("bind"),
