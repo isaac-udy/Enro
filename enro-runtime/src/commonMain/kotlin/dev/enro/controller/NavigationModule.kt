@@ -102,8 +102,21 @@ public class NavigationModule @PublishedApi internal constructor() {
     }
 }
 
+@Deprecated(
+    message = "Use 'navigationModule' instead",
+    replaceWith = ReplaceWith("navigationModule(block)")
+)
 public fun createNavigationModule(block: NavigationModule.BuilderScope.() -> Unit): NavigationModule {
+    return navigationModule(block)
+}
+
+public fun navigationModule(block: NavigationModule.BuilderScope.() -> Unit): NavigationModule {
     val module = NavigationModule()
     NavigationModule.BuilderScope(module).block()
     return module
 }
+
+public fun emptyNavigationModule(): NavigationModule {
+    return NavigationModule()
+}
+

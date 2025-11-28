@@ -1,5 +1,6 @@
 package dev.enro.compiler.fir.generators
 
+import dev.enro.annotations.GeneratedNavigationBinding
 import dev.enro.compiler.EnroLogger
 import dev.enro.compiler.EnroNames
 import dev.enro.compiler.fir.Keys
@@ -10,10 +11,10 @@ import org.jetbrains.kotlin.fir.caches.FirCache
 import org.jetbrains.kotlin.fir.caches.firCachesFactory
 import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
 import org.jetbrains.kotlin.fir.declarations.getKClassArgument
+import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.expressions.builder.buildAnnotation
 import org.jetbrains.kotlin.fir.expressions.builder.buildAnnotationArgumentMapping
 import org.jetbrains.kotlin.fir.expressions.builder.buildLiteralExpression
-import org.jetbrains.kotlin.fir.expressions.builder.buildPropertyAccessExpression
 import org.jetbrains.kotlin.fir.extensions.ExperimentalTopLevelDeclarationsGenerationApi
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationPredicateRegistrar
@@ -25,10 +26,8 @@ import org.jetbrains.kotlin.fir.plugin.createDefaultPrivateConstructor
 import org.jetbrains.kotlin.fir.plugin.createMemberFunction
 import org.jetbrains.kotlin.fir.plugin.createTopLevelClass
 import org.jetbrains.kotlin.fir.plugin.createTopLevelFunction
-import org.jetbrains.kotlin.fir.references.builder.buildResolvedNamedReference
 import org.jetbrains.kotlin.fir.resolve.defaultType
 import org.jetbrains.kotlin.fir.resolve.providers.getRegularClassSymbolByClassId
-import org.jetbrains.kotlin.fir.resolve.typeResolver
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
@@ -38,7 +37,6 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.toFirResolvedTypeRef
-import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
 import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.constructClassLikeType
 import org.jetbrains.kotlin.name.CallableId
@@ -73,7 +71,7 @@ class NavigationBindingGenerator(
 
     @ExperimentalTopLevelDeclarationsGenerationApi
     override fun getTopLevelCallableIds(): Set<CallableId> {
-        return setOf(EnroNames.Generated.bindFunction)
+        return setOf(EnroNames.Generated.bindingReferenceFunction)
     }
 
     @ExperimentalTopLevelDeclarationsGenerationApi
@@ -100,7 +98,7 @@ class NavigationBindingGenerator(
                         buildLiteralExpression(
                             source = null,
                             kind = ConstantValueKind.String,
-                            value = "${destinationInformation.packageName.asString()}.${destinationInformation.declarationName}",
+                            value = "${destinationInformation.packageName.asString().replace('.', '/')}.${destinationInformation.declarationName}",
                             annotations = null,
                             setType = true,
                             prefix = null,
@@ -109,7 +107,7 @@ class NavigationBindingGenerator(
                         buildLiteralExpression(
                             source = null,
                             kind = ConstantValueKind.String,
-                            value = navigationKey!!.asString(),
+                            value = navigationKey!!.toString(),
                             annotations = null,
                             setType = true,
                             prefix = null,
@@ -119,9 +117,9 @@ class NavigationBindingGenerator(
                             source = null,
                             kind = ConstantValueKind.Int,
                             value = when {
-                                destinationInformation.symbol is FirClassLikeSymbol -> 0
-                                destinationInformation.symbol is FirFunctionSymbol -> 1
-                                destinationInformation.symbol is FirPropertySymbol -> 2
+                                destinationInformation.symbol is FirClassLikeSymbol -> GeneratedNavigationBinding.BindingType.CLASS
+                                destinationInformation.symbol is FirFunctionSymbol -> GeneratedNavigationBinding.BindingType.FUNCTION
+                                destinationInformation.symbol is FirPropertySymbol -> GeneratedNavigationBinding.BindingType.PROPERTY
                                 else -> error("Unsupported symbol type ${destinationInformation.symbol::class}")
                             },
                             annotations = null,
@@ -142,7 +140,7 @@ class NavigationBindingGenerator(
         }
         return setOf(
             SpecialNames.INIT,
-            Name.identifier("bind"),
+            EnroNames.Generated.bindFunction(classSymbol.classId).callableName,
         )
     }
 
@@ -164,7 +162,7 @@ class NavigationBindingGenerator(
         context: MemberGenerationContext?
     ): List<FirNamedFunctionSymbol> {
         return when {
-            callableId == EnroNames.Generated.bindFunction -> {
+            callableId == EnroNames.Generated.bindingReferenceFunction -> {
                 symbols.getValue(Unit, session).values.map { info ->
                     createTopLevelFunction(
                         key = Keys.GeneratedNavigationBinding,
@@ -178,7 +176,7 @@ class NavigationBindingGenerator(
                     }.symbol
                 }
             }
-            callableId.callableName.identifier == "bind" -> {
+            callableId == EnroNames.Generated.bindFunction(callableId.classId) -> {
                 requireNotNull(context)
                 listOf(
                     createMemberFunction(
@@ -215,16 +213,17 @@ class NavigationBindingGenerator(
             ),
         )
 
-        fun getNavigationDestinationAnnotation(session: FirSession) = symbol
-            .getAnnotationByClassId(EnroNames.Annotations.navigationDestination, session)
-            ?: error("No navigation destination annotation found for ${packageName}.${declarationName}")
+        fun getNavigationDestinationAnnotation(session: FirSession): FirAnnotation {
+            return symbol
+                .getAnnotationByClassId(EnroNames.Annotations.navigationDestination, session)
+                ?: error("No navigation destination annotation found for ${packageName}.${declarationName}")
+        }
 
-        fun getNavigationKeyName(session: FirSession) =
-            getNavigationDestinationAnnotation(session)
+        fun getNavigationKeyName(session: FirSession): ClassId? {
+            return getNavigationDestinationAnnotation(session)
                 .getKClassArgument(Name.identifier("key"), session)
                 ?.classId
-                ?.asSingleFqName()
-//                ?: error("No navigation destination annotation found for ${packageName}.${declarationName}")
+        }
     }
 }
 

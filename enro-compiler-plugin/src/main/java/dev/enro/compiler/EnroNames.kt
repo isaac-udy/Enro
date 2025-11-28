@@ -39,9 +39,24 @@ object EnroNames {
     object Generated {
         val generatedPackage = FqName("enro_generated_bindings")
 
-        val bindFunction = CallableId(
+        fun bindFunction(
+            classId: ClassId?,
+        ): CallableId {
+            if (classId == null) {
+                return CallableId(
+                    packageName = generatedPackage,
+                    callableName = Name.identifier("bindForMissingClassId"),
+                )
+            }
+            return CallableId(
+                classId = classId,
+                callableName = Name.identifier("bind"),
+            )
+        }
+
+        val bindingReferenceFunction = CallableId(
             packageName = generatedPackage,
-            callableName = Name.identifier("bind"),
+            callableName = Name.identifier("_bindingReference"),
         )
     }
 

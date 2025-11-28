@@ -51,7 +51,7 @@ class TestApplication : Application() {
             UnboundBottomSheet,
         )
 
-        installNavigationController<TestApplicationComponent>(this)
+        installNavigationController(this)
 //        val thing = ::ComposeAnimationsDestination
 //        val thing2 = ::SavedStateActivity
 //        val thing3 = ::composeStabilityDestination
