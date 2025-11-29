@@ -1,6 +1,7 @@
 package dev.enro.compiler.ir
 
 import dev.enro.compiler.EnroLogger
+import dev.enro.compiler.ir.transformers.BindFunctionTransformer
 import dev.enro.compiler.ir.transformers.InstallNavigationControllerTransformer
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
@@ -29,6 +30,12 @@ class EnroIrGenerationExtension(
             enroSymbols = enroSymbols,
             logger = logger,
         )
+        val bindFunctionTransformer = BindFunctionTransformer(
+            pluginContext = pluginContext,
+            enroSymbols = enroSymbols,
+            logger = logger,
+        )
+        moduleFragment.transform(bindFunctionTransformer, null)
         moduleFragment.transform(installNavigationControllerTransformer, null)
     }
 }
