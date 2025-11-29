@@ -5,28 +5,20 @@ import dev.enro.compiler.EnroLogger
 import dev.enro.compiler.EnroNames
 import dev.enro.compiler.fir.Keys
 import dev.enro.compiler.fir.isFromGeneratedDeclaration
+import dev.enro.compiler.fir.utils.EnroFirBuilder
 import dev.enro.compiler.utils.buildPrintlnFunctionCall
 import dev.enro.compiler.utils.nameForSymbol
 import org.jetbrains.kotlin.descriptors.ClassKind
-import org.jetbrains.kotlin.descriptors.EffectiveVisibility
-import org.jetbrains.kotlin.descriptors.Modality
-import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.caches.FirCache
 import org.jetbrains.kotlin.fir.caches.firCachesFactory
-import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
-import org.jetbrains.kotlin.fir.declarations.builder.buildAnonymousFunction
-import org.jetbrains.kotlin.fir.declarations.builder.buildReceiverParameter
 import org.jetbrains.kotlin.fir.declarations.declaredFunctions
 import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
-import org.jetbrains.kotlin.fir.declarations.impl.FirResolvedDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.expressions.FirBlock
-import org.jetbrains.kotlin.fir.expressions.FirStatement
+import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
 import org.jetbrains.kotlin.fir.expressions.buildResolvedArgumentList
 import org.jetbrains.kotlin.fir.expressions.builder.buildAnnotation
 import org.jetbrains.kotlin.fir.expressions.builder.buildAnnotationArgumentMapping
-import org.jetbrains.kotlin.fir.expressions.builder.buildAnnotationCall
-import org.jetbrains.kotlin.fir.expressions.builder.buildAnonymousFunctionExpression
 import org.jetbrains.kotlin.fir.expressions.builder.buildBlock
 import org.jetbrains.kotlin.fir.expressions.builder.buildFunctionCall
 import org.jetbrains.kotlin.fir.expressions.builder.buildLiteralExpression
@@ -37,7 +29,6 @@ import org.jetbrains.kotlin.fir.extensions.FirDeclarationPredicateRegistrar
 import org.jetbrains.kotlin.fir.extensions.MemberGenerationContext
 import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate.BuilderContext.annotated
 import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
-import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.fir.plugin.createDefaultPrivateConstructor
 import org.jetbrains.kotlin.fir.plugin.createMemberFunction
 import org.jetbrains.kotlin.fir.plugin.createTopLevelClass
@@ -47,14 +38,12 @@ import org.jetbrains.kotlin.fir.resolve.defaultType
 import org.jetbrains.kotlin.fir.resolve.providers.getRegularClassSymbolByClassId
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
-import org.jetbrains.kotlin.fir.symbols.impl.FirAnonymousFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirReceiverParameterSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.toFirResolvedTypeRef
@@ -72,6 +61,8 @@ class NavigationBindingGenerator(
     session: FirSession,
     private val logger: EnroLogger,
 ) : FirDeclarationGenerationExtension(session) {
+    private val builder = EnroFirBuilder(session)
+
     override fun FirDeclarationPredicateRegistrar.registerPredicates() {
         register(annotated(EnroNames.Annotations.navigationDestination.asSingleFqName()))
     }
@@ -291,24 +282,19 @@ class NavigationBindingGenerator(
         }
     }
 
-    private val composableAnnotationClassId = ClassId(
-        FqName("androidx.compose.runtime"),
-        Name.identifier("Composable")
-    )
-
     @OptIn(SymbolInternals::class)
     private fun createFunctionBindingFor(
         navigationDestination: NavigationDestinationInformation,
         scopeParameter: FirValueParameterSymbol,
     ): FirBlock {
-        val symbol = navigationDestination.symbol as? FirNamedFunctionSymbol
+        val functionSymbol = navigationDestination.symbol as? FirNamedFunctionSymbol
             ?: error("${nameForSymbol(navigationDestination.symbol)} is not a function")
 
         if (false) {
             return buildBlock {
                 statements += buildPrintlnFunctionCall(
                     session = session,
-                    value = "Property binding for ${nameForSymbol(symbol)} / ${
+                    value = "Property binding for ${nameForSymbol(functionSymbol)} / ${
                         navigationDestination.getNavigationKeyName(
                             session
                         )
@@ -318,8 +304,9 @@ class NavigationBindingGenerator(
         }
 
         // Verify the function is annotated with @Composable
-        val composableAnnotation =
-            symbol.getAnnotationByClassId(composableAnnotationClassId, session)
+        val composableAnnotation = functionSymbol
+            .getAnnotationByClassId(EnroNames.Compose.composableAnnotation, session)
+
         if (composableAnnotation == null) {
             error(
                 "Function ${navigationDestination.packageName}.${navigationDestination.declarationName} " +
@@ -332,10 +319,10 @@ class NavigationBindingGenerator(
             ?: error("Could not find navigation key for ${navigationDestination.declarationName}")
 
         // Build: scope.destination(navigationDestination<KeyType> { ComposableFunctionName() })
-        val destinationCall = buildScopeDestinationCall(
+        val destinationCall = buildComposableDestinationCall(
             scopeParameter = scopeParameter,
             navigationKeyClassId = navigationKeyClassId,
-            composableFunctionSymbol = symbol,
+            composableFunctionSymbol = functionSymbol,
         )
 
         return buildBlock {
@@ -347,23 +334,11 @@ class NavigationBindingGenerator(
      * Builds: scope.destination(navigationDestination<KeyType> { ComposableFunctionName() })
      */
     @OptIn(SymbolInternals::class)
-    private fun buildScopeDestinationCall(
+    private fun buildComposableDestinationCall(
         scopeParameter: FirValueParameterSymbol,
         navigationKeyClassId: ClassId,
         composableFunctionSymbol: FirNamedFunctionSymbol,
-    ): List<FirStatement> {
-        // Build the call to the composable function: ComposableFunctionName()
-        val composableFunctionCall = buildFunctionCall {
-            source = composableFunctionSymbol.source
-            calleeReference = buildResolvedNamedReference {
-                source = null
-                name = composableFunctionSymbol.name
-                resolvedSymbol = composableFunctionSymbol
-            }
-            coneTypeOrNull = composableFunctionSymbol.resolvedReturnType
-            argumentList = buildResolvedArgumentList(original = null, mapping = linkedMapOf())
-        }
-
+    ): FirFunctionCall {
         // Find the navigationDestination function
         val builderDestinationCallableId = EnroNames.Runtime.NavigationModuleBuilderScope.destinationFunction
         val builderSymbol = session.symbolProvider.getClassLikeSymbolByClassId(
@@ -414,51 +389,14 @@ class NavigationBindingGenerator(
         // Create the type argument for NavigationKey
         val navigationKeyType = navigationKeyClassId.constructClassLikeType()
 
-        val lambdaSymbol = FirAnonymousFunctionSymbol()
-        val anonymousFunction = buildAnonymousFunction {
-            source = null
-            moduleData = session.moduleData
-            origin = FirDeclarationOrigin.Plugin(Keys.GeneratedNavigationBinding)
-            typeRef = buildResolvedTypeRef {
-                coneType = contentParameterSymbol.fir.returnTypeRef.coneType
-            }
-            returnTypeRef = session.builtinTypes.unitType
-            receiverParameter = buildReceiverParameter {
-                symbol = FirReceiverParameterSymbol()
-                origin = FirDeclarationOrigin.Plugin(Keys.GeneratedNavigationBinding)
-                moduleData = session.moduleData
-                typeRef = buildResolvedTypeRef {
-                    coneType = EnroNames.Runtime.Ui.navigationDestinationScope.constructClassLikeType(
-                        arrayOf(navigationKeyType),
-                    )
-                }
-                containingDeclarationSymbol = lambdaSymbol
-            }
-            status = FirResolvedDeclarationStatusImpl(
-                Visibilities.Local,
-                Modality.FINAL,
-                EffectiveVisibility.Local
-            ).apply {
-                isOperator = false
-                isSuspend = false
-                hasStableParameterNames = false
-            }
-
-            symbol = lambdaSymbol
-            isLambda = true
-            hasExplicitParameterList = false
-
-            annotations += buildAnnotationCall {
-                containingDeclarationSymbol = lambdaSymbol
-                annotationTypeRef = buildResolvedTypeRef {
-                    coneType = composableAnnotationClassId.constructClassLikeType()
-                }
-                calleeReference = buildResolvedNamedReference {
-                    name = composableAnnotationClassId.shortClassName
-                    resolvedSymbol = session.symbolProvider.getClassLikeSymbolByClassId(composableAnnotationClassId)
-                        ?: error("Could not find Composable annotation symbol")
-                }
-            }
+        val contentParameterLambda = builder.buildLambdaExpression(
+            functionType = contentParameterSymbol.fir.returnTypeRef.coneType,
+            returnType = session.builtinTypes.unitType,
+            receiverType = EnroNames.Runtime.Ui.navigationDestinationScope.constructClassLikeType(
+                arrayOf(navigationKeyType),
+            ),
+        ) {
+            annotations += builder.buildComposableAnnotationCall(symbol)
             // Set the body
             body = buildBlock {
                 // This property access expression is important to bind the anonymous function
@@ -474,14 +412,17 @@ class NavigationBindingGenerator(
                     }
                     coneTypeOrNull = scopeParameter.resolvedReturnType
                 }
-                statements += composableFunctionCall
+                statements += buildFunctionCall {
+                    source = composableFunctionSymbol.source
+                    calleeReference = buildResolvedNamedReference {
+                        source = null
+                        name = composableFunctionSymbol.name
+                        resolvedSymbol = composableFunctionSymbol
+                    }
+                    coneTypeOrNull = composableFunctionSymbol.resolvedReturnType
+                    argumentList = buildResolvedArgumentList(original = null, mapping = linkedMapOf())
+                }
             }
-        }
-
-        val lambdaExpression = buildAnonymousFunctionExpression {
-            source = null
-            this.anonymousFunction = anonymousFunction
-            isTrailingLambda = false
         }
 
         // Build the navigationDestination<KeyType> { ... } call
@@ -490,12 +431,11 @@ class NavigationBindingGenerator(
             calleeReference = navigationDestinationReference
             coneTypeOrNull = EnroNames.Runtime.Ui.navigationDestinationProvider
                 .constructClassLikeType(arrayOf(navigationKeyType))
-            // For simplicity, we pass an empty argument list and let the compiler use defaults
-            // The content lambda would require building an anonymous function which is complex in FIR
+
             argumentList = buildResolvedArgumentList(
                 original = null,
                 mapping = linkedMapOf(
-                    lambdaExpression to contentParameterSymbol.fir,
+                    contentParameterLambda to contentParameterSymbol.fir,
                 ),
             )
             typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
@@ -504,34 +444,30 @@ class NavigationBindingGenerator(
             }
         }
 
-        // Build the scope parameter access: `scope`
-        val scopeAccess = buildPropertyAccessExpression {
+        return buildFunctionCall {
             source = null
-            calleeReference = buildResolvedNamedReference {
+            calleeReference = builderDestinationReference
+            coneTypeOrNull = builderDestinationSymbol.resolvedReturnType
+            dispatchReceiver = buildPropertyAccessExpression {
                 source = null
-                name = scopeParameter.name
-                resolvedSymbol = scopeParameter
-            }
-            coneTypeOrNull = scopeParameter.resolvedReturnType
-        }
-        return listOf(
-            buildFunctionCall {
-                source = null
-                calleeReference = builderDestinationReference
-                coneTypeOrNull = builderDestinationSymbol.resolvedReturnType
-                dispatchReceiver = scopeAccess
-                argumentList = buildResolvedArgumentList(
-                    original = null,
-                    mapping = linkedMapOf(
-                        navigationDestinationCall to builderDestinationParameter.fir,
-                    )
-                )
-                typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
-                    this.typeRef = buildResolvedTypeRef { coneType = navigationKeyType }
-                    this.variance = org.jetbrains.kotlin.types.Variance.INVARIANT
+                calleeReference = buildResolvedNamedReference {
+                    source = null
+                    name = scopeParameter.name
+                    resolvedSymbol = scopeParameter
                 }
+                coneTypeOrNull = scopeParameter.resolvedReturnType
             }
-        )
+            argumentList = buildResolvedArgumentList(
+                original = null,
+                mapping = linkedMapOf(
+                    navigationDestinationCall to builderDestinationParameter.fir,
+                )
+            )
+            typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
+                this.typeRef = buildResolvedTypeRef { coneType = navigationKeyType }
+                this.variance = org.jetbrains.kotlin.types.Variance.INVARIANT
+            }
+        }
     }
 
     private fun createPropertyBindingFor(

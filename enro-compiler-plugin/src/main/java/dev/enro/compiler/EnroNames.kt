@@ -7,6 +7,12 @@ import org.jetbrains.kotlin.name.Name
 
 object EnroNames {
 
+    object Compose {
+        val composableAnnotation = ClassId(
+            FqName("androidx.compose.runtime"),
+            Name.identifier("Composable")
+        )
+    }
 
     object Runtime {
         val rootPackage = FqName("dev.enro")
