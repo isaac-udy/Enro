@@ -290,19 +290,6 @@ class NavigationBindingGenerator(
         val functionSymbol = navigationDestination.symbol as? FirNamedFunctionSymbol
             ?: error("${nameForSymbol(navigationDestination.symbol)} is not a function")
 
-        if (false) {
-            return buildBlock {
-                statements += buildPrintlnFunctionCall(
-                    session = session,
-                    value = "Property binding for ${nameForSymbol(functionSymbol)} / ${
-                        navigationDestination.getNavigationKeyName(
-                            session
-                        )
-                    }",
-                )
-            }
-        }
-
         // Verify the function is annotated with @Composable
         val composableAnnotation = functionSymbol
             .getAnnotationByClassId(EnroNames.Compose.composableAnnotation, session)
