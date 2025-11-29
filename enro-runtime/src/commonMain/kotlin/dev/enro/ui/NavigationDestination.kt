@@ -140,12 +140,3 @@ public fun <T: NavigationKey> navigationDestination(
 ): NavigationDestinationProvider<T> {
     return NavigationDestinationProvider(metadata, content)
 }
-
-public fun <T: NavigationKey> _navigationDestination(
-    content: @Composable () -> Unit,
-): NavigationDestinationProvider<T> {
-    return NavigationDestinationProvider(
-        metadata = { },
-        content = { content() }
-    )
-}
