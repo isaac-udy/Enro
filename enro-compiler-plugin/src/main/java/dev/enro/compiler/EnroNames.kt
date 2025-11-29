@@ -47,6 +47,15 @@ object EnroNames {
                 uiPackage,
                 Name.identifier("NavigationDestinationScope")
             )
+
+            val navigationDestination = ClassId(
+                uiPackage,
+                Name.identifier("NavigationDestination")
+            )
+
+            val metadataBuilder = navigationDestination.createNestedClassId(
+                Name.identifier("MetadataBuilder")
+            )
         }
     }
 
