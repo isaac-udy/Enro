@@ -3,9 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
     id("configure-application")
-    id("com.google.devtools.ksp")
     id("wtf.emulator.gradle")
-    id("kotlin-kapt")
     id("dev.enro.gradle")
     kotlin("plugin.serialization")
 }
@@ -97,18 +95,6 @@ kotlin {
         wasmJsMain.dependencies {
             implementation(npm("@js-joda/core", "5.6.5"))
         }
-//        iosX64Main {
-//            kotlin.srcDir("build/generated/ksp/iosX64/${name}/kotlin")
-//        }
-//        iosArm64Main {
-//            kotlin.srcDir("build/generated/ksp/iosArm64/${name}/kotlin")
-//        }
-//        iosSimulatorArm64Main {
-//            kotlin.srcDir("build/generated/ksp/iosSimulatorArm64/${name}/kotlin")
-//        }
-//        iosMain {
-//            kotlin.srcDir("build/generated/ksp/iosSimulatorArm64/iosSimulatorArm64Main/kotlin")
-//        }
     }
 }
 
@@ -118,30 +104,5 @@ dependencies {
 //     Uncomment the following line to enable leakcanary
 //    debugImplementation(libs.leakcanary)
 
-    if (project.hasProperty("enroExampleUseKapt")) {
-        kapt("dev.enro:enro-processor:${project.enroVersionName}")
-    }
-    else {
-        val enroProcessor = "dev.enro:enro-processor:${project.enroVersionName}"
-        add("kspCommonMainMetadata", enroProcessor)
-        add("kspAndroid", enroProcessor)
-        add("kspDesktop", enroProcessor)
-        add("kspWasmJs", enroProcessor)
-        add("kspIosX64", enroProcessor)
-        add("kspIosArm64", enroProcessor)
-        add("kspIosSimulatorArm64", enroProcessor)
-    }
-
     lintChecks(project(":enro-lint"))
-}
-
-afterEvaluate {
-    tasks.named("kspDebugKotlinAndroid") {
-        dependsOn("generateActualResourceCollectorsForAndroidMain")
-        dependsOn("generateComposeResClass")
-        dependsOn("generateExpectResourceCollectorsForCommonMain")
-        dependsOn("generateResourceAccessorsForAndroidDebug")
-        dependsOn("generateResourceAccessorsForAndroidMain")
-        dependsOn("generateResourceAccessorsForCommonMain")
-    }
 }

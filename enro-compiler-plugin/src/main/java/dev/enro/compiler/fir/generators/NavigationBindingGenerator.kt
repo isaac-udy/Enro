@@ -257,7 +257,8 @@ class NavigationBindingGenerator(
 
                 is FirPropertySymbol -> replaceBody(
                     createPropertyBindingFor(
-                        navigationDestinationInformation
+                        navigationDestinationInformation,
+                        scopeParameterSymbol
                     )
                 )
 
@@ -458,15 +459,95 @@ class NavigationBindingGenerator(
     }
 
     private fun createPropertyBindingFor(
-        navigationDestination: NavigationDestinationInformation
+        navigationDestination: NavigationDestinationInformation,
+        scopeParameter: FirValueParameterSymbol,
     ): FirBlock {
         val symbol = navigationDestination.symbol as? FirPropertySymbol
             ?: error("${nameForSymbol(navigationDestination.symbol)} is not a property")
+
+        val navigationKeyClassId = navigationDestination.getNavigationKeyName(session)
+            ?: error("Could not find navigation key for ${navigationDestination.declarationName}")
+
+        val destinationCall = buildPropertyDestinationCall(
+            scopeParameter = scopeParameter,
+            navigationKeyClassId = navigationKeyClassId,
+            propertySymbol = symbol,
+        )
+
         return buildBlock {
-            statements += buildPrintlnFunctionCall(
-                session = session,
-                value = "Property binding for ${nameForSymbol(symbol)} / ${navigationDestination.getNavigationKeyName(session)}",
+            statements += destinationCall
+        }
+    }
+
+    /**
+     * Builds: scope.destination(property)
+     */
+    @OptIn(SymbolInternals::class)
+    private fun buildPropertyDestinationCall(
+        scopeParameter: FirValueParameterSymbol,
+        navigationKeyClassId: ClassId,
+        propertySymbol: FirPropertySymbol,
+    ): FirFunctionCall {
+        // Find the navigationDestination function
+        val builderDestinationCallableId =
+            EnroNames.Runtime.NavigationModuleBuilderScope.destinationFunction
+        val builderSymbol = session.symbolProvider.getClassLikeSymbolByClassId(
+            EnroNames.Runtime.navigationModuleBuilderScope
+        ) as FirRegularClassSymbol
+
+        val builderDestinationSymbol = builderSymbol.declaredFunctions(session)
+            .filter {
+                it.callableId == builderDestinationCallableId
+            }
+            .firstOrNull { it.valueParameterSymbols.size == 2 }
+            ?: error("Could not find navigationDestination function symbol")
+
+        val builderDestinationParameter = builderDestinationSymbol.valueParameterSymbols
+            .first { it.name == Name.identifier("destination") }
+
+        val builderDestinationReference = buildResolvedNamedReference {
+            source = null
+            name = builderDestinationCallableId.callableName
+            // CRITICAL: Link the reference to the actual function symbol
+            resolvedSymbol = builderDestinationSymbol
+        }
+
+        val propertyAccess = buildPropertyAccessExpression {
+            source = null
+            calleeReference = buildResolvedNamedReference {
+                source = null
+                name = propertySymbol.name
+                resolvedSymbol = propertySymbol
+            }
+            coneTypeOrNull = propertySymbol.resolvedReturnType
+        }
+
+        // Create the type argument for NavigationKey
+        val navigationKeyType = navigationKeyClassId.constructClassLikeType()
+
+        return buildFunctionCall {
+            source = null
+            calleeReference = builderDestinationReference
+            coneTypeOrNull = builderDestinationSymbol.resolvedReturnType
+            dispatchReceiver = buildPropertyAccessExpression {
+                source = null
+                calleeReference = buildResolvedNamedReference {
+                    source = null
+                    name = scopeParameter.name
+                    resolvedSymbol = scopeParameter
+                }
+                coneTypeOrNull = scopeParameter.resolvedReturnType
+            }
+            argumentList = buildResolvedArgumentList(
+                original = null,
+                mapping = linkedMapOf(
+                    propertyAccess to builderDestinationParameter.fir,
+                )
             )
+            typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
+                this.typeRef = buildResolvedTypeRef { coneType = navigationKeyType }
+                this.variance = org.jetbrains.kotlin.types.Variance.INVARIANT
+            }
         }
     }
 }
