@@ -13,6 +13,7 @@ import dev.enro.NavigationKey
 import dev.enro.accept
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.complete
 import dev.enro.completeFrom
 import dev.enro.navigationHandle
@@ -49,7 +50,7 @@ object ComposeEmbeddedResultFlow : NavigationKey {
 @Composable
 fun ComposeEmbeddedResultFlowScreen() {
     val container = rememberNavigationContainer(
-        backstack = listOf(ComposeEmbeddedResultFlow.Root.asInstance()),
+        backstack = backstackOf(ComposeEmbeddedResultFlow.Root.asInstance()),
         emptyBehavior = EmptyBehavior.closeParent(),
         filter = accept {
             key<ComposeEmbeddedResultFlow.Root>()

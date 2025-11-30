@@ -4,9 +4,9 @@ import dev.enro.context.ContainerContext
 import dev.enro.context.NavigationContext
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.builder.navigationInterceptor
+import dev.enro.test.NavigationKeyFixtures
 import dev.enro.test.fixtures.NavigationContextFixtures
 import dev.enro.test.fixtures.NavigationDestinationFixtures
-import dev.enro.test.NavigationKeyFixtures
 import dev.enro.test.runEnroTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,7 +31,7 @@ class NavigationContainerTests {
         assertFalse(container.accepts(containerContext, NavigationOperation.Complete(instance1)))
 
         // Add instances to backstack
-        container.setBackstackDirect(listOf(instance1, instance2))
+        container.setBackstackDirect(backstackOf(instance1, instance2))
 
         // Container should accept operations for instances in backstack
         assertTrue(container.accepts(containerContext, NavigationOperation.Close(instance1)))
@@ -214,7 +214,7 @@ class NavigationContainerTests {
         val instance1 = NavigationKeyFixtures.SimpleKey().asInstance()
         val instance2 = NavigationKeyFixtures.SimpleKey().asInstance()
 
-        container.setBackstackDirect(listOf(instance1, instance2))
+        container.setBackstackDirect(backstackOf(instance1, instance2))
         assertEquals(2, container.backstack.size)
 
         container.execute(destinationContext, NavigationOperation.Close(instance1))
@@ -236,7 +236,7 @@ class NavigationContainerTests {
         val instance1 = NavigationKeyFixtures.SimpleKey().asInstance()
         val instance2 = NavigationKeyFixtures.SimpleKey().asInstance()
 
-        container.setBackstackDirect(listOf(instance1, instance2))
+        container.setBackstackDirect(backstackOf(instance1, instance2))
         assertEquals(2, container.backstack.size)
 
         container.execute(destinationContext, NavigationOperation.Complete(instance1))
@@ -260,7 +260,7 @@ class NavigationContainerTests {
         val instance2 = NavigationKeyFixtures.SimpleKey().asInstance()
         val instance3 = NavigationKeyFixtures.SimpleKey().asInstance()
 
-        container.setBackstackDirect(listOf(instance1))
+        container.setBackstackDirect(backstackOf(instance1))
 
         val aggregateOperation = NavigationOperation.AggregateOperation(
             listOf(
@@ -346,7 +346,7 @@ class NavigationContainerTests {
         val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, destination)
 
         val instance = NavigationKeyFixtures.SimpleKey().asInstance()
-        container.setBackstackDirect(listOf(instance))
+        container.setBackstackDirect(backstackOf(instance))
 
         var emptyInterceptorCalled = false
         val emptyInterceptor = object : NavigationContainer.EmptyInterceptor() {
@@ -375,7 +375,7 @@ class NavigationContainerTests {
         val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, destination)
 
         val instance = NavigationKeyFixtures.SimpleKey().asInstance()
-        container.setBackstackDirect(listOf(instance))
+        container.setBackstackDirect(backstackOf(instance))
 
         var emptyInterceptorCalled = false
         val emptyInterceptor = object : NavigationContainer.EmptyInterceptor() {
@@ -404,7 +404,7 @@ class NavigationContainerTests {
         val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, destination)
 
         val instance = NavigationKeyFixtures.SimpleKey().asInstance()
-        container.setBackstackDirect(listOf(instance))
+        container.setBackstackDirect(backstackOf(instance))
 
         var sideEffectExecuted = false
         val emptyInterceptor = object : NavigationContainer.EmptyInterceptor() {
@@ -594,7 +594,7 @@ class NavigationContainerTests {
         val instance3 = NavigationKeyFixtures.SimpleKey().asInstance()
 
         // Set initial backstack
-        container.setBackstackDirect(listOf(instance1, instance2, instance3))
+        container.setBackstackDirect(backstackOf(instance1, instance2, instance3))
         assertEquals(3, container.backstack.size)
         assertEquals(instance1, container.backstack[0])
         assertEquals(instance2, container.backstack[1])
@@ -626,7 +626,7 @@ class NavigationContainerTests {
         val instance3 = NavigationKeyFixtures.SimpleKey().asInstance()
 
         // Set initial backstack
-        container.setBackstackDirect(listOf(instance1, instance2, instance3))
+        container.setBackstackDirect(backstackOf(instance1, instance2, instance3))
 
         // Open instance2 which is in the middle
         container.execute(destinationContext, NavigationOperation.Open(instance2))
@@ -654,7 +654,7 @@ class NavigationContainerTests {
         val instance3 = NavigationKeyFixtures.SimpleKey().asInstance()
 
         // Set initial backstack
-        container.setBackstackDirect(listOf(instance1, instance2, instance3))
+        container.setBackstackDirect(backstackOf(instance1, instance2, instance3))
 
         // Open instance3 which is already at the top
         container.execute(destinationContext, NavigationOperation.Open(instance3))
@@ -683,7 +683,7 @@ class NavigationContainerTests {
         val instance4 = NavigationKeyFixtures.SimpleKey().asInstance()
 
         // Set initial backstack
-        container.setBackstackDirect(listOf(instance1, instance2, instance3))
+        container.setBackstackDirect(backstackOf(instance1, instance2, instance3))
 
         val aggregateOperation = NavigationOperation.AggregateOperation(
             listOf(
@@ -717,7 +717,7 @@ class NavigationContainerTests {
         val instance = NavigationKeyFixtures.SimpleKey().asInstance()
 
         // Set backstack with single item
-        container.setBackstackDirect(listOf(instance))
+        container.setBackstackDirect(backstackOf(instance))
 
         // Open the same instance
         container.execute(destinationContext, NavigationOperation.Open(instance))

@@ -8,6 +8,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.application
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.close
 import dev.enro.platform.desktop.GenericRootWindow
 import dev.enro.platform.desktop.RootWindow
@@ -63,7 +64,7 @@ fun main() {
                 }
             }
             val container = rememberNavigationContainer(
-                backstack = listOf(SelectDestination().asInstance())
+                backstack = backstackOf(SelectDestination().asInstance())
             )
             NavigationDisplay(container)
         }

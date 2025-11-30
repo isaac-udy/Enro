@@ -15,6 +15,7 @@ import dev.enro.NavigationContainer
 import dev.enro.NavigationContainerFilter
 import dev.enro.NavigationKey
 import dev.enro.acceptAll
+import dev.enro.asBackstack
 import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.context.RootContext
@@ -22,10 +23,14 @@ import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.NoOpNavigationInterceptor
 import dev.enro.ui.decorators.NavigationSavedStateHolder
 import kotlinx.serialization.PolymorphicSerializer
+import kotlin.jvm.JvmName
+import kotlin.uuid.Uuid
 
 @Composable
 public fun rememberNavigationContainer(
-    key: NavigationContainer.Key = NavigationContainer.Key("NavigationContainer@${currentCompositeKeyHash}"),
+    key: NavigationContainer.Key = rememberSaveable(saver = NavigationContainer.Key.Saver) {
+        NavigationContainer.Key("NavigationContainer@${Uuid.random()}")
+    },
     backstack: NavigationBackstack,
     emptyBehavior: EmptyBehavior = EmptyBehavior.preventEmpty(),
     interceptor: NavigationInterceptor = NoOpNavigationInterceptor,
@@ -52,13 +57,15 @@ public fun rememberNavigationContainer(
                 }
             },
             restore = { savedBackstack ->
-                val backstack = savedBackstack.map {
-                    decodeFromSavedState(
-                        deserializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
-                        savedState = it,
-                        configuration = controller.serializers.savedStateConfiguration
-                    )
-                }
+                val backstack = savedBackstack
+                    .map {
+                        decodeFromSavedState(
+                            deserializer = NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class)),
+                            savedState = it,
+                            configuration = controller.serializers.savedStateConfiguration
+                        )
+                    }
+                    .asBackstack()
                 NavigationContainer(
                     key = key,
                     controller = controller,
@@ -129,4 +136,25 @@ public fun rememberNavigationContainer(
     )
     containerState.destinations = destinations
     return containerState
+}
+
+@Deprecated("Use the version of rememberNavigationContainer that takes a NavigationBackstack as the backstack parameter")
+@Composable
+@JvmName("rememberNavigationContainerListBackstack")
+public fun rememberNavigationContainer(
+    key: NavigationContainer.Key = rememberSaveable(saver = NavigationContainer.Key.Saver) {
+        NavigationContainer.Key("NavigationContainer@${Uuid.random()}")
+    },
+    backstack: List<NavigationKey.Instance<*>>,
+    emptyBehavior: EmptyBehavior = EmptyBehavior.preventEmpty(),
+    interceptor: NavigationInterceptor = NoOpNavigationInterceptor,
+    filter: NavigationContainerFilter = acceptAll(),
+): NavigationContainerState {
+    return rememberNavigationContainer(
+        key = key,
+        backstack = backstack.asBackstack(),
+        emptyBehavior = emptyBehavior,
+        interceptor = interceptor,
+        filter = filter,
+    )
 }

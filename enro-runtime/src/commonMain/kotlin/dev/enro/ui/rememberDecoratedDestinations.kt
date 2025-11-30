@@ -3,6 +3,7 @@ package dev.enro.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import dev.enro.EnroController
+import dev.enro.NavigationBackstack
 import dev.enro.NavigationKey
 import dev.enro.ui.decorators.NavigationSavedStateHolder
 import dev.enro.ui.decorators.decorateNavigationDestination
@@ -26,7 +27,7 @@ import dev.enro.ui.decorators.rememberViewModelStoreDecorator
 @Composable
 internal fun rememberDecoratedDestinations(
     controller: EnroController,
-    backstack: List<NavigationKey.Instance<*>>,
+    backstack: NavigationBackstack,
     savedStateHolder: NavigationSavedStateHolder,
     isSettled: Boolean,
 ): List<NavigationDestination<NavigationKey>> {

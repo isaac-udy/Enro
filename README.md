@@ -13,9 +13,9 @@ Enro is published to [Maven Central](https://search.maven.org/). Make sure your 
 
 ```kotlin
 dependencies {
-    implementation("dev.enro:enro:2.7.0")
-    ksp("dev.enro:enro-processor:2.7.0") // both kapt and ksp are supported
-    testImplementation("dev.enro:enro-test:2.7.0")
+    implementation("dev.enro:enro:3.0.0-alpha05")
+    ksp("dev.enro:enro-processor:3.0.0-alpha05")
+    testImplementation("dev.enro:enro-test:3.0.0-alpha05")
 }
 ```
 

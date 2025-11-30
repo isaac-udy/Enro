@@ -24,6 +24,7 @@ import dev.enro.EnroController
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.core.compose.navigationHandle
 import dev.enro.core.container.setBackstack
 import dev.enro.core.requestClose
@@ -166,7 +167,7 @@ data class ParcelableAndSerializableData(
 @Composable
 fun AndroidSerializationScreen() {
     val container = rememberNavigationContainer(
-        backstack = listOf(),
+        backstack = backstackOf(),
         emptyBehavior = EmptyBehavior.preventEmpty(),
     )
 
@@ -174,7 +175,7 @@ fun AndroidSerializationScreen() {
         Button(
             onClick = {
                 container.setBackstack(
-                    listOf(AndroidSerialization.ParcelableNavigationKey.createRandom().asInstance())
+                    backstackOf(AndroidSerialization.ParcelableNavigationKey.createRandom().asInstance())
                 )
             }
         ) {
@@ -183,7 +184,7 @@ fun AndroidSerializationScreen() {
         Button(
             onClick = {
                 container.setBackstack(
-                    listOf(AndroidSerialization.SerializableNavigationKey.createRandom().asInstance())
+                    backstackOf(AndroidSerialization.SerializableNavigationKey.createRandom().asInstance())
                 )
             }
         ) {

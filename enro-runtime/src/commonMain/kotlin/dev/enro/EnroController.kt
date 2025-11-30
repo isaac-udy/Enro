@@ -1,5 +1,6 @@
 package dev.enro
 
+import androidx.compose.runtime.Stable
 import androidx.savedstate.serialization.SavedStateConfiguration
 import dev.enro.context.RootContextRegistry
 import dev.enro.controller.NavigationModule
@@ -13,6 +14,7 @@ import dev.enro.controller.repository.ViewModelRepository
 import dev.enro.serialization.wrapForSerialization
 import kotlinx.serialization.json.Json
 
+@Stable
 public class EnroController {
     // TODO NEED TO CONFIGURE THIS
     internal val isDebug = false

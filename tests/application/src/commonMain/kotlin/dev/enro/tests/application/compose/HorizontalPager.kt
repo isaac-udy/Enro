@@ -24,6 +24,7 @@ import dev.enro.NavigationKey
 import dev.enro.accept
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
@@ -48,12 +49,12 @@ fun HorizontalPagerCrossFadeScreen() {
     val parentContext = LocalNavigationContext.current
     val pageOne = rememberNavigationContainer(
         key = NavigationContainer.Key("Page One Container"),
-        backstack = listOf(HorizontalPager.PageOne("Root").asInstance()),
+        backstack = backstackOf(HorizontalPager.PageOne("Root").asInstance()),
         filter = accept { key<HorizontalPager.PageOne>() }
     )
     val pageTwo = rememberNavigationContainer(
         key = NavigationContainer.Key("Page Two Container"),
-        backstack = listOf(HorizontalPager.PageTwo("Root").asInstance()),
+        backstack = backstackOf(HorizontalPager.PageTwo("Root").asInstance()),
         filter = accept { key<HorizontalPager.PageTwo>() }
     )
     val state = rememberPagerState { 2 }

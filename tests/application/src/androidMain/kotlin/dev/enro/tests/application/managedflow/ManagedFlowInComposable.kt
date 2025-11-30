@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.core.NavigationKey
 import dev.enro.core.compose.navigationHandle
 import dev.enro.interceptor.builder.navigationInterceptor
@@ -29,7 +30,7 @@ object ManagedFlowInComposable : Parcelable, NavigationKey.SupportsPush {
 fun ManagedFlowInComposableScreen() {
     val navigation = navigationHandle<ManagedFlowInComposable>()
     val container = rememberNavigationContainer(
-        backstack = listOf(UserInformationFlow().asInstance()),
+        backstack = backstackOf(UserInformationFlow().asInstance()),
         interceptor = navigationInterceptor {
             onCompleted<UserInformationFlow> {
                 cancelAnd {

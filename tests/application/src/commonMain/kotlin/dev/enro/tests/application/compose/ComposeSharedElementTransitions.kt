@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
@@ -73,7 +74,7 @@ object ComposeSharedElementTransitions : NavigationKey {
 @Composable
 fun ComposableSharedElementTransitionsRootScreen() {
     val container = rememberNavigationContainer(
-        backstack = listOf(ComposeSharedElementTransitions.List().asInstance()),
+        backstack = backstackOf(ComposeSharedElementTransitions.List().asInstance()),
     )
     Box(Modifier.fillMaxSize()) {
         NavigationDisplay(container)

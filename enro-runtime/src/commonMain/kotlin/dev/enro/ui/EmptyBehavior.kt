@@ -1,6 +1,8 @@
 package dev.enro.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
@@ -8,7 +10,10 @@ import dev.enro.NavigationTransition
 import dev.enro.close
 import dev.enro.navigationHandle
 
-public class EmptyBehavior internal constructor(
+@Immutable
+@Stable
+@ConsistentCopyVisibility
+public data class EmptyBehavior internal constructor(
     private val isBackHandlerEnabled: () -> Boolean,
     private val onPredictiveBackProgress: (Float) -> Boolean,
     private val onEmpty: Scope.() -> NavigationContainer.EmptyInterceptor.Result,

@@ -7,9 +7,11 @@ import dev.enro.NavigationContainerFilter
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.acceptAll
+import dev.enro.backstackOf
 import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.context.RootContext
+import dev.enro.emptyBackstack
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.NoOpNavigationInterceptor
 import dev.enro.interceptor.builder.navigationInterceptor
@@ -28,7 +30,7 @@ object NavigationContainerFixtures {
     fun create(
         parentContext: NavigationContext = NavigationContextFixtures.createRootContext(),
         key: NavigationContainer.Key = NavigationContainer.Key("TestNavigationContainer@${Uuid.random()}"),
-        backstack: NavigationBackstack = emptyList(),
+        backstack: NavigationBackstack = backstackOf(),
         emptyBehavior: EmptyBehavior = EmptyBehavior.preventEmpty(),
         interceptor: NavigationInterceptor = NoOpNavigationInterceptor,
         filter: NavigationContainerFilter = acceptAll(),
@@ -78,7 +80,7 @@ object NavigationContainerFixtures {
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         return create(
             key = NavigationContainer.Key("TestNavigationFlow"),
-            backstack = listOf(),
+            backstack = emptyBackstack(),
             filter = run {
                 NavigationContainerFilter(
                     fromChildrenOnly = true,

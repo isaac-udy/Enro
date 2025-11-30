@@ -1,5 +1,7 @@
 package dev.enro
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.serialization.internalUnwrapForSerialization
 import dev.enro.serialization.internalWrapForSerialization
@@ -67,8 +69,9 @@ public interface NavigationKey {
      * Each [NavigationKey.Instance] is uniquely identified by its [id], references the original [key]
      * it is representing, and carries its own [metadata].
      */
+    @Stable
+    @Immutable
     @Serializable
-    @ConsistentCopyVisibility
     public data class Instance<out T : NavigationKey> @AdvancedEnroApi constructor(
         @Polymorphic public val key: T,
         public val id: String = Uuid.random().toString(),

@@ -14,6 +14,7 @@ import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.core.container.setBackstack
 import dev.enro.navigationHandle
 import dev.enro.open
@@ -41,10 +42,10 @@ fun NestedContainerExampleScreen() {
         mutableStateOf(MultipleNestedContainerExample.ChildKey("Saved").asInstance())
     }
     val first = rememberNavigationContainer(
-        backstack = listOf(MultipleNestedContainerExample.ChildKey("First").asInstance())
+        backstack = backstackOf(MultipleNestedContainerExample.ChildKey("First").asInstance())
     )
     val second = rememberNavigationContainer(
-        backstack = listOf(MultipleNestedContainerExample.ChildKey("Second").asInstance()),
+        backstack = backstackOf(MultipleNestedContainerExample.ChildKey("Second").asInstance()),
     )
     val selectedState = remember { mutableStateOf(first) }
     TitledColumn("Nested Containers") {
@@ -67,7 +68,7 @@ fun NestedContainerExampleScreen() {
                     val saved = savedInstance.value
                     val current = selectedState.value.backstack.last()
                     savedInstance.value = current
-                    selectedState.value.setBackstack(listOf(saved))
+                    selectedState.value.setBackstack(backstackOf(saved))
                 },
             ) {
                 Text(text = "Swap")
@@ -97,7 +98,7 @@ fun ChildKeyScreen() {
     }
     val saved = rememberSaveable { Uuid.random() }
     val container = rememberNavigationContainer(
-        backstack = listOf(EmptyNavigationKey.asInstance())
+        backstack = backstackOf(EmptyNavigationKey.asInstance())
     )
     TitledColumn(
         title = "Child Key",

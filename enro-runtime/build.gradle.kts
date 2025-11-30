@@ -16,6 +16,7 @@ kotlin {
         commonMain.dependencies {
             api("dev.enro:enro-annotations:${project.enroVersionName}")
             api("dev.enro:enro-common:${project.enroVersionName}")
+            implementation(libs.compose.runtime)
             implementation(libs.compose.viewmodel)
             implementation(libs.compose.lifecycle)
             implementation(libs.androidx.savedState)

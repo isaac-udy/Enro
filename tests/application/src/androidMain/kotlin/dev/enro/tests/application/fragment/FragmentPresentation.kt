@@ -25,6 +25,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.closeWithResult
@@ -87,7 +88,7 @@ class FragmentPresentationActivity : androidx.appcompat.app.AppCompatActivity() 
         setContentView(R.layout.activity_fragment_presentation)
         setContent {
             val container = rememberNavigationContainer(
-                backstack = listOf(FragmentPresentation.Root.asInstance()),
+                backstack = backstackOf(FragmentPresentation.Root.asInstance()),
             )
             NavigationDisplay(container)
         }

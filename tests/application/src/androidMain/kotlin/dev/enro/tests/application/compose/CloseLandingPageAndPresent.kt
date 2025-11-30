@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.core.NavigationKey
 import dev.enro.core.close
 import dev.enro.core.compose.dialog.BottomSheetDestination
@@ -42,7 +43,7 @@ class CloseRootAndPresentActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val container = rememberNavigationContainer(
-                backstack = listOf(LandingPageDestination().asInstance()),
+                backstack = backstackOf(LandingPageDestination().asInstance()),
             )
             NavigationDisplay(container)
         }

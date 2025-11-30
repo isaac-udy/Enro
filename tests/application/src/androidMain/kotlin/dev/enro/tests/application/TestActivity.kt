@@ -6,6 +6,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.MaterialTheme
 import dev.enro.asInstance
+import dev.enro.core.container.backstackOf
 import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
@@ -16,7 +17,7 @@ class TestActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val container = rememberNavigationContainer(
-                backstack = listOf(SelectDestination().asInstance()),
+                backstack = backstackOf(SelectDestination().asInstance()),
             )
             MaterialTheme {
                 NavigationDisplay(container)

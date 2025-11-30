@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.tests.application.samples.travel.ui.registration.RegistrationSuccessfulDestination
 import dev.enro.tests.application.samples.travel.ui.theme.TravelTheme
 import dev.enro.ui.NavigationAnimations
@@ -24,7 +25,7 @@ fun TravelSampleScreen() {
         darkTheme = false,
     ) {
         val container = rememberNavigationContainer(
-            backstack = listOf(LoginDestination.asInstance()),
+            backstack = backstackOf(LoginDestination.asInstance()),
         )
         NavigationDisplay(
             state = container,

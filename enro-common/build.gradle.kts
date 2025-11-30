@@ -13,6 +13,7 @@ kotlin {
             implementation(libs.kotlinx.serialization)
             implementation(libs.kotlin.reflect)
             implementation(libs.thauvin.urlencoder)
+            implementation(libs.compose.runtimeAnnotation)
         }
 
         androidMain.dependencies {

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
@@ -15,7 +16,7 @@ object RecipesSampleDestination : NavigationKey
 @NavigationDestination(RecipesSampleDestination::class)
 fun RecipesHomeScreen() {
     val container = rememberNavigationContainer(
-        backstack = listOf(RecipeList.asInstance()),
+        backstack = backstackOf(RecipeList.asInstance()),
     )
     NavigationDisplay(state = container)
 }

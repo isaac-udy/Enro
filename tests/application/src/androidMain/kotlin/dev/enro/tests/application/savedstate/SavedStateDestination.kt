@@ -31,6 +31,7 @@ import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
+import dev.enro.emptyBackstack
 import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.ui.EmptyBehavior
@@ -61,7 +62,7 @@ class SavedStateActivity : ComponentActivity() {
                 val isPopupVisible = remember { mutableStateOf(false) }
                 val saved = rememberSaveable { mutableStateOf<SavedState?>(null) }
                 val container = rememberNavigationContainer(
-                    backstack = emptyList(),
+                    backstack = emptyBackstack(),
                     emptyBehavior = EmptyBehavior.allowEmpty(),
                 )
                 Button(onClick = {

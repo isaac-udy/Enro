@@ -3,11 +3,12 @@ package dev.enro.core.container
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.asBackstack
 import dev.enro.asInstance
 import dev.enro.ui.NavigationContainerState
 
 public fun backstackOf(vararg elements: NavigationKey.Instance<out NavigationKey>): NavigationBackstack {
-    return elements.toList()
+    return elements.toList().asBackstack()
 }
 
 public fun emptyBackstack(): NavigationBackstack = backstackOf()
@@ -26,5 +27,5 @@ public fun NavigationContainerState.setBackstack(block: (NavigationBackstack) ->
 }
 
 public fun NavigationBackstack.push(key: NavigationKey) : NavigationBackstack {
-    return this + key.asInstance()
+    return (this + key.asInstance()).asBackstack()
 }
