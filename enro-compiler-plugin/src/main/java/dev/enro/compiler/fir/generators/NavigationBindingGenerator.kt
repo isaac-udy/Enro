@@ -107,7 +107,6 @@ class NavigationBindingGenerator(
             )
             return null
         }
-        logger.warn("Generating top-level class for classId: $classId")
         return createTopLevelClass(
             classId = classId,
             key = Keys.GeneratedNavigationBinding,
