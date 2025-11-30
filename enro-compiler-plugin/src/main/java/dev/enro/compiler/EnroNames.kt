@@ -72,7 +72,7 @@ object EnroNames {
     }
 
     object Generated {
-        val generatedPackage = FqName("enro_generated_bindings")
+        val generatedPackage = FqName.ROOT
 
         fun bindFunction(
             classId: ClassId,
@@ -85,7 +85,7 @@ object EnroNames {
 
         val bindingReferenceFunction = CallableId(
             packageName = generatedPackage,
-            callableName = Name.identifier("_bindingReference"),
+            callableName = Name.identifier("enroGeneratedBindingReference"),
         )
     }
 

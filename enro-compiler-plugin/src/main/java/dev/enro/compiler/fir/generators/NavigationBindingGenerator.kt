@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.fir.caches.FirCache
 import org.jetbrains.kotlin.fir.caches.firCachesFactory
 import org.jetbrains.kotlin.fir.declarations.declaredFunctions
 import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
+import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
 import org.jetbrains.kotlin.fir.expressions.FirBlock
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
 import org.jetbrains.kotlin.fir.expressions.buildResolvedArgumentList
@@ -23,6 +24,7 @@ import org.jetbrains.kotlin.fir.expressions.builder.buildBlock
 import org.jetbrains.kotlin.fir.expressions.builder.buildFunctionCall
 import org.jetbrains.kotlin.fir.expressions.builder.buildLiteralExpression
 import org.jetbrains.kotlin.fir.expressions.builder.buildPropertyAccessExpression
+import org.jetbrains.kotlin.fir.expressions.builder.buildResolvedQualifier
 import org.jetbrains.kotlin.fir.extensions.ExperimentalTopLevelDeclarationsGenerationApi
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationPredicateRegistrar
@@ -65,6 +67,10 @@ class NavigationBindingGenerator(
 
     override fun FirDeclarationPredicateRegistrar.registerPredicates() {
         register(annotated(EnroNames.Annotations.navigationDestination.asSingleFqName()))
+    }
+
+    init {
+
     }
 
     private val symbols: FirCache<Unit, Map<ClassId, NavigationDestinationInformation>, FirSession> =
@@ -512,6 +518,24 @@ class NavigationBindingGenerator(
             resolvedSymbol = builderDestinationSymbol
         }
 
+        val dispatchReceiverExpression = propertySymbol.callableId?.classId?.let { classId ->
+            val classSymbol =
+                session.symbolProvider.getClassLikeSymbolByClassId(classId) as? FirRegularClassSymbol
+                    ?: error("Could not find class symbol for $classId")
+
+            if (classSymbol.classKind != ClassKind.OBJECT && classSymbol.classKind != ClassKind.ENUM_ENTRY) {
+                error("Navigation destinations can only be properties of objects or top-level properties. ${classId.asString()} is a ${classSymbol.classKind}")
+            }
+            buildResolvedQualifier {
+                packageFqName = classId.packageFqName
+                relativeClassFqName = classId.relativeClassName
+                symbol = classSymbol
+                coneTypeOrNull = classSymbol.defaultType()
+                resolvedToCompanionObject =
+                    (classSymbol as? FirRegularClassSymbol)?.isCompanion == true
+            }
+        }
+
         val propertyAccess = buildPropertyAccessExpression {
             source = null
             calleeReference = buildResolvedNamedReference {
@@ -520,6 +544,7 @@ class NavigationBindingGenerator(
                 resolvedSymbol = propertySymbol
             }
             coneTypeOrNull = propertySymbol.resolvedReturnType
+            this.dispatchReceiver = dispatchReceiverExpression
         }
 
         // Create the type argument for NavigationKey
