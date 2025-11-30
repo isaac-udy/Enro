@@ -44,6 +44,8 @@ object EnroNames {
 
         object Ui {
             val uiPackage = rootPackage.child(Name.identifier("ui"))
+            val destinationsPackage = uiPackage.child(Name.identifier("destinations"))
+
             val navigationDestinationProvider = ClassId(
                 uiPackage,
                 Name.identifier("NavigationDestinationProvider")
@@ -59,10 +61,39 @@ object EnroNames {
                 Name.identifier("NavigationDestination")
             )
 
+            val fragmentDestination = CallableId(
+                packageName = destinationsPackage,
+                callableName = Name.identifier("fragmentDestination")
+            )
+
+            val activityDestination = CallableId(
+                packageName = destinationsPackage,
+                callableName = Name.identifier("activityDestination")
+            )
+
             val metadataBuilder = navigationDestination.createNestedClassId(
                 Name.identifier("MetadataBuilder")
             )
         }
+    }
+
+    object Android {
+        val fragment = ClassId(
+            FqName("androidx.fragment.app"),
+            Name.identifier("Fragment")
+        )
+        val activity = ClassId(
+            FqName("android.app"),
+            Name.identifier("Activity")
+        )
+        val componentActivity = ClassId(
+            FqName("androidx.activity"),
+            Name.identifier("ComponentActivity")
+        )
+        val bundle = ClassId(
+            FqName("android.os"),
+            Name.identifier("Bundle")
+        )
     }
 
     object Annotations {

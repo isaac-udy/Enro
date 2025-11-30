@@ -6,12 +6,12 @@ import dev.enro.compiler.EnroNames
 import dev.enro.compiler.fir.Keys
 import dev.enro.compiler.fir.isFromGeneratedDeclaration
 import dev.enro.compiler.fir.utils.EnroFirBuilder
-import dev.enro.compiler.utils.buildPrintlnFunctionCall
 import dev.enro.compiler.utils.nameForSymbol
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.caches.FirCache
 import org.jetbrains.kotlin.fir.caches.firCachesFactory
+import org.jetbrains.kotlin.fir.declarations.DirectDeclarationsAccess
 import org.jetbrains.kotlin.fir.declarations.declaredFunctions
 import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
@@ -49,8 +49,11 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.toFirResolvedTypeRef
+import org.jetbrains.kotlin.fir.types.ConeClassLikeType
+import org.jetbrains.kotlin.fir.types.FirTypeRef
 import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
 import org.jetbrains.kotlin.fir.types.coneType
+import org.jetbrains.kotlin.fir.types.coneTypeSafe
 import org.jetbrains.kotlin.fir.types.constructClassLikeType
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
@@ -59,6 +62,7 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.types.ConstantValueKind
 
+@OptIn(SymbolInternals::class)
 class NavigationBindingGenerator(
     session: FirSession,
     private val logger: EnroLogger,
@@ -177,7 +181,7 @@ class NavigationBindingGenerator(
         )
     }
 
-    @OptIn(ExperimentalTopLevelDeclarationsGenerationApi::class, SymbolInternals::class)
+    @ExperimentalTopLevelDeclarationsGenerationApi
     override fun generateFunctions(
         callableId: CallableId,
         context: MemberGenerationContext?
@@ -195,7 +199,7 @@ class NavigationBindingGenerator(
     }
 
 
-    @OptIn(ExperimentalTopLevelDeclarationsGenerationApi::class)
+    @ExperimentalTopLevelDeclarationsGenerationApi
     private fun generateBindingReferenceFunction(
         callableId: CallableId,
     ): List<FirNamedFunctionSymbol>? {
@@ -218,7 +222,7 @@ class NavigationBindingGenerator(
         }
     }
 
-    @OptIn(ExperimentalTopLevelDeclarationsGenerationApi::class)
+    @ExperimentalTopLevelDeclarationsGenerationApi
     private fun generateBindFunction(
         callableId: CallableId,
         context: MemberGenerationContext?,
@@ -250,7 +254,8 @@ class NavigationBindingGenerator(
             when (navigationDestinationInformation.symbol) {
                 is FirClassLikeSymbol -> replaceBody(
                     createClassBindingFor(
-                        navigationDestinationInformation
+                        navigationDestinationInformation,
+                        scopeParameterSymbol
                     )
                 )
 
@@ -276,16 +281,242 @@ class NavigationBindingGenerator(
     }
 
     private fun createClassBindingFor(
-        navigationDestination: NavigationDestinationInformation
+        navigationDestination: NavigationDestinationInformation,
+        scopeParameter: FirValueParameterSymbol,
     ): FirBlock {
         val symbol = navigationDestination.symbol as? FirClassLikeSymbol
             ?: error("${nameForSymbol(navigationDestination.symbol)} is not a class or object")
 
-        return buildBlock {
-            statements += buildPrintlnFunctionCall(
-                session = session,
-                value = "Class binding for ${nameForSymbol(symbol)} / ${navigationDestination.getNavigationKeyName(session)}",
+        val isFragment = symbol.isSubclassOf(EnroNames.Android.fragment, session)
+        val isActivity = symbol.isSubclassOf(EnroNames.Android.componentActivity, session)
+
+        if (!isFragment && !isActivity) {
+            error("${nameForSymbol(symbol)} must extend Fragment or ComponentActivity")
+        }
+
+        val navigationKeyClassId = navigationDestination.getNavigationKeyName(session)
+            ?: error("Could not find navigation key for ${navigationDestination.declarationName}")
+
+        val destinationCall = if (isFragment) {
+            buildFragmentDestinationCall(
+                scopeParameter = scopeParameter,
+                navigationKeyClassId = navigationKeyClassId,
+                classSymbol = symbol,
             )
+        } else {
+            buildActivityDestinationCall(
+                scopeParameter = scopeParameter,
+                navigationKeyClassId = navigationKeyClassId,
+                classSymbol = symbol,
+            )
+        }
+
+        return buildBlock {
+            statements += destinationCall
+        }
+    }
+
+    private fun FirClassLikeSymbol<*>.isSubclassOf(
+        classId: ClassId,
+        session: FirSession,
+    ): Boolean {
+        if (this.classId == classId) return true
+        val firClass = fir as? org.jetbrains.kotlin.fir.declarations.FirClass ?: return false
+        return firClass.superTypeRefs.any { typeRef: FirTypeRef ->
+            val coneType = typeRef.coneTypeSafe<ConeClassLikeType>() ?: return@any false
+            val symbol =
+                session.symbolProvider.getClassLikeSymbolByClassId(coneType.lookupTag.classId)
+                    ?: return@any false
+            symbol.isSubclassOf(classId, session)
+        }
+    }
+
+    @OptIn(SymbolInternals::class, DirectDeclarationsAccess::class)
+    @Suppress("DirectDeclarationsAccess")
+    private fun buildFragmentDestinationCall(
+        scopeParameter: FirValueParameterSymbol,
+        navigationKeyClassId: ClassId,
+        classSymbol: FirClassLikeSymbol<*>,
+    ): FirFunctionCall {
+        // Find the destination function
+        val builderDestinationCallableId =
+            EnroNames.Runtime.NavigationModuleBuilderScope.destinationFunction
+        val builderSymbol = session.symbolProvider.getClassLikeSymbolByClassId(
+            EnroNames.Runtime.navigationModuleBuilderScope
+        ) as FirRegularClassSymbol
+
+        val builderDestinationSymbol = builderSymbol.declaredFunctions(session)
+            .filter {
+                it.callableId == builderDestinationCallableId
+            }
+            .firstOrNull { it.valueParameterSymbols.size == 2 }
+            ?: error("Could not find navigationDestination function symbol")
+
+        val builderDestinationParameter = builderDestinationSymbol.valueParameterSymbols
+            .first { it.name == Name.identifier("destination") }
+
+        val builderDestinationReference = buildResolvedNamedReference {
+            source = null
+            name = builderDestinationCallableId.callableName
+            resolvedSymbol = builderDestinationSymbol
+        }
+
+        // Find the fragmentDestination function
+        val fragmentDestinationCallableId = EnroNames.Runtime.Ui.fragmentDestination
+        val fragmentDestinationSymbol = session.symbolProvider
+            .getTopLevelFunctionSymbols(
+                fragmentDestinationCallableId.packageName,
+                fragmentDestinationCallableId.callableName
+            )
+            .firstOrNull { it.valueParameterSymbols.size == 2 }
+            ?: error("Could not find fragmentDestination function symbol")
+
+        val fragmentDestinationReference = buildResolvedNamedReference {
+            source = null
+            name = fragmentDestinationCallableId.callableName
+            resolvedSymbol = fragmentDestinationSymbol
+        }
+
+        val navigationKeyType = navigationKeyClassId.constructClassLikeType()
+
+        val fragmentDestinationCall = buildFunctionCall {
+            source = null
+            calleeReference = fragmentDestinationReference
+            coneTypeOrNull = EnroNames.Runtime.Ui.navigationDestinationProvider
+                .constructClassLikeType(arrayOf(navigationKeyType))
+
+            argumentList = buildResolvedArgumentList(
+                original = null,
+                mapping = linkedMapOf(),
+            )
+            typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
+                this.typeRef = buildResolvedTypeRef { coneType = navigationKeyType }
+                this.variance = org.jetbrains.kotlin.types.Variance.INVARIANT
+            }
+            typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
+                this.typeRef = buildResolvedTypeRef { coneType = classSymbol.defaultType() }
+                this.variance = org.jetbrains.kotlin.types.Variance.INVARIANT
+            }
+        }
+
+        return buildFunctionCall {
+            source = null
+            calleeReference = builderDestinationReference
+            coneTypeOrNull = builderDestinationSymbol.resolvedReturnType
+            dispatchReceiver = buildPropertyAccessExpression {
+                source = null
+                calleeReference = buildResolvedNamedReference {
+                    source = null
+                    name = scopeParameter.name
+                    resolvedSymbol = scopeParameter
+                }
+                coneTypeOrNull = scopeParameter.resolvedReturnType
+            }
+            argumentList = buildResolvedArgumentList(
+                original = null,
+                mapping = linkedMapOf(
+                    fragmentDestinationCall to builderDestinationParameter.fir,
+                )
+            )
+            typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
+                this.typeRef = buildResolvedTypeRef { coneType = navigationKeyType }
+                this.variance = org.jetbrains.kotlin.types.Variance.INVARIANT
+            }
+        }
+    }
+
+    @OptIn(SymbolInternals::class)
+    private fun buildActivityDestinationCall(
+        scopeParameter: FirValueParameterSymbol,
+        navigationKeyClassId: ClassId,
+        classSymbol: FirClassLikeSymbol<*>,
+    ): FirFunctionCall {
+        // Find the destination function
+        val builderDestinationCallableId =
+            EnroNames.Runtime.NavigationModuleBuilderScope.destinationFunction
+        val builderSymbol = session.symbolProvider.getClassLikeSymbolByClassId(
+            EnroNames.Runtime.navigationModuleBuilderScope
+        ) as FirRegularClassSymbol
+
+        val builderDestinationSymbol = builderSymbol.declaredFunctions(session)
+            .filter {
+                it.callableId == builderDestinationCallableId
+            }
+            .firstOrNull { it.valueParameterSymbols.size == 2 }
+            ?: error("Could not find navigationDestination function symbol")
+
+        val builderDestinationParameter = builderDestinationSymbol.valueParameterSymbols
+            .first { it.name == Name.identifier("destination") }
+
+        val builderDestinationReference = buildResolvedNamedReference {
+            source = null
+            name = builderDestinationCallableId.callableName
+            // CRITICAL: Link the reference to the actual function symbol
+            resolvedSymbol = builderDestinationSymbol
+        }
+
+        // Find the activityDestination function
+        val activityDestinationCallableId = EnroNames.Runtime.Ui.activityDestination
+        val activityDestinationSymbol = session.symbolProvider
+            .getTopLevelFunctionSymbols(
+                activityDestinationCallableId.packageName,
+                activityDestinationCallableId.callableName
+            )
+            .firstOrNull { it.valueParameterSymbols.isEmpty() }
+            ?: error("Could not find activityDestination function symbol")
+
+        val activityDestinationReference = buildResolvedNamedReference {
+            source = null
+            name = activityDestinationCallableId.callableName
+            // CRITICAL: Link the reference to the actual function symbol
+            resolvedSymbol = activityDestinationSymbol
+        }
+
+        val navigationKeyType = navigationKeyClassId.constructClassLikeType()
+
+        val activityDestinationCall = buildFunctionCall {
+            source = null
+            calleeReference = activityDestinationReference
+            coneTypeOrNull = EnroNames.Runtime.Ui.navigationDestinationProvider
+                .constructClassLikeType(arrayOf(navigationKeyType))
+
+            argumentList = buildResolvedArgumentList(
+                original = null,
+                mapping = linkedMapOf(),
+            )
+            typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
+                this.typeRef = buildResolvedTypeRef { coneType = navigationKeyType }
+                this.variance = org.jetbrains.kotlin.types.Variance.INVARIANT
+            }
+            typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
+                this.typeRef = buildResolvedTypeRef { coneType = classSymbol.defaultType() }
+                this.variance = org.jetbrains.kotlin.types.Variance.INVARIANT
+            }
+        }
+
+        return buildFunctionCall {
+            source = null
+            calleeReference = builderDestinationReference
+            coneTypeOrNull = builderDestinationSymbol.resolvedReturnType
+            dispatchReceiver = buildPropertyAccessExpression {
+                source = null
+                calleeReference = buildResolvedNamedReference {
+                    source = null
+                    name = scopeParameter.name
+                    resolvedSymbol = scopeParameter
+                }
+                coneTypeOrNull = scopeParameter.resolvedReturnType
+            }
+            argumentList = buildResolvedArgumentList(
+                original = null,
+                mapping = linkedMapOf(
+                    activityDestinationCall to builderDestinationParameter.fir,
+                )
+            )
+            typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
+                this.typeRef = buildResolvedTypeRef { coneType = navigationKeyType }
+                this.variance = org.jetbrains.kotlin.types.Variance.INVARIANT
+            }
         }
     }
 
