@@ -34,6 +34,7 @@ import dev.enro.tests.application.compose.results.ComposeManagedResultsWithNeste
 import dev.enro.tests.application.compose.results.ComposeMixedResultTypes
 import dev.enro.tests.application.compose.results.ComposeNestedResults
 import dev.enro.tests.application.compose.results.ResultsWithMetadata
+import dev.enro.tests.application.platform.PlatformOverrideExample
 import dev.enro.tests.application.samples.SelectSampleDestination
 import dev.enro.tests.application.serialization.CommonSerialization
 import dev.enro.tests.application.window.SimpleWindow
@@ -54,6 +55,7 @@ internal class SelectDestination() : NavigationKey {
                 ComposeSharedElementTransitions,
                 DialogScene,
                 HorizontalPager,
+                PlatformOverrideExample,
                 ResultsWithMetadata,
                 SimpleWindow,
             )
