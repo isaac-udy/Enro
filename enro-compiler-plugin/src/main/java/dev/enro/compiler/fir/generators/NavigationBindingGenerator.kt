@@ -1,6 +1,5 @@
 package dev.enro.compiler.fir.generators
 
-import dev.enro.annotations.GeneratedNavigationBinding
 import dev.enro.compiler.EnroLogger
 import dev.enro.compiler.EnroNames
 import dev.enro.compiler.fir.Keys
@@ -18,26 +17,20 @@ import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
 import org.jetbrains.kotlin.fir.expressions.FirBlock
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
 import org.jetbrains.kotlin.fir.expressions.buildResolvedArgumentList
-import org.jetbrains.kotlin.fir.expressions.builder.buildAnnotation
-import org.jetbrains.kotlin.fir.expressions.builder.buildAnnotationArgumentMapping
 import org.jetbrains.kotlin.fir.expressions.builder.buildBlock
 import org.jetbrains.kotlin.fir.expressions.builder.buildFunctionCall
-import org.jetbrains.kotlin.fir.expressions.builder.buildLiteralExpression
 import org.jetbrains.kotlin.fir.expressions.builder.buildPropertyAccessExpression
 import org.jetbrains.kotlin.fir.expressions.builder.buildResolvedQualifier
-import org.jetbrains.kotlin.fir.extensions.ExperimentalTopLevelDeclarationsGenerationApi
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationPredicateRegistrar
 import org.jetbrains.kotlin.fir.extensions.MemberGenerationContext
 import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate.BuilderContext.annotated
 import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
+import org.jetbrains.kotlin.fir.packageFqName
 import org.jetbrains.kotlin.fir.plugin.createDefaultPrivateConstructor
 import org.jetbrains.kotlin.fir.plugin.createMemberFunction
-import org.jetbrains.kotlin.fir.plugin.createTopLevelClass
-import org.jetbrains.kotlin.fir.plugin.createTopLevelFunction
 import org.jetbrains.kotlin.fir.references.builder.buildResolvedNamedReference
 import org.jetbrains.kotlin.fir.resolve.defaultType
-import org.jetbrains.kotlin.fir.resolve.providers.getRegularClassSymbolByClassId
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
@@ -48,7 +41,6 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
-import org.jetbrains.kotlin.fir.toFirResolvedTypeRef
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.FirTypeRef
 import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
@@ -59,8 +51,6 @@ import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.name.SpecialNames
-import org.jetbrains.kotlin.types.ConstantValueKind
 
 @OptIn(SymbolInternals::class)
 class NavigationBindingGenerator(
@@ -73,11 +63,7 @@ class NavigationBindingGenerator(
         register(annotated(EnroNames.Annotations.navigationDestination.asSingleFqName()))
     }
 
-    init {
-
-    }
-
-    private val symbols: FirCache<Unit, Map<ClassId, NavigationDestinationInformation>, FirSession> =
+    private val symbols: FirCache<Unit, Map<Name, NavigationDestinationInformation>, FirSession> =
         session.firCachesFactory.createCache { _, session ->
             session.predicateBasedProvider
                 .getSymbolsByPredicate(annotated(EnroNames.Annotations.navigationDestination.asSingleFqName()))
@@ -87,85 +73,26 @@ class NavigationBindingGenerator(
                 }
         }
 
-
-    @ExperimentalTopLevelDeclarationsGenerationApi
-    override fun getTopLevelClassIds(): Set<ClassId> {
-        return symbols.getValue(Unit, session).keys
-    }
-
-    @ExperimentalTopLevelDeclarationsGenerationApi
-    override fun getTopLevelCallableIds(): Set<CallableId> {
-        return setOf(EnroNames.Generated.bindingReferenceFunction)
-    }
-
-    @ExperimentalTopLevelDeclarationsGenerationApi
-    override fun generateTopLevelClassLikeDeclaration(classId: ClassId): FirClassLikeSymbol<*>? {
-        val destinationInformation = symbols.getValue(Unit, session)[classId]
-        if (destinationInformation == null) {
-            logger.error(
-                "Could not find originating declaration for classId: $classId",
-            )
-            return null
-        }
-        return createTopLevelClass(
-            classId = classId,
-            key = Keys.GeneratedNavigationBinding,
-            classKind = ClassKind.OBJECT,
-        ).apply {
-            val navigationKey = destinationInformation.getNavigationKeyName(session)
-            replaceAnnotations(annotations + buildAnnotation {
-                annotationTypeRef = (session
-                    .getRegularClassSymbolByClassId(EnroNames.Annotations.generatedNavigationBinding) as FirRegularClassSymbol
-                        ).defaultType().toFirResolvedTypeRef()
-                argumentMapping = buildAnnotationArgumentMapping {
-                    mapping[Name.identifier("destination")] =
-                        buildLiteralExpression(
-                            source = null,
-                            kind = ConstantValueKind.String,
-                            value = "${destinationInformation.packageName.asString().replace('.', '/')}/${destinationInformation.declarationName}",
-                            annotations = null,
-                            setType = true,
-                            prefix = null,
-                        )
-                    mapping[Name.identifier("navigationKey")] =
-                        buildLiteralExpression(
-                            source = null,
-                            kind = ConstantValueKind.String,
-                            value = navigationKey!!.toString(),
-                            annotations = null,
-                            setType = true,
-                            prefix = null,
-                        )
-                    mapping[Name.identifier("bindingType")] =
-                        buildLiteralExpression(
-                            source = null,
-                            kind = ConstantValueKind.Int,
-                            value = when {
-                                destinationInformation.symbol is FirClassLikeSymbol -> GeneratedNavigationBinding.BindingType.CLASS
-                                destinationInformation.symbol is FirFunctionSymbol -> GeneratedNavigationBinding.BindingType.FUNCTION
-                                destinationInformation.symbol is FirPropertySymbol -> GeneratedNavigationBinding.BindingType.PROPERTY
-                                else -> error("Unsupported symbol type ${destinationInformation.symbol::class}")
-                            },
-                            annotations = null,
-                            setType = true,
-                            prefix = null,
-                        )
-                }
-            })
-        }.symbol
-    }
-
     override fun getCallableNamesForClass(
         classSymbol: FirClassSymbol<*>,
         context: MemberGenerationContext
     ): Set<Name> {
-        if (!classSymbol.origin.isFromGeneratedDeclaration(Keys.GeneratedNavigationBinding)) {
+        val isGeneratedBinding = classSymbol.name.identifierOrNullIfSpecial
+            .orEmpty()
+            .startsWith("EnroBindings")
+            .and(classSymbol.packageFqName() == EnroNames.Generated.generatedPackage)
+
+        if (!isGeneratedBinding) {
             return emptySet()
         }
-        return setOf(
-            SpecialNames.INIT,
-            EnroNames.Generated.bindFunction(classSymbol.classId).callableName,
-        )
+
+        return symbols.getValue(Unit, session).values.map {
+            val destinationName = it.generatedBindingId
+            EnroNames.Generated.bindFunction(
+                classSymbol.classId,
+                destinationName.identifier,
+            ).callableName
+        }.toSet()
     }
 
     override fun generateConstructors(context: MemberGenerationContext): List<FirConstructorSymbol> {
@@ -180,59 +107,29 @@ class NavigationBindingGenerator(
         )
     }
 
-    @ExperimentalTopLevelDeclarationsGenerationApi
     override fun generateFunctions(
         callableId: CallableId,
         context: MemberGenerationContext?
     ): List<FirNamedFunctionSymbol> {
-        generateBindingReferenceFunction(
-            callableId = callableId,
-        )?.let { return it }
-
         generateBindFunction(
             callableId = callableId,
             context = context,
         )?.let { return listOf(it) }
-
         return emptyList()
     }
 
-
-    @ExperimentalTopLevelDeclarationsGenerationApi
-    private fun generateBindingReferenceFunction(
-        callableId: CallableId,
-    ): List<FirNamedFunctionSymbol>? {
-        if (callableId != EnroNames.Generated.bindingReferenceFunction) return null
-        return symbols.getValue(Unit, session).values.map { info ->
-            createTopLevelFunction(
-                key = Keys.GeneratedNavigationBinding,
-                callableId = callableId,
-                returnType = session.builtinTypes.unitType.coneType,
-            ){
-                valueParameter(
-                    Name.identifier("binding"),
-                    info.generatedBindingId.constructClassLikeType(),
-                )
-            }.apply {
-                // We're going to set the binding reference function to have
-                // an empty block body, otherwise we'd need to configure this during IR
-                replaceBody(buildBlock {  })
-            }.symbol
-        }
-    }
-
-    @ExperimentalTopLevelDeclarationsGenerationApi
     private fun generateBindFunction(
         callableId: CallableId,
         context: MemberGenerationContext?,
     ): FirNamedFunctionSymbol? {
         if (context == null) return null
         val classId = callableId.classId ?: return null
-        val bindFunctionId = EnroNames.Generated.bindFunction(classId)
-        if (callableId != bindFunctionId) return null
+        if (classId.packageFqName != EnroNames.Generated.generatedPackage) return null
+        if (!classId.shortClassName.identifier.startsWith("EnroBindings")) return null
 
-        val navigationDestinationInformation = symbols.getValue(Unit, session)[classId]
-            ?: error("No navigation destination information found for $classId")
+        val bindingName = Name.identifier(callableId.callableName.identifier.removePrefix("bind"))
+        val navigationDestinationInformation = symbols.getValue(Unit, session)[bindingName]
+            ?: error("No navigation destination information found for ${callableId.callableName}")
 
         val function = createMemberFunction(
             owner = context.owner,

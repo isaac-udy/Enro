@@ -1,8 +1,6 @@
 package dev.enro.tests.application
 
 import android.app.Application
-import dev.enro.controller.NavigationModule
-import dev.enro.controller.navigationModule
 import dev.enro.installNavigationController
 import dev.enro.tests.application.activity.PictureInPicture
 import dev.enro.tests.application.activity.SimpleActivity
@@ -23,12 +21,10 @@ import dev.enro.tests.application.managedflow.ManagedFlowInComposable
 import dev.enro.tests.application.savedstate.SavedStateDestination
 import dev.enro.tests.application.serialization.AndroidSerialization
 import dev.enro.tests.module.ModuleOneDestination
-import dev.enro.ui.NavigationDestinationProvider
 
 class TestApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-
         SelectDestination.registerSelectableDestinations(
             AndroidSerialization,
             BottomNavigation,
@@ -48,27 +44,11 @@ class TestApplication : Application() {
             SimpleActivity,
             SyntheticViewModelAccess,
             UnboundBottomSheet,
+            ModuleOneDestination,
         )
 
         installNavigationController(
             this,
-            module = navigationModule {
-                destination(
-                    NavigationDestinationProvider<ModuleOneDestination>(metadata = { // BLOCK
-                    }, content = { // BLOCK
-                    })
-                )
-            }
         )
-//        val thing = ::ComposeAnimationsDestination
-//        val thing2 = ::SavedStateActivity
-//        val thing3 = ::composeStabilityDestination
-//        TestApplicationComponent.installNavigationController(this)
     }
-}
-
-fun bind(scope: NavigationModule.BuilderScope) {
-    NavigationDestinationProvider<ModuleOneDestination>(metadata = { // BLOCK
-    }, content = { // BLOCK
-    })
 }

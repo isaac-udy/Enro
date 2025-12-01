@@ -31,8 +31,8 @@ import org.jetbrains.kotlin.ir.types.defaultType
 import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.SYNTHETIC_OFFSET
 import org.jetbrains.kotlin.ir.util.callableId
-import org.jetbrains.kotlin.ir.util.classId
 import org.jetbrains.kotlin.ir.util.defaultType
+import org.jetbrains.kotlin.ir.util.dumpKotlinLike
 import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.name.Name
@@ -60,30 +60,34 @@ class InstallNavigationControllerTransformer(
                 )?.owner ?: error("NavigationModule.BuilderScope not found")
 
                 val lambdaParent = parent
-                val bindFunctions = enroSymbols.bindingReferenceFunctions
+                val bindingReferenceFunctions = enroSymbols.bindingReferenceFunctions
+                logger.warn("binding funcs: " + bindingReferenceFunctions.joinToString { it.owner.callableId.toString() + "/" + it.owner })
                 arguments[0] = with(pluginContext) {
                     irLambda(
                         parent = lambdaParent,
                         returnType = symbols.unit.defaultType,
                         valueParameters = listOf(builderScopeClass.defaultType),
                         content = { lambda ->
+                            val bindingObjects = bindingReferenceFunctions
+                                .map { bindFunction ->
+                                    bindFunction.owner.parameters[0].type.classOrFail
+                                }
+                                .toSet()
                             // Add bind calls for each binding function
-                            bindFunctions.forEach { bindFunction ->
-                                val bindingObjectType = bindFunction.owner.parameters[0].type.classOrFail
-                                val bindingObjectClassId = bindingObjectType.owner.classId
-                                    ?: error("Couldn't find classId for $bindingObjectType")
-                                val bindingFunctionId = EnroNames.Generated.bindFunction(bindingObjectClassId)
-                                val bindMethod = bindingObjectType.functions.single {
-                                    bindingFunctionId == it.owner.callableId
-                                }
-
-                                +irCall(bindMethod).apply {
-                                    arguments[0] = irGetObject(bindingObjectType)
-                                    arguments[1] = irGet(lambda.parameters[0])
-                                }
+                            bindingObjects.forEach { bindingObjectType ->
+                                bindingObjectType.functions
+                                    .filter { it.owner.name.identifierOrNullIfSpecial.orEmpty().startsWith("bind") }
+                                    .forEach { bindFunction ->
+                                        +irCall(bindFunction).apply {
+                                            arguments[0] = irGetObject(bindingObjectType)
+                                            arguments[1] = irGet(lambda.parameters[0])
+                                        }
+                                    }
                             }
                         }
-                    )
+                    ).also {
+                        logger.warn(it.dumpKotlinLike())
+                    }
                 }
             }
             val controllerVal = irTemporary(

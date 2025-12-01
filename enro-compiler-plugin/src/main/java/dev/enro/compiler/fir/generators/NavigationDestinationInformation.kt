@@ -19,14 +19,11 @@ class NavigationDestinationInformation(
     val declarationName = nameForSymbol(symbol)
         ?: error("$symbol is not a valid NavigationDestination")
 
-    val generatedBindingId = ClassId(
-        packageFqName = EnroNames.Generated.generatedPackage,
-        topLevelName = Name.identifier(
-            "_$packageName.${declarationName}Binding".replace(
-                ".",
-                "_"
-            )
-        ),
+    val generatedBindingId = Name.identifier(
+        "_$packageName.${declarationName}".replace(
+            ".",
+            "_"
+        )
     )
 
     fun getNavigationDestinationAnnotation(session: FirSession): FirAnnotation {
