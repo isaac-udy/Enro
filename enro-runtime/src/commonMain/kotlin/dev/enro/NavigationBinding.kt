@@ -46,6 +46,14 @@ public class NavigationBinding<K : NavigationKey> @PublishedApi internal constru
     }
 }
 
+public fun <T : NavigationKey> T.asCommonDestination(): NavigationKey.WithMetadata<T> {
+    return withMetadata(NavigationBinding.Companion.UseOriginalBindingKey, true)
+}
+
+public fun <T : NavigationKey> NavigationKey.WithMetadata<T>.asCommonDestination(): NavigationKey.WithMetadata<T> {
+    return withMetadata(NavigationBinding.Companion.UseOriginalBindingKey, true)
+}
+
 public fun <T : NavigationKey> NavigationKey.Instance<T>.asCommonDestination(): NavigationKey.Instance<T> {
     val commonInstance = NavigationKey.Instance<T>(
         key = this.key,
