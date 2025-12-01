@@ -41,9 +41,6 @@ allprojects {
             substitute(module("dev.enro:enro-annotations"))
                 .using(project(":enro-annotations"))
 
-            substitute(module("dev.enro:enro-processor"))
-                .using(project(":enro-processor"))
-
             substitute(module("dev.enro:enro-compiler-plugin"))
                 .using(project(":enro-compiler-plugin"))
 
@@ -94,7 +91,8 @@ tasks.register("publishEnroLocal") {
             workingDir = rootProject.projectDir
             commandLine(
                 "./gradlew",
-                ":enro-processor:publishMavenPublicationToMavenLocal",
+                ":enro-compiler-plugin:publishMavenPublicationToMavenLocal",
+                ":enro-compiler-plugin-gradle:publishMavenPublicationToMavenLocal",
                 ":enro-annotations:publishAndroidReleasePublicationToMavenLocal",
                 ":enro-annotations:publishDesktopPublicationToMavenLocal",
 

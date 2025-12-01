@@ -12,9 +12,12 @@ Enro is a powerful navigation library based on a simple idea; screens within an 
 Enro is published to [Maven Central](https://search.maven.org/). Make sure your project includes the mavenCentral() repository, and then include the following in your module's build.gradle:
 
 ```kotlin
+plugins {
+   id("dev.enro.gradle")
+}
+
 dependencies {
     implementation("dev.enro:enro:3.0.0-alpha05")
-    ksp("dev.enro:enro-processor:3.0.0-alpha05")
     testImplementation("dev.enro:enro-test:3.0.0-alpha05")
 }
 ```
