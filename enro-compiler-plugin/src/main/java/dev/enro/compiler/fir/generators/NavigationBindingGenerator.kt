@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.fir.packageFqName
 import org.jetbrains.kotlin.fir.plugin.createMemberFunction
 import org.jetbrains.kotlin.fir.references.builder.buildResolvedNamedReference
 import org.jetbrains.kotlin.fir.resolve.defaultType
+import org.jetbrains.kotlin.fir.resolve.providers.getRegularClassSymbolByClassId
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
@@ -257,7 +258,7 @@ class NavigationBindingGenerator(
             resolvedSymbol = fragmentDestinationSymbol
         }
 
-        val navigationKeyType = navigationKeyClassId.constructClassLikeType()
+        val navigationKeyType = session.getRegularClassSymbolByClassId(navigationKeyClassId)!!.defaultType()
 
         val fragmentDestinationCall = buildFunctionCall {
             source = null
@@ -352,7 +353,7 @@ class NavigationBindingGenerator(
             resolvedSymbol = activityDestinationSymbol
         }
 
-        val navigationKeyType = navigationKeyClassId.constructClassLikeType()
+        val navigationKeyType = session.getRegularClassSymbolByClassId(navigationKeyClassId)!!.defaultType()
 
         val activityDestinationCall = buildFunctionCall {
             source = null
@@ -491,7 +492,7 @@ class NavigationBindingGenerator(
             .first { it.name == Name.identifier("content") }
 
         // Create the type argument for NavigationKey
-        val navigationKeyType = navigationKeyClassId.constructClassLikeType()
+        val navigationKeyType = session.getRegularClassSymbolByClassId(navigationKeyClassId)!!.defaultType()
 
         val contentParameterLambda = builder.buildLambdaExpression(
             functionType = contentParameterSymbol.fir.returnTypeRef.coneType,
@@ -657,7 +658,7 @@ class NavigationBindingGenerator(
         }
 
         // Create the type argument for NavigationKey
-        val navigationKeyType = navigationKeyClassId.constructClassLikeType()
+        val navigationKeyType = session.getRegularClassSymbolByClassId(navigationKeyClassId)!!.defaultType()
 
         return buildFunctionCall {
             source = null

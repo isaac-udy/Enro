@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetObject
 import org.jetbrains.kotlin.ir.builders.irReturnableBlock
 import org.jetbrains.kotlin.ir.builders.irTemporary
+import org.jetbrains.kotlin.ir.builders.irUnit
 import org.jetbrains.kotlin.ir.builders.parent
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationParent
@@ -30,9 +31,7 @@ import org.jetbrains.kotlin.ir.types.classOrFail
 import org.jetbrains.kotlin.ir.types.defaultType
 import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.SYNTHETIC_OFFSET
-import org.jetbrains.kotlin.ir.util.callableId
 import org.jetbrains.kotlin.ir.util.defaultType
-import org.jetbrains.kotlin.ir.util.dumpKotlinLike
 import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.name.Name
@@ -47,12 +46,20 @@ class InstallNavigationControllerTransformer(
     override fun visitCall(expression: IrCall): IrExpression {
         val callee = expression.symbol.owner
         if (callee.symbol != enroSymbols.installNavigationController) return expression
-        val application = expression.arguments[0]!!
+
+        val applicationParameter = callee
+            .parameters
+            .firstOrNull { it.name.identifierOrNullIfSpecial == "application" }
+
 
         val controllerType = pluginContext.referenceClass(EnroNames.Runtime.enroController)!!
         return pluginContext.createIrBuilder(expression.symbol).irReturnableBlock(
             resultType = controllerType.defaultType
         ) {
+            val installationTarget = when {
+                applicationParameter != null -> expression.arguments[applicationParameter]
+                else -> irUnit()
+            }
             // Create the internalCreateEnroController call
             val createControllerCall = irCall(enroSymbols.internalCreateEnroController).apply {
                 val builderScopeClass = pluginContext.referenceClass(
@@ -61,7 +68,6 @@ class InstallNavigationControllerTransformer(
 
                 val lambdaParent = parent
                 val bindingReferenceFunctions = enroSymbols.bindingReferenceFunctions
-                logger.warn("binding funcs: " + bindingReferenceFunctions.joinToString { it.owner.callableId.toString() + "/" + it.owner })
                 arguments[0] = with(pluginContext) {
                     irLambda(
                         parent = lambdaParent,
@@ -84,11 +90,10 @@ class InstallNavigationControllerTransformer(
                                 }
                             }
                         }
-                    ).also {
-                        logger.warn(it.dumpKotlinLike())
-                    }
+                    )
                 }
             }
+
             val controllerVal = irTemporary(
                 value = createControllerCall, // Initialize the variable with the function call
                 nameHint = "controller",
@@ -101,8 +106,9 @@ class InstallNavigationControllerTransformer(
             +irCall(installFunction).apply {
                 // The controller instance is the dispatch receiver for the instance method
                 arguments[0] = irGet(controllerVal)
-                arguments[1] = application
+                arguments[1] = installationTarget
             }
+
             +irGet(controllerVal)
         }
     }
@@ -131,7 +137,12 @@ internal fun irLambda(
             }
             .apply {
                 this.parent = parent
-                valueParameters.forEachIndexed { index, type -> addValueParameter("arg$index", type) }
+                valueParameters.forEachIndexed { index, type ->
+                    addValueParameter(
+                        "arg$index",
+                        type
+                    )
+                }
                 body = context.createIrBuilder(this.symbol).irBlockBody { content(this@apply) }
             }
     return IrFunctionExpressionImpl(

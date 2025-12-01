@@ -30,10 +30,7 @@ struct EnroTestApplicationApp: App {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
      ) -> Bool {
          SelectDestination_iosKt.registerIosDestinations()
-         TestApplicationComponent.shared.installNavigationController(
-             application: application,
-             block: { scope in }
-         )
+         TestApplication.shared.install(application: application)
          return true
      }
  }

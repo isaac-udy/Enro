@@ -10,18 +10,17 @@ import androidx.compose.ui.window.application
 import dev.enro.asInstance
 import dev.enro.backstackOf
 import dev.enro.close
+import dev.enro.installNavigationController
 import dev.enro.platform.desktop.GenericRootWindow
 import dev.enro.platform.desktop.RootWindow
 import dev.enro.platform.desktop.openWindow
 import dev.enro.tests.application.SelectDestination
-import dev.enro.tests.application.TestApplicationComponent
-import dev.enro.tests.application.installNavigationController
 import dev.enro.ui.EnroApplicationContent
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 
 fun main() {
-    val controller = TestApplicationComponent.installNavigationController(Unit)
+    val controller = installNavigationController()
     controller.openWindow(
         GenericRootWindow(
             windowConfiguration = {
