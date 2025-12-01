@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.fir.expressions.FirStatement
 import org.jetbrains.kotlin.fir.expressions.buildResolvedArgumentList
 import org.jetbrains.kotlin.fir.expressions.builder.buildBlock
 import org.jetbrains.kotlin.fir.expressions.builder.buildFunctionCall
+import org.jetbrains.kotlin.fir.expressions.builder.buildLiteralExpression
 import org.jetbrains.kotlin.fir.expressions.builder.buildPropertyAccessExpression
 import org.jetbrains.kotlin.fir.expressions.builder.buildResolvedQualifier
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
@@ -49,6 +50,7 @@ import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.types.ConstantValueKind
 
 @OptIn(SymbolInternals::class)
 class NavigationBindingGenerator(
@@ -59,14 +61,29 @@ class NavigationBindingGenerator(
 
     override fun FirDeclarationPredicateRegistrar.registerPredicates() {
         register(annotated(EnroNames.Annotations.navigationDestination.asSingleFqName()))
+        register(annotated(EnroNames.Annotations.navigationDestinationPlatformOverride.asSingleFqName()))
     }
 
     private val symbols: FirCache<Unit, Map<Name, NavigationDestinationInformation>, FirSession> =
         session.firCachesFactory.createCache { _, session ->
-            session.predicateBasedProvider
+            val destinations = session.predicateBasedProvider
                 .getSymbolsByPredicate(annotated(EnroNames.Annotations.navigationDestination.asSingleFqName()))
-                .associate { symbol ->
-                    val info = NavigationDestinationInformation(symbol)
+                .map {
+                    NavigationDestinationInformation(
+                        symbol = it,
+                        isPlatformOverride = false
+                    )
+                }
+            val platformOverrides = session.predicateBasedProvider
+                .getSymbolsByPredicate(annotated(EnroNames.Annotations.navigationDestinationPlatformOverride.asSingleFqName()))
+                .map {
+                    NavigationDestinationInformation(
+                        symbol = it,
+                        isPlatformOverride = true
+                    )
+                }
+            (destinations + platformOverrides)
+                .associate { info ->
                     info.generatedBindingId to info
                 }
         }
@@ -185,12 +202,14 @@ class NavigationBindingGenerator(
                 scopeParameter = scopeParameter,
                 navigationKeyClassId = navigationKeyClassId,
                 classSymbol = symbol,
+                isPlatformOverride = navigationDestination.isPlatformOverride,
             )
         } else {
             buildActivityDestinationCall(
                 scopeParameter = scopeParameter,
                 navigationKeyClassId = navigationKeyClassId,
                 classSymbol = symbol,
+                isPlatformOverride = navigationDestination.isPlatformOverride,
             )
         }
 
@@ -218,6 +237,7 @@ class NavigationBindingGenerator(
         scopeParameter: FirValueParameterSymbol,
         navigationKeyClassId: ClassId,
         classSymbol: FirClassLikeSymbol<*>,
+        isPlatformOverride: Boolean,
     ): FirFunctionCall {
         // Find the destination function
         val builderDestinationCallableId =
@@ -235,6 +255,9 @@ class NavigationBindingGenerator(
 
         val builderDestinationParameter = builderDestinationSymbol.valueParameterSymbols
             .first { it.name == Name.identifier("destination") }
+
+        val platformOverrideParameter = builderDestinationSymbol.valueParameterSymbols
+            .first { it.name == Name.identifier("isPlatformOverride") }
 
         val builderDestinationReference = buildResolvedNamedReference {
             source = null
@@ -297,6 +320,13 @@ class NavigationBindingGenerator(
                 original = null,
                 mapping = linkedMapOf(
                     fragmentDestinationCall to builderDestinationParameter.fir,
+                    buildLiteralExpression(
+                        source = null,
+                        // The type of the string literal is String
+                        kind = ConstantValueKind.Boolean,
+                        value = isPlatformOverride,
+                        setType = true
+                    ) to platformOverrideParameter.fir
                 )
             )
             typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
@@ -311,6 +341,7 @@ class NavigationBindingGenerator(
         scopeParameter: FirValueParameterSymbol,
         navigationKeyClassId: ClassId,
         classSymbol: FirClassLikeSymbol<*>,
+        isPlatformOverride: Boolean,
     ): FirFunctionCall {
         // Find the destination function
         val builderDestinationCallableId =
@@ -328,6 +359,9 @@ class NavigationBindingGenerator(
 
         val builderDestinationParameter = builderDestinationSymbol.valueParameterSymbols
             .first { it.name == Name.identifier("destination") }
+
+        val platformOverrideParameter = builderDestinationSymbol.valueParameterSymbols
+            .first { it.name == Name.identifier("isPlatformOverride") }
 
         val builderDestinationReference = buildResolvedNamedReference {
             source = null
@@ -392,6 +426,13 @@ class NavigationBindingGenerator(
                 original = null,
                 mapping = linkedMapOf(
                     activityDestinationCall to builderDestinationParameter.fir,
+                    buildLiteralExpression(
+                        source = null,
+                        // The type of the string literal is String
+                        kind = ConstantValueKind.Boolean,
+                        value = isPlatformOverride,
+                        setType = true
+                    ) to platformOverrideParameter.fir
                 )
             )
             typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
@@ -429,6 +470,7 @@ class NavigationBindingGenerator(
             scopeParameter = scopeParameter,
             navigationKeyClassId = navigationKeyClassId,
             composableFunctionSymbol = functionSymbol,
+            isPlatformOverride = navigationDestination.isPlatformOverride
         )
 
         return destinationCall
@@ -442,6 +484,7 @@ class NavigationBindingGenerator(
         scopeParameter: FirValueParameterSymbol,
         navigationKeyClassId: ClassId,
         composableFunctionSymbol: FirNamedFunctionSymbol,
+        isPlatformOverride: Boolean,
     ): FirFunctionCall {
         // Find the navigationDestination function
         val builderDestinationCallableId =
@@ -459,6 +502,9 @@ class NavigationBindingGenerator(
 
         val builderDestinationParameter = builderDestinationSymbol.valueParameterSymbols
             .first { it.name == Name.identifier("destination") }
+
+        val platformOverrideParameter = builderDestinationSymbol.valueParameterSymbols
+            .first { it.name == Name.identifier("isPlatformOverride") }
 
         val builderDestinationReference = buildResolvedNamedReference {
             source = null
@@ -567,6 +613,13 @@ class NavigationBindingGenerator(
                 original = null,
                 mapping = linkedMapOf(
                     navigationDestinationCall to builderDestinationParameter.fir,
+                    buildLiteralExpression(
+                        source = null,
+                        // The type of the string literal is String
+                        kind = ConstantValueKind.Boolean,
+                        value = isPlatformOverride,
+                        setType = true
+                    ) to platformOverrideParameter.fir
                 )
             )
             typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {
@@ -590,6 +643,7 @@ class NavigationBindingGenerator(
             scopeParameter = scopeParameter,
             navigationKeyClassId = navigationKeyClassId,
             propertySymbol = symbol,
+            isPlatformOverride = navigationDestination.isPlatformOverride,
         )
 
         return destinationCall
@@ -603,6 +657,7 @@ class NavigationBindingGenerator(
         scopeParameter: FirValueParameterSymbol,
         navigationKeyClassId: ClassId,
         propertySymbol: FirPropertySymbol,
+        isPlatformOverride: Boolean,
     ): FirStatement {
         // Find the navigationDestination function
         val builderDestinationCallableId =
@@ -620,6 +675,9 @@ class NavigationBindingGenerator(
 
         val builderDestinationParameter = builderDestinationSymbol.valueParameterSymbols
             .first { it.name == Name.identifier("destination") }
+
+        val platformOverrideParameter = builderDestinationSymbol.valueParameterSymbols
+            .first { it.name == Name.identifier("isPlatformOverride") }
 
         val builderDestinationReference = buildResolvedNamedReference {
             source = null
@@ -677,6 +735,13 @@ class NavigationBindingGenerator(
                 original = null,
                 mapping = linkedMapOf(
                     propertyAccess to builderDestinationParameter.fir,
+                    buildLiteralExpression(
+                        source = null,
+                        // The type of the string literal is String
+                        kind = ConstantValueKind.Boolean,
+                        value = isPlatformOverride,
+                        setType = true
+                    ) to platformOverrideParameter.fir
                 )
             )
             typeArguments += org.jetbrains.kotlin.fir.types.builder.buildTypeProjectionWithVariance {

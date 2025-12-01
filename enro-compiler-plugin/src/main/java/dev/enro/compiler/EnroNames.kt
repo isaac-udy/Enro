@@ -99,6 +99,7 @@ object EnroNames {
     object Annotations {
         val annotationsPackage = FqName("dev.enro.annotations")
         val navigationDestination = ClassId(annotationsPackage, Name.identifier("NavigationDestination"))
+        val navigationDestinationPlatformOverride = navigationDestination.createNestedClassId(Name.identifier("PlatformOverride"))
         val generatedNavigationBinding = ClassId(annotationsPackage, Name.identifier("GeneratedNavigationBinding"))
     }
 

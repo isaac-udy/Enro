@@ -9,6 +9,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import kotlinx.serialization.Serializable
@@ -27,6 +28,7 @@ fun PlatformOverrideExample() {
         Text(
             text = "Platform Override Example\nCommon Destination",
             style = MaterialTheme.typography.subtitle1,
+            textAlign = TextAlign.Center,
         )
     }
 }
