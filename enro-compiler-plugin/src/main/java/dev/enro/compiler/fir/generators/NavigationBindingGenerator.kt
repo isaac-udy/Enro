@@ -3,7 +3,6 @@ package dev.enro.compiler.fir.generators
 import dev.enro.compiler.EnroLogger
 import dev.enro.compiler.EnroNames
 import dev.enro.compiler.fir.Keys
-import dev.enro.compiler.fir.isFromGeneratedDeclaration
 import dev.enro.compiler.fir.utils.EnroFirBuilder
 import dev.enro.compiler.utils.nameForSymbol
 import org.jetbrains.kotlin.descriptors.ClassKind
@@ -14,8 +13,8 @@ import org.jetbrains.kotlin.fir.declarations.DirectDeclarationsAccess
 import org.jetbrains.kotlin.fir.declarations.declaredFunctions
 import org.jetbrains.kotlin.fir.declarations.getAnnotationByClassId
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
-import org.jetbrains.kotlin.fir.expressions.FirBlock
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
+import org.jetbrains.kotlin.fir.expressions.FirStatement
 import org.jetbrains.kotlin.fir.expressions.buildResolvedArgumentList
 import org.jetbrains.kotlin.fir.expressions.builder.buildBlock
 import org.jetbrains.kotlin.fir.expressions.builder.buildFunctionCall
@@ -27,7 +26,6 @@ import org.jetbrains.kotlin.fir.extensions.MemberGenerationContext
 import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate.BuilderContext.annotated
 import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
 import org.jetbrains.kotlin.fir.packageFqName
-import org.jetbrains.kotlin.fir.plugin.createDefaultPrivateConstructor
 import org.jetbrains.kotlin.fir.plugin.createMemberFunction
 import org.jetbrains.kotlin.fir.references.builder.buildResolvedNamedReference
 import org.jetbrains.kotlin.fir.resolve.defaultType
@@ -35,7 +33,6 @@ import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
@@ -75,7 +72,7 @@ class NavigationBindingGenerator(
 
     override fun getCallableNamesForClass(
         classSymbol: FirClassSymbol<*>,
-        context: MemberGenerationContext
+        context: MemberGenerationContext,
     ): Set<Name> {
         val isGeneratedBinding = classSymbol.name.identifierOrNullIfSpecial
             .orEmpty()
@@ -86,39 +83,23 @@ class NavigationBindingGenerator(
             return emptySet()
         }
 
-        return symbols.getValue(Unit, session).values.map {
-            val destinationName = it.generatedBindingId
-            EnroNames.Generated.bindFunction(
-                classSymbol.classId,
-                destinationName.identifier,
-            ).callableName
-        }.toSet()
-    }
-
-    override fun generateConstructors(context: MemberGenerationContext): List<FirConstructorSymbol> {
-        if (!context.owner.origin.isFromGeneratedDeclaration(Keys.GeneratedNavigationBinding)) {
-            return emptyList()
-        }
-        return listOf(
-            createDefaultPrivateConstructor(
-                context.owner,
-                Keys.GeneratedNavigationBinding
-            ).symbol
-        )
+        // Add the top-level "bind" function that calls all individual bindings
+        return setOf(Name.identifier("bind"))
     }
 
     override fun generateFunctions(
         callableId: CallableId,
-        context: MemberGenerationContext?
+        context: MemberGenerationContext?,
     ): List<FirNamedFunctionSymbol> {
-        generateBindFunction(
+        // Handle the top-level "bind" function that calls all individual bindings
+        generateTopLevelBindFunction(
             callableId = callableId,
             context = context,
         )?.let { return listOf(it) }
         return emptyList()
     }
 
-    private fun generateBindFunction(
+    private fun generateTopLevelBindFunction(
         callableId: CallableId,
         context: MemberGenerationContext?,
     ): FirNamedFunctionSymbol? {
@@ -126,10 +107,7 @@ class NavigationBindingGenerator(
         val classId = callableId.classId ?: return null
         if (classId.packageFqName != EnroNames.Generated.generatedPackage) return null
         if (!classId.shortClassName.identifier.startsWith("EnroBindings")) return null
-
-        val bindingName = Name.identifier(callableId.callableName.identifier.removePrefix("bind"))
-        val navigationDestinationInformation = symbols.getValue(Unit, session)[bindingName]
-            ?: error("No navigation destination information found for ${callableId.callableName}")
+        if (callableId.callableName.identifier != "bind") return null
 
         val function = createMemberFunction(
             owner = context.owner,
@@ -143,43 +121,51 @@ class NavigationBindingGenerator(
             )
         }
 
-        // Get the scope parameter symbol for use in function body generation
+        val destinations = symbols.getValue(Unit, session).values
         val scopeParameterSymbol = function.valueParameters.first().symbol
-
-        function.apply {
-            when (navigationDestinationInformation.symbol) {
-                is FirClassLikeSymbol -> replaceBody(
-                    createClassBindingFor(
-                        navigationDestinationInformation,
-                        scopeParameterSymbol
+        // Build the body that calls all individual bind functions
+        function.replaceBody(
+            buildBlock {
+                statements += destinations.map { destination ->
+                    generateDestinationBindingStatement(
+                        destinationInformation = destination,
+                        scopeParameter = scopeParameterSymbol,
                     )
-                )
-
-                is FirFunctionSymbol -> replaceBody(
-                    createFunctionBindingFor(
-                        navigationDestinationInformation,
-                        scopeParameterSymbol
-                    )
-                )
-
-                is FirPropertySymbol -> replaceBody(
-                    createPropertyBindingFor(
-                        navigationDestinationInformation,
-                        scopeParameterSymbol
-                    )
-                )
-
-                else -> error("Unsupported symbol type")
+                }
             }
-        }
+        )
 
         return function.symbol
+    }
+
+    private fun generateDestinationBindingStatement(
+        destinationInformation: NavigationDestinationInformation,
+        scopeParameter: FirValueParameterSymbol,
+    ): FirStatement {
+        return when (destinationInformation.symbol) {
+            is FirClassLikeSymbol -> createClassBindingFor(
+                destinationInformation,
+                scopeParameter
+            )
+
+            is FirFunctionSymbol -> createFunctionBindingFor(
+                destinationInformation,
+                scopeParameter
+            )
+
+            is FirPropertySymbol -> createPropertyBindingFor(
+                destinationInformation,
+                scopeParameter
+            )
+
+            else -> error("Unsupported symbol type")
+        }
     }
 
     private fun createClassBindingFor(
         navigationDestination: NavigationDestinationInformation,
         scopeParameter: FirValueParameterSymbol,
-    ): FirBlock {
+    ): FirStatement {
         val symbol = navigationDestination.symbol as? FirClassLikeSymbol
             ?: error("${nameForSymbol(navigationDestination.symbol)} is not a class or object")
 
@@ -207,9 +193,7 @@ class NavigationBindingGenerator(
             )
         }
 
-        return buildBlock {
-            statements += destinationCall
-        }
+        return destinationCall
     }
 
     private fun FirClassLikeSymbol<*>.isSubclassOf(
@@ -420,7 +404,7 @@ class NavigationBindingGenerator(
     private fun createFunctionBindingFor(
         navigationDestination: NavigationDestinationInformation,
         scopeParameter: FirValueParameterSymbol,
-    ): FirBlock {
+    ): FirStatement {
         val functionSymbol = navigationDestination.symbol as? FirNamedFunctionSymbol
             ?: error("${nameForSymbol(navigationDestination.symbol)} is not a function")
 
@@ -446,9 +430,7 @@ class NavigationBindingGenerator(
             composableFunctionSymbol = functionSymbol,
         )
 
-        return buildBlock {
-            statements += destinationCall
-        }
+        return destinationCall
     }
 
     /**
@@ -461,7 +443,8 @@ class NavigationBindingGenerator(
         composableFunctionSymbol: FirNamedFunctionSymbol,
     ): FirFunctionCall {
         // Find the navigationDestination function
-        val builderDestinationCallableId = EnroNames.Runtime.NavigationModuleBuilderScope.destinationFunction
+        val builderDestinationCallableId =
+            EnroNames.Runtime.NavigationModuleBuilderScope.destinationFunction
         val builderSymbol = session.symbolProvider.getClassLikeSymbolByClassId(
             EnroNames.Runtime.navigationModuleBuilderScope
         ) as FirRegularClassSymbol
@@ -541,7 +524,8 @@ class NavigationBindingGenerator(
                         resolvedSymbol = composableFunctionSymbol
                     }
                     coneTypeOrNull = composableFunctionSymbol.resolvedReturnType
-                    argumentList = buildResolvedArgumentList(original = null, mapping = linkedMapOf())
+                    argumentList =
+                        buildResolvedArgumentList(original = null, mapping = linkedMapOf())
                 }
             }
         }
@@ -594,7 +578,7 @@ class NavigationBindingGenerator(
     private fun createPropertyBindingFor(
         navigationDestination: NavigationDestinationInformation,
         scopeParameter: FirValueParameterSymbol,
-    ): FirBlock {
+    ): FirStatement {
         val symbol = navigationDestination.symbol as? FirPropertySymbol
             ?: error("${nameForSymbol(navigationDestination.symbol)} is not a property")
 
@@ -607,9 +591,7 @@ class NavigationBindingGenerator(
             propertySymbol = symbol,
         )
 
-        return buildBlock {
-            statements += destinationCall
-        }
+        return destinationCall
     }
 
     /**
@@ -620,7 +602,7 @@ class NavigationBindingGenerator(
         scopeParameter: FirValueParameterSymbol,
         navigationKeyClassId: ClassId,
         propertySymbol: FirPropertySymbol,
-    ): FirFunctionCall {
+    ): FirStatement {
         // Find the navigationDestination function
         val builderDestinationCallableId =
             EnroNames.Runtime.NavigationModuleBuilderScope.destinationFunction

@@ -24,18 +24,3 @@ fun ModuleOneScreen() {
         )
     }
 }
-
-@Composable
-fun ModuleOneScreen_2() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            text = "Module One (2)",
-            style = MaterialTheme.typography.subtitle1,
-        )
-    }
-}
-

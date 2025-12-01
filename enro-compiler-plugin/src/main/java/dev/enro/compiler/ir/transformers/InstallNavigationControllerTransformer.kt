@@ -75,14 +75,13 @@ class InstallNavigationControllerTransformer(
                                 .toSet()
                             // Add bind calls for each binding function
                             bindingObjects.forEach { bindingObjectType ->
-                                bindingObjectType.functions
-                                    .filter { it.owner.name.identifierOrNullIfSpecial.orEmpty().startsWith("bind") }
-                                    .forEach { bindFunction ->
-                                        +irCall(bindFunction).apply {
-                                            arguments[0] = irGetObject(bindingObjectType)
-                                            arguments[1] = irGet(lambda.parameters[0])
-                                        }
-                                    }
+                                val bindFunction = bindingObjectType.functions
+                                    .single { it.owner.name.identifierOrNullIfSpecial == "bind" }
+
+                                +irCall(bindFunction).apply {
+                                    arguments[0] = irGetObject(bindingObjectType)
+                                    arguments[1] = irGet(lambda.parameters[0])
+                                }
                             }
                         }
                     ).also {
