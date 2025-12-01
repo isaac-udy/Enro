@@ -1,5 +1,5 @@
+
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
-import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -49,6 +49,7 @@ tasks.withType<KotlinCompile>().configureEach {
 gradlePlugin {
     plugins {
         create("dev.enro.gradle") {
+            group = "dev.enro"
             id = "dev.enro.gradle"
             implementationClass = "dev.enro.gradle.EnroGradleSubplugin"
         }
