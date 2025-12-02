@@ -38,18 +38,17 @@ class NavigationProcessor(
             // GeneratedNavigationBindings from the EnroLocation.GENERATED_PACKAGE package,
             // and put them into the "bindings" map so they can be referenced in the "finish" function
             platform = ResolverPlatform.getPlatform(resolver)
-            resolver.getDeclarationsFromPackage(EnroLocation.GENERATED_PACKAGE)
-                .filterIsInstance<KSClassDeclaration>()
-                .filter { declaration ->
-                    declaration.isAnnotationPresent(GeneratedNavigationBinding::class)
-                }
-                .toList()
-                .map { declaration ->
-                    GeneratedBindingReference.fromDeclaration(declaration).let { binding ->
-                        generatedBindings[binding.qualifiedName] = binding
-                    }
-                }
         }
+
+        resolver.getDeclarationsFromPackage(EnroLocation.GENERATED_PACKAGE)
+            .filterIsInstance<KSClassDeclaration>()
+            .filter { !generatedBindings.containsKey(it.qualifiedName?.asString()) }
+            .filter { it.isAnnotationPresent(GeneratedNavigationBinding::class) }
+            .forEach { declaration ->
+                GeneratedBindingReference.fromDeclaration(declaration).let { binding ->
+                    generatedBindings[binding.qualifiedName] = binding
+                }
+            }
 
         // Whenever we see a new class annotated with GeneratedNavigationBinding, we're also going to add this
         // to the bindings map, so that it can be referenced in the "finish" function
@@ -107,6 +106,12 @@ class NavigationProcessor(
     }
 
     override fun finish() {
+        environment.logger.warn(
+            "NavigationProcessor finished with ${componentsToProcess.size} components and ${generatedBindings.size} bindings",
+        )
+        generatedBindings.forEach {
+            environment.logger.warn("Generated binding: ${it.value.destination}")
+        }
         // After we've finished all rounds of processing for this module, we're going to process the NavigationComponent
         // objects that we found and stored in componentsToProcess. We always need to do this as the final step in
         // "finish" because the GeneratedNavigationComponent needs to reference all of the GeneratedNavigationBindings

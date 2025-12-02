@@ -127,23 +127,3 @@ dependencies {
     lintChecks(project(":enro-lint"))
 }
 
-
-afterEvaluate {
-    tasks.named("kspDebugKotlinAndroid") {
-        dependsOn("generateActualResourceCollectorsForAndroidMain")
-        dependsOn("generateComposeResClass")
-        dependsOn("generateExpectResourceCollectorsForCommonMain")
-        dependsOn("generateResourceAccessorsForAndroidDebug")
-        dependsOn("generateResourceAccessorsForAndroidMain")
-        dependsOn("generateResourceAccessorsForCommonMain")
-    }
-
-    tasks.named("kspReleaseKotlinAndroid") {
-        dependsOn("generateActualResourceCollectorsForAndroidMain")
-        dependsOn("generateComposeResClass")
-        dependsOn("generateExpectResourceCollectorsForCommonMain")
-        dependsOn("generateResourceAccessorsForAndroidRelease")
-        dependsOn("generateResourceAccessorsForAndroidMain")
-        dependsOn("generateResourceAccessorsForCommonMain")
-    }
-}
