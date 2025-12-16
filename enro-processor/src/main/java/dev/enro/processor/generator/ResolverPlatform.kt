@@ -21,6 +21,8 @@ sealed class ResolverPlatform {
         val webDocumentClassName: ClassName,
     ) : ResolverPlatform()
 
+    data object Other : ResolverPlatform()
+
     companion object {
         @OptIn(KspExperimental::class)
         fun getPlatform(resolver: Resolver) : ResolverPlatform {
@@ -50,7 +52,7 @@ sealed class ResolverPlatform {
                 )
             }
 
-            error("Unknown platform")
+            return ResolverPlatform.Other
         }
     }
 }

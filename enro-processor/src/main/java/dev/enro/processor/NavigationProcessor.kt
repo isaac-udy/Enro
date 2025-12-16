@@ -106,12 +106,6 @@ class NavigationProcessor(
     }
 
     override fun finish() {
-        environment.logger.warn(
-            "NavigationProcessor finished with ${componentsToProcess.size} components and ${generatedBindings.size} bindings",
-        )
-        generatedBindings.forEach {
-            environment.logger.warn("Generated binding: ${it.value.destination}")
-        }
         // After we've finished all rounds of processing for this module, we're going to process the NavigationComponent
         // objects that we found and stored in componentsToProcess. We always need to do this as the final step in
         // "finish" because the GeneratedNavigationComponent needs to reference all of the GeneratedNavigationBindings
