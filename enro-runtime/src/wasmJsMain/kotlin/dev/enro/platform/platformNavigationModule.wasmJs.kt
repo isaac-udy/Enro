@@ -1,6 +1,6 @@
 package dev.enro.platform
 
 import dev.enro.controller.NavigationModule
+import dev.enro.controller.createNavigationModule
 
-internal actual val platformNavigationModule: NavigationModule
-    get() = TODO("Not yet implemented")
+internal actual val platformNavigationModule: NavigationModule = createNavigationModule {  }

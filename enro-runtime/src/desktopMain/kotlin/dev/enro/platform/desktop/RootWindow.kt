@@ -12,7 +12,6 @@ import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.backhandler.LocalBackGestureDispatcher
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.window.FrameWindowScope
@@ -49,7 +48,6 @@ public class RootWindow<out T: NavigationKey> internal constructor(
     ViewModelStoreOwner,
     HasDefaultViewModelProviderFactory {
 
-    public val backDispatcher: EnroBackDispatcher = EnroBackDispatcher()
     private val windowConfiguration: WindowConfiguration by mutableStateOf(
         windowConfiguration()
     )
@@ -134,7 +132,6 @@ public class RootWindow<out T: NavigationKey> internal constructor(
                         }
                         val rootWindowScope = remember(navigationHandle) {
                             val scope = RootWindowScope<T>(
-                                rootWindow = this,
                                 navigation = navigationHandle as RootNavigationHandle<T>,
                                 frameWindowScope = windowScope,
                             )
@@ -144,7 +141,6 @@ public class RootWindow<out T: NavigationKey> internal constructor(
 
                         CompositionLocalProvider(
                             LocalRootContext provides context,
-                            LocalBackGestureDispatcher provides backDispatcher,
                             LocalNavigationHandle provides navigationHandle,
                             LocalViewModelStoreOwner provides viewModelStoreOwner,
                         ) {
@@ -220,7 +216,6 @@ public class RootWindow<out T: NavigationKey> internal constructor(
 }
 
 public class RootWindowScope<out T: NavigationKey> internal constructor(
-    private val rootWindow: RootWindow<T>,
     public val navigation: NavigationHandle<T>,
     private val frameWindowScope: FrameWindowScope,
 ) : FrameWindowScope by frameWindowScope {
@@ -230,7 +225,4 @@ public class RootWindowScope<out T: NavigationKey> internal constructor(
 
     public val key: T
         get() = navigation.key
-
-    public val backDispatcher: EnroBackDispatcher
-        get() = rootWindow.backDispatcher
 }

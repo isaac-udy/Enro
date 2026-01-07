@@ -4,5 +4,6 @@ import androidx.compose.runtime.Composable
 
 @Composable
 internal actual fun rememberShouldRemoveViewModelStoreCallback(): () -> Boolean {
-    TODO("Not yet implemented")
+    // On wasmJs, always remove ViewModelStore when destination is removed
+    return { true }
 }

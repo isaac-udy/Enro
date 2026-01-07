@@ -1,10 +1,11 @@
 [versions]
 agp = "8.13.0"
 android-compileSdk = "36"
-android-minSdk = "21"
+android-minSdk = "23"
 android-targetSdk = "36"
 kotlin = "2.2.21"
-compose-plugin = "1.9.3"
+compose-plugin = "1.10.0-rc02"
+compose = "1.10.0-rc02"
 kotlinx-serialization = "1.9.0"
 maven-publish = "0.34.0"
 ksp = "2.3.3"
@@ -32,10 +33,9 @@ androidx-splashscreen = "androidx.core:core-splashscreen:1.2.0"
 # Used for interoperability testing in the main Enro test suite
 androidx-navigation-fragment = "androidx.navigation:navigation-fragment-ktx:2.9.6"
 androidx-navigation-ui = "androidx.navigation:navigation-ui-ktx:2.9.6"
-androidx-navigation-event = "androidx.navigationevent:navigationevent:1.0.0-rc01"
 
-androidx-activity = "androidx.activity:activity-ktx:1.11.0"
-compose-activity = "androidx.activity:activity-compose:1.11.0"
+androidx-activity = "androidx.activity:activity-ktx:1.12.2"
+compose-activity = "androidx.activity:activity-compose:1.12.2"
 
 androidx-viewmodel = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel:2.9.6"
 androidx-lifecycle-process = "androidx.lifecycle:lifecycle-process:2.9.4"
@@ -58,7 +58,7 @@ compose-material3 = "androidx.compose.material:material3:1.7.8"
 compose-lifecycle = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:2.9.6"
 compose-bundle = "org.jetbrains.androidx.core:core-bundle:1.0.1"
 compose-viewmodel = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.6"
-
+compose-navigationEvent = "org.jetbrains.androidx.navigationevent:navigationevent-compose:1.0.0-rc02"
 
 compose-accompanist-systemUiController = "com.google.accompanist:accompanist-systemuicontroller:0.36.0"
 

@@ -19,6 +19,7 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.viewmodel)
             implementation(libs.compose.lifecycle)
+            implementation(libs.compose.navigationEvent)
             implementation(libs.androidx.savedState)
             implementation(libs.androidx.savedState.compose)
             implementation(libs.kotlinx.serialization)

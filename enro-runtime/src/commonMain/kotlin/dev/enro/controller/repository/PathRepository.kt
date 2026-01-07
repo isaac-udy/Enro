@@ -22,9 +22,7 @@ public class PathRepository {
 
     public fun getPathBinding(path: ParsedPath): NavigationPathBinding<*>? {
         val matching = bindings.filter { it.matches(path) }
-        require(matching.isNotEmpty()) {
-            "No path binding found for path: $path"
-        }
+        if (matching.isEmpty()) return null
         require(matching.size == 1) {
             "Multiple path bindings found for path: $path"
         }

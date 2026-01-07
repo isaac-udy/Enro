@@ -25,6 +25,10 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.NavigationEventTransitionState
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.asBackstack
@@ -303,25 +307,15 @@ private fun HandlePredictiveBack(
         if (scene.previousEntries.isNotEmpty()) return@remember true
         state.emptyBehavior.isBackHandlerEnabled(backstack)
     }
+
+    val navState = rememberNavigationEventState(NavigationEventInfo.None)
     NavigationBackHandler(
-        enabled = isEnabled && state.context.isActiveInRoot,
-    ) { navEvent ->
-        state.predictiveBackProgress = 0f
-        try {
-            // Collect gesture progress events
-            navEvent.collect { value ->
-                state.inPredictiveBack = true
-                val isProgressConsumed = state.emptyBehavior
-                    .onPredictiveBackProgress(
-                        backstack = scene.previousEntries.map { it.instance }.asBackstack(),
-                        progress = value.progress
-                    )
-                if (!isProgressConsumed) {
-                    state.predictiveBackProgress = value.progress
-                }
-            }
-            // Gesture completed - execute the back navigation
-            state.inPredictiveBack = false
+        state = navState,
+        isBackEnabled = isEnabled,
+        onBackCancelled = {
+            // Process the canceled back gesture
+        },
+        onBackCompleted = {
             val previousIds = scene.previousEntries
                 .map { it.instance.id }
                 .toSet()
@@ -332,9 +326,27 @@ private fun HandlePredictiveBack(
             toCloseDestinations.forEach {
                 it.getNavigationHandle<NavigationKey>().requestClose()
             }
-        } finally {
-            // Ensure state is cleaned up even if an error occurs
-            state.inPredictiveBack = false
+        }
+    )
+
+    LaunchedEffect(navState.transitionState) {
+        when (val transitionState = navState.transitionState) {
+            is NavigationEventTransitionState.InProgress -> {
+                state.inPredictiveBack = true
+                val isProgressConsumed = state.emptyBehavior
+                    .onPredictiveBackProgress(
+                        backstack = scene.previousEntries.map { it.instance }.asBackstack(),
+                        progress = transitionState.latestEvent.progress,
+                    )
+
+                if (!isProgressConsumed) {
+                    state.predictiveBackProgress = transitionState.latestEvent.progress
+                }
+            }
+
+            is NavigationEventTransitionState.Idle -> {
+                state.inPredictiveBack = false
+            }
         }
     }
 }
