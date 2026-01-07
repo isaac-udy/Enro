@@ -28,6 +28,9 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.navigationevent.NavigationEventDispatcher
+import androidx.navigationevent.NavigationEventDispatcherOwner
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import dev.enro.EnroController
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
@@ -46,7 +49,8 @@ public class RootWindow<out T: NavigationKey> internal constructor(
     private val content: @Composable RootWindowScope<T>.() -> Unit,
 ) : LifecycleOwner,
     ViewModelStoreOwner,
-    HasDefaultViewModelProviderFactory {
+    HasDefaultViewModelProviderFactory,
+    NavigationEventDispatcherOwner {
 
     private val windowConfiguration: WindowConfiguration by mutableStateOf(
         windowConfiguration()
@@ -83,9 +87,15 @@ public class RootWindow<out T: NavigationKey> internal constructor(
             return windowViewModelStoreOwner.defaultViewModelProviderFactory
         }
 
+    private var windowNavigationEventDispatcher: NavigationEventDispatcher? = null
+    override val navigationEventDispatcher: NavigationEventDispatcher
+        get() = requireNotNull(windowNavigationEventDispatcher) {
+            "windowNavigationEventDispatcher has not been initialized yet"
+        }
+
     private val activeChildId = mutableStateOf<String?>(null)
 
-    public val context: RootContext = RootContext(
+    public val navigationContext: RootContext = RootContext(
         id = "RootWindow(${instance.key::class.simpleName})" + "$@${hashCode()}",
         parent = this,
         controller = controller,
@@ -97,11 +107,11 @@ public class RootWindow<out T: NavigationKey> internal constructor(
 
     @OptIn(ExperimentalComposeUiApi::class)
     internal val movableWindowContent = movableContentOf {
-        key(context.id) {
+        key(navigationContext.id) {
             val lazyRootWindowScope = remember<MutableState<RootWindowScope<T>?>> {
                 mutableStateOf(null)
             }
-            if (controller.rootContextRegistry.getAllContexts().contains(context)) {
+            if (controller.rootContextRegistry.getAllContexts().contains(navigationContext)) {
                 val movableContent = remember {
                     movableContentOf { windowScope: FrameWindowScope ->
                         val localViewModelStoreOwner = LocalViewModelStoreOwner.current
@@ -116,6 +126,7 @@ public class RootWindow<out T: NavigationKey> internal constructor(
                             )
                         }
                         windowViewModelStoreOwner = viewModelStoreOwner
+                        windowNavigationEventDispatcher = LocalNavigationEventDispatcherOwner.current!!.navigationEventDispatcher
                         // Get or create the NavigationHandleHolder for this destination
                         val navigationHandle = remember(viewModelStoreOwner) {
                             val instance = instance
@@ -127,12 +138,13 @@ public class RootWindow<out T: NavigationKey> internal constructor(
                             }
                             val navigationHandle = holder.navigationHandle
                             require(navigationHandle is RootNavigationHandle)
-                            navigationHandle.bindContext(context)
+                            navigationHandle.bindContext(navigationContext)
                             return@remember navigationHandle
                         }
                         val rootWindowScope = remember(navigationHandle) {
-                            val scope = RootWindowScope<T>(
-                                navigation = navigationHandle as RootNavigationHandle<T>,
+                            val scope = RootWindowScope(
+                                navigationContext = navigationContext,
+                                navigation = navigationHandle,
                                 frameWindowScope = windowScope,
                             )
                             lazyRootWindowScope.value = scope
@@ -140,7 +152,7 @@ public class RootWindow<out T: NavigationKey> internal constructor(
                         }
 
                         CompositionLocalProvider(
-                            LocalRootContext provides context,
+                            LocalRootContext provides navigationContext,
                             LocalNavigationHandle provides navigationHandle,
                             LocalViewModelStoreOwner provides viewModelStoreOwner,
                         ) {
@@ -188,7 +200,7 @@ public class RootWindow<out T: NavigationKey> internal constructor(
 
                 DisposableEffect(Unit) {
                     onDispose {
-                        if (!controller.rootContextRegistry.getAllContexts().contains(context)) {
+                        if (!controller.rootContextRegistry.getAllContexts().contains(navigationContext)) {
                             lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
                         }
                     }
@@ -216,6 +228,7 @@ public class RootWindow<out T: NavigationKey> internal constructor(
 }
 
 public class RootWindowScope<out T: NavigationKey> internal constructor(
+    public val navigationContext: RootContext,
     public val navigation: NavigationHandle<T>,
     private val frameWindowScope: FrameWindowScope,
 ) : FrameWindowScope by frameWindowScope {

@@ -5,7 +5,10 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.MenuBar
 import dev.enro.close
+import dev.enro.context.activeLeaf
+import dev.enro.context.getNavigationHandle
 import dev.enro.platform.desktop.RootWindowScope
+import dev.enro.requestClose
 
 @Composable
 fun RootWindowScope<*>.EnroTestApplicationMenu() {
@@ -18,7 +21,7 @@ fun RootWindowScope<*>.EnroTestApplicationMenu() {
                     meta = true
                 )
             ) {
-                backDispatcher.onBack()
+                navigationContext.activeLeaf().getNavigationHandle().requestClose()
             }
             Item(
                 "Close",

@@ -10,9 +10,12 @@ import androidx.compose.ui.window.application
 import dev.enro.asInstance
 import dev.enro.backstackOf
 import dev.enro.close
+import dev.enro.context.activeLeaf
+import dev.enro.context.getNavigationHandle
 import dev.enro.platform.desktop.GenericRootWindow
 import dev.enro.platform.desktop.RootWindow
 import dev.enro.platform.desktop.openWindow
+import dev.enro.requestClose
 import dev.enro.tests.application.SelectDestination
 import dev.enro.tests.application.TestApplicationComponent
 import dev.enro.tests.application.installNavigationController
@@ -34,7 +37,7 @@ fun main() {
                             true
                         }
                         if (it.type == KeyEventType.KeyDown && it.key == Key.Escape) {
-                            backDispatcher.onBack()
+                            navigationContext.activeLeaf().getNavigationHandle().requestClose()
                         }
                         false
                     }
@@ -50,7 +53,7 @@ fun main() {
                             meta = true
                         )
                     ) {
-                        backDispatcher.onBack()
+                        navigationContext.activeLeaf().getNavigationHandle().requestClose()
                     }
                     Item(
                         "Close",

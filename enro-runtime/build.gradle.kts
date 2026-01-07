@@ -9,7 +9,6 @@ plugins {
 kotlin {
     sourceSets {
         desktopMain.dependencies {
-            api(libs.compose.ui.backhandler)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.coroutines.swing)
         }
@@ -19,7 +18,7 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.viewmodel)
             implementation(libs.compose.lifecycle)
-            implementation(libs.compose.navigationEvent)
+            api(libs.compose.navigationEvent)
             implementation(libs.androidx.savedState)
             implementation(libs.androidx.savedState.compose)
             implementation(libs.kotlinx.serialization)

@@ -6,6 +6,6 @@ import dev.enro.NavigationKey
 public fun EnroController.openWindow(
     window: RootWindow<NavigationKey>,
 ) {
-    rootContextRegistry.register(window.context)
+    rootContextRegistry.register(window.navigationContext)
 }
 

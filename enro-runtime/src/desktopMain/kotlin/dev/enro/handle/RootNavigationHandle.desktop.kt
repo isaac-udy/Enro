@@ -42,7 +42,7 @@ internal actual fun <T : NavigationKey> RootNavigationHandle<T>.handleNavigation
             NavigationResultChannel.registerResult(
                 NavigationResult.Completed(instance, complete.result),
             )
-            context.controller.rootContextRegistry.unregister(window.context)
+            context.controller.rootContextRegistry.unregister(window.navigationContext)
         }
         close != null -> {
             if (!close.silent) {
@@ -50,7 +50,7 @@ internal actual fun <T : NavigationKey> RootNavigationHandle<T>.handleNavigation
                     NavigationResult.Closed(instance),
                 )
             }
-            context.controller.rootContextRegistry.unregister(window.context)
+            context.controller.rootContextRegistry.unregister(window.navigationContext)
         }
         else -> {}
     }

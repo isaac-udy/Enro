@@ -36,7 +36,6 @@ android {
 kotlin {
     sourceSets {
         desktopMain.dependencies {
-            implementation(libs.compose.ui.backhandler)
             implementation(libs.kotlin.reflect)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.coroutines.swing)
