@@ -1,35 +1,31 @@
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
-import dev.enro.core.window.EnroViewport
-import dev.enro.tests.application.EnroComponent
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.window.ComposeViewport
+import dev.enro.asInstance
+import dev.enro.backstackOf
+import dev.enro.tests.application.SelectDestination
+import dev.enro.tests.application.TestApplicationComponent
+import dev.enro.tests.application.TestApplicationComponentNavigation
 import dev.enro.tests.application.installNavigationController
+import dev.enro.ui.EnroBrowserContent
+import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.rememberNavigationContainer
 import kotlinx.browser.document
-import kotlinx.browser.window
 import org.jetbrains.compose.resources.configureWebResources
 
+@OptIn(ExperimentalComposeUiApi::class)
 fun main() {
+    TestApplicationComponent.installNavigationController(document)
     configureWebResources {
         resourcePathMapping { path -> "./$path" }
     }
-
-    runCatching {
-        val controller = EnroComponent.installNavigationController(
-            document = document,
-        )
-
-        val path = window.location
-        val specificPath = window.location.href
-            .removePrefix(path.origin)
-            .removeSuffix(path.hash)
-        val instruction = controller.instructionForPath(specificPath)
-        if (instruction != null) {
-            controller.windowManager.open(instruction)
+    ComposeViewport {
+        EnroBrowserContent {
+            val container = rememberNavigationContainer(
+                backstack = backstackOf(SelectDestination().asInstance())
+            )
+            NavigationDisplay(container)
         }
-
-        EnroViewport(
-            controller = controller,
-        )
-    }.onFailure {
-        it.printStackTrace()
     }
 }
