@@ -3,6 +3,7 @@ package dev.enro.processor
 import com.google.auto.service.AutoService
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.isAnnotationPresent
+import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -10,6 +11,10 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.ksp.writeTo
 import dev.enro.annotations.GeneratedNavigationBinding
 import dev.enro.processor.domain.ComponentReference
 import dev.enro.processor.domain.GeneratedBindingReference
@@ -77,6 +82,30 @@ class NavigationProcessor(
                     error(error)
                 }
                 componentsToProcess[name] = ComponentReference.fromDeclaration(environment, it)
+
+                // It appears that on some platforms, the "getDeclarationsFromPackage" call above won't
+                // work unless there's either something *in* that package that's owned by the module
+                // under compilation, so we write a "Sentinel" here for each NavigationComponent,
+                // which means that if we're in a module that only defines a NavigationComponent but
+                // no NavigationDestinations, we're still going to be able to hit a second round of
+                // processing and get all of the getDeclarationsFromPackage when the "process" function
+                // gets called for a second time. It appears this is only an issue on iOS/wasm targets,
+                // so if removing this in the future, make sure to test on those targets!
+                val typeSpec = TypeSpec.classBuilder("_${name.replace(".", "_")}Sentinel")
+                    .addModifiers(KModifier.PRIVATE)
+                    .build()
+
+                FileSpec
+                    .builder(EnroLocation.GENERATED_PACKAGE, requireNotNull(typeSpec.name))
+                    .addType(typeSpec)
+                    .build()
+                    .writeTo(
+                        codeGenerator = environment.codeGenerator,
+                        dependencies = Dependencies(
+                            aggregating = false,
+                            sources = arrayOf(requireNotNull(it.containingFile)),
+                        )
+                    )
             }
 
         // Whenever we see a class, function or property annotated with NavigationDestination, we're going to grab tha
