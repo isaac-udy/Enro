@@ -106,7 +106,6 @@ internal fun Project.configureKotlinMultiplatform(
                 binaries.executable()
                 compilations["main"].packageJson {
                     main = "$projectName-backend.js"
-                    description = "Cloud Functions for Firebase"
                     version = "1.0.0"
                     customField("engines", mapOf("node" to "22"))
                     private = true
