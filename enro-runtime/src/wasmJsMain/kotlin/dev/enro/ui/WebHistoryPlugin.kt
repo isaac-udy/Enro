@@ -1,0 +1,392 @@
+package dev.enro.ui
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import dev.enro.EnroController
+import dev.enro.NavigationBackstack
+import dev.enro.NavigationContainer
+import dev.enro.NavigationHandle
+import dev.enro.annotations.ExperimentalEnroApi
+import dev.enro.context.ContainerContext
+import dev.enro.controller.createNavigationModule
+import dev.enro.emptyBackstack
+import dev.enro.plugin.NavigationPlugin
+import kotlinx.browser.window
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
+import kotlinx.serialization.Serializable
+import org.w3c.dom.PopStateEvent
+import org.w3c.dom.Window
+import org.w3c.dom.events.Event
+
+// TODO: rootOnly=true is pretty safe, but probably need to do a bit more exploring with rootOnly=flase,
+//  as it appears to work correctly in many cases, but there still seem to be some cases where the
+//  synthetic backstack history gets out of sync with the browser history. There's also the case
+//  with managed flows where things don't quite work as you might expect with the browser history,
+//  resulting in some strange forward/back behavior and some steps getting skipped. One solution to
+//  explore here is to make sure to clear the results for steps when they are navigated away from
+//  due to browser back presses. Another option might be to use some kind of "reset" on the history
+//  state when things appear to be getting out-of-sync (or some pop-and-then-push forward resets).
+//  It may also be interesting to do some kind of middle ground here, where certain destinations
+//  or containers are allowed within the history, but not all of them. This would be a reasonable
+//  way to allow for some more complex navigation while avoiding certain issues that may
+//  be present with the full/deep container history.
+@ExperimentalEnroApi
+internal class WebHistoryPlugin(
+    private val window: Window,
+    private val rootContainer: ContainerContext,
+    private val rootOnly: Boolean = true,
+) : NavigationPlugin() {
+
+    private var activeHistoryJob: Job? = null
+    private var eventListenerEnabled = true
+    private val eventListener: (Event) -> Unit = {
+        if (eventListenerEnabled && it is PopStateEvent) {
+            updateHistoryState(it)
+        }
+    }
+
+    // In-memory representation of the browser history for this session
+    private val historyStates = mutableListOf<ContainerNode>()
+    private var historyIndex = -1 // Index of the current state in historyStates
+
+    init {
+        window.addEventListener("popstate", eventListener)
+    }
+
+    override fun onAttached(controller: EnroController) {}
+
+    override fun onDetached(controller: EnroController) {}
+
+    override fun onOpened(navigationHandle: NavigationHandle<*>) {
+        updateHistoryState()
+    }
+
+    override fun onActive(navigationHandle: NavigationHandle<*>) {
+        updateHistoryState()
+    }
+
+    override fun onClosed(navigationHandle: NavigationHandle<*>) {
+        updateHistoryState()
+    }
+
+    @OptIn(ExperimentalWasmJsInterop::class)
+    private fun updateHistoryState(
+        event: PopStateEvent? = null,
+    ) {
+        val container = rootContainer
+        eventListenerEnabled = false
+        if (activeHistoryJob != null) {
+            return
+        }
+        activeHistoryJob = CoroutineScope(Dispatchers.Main).launch {
+            val currentState = createNodeFor(container, rootOnly)
+            val serializedCurrentState = EnroController.jsonConfiguration
+                .encodeToString(currentState)
+                .toJsString()
+
+            val windowState = window.history.state?.let {
+                EnroController.jsonConfiguration
+                    .decodeFromString<ContainerNode>(it.toString())
+            }
+
+            if (event != null && event.state != null) {
+                val poppedState = EnroController.jsonConfiguration
+                    .decodeFromString<ContainerNode>(event.state.toString())
+                if (currentState != poppedState) {
+                    applyNodeFor(container, poppedState)
+                    val updatedState = createNodeFor(container, rootOnly)
+                    if (updatedState != poppedState) {
+                        window.history.back()
+                        return@launch
+                    }
+                    val poppedIndex = historyStates.indexOfFirst { it == poppedState }
+                    if (poppedIndex != -1) {
+                        historyIndex = poppedIndex
+                    } else {
+                        historyStates.add(poppedState)
+                        historyIndex = historyStates.lastIndex
+                    }
+                }
+            } else { // Not a popstate event (opened, active, closed, init)
+                val isInit = historyStates.isEmpty() && historyIndex == -1
+                val isNoOp = windowState != null && windowState == currentState
+
+                val closeIndex = historyStates.indexOfLast { it == currentState }
+                val isClose = closeIndex >= 0
+
+                when {
+                    isInit -> {
+                        historyStates.add(currentState)
+                        historyIndex = 0
+                        window.history.replaceState(
+                            serializedCurrentState,
+                            "example",
+                            "#${historyIndex}"
+                        )
+                    }
+
+                    isNoOp -> {
+                        val windowIndex = historyStates.indexOfLast { it == currentState }
+                        historyIndex = windowIndex
+                        historyStates[historyIndex] = currentState
+                        window.history.replaceState(
+                            serializedCurrentState,
+                            "example",
+                            "#${historyIndex}"
+                        )
+                    }
+
+                    isClose -> {
+                        println("History close")
+                        // when the target state is a close, we need to pop back to that element in the history
+                        val previousIndex = historyIndex
+                        historyIndex = closeIndex
+                        historyStates[historyIndex] = currentState
+                        val goDelta = closeIndex - previousIndex
+                        if (closeIndex == 0) {
+                            println("going back delta replace: ${goDelta}")
+                            window.history.go(goDelta)
+                            window.history.replaceState(
+                                serializedCurrentState,
+                                "example",
+                                "#${historyIndex}"
+                            )
+                        } else {
+                            println("going back delta push: ${goDelta}")
+                            window.history.go(goDelta - 1)
+                            delay(1)
+                            window.history.pushState(
+                                serializedCurrentState,
+                                "example",
+                                "#${historyIndex}"
+                            )
+                        }
+                    }
+                    else -> {
+                        val currentIndex = historyStates.indexOfLast { it == currentState }
+                        if (currentIndex < 0) {
+                            historyStates.subList(historyIndex + 1, historyStates.size).clear()
+                            historyStates.add(currentState)
+                            historyIndex = historyStates.lastIndex
+                            window.history.pushState(
+                                serializedCurrentState,
+                                "example",
+                                "#${historyIndex}"
+                            )
+                        } else {
+                            val previousIndex = historyIndex
+                            historyIndex = currentIndex
+                            historyStates[historyIndex] = currentState
+                            window.history.go(previousIndex - currentIndex)
+                            delay(1)
+                            window.history.pushState(
+                                serializedCurrentState,
+                                "example",
+                                "#${historyIndex}"
+                            )
+                        }
+                    }
+                }
+            }
+            delay(1)
+        }.apply {
+            invokeOnCompletion {
+                activeHistoryJob = null
+                eventListenerEnabled = true
+            }
+        }
+    }
+}
+
+
+@Serializable
+internal data class ContainerNode(
+    val containerKey: NavigationContainer.Key,
+    val backstack: NavigationBackstack,
+    val children: List<ContainerNode>,
+) {
+    override fun toString(): String {
+        val content = "backstack = [${backstack.joinToString { it.navigationKey.toString() }}],\n" +
+                "children = [${children.joinToString { it.toString() }}],\n"
+        return buildString {
+            appendLine("ContainerNode(")
+            content.lines().forEach {
+                appendLine(it.prependIndent("    "))
+            }
+            append(")")
+        }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null) return false
+        if (other::class != this::class) return false
+
+        other as ContainerNode
+
+        if (containerKey != other.containerKey) return false
+        if (backstack.map { it.id } != other.backstack.map { it.id }) return false
+
+        val filteredChildren =
+            children.filter { it.backstack.isNotEmpty() }.sortedBy { it.containerKey.name }
+        val otherFilteredChildren =
+            other.children.filter { it.backstack.isNotEmpty() }.sortedBy { it.containerKey.name }
+        if (filteredChildren.size != otherFilteredChildren.size) return false
+        filteredChildren.forEachIndexed { index, child ->
+            if (child != otherFilteredChildren[index]) return false
+        }
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = containerKey.hashCode()
+        result = 31 * result + backstack.map { it.id }.hashCode()
+        result = 31 * result + children.filter { it.backstack.isNotEmpty() }
+            .sortedBy { it.containerKey.name }.hashCode()
+        return result
+    }
+}
+
+internal fun createNodeFor(
+    container: ContainerContext,
+    rootOnly: Boolean,
+): ContainerNode {
+    return ContainerNode(
+        containerKey = container.container.key,
+        backstack = container.container.backstack,
+        // When we're in the "rootOnly" navigation mode, we just want to ignore
+        // any changes in child containers, as they are not relevant to the back navigation
+        children = when {
+            rootOnly -> emptyList()
+            else -> container.activeChild?.children.orEmpty()
+                .map { createNodeFor(it, false) }
+                .sortedBy { it.containerKey.name }
+
+        }
+    )
+}
+
+internal suspend fun applyNodeFor(
+    container: ContainerContext,
+    node: ContainerNode,
+) {
+    if (container.container.backstack != node.backstack) {
+        container.container.updateBackstack(container) { node.backstack }
+    }
+    // If the backstack is empty, we don't need to do anything else,
+    // so can return early, otherwise we're going to wait for the
+    // child context to be set before we continue
+    if (node.children.isEmpty()) return
+    val childContext = withTimeout(64) {
+        while (container.activeChild?.instance?.id != node.backstack.lastOrNull()?.id) {
+            yield()
+        }
+        container.activeChild
+    }
+    if (childContext == null) {
+        println("Failed to restore")
+        return
+    }
+    val containers = childContext.children
+        .associateBy { it.container.key }
+        .toMutableMap()
+
+    node.children.forEach { childNode ->
+        val child = containers[childNode.containerKey]
+        if (child != null) {
+            applyNodeFor(child, childNode)
+        }
+        containers.remove(childNode.containerKey)
+    }
+    containers.forEach { (_, child) ->
+        child.container.updateBackstack(child) { emptyBackstack() }
+    }
+}
+
+internal fun isNewState(old: ContainerNode, new: ContainerNode): Boolean {
+    val oldInstructions = collectInstructionIds(old).toSet()
+    val newInstructions = collectInstructionIds(new).toSet()
+
+    // If the new tree has instructions not in the old tree, it's a new state
+    if (newInstructions.any { it !in oldInstructions }) {
+        return true
+    }
+
+    // Check if the new tree is a subset of the old tree
+    return !isSubset(old, new)
+}
+
+internal fun collectInstructionIds(node: ContainerNode): List<String> {
+    val instructions = node.backstack.map { it.id }
+    return instructions + node.children.flatMap { collectInstructionIds(it) }
+}
+
+internal fun isSubset(old: ContainerNode, new: ContainerNode): Boolean {
+    fun isNodeSubset(oldNode: ContainerNode, newNode: ContainerNode): Boolean {
+        if (oldNode.containerKey != newNode.containerKey) {
+            return false
+        }
+
+        val oldInstructionIds = oldNode.backstack.map { it.id }
+        val newInstructionIds = newNode.backstack.map { it.id }
+
+        // Check if the new backstack is a prefix of the old backstack
+        if (!newInstructionIds.zip(oldInstructionIds)
+                .all { it.first == it.second } || newInstructionIds.size > oldInstructionIds.size
+        ) {
+            return false
+        }
+
+        val oldChildrenSorted = oldNode.children.sortedBy { it.containerKey.name }
+        val newChildrenSorted = newNode.children.sortedBy { it.containerKey.name }
+
+        if (newChildrenSorted.size > oldChildrenSorted.size) return false
+
+        for (i in newChildrenSorted.indices) {
+            val matchingOldChild = oldChildrenSorted.getOrNull(i)
+            if (matchingOldChild == null || !isNodeSubset(matchingOldChild, newChildrenSorted[i])) {
+                return false
+            }
+        }
+        return true
+    }
+
+    // We need to find a path in the old tree that matches the structure of the new tree
+    fun findMatchInOld(oldRoot: ContainerNode, newRoot: ContainerNode): Boolean {
+        if (oldRoot.containerKey == newRoot.containerKey && isNodeSubset(oldRoot, newRoot)) {
+            if (newRoot.children.isEmpty()) return true
+            return newRoot.children.all { newChild ->
+                oldRoot.children.any { oldChild -> findMatchInOld(oldChild, newChild) }
+            }
+        }
+        return oldRoot.children.any { findMatchInOld(it, newRoot) }
+    }
+
+    return findMatchInOld(old, new)
+}
+
+/**
+ * Experimental browser-based back handling
+ */
+@ExperimentalEnroApi
+@Composable
+public fun InstallWebHistoryPlugin(
+    container: NavigationContainerState,
+) {
+    LaunchedEffect(Unit) {
+        container.context.controller.addModule(
+            createNavigationModule {
+                plugin(WebHistoryPlugin(
+                    window = window,
+                    rootContainer = container.context,
+                ))
+            }
+        )
+    }
+}

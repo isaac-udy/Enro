@@ -12,6 +12,7 @@ import dev.enro.tests.application.SelectDestination
 import dev.enro.tests.application.TestApplicationComponent
 import dev.enro.tests.application.installNavigationController
 import dev.enro.ui.EnroBrowserContent
+import dev.enro.ui.InstallWebHistoryPlugin
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 import embedded_enro.tests.application.generated.resources.NotoEmoji_SemiBold
@@ -40,6 +41,7 @@ fun main() {
             val container = rememberNavigationContainer(
                 backstack = backstackOf(SelectDestination().asInstance())
             )
+            InstallWebHistoryPlugin(container)
             NavigationDisplay(container)
         }
     }

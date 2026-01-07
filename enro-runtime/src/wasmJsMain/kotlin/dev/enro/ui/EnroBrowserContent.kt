@@ -28,10 +28,13 @@ import kotlin.uuid.Uuid
  *
  * Usage:
  * ```kotlin
- * fun main() = CanvasBasedWindow {
- *     EnroBrowserContent {
- *         // Your app content here
- *         MyNavigationContainer()
+ * fun main() {
+ *     MyNavigationComponent.installNavigationController(document)
+ *     ComposeViewPort {
+ *         EnroBrowserContent {
+ *             // Your app content here
+ *             MyApplicationContent()
+ *         }
  *     }
  * }
  * ```
