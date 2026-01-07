@@ -1,12 +1,11 @@
 //
-//import dev.enro.core.AnyOpenInstruction
-//import dev.enro.core.NavigationContainerKey
-//import dev.enro.core.NavigationHandle
-//import dev.enro.core.container.NavigationContainer
-//import dev.enro.core.container.emptyBackstack
-//import dev.enro.core.container.toBackstack
-//import dev.enro.core.controller.NavigationController
-//import dev.enro.core.plugins.EnroPlugin
+//import dev.enro.EnroController
+//import dev.enro.NavigationBackstack
+//import dev.enro.NavigationContainer
+//import dev.enro.NavigationHandle
+//import dev.enro.context.ContainerContext
+//import dev.enro.emptyBackstack
+//import dev.enro.plugin.NavigationPlugin
 //import kotlinx.coroutines.CoroutineScope
 //import kotlinx.coroutines.Dispatchers
 //import kotlinx.coroutines.Job
@@ -33,13 +32,14 @@
 //// be present with the full/deep container history.
 //class WebHistoryPlugin(
 //    private val window: Window,
-//    private val rootContainer: NavigationContainer,
+//    private val rootContainer: ContainerContext,
 //    private val rootOnly: Boolean = true,
-//) : EnroPlugin() {
+//) : NavigationPlugin() {
 //
 //    private var activeHistoryJob: Job? = null
 //    private var eventListenerEnabled = true
 //    private val eventListener: (Event) -> Unit = {
+//        println("ASDASDASD $it")
 //        if (eventListenerEnabled && it is PopStateEvent) {
 //            updateHistoryState(it)
 //        }
@@ -50,22 +50,26 @@
 //    private var historyIndex = -1 // Index of the current state in historyStates
 //
 //    init {
+//        println("created")
 //        window.addEventListener("popstate", eventListener)
 //    }
 //
-//    override fun onAttached(navigationController: NavigationController) {}
+//    override fun onAttached(controller: EnroController) {}
 //
-//    override fun onDetached(navigationController: NavigationController) {}
+//    override fun onDetached(controller: EnroController) {}
 //
-//    override fun onOpened(navigationHandle: NavigationHandle) {
+//    override fun onOpened(navigationHandle: NavigationHandle<*>) {
+//        println("onOpened")
 //        updateHistoryState()
 //    }
 //
-//    override fun onActive(navigationHandle: NavigationHandle) {
+//    override fun onActive(navigationHandle: NavigationHandle<*>) {
+//        println("onActive")
 //        updateHistoryState()
 //    }
 //
-//    override fun onClosed(navigationHandle: NavigationHandle) {
+//    override fun onClosed(navigationHandle: NavigationHandle<*>) {
+//        println("onClosed")
 //        updateHistoryState()
 //    }
 //
@@ -80,17 +84,17 @@
 //        println("START")
 //        activeHistoryJob = CoroutineScope(Dispatchers.Main).launch {
 //            val currentState = createNodeFor(container, rootOnly)
-//            val serializedCurrentState = NavigationController.jsonConfiguration
+//            val serializedCurrentState = EnroController.jsonConfiguration
 //                .encodeToString(currentState)
 //                .toJsString()
 //
 //            val windowState = window.history.state?.let {
-//                NavigationController.jsonConfiguration
+//                EnroController.jsonConfiguration
 //                    .decodeFromString<ContainerNode>(it.toString())
 //            }
 //
 //            if (event != null && event.state != null) {
-//                val poppedState = NavigationController.jsonConfiguration
+//                val poppedState = EnroController.jsonConfiguration
 //                    .decodeFromString<ContainerNode>(event.state.toString())
 //                if (currentState != poppedState) {
 //                    println("History browserpop")
@@ -215,8 +219,8 @@
 //
 //@Serializable
 //data class ContainerNode(
-//    val containerKey: NavigationContainerKey,
-//    val backstack: List<AnyOpenInstruction>,
+//    val containerKey: NavigationContainer.Key,
+//    val backstack: NavigationBackstack,
 //    val children: List<ContainerNode>,
 //) {
 //    override fun toString(): String {
@@ -239,7 +243,7 @@
 //        other as ContainerNode
 //
 //        if (containerKey != other.containerKey) return false
-//        if (backstack.map { it.instructionId } != other.backstack.map { it.instructionId }) return false
+//        if (backstack.map { it.id } != other.backstack.map { it.id }) return false
 //
 //        val filteredChildren =
 //            children.filter { it.backstack.isNotEmpty() }.sortedBy { it.containerKey.name }
@@ -255,7 +259,7 @@
 //
 //    override fun hashCode(): Int {
 //        var result = containerKey.hashCode()
-//        result = 31 * result + backstack.map { it.instructionId }.hashCode()
+//        result = 31 * result + backstack.map { it.id }.hashCode()
 //        result = 31 * result + children.filter { it.backstack.isNotEmpty() }
 //            .sortedBy { it.containerKey.name }.hashCode()
 //        return result
@@ -263,17 +267,17 @@
 //}
 //
 //fun createNodeFor(
-//    container: NavigationContainer,
+//    container: ContainerContext,
 //    rootOnly: Boolean,
 //): ContainerNode {
 //    return ContainerNode(
-//        containerKey = container.key,
-//        backstack = container.backstack.toList(),
+//        containerKey = container.container.key,
+//        backstack = container.container.backstack,
 //        // When we're in the "rootOnly" navigation mode, we just want to ignore
 //        // any changes in child containers, as they are not relevant to the back navigation
 //        children = when {
 //            rootOnly -> emptyList()
-//            else -> container.childContext?.containerManager?.containers.orEmpty()
+//            else -> container.activeChild?.children.orEmpty()
 //                .map { createNodeFor(it, false) }
 //                .sortedBy { it.containerKey.name }
 //
@@ -282,28 +286,28 @@
 //}
 //
 //suspend fun applyNodeFor(
-//    container: NavigationContainer,
+//    container: ContainerContext,
 //    node: ContainerNode,
 //) {
-//    if (container.backstack != node.backstack.toBackstack()) {
-//        container.setBackstack(node.backstack.toBackstack())
+//    if (container.container.backstack != node.backstack) {
+//        container.container.updateBackstack(container) { node.backstack }
 //    }
 //    // If the backstack is empty, we don't need to do anything else,
 //    // so can return early, otherwise we're going to wait for the
 //    // child context to be set before we continue
 //    if (node.children.isEmpty()) return
 //    val childContext = withTimeout(64) {
-//        while (container.childContext?.instruction?.instructionId != node.backstack.lastOrNull()?.instructionId) {
+//        while (container.activeChild?.instance?.id != node.backstack.lastOrNull()?.id) {
 //            yield()
 //        }
-//        container.childContext
+//        container.activeChild
 //    }
 //    if (childContext == null) {
 //        println("Failed to restore")
 //        return
 //    }
-//    val containers = childContext.containerManager.containers
-//        .associateBy { it.key }
+//    val containers = childContext.children
+//        .associateBy { it.container.key }
 //        .toMutableMap()
 //
 //    node.children.forEach { childNode ->
@@ -314,7 +318,7 @@
 //        containers.remove(childNode.containerKey)
 //    }
 //    containers.forEach { (_, child) ->
-//        child.setBackstack(emptyBackstack())
+//        child.container.updateBackstack(child) { emptyBackstack() }
 //    }
 //}
 //
@@ -332,7 +336,7 @@
 //}
 //
 //fun collectInstructionIds(node: ContainerNode): List<String> {
-//    val instructions = node.backstack.map { it.instructionId }
+//    val instructions = node.backstack.map { it.id }
 //    return instructions + node.children.flatMap { collectInstructionIds(it) }
 //}
 //
@@ -342,8 +346,8 @@
 //            return false
 //        }
 //
-//        val oldInstructionIds = oldNode.backstack.map { it.instructionId }
-//        val newInstructionIds = newNode.backstack.map { it.instructionId }
+//        val oldInstructionIds = oldNode.backstack.map { it.id }
+//        val newInstructionIds = newNode.backstack.map { it.id }
 //
 //        // Check if the new backstack is a prefix of the old backstack
 //        if (!newInstructionIds.zip(oldInstructionIds)
