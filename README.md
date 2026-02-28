@@ -1,4 +1,5 @@
 [![Maven Central](https://img.shields.io/maven-central/v/dev.enro/enro.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22dev.enro%22)
+[![libs.tech recommends](https://libs.tech/project/256179010/badge.svg)](https://libs.tech/project/256179010/enro)
 > **Note**
 >
 > Please see the [CHANGELOG](./CHANGELOG.md) to understand the latest changes in Enro
