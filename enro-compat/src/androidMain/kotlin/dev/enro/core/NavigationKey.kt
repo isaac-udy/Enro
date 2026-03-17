@@ -10,6 +10,9 @@ public interface NavigationKey : dev.enro.NavigationKey, Parcelable {
     @Deprecated("Use dev.enro.NavigationKey.WithResult")
     public interface WithResult<T: Any> : NavigationKey, dev.enro.NavigationKey.WithResult<T>
 
+    @Deprecated("Use dev.enro.NavigationKey.WithMetadata")
+    public typealias WithExtras<T> = dev.enro.NavigationKey.WithMetadata<T>
+
     @Deprecated("Use dev.enro.NavigationKey")
     public interface SupportsPush : NavigationKey {
         @Deprecated("Use dev.enro.NavigationKey.WithResult")

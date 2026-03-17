@@ -7,6 +7,9 @@ plugins {
 }
 
 kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xnested-type-aliases")
+    }
     sourceSets {
         desktopMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)

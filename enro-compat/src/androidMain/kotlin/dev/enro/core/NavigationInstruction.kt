@@ -12,6 +12,9 @@ public typealias NavigationInstructionOpen = dev.enro.NavigationKey.Instance<dev
 
 @Deprecated("Use dev.enro.NavigationKey.Instance instead")
 public object NavigationInstruction {
+
+    public typealias Open<T> = dev.enro.NavigationKey.Instance<dev.enro.NavigationKey>
+
     public fun Push(navigationKey: NavigationKey.SupportsPush): NavigationInstructionOpen {
         return navigationKey.asPush()
     }

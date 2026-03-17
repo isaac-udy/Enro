@@ -5,6 +5,7 @@ import dev.enro.core.NavigationKey
 import dev.enro.result.open
 import dev.enro.withMetadata
 
+@Deprecated("Use dev.enro.result.NavigationResultChannel instead")
 public class NavigationResultChannel<Result: Any, Key : NavigationKey>(
     private val wrapped: dev.enro.result.NavigationResultChannel<Result>
 ) {
