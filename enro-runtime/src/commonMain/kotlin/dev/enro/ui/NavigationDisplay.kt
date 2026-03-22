@@ -8,7 +8,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.SeekableTransitionState
-import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
@@ -17,7 +16,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,10 +26,10 @@ import androidx.compose.ui.util.fastForEachReversed
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.NavigationEventState
 import androidx.navigationevent.compose.rememberNavigationEventState
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
-import dev.enro.asBackstack
 import dev.enro.platform.EnroLog
 import dev.enro.requestClose
 import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
@@ -46,22 +44,28 @@ import kotlin.reflect.KClass
 
 /**
  * NavigationDisplay is the main composable for rendering a navigation container's content.
- * It handles:
- * - Scene management (organizing destinations into logical groups like dialogs, overlays, etc.)
- * - Transition animations between destinations
- * - Predictive back gesture support
- * - Lifecycle and state management for destinations
- * - Shared element transitions
  *
- * @param container The navigation container whose backstack will be displayed
+ * It renders and animates between different [NavigationScene]s, each of which can render one
+ * or more [NavigationDestination]s. Overlay scenes (like dialogs) are rendered on top.
+ *
+ * The [NavigationScene]s are calculated with the given [NavigationSceneStrategy], which may be
+ * an assembled chain of strategies. If no scene is calculated, the fallback will be to a
+ * [SinglePaneSceneStrategy].
+ *
+ * It is allowable for different scenes to render the same entries, perhaps on some conditions
+ * as determined by the [sceneStrategy] based on window size, form factor, or other logic.
+ *
+ * If this happens, and these scenes are rendered at the same time due to animation or predictive
+ * back, then the content for the entry will only be rendered in the most recent scene that
+ * is the target for being the current scene. This enforces a unique invocation of each entry,
+ * even if it is displayable by two different scenes.
+ *
+ * @param state The navigation container state whose backstack will be displayed
  * @param modifier Modifier to be applied to the root content
  * @param sceneStrategy Strategy for organizing destinations into scenes (e.g., dialogs, overlays, single pane)
  * @param contentAlignment Alignment of content within the display
  * @param sizeTransform Transform to apply when content size changes during transitions
- * @param transitionSpec Animation spec for forward navigation transitions
- * @param popTransitionSpec Animation spec for back navigation transitions
- * @param predictivePopTransitionSpec Animation spec for predictive back gesture transitions
- * @param containerTransitionSpec Animation spec for transitions when the container [state] changes
+ * @param animations Animation specs for navigation transitions
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -85,8 +89,6 @@ public fun NavigationDisplay(
             state.context.parent.registerVisibility(state.context, false)
         }
     }
-    // Create and remember the state that tracks the display's internal state
-    val sceneState = remember { NavigationSceneState() }
 
     // Calculate the scene hierarchy - scenes organize destinations into logical groups
     val (scene, overlayScenes) = calculateScenes(
@@ -94,7 +96,7 @@ public fun NavigationDisplay(
         sceneStrategy = sceneStrategy,
     )
 
-    // Create a unique key for the current scene and store it
+    // Create a unique key for the current scene
     val sceneKey = SceneKey(
         sceneType = scene::class,
         key = scene.key,
@@ -102,53 +104,147 @@ public fun NavigationDisplay(
         visible = scene.entries.map { it.instance },
         previouslyVisible = scene.previousEntries.map { it.instance },
     )
-    sceneState.scenes[sceneKey] = scene
+
+    // Scene tracking maps (like NavDisplay's sceneMap and zIndices)
+    val sceneMap = remember { mutableStateMapOf<SceneKey, NavigationScene>() }
+    val zIndices = remember { mutableMapOf<SceneKey, Float>() }
+    sceneMap[sceneKey] = scene
+
+    val navigationEventState = rememberNavigationEventState(NavigationEventInfo.None)
 
     // Set up predictive back gesture handling
     HandlePredictiveBack(
+        navigationEventState = navigationEventState,
         scene = overlayScenes.lastOrNull() ?: scene,
         state = state,
     )
 
     // Create the transition state that manages animations between scenes
     val transitionState = remember { SeekableTransitionState(sceneKey) }
-    val transition = rememberTransition(transitionState, label = sceneKey.toString())
+    val transition = rememberTransition(transitionState, label = "scene")
 
-    // Calculate which destinations should be rendered in each scene
-    val sceneToRenderableDestinationMap = calculateSceneToRenderableDestinationMap(
-        state = sceneState,
-        transition = transition,
-    )
-
-    // Determine if this is a pop (back) navigation
-    val lastBackstackIds = remember { mutableStateOf(listOf<String>()) }
-    val currentBackstackIds = state.backstack.map { it.id }
-    val isPop = remember(currentBackstackIds) {
-        val isPop = isPop(
-            lastBackstackIds.value,
-            currentBackstackIds
-        )
-        lastBackstackIds.value = currentBackstackIds
-        return@remember isPop
+    // Track entries from the transition's current state for isPop detection
+    // (like NavDisplay's transitionCurrentStateEntries)
+    val transitionCurrentStateEntries = remember(transition.currentState) {
+        state.backstack.map { it.id }
     }
 
-    // Calculate z-indices for proper layering during transitions
-    val zIndices = updateZIndices(
-        transition = transition,
-        isPop = isPop,
-        inPredictiveBack = state.inPredictiveBack
+    // Gesture state
+    val gestureTransition = navigationEventState.transitionState
+    val progress = when (gestureTransition) {
+            is NavigationEventTransitionState.Idle -> 0f
+            is NavigationEventTransitionState.InProgress -> gestureTransition.latestEvent.progress
+        }
+    val inPredictiveBack = gestureTransition is NavigationEventTransitionState.InProgress
+
+    // Calculate previous scene for predictive back (like NavDisplay's previousScene)
+    val activeScene = overlayScenes.lastOrNull() ?: scene
+    val previousSceneKey = if (inPredictiveBack && activeScene !is NavigationScene.Overlay) {
+        calculatePreviousScene(activeScene, sceneStrategy)?.let { previousScene ->
+            SceneKey(
+                sceneType = previousScene::class,
+                key = previousScene.key,
+                containerKey = state.key,
+                visible = previousScene.entries.map { it.instance },
+                previouslyVisible = previousScene.previousEntries.map { it.instance },
+            ).also { key ->
+                sceneMap[key] = previousScene
+            }
+        }
+    } else null
+
+    // Determine if this is a pop (back) navigation (like NavDisplay's isPop)
+    val isPop = isPop(
+        transitionCurrentStateEntries,
+        state.backstack.map { it.id },
     )
 
-    // Handle transition animations
-    TransitionAnimationEffect(
-        transitionState = transitionState,
-        transition = transition,
-        sceneKey = sceneKey,
-        state = state,
-        scene = overlayScenes.lastOrNull() ?: scene,
-        sceneStrategy = sceneStrategy,
-        scenes = sceneState.scenes
-    )
+    // Z-index management (like NavDisplay)
+    val initialKey = transition.currentState
+    val targetKey = transition.targetState
+    val initialZIndex = zIndices.getOrPut(initialKey) { 0f }
+    val targetZIndex = when {
+        initialKey == targetKey -> initialZIndex
+        isPop || inPredictiveBack -> initialZIndex - 1f
+        else -> initialZIndex + 1f
+    }
+    zIndices[targetKey] = targetZIndex
+
+    // Transition handling (like NavDisplay)
+    if (inPredictiveBack && previousSceneKey != null) {
+        // During predictive back, seek to the previous scene based on gesture progress
+        if (transition.currentState != previousSceneKey) {
+            LaunchedEffect(previousSceneKey, progress) {
+                transitionState.seekTo(progress, previousSceneKey)
+            }
+        }
+    } else {
+        LaunchedEffect(sceneKey) {
+            if (transitionState.currentState != sceneKey) {
+                // Animate to the new scene
+                transitionState.animateTo(sceneKey)
+            } else {
+                // Predictive back has either been completed or cancelled
+                // so now we need to seekTo+snapTo the final state
+                // (like NavDisplay's settle animation)
+
+                // convert from nanoseconds to milliseconds
+                val totalDuration = transition.totalDurationNanos / 1000000
+                // Which way we have to seek depends on whether the
+                // predictive back was completed or cancelled
+                val predictiveBackCompleted = transition.targetState == sceneKey
+                val (finalFraction, remainingDuration) = if (predictiveBackCompleted) {
+                    // If it completed, animate to the state we were
+                    // already seeking to with the remaining duration
+                    1f to ((1f - transitionState.fraction) * totalDuration).toInt()
+                } else {
+                    // If it got cancelled, animate back to the
+                    // initial state, reversing what we seeked to
+                    0f to (transitionState.fraction * totalDuration).toInt()
+                }
+                animate(
+                    transitionState.fraction,
+                    finalFraction,
+                    animationSpec = tween(remainingDuration),
+                ) { value, _ ->
+                    this@LaunchedEffect.launch {
+                        if (value != finalFraction) {
+                            // Seek the transition towards the finalFraction
+                            transitionState.seekTo(value)
+                        }
+                        if (value == finalFraction) {
+                            // Once the animation finishes, we need to snap to the right state.
+                            transitionState.snapTo(sceneKey)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Calculate which destinations should be rendered in each scene
+    // (like NavDisplay's sceneToExcludedEntryMap, but tracking renderable entries instead)
+    val sceneToRenderableDestinationMap = remember(
+        sceneMap.entries.toList(),
+        zIndices.toString(),
+    ) {
+        buildMap {
+            val coveredDestinationIds = mutableSetOf<String>()
+            // Process scenes from highest z-index first, so higher scenes get priority
+            sceneMap.entries
+                .sortedByDescending { zIndices[it.key] ?: 0f }
+                .forEach { (sceneKey, scene) ->
+                    put(
+                        sceneKey,
+                        scene.entries
+                            .map { it.instance.id }
+                            .filterNot(coveredDestinationIds::contains)
+                            .toSet()
+                    )
+                    scene.entries.forEach { coveredDestinationIds.add(it.instance.id) }
+                }
+        }
+    }
 
     // Select the appropriate transition spec based on navigation type
     val contentTransform: AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform = {
@@ -162,44 +258,80 @@ public fun NavigationDisplay(
         }
         when {
             useContainerTransition -> animations.containerTransitionSpec(this)
-            state.inPredictiveBack -> animations.predictivePopTransitionSpec(this)
+            inPredictiveBack -> animations.predictivePopTransitionSpec(this)
             isPop -> animations.popTransitionSpec(this)
             else -> animations.transitionSpec(this)
         }
     }
+
     // Render the navigation content
     CompositionLocalProvider(
         LocalNavigationContainer provides state,
         LocalNavigationContext provides state.context,
     ) {
-       ProvideRemovalTrackingInfo {
-            RenderMainContent(
-                transition = transition,
-                scenes = sceneState.scenes,
-                sceneToRenderableDestinationMap = sceneToRenderableDestinationMap,
-                zIndices = zIndices,
-                contentTransform = contentTransform,
-                contentAlignment = contentAlignment,
-                modifier = modifier,
-                sizeTransform = sizeTransform
-            )
-            CleanupSceneEffect(transition, sceneState)
-            UpdateSettledStateEffect(transition) { state.isSettled = it }
+        ProvideRemovalTrackingInfo {
+            SharedTransitionLayout {
+                transition.AnimatedContent(
+                    contentAlignment = contentAlignment,
+                    modifier = modifier,
+                    transitionSpec = {
+                        ContentTransform(
+                            targetContentEnter = contentTransform(this).targetContentEnter,
+                            initialContentExit = contentTransform(this).initialContentExit,
+                            // z-index increases during navigate and decreases during pop
+                            targetContentZIndex = zIndices[transition.targetState] ?: 0f,
+                            sizeTransform = sizeTransform,
+                        )
+                    }
+                ) { targetSceneKey ->
+                    val targetScene = sceneMap.getValue(targetSceneKey)
+                    LaunchedEffect(targetSceneKey) {
+                        println("Target: entries: ${targetScene.entries.map { it.key }}, prevEntries: ${targetScene.previousEntries.map { it.key }}")
+                    }
+                    // Provide necessary composition locals for the scene content
+                    CompositionLocalProvider(
+                        LocalNavigationAnimatedVisibilityScope provides this@AnimatedContent,
+                        LocalNavigationSharedTransitionScope provides this@SharedTransitionLayout,
+                        LocalDestinationsToRenderInCurrentScene provides sceneToRenderableDestinationMap.getValue(
+                            targetSceneKey
+                        )
+                    ) {
+                        targetScene.content()
+                    }
+                }
+            }
+
+            // Clean up scene book-keeping once the transition is finished (like NavDisplay)
+            LaunchedEffect(transition) {
+                snapshotFlow { transition.isRunning }
+                    .filter { !it }
+                    .collect {
+                        val currentTargetKey = transition.targetState
+                        // Creating a copy to avoid ConcurrentModificationException
+                        sceneMap.keys.toList().forEach { key ->
+                            if (key != currentTargetKey) {
+                                sceneMap.remove(key)
+                            }
+                        }
+                        // Creating a copy to avoid ConcurrentModificationException
+                        zIndices.keys.toList().forEach { key ->
+                            if (key != currentTargetKey) {
+                                zIndices.remove(key)
+                            }
+                        }
+                    }
+            }
+
+            // Update settled state based on transition progress
+            LaunchedEffect(transition.currentState, transition.targetState) {
+                val settled = transition.currentState == transition.targetState
+                state.isSettled = settled
+            }
+
+            // Show all overlay scenes above the AnimatedContent (like NavDisplay)
             RenderOverlayScenes(overlayScenes)
         }
     }
-}
-
-/**
- * Internal state management for NavigationDisplay.
- * Tracks the current state of animations, scenes, and navigation gestures.
- */
-private class NavigationSceneState {
-    /** Map of scene keys to their corresponding NavigationScene instances */
-    val scenes = mutableStateMapOf<SceneKey, NavigationScene>()
-
-    /** Ordered list of scene keys, with most recently targeted scenes last */
-    val mostRecentSceneKeys = mutableStateListOf<SceneKey>()
 }
 
 /**
@@ -211,9 +343,8 @@ private class NavigationSceneState {
  * - Overlay scenes (like dialogs) are rendered on top
  * - Each overlay scene may itself have overlaid content
  *
- * @param destinations The list of all destinations to organize into scenes
+ * @param state The navigation container state
  * @param sceneStrategy The strategy for determining scene organization
- * @param onBack Callback for handling back navigation
  * @return Pair of the main scene and list of overlay scenes
  */
 @Composable
@@ -243,6 +374,30 @@ private fun calculateScenes(
         destinations = destinations,
     )
     return scene to overlayScenes
+}
+
+/**
+ * Calculates the previous scene for predictive back gesture.
+ *
+ * This determines what scene to show "underneath" during a back gesture by running
+ * the scene strategy on the current scene's previous entries. Overlay scenes are
+ * skipped to find the underlying content scene.
+ *
+ * @param scene The current non-overlay scene
+ * @param sceneStrategy The strategy for determining scene organization
+ * @return The previous scene, or null if there are no previous entries
+ */
+@Composable
+private fun calculatePreviousScene(
+    scene: NavigationScene,
+    sceneStrategy: NavigationSceneStrategy,
+): NavigationScene? {
+    if (scene.previousEntries.isEmpty()) return null
+    var previousScene = sceneStrategy.calculateSceneWithSinglePaneFallback(scene.previousEntries)
+    while (previousScene is NavigationScene.Overlay && previousScene.previousEntries.isNotEmpty()) {
+        previousScene = sceneStrategy.calculateSceneWithSinglePaneFallback(previousScene.previousEntries)
+    }
+    return previousScene
 }
 
 @Composable
@@ -292,13 +447,12 @@ private data class SceneHash(
  * Sets up handling for predictive back gestures.
  * Monitors back gesture events and updates the state accordingly.
  *
- * @param scene The current scene
- * @param destinations All destinations in the backstack
- * @param visibility The navigation display state to update
- * @param onBack Callback to execute when back gesture completes
+ * @param scene The current scene (including overlays)
+ * @param state The navigation container state to update
  */
 @Composable
 private fun HandlePredictiveBack(
+    navigationEventState: NavigationEventState<out NavigationEventInfo>,
     scene: NavigationScene,
     state: NavigationContainerState,
 ) {
@@ -308,9 +462,8 @@ private fun HandlePredictiveBack(
         state.emptyBehavior.isBackHandlerEnabled(backstack)
     }
 
-    val navState = rememberNavigationEventState(NavigationEventInfo.None)
     NavigationBackHandler(
-        state = navState,
+        state = navigationEventState,
         isBackEnabled = isEnabled,
         onBackCancelled = {
             // Process the canceled back gesture
@@ -329,26 +482,20 @@ private fun HandlePredictiveBack(
         }
     )
 
-    LaunchedEffect(navState.transitionState) {
-        when (val transitionState = navState.transitionState) {
-            is NavigationEventTransitionState.InProgress -> {
-                state.inPredictiveBack = true
-                val isProgressConsumed = state.emptyBehavior
-                    .onPredictiveBackProgress(
-                        backstack = scene.previousEntries.map { it.instance }.asBackstack(),
-                        progress = transitionState.latestEvent.progress,
-                    )
-
-                if (!isProgressConsumed) {
-                    state.predictiveBackProgress = transitionState.latestEvent.progress
-                }
-            }
-
-            is NavigationEventTransitionState.Idle -> {
-                state.inPredictiveBack = false
-            }
-        }
-    }
+//    LaunchedEffect(navigationEventState.transitionState) {
+//        when (val transitionState = navigationEventState.transitionState) {
+//            is NavigationEventTransitionState.InProgress -> {
+//                val isProgressConsumed = state.emptyBehavior
+//                    .onPredictiveBackProgress(
+//                        backstack = scene.previousEntries.map { it.instance }.asBackstack(),
+//                        progress = transitionState.latestEvent.progress,
+//                    )
+//            }
+//
+//            is NavigationEventTransitionState.Idle -> {
+//            }
+//        }
+//    }
 }
 
 public interface SceneTransitionData {
@@ -359,7 +506,7 @@ public interface SceneTransitionData {
 
 /**
  * A key that uniquely identifies a scene instance.
- * Combines the scene's type (KClass) with its instance key.
+ * Combines the scene's type (KClass) with its instance key and transition data.
  */
 private data class SceneKey(
     val sceneType: KClass<*>,
@@ -368,280 +515,6 @@ private data class SceneKey(
     override val visible: List<NavigationKey.Instance<NavigationKey>>,
     override val previouslyVisible: List<NavigationKey.Instance<NavigationKey>>,
 ) : SceneTransitionData
-
-/**
- * Calculates which destinations should be rendered in each scene.
- *
- * This function ensures that:
- * - Each destination is only rendered in one scene
- * - More recently targeted scenes get priority for rendering destinations
- * - The transition target scene always renders its destinations
- *
- * @param state The navigation display state containing scene information
- * @param transition The current transition state
- * @return Map of scene keys to sets of destination IDs that should be rendered in each scene
- */
-@Composable
-private fun calculateSceneToRenderableDestinationMap(
-    state: NavigationSceneState,
-    transition: Transition<SceneKey>,
-): Map<SceneKey, Set<String>> {
-    // Update the most recent scene keys list when target changes
-    LaunchedEffect(transition.targetState) {
-        if (state.mostRecentSceneKeys.lastOrNull() != transition.targetState) {
-            state.mostRecentSceneKeys.remove(transition.targetState)
-            state.mostRecentSceneKeys.add(transition.targetState)
-        }
-    }
-
-    return remember(
-        state.mostRecentSceneKeys,
-        state.scenes.values.map { scene -> scene.entries.map { it.instance.id } },
-        transition.targetState,
-    ) {
-        buildMap {
-            val coveredDestinationIds = mutableSetOf<String>()
-            // Process scenes from most recent to least recent
-            (state.mostRecentSceneKeys.filter { it != transition.targetState } + listOf(transition.targetState))
-                .fastForEachReversed { sceneKey ->
-                    val scene = state.scenes.getValue(sceneKey)
-                    put(
-                        sceneKey,
-                        scene.entries
-                            .map { it.instance.id }
-                            .filterNot(coveredDestinationIds::contains)  // Only include uncovered destinations
-                            .toSet(),
-                    )
-                    // Mark these destinations as covered
-                    scene.entries.forEach { coveredDestinationIds.add(it.instance.id) }
-                }
-        }
-    }
-}
-
-/**
- * Manages z-indices for proper layering during transitions.
- *
- * Z-index logic:
- * - Forward navigation: new content appears on top (higher z-index)
- * - Back navigation: old content appears on top (lower z-index for new content)
- * - No change when transitioning to the same scene
- *
- * @param transition The current transition state
- * @param isPop Whether this is a back navigation
- * @param inPredictiveBack Whether a predictive back gesture is active
- * @return Map of scene keys to their z-indices
- */
-@Composable
-private fun updateZIndices(
-    transition: Transition<SceneKey>,
-    isPop: Boolean,
-    inPredictiveBack: Boolean,
-): MutableMap<SceneKey, Float> {
-    val zIndices = remember { mutableMapOf<SceneKey, Float>() }
-    val initialKey = transition.currentState
-    val targetKey = transition.targetState
-    val initialZIndex = zIndices.getOrPut(initialKey) { 0f }
-
-    // Calculate target z-index based on navigation direction
-    val targetZIndex = when {
-        initialKey == targetKey -> initialZIndex  // No change for same scene
-        isPop || inPredictiveBack -> initialZIndex - 1f  // Lower for back navigation
-        else -> initialZIndex + 1f  // Higher for forward navigation
-    }
-    zIndices[targetKey] = targetZIndex
-    return zIndices
-}
-
-/**
- * Manages transition animations between scenes.
- *
- * Handles two cases:
- * 1. Predictive back: Creates a "peek" scene and animates based on gesture progress
- * 2. Regular navigation: Animates to the target scene or handles settling animations
- *
- * @param transitionState The seekable transition state for controlling animations
- * @param transition The current transition
- * @param sceneKey The target scene key
- * @param progress Current progress of predictive back gesture
- * @param inPredictiveBack Whether predictive back is active
- * @param scene The current scene
- * @param sceneStrategy Strategy for calculating scenes
- * @param scenes Map of all scenes
- */
-@Composable
-private fun TransitionAnimationEffect(
-    transitionState: SeekableTransitionState<SceneKey>,
-    transition: Transition<SceneKey>,
-    sceneKey: SceneKey,
-    state: NavigationContainerState,
-    scene: NavigationScene,
-    sceneStrategy: NavigationSceneStrategy,
-    scenes: MutableMap<SceneKey, NavigationScene>,
-) {
-    if (state.inPredictiveBack) {
-        if (scene is NavigationScene.Overlay) return
-        // During predictive back, create a "peek" scene showing the previous destinations
-        var peekScene = sceneStrategy.calculateSceneWithSinglePaneFallback(
-            scene.previousEntries,
-        )
-        while (peekScene is NavigationScene.Overlay) {
-            peekScene = sceneStrategy.calculateSceneWithSinglePaneFallback(
-                peekScene.previousEntries,
-            )
-        }
-        val peekSceneKey = SceneKey(
-            sceneType = peekScene::class,
-            key = peekScene.key,
-            containerKey = state.key,
-            visible = peekScene.entries.map { it.instance },
-            previouslyVisible = peekScene.previousEntries.map { it.instance },
-        )
-        scenes[peekSceneKey] = peekScene
-
-        // Seek to the appropriate position based on gesture progress
-        if (transitionState.currentState != peekSceneKey) {
-            LaunchedEffect(state.predictiveBackProgress) {
-                transitionState.seekTo(
-                    state.predictiveBackProgress,
-                    peekSceneKey
-                )
-            }
-        }
-    } else {
-        // Regular navigation - animate to target or handle settling
-        LaunchedEffect(sceneKey) {
-            if (transitionState.currentState != sceneKey) {
-                // Animate to the new scene
-                transitionState.animateTo(sceneKey)
-            } else {
-                // Already at target - animate any remaining settling
-                val totalDuration = transition.totalDurationNanos / 1000000
-                animate(
-                    transitionState.fraction,
-                    0f,
-                    animationSpec = tween((transitionState.fraction * totalDuration).toInt()),
-                ) { value, _ ->
-                    this@LaunchedEffect.launch {
-                        if (value > 0) {
-                            transitionState.seekTo(value)
-                        }
-                        if (value == 0f) {
-                            transitionState.snapTo(sceneKey)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Renders the main navigation content with animated transitions.
- *
- * Uses SharedTransitionLayout and AnimatedContent to:
- * - Animate between different scenes
- * - Support shared element transitions
- * - Provide proper scoping for animations
- *
- * @param transition The current transition state
- * @param scenes Map of all available scenes
- * @param sceneToRenderableDestinationMap Map of which destinations to render in each scene
- * @param zIndices Z-index values for each scene
- * @param contentTransform Transform to apply during transitions
- * @param contentAlignment Alignment of content
- * @param modifier Modifier for the content
- * @param sizeTransform Transform for size changes
- */
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-private fun RenderMainContent(
-    transition: Transition<SceneKey>,
-    scenes: Map<SceneKey, NavigationScene>,
-    sceneToRenderableDestinationMap: Map<SceneKey, Set<String>>,
-    zIndices: Map<SceneKey, Float>,
-    contentTransform: AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform,
-    contentAlignment: Alignment,
-    modifier: Modifier,
-    sizeTransform: SizeTransform?,
-) {
-    SharedTransitionLayout {
-        transition.AnimatedContent(
-            contentAlignment = contentAlignment,
-            modifier = modifier,
-            transitionSpec = {
-                ContentTransform(
-                    targetContentEnter = contentTransform(this).targetContentEnter,
-                    initialContentExit = contentTransform(this).initialContentExit,
-                    targetContentZIndex = zIndices[transition.targetState] ?: 0f,
-                    sizeTransform = sizeTransform,
-                )
-            }
-        ) { targetSceneKey ->
-            val targetScene = scenes.getValue(targetSceneKey)
-            // Provide necessary composition locals for the scene content
-            CompositionLocalProvider(
-                LocalNavigationAnimatedVisibilityScope provides this@AnimatedContent,
-                LocalNavigationSharedTransitionScope provides this@SharedTransitionLayout,
-                LocalDestinationsToRenderInCurrentScene provides sceneToRenderableDestinationMap.getValue(
-                    targetSceneKey
-                )
-            ) {
-                targetScene.content()
-            }
-        }
-    }
-}
-
-/**
- * Cleans up scenes that are no longer needed after transitions complete.
- * This prevents memory leaks and ensures only active scenes are retained.
- *
- * @param transition The current transition state
- * @param state The navigation display state containing scenes
- */
-@Composable
-private fun CleanupSceneEffect(
-    transition: Transition<SceneKey>,
-    state: NavigationSceneState,
-) {
-    LaunchedEffect(transition) {
-        snapshotFlow { transition.isRunning }
-            .filter { !it }  // Only proceed when transition is complete
-            .collect {
-                // Remove all scenes except the current target
-                state.scenes.keys.toList().forEach { key ->
-                    if (key != transition.targetState) {
-                        state.scenes.remove(key)
-                    }
-                }
-                // Clean up the most recent keys list as well
-                state.mostRecentSceneKeys.toList().forEach { key ->
-                    if (key != transition.targetState) {
-                        state.mostRecentSceneKeys.remove(key)
-                    }
-                }
-            }
-    }
-}
-
-/**
- * Updates the settled state based on transition progress.
- * The state is settled when no transition is running (current == target).
- *
- * @param transition The current transition state
- * @param onSettledChange Callback invoked when settled state changes
- */
-@Composable
-private fun UpdateSettledStateEffect(
-    transition: Transition<SceneKey>,
-    onSettledChange: (Boolean) -> Unit,
-) {
-    LaunchedEffect(transition.currentState, transition.targetState) {
-        val settled = transition.currentState == transition.targetState
-        onSettledChange(settled)
-    }
-}
 
 /**
  * Renders overlay scenes (like dialogs) on top of the main content.
@@ -682,12 +555,15 @@ private fun RenderOverlayScenes(overlayScenes: List<NavigationScene.Overlay>) {
  */
 private fun <T : Any> isPop(oldBackStack: List<T>, newBackStack: List<T>): Boolean {
     if (oldBackStack.isEmpty() || newBackStack.isEmpty()) return false
-    if (oldBackStack.firstOrNull() != newBackStack.firstOrNull()) return false  // Different roots
-    if (newBackStack.size > oldBackStack.size) return false  // Can't be pop if growing
+    // entire stack replaced
+    if (oldBackStack.first() != newBackStack.first()) return false
+    // navigated
+    if (newBackStack.size > oldBackStack.size) return false
 
-    // Check if new backstack is a prefix of the old one
     val divergingIndex = newBackStack.indices.firstOrNull { index ->
         newBackStack[index] != oldBackStack[index]
     }
+    // if newBackStack never diverged from oldBackStack, then it is a clean subset of the oldStack
+    // and is a pop
     return divergingIndex == null && newBackStack.size != oldBackStack.size
 }
