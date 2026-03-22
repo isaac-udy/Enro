@@ -2,11 +2,13 @@ package dev.enro
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import kotlinx.serialization.Serializable
 
 @Stable
 @Immutable
+@Serializable
 public class NavigationBackstack(
-    backstack: List<NavigationKey.Instance<NavigationKey>>
+    private val backstack: List<NavigationKey.Instance<NavigationKey>>
 ): List<NavigationKey.Instance<NavigationKey>> by backstack {
     public val keys: List<NavigationKey> by lazy {
         map { it.key }

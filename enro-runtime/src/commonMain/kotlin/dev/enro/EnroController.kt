@@ -2,6 +2,7 @@ package dev.enro
 
 import androidx.compose.runtime.Stable
 import androidx.savedstate.serialization.SavedStateConfiguration
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.context.RootContextRegistry
 import dev.enro.controller.NavigationModule
 import dev.enro.controller.repository.BindingRepository
@@ -29,6 +30,10 @@ public class EnroController {
 
     internal val rootContextRegistry: RootContextRegistry = RootContextRegistry()
 
+    /**
+     * Attaches a module to the EnroController *after* the Controller has been attached;
+     * you can't uninstall a module once it has been added, use with caution.
+     */
     internal fun addModule(module: NavigationModule) {
         plugins.addPlugins(module.plugins)
         bindings.addNavigationBindings(module.bindings)
