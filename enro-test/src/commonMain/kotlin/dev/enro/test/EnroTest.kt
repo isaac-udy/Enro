@@ -10,12 +10,7 @@ object EnroTest {
     private var wasInstalled = false
 
     private val application: Any?
-        get() {
-            runCatching {
-                return TODO("Application install support android")//ApplicationProvider.getApplicationContext()
-            }
-            return null
-        }
+        get() = getTestApplicationContext()
 
     // TODO: Would be nice to add functionality to temporarily install a NavigationModule for a particular test
     fun installNavigationController() {
