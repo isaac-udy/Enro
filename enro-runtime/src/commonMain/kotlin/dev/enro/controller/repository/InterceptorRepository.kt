@@ -22,4 +22,9 @@ internal class InterceptorRepository(
         interceptors.remove(interceptor)
         aggregateInterceptor = AggregateNavigationInterceptor(this.interceptors)
     }
+
+    fun removeInterceptors(interceptors: List<NavigationInterceptor>) {
+        this.interceptors.removeAll(interceptors)
+        aggregateInterceptor = AggregateNavigationInterceptor(this.interceptors)
+    }
 }

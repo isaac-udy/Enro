@@ -64,6 +64,13 @@ internal class BindingRepository(
         }
     }
 
+    fun removeNavigationBindings(bindings: List<NavigationBinding<*>>) {
+        bindings.forEach {
+            bindingsByKeyType.remove(it.keyType)
+            originalBindingsByKeyType.remove(it.keyType)
+        }
+    }
+
     fun <K : NavigationKey> bindingFor(
         instance: NavigationKey.Instance<K>,
     ): NavigationBinding<K> {

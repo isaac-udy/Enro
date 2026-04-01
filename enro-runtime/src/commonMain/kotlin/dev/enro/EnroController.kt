@@ -31,8 +31,8 @@ public class EnroController {
     internal val rootContextRegistry: RootContextRegistry = RootContextRegistry()
 
     /**
-     * Attaches a module to the EnroController *after* the Controller has been attached;
-     * you can't uninstall a module once it has been added, use with caution.
+     * Attaches a module to the EnroController *after* the Controller has been attached.
+     * A module can be removed later using [removeModule].
      */
     internal fun addModule(module: NavigationModule) {
         plugins.addPlugins(module.plugins)
@@ -42,6 +42,14 @@ public class EnroController {
         decorators.addDecorators(module.decorators)
         serializers.registerSerializersModule(module.serializers)
         serializers.registerSerializersModule(module.serializersForBindings)
+    }
+
+    internal fun removeModule(module: NavigationModule) {
+        plugins.removePlugins(module.plugins)
+        bindings.removeNavigationBindings(module.bindings)
+        interceptors.removeInterceptors(module.interceptors)
+        paths.removePaths(module.paths)
+        decorators.removeDecorators(module.decorators)
     }
 
     // The reference parameter is used to pass the platform-specific reference to the NavigationController,

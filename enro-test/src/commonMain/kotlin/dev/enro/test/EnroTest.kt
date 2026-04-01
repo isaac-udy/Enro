@@ -3,16 +3,31 @@
 package dev.enro.test
 
 import dev.enro.EnroController
+import dev.enro.controller.NavigationModule
 
 object EnroTest {
 
     private var navigationController: EnroController? = null
     private var wasInstalled = false
+    private val installedModules: MutableList<NavigationModule> = mutableListOf()
 
     private val application: Any?
         get() = getTestApplicationContext()
 
-    // TODO: Would be nice to add functionality to temporarily install a NavigationModule for a particular test
+    fun installModule(module: NavigationModule) {
+        val controller = navigationController
+            ?: throw IllegalStateException("NavigationController is not installed, call installNavigationController() before installModule()")
+        controller.addModule(module)
+        installedModules.add(module)
+    }
+
+    fun removeModule(module: NavigationModule) {
+        val controller = navigationController
+            ?: throw IllegalStateException("NavigationController is not installed")
+        controller.removeModule(module)
+        installedModules.remove(module)
+    }
+
     fun installNavigationController() {
         if (navigationController != null) {
             uninstallNavigationController()
@@ -33,6 +48,12 @@ object EnroTest {
     }
 
     fun uninstallNavigationController() {
+        // Remove any temporarily installed modules before uninstalling
+        navigationController?.let { controller ->
+            installedModules.forEach { controller.removeModule(it) }
+        }
+        installedModules.clear()
+
         // Only uninstall if we created it
         if (!wasInstalled) {
             navigationController?.uninstall()

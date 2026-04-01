@@ -16,6 +16,10 @@ public class PathRepository {
         this.bindings.add(path)
     }
 
+    public fun removePaths(paths: List<NavigationPathBinding<*>>) {
+        this.bindings.removeAll(paths)
+    }
+
     public fun <T : NavigationKey> getPathBinding(): List<NavigationPathBinding<T>> {
         return bindings.filterIsInstance<NavigationPathBinding<T>>()
     }

@@ -18,6 +18,12 @@ internal class DecoratorRepository {
         decoratorBuilders.addAll(decorators)
     }
 
+    fun removeDecorators(
+        decorators: List<() -> NavigationDestinationDecorator<NavigationKey>>
+    ) {
+        decoratorBuilders.removeAll(decorators)
+    }
+
     fun getDecorators() : List<NavigationDestinationDecorator<NavigationKey>> {
         return decoratorBuilders.map { builder -> builder() }
     }
