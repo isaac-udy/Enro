@@ -1,10 +1,6 @@
 package dev.enro.ui.decorators
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.Lifecycle
@@ -105,12 +101,17 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
             LocalNavigationContext provides context,
             LocalNavigationHandle provides navigationHandle,
         ) {
-            destination.content()
-            DisposableEffect(isActiveInRoot) {
+            val isOpened = remember (isFirstOpen.value) {
                 if (isFirstOpen.value) {
                     context.controller.plugins.onOpened(navigationHandle)
                 }
                 isFirstOpen.value = false
+                return@remember true
+            }
+            if (isOpened) {
+                destination.content()
+            }
+            DisposableEffect(isActiveInRoot) {
                 if (isActiveInRoot) {
                     context.controller.plugins.onActive(navigationHandle)
                 }
