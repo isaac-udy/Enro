@@ -58,6 +58,12 @@ subprojects {
             tasks.findByName("testDebugUnitTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("desktopTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("testDebugWithEmulatorWtf")?.let { continuousIntegration.dependsOn(it) }
+            // Compile-only fallbacks so modules without tests (e.g. recipes)
+            // are still build-checked by CI. For modules with tests, these are
+            // no-ops — the test tasks above already depend on compilation.
+            tasks.findByName("compileKotlinDesktop")?.let { continuousIntegration.dependsOn(it) }
+            tasks.findByName("compileDebugKotlinAndroid")?.let { continuousIntegration.dependsOn(it) }
+            tasks.findByName("compileKotlinWasmJs")?.let { continuousIntegration.dependsOn(it) }
         }
     }
 }

@@ -273,7 +273,6 @@ public fun NavigationDisplay(
     // Render the navigation content
     CompositionLocalProvider(
         LocalNavigationContainer provides state,
-        LocalNavigationContainerOrNull provides state,
         LocalNavigationContext provides state.context,
     ) {
         ProvideRemovalTrackingInfo {
