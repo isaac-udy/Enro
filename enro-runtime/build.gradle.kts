@@ -16,7 +16,7 @@ kotlin {
             api("dev.enro:enro-annotations:${project.enroVersionName}")
             api("dev.enro:enro-common:${project.enroVersionName}")
             implementation(libs.compose.runtime)
-            implementation(libs.compose.viewmodel)
+            api(libs.compose.viewmodel)
             implementation(libs.compose.lifecycle)
             api(libs.compose.navigationEvent)
             implementation(libs.androidx.savedState)

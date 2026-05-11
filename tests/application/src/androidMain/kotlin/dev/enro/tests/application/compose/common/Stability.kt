@@ -2,6 +2,7 @@ package dev.enro.tests.application.compose.common
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
@@ -22,13 +23,14 @@ fun Stability(
     val rememberSaveable = rememberSaveable { Uuid.random().toString() }
     val viewModel = viewModel<ComposeStabilityContentViewModel>()
     val viewModelStore = LocalViewModelStoreOwner.current?.viewModelStore
+    val viewModelSavedStateId = viewModel.saveStateHandleId.collectAsState()
 
     val stabilityContent = buildString {
         appendLine("navigationId: ${rawNavigationHandle.instance.id}")
         appendLine("navigationHashCode: ${rawNavigationHandle.hashCode()}")
         appendLine("viewModelId: ${viewModel.id}")
         appendLine("viewModelHashCode: ${viewModel.hashCode()}")
-        appendLine("viewModelSavedStateId: ${viewModel.saveStateHandleId.value}")
+        appendLine("viewModelSavedStateId: $viewModelSavedStateId")
         appendLine("viewModelStoreHashCode: ${viewModelStore.hashCode()}")
         appendLine("viewModelScopeActive: ${viewModel.viewModelScope.isActive}")
         appendLine("rememberSaveableId: $rememberSaveable")

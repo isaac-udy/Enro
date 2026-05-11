@@ -1,20 +1,9 @@
 
-import com.android.build.api.dsl.AndroidResources
-import com.android.build.api.dsl.BuildFeatures
-import com.android.build.api.dsl.BuildType
-import com.android.build.api.dsl.CommonExtension
-import com.android.build.api.dsl.DefaultConfig
-import com.android.build.api.dsl.Installation
-import com.android.build.api.dsl.ProductFlavor
+import com.android.build.api.dsl.*
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.getValue
-import org.gradle.kotlin.dsl.getting
-import org.gradle.kotlin.dsl.invoke
-import org.gradle.kotlin.dsl.the
+import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JsSourceMapEmbedMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -122,7 +111,6 @@ internal fun Project.configureKotlinMultiplatform(
 
         if (ios) {
             listOf(
-                iosX64(),
                 iosArm64(),
                 iosSimulatorArm64()
             ).forEach { iosTarget ->

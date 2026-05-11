@@ -1,6 +1,7 @@
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.konan.properties.hasProperty
+import wtf.emulator.DeviceModel
 import wtf.emulator.EwExtension
 import java.io.FileInputStream
 import java.util.*
@@ -28,27 +29,33 @@ fun Project.configureEmulatorWtf(numShards: Int = 2) {
 
         this.numShards.set(numShards)
 
-        devices.set(
-            listOf(
-                mapOf(
-                    "model" to "Pixel2", "version" to 35
-                ),
-                mapOf(
-                    "model" to "Pixel2", "version" to 34
-                ),
-                mapOf(
-                    "model" to "Pixel2", "version" to 33
-                ),
-                mapOf(
-                    "model" to "Pixel2", "version" to 30
-                ),
-                mapOf(
-                    "model" to "Pixel2", "version" to 27
-                ),
-                mapOf(
-                    "model" to "Pixel2", "version" to 23
-                ),
-            )
-        )
+        device {
+            model.set(DeviceModel.PIXEL_2_ATD)
+            version.set(36)
+        }
+        device {
+            model.set(DeviceModel.PIXEL_2_ATD)
+            version.set(35)
+        }
+        device {
+            model.set(DeviceModel.PIXEL_2_ATD)
+            version.set(34)
+        }
+        device {
+            model.set(DeviceModel.PIXEL_2_ATD)
+            version.set(33)
+        }
+        device {
+            model.set(DeviceModel.PIXEL_2_ATD)
+            version.set(30)
+        }
+        device {
+            model.set(DeviceModel.PIXEL_2)
+            version.set(27)
+        }
+        device {
+            model.set(DeviceModel.PIXEL_2)
+            version.set(23)
+        }
     }
 }
