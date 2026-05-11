@@ -42,6 +42,7 @@ import dev.enro.recipes.plugins.OpenedTimestampPluginRecipe
 import dev.enro.recipes.requestclose.RequestCloseConfirmationRecipe
 import dev.enro.recipes.results.ResultsRecipe
 import dev.enro.recipes.saveable.SaveableRecipe
+import dev.enro.recipes.sharedelements.SharedElementAnimationsRecipe
 import dev.enro.recipes.tabs.TabsRecipe
 import dev.enro.recipes.viewmodel.BasicViewModelRecipe
 import dev.enro.recipes.viewmodel.SharedViewModelRecipe
@@ -111,6 +112,21 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 description = "Adaptive single/dual-pane list-detail layouts.",
             ),
             RecipeEntry(
+                key = TabsRecipe,
+                title = "Tab Navigation",
+                description = "Multiple containers with NavigationContainerGroup.",
+            ),
+            RecipeEntry(
+                key = MultipleBackStacksRecipe,
+                title = "Multiple Back Stacks",
+                description = "Independent backstacks per tab using NavigationContainerGroup.",
+            ),
+        ),
+    ),
+    RecipeGroup(
+        title = "Animations",
+        recipes = listOf(
+            RecipeEntry(
                 key = AnimationsRecipe,
                 title = "Animated Navigation",
                 description = "Customise transitions with NavigationAnimations.",
@@ -122,14 +138,9 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                     "Modifier.animateNavigationEnterExit and NavigationAnimatedVisibility.",
             ),
             RecipeEntry(
-                key = TabsRecipe,
-                title = "Tab Navigation",
-                description = "Multiple containers with NavigationContainerGroup.",
-            ),
-            RecipeEntry(
-                key = MultipleBackStacksRecipe,
-                title = "Multiple Back Stacks",
-                description = "Independent backstacks per tab using NavigationContainerGroup.",
+                key = SharedElementAnimationsRecipe,
+                title = "Shared Element Animations",
+                description = "Compose's sharedElement transitions across destinations.",
             ),
         ),
     ),
