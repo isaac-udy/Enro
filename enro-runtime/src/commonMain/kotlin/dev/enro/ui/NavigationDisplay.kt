@@ -19,6 +19,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -137,9 +138,9 @@ public fun NavigationDisplay(
     // Gesture state
     val gestureTransition = navigationEventState.transitionState
     val progress = when (gestureTransition) {
-            is NavigationEventTransitionState.Idle -> 0f
-            is NavigationEventTransitionState.InProgress -> gestureTransition.latestEvent.progress
-        }
+        is NavigationEventTransitionState.Idle -> 0f
+        is NavigationEventTransitionState.InProgress -> gestureTransition.latestEvent.progress
+    }
     val inPredictiveBack = gestureTransition is NavigationEventTransitionState.InProgress
 
     // Calculate previous scene for predictive back (like NavDisplay's previousScene)
@@ -556,14 +557,16 @@ private fun RenderOverlayScenes(overlayScenes: List<NavigationScene.Overlay>) {
     // `onFullyHidden` don't perturb the current pass.
     keysInOrder.toList().forEach { key ->
         val scene = rendered[key] ?: return@forEach
-        OverlaySceneRenderer(
-            scene = scene,
-            visible = key in activeKeys,
-            onFullyHidden = {
-                rendered.remove(key)
-                keysInOrder.remove(key)
-            },
-        )
+        key(scene.key) {
+            OverlaySceneRenderer(
+                scene = scene,
+                visible = key in activeKeys,
+                onFullyHidden = {
+                    rendered.remove(key)
+                    keysInOrder.remove(key)
+                },
+            )
+        }
     }
 }
 
