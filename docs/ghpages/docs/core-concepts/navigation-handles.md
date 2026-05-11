@@ -122,28 +122,162 @@ navigation.close()             // close this destination
 navigation.requestClose()      // ask this destination to close
 ```
 
-`close()` removes the destination unconditionally.
-`requestClose()` is a *softer* form — it dispatches the request through any
-interceptors configured on this destination, which may veto or transform it
-(for example, to show a "discard unsaved changes?" dialog first). Use
-`requestClose()` for user-initiated dismissals (back button, X button); use
-`close()` from internal flows that don't want interception.
+`close()` and `requestClose()` are both ways of dismissing a destination,
+but they're not interchangeable.
 
-### Completing with a result
+- `close()` closes the destination directly.
+- `requestClose()` invokes the destination's *onCloseRequested* callback.
+  By default that callback just calls `close()`, so unless you've overridden
+  it, `requestClose()` and `close()` do the same thing. Overriding the
+  callback lets you put logic between the request and the actual close.
 
-For destinations whose key implements `NavigationKey.WithResult<R>`:
+The Android back button calls `requestClose()`, not `close()`. Custom
+"dismiss" UI in your destination (a back arrow, an X button, a backdrop tap
+on a dialog) should call `requestClose()` too. As a rule of thumb,
+**prefer `requestClose()` for anything user-initiated** — you'll lose
+nothing today and gain the ability to add behaviour later without hunting
+down every call site.
+
+### Overriding the close-requested callback
+
+In a Composable destination, configure the callback with
+`navigation.configure { onCloseRequested { ... } }`. The `configure` block
+is a `DisposableEffect`, so the callback is automatically cleaned up when
+the destination leaves the composition.
 
 ```kotlin
-navigation.complete(LocalDate.now())     // closes this destination and returns the value
+@Composable
+@NavigationDestination(EditProfile::class)
+fun EditProfileScreen() {
+    val navigation = navigationHandle<EditProfile>()
+    var draft by remember { mutableStateOf(navigation.key.initial) }
+
+    val confirmDiscard = registerForNavigationResult<Boolean>(
+        onCompleted = { discard -> if (discard) navigation.close() },
+    )
+
+    navigation.configure {
+        onCloseRequested {
+            if (draft == navigation.key.initial) {
+                close()              // nothing changed — close directly
+            } else {
+                confirmDiscard.open(ConfirmDiscardDialog)
+            }
+        }
+    }
+
+    // ...
+}
+```
+
+In a `ViewModel`, pass a `config` block to the `by navigationHandle<T>`
+delegate:
+
+```kotlin
+class EditProfileViewModel : ViewModel() {
+    val draft = MutableStateFlow("")
+    private val originalValue: String get() = navigation.key.initial
+
+    val navigation by navigationHandle<EditProfile> {
+        onCloseRequested {
+            if (draft.value == originalValue) {
+                close()
+            } else {
+                // delegate to a UI-side handler, emit an event, etc.
+                viewModelScope.launch { closeRequests.emit(Unit) }
+            }
+        }
+    }
+
+    val closeRequests = MutableSharedFlow<Unit>()
+}
+```
+
+The ViewModel form is configured once at construction time and cleaned up
+when the ViewModel is cleared.
+
+Two things to notice in the Composable example above:
+
+1. The "no changes" branch calls `close()`, **not** `requestClose()` —
+   calling `requestClose()` from inside the `onCloseRequested` callback
+   would loop forever.
+2. The confirmation dialog is opened through a `registerForNavigationResult`
+   channel so the screen can react to the user's confirmation. See
+   [Results](../advanced/results.md).
+
+Other common reasons to override `onCloseRequested`:
+
+- Block the back button while a save is in progress.
+- Run a cleanup side-effect before closing.
+- Redirect the close to a different operation
+  (e.g. `completeFrom(otherKey)`).
+
+A worked end-to-end example lives in the
+[request-close confirmation recipe][requestclose-recipe].
+
+### One callback per handle
+
+A navigation handle can have at most one active `onCloseRequested` callback.
+Registering more than one for the same handle — whether that's two
+`configure { }` blocks in the same composable, two `by navigationHandle<K>`
+properties on the same ViewModel, or one of each running concurrently — is
+an error and will throw when `requestClose()` is invoked. Decide where the
+callback belongs (typically the ViewModel if you have one, otherwise the
+top-level Composable for the destination) and register it once.
+
+### Closing vs completing
+
+Every destination can be closed *or* completed — those aren't determined by
+the key's type, they're determined by what the destination is trying to
+communicate to its caller.
+
+- `close()` — the screen is going away **without** finishing the task it
+  was opened for. The user backed out, cancelled, dismissed the dialog, etc.
+- `complete()` / `complete(result)` — the screen is going away **because**
+  it finished the task it was opened for.
+
+The distinction is delivered to whoever opened the destination through a
+`registerForNavigationResult` channel: `onCompleted` fires for `complete`,
+`onClosed` fires for `close`. See [Results](../advanced/results.md).
+
+#### With a result
+
+For destinations whose key implements `NavigationKey.WithResult<R>`,
+`complete` requires the result value:
+
+```kotlin
+navigation.complete(LocalDate.now())
 ```
 
 Calling `complete()` with no argument on a `WithResult<R>` handle is a
-compile error — a result-producing key must produce a result.
+compile error — a result-producing key has no meaningful completion without
+the result.
 
-For destinations *without* a result, `complete()` with no argument closes
-the destination cleanly. The distinction (`close()` vs `complete()`) matters
-when the destination was opened through a `registerForNavigationResult`
-channel — see [Results](../advanced/results.md).
+#### Without a result
+
+For destinations whose key has no result, both `close()` and `complete()`
+are valid. The choice is semantic:
+
+```kotlin
+@Composable
+@NavigationDestination(ConfirmDelete::class)
+fun ConfirmDeleteDialog() {
+    val navigation = navigationHandle<ConfirmDelete>()
+    AlertDialog(
+        onDismissRequest = { navigation.requestClose() }, // user backed out
+        confirmButton = {
+            Button(onClick = { navigation.complete() }) { Text("Delete") } // confirmed
+        },
+        dismissButton = {
+            Button(onClick = { navigation.close() }) { Text("Cancel") }    // cancelled
+        },
+    )
+}
+```
+
+Even though `ConfirmDelete` has no result type, the *caller* still gets to
+distinguish "the user confirmed" from "the user cancelled" by registering
+both `onCompleted` and `onClosed` on its result channel.
 
 ### Composite operations
 
@@ -186,3 +320,6 @@ When the user navigates back, the same handle resumes.
 - [Navigation Destinations](navigation-destinations.md) — where handles come from.
 - [Results](../advanced/results.md) — `complete` and `registerForNavigationResult` in depth.
 - [View Models](../advanced/view-models.md) — `by navigationHandle<T>()` inside a ViewModel.
+- [Request-close confirmation recipe][requestclose-recipe] — full unsaved-changes example.
+
+[requestclose-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/requestclose/RequestCloseConfirmation.kt

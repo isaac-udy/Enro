@@ -76,8 +76,10 @@ calling `navigation.complete(value)`. The caller receives it through a
 data class ConfirmDelete(val itemName: String) : NavigationKey.WithResult<Boolean>
 ```
 
-If a key does not implement `WithResult`, the screen has no return value and
-must be closed with `navigation.close()` (not `complete`).
+Whether a key implements `WithResult` only determines whether `complete`
+*requires* a value — every screen can still use both `close` and `complete`
+regardless. See [close vs complete](navigation-handles.md#closing-vs-completing)
+on the Navigation Handles page for the semantic distinction.
 
 ## NavigationKey.Instance
 
@@ -100,39 +102,60 @@ val initial = backstackOf(
 key are distinct values (different `id`s) — `Set<NavigationKey.Instance<*>>`
 will not collapse them.
 
-## Metadata
+## Instance metadata
 
-A `NavigationKey.Metadata` is a typed, serializable key-value bag attached to
-an `Instance`. It carries extra information *about a particular appearance*
-of a key, without being part of the key's contract.
+`NavigationKey.Metadata` is a typed, serializable key-value bag attached to
+each `Instance` on the backstack. It's a place to carry data **about a
+particular appearance of a key** that isn't part of the key's contract.
 
-Metadata is how features like "render this destination as a dialog" or
-"pin this entry to the bottom of the back stack" are expressed. The metadata
-*on the key itself* is set at creation time and travels with the instance.
-The metadata *on the destination* (set in the `metadata = { }` block of
-`navigationDestination`) is read by scene strategies when the destination
-is rendered. See [Navigation Destinations](navigation-destinations.md).
+A few real-world uses for instance metadata:
 
-You define a `MetadataKey<T>` to read and write a metadata value:
+- The screen-space coordinates of the click that opened this destination,
+  so an animation can play from that point.
+- An analytics correlation id assigned at the moment the instance was
+  created, so events emitted while the destination is open can be linked
+  back to its origin.
+- A timestamp of when this instance was opened.
+- A note indicating which feature flow opened this destination.
+
+These are all things that *might be present, or might not*, and that don't
+change what the destination is or how it renders. They're closer to "extra
+parameters that any key might carry" than to anything in the key itself.
+
+> **Don't confuse this with destination metadata.** A
+> `navigationDestination(metadata = { dialog() }) { ... }` block configures
+> *the destination* — it drives rendering decisions like "show this as a
+> dialog" or "render as an overlay." That's a separate system. See
+> [Navigation Destinations](navigation-destinations.md#destination-metadata-and-scene-strategies).
+
+Define a `MetadataKey<T>` to read and write a metadata value:
 
 ```kotlin
-object IsExpanded : NavigationKey.MetadataKey<Boolean>(default = false)
+object OpenedAt : NavigationKey.MetadataKey<Long?>(default = null)
 ```
 
-And use `withMetadata` to attach a value to a key for a single open:
+Attach a value to a key for a single open via `withMetadata`:
 
 ```kotlin
 navigation.open(
-    ShowProfile("user-123").withMetadata(IsExpanded, true)
+    ShowProfile("user-123").withMetadata(OpenedAt, Clock.System.now().toEpochMilliseconds())
 )
 ```
 
-The `MetadataKey`'s `name` is its `qualifiedName` — make it an `object` or a
+Or set it from a [plugin](../advanced/plugins.md) on every instance globally
+— useful when you want metadata that applies uniformly across the app (an
+analytics correlation id, an origin point captured from the last user input,
+an opened-at timestamp, etc.). The
+[OpenedTimestampPlugin recipe][timestamp-recipe] is a small worked example
+of this.
+
+A `MetadataKey`'s `name` is its `qualifiedName` — make it an `object` or a
 top-level singleton.
 
 For metadata that should not be persisted across process death, use
 `TransientMetadataKey`. This is marked `@AdvancedEnroApi` because skipping
-persistence has consequences.
+persistence has consequences — your code has to tolerate the value being
+absent after the app is restored from saved state.
 
 ## Naming conventions
 
@@ -184,3 +207,4 @@ See the [modular navigation recipe][modular-recipe] for a worked example.
 
 [basic-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/basic/BasicNavigation.kt
 [modular-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/modular/ModularNavigation.kt
+[timestamp-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/plugins/OpenedTimestampPlugin.kt

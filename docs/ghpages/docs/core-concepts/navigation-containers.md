@@ -93,9 +93,10 @@ destination in the container.
 
 | Helper | Effect |
 |---|---|
-| `EmptyBehavior.preventEmpty()` *(default)* | Refuses the close — the bottom-most destination stays put. |
+| `EmptyBehavior.preventEmpty()` | Refuses the close — the bottom-most destination stays put. |
+| `EmptyBehavior.allowEmpty(onEmpty = { })` | Allows the container to become empty when its stack drains. The container stays mounted but renders nothing. The optional `onEmpty` lambda fires when this happens. |
 | `EmptyBehavior.closeParent()` | When the last destination is closed, closes the *parent* destination too. This is what a typical detail-stack inside a list-detail layout wants. |
-| `EmptyBehavior.default()` | The container becomes empty and is removed. Use for nested containers that should disappear cleanly when their stack drains. |
+| `EmptyBehavior.default()` | An alias for the current default behaviour. Today that's `preventEmpty()`; future versions of Enro may change the default, so use this if you want to track whatever Enro considers most appropriate. |
 
 For custom behaviour, build an `EmptyBehavior` from a lambda (see
 `EmptyBehavior.kt` in the source).

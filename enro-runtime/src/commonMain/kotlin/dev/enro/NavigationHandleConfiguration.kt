@@ -5,7 +5,6 @@ import androidx.lifecycle.SavedStateHandle
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.interceptor.builder.OnNavigationKeyClosedScope
 import dev.enro.interceptor.builder.navigationInterceptor
-import dev.enro.platform.EnroLog
 
 private typealias OnCloseCallback<T> = NavigationHandle<T>.() -> Unit
 
@@ -53,14 +52,21 @@ public class NavigationHandleConfiguration<T : NavigationKey>(
             navigation: NavigationHandle<T>
         ) {
             val callbacks = navigation.instance.metadata.get(OnCloseCallbacks) as List<OnCloseCallback<T>>
-            if (callbacks.isEmpty()) {
-                navigation.execute(NavigationOperation.Close(navigation.instance))
-            } else {
-                val callback = callbacks.last()
-                if (callbacks.size > 1) {
-                    EnroLog.warn("Multiple onCloseRequested callbacks have been registered for NavigationHandle with key ${navigation.key}, the last registered callback will be used.")
+            when {
+                callbacks.isEmpty() -> {
+                    navigation.execute(NavigationOperation.Close(navigation.instance))
                 }
-                callback.invoke(navigation)
+                callbacks.size > 1 -> {
+                    error(
+                        "Multiple onCloseRequested callbacks have been registered for NavigationHandle " +
+                            "with key ${navigation.key}. Only one onCloseRequested callback may be active " +
+                            "for a given NavigationHandle at a time — register it in exactly one place " +
+                            "(typically the destination's ViewModel, otherwise the top-level Composable)."
+                    )
+                }
+                else -> {
+                    callbacks.single().invoke(navigation)
+                }
             }
         }
     }

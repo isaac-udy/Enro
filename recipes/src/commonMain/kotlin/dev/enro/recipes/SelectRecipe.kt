@@ -38,6 +38,8 @@ import dev.enro.recipes.listdetail.ListDetailRecipe
 import dev.enro.recipes.managedflow.ManagedFlowRecipe
 import dev.enro.recipes.modular.ModularNavigationRecipe
 import dev.enro.recipes.multiplestacks.MultipleBackStacksRecipe
+import dev.enro.recipes.plugins.OpenedTimestampPluginRecipe
+import dev.enro.recipes.requestclose.RequestCloseConfirmationRecipe
 import dev.enro.recipes.results.ResultsRecipe
 import dev.enro.recipes.saveable.SaveableRecipe
 import dev.enro.recipes.tabs.TabsRecipe
@@ -154,6 +156,11 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 title = "Managed Flow",
                 description = "Multi-step flows defined as sequential code.",
             ),
+            RecipeEntry(
+                key = RequestCloseConfirmationRecipe,
+                title = "Request-Close Confirmation",
+                description = "Override onCloseRequested to confirm discarding unsaved changes.",
+            ),
         ),
     ),
     RecipeGroup(
@@ -168,6 +175,11 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 key = ModularNavigationRecipe,
                 title = "Modular Navigation",
                 description = "Destinations across feature modules with KSP.",
+            ),
+            RecipeEntry(
+                key = OpenedTimestampPluginRecipe,
+                title = "Opened Timestamp Plugin",
+                description = "A NavigationPlugin that stamps every instance with an opened-at timestamp.",
             ),
         ),
     ),
