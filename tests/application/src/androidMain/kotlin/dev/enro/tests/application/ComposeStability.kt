@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -82,13 +83,14 @@ fun Stability(
         ComposeStabilityViewModel(createSavedStateHandle())
     }
     val viewModelStore = LocalViewModelStoreOwner.current?.viewModelStore
+    val saveStateHandleId = viewModel.saveStateHandleId.collectAsState()
 
     val stabilityContent = buildString {
         appendLine("navigationId: ${rawNavigationHandle.instance.id}")
         appendLine("navigationHashCode: ${rawNavigationHandle.hashCode()}")
         appendLine("viewModelId: ${viewModel.id}")
         appendLine("viewModelHashCode: ${viewModel.hashCode()}")
-        appendLine("viewModelSavedStateId: ${viewModel.saveStateHandleId.value}")
+        appendLine("viewModelSavedStateId: $saveStateHandleId")
         appendLine("viewModelStoreHashCode: ${viewModelStore.hashCode()}")
         appendLine("viewModelScopeActive: ${viewModel.viewModelScope.isActive}")
         appendLine("rememberSaveableId: $rememberSaveable")
