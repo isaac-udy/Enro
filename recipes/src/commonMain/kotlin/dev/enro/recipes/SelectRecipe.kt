@@ -25,6 +25,7 @@ import dev.enro.annotations.NavigationDestination
 import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.recipes.animations.AnimationsRecipe
+import dev.enro.recipes.animations.StaggeredAnimationsRecipe
 import dev.enro.recipes.basic.BasicRecipe
 import dev.enro.recipes.bottomsheet.BottomSheetRecipe
 import dev.enro.recipes.conditional.ConditionalRecipe
@@ -111,6 +112,12 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 key = AnimationsRecipe,
                 title = "Animated Navigation",
                 description = "Customise transitions with NavigationAnimations.",
+            ),
+            RecipeEntry(
+                key = StaggeredAnimationsRecipe,
+                title = "Staggered Animations",
+                description = "Animate parts of a destination on their own timing with " +
+                    "Modifier.animateNavigationEnterExit and NavigationAnimatedVisibility.",
             ),
             RecipeEntry(
                 key = TabsRecipe,
