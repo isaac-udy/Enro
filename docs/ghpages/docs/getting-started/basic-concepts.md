@@ -1,92 +1,172 @@
+---
+title: Basic Concepts
+parent: Getting Started
+nav_order: 2
+---
+
 # Basic Concepts
 
-This guide introduces the fundamental concepts of Enro's navigation system.
+This page is the short vocabulary tour. Each concept here gets its own page
+under *Core Concepts* — read this one first so the rest of the docs make
+sense.
 
-## Navigation Philosophy
+The central idea is that **screens behave like functions**. A screen has a
+contract (its inputs and an optional return value); calling code invokes the
+contract without knowing how the screen is implemented.
 
-At its core, Enro is built around a few key principles:
+## Navigation Keys
 
-1. **Screen Contracts**: Each screen has a clearly defined contract (NavigationKey) that specifies its inputs and outputs.
-2. **Decoupled Navigation**: Screens don't need to know about the implementation of other screens they navigate to.
-3. **Type Safety**: Navigation is fully type-safe, with compile-time checking of navigation parameters.
-4. **Platform Agnostic**: The same navigation concepts work across different platforms and UI frameworks.
-
-## Core Components
-
-### NavigationKey
-
-A NavigationKey represents the contract for a screen. It defines:
-- The inputs required to display the screen
-- The output type (if any) that the screen can produce
-- Any additional metadata needed for navigation
+A `NavigationKey` is the contract for a screen — its function signature. The
+properties of the key are the inputs to the screen. If the screen produces a
+value, the key implements `NavigationKey.WithResult<T>`.
 
 ```kotlin
-// Simple key
-data class ProfileKey(
-    val userId: String
-) : NavigationKey.SupportsPush
+@Serializable
+data class ShowProfile(val userId: String) : NavigationKey
 
-// Key with result
-data class SelectDateKey(
-    val initialDate: LocalDate? = null
-) : NavigationKey.SupportsPresent.WithResult<LocalDate>
+@Serializable
+data class SelectDate(
+    val minDate: LocalDate? = null,
+    val maxDate: LocalDate? = null,
+) : NavigationKey.WithResult<LocalDate>
 ```
 
-### NavigationDestination
+Keys are `@Serializable` (kotlinx.serialization) so Enro can persist the
+backstack across process death and across platforms.
 
-A NavigationDestination is a screen implementation that can be navigated to. It is bound to a specific NavigationKey type and can be implemented as:
-- Android: Activity, Fragment, or Composable
-- iOS: UIViewController or SwiftUI View
-- Desktop: Window or Composable
+A key on its own doesn't do anything — it's a value. The system that *invokes*
+the contract is the navigation handle (below).
+
+## Navigation Destinations
+
+A `NavigationDestination` is the *implementation* of a contract — the screen
+itself. It's bound to a key with the `@NavigationDestination(KeyClass::class)`
+annotation. Two styles are supported:
+
+A regular Composable function:
 
 ```kotlin
-@NavigationDestination(ProfileKey::class)
 @Composable
+@NavigationDestination(ShowProfile::class)
 fun ProfileScreen() {
-    val navigation = navigationHandle<ProfileKey>()
-    // Screen implementation...
+    val navigation = navigationHandle<ShowProfile>()
+    Text("Profile for ${navigation.key.userId}")
 }
 ```
 
-### NavigationContainer
+Or a destination provider, when the destination needs metadata (for example,
+to behave like a dialog or an overlay):
 
-A NavigationContainer is a location within the UI that can host screens. It:
-- Maintains a backstack of screens
-- Manages screen lifecycles
-- Handles navigation animations
-- Can be nested within other containers
+```kotlin
+@NavigationDestination(ShowProfile::class)
+val profileDestination = navigationDestination<ShowProfile> {
+    Text("Profile for ${navigation.key.userId}")
+}
+```
+
+The provider form is also what you use to declare a dialog, bottom sheet, or
+custom overlay — through the `metadata = { dialog() }` or
+`metadata = { directOverlay() }` builders. See
+[Navigation Destinations](../core-concepts/navigation-destinations.md).
+
+## Navigation Handle
+
+A `NavigationHandle` is the control surface inside a screen — the variable
+you call `open`, `close`, or `complete` on.
+
+```kotlin
+val navigation = navigationHandle<ShowProfile>()
+
+navigation.open(SelectDate(maxDate = LocalDate.now())) // open another screen
+navigation.close()                                     // close this screen
+navigation.complete(result)                            // close with a result
+```
+
+The typed parameter (`<ShowProfile>` above) gives you access to the key the
+screen was opened with via `navigation.key`.
+
+## Navigation Container
+
+A `NavigationContainer` is a location in your UI that hosts a backstack of
+destinations. You create one inside a Composable with
+`rememberNavigationContainer`, give it an initial backstack, and render it with
+`NavigationDisplay`.
 
 ```kotlin
 val container = rememberNavigationContainer(
-    root = HomeKey(),
-    emptyBehavior = EmptyBehavior.CloseParent
+    backstack = backstackOf(Home.asInstance()),
+)
+NavigationDisplay(state = container)
+```
+
+A typical app has one root container; nested containers are supported and are
+how features like tabs, list-detail layouts, and multiple back stacks are built.
+
+## NavigationKey.Instance
+
+When a key is added to a backstack, Enro wraps it in a
+`NavigationKey.Instance` — the same key may appear in the backstack more than
+once, so each appearance gets a unique `id`. You'll mostly see `Instance` when
+building a backstack:
+
+```kotlin
+val initial = backstackOf(
+    Home.asInstance(),
+    ShowProfile("user-123").asInstance(),
 )
 ```
 
-### NavigationHandle
+You can also attach `Metadata` to an instance to influence how that particular
+appearance behaves (animations, scene treatment, etc.).
 
-A NavigationHandle provides the API for controlling navigation within a screen. It:
-- Provides access to the screen's NavigationKey
-- Allows execution of navigation instructions
-- Manages navigation state
-- Handles navigation results
+## Results
+
+A `NavigationKey.WithResult<T>` screen returns a value to its caller. Callers
+register a result channel and call `open` on it.
 
 ```kotlin
-val navigation = navigationHandle<ProfileKey>()
-navigation.push(EditProfileKey(navigation.key.userId))
+val getDate = registerForNavigationResult<LocalDate>(
+    onCompleted = { date -> /* use date */ },
+)
+
+Button(onClick = { getDate.open(SelectDate(maxDate = LocalDate.now())) }) {
+    Text("Pick a date")
+}
 ```
 
-## Navigation Flow
+The screen returns its value with `navigation.complete(date)`. See
+[Results](../advanced/results.md).
 
-1. **Navigation Request**: A screen uses its NavigationHandle to request navigation to another screen
-2. **Key Creation**: The NavigationKey for the target screen is created with the required parameters
-3. **Destination Resolution**: Enro finds the appropriate NavigationDestination for the key
-4. **Screen Creation**: The destination is created and displayed
-5. **Result Handling**: If the screen produces a result, it's returned to the calling screen
+## NavigationComponent
 
-## Next Steps
+A `NavigationComponent` is the configuration object for Enro in your
+application. It's declared once, annotated with `@NavigationComponent`, and
+installed at app startup.
 
-- Learn about [Navigation Keys](../core-concepts/navigation-keys.md)
-- Understand [Navigation Destinations](../core-concepts/navigation-destinations.md)
-- Explore [Navigation Containers](../core-concepts/navigation-containers.md)
-- See how to use [Navigation Handles](../core-concepts/navigation-handles.md) 
+```kotlin
+@NavigationComponent
+object MyComponent : NavigationComponentConfiguration(
+    module = createNavigationModule { /* optional config */ }
+)
+```
+
+See [Installation](installation.md).
+
+## Where everything fits
+
+```
+Application starts
+  └── MyComponent.installNavigationController(this)        ← happens once
+
+Compose tree
+  └── rememberNavigationContainer(backstack = ...)         ← NavigationContainer
+        └── NavigationDisplay(state = container)
+              └── Destination for the current key on the stack
+                    └── navigationHandle<MyKey>()          ← NavigationHandle
+                          └── .open(...) / .close() / .complete(...)
+```
+
+## Next steps
+
+- Walk through [Your First Screen](your-first-screen.md) for a complete end-to-end example.
+- Then read the [Core Concepts](../../index.md#core-concepts) pages in order — they go into each of the above in depth.
