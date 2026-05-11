@@ -13,8 +13,6 @@
  * The plugin is installed globally in RecipesComponent so every destination in
  * the recipes app receives a timestamp.
  */
-@file:OptIn(kotlin.time.ExperimentalTime::class)
-
 package dev.enro.recipes.plugins
 
 import androidx.compose.foundation.layout.Arrangement
@@ -23,22 +21,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.enro.NavigationHandle
-import dev.enro.NavigationKey
+import dev.enro.*
 import dev.enro.annotations.NavigationDestination
-import dev.enro.asInstance
-import dev.enro.backstackOf
-import dev.enro.close
-import dev.enro.navigationHandle
-import dev.enro.open
 import dev.enro.plugin.NavigationPlugin
 import dev.enro.recipes.RecipeScaffold
 import dev.enro.ui.NavigationDisplay
