@@ -298,6 +298,7 @@ public fun NavigationDisplay(
                     // Provide necessary composition locals for the scene content
                     CompositionLocalProvider(
                         LocalNavigationAnimatedVisibilityScope provides this@AnimatedContent,
+                        LocalNavigationAnimatedVisibilityScopeOrNull provides this@AnimatedContent,
                         LocalNavigationSharedTransitionScope provides this@SharedTransitionLayout,
                         LocalDestinationsToRenderInCurrentScene provides sceneToRenderableDestinationMap.getValue(
                             targetSceneKey
@@ -602,6 +603,7 @@ private fun OverlaySceneRenderer(
         ) {
             CompositionLocalProvider(
                 LocalNavigationAnimatedVisibilityScope provides this@AnimatedVisibility,
+                LocalNavigationAnimatedVisibilityScopeOrNull provides this@AnimatedVisibility,
                 LocalNavigationSharedTransitionScope provides this@SharedTransitionLayout,
                 LocalDestinationsToRenderInCurrentScene provides allDestinations,
             ) {

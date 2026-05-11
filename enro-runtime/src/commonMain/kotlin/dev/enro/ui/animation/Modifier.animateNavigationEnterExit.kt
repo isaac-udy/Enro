@@ -4,7 +4,7 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import dev.enro.ui.LocalNavigationAnimatedVisibilityScope
+import dev.enro.ui.LocalNavigationAnimatedVisibilityScopeOrNull
 
 /**
  * Attaches enter / exit transitions to a composable, tied to the
@@ -17,15 +17,21 @@ import dev.enro.ui.LocalNavigationAnimatedVisibilityScope
  * itself drives the visibility flip; this modifier just plumbs the
  * caller's transitions into the active scope.
  *
- * Reads [LocalNavigationAnimatedVisibilityScope] — must be called
- * from inside a destination that's rendered by `NavigationDisplay`
- * (which is everywhere destinations live, in practice).
+ * Reads [LocalNavigationAnimatedVisibilityScopeOrNull]. Normally that
+ * local is provided by `NavigationDisplay`'s overlay renderer, so
+ * in-app the modifier always finds a scope. When it isn't provided —
+ * typical of Paparazzi / snapshot tests that render a composable in
+ * isolation without an Enro container — the modifier degrades to a
+ * no-op rather than crashing, so design-system surfaces (dialogs,
+ * popups) can still be rendered standalone for documentation
+ * snapshots.
  */
 public fun Modifier.animateNavigationEnterExit(
     enter: EnterTransition = EnterTransition.None,
     exit: ExitTransition = ExitTransition.None,
 ): Modifier = composed {
-    val scope = LocalNavigationAnimatedVisibilityScope.current
+    val scope = LocalNavigationAnimatedVisibilityScopeOrNull.current
+        ?: return@composed this@composed
     scope.run {
         this@composed.animateEnterExit(enter = enter, exit = exit)
     }
