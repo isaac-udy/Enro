@@ -1,0 +1,65 @@
+name: Deploy docs to gh-pages
+
+# Manual deploy of docs/ghpages/ from main to the gh-pages branch.
+#
+# What it does:
+#   1. Check out main.
+#   2. Check out gh-pages alongside, as a git worktree.
+#   3. On gh-pages: delete index.md, assets/, and docs/ at the root.
+#      (Anything else on gh-pages — CNAME, _config.yml, .nojekyll, etc. —
+#      is preserved.)
+#   4. Copy main's docs/ghpages/{index.md, assets, docs} into the gh-pages
+#      worktree's root.
+#   5. Commit and push if anything changed.
+#
+# Trigger this from the Actions tab → "Deploy docs to gh-pages" → Run
+# workflow.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy docs/ghpages to the gh-pages branch
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Add gh-pages as a worktree
+        run: |
+          git fetch origin gh-pages
+          git worktree add gh-pages-deploy gh-pages
+
+      - name: Replace docs content on gh-pages
+        run: |
+          cd gh-pages-deploy
+          # Remove only the three paths we manage. Other files on
+          # gh-pages (CNAME, _config.yml, .nojekyll, etc.) are preserved.
+          rm -f index.md
+          rm -rf assets docs
+          # Copy main's docs/ghpages/* into the worktree root. The
+          # `./.` syntax includes hidden files alongside the regular
+          # ones.
+          cp -r ../docs/ghpages/. .
+
+      - name: Commit and push
+        working-directory: gh-pages-deploy
+        run: |
+          git add -A index.md assets docs
+          if git diff --cached --quiet; then
+            echo "No changes to deploy."
+            exit 0
+          fi
+          git commit -m "Deploy docs from main (${GITHUB_SHA::7})"
+          git push origin gh-pages
