@@ -30,19 +30,23 @@ fun Project.configureEmulatorWtf(numShards: Int = 2) {
         this.numShards.set(numShards)
 
         device {
-            model.set(DeviceModel.PIXEL_2)
+            model.set(DeviceModel.PIXEL_2_ATD)
+            version.set(36)
+        }
+        device {
+            model.set(DeviceModel.PIXEL_2_ATD)
             version.set(35)
         }
         device {
-            model.set(DeviceModel.PIXEL_2)
+            model.set(DeviceModel.PIXEL_2_ATD)
             version.set(34)
         }
         device {
-            model.set(DeviceModel.PIXEL_2)
+            model.set(DeviceModel.PIXEL_2_ATD)
             version.set(33)
         }
         device {
-            model.set(DeviceModel.PIXEL_2)
+            model.set(DeviceModel.PIXEL_2_ATD)
             version.set(30)
         }
         device {
