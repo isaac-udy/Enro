@@ -15,8 +15,8 @@ import dev.enro.ui.EnroBrowserContent
 import dev.enro.ui.InstallWebHistoryPlugin
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
-import embedded_enro.tests.application.generated.resources.NotoEmoji_SemiBold
-import embedded_enro.tests.application.generated.resources.Res
+import enro.tests.application.generated.resources.NotoEmoji_SemiBold
+import enro.tests.application.generated.resources.Res
 import kotlinx.browser.document
 import org.jetbrains.compose.resources.configureWebResources
 import org.jetbrains.compose.resources.getFontResourceBytes
