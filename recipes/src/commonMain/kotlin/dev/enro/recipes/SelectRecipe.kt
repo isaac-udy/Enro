@@ -169,8 +169,8 @@ private val recipeGroups: List<RecipeGroup> = listOf(
         recipes = listOf(
             RecipeEntry(
                 key = FragmentInteropRecipe,
-                title = "Fragment Interop",
-                description = "Mix Fragment and Compose destinations (Android-only).",
+                title = "Native Interop",
+                description = "Embed native UI (AndroidView / SwingPanel / UIKitView) inside a destination.",
             ),
         ),
     ),
