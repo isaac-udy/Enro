@@ -4,6 +4,8 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SizeTransform
@@ -11,18 +13,19 @@ import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.util.fastForEachReversed
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.NavigationBackHandler
@@ -35,6 +38,8 @@ import dev.enro.requestClose
 import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
 import dev.enro.ui.scenes.DialogSceneStrategy
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
+import dev.enro.ui.scenes.OverlayTransitions
+import dev.enro.ui.scenes.OverlayTransitionsKey
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import dev.enro.ui.scenes.calculateSceneWithSinglePaneFallback
 import dev.enro.viewmodel.getNavigationHandle
@@ -525,20 +530,92 @@ private data class SceneKey(
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun RenderOverlayScenes(overlayScenes: List<NavigationScene.Overlay>) {
-    overlayScenes.fastForEachReversed { overlayScene ->
-        val allDestinations = overlayScene.entries.map { it.instance.id }.toSet()
-        SharedTransitionLayout {
-            AnimatedVisibility(true) {
-                CompositionLocalProvider(
-                    LocalNavigationAnimatedVisibilityScope provides this@AnimatedVisibility,
-                    LocalNavigationSharedTransitionScope provides this@SharedTransitionLayout,
-                    LocalDestinationsToRenderInCurrentScene provides allDestinations
-                ) {
-                    overlayScene.content()
-                }
+    // Track overlay scenes across recompositions. A scene that has just
+    // left `overlayScenes` (e.g. its destination was popped from the
+    // backstack) still appears in `rendered` until its exit transition
+    // settles — so the renderer can keep calling its `content()` and the
+    // destination's lifecycle decorator can run the proper teardown
+    // sequence after the animation, not in the middle of it.
+    val rendered = remember { mutableStateMapOf<Any, NavigationScene.Overlay>() }
+    // Stacking order is insertion order: later-added scenes render on
+    // top. We retain entries here even after they've left the active
+    // overlay list so the per-scene `AnimatedVisibility` can play its
+    // exit transition; cleanup happens via `onFullyHidden` below.
+    val keysInOrder = remember { mutableStateListOf<Any>() }
+
+    overlayScenes.forEach { scene ->
+        if (scene.key !in rendered) keysInOrder.add(scene.key)
+        // Always refresh the stored scene — its `previousEntries` /
+        // `entries` may have changed even when the key stayed the same.
+        rendered[scene.key] = scene
+    }
+    val activeKeys = overlayScenes.map { it.key }.toSet()
+
+    // Iterate over a snapshot of the ordered list so removals inside
+    // `onFullyHidden` don't perturb the current pass.
+    keysInOrder.toList().forEach { key ->
+        val scene = rendered[key] ?: return@forEach
+        OverlaySceneRenderer(
+            scene = scene,
+            visible = key in activeKeys,
+            onFullyHidden = {
+                rendered.remove(key)
+                keysInOrder.remove(key)
+            },
+        )
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun OverlaySceneRenderer(
+    scene: NavigationScene.Overlay,
+    visible: Boolean,
+    onFullyHidden: () -> Unit,
+) {
+    val visibleState = remember { mutableStateOf(false) }
+    val transitions = scene.overlayTransitions()
+    val transition = updateTransition(targetState = visibleState.value, label = "OverlayVisibility")
+
+    LaunchedEffect(visible) {
+        visibleState.value = visible
+    }
+    // The exit transition has settled once `transition.currentState` is false AND the
+    // transition is no longer running. Drop the scene from tracking so
+    // its destinations can finish their removal lifecycle.
+    LaunchedEffect(transition.currentState, transition.isRunning) {
+        if (transition.currentState) return@LaunchedEffect
+        if (transition.isRunning) return@LaunchedEffect
+        onFullyHidden()
+    }
+
+    val allDestinations = scene.entries.map { it.instance.id }.toSet()
+    SharedTransitionLayout {
+        transition.AnimatedVisibility(
+            visible = { it },
+            enter = transitions?.enter ?: EnterTransition.None,
+            exit = transitions?.exit ?: ExitTransition.None,
+        ) {
+            CompositionLocalProvider(
+                LocalNavigationAnimatedVisibilityScope provides this@AnimatedVisibility,
+                LocalNavigationSharedTransitionScope provides this@SharedTransitionLayout,
+                LocalDestinationsToRenderInCurrentScene provides allDestinations,
+            ) {
+                scene.content()
             }
         }
     }
+}
+
+/**
+ * Reads the optional [OverlayTransitions] off the scene's top entry,
+ * if it opted in via `directOverlay(enter, exit)` /
+ * `directOverlayWithFade()`. Returns null when the scene wants the
+ * legacy snap-in / snap-out treatment.
+ */
+private fun NavigationScene.Overlay.overlayTransitions(): OverlayTransitions? {
+    val entry = entries.lastOrNull() ?: return null
+    return entry.metadata[OverlayTransitionsKey] as? OverlayTransitions
 }
 
 /**
