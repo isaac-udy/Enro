@@ -46,7 +46,6 @@ dependencies {
     add("kspAndroid", enroProcessor)
     add("kspDesktop", enroProcessor)
     add("kspWasmJs", enroProcessor)
-    add("kspIosX64", enroProcessor)
     add("kspIosArm64", enroProcessor)
     add("kspIosSimulatorArm64", enroProcessor)
 }
