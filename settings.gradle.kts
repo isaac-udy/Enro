@@ -8,6 +8,7 @@ include(":enro-runtime")
 include(":enro-compat")
 include(":tests:application")
 include(":tests:module-one")
+include(":recipes")
 
 dependencyResolutionManagement {
     versionCatalogs {
