@@ -35,6 +35,7 @@ import dev.enro.recipes.dialog.DialogRecipe
 import dev.enro.recipes.entryprovider.DestinationRegistrationRecipe
 import dev.enro.recipes.interop.FragmentInteropRecipe
 import dev.enro.recipes.listdetail.ListDetailRecipe
+import dev.enro.recipes.listdetail.ListDetailWithContainersRecipe
 import dev.enro.recipes.managedflow.ManagedFlowRecipe
 import dev.enro.recipes.modular.ModularNavigationRecipe
 import dev.enro.recipes.multiplestacks.MultipleBackStacksRecipe
@@ -44,6 +45,7 @@ import dev.enro.recipes.results.ResultsRecipe
 import dev.enro.recipes.saveable.SaveableRecipe
 import dev.enro.recipes.sharedelements.SharedElementAnimationsRecipe
 import dev.enro.recipes.tabs.TabsRecipe
+import dev.enro.recipes.twopane.TwoPaneRecipe
 import dev.enro.recipes.viewmodel.BasicViewModelRecipe
 import dev.enro.recipes.viewmodel.SharedViewModelRecipe
 import kotlinx.serialization.Serializable
@@ -108,8 +110,22 @@ private val recipeGroups: List<RecipeGroup> = listOf(
             ),
             RecipeEntry(
                 key = ListDetailRecipe,
-                title = "List-Detail Navigation",
-                description = "Adaptive single/dual-pane list-detail layouts.",
+                title = "List-Detail (Scene)",
+                description = "Adaptive list-detail using a custom NavigationSceneStrategy with " +
+                    "listPane() / detailPane() metadata.",
+            ),
+            RecipeEntry(
+                key = TwoPaneRecipe,
+                title = "Two-Pane (Scene)",
+                description = "Render two adjacent destinations side-by-side via a custom " +
+                    "scene strategy gated by twoPane() metadata.",
+            ),
+            RecipeEntry(
+                key = ListDetailWithContainersRecipe,
+                title = "List-Detail (Containers)",
+                description = "List-detail built from two NavigationContainers. Prefer the " +
+                    "scene-based recipe above; this one is for when you need independent " +
+                    "container filters and backstacks per pane.",
             ),
             RecipeEntry(
                 key = TabsRecipe,
