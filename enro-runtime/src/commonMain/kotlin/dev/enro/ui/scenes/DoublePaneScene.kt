@@ -1,6 +1,5 @@
 package dev.enro.ui.scenes
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
@@ -11,14 +10,11 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import dev.enro.NavigationKey
-import dev.enro.ui.LocalNavigationAnimatedVisibilityScope
-import dev.enro.ui.LocalNavigationSharedTransitionScope
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
 
 public class DoublePaneScene : NavigationSceneStrategy {
-    @OptIn(ExperimentalSharedTransitionApi::class)
     @Composable
     override fun calculateScene(
         entries: List<NavigationDestination<NavigationKey>>,
@@ -40,38 +36,11 @@ public class DoublePaneScene : NavigationSceneStrategy {
                         LocalWindowInfo.current.containerSize.toSize().width.toDp()
                     }
                     Row {
-                        with(LocalNavigationSharedTransitionScope.current) {
-                            if (width > 600.dp) {
-                                // Render both destinations side by side or in some layout
-                                if (entries.size > 1) {
-                                    Box(
-                                        modifier = Modifier.Companion
-                                            .sharedElement(
-                                                rememberSharedContentState(key = entries.first().instance.id),
-                                                animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
-                                            )
-                                            .weight(1f)
-
-                                    ) { entries.first().content() }
-                                }
-                                Box(
-                                    modifier = Modifier.Companion
-                                        .sharedElement(
-                                            rememberSharedContentState(key = entries.last().instance.id),
-                                            animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
-                                        )
-                                        .weight(1f)
-                                ) { entries.last().content() }
-                            } else {
-                                Box(
-                                    modifier = Modifier.Companion
-                                        .sharedElement(
-                                            rememberSharedContentState(key = entries.last().instance.id),
-                                            animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
-                                        )
-                                        .weight(1f)
-                                ) { entries.last().content() }
-                            }
+                        if (width > 600.dp && entries.size > 1) {
+                            Box(modifier = Modifier.weight(1f)) { entries.first().content() }
+                            Box(modifier = Modifier.weight(1f)) { entries.last().content() }
+                        } else {
+                            Box(modifier = Modifier.weight(1f)) { entries.last().content() }
                         }
                     }
                 }

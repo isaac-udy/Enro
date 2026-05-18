@@ -12,6 +12,7 @@ import dev.enro.ui.decorators.rememberMovableContentDecorator
 import dev.enro.ui.decorators.rememberNavigationContextDecorator
 import dev.enro.ui.decorators.rememberRemovalTrackingDecorator
 import dev.enro.ui.decorators.rememberSavedStateDecorator
+import dev.enro.ui.decorators.rememberSharedElementDecorator
 import dev.enro.ui.decorators.rememberViewModelStoreDecorator
 
 
@@ -36,6 +37,15 @@ internal fun rememberDecoratedDestinations(
         controller.decorators.getDecorators()
     }
     val decorators = listOf(
+        // sharedElementDecorator must be the OUTERMOST decorator (first
+        // in this list — foldRight makes the first entry the outermost
+        // wrapper). It always emits a Box(Modifier.sharedElement(...))
+        // for every destination in every scene that lists it, even when
+        // the movableContentDecorator below skips rendering the actual
+        // content. That empty Box is what lets Compose's
+        // SharedTransitionScope bridge an entry's bounds from one
+        // scene's layout slot to another during a transition.
+        rememberSharedElementDecorator(),
         rememberMovableContentDecorator(),  // Preserves content across recompositions
         rememberSavedStateDecorator(savedStateHolder),      // Manages saved instance state
         rememberViewModelStoreDecorator(),  // Provides ViewModelStore for each destination
