@@ -1,6 +1,5 @@
 package dev.enro.recipes.listdetail
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -99,15 +98,8 @@ class ListDetailSceneStrategy(
                 override val previousEntries: List<NavigationDestination<NavigationKey>> =
                     entries.dropLast(1)
 
-                // Note: the key only includes the list entry's id, NOT
-                // the detail's. Same key across detail swaps means the
-                // NavigationDisplay keeps this scene in the same
-                // AnimatedContent slot — so when the user picks a new
-                // conversation, the whole list-detail layout doesn't
-                // re-animate. The detail pane swap is handled by an
-                // inner AnimatedContent below.
                 override val key: Any =
-                    ListDetailSceneStrategy::class to listEntry.instance.id
+                    ListDetailSceneStrategy::class to (listEntry.instance.id to detailEntry?.instance?.id)
 
                 override val content: @Composable (() -> Unit) = {
                     Row(modifier = Modifier.fillMaxSize()) {
@@ -123,14 +115,10 @@ class ListDetailSceneStrategy(
                                 .weight(0.6f)
                                 .fillMaxHeight(),
                         ) {
-                            AnimatedContent(
-                                targetState = detailEntry,
-                                contentKey = { detailEntry?.id }
-                            ) { target ->
-                                target?.content() ?: listEntry.listPaneMetadata()
+                            detailEntry?.content()
+                                ?: listEntry.listPaneMetadata()
                                     ?.detailPlaceholder
                                     ?.invoke()
-                            }
                         }
                     }
                 }

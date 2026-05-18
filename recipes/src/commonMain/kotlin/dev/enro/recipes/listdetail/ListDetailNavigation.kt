@@ -23,12 +23,7 @@
 package dev.enro.recipes.listdetail
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -39,19 +34,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.enro.NavigationKey
+import dev.enro.*
 import dev.enro.annotations.NavigationDestination
-import dev.enro.asInstance
-import dev.enro.backstackOf
-import dev.enro.close
-import dev.enro.navigationHandle
-import dev.enro.open
 import dev.enro.recipes.RecipeScaffold
-import dev.enro.ui.NavigationDestinationProvider
-import dev.enro.ui.NavigationDisplay
-import dev.enro.ui.NavigationSceneStrategy
-import dev.enro.ui.navigationDestination
-import dev.enro.ui.rememberNavigationContainer
+import dev.enro.ui.*
 import dev.enro.ui.scenes.DialogSceneStrategy
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
