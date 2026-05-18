@@ -9,34 +9,23 @@
  */
 package dev.enro.recipes.listdetail
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.enro.NavigationContainer
-import dev.enro.NavigationKey
-import dev.enro.accept
-import dev.enro.acceptNone
+import dev.enro.*
 import dev.enro.annotations.NavigationDestination
-import dev.enro.asInstance
-import dev.enro.backstackOf
-import dev.enro.navigationHandle
-import dev.enro.open
 import dev.enro.recipes.RecipeScaffold
 import dev.enro.ui.EmptyBehavior
+import dev.enro.ui.NavigationAnimations
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
@@ -49,9 +38,6 @@ data object ItemList : NavigationKey
 
 @Serializable
 data class ItemDetailScreen(val itemId: String, val title: String) : NavigationKey
-
-@Serializable
-data object EmptyDetailPlaceholder : NavigationKey
 
 data class ListItem(val id: String, val title: String, val description: String)
 
@@ -69,26 +55,14 @@ fun ListDetailRecipeScreen() {
         title = "List-Detail Navigation",
         navigation = navigation,
     ) { modifier ->
-        BoxWithConstraints(modifier = modifier) {
-            if (maxWidth >= 600.dp) {
-                DualPaneLayout()
-            } else {
-                SinglePaneLayout()
-            }
-        }
+        DualPaneLayout(modifier = modifier)
     }
 }
 
 @Composable
-private fun SinglePaneLayout() {
-    val container = rememberNavigationContainer(
-        backstack = backstackOf(ItemList.asInstance()),
-    )
-    NavigationDisplay(state = container)
-}
-
-@Composable
-private fun DualPaneLayout() {
+private fun DualPaneLayout(
+    modifier: Modifier = Modifier,
+) {
     val listContainer = rememberNavigationContainer(
         key = NavigationContainer.Key("list-pane"),
         backstack = backstackOf(ItemList.asInstance()),
@@ -97,25 +71,74 @@ private fun DualPaneLayout() {
 
     val detailContainer = rememberNavigationContainer(
         key = NavigationContainer.Key("detail-pane"),
-        backstack = backstackOf(EmptyDetailPlaceholder.asInstance()),
+        backstack = backstackOf(),
         filter = accept { key<ItemDetailScreen>() },
-        emptyBehavior = EmptyBehavior.preventEmpty(),
+        emptyBehavior = EmptyBehavior.allowEmpty(),
     )
 
-    Row(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .weight(0.4f),
-        ) {
-            NavigationDisplay(state = listContainer)
+    // Only keep the single top-most ItemDetailScreen in the detail container
+    LaunchedEffect(detailContainer.backstack) {
+        val detailCount = detailContainer.backstack.count { it.key is ItemDetailScreen }
+        if (detailCount <= 1) {
+            return@LaunchedEffect
         }
-        Box(
+        detailContainer.updateBackstack { backstack ->
+            val lastDetailIndex = detailContainer.backstack.indexOfLast { it.key is ItemDetailScreen }
+            backstack.subList(lastDetailIndex, backstack.size).asBackstack()
+        }
+    }
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val showAsDualPane = maxWidth >= 600.dp
+        val showList = showAsDualPane || detailContainer.backstack.isEmpty()
+        val showDetail = showAsDualPane || detailContainer.backstack.isNotEmpty()
+
+        val listWidth =  animateDpAsState(
+            when {
+                showAsDualPane -> maxWidth * 0.4f
+                else -> maxWidth
+            }
+        ).value
+
+        val detailWidth = animateDpAsState(
+            when {
+                showAsDualPane -> maxWidth * 0.6f
+                else -> maxWidth
+            }
+        ).value
+
+        val detailOffset = animateDpAsState(
+            when {
+                showAsDualPane -> maxWidth * 0.4f
+                else -> 0.dp
+            },
+        ).value
+
+        AnimatedVisibility(
+            visible = showList,
             modifier = Modifier
-                .fillMaxHeight()
-                .weight(0.6f),
+                .width(listWidth)
+                .fillMaxHeight(),
         ) {
-            NavigationDisplay(state = detailContainer)
+            NavigationDisplay(
+                state = listContainer
+            )
+        }
+
+        AnimatedVisibility(
+            visible = showDetail,
+            modifier = Modifier
+                .width(detailWidth)
+                .offset(x = detailOffset)
+                .fillMaxHeight(),
+        ) {
+            NavigationDisplay(
+                state = detailContainer,
+                animations = NavigationAnimations(
+                    transitionSpec = NavigationAnimations.Default.containerTransitionSpec,
+                    popTransitionSpec = NavigationAnimations.Default.containerTransitionSpec,
+                    predictivePopTransitionSpec = NavigationAnimations.Default.containerTransitionSpec,
+                )
+            )
         }
     }
 }
@@ -163,16 +186,5 @@ fun ItemDetailScreenDestination() {
         } else {
             Text("Item not found: ${navigation.key.itemId}")
         }
-    }
-}
-
-@Composable
-@NavigationDestination(EmptyDetailPlaceholder::class)
-fun EmptyDetailPlaceholderDestination() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = "Select an item to view details",
-            modifier = Modifier.padding(16.dp),
-        )
     }
 }
