@@ -46,6 +46,8 @@ Code that knowingly diverges from Nav3 carries an inline comment of the form:
 | `DialogSceneStrategy<T>` | `dev.enro.ui.scenes.DialogSceneStrategy` | Same metadata-driven activation. |
 | `NavDisplay(...)` | `NavigationDisplay(state, ...)` | Same `AnimatedContent`-driven rendering. |
 | `AnimatedSceneKey` | `SceneIdentity` (private) | `(class, key, containerKey)`. Used as the `AnimatedContent.contentKey`. |
+| `SceneState<T>` | `NavigationSceneState` | Hoistable scene-hierarchy snapshot. Same fields: `entries`, `overlayScenes`, `currentScene`, `previousScenes`. |
+| `rememberSceneState` | `rememberNavigationSceneState` | Computes the state; consumed internally by `NavigationDisplay` if not hoisted. |
 | `LocalNavAnimatedContentScope` | `LocalNavigationAnimatedVisibilityScope` | Same `AnimatedVisibilityScope` provided. |
 | `SharedEntryInSceneNavEntryDecorator` | `sharedElementDecorator()` | Auto-wraps entries in `Modifier.sharedElement` keyed by instance id. |
 | `SceneSetupNavEntryDecorator` | `movableContentDecorator()` | Wraps entries in `movableContentOf` and gates rendering by exclusion. |
@@ -110,7 +112,7 @@ This list is the source of truth for "we don't match Nav3 here, on purpose."
 |--|--|--|
 | 1 — renames + scenes as data classes + cleanup | landed | `1d5e06c9` |
 | 2 — typed metadata (`NavigationDestination.MetadataKey<T>`) | landed | `9056dd22` |
-| 3 — invert exclusion polarity to match Nav3 | in progress | — |
-| 4 — hoistable scene state | pending | — |
+| 3 — invert exclusion polarity to match Nav3 | landed | `b307882f` |
+| 4 — hoistable scene state | in progress | — |
 | 5 — Nav3-style flexibility additions (scene metadata, decorator strategies, etc.) | pending | — |
 | 6 — internal refactors (`PrepareBackStack`, optional `sharedTransitionScope` param, factory-style strategies) | pending | — |
