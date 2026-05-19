@@ -101,8 +101,15 @@ public abstract class NavigationInterceptor {
                         toProcess.add(0, intercepted)
                     }
                     intercepted is NavigationOperation.AggregateOperation -> {
+                        // if we get an aggregate operation that contains the SAME operation we started with,
+                        // that means we still want to count that operation as being added to the result,
+                        // and we don't want to process it again
+                        val filtered = intercepted.operations.filter { it != operation }
+                        if (filtered.size != intercepted.operations.size) {
+                            result.add(operation)
+                        }
                         // Different operation returned, add to processing queue
-                        toProcess.addAll(0, intercepted.operations)
+                        toProcess.addAll(0, filtered)
                     }
                 }
             }

@@ -1,7 +1,10 @@
 package dev.enro.interceptor.builder
 
+import dev.enro.NavigationBackstack
+import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.context.ContainerContext
 import dev.enro.result.NavigationResult
 import dev.enro.result.NavigationResultChannel
 
@@ -11,7 +14,14 @@ import dev.enro.result.NavigationResultChannel
 public class OnNavigationKeyCompletedScope<out K : NavigationKey> @PublishedApi internal constructor(
     public val instance: NavigationKey.Instance<K>,
     internal val data: Any?,
+    public val fromContext: NavigationContext,
+    public val containerContext: ContainerContext,
 ) {
+    /**
+     * The current backstack of the container the operation is being applied to.
+     */
+    public val backstack: NavigationBackstack get() = containerContext.container.backstack
+
     public val <R : Any> OnNavigationKeyCompletedScope<NavigationKey.WithResult<R>>.result: R get() {
         require(data != null) {
             "Incorrect type, but got null"

@@ -1,16 +1,29 @@
 package dev.enro.interceptor.builder
 
+import dev.enro.NavigationBackstack
+import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.asInstance
+import dev.enro.context.ContainerContext
 
 /**
  * Scope for handling when a navigation key is opened.
  */
-public class OnNavigationKeyOpenedScope<T : NavigationKey>(
+public class OnNavigationKeyOpenedScope<T : NavigationKey> @PublishedApi internal constructor(
     public val instance: NavigationKey.Instance<T>,
+    public val fromContext: NavigationContext,
+    public val containerContext: ContainerContext,
 ) {
     public val key: T get() = instance.key
+
+    /**
+     * The current backstack of the container the operation is being applied to.
+     * Read this to make decisions based on what's already on the stack — e.g.
+     * to find an anchor entry and rewrite the operation into a `SetBackstack`
+     * or an `AggregateOperation`.
+     */
+    public val backstack: NavigationBackstack get() = containerContext.container.backstack
 
     /**
      * Continue with the navigation as normal.
@@ -35,4 +48,12 @@ public class OnNavigationKeyOpenedScope<T : NavigationKey>(
 
     public fun replaceWith(instance: NavigationKey.Instance<*>): Nothing =
         throw InterceptorBuilderResult.ReplaceWith(NavigationOperation.Open(instance))
+
+    /**
+     * Replace this Open with an arbitrary [NavigationOperation] — for example
+     * an [NavigationOperation.AggregateOperation] that closes some existing
+     * entries before opening the new one, or a `SetBackstack` transition.
+     */
+    public fun replaceWith(operation: NavigationOperation): Nothing =
+        throw InterceptorBuilderResult.ReplaceWith(operation)
 }

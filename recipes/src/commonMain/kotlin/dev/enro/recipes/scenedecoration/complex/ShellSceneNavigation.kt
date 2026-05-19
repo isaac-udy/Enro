@@ -29,12 +29,11 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import dev.enro.NavigationKey
+import dev.enro.*
 import dev.enro.annotations.NavigationDestination
-import dev.enro.asInstance
-import dev.enro.backstackOf
-import dev.enro.navigationHandle
+import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.recipes.RecipeScaffold
+import dev.enro.recipes.scenedecoration.complex.destinations.ProductDetail
 import dev.enro.recipes.scenedecoration.complex.destinations.ProductList
 import dev.enro.recipes.scenedecoration.complex.destinations.ShellHome
 import dev.enro.ui.NavigationDisplay
@@ -52,10 +51,23 @@ fun ShellSceneRecipeScreen() {
     val navigation = navigationHandle<ShellSceneRecipe>()
     RecipeScaffold(
         title = "Shell Scene",
+        topBar = {},
         navigation = navigation,
     ) { modifier ->
         val container = rememberNavigationContainer(
             backstack = backstackOf(ShellHome.asInstance()),
+            interceptor = navigationInterceptor {
+                onOpened<ProductDetail> {
+                    val existingProductDetails = backstack.takeLastWhile { it.key is ProductDetail }
+                    if (existingProductDetails.isEmpty()) continueWithOpen()
+                    replaceWith(
+                        NavigationOperation.AggregateOperation(
+                            instance.asOpenOperation(),
+                            *existingProductDetails.map { it.asCloseOperation() }.toTypedArray(),
+                        )
+                    )
+                }
+            }
         )
         NavigationDisplay(
             state = container,
@@ -74,6 +86,13 @@ fun ShellSceneRecipeScreen() {
                             ShellSection(ShellHome, "Home", Icons.Filled.Home),
                             ShellSection(ProductList, "Shop", Icons.Filled.Search),
                         ),
+                        onClose = {
+                            if (container.backstack.size == 1) {
+                                navigation.close()
+                            } else {
+                                container.updateBackstack { it.dropLast(1).asBackstack() }
+                            }
+                        },
                     )
                 },
             ),

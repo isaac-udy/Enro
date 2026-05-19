@@ -2,28 +2,14 @@ package dev.enro.recipes.scenedecoration.complex
 
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
@@ -36,13 +22,7 @@ import dev.enro.NavigationOperation
 import dev.enro.asInstance
 import dev.enro.backstackOf
 import dev.enro.recipes.scenedecoration.complex.destinations.CartOverlay
-import dev.enro.ui.LocalNavigationAnimatedVisibilityScope
-import dev.enro.ui.LocalNavigationContainer
-import dev.enro.ui.LocalNavigationSharedTransitionScope
-import dev.enro.ui.NavigationContainerState
-import dev.enro.ui.NavigationScene
-import dev.enro.ui.SceneDecoratorStrategy
-import dev.enro.ui.SceneDecoratorStrategyScope
+import dev.enro.ui.*
 
 internal data class ShellSection(
     val key: NavigationKey,
@@ -75,6 +55,7 @@ internal data class ShellSection(
  */
 internal class ShellSceneDecorator(
     private val sections: List<ShellSection>,
+    private val onClose: () -> Unit,
 ) : SceneDecoratorStrategy {
 
     @OptIn(ExperimentalSharedTransitionApi::class)
@@ -89,8 +70,8 @@ internal class ShellSceneDecorator(
         val showBottomChrome = breakpoint == ShellBreakpoint.Mobile &&
             (isSectionRoot || !claimsFullArea)
 
-        val desktopTopBar = remember { movableContentOf { ShellDesktopTopBar() } }
-        val mobileTopBar = remember { movableContentOf { ShellMobileTopBar() } }
+        val desktopTopBar = remember { movableContentOf { ShellDesktopTopBar(onClose) } }
+        val mobileTopBar = remember { movableContentOf { ShellMobileTopBar(onClose) } }
         val leftRail = remember(sections) { movableContentOf { ShellLeftRail(sections) } }
         val bottomChrome = remember(sections) { movableContentOf { ShellBottomChrome(sections) } }
 
@@ -179,7 +160,7 @@ internal class ShellSceneDecorator(
 }
 
 @Composable
-private fun ShellDesktopTopBar() {
+private fun ShellDesktopTopBar(onClose: () -> Unit) {
     val container = LocalNavigationContainer.current
     Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -189,6 +170,9 @@ private fun ShellDesktopTopBar() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            IconButton(onClick = onClose) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
             Text("Shell", style = MaterialTheme.typography.titleMedium)
             ShellSearchField(modifier = Modifier.weight(1f))
             IconButton(onClick = {
@@ -201,7 +185,7 @@ private fun ShellDesktopTopBar() {
 }
 
 @Composable
-private fun ShellMobileTopBar() {
+private fun ShellMobileTopBar(onClose: () -> Unit) {
     val container = LocalNavigationContainer.current
     Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -211,10 +195,13 @@ private fun ShellMobileTopBar() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            IconButton(onClick = onClose) {
+                Icon(Icons.Filled.Close, contentDescription = "Close recipe")
+            }
             Text(
                 "Shell",
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f).padding(start = 8.dp),
+                modifier = Modifier.weight(1f),
             )
             IconButton(onClick = {
                 container.execute(NavigationOperation.Open(CartOverlay.asInstance()))

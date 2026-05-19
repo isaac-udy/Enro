@@ -57,6 +57,8 @@ public class NavigationInterceptorBuilder internal constructor() {
                 val result = runForInterceptorBuilderResult {
                     OnNavigationKeyOpenedScope(
                         instance = instance,
+                        fromContext = fromContext,
+                        containerContext = containerContext,
                     ).block()
                 }
                 return when (result) {
@@ -96,6 +98,8 @@ public class NavigationInterceptorBuilder internal constructor() {
                     OnNavigationKeyClosedScope(
                         isSilent = operation.silent,
                         instance = instance,
+                        fromContext = fromContext,
+                        containerContext = containerContext,
                     ).block()
                 }
 
@@ -137,6 +141,8 @@ public class NavigationInterceptorBuilder internal constructor() {
                     OnNavigationKeyCompletedScope(
                         instance = instance,
                         data = operation.result,
+                        fromContext = fromContext,
+                        containerContext = containerContext,
                     ).block()
                 }
                 return when (result) {
