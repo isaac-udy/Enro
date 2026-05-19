@@ -580,21 +580,6 @@ private fun HandlePredictiveBack(
             }
         }
     )
-
-//    LaunchedEffect(navigationEventState.transitionState) {
-//        when (val transitionState = navigationEventState.transitionState) {
-//            is NavigationEventTransitionState.InProgress -> {
-//                val isProgressConsumed = state.emptyBehavior
-//                    .onPredictiveBackProgress(
-//                        backstack = scene.previousEntries.map { it.instance }.asBackstack(),
-//                        progress = transitionState.latestEvent.progress,
-//                    )
-//            }
-//
-//            is NavigationEventTransitionState.Idle -> {
-//            }
-//        }
-//    }
 }
 
 public interface SceneTransitionData {
