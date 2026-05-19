@@ -81,6 +81,18 @@ internal class DestinationSavedStateRegistry(
     override val savedStateRegistry: SavedStateRegistry =
         savedStateRegistryController.savedStateRegistry
 
+    /**
+     * Tracks whether `enableSavedStateHandles()` has already been called for
+     * this registry. The first [DestinationViewModelStoreOwner] constructed
+     * around the registry flips this to `true` so a second owner — possible
+     * when Compose freshly inserts movable content at a new slot, causing
+     * `remember(savedStateRegistryOwner) { … }` inside the decorator chain to
+     * re-evaluate — can skip the call. `enableSavedStateHandles()` adds a
+     * non-idempotent `SavedStateHandleAttacher` observer; calling it twice
+     * would double-register.
+     */
+    var savedStateHandlesEnabled: Boolean = false
+
     init {
         savedStateRegistryController.performRestore(savedState)
     }
