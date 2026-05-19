@@ -1,4 +1,4 @@
-package dev.enro.recipes.scenedecoration
+package dev.enro.recipes.scenedecoration.simple
 
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.ExperimentalSharedTransitionApi

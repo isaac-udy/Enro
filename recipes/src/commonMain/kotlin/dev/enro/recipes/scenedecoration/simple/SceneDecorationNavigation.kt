@@ -15,7 +15,7 @@
  *
  * See [AdaptiveNavigationSceneDecorator] for the decorator implementation.
  */
-package dev.enro.recipes.scenedecoration
+package dev.enro.recipes.scenedecoration.simple
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

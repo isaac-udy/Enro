@@ -5,12 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dev.enro.NavigationHandle
@@ -26,22 +21,23 @@ import dev.enro.close
 internal fun <T : NavigationKey> RecipeScaffold(
     title: String,
     navigation: NavigationHandle<T>,
+    topBar: @Composable () -> Unit = {
+        TopAppBar(
+            title = { Text(title) },
+            navigationIcon = {
+                IconButton(onClick = { navigation.close() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back to recipes",
+                    )
+                }
+            },
+        )
+    },
     content: @Composable (Modifier) -> Unit,
 ) {
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(title) },
-                navigationIcon = {
-                    IconButton(onClick = { navigation.close() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back to recipes",
-                        )
-                    }
-                },
-            )
-        },
+        topBar = topBar,
     ) { padding ->
         Box(
             modifier = Modifier

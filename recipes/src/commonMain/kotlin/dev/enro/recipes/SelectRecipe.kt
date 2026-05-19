@@ -43,7 +43,8 @@ import dev.enro.recipes.plugins.OpenedTimestampPluginRecipe
 import dev.enro.recipes.requestclose.RequestCloseConfirmationRecipe
 import dev.enro.recipes.results.ResultsRecipe
 import dev.enro.recipes.saveable.SaveableRecipe
-import dev.enro.recipes.scenedecoration.SceneDecorationRecipe
+import dev.enro.recipes.scenedecoration.complex.ShellSceneRecipe
+import dev.enro.recipes.scenedecoration.simple.SceneDecorationRecipe
 import dev.enro.recipes.sharedelements.SharedElementAnimationsRecipe
 import dev.enro.recipes.tabs.TabsRecipe
 import dev.enro.recipes.twopane.TwoPaneRecipe
@@ -144,6 +145,14 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 description = "A SceneDecoratorStrategy that wraps the current scene in a " +
                     "sidebar (wide windows) or a bottom navigation bar (narrow windows) " +
                     "without re-animating the chrome when the section changes.",
+            ),
+            RecipeEntry(
+                key = ShellSceneRecipe,
+                title = "Shell Scene (multi-pane)",
+                description = "A metadata-driven multi-pane app shell. Destinations tagged " +
+                    "leftPane() / rightPane() / fullScreen() / directOverlay() compose into " +
+                    "drawer + main + side-pane layouts that adapt to mobile / medium / wide " +
+                    "window widths.",
             ),
         ),
     ),
