@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import dev.enro.NavigationKey
+import dev.enro.ui.scenes.EmptyNavigationScene
 import dev.enro.ui.scenes.calculateSceneWithSinglePaneFallback
 
 /**
@@ -83,6 +84,21 @@ public fun rememberNavigationSceneState(
     val scope = remember { SceneStrategyScope(onBack = { currentOnBack() }) }
     val decoratorScope = remember { SceneDecoratorStrategyScope(onBack = { currentOnBack() }) }
     val destinations = containerState.destinations
+
+    // Containers configured with `EmptyBehavior.allowEmpty()` legitimately
+    // hit a state with no destinations. Short-circuit to a no-op scene
+    // here so every `NavigationSceneStrategy.calculateScene` implementation
+    // is guaranteed a non-empty entries list — same invariant Nav3 enforces
+    // at the `NavDisplay(backStack)` boundary, just pushed one frame in.
+    if (destinations.isEmpty()) {
+        return NavigationSceneState(
+            entries = emptyList(),
+            overlayScenes = emptyList(),
+            currentScene = EmptyNavigationScene,
+            previousScenes = emptyList(),
+        )
+    }
+
     val resolved = resolveSceneChain(scope, destinations, sceneStrategy)
     val overlayScenes = resolved.dropLast(1).filterIsInstance<NavigationScene.Overlay>()
     val currentScene = applyDecorators(decoratorScope, resolved.last(), sceneDecoratorStrategies)
