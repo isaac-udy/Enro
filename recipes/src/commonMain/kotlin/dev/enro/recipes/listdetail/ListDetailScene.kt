@@ -108,17 +108,20 @@ class ListDetailSceneStrategy(
                                 .weight(0.4f)
                                 .fillMaxHeight(),
                         ) {
-                            listEntry.content()
+                            listEntry.Content()
                         }
                         Box(
                             modifier = Modifier
                                 .weight(0.6f)
                                 .fillMaxHeight(),
                         ) {
-                            detailEntry?.content()
-                                ?: listEntry.listPaneMetadata()
+                            if (detailEntry != null) {
+                                detailEntry.Content()
+                            } else {
+                                listEntry.listPaneMetadata()
                                     ?.detailPlaceholder
                                     ?.invoke()
+                            }
                         }
                     }
                 }

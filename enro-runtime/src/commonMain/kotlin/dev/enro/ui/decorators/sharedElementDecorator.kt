@@ -43,7 +43,7 @@ import dev.enro.ui.LocalNavigationSharedTransitionScopeOrNull
  * If no `SharedTransitionScope` or `AnimatedVisibilityScope` is
  * available (e.g. a destination rendered standalone for previews or
  * snapshot tests, outside any `NavigationDisplay`), this decorator
- * gracefully degrades to just calling `destination.content()`.
+ * gracefully degrades to just calling `destination.Content()`.
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -58,7 +58,7 @@ internal fun sharedElementDecorator(): NavigationDestinationDecorator<Navigation
         val sharedTransitionScope = LocalNavigationSharedTransitionScopeOrNull.current
         val animatedVisibilityScope = LocalNavigationAnimatedVisibilityScopeOrNull.current
         if (sharedTransitionScope == null || animatedVisibilityScope == null) {
-            destination.content()
+            destination.Content()
             return@navigationDestinationDecorator
         }
         with(sharedTransitionScope) {
@@ -68,7 +68,7 @@ internal fun sharedElementDecorator(): NavigationDestinationDecorator<Navigation
                     animatedVisibilityScope = animatedVisibilityScope,
                 ),
             ) {
-                destination.content()
+                destination.Content()
             }
         }
     }

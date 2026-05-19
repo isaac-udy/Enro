@@ -29,17 +29,17 @@ import dev.enro.ui.NavigationSceneStrategy
  * scene (e.g. by using a Dialog or ModalBottomSheet), it will be possible to click through the overlay
  * and interact with the underlying scene.
  */
-public class DirectOverlayScene(
+public data class DirectOverlayScene(
     override val key: Any,
     override val previousEntries: List<NavigationDestination<NavigationKey>>,
     override val overlaidEntries: List<NavigationDestination<NavigationKey>>,
-    private val entry: NavigationDestination<NavigationKey>,
+    val entry: NavigationDestination<NavigationKey>,
 ) : NavigationScene.Overlay {
 
     override val entries: List<NavigationDestination<NavigationKey>> = listOf(entry)
 
-    override val content: @Composable (() -> Unit) = {
-        entry.content()
+    override val content: @Composable () -> Unit = {
+        entry.Content()
     }
 }
 

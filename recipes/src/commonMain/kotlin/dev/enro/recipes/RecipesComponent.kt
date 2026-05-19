@@ -32,13 +32,13 @@ object RecipesComponent : NavigationComponentConfiguration(
                 val isOverlay = destination.isDirectOverlay() ||
                     destination.metadata.containsKey(DialogPropertiesMetadataKey)
                 if (isOverlay) {
-                    destination.content()
+                    destination.Content()
                 } else {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background,
                     ) {
-                        destination.content()
+                        destination.Content()
                     }
                 }
             }

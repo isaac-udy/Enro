@@ -11,17 +11,17 @@ import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
 
 /** An [NavigationScene.Overlay] that renders an [entry] within a [Dialog]. */
-internal class DialogScene(
+internal data class DialogScene(
     override val key: Any,
     override val previousEntries: List<NavigationDestination<NavigationKey>>,
     override val overlaidEntries: List<NavigationDestination<NavigationKey>>,
-    private val entry: NavigationDestination<NavigationKey>,
-    private val dialogProperties: DialogProperties,
+    val entry: NavigationDestination<NavigationKey>,
+    val dialogProperties: DialogProperties,
 ) : NavigationScene.Overlay {
 
     override val entries: List<NavigationDestination<NavigationKey>> = listOf(entry)
 
-    override val content: @Composable (() -> Unit) = {
+    override val content: @Composable () -> Unit = {
         val container = LocalNavigationContainer.current
         Dialog(
             onDismissRequest = {
@@ -29,7 +29,7 @@ internal class DialogScene(
             },
             properties = dialogProperties,
         ) {
-            entry.content()
+            entry.Content()
         }
     }
 }

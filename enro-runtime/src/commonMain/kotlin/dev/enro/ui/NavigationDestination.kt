@@ -34,10 +34,20 @@ public open class NavigationDestinationProvider<T : NavigationKey>(
 public data class NavigationDestination<out T : NavigationKey> private constructor(
     public val instance: NavigationKey.Instance<T>,
     public val metadata: Map<String, Any> = emptyMap(),
-    public val content: @Composable () -> Unit,
+    private val content: @Composable () -> Unit,
 ) {
     public val id: String get() = instance.id
     public val key: T get() = instance.key
+
+    /**
+     * Renders this destination's content. Mirrors Nav3's `NavEntry.Content()`
+     * naming so a Nav3-style scene that calls `entry.Content()` translates
+     * directly to `destination.Content()` in Enro.
+     */
+    @Composable
+    public fun Content() {
+        content()
+    }
 
     /**
      * Creates a copy of this NavigationDestination with updated metadata.

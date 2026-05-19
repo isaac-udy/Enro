@@ -8,25 +8,31 @@ import dev.enro.ui.NavigationDestination
  * A decorator that wraps navigation destinations to provide additional functionality
  * such as lifecycle management, state preservation, or visual effects.
  *
+ * Parameter names ([onPop], [decorate]) mirror Nav3's `NavEntryDecorator` so a
+ * decorator written against Nav3 can almost copy-paste over. See
+ * `docs/NAV3-COMPARISON.md` for the broader alignment rationale.
+ *
  * @param T The type of NavigationKey this decorator can handle
- * @property onRemove Called when the destination is removed from the backstack
- * @property decorator The composable function that wraps the destination content
+ * @property onPop Called when the destination is popped from the backstack and
+ *   has left composition. Mirrors Nav3's `NavEntryDecorator.onPop`.
+ * @property decorate The composable function that wraps the destination content.
+ *   Mirrors Nav3's `NavEntryDecorator.decorate`.
  */
-public class NavigationDestinationDecorator<T : NavigationKey>(
-    internal val onRemove: (key: NavigationKey.Instance<T>) -> Unit,
-    internal val decorator: @Composable (destination: NavigationDestination<T>) -> Unit,
+public open class NavigationDestinationDecorator<T : NavigationKey>(
+    internal val onPop: (key: NavigationKey.Instance<T>) -> Unit,
+    internal val decorate: @Composable (destination: NavigationDestination<T>) -> Unit,
 )
 
 /**
- * Creates a [NavigationDestinationDecorator] with the provided lifecycle callback and decorator function.
+ * Creates a [NavigationDestinationDecorator] with the provided lifecycle callback and decorate function.
  *
- * @param onRemove Called when the destination is removed from the backstack
- * @param decorator The composable function that wraps the destination content
+ * @param onPop Called when the destination is popped from the backstack and has left composition.
+ * @param decorate The composable function that wraps the destination content.
  */
 public fun <T : NavigationKey> navigationDestinationDecorator(
-    onRemove: (key: NavigationKey.Instance<T>) -> Unit = {},
-    decorator: @Composable (destination: NavigationDestination<T>) -> Unit,
-): NavigationDestinationDecorator<T> = NavigationDestinationDecorator(onRemove, decorator)
+    onPop: (key: NavigationKey.Instance<T>) -> Unit = {},
+    decorate: @Composable (destination: NavigationDestination<T>) -> Unit,
+): NavigationDestinationDecorator<T> = NavigationDestinationDecorator(onPop, decorate)
 
 /**
  * Applies a list of decorators to a navigation destination, wrapping it in the order provided.
@@ -48,7 +54,7 @@ public fun <T : NavigationKey> decorateNavigationDestination(
             NavigationDestination.createWithoutScope(
                 instance = destination.instance,
                 metadata = destination.metadata,
-                content = { decorator.decorator(dest) }
+                content = { decorator.decorate(dest) }
             )
         }
 }

@@ -82,10 +82,10 @@ class TwoPaneSceneStrategy(
                 override val content: @Composable (() -> Unit) = {
                     Row(modifier = Modifier.fillMaxSize()) {
                         Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                            first.content()
+                            first.Content()
                         }
                         Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                            second.content()
+                            second.Content()
                         }
                     }
                 }

@@ -86,7 +86,7 @@ internal fun movableContentDecorator(): NavigationDestinationDecorator<Navigatio
                 // Update the state holder with the actual destination content
                 movableContentContentHolder.value = {
                     key(destination.instance.id) {
-                        destination.content()
+                        destination.Content()
                     }
                 }
                 // In case the key is removed from the backstack while this is still

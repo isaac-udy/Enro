@@ -74,12 +74,12 @@ internal fun viewModelStoreDecorator(
     val storage = viewModelStore.getOrCreateViewModelStoreStorage()
 
     return navigationDestinationDecorator(
-        onRemove = { instance ->
+        onPop = { instance ->
             if (shouldRemoveStoreOwner()) {
                 storage.clearViewModelStoreForInstance(instance)
             }
         },
-        decorator = { destination ->
+        decorate = { destination ->
             val destinationViewModelStore = storage.viewModelStoreForInstance(destination.instance)
             val savedStateRegistryOwner = LocalSavedStateRegistryOwner.current
 
@@ -92,7 +92,7 @@ internal fun viewModelStoreDecorator(
             }
 
             CompositionLocalProvider(LocalViewModelStoreOwner provides childViewModelStoreOwner) {
-                destination.content()
+                destination.Content()
             }
         }
     )

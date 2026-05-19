@@ -50,7 +50,7 @@ internal fun removalTrackingDecorator(
         // Collect onRemove callbacks from all decorators
         @Suppress("UNCHECKED_CAST")
         decorators.distinct().forEach { decorator ->
-            popCallbacks.add(decorator.onRemove as (NavigationKey.Instance<NavigationKey>) -> Unit)
+            popCallbacks.add(decorator.onPop as (NavigationKey.Instance<NavigationKey>) -> Unit)
         }
 
         // Track this destination's lifecycle
@@ -87,7 +87,7 @@ internal fun removalTrackingDecorator(
             }
         }
 
-        destination.content()
+        destination.Content()
     }
 }
 

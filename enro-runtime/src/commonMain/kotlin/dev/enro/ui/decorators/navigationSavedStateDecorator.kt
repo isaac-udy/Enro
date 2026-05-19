@@ -45,11 +45,11 @@ internal fun savedStateDecorator(
     navigationSavedStateHolder: NavigationSavedStateHolder,
 ): NavigationDestinationDecorator<NavigationKey> {
     return navigationDestinationDecorator<NavigationKey>(
-        onRemove = { instance ->
+        onPop = { instance ->
             val id = instance.id
             navigationSavedStateHolder.removeState(id)
         },
-        decorator = { destination ->
+        decorate = { destination ->
             val instance = destination.instance
             val id = instance.id
 
@@ -59,7 +59,7 @@ internal fun savedStateDecorator(
                 LocalSavedStateRegistryOwner provides childRegistry,
                 LocalSaveableStateRegistry provides saveableRegistry.saveableStateRegistry
             ) {
-                destination.content()
+                destination.Content()
             }
             navigationSavedStateHolder.DestinationDisposedEffect(id)
         }
