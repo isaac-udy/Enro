@@ -74,12 +74,12 @@ internal fun viewModelStoreDecorator(
     val storage = viewModelStore.getOrCreateViewModelStoreStorage()
 
     return navigationDestinationDecorator(
-        onRemove = { instance ->
+        onPop = { instance ->
             if (shouldRemoveStoreOwner()) {
                 storage.clearViewModelStoreForInstance(instance)
             }
         },
-        decorator = { destination ->
+        decorate = { destination ->
             val destinationViewModelStore = storage.viewModelStoreForInstance(destination.instance)
             val savedStateRegistryOwner = LocalSavedStateRegistryOwner.current
 
@@ -92,7 +92,7 @@ internal fun viewModelStoreDecorator(
             }
 
             CompositionLocalProvider(LocalViewModelStoreOwner provides childViewModelStoreOwner) {
-                destination.content()
+                destination.Content()
             }
         }
     )
@@ -132,13 +132,30 @@ private class DestinationViewModelStoreOwner(
         }
 
     init {
-        require(lifecycle.currentState == Lifecycle.State.INITIALIZED || lifecycle.currentState == Lifecycle.State.CREATED) {
-            "The Lifecycle state is already beyond CREATED. The " +
+        // The flag on DestinationSavedStateRegistry is the source of truth
+        // for "has enableSavedStateHandles() already run for this registry".
+        // The first owner constructed for a given registry does the
+        // initialisation; subsequent owners (which can happen when Compose
+        // freshly inserts movable content at a new slot, causing the
+        // remember(savedStateRegistryOwner) inside the decorator chain to
+        // re-evaluate) treat it as a no-op. The original require still
+        // catches the "decorator chain isn't wired up correctly" case —
+        // when the savedStateRegistryOwner isn't one of ours, we fall
+        // through to the strict check.
+        val destinationRegistry = savedStateRegistryOwner as? DestinationSavedStateRegistry
+        if (destinationRegistry == null || !destinationRegistry.savedStateHandlesEnabled) {
+            require(
+                lifecycle.currentState == Lifecycle.State.INITIALIZED ||
+                    lifecycle.currentState == Lifecycle.State.CREATED
+            ) {
+                "The Lifecycle state is already beyond CREATED. The " +
                     "ViewModelStoreDecorator requires adding the " +
                     "SavedStateDecorator to ensure support for " +
                     "SavedStateHandles."
+            }
+            enableSavedStateHandles()
+            destinationRegistry?.savedStateHandlesEnabled = true
         }
-        enableSavedStateHandles()
     }
 }
 

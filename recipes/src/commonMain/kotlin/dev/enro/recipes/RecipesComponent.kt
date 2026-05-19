@@ -8,14 +8,10 @@ import dev.enro.annotations.NavigationComponent
 import dev.enro.controller.NavigationComponentConfiguration
 import dev.enro.controller.createNavigationModule
 import dev.enro.recipes.plugins.OpenedTimestampPlugin
+import dev.enro.ui.contains
 import dev.enro.ui.decorators.navigationDestinationDecorator
+import dev.enro.ui.scenes.DialogSceneStrategy
 import dev.enro.ui.scenes.isDirectOverlay
-
-// The DialogSceneStrategy uses this key string to mark a destination for
-// rendering inside a Compose `Dialog`. The constant itself is private to
-// `DialogSceneStrategy`, but the string is stable; checking it here lets the
-// recipe-level decorator skip dialog destinations.
-private const val DialogPropertiesMetadataKey = "dev.enro.ui.scenes.DialogProperties"
 
 @NavigationComponent
 object RecipesComponent : NavigationComponentConfiguration(
@@ -30,15 +26,15 @@ object RecipesComponent : NavigationComponentConfiguration(
         decorator {
             navigationDestinationDecorator { destination ->
                 val isOverlay = destination.isDirectOverlay() ||
-                    destination.metadata.containsKey(DialogPropertiesMetadataKey)
+                    destination.metadata.contains(DialogSceneStrategy.DialogPropertiesKey)
                 if (isOverlay) {
-                    destination.content()
+                    destination.Content()
                 } else {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background,
                     ) {
-                        destination.content()
+                        destination.Content()
                     }
                 }
             }

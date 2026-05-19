@@ -18,6 +18,6 @@ val createRecipeDesktopDestination = navigationDestination<CreateRecipe>(
         title = "Create Recipe",
         onCloseRequest = { navigation.close() },
     ) {
-        destination.content()
+        destination.Content()
     }
 }

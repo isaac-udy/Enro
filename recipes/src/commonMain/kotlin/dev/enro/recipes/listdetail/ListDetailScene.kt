@@ -15,17 +15,29 @@ import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
+import dev.enro.ui.SceneStrategyScope
+import dev.enro.ui.get
 
 // ─────────────────────────────────────────────────────────────────────
 // Pane metadata
 // ─────────────────────────────────────────────────────────────────────
 
-private const val ListPaneKey = "dev.enro.recipes.listdetail.ListPane"
-private const val DetailPaneKey = "dev.enro.recipes.listdetail.DetailPane"
-
 internal data class ListPaneMetadata(
     val detailPlaceholder: @Composable () -> Unit,
 )
+
+/**
+ * Metadata: declares the destination is the "list" side of a
+ * list-detail layout, and supplies the placeholder to render in the
+ * detail slot when no detail destination is on the backstack.
+ */
+internal object ListPaneKey : NavigationDestination.MetadataKey<ListPaneMetadata?>(default = null)
+
+/**
+ * Metadata flag: declares the destination is the "detail" side of a
+ * list-detail layout. Default `false`.
+ */
+internal object IsDetailPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
 
 /**
  * Marks a destination as the "list" side of a list-detail layout. The
@@ -35,7 +47,7 @@ internal data class ListPaneMetadata(
 fun NavigationDestination.MetadataBuilder<*>.listPane(
     detailPlaceholder: @Composable () -> Unit = {},
 ) {
-    add(ListPaneKey to ListPaneMetadata(detailPlaceholder = detailPlaceholder))
+    add(ListPaneKey, ListPaneMetadata(detailPlaceholder = detailPlaceholder))
 }
 
 /**
@@ -44,14 +56,14 @@ fun NavigationDestination.MetadataBuilder<*>.listPane(
  * destination is below it on the backstack.
  */
 fun NavigationDestination.MetadataBuilder<*>.detailPane() {
-    add(DetailPaneKey to Unit)
+    add(IsDetailPaneKey, true)
 }
 
 internal fun NavigationDestination<*>.listPaneMetadata(): ListPaneMetadata? =
-    metadata[ListPaneKey] as? ListPaneMetadata
+    metadata[ListPaneKey]
 
 internal fun NavigationDestination<*>.isDetailPane(): Boolean =
-    metadata[DetailPaneKey] != null
+    metadata[IsDetailPaneKey]
 
 // ─────────────────────────────────────────────────────────────────────
 // The scene strategy
@@ -72,7 +84,7 @@ class ListDetailSceneStrategy(
 ) : NavigationSceneStrategy {
 
     @Composable
-    override fun calculateScene(
+    override fun SceneStrategyScope.calculateScene(
         entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene? {
         if (entries.isEmpty()) return null
@@ -108,17 +120,20 @@ class ListDetailSceneStrategy(
                                 .weight(0.4f)
                                 .fillMaxHeight(),
                         ) {
-                            listEntry.content()
+                            listEntry.Content()
                         }
                         Box(
                             modifier = Modifier
                                 .weight(0.6f)
                                 .fillMaxHeight(),
                         ) {
-                            detailEntry?.content()
-                                ?: listEntry.listPaneMetadata()
+                            if (detailEntry != null) {
+                                detailEntry.Content()
+                            } else {
+                                listEntry.listPaneMetadata()
                                     ?.detailPlaceholder
                                     ?.invoke()
+                            }
                         }
                     }
                 }

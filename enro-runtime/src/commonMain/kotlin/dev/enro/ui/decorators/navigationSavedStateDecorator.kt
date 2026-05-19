@@ -45,11 +45,11 @@ internal fun savedStateDecorator(
     navigationSavedStateHolder: NavigationSavedStateHolder,
 ): NavigationDestinationDecorator<NavigationKey> {
     return navigationDestinationDecorator<NavigationKey>(
-        onRemove = { instance ->
+        onPop = { instance ->
             val id = instance.id
             navigationSavedStateHolder.removeState(id)
         },
-        decorator = { destination ->
+        decorate = { destination ->
             val instance = destination.instance
             val id = instance.id
 
@@ -59,7 +59,7 @@ internal fun savedStateDecorator(
                 LocalSavedStateRegistryOwner provides childRegistry,
                 LocalSaveableStateRegistry provides saveableRegistry.saveableStateRegistry
             ) {
-                destination.content()
+                destination.Content()
             }
             navigationSavedStateHolder.DestinationDisposedEffect(id)
         }
@@ -80,6 +80,18 @@ internal class DestinationSavedStateRegistry(
 
     override val savedStateRegistry: SavedStateRegistry =
         savedStateRegistryController.savedStateRegistry
+
+    /**
+     * Tracks whether `enableSavedStateHandles()` has already been called for
+     * this registry. The first [DestinationViewModelStoreOwner] constructed
+     * around the registry flips this to `true` so a second owner — possible
+     * when Compose freshly inserts movable content at a new slot, causing
+     * `remember(savedStateRegistryOwner) { … }` inside the decorator chain to
+     * re-evaluate — can skip the call. `enableSavedStateHandles()` adds a
+     * non-idempotent `SavedStateHandleAttacher` observer; calling it twice
+     * would double-register.
+     */
+    var savedStateHandlesEnabled: Boolean = false
 
     init {
         savedStateRegistryController.performRestore(savedState)

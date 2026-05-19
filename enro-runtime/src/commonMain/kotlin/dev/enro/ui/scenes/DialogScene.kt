@@ -9,19 +9,21 @@ import dev.enro.ui.LocalNavigationContainer
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
+import dev.enro.ui.SceneStrategyScope
+import dev.enro.ui.get
 
 /** An [NavigationScene.Overlay] that renders an [entry] within a [Dialog]. */
-internal class DialogScene(
+internal data class DialogScene(
     override val key: Any,
     override val previousEntries: List<NavigationDestination<NavigationKey>>,
     override val overlaidEntries: List<NavigationDestination<NavigationKey>>,
-    private val entry: NavigationDestination<NavigationKey>,
-    private val dialogProperties: DialogProperties,
+    val entry: NavigationDestination<NavigationKey>,
+    val dialogProperties: DialogProperties,
 ) : NavigationScene.Overlay {
 
     override val entries: List<NavigationDestination<NavigationKey>> = listOf(entry)
 
-    override val content: @Composable (() -> Unit) = {
+    override val content: @Composable () -> Unit = {
         val container = LocalNavigationContainer.current
         Dialog(
             onDismissRequest = {
@@ -29,7 +31,7 @@ internal class DialogScene(
             },
             properties = dialogProperties,
         ) {
-            entry.content()
+            entry.Content()
         }
     }
 }
@@ -42,40 +44,36 @@ internal class DialogScene(
  */
 public class DialogSceneStrategy : NavigationSceneStrategy {
     @Composable
-    public override fun calculateScene(
+    public override fun SceneStrategyScope.calculateScene(
         entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene? {
-        val lastEntry = entries.lastOrNull()
-        val dialogProperties = lastEntry?.metadata?.get(DialogPropertiesKey) as? DialogProperties
-
-        return if (dialogProperties != null) {
-            DialogScene(
-                key = lastEntry.instance.id,
-                previousEntries = entries.dropLast(1),
-                overlaidEntries = entries.dropLast(1),
-                entry = lastEntry,
-                dialogProperties = dialogProperties,
-            )
-        } else null
+        val lastEntry = entries.lastOrNull() ?: return null
+        val dialogProperties = lastEntry.metadata[DialogPropertiesKey] ?: return null
+        return DialogScene(
+            key = lastEntry.instance.id,
+            previousEntries = entries.dropLast(1),
+            overlaidEntries = entries.dropLast(1),
+            entry = lastEntry,
+            dialogProperties = dialogProperties,
+        )
     }
 
-    public companion object Companion {
-        private const val DialogPropertiesKey = "dev.enro.ui.scenes.DialogProperties"
+    /**
+     * Metadata key under which a destination's [DialogProperties] are
+     * stored when it opts into being displayed inside a [Dialog].
+     * Mirrors Nav3's `DialogSceneStrategy.DialogKey: NavMetadataKey<DialogProperties>`.
+     */
+    public object DialogPropertiesKey :
+        NavigationDestination.MetadataKey<DialogProperties?>(default = null)
 
-        /**
-         * Function to create a metadata map with dialog properties to mark this entry as something that
-         * should be displayed within a [Dialog].
-         *
-         * @param dialogProperties properties that should be passed to the containing [Dialog].
-         */
-        public fun dialogMetadata(
-            dialogProperties: DialogProperties = DialogProperties(),
-        ): Pair<String, DialogProperties> = DialogPropertiesKey to dialogProperties
-    }
+    public companion object
 }
 
+/**
+ * Marks the destination as one that should be displayed inside a [Dialog].
+ */
 public fun NavigationDestination.MetadataBuilder<*>.dialog(
     dialogProperties: DialogProperties = DialogProperties(),
 ) {
-    add(DialogSceneStrategy.dialogMetadata(dialogProperties))
+    add(DialogSceneStrategy.DialogPropertiesKey, dialogProperties)
 }

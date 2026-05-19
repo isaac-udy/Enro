@@ -109,7 +109,7 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
                 return@remember true
             }
             if (isOpened) {
-                destination.content()
+                destination.Content()
             }
             DisposableEffect(isActiveInRoot) {
                 if (isActiveInRoot) {

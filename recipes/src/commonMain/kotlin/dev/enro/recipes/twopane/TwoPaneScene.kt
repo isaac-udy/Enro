@@ -15,12 +15,18 @@ import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
+import dev.enro.ui.SceneStrategyScope
+import dev.enro.ui.get
 
 // ─────────────────────────────────────────────────────────────────────
 // Two-pane metadata
 // ─────────────────────────────────────────────────────────────────────
 
-private const val TwoPaneKey = "dev.enro.recipes.twopane.TwoPane"
+/**
+ * Metadata flag: declares the destination is willing to participate
+ * in a two-pane layout under [TwoPaneSceneStrategy]. Default `false`.
+ */
+object IsTwoPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
 
 /**
  * Marks a destination as eligible for two-pane rendering. The
@@ -28,11 +34,11 @@ private const val TwoPaneKey = "dev.enro.recipes.twopane.TwoPane"
  * when *both* of the top two backstack entries carry this metadata.
  */
 fun NavigationDestination.MetadataBuilder<*>.twoPane() {
-    add(TwoPaneKey to Unit)
+    add(IsTwoPaneKey, true)
 }
 
 internal fun NavigationDestination<*>.isTwoPane(): Boolean =
-    metadata[TwoPaneKey] != null
+    metadata[IsTwoPaneKey]
 
 // ─────────────────────────────────────────────────────────────────────
 // The scene strategy
@@ -52,7 +58,7 @@ class TwoPaneSceneStrategy(
 ) : NavigationSceneStrategy {
 
     @Composable
-    override fun calculateScene(
+    override fun SceneStrategyScope.calculateScene(
         entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene? {
         if (entries.size < 2) return null
@@ -82,10 +88,10 @@ class TwoPaneSceneStrategy(
                 override val content: @Composable (() -> Unit) = {
                     Row(modifier = Modifier.fillMaxSize()) {
                         Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                            first.content()
+                            first.Content()
                         }
                         Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                            second.content()
+                            second.Content()
                         }
                     }
                 }

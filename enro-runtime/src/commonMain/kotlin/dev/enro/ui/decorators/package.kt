@@ -45,10 +45,10 @@
  * ```kotlin
  * fun myCustomDecorator(): NavigationDestinationDecorator<NavigationKey> {
  *     return navigationDestinationDecorator(
- *         onRemove = { instance ->
- *             // Clean up when destination is removed
+ *         onPop = { instance ->
+ *             // Clean up when destination is popped from the backstack
  *         },
- *         decorator = { destination ->
+ *         decorate = { destination ->
  *             // Wrap the destination content
  *             MyCustomWrapper {
  *                 destination.Content()

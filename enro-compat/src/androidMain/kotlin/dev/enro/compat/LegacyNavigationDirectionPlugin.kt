@@ -15,6 +15,6 @@ internal object LegacyNavigationDirectionPlugin : NavigationPlugin() {
         val direction = destination.instance.metadata.get(NavigationDirection.MetadataKey)
         if (direction == null) return
         if (direction != NavigationDirection.Present) return
-        additionalMetadata += DirectOverlaySceneStrategy.overlay()
+        additionalMetadata[DirectOverlaySceneStrategy.IsDirectOverlayKey.name] = true
     }
 }

@@ -84,7 +84,19 @@ public class NavigationSavedStateHolder(
         savedStateRegistry?.lifecycle?.currentState = Lifecycle.State.RESUMED
         DisposableEffect(destinationId, savedState) {
             onDispose {
-                savedStateRegistry?.lifecycle?.currentState = Lifecycle.State.CREATED
+                // Defensive: this DisposableEffect lives inside the movable
+                // content set up by movableContentDecorator, which Compose
+                // tears down later than the outer DisposableEffect in
+                // decorateNavigationDestination (the one that fires
+                // savedStateDecorator.onPop -> removeState -> DESTROYED).
+                // By the time this onDispose runs after a pop, the registry
+                // may already be DESTROYED — and a DESTROYED -> CREATED
+                // transition throws in LifecycleRegistry. Treat the
+                // already-destroyed case as "nothing to do".
+                val registry = savedStateRegistry ?: return@onDispose
+                if (registry.lifecycle.currentState != Lifecycle.State.DESTROYED) {
+                    registry.lifecycle.currentState = Lifecycle.State.CREATED
+                }
             }
         }
         DisposableEffect(destinationId, savedState) {

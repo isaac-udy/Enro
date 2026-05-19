@@ -10,7 +10,7 @@ public fun NavigationModule.BuilderScope.composeEnvironment(
     decorator {
         navigationDestinationDecorator { destination ->
             block {
-                destination.content()
+                destination.Content()
             }
         }
     }

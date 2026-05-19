@@ -65,7 +65,7 @@ public class NavigationModule @PublishedApi internal constructor() {
             decorator {
                 navigationDestinationDecorator { destination ->
                     block {
-                        destination.content()
+                        destination.Content()
                     }
                 }
             }
