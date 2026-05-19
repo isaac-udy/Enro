@@ -36,6 +36,7 @@ import dev.enro.recipes.RecipeScaffold
 import dev.enro.recipes.scenedecoration.complex.destinations.ProductDetail
 import dev.enro.recipes.scenedecoration.complex.destinations.ProductList
 import dev.enro.recipes.scenedecoration.complex.destinations.ShellHome
+import dev.enro.ui.NavigationAnimations
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.NavigationSceneStrategy
 import dev.enro.ui.rememberNavigationContainer
@@ -79,6 +80,10 @@ fun ShellSceneRecipeScreen() {
                     SinglePaneSceneStrategy(),
                 )
             },
+            animations = NavigationAnimations.Default.copy(
+                transitionSpec = NavigationAnimations.Default.containerTransitionSpec,
+                popTransitionSpec = NavigationAnimations.Default.containerTransitionSpec,
+            ),
             sceneDecoratorStrategies = listOf(
                 remember {
                     ShellSceneDecorator(

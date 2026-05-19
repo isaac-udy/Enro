@@ -88,9 +88,15 @@ internal class ShellSceneDecorator(
                     with(sharedScope) {
                         if (breakpoint == ShellBreakpoint.Mobile) {
                             Column(modifier = Modifier.fillMaxSize()) {
+                                // Slot has a fixed height so the outgoing composition
+                                // (which doesn't invoke the movable chrome) still
+                                // reserves the same vertical space — otherwise the
+                                // inner scene content would jump up by TopBarHeight
+                                // at the start of the exit animation.
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
+                                        .height(MobileTopBarHeight)
                                         .sharedElement(
                                             sharedContentState = rememberSharedContentState(MobileTopBarKey),
                                             animatedVisibilityScope = animatedScope,
@@ -105,6 +111,7 @@ internal class ShellSceneDecorator(
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .height(BottomChromeHeight)
                                             .sharedElement(
                                                 sharedContentState = rememberSharedContentState(BottomChromeKey),
                                                 animatedVisibilityScope = animatedScope,
@@ -119,6 +126,7 @@ internal class ShellSceneDecorator(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
+                                        .height(DesktopTopBarHeight)
                                         .sharedElement(
                                             sharedContentState = rememberSharedContentState(DesktopTopBarKey),
                                             animatedVisibilityScope = animatedScope,
@@ -151,7 +159,6 @@ internal class ShellSceneDecorator(
     }
 
     private companion object {
-        val LeftRailWidth = 220.dp
         const val DesktopTopBarKey = "ShellSceneDecorator.desktopTopBar"
         const val MobileTopBarKey = "ShellSceneDecorator.mobileTopBar"
         const val LeftRailKey = "ShellSceneDecorator.leftRail"
@@ -159,14 +166,25 @@ internal class ShellSceneDecorator(
     }
 }
 
+// Heights must match the rendered chrome composables exactly so that both
+// outgoing and incoming wrapper compositions reserve the same vertical space
+// for chrome slots — see the slot-sizing comment in decorateScene.
+private val DesktopTopBarHeight = 68.dp
+private val MobileTopBarHeight = 64.dp
+private val BottomChromeHeight = 144.dp
+private val LeftRailWidth = 220.dp
+
 @Composable
 private fun ShellDesktopTopBar(onClose: () -> Unit) {
     val container = LocalNavigationContainer.current
-    Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth()) {
+    Surface(
+        tonalElevation = 3.dp,
+        modifier = Modifier.fillMaxWidth().height(DesktopTopBarHeight),
+    ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -187,11 +205,14 @@ private fun ShellDesktopTopBar(onClose: () -> Unit) {
 @Composable
 private fun ShellMobileTopBar(onClose: () -> Unit) {
     val container = LocalNavigationContainer.current
-    Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth()) {
+    Surface(
+        tonalElevation = 3.dp,
+        modifier = Modifier.fillMaxWidth().height(MobileTopBarHeight),
+    ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -264,7 +285,7 @@ private fun ShellRailItem(
 private fun ShellBottomChrome(sections: List<ShellSection>) {
     val container = LocalNavigationContainer.current
     val sectionKey = container.backstack.firstOrNull()?.key
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth().height(BottomChromeHeight)) {
         ShellSearchField(
             modifier = Modifier
                 .fillMaxWidth()
