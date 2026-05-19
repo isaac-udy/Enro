@@ -7,7 +7,7 @@ import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import dev.enro.NavigationKey
-import dev.enro.ui.LocalDestinationsToRenderInCurrentScene
+import dev.enro.ui.LocalEntriesToExcludeFromCurrentScene
 
 /**
  * Returns a [NavigationDestinationDecorator] that wraps each destination in a [movableContentOf]
@@ -34,8 +34,9 @@ public fun rememberMovableContentDecorator(): NavigationDestinationDecorator<Nav
  * - A map of content holders that store the actual destination content
  * - A map of movable content wrappers that allow the content to be moved
  *
- * The decorator only renders destinations that are marked as visible in the current scene
- * via [LocalDestinationsToRenderInCurrentScene].
+ * The decorator only renders destinations that are NOT excluded by
+ * [LocalEntriesToExcludeFromCurrentScene] (mirroring Nav3's
+ * `LocalEntriesToExcludeFromCurrentScene`).
  */
 internal fun movableContentDecorator(): NavigationDestinationDecorator<NavigationKey> {
     val movableContentContentHolderMap: MutableMap<String, MutableState<@Composable () -> Unit>> = mutableMapOf()
@@ -74,8 +75,8 @@ internal fun movableContentDecorator(): NavigationDestinationDecorator<Navigatio
             }
         }
 
-        // Only render if this destination should be visible in the current scene
-        if (LocalDestinationsToRenderInCurrentScene.current.contains(destination.instance.id)) {
+        // Skip rendering if a higher-z scene has claimed this entry for itself
+        if (!LocalEntriesToExcludeFromCurrentScene.current.contains(destination.instance.id)) {
             key(key) {
                 // In case the key is removed from the backstack while this is still
                 // being rendered, we remember the MutableState directly to allow

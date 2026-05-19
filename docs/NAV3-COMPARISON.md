@@ -109,8 +109,8 @@ This list is the source of truth for "we don't match Nav3 here, on purpose."
 | Batch | Status | Commit |
 |--|--|--|
 | 1 — renames + scenes as data classes + cleanup | landed | `1d5e06c9` |
-| 2 — typed metadata (`NavigationDestination.MetadataKey<T>`) | in progress | — |
-| 3 — invert exclusion polarity to match Nav3 | pending | — |
+| 2 — typed metadata (`NavigationDestination.MetadataKey<T>`) | landed | `9056dd22` |
+| 3 — invert exclusion polarity to match Nav3 | in progress | — |
 | 4 — hoistable scene state | pending | — |
 | 5 — Nav3-style flexibility additions (scene metadata, decorator strategies, etc.) | pending | — |
 | 6 — internal refactors (`PrepareBackStack`, optional `sharedTransitionScope` param, factory-style strategies) | pending | — |

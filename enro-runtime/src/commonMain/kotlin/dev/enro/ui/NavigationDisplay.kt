@@ -233,13 +233,13 @@ public fun NavigationDisplay(
         }
     }
 
-    // Calculate which destinations should be rendered in each scene.
-    // Mirrors Nav3's sceneToExcludedEntryMap with the same pop-swap
-    // branch: on pops, the entries of the target scene must be
-    // rendered by the *target* and excluded from every other (higher-z)
-    // scene, otherwise a shared entry that's "coming back into view"
-    // beneath the popping scene won't have a layout slot to bridge to.
-    val sceneToRenderableDestinationMap = remember(
+    // Build the per-scene exclusion sets. Mirrors Nav3's
+    // sceneToExcludedEntryMap exactly: each scene's value is the set
+    // of entry ids that this scene must NOT render (because a higher-z
+    // scene already owns them — or, during a pop, because the target
+    // scene underneath needs to render them so a shared element has
+    // somewhere to bridge to).
+    val sceneToExcludedEntryMap = remember(
         sceneMap.entries.toList(),
         transition.targetState.identity,
         zIndices.toString(),
@@ -258,35 +258,38 @@ public fun NavigationDisplay(
                 .map { it.instance.id }
                 .toSet()
 
-            // Tracks entries that a higher-z scene has CLAIMED for
-            // rendering. We accumulate only the *renderable* set, not
-            // the scene's full entries list — otherwise during a pop
-            // the popping scene's entries (which it deliberately
-            // doesn't render so the target can render them underneath)
-            // would still end up in coveredDestinationIds and end up
-            // excluded from the target as well, leaving the target
-            // scene blank.
-            val coveredDestinationIds = mutableSetOf<String>()
+            // `coveredEntryIds` accumulates the entries that have been
+            // claimed by a higher-z scene as we walk the z-order. Each
+            // scene's exclusion set is exactly this accumulator at the
+            // time it's processed.
+            val coveredEntryIds = mutableSetOf<String>()
             scenesByZDescending.forEach { (identity, scene) ->
                 val sceneEntryIds = scene.entries.map { it.instance.id }
-                val renderable = if (isPopTransition && identity != targetIdentity) {
-                    // Higher-z (popping) scene during a pop: render
-                    // only what's NOT in the target scene and NOT
-                    // already covered by an even-higher scene.
-                    sceneEntryIds
-                        .filterNot(coveredDestinationIds::contains)
-                        .filterNot(targetEntryIds::contains)
-                        .toSet()
+                if (isPopTransition && identity != targetIdentity) {
+                    // Popping (higher-z) scene during a pop: exclude
+                    // the target's entries so the target underneath
+                    // renders them.
+                    put(identity, targetEntryIds)
                 } else {
-                    // Push, or this is the target scene during a pop:
-                    // render everything not already claimed by a
-                    // higher-z scene's renderable set.
-                    sceneEntryIds
-                        .filterNot(coveredDestinationIds::contains)
-                        .toSet()
+                    put(identity, coveredEntryIds.toSet())
                 }
-                put(identity, renderable)
-                coveredDestinationIds.addAll(renderable)
+                // Newly-rendered entries (this scene's entries not yet
+                // covered, minus what we just excluded) become covered
+                // for any lower-z scene.
+                val newlyCovered = sceneEntryIds.filterNot { it in coveredEntryIds }
+                if (isPopTransition && identity != targetIdentity) {
+                    coveredEntryIds.addAll(newlyCovered.filterNot { it in targetEntryIds })
+                } else {
+                    coveredEntryIds.addAll(newlyCovered)
+                }
+            }
+
+            // During a pop the target's exclusion set was computed
+            // ignoring its own swap rule above; override it to empty
+            // so the target renders everything in its entries list,
+            // including entries that the popping scene above it lists.
+            if (isPopTransition) {
+                put(targetIdentity, emptySet())
             }
         }
     }
@@ -345,10 +348,8 @@ public fun NavigationDisplay(
                         LocalNavigationAnimatedVisibilityScopeOrNull provides this@AnimatedContent,
                         LocalNavigationSharedTransitionScope provides this@SharedTransitionLayout,
                         LocalNavigationSharedTransitionScopeOrNull provides this@SharedTransitionLayout,
-                        LocalDestinationsToRenderInCurrentScene provides (
-                            sceneToRenderableDestinationMap[targetIdentityForContent]
-                                ?: targetScene.entries.map { it.instance.id }.toSet()
-                        )
+                        LocalEntriesToExcludeFromCurrentScene provides
+                            (sceneToExcludedEntryMap[targetIdentityForContent] ?: emptySet())
                     ) {
                         targetScene.content()
                     }
@@ -675,7 +676,6 @@ private fun OverlaySceneRenderer(
         onFullyHidden()
     }
 
-    val allDestinations = scene.entries.map { it.instance.id }.toSet()
     SharedTransitionLayout {
         transition.AnimatedVisibility(
             visible = { it },
@@ -687,7 +687,9 @@ private fun OverlaySceneRenderer(
                 LocalNavigationAnimatedVisibilityScopeOrNull provides this@AnimatedVisibility,
                 LocalNavigationSharedTransitionScope provides this@SharedTransitionLayout,
                 LocalNavigationSharedTransitionScopeOrNull provides this@SharedTransitionLayout,
-                LocalDestinationsToRenderInCurrentScene provides allDestinations,
+                // Overlay scenes render all their entries (no z-order
+                // contention with sibling overlays in this composition).
+                LocalEntriesToExcludeFromCurrentScene provides emptySet(),
             ) {
                 scene.content()
             }
