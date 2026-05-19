@@ -124,7 +124,7 @@ This list is the source of truth for "we don't match Nav3 here, on purpose."
 | 3 — invert exclusion polarity to match Nav3 | landed | `b307882f` |
 | 4 — hoistable scene state | landed | `b74214b4` |
 | 5 — Nav3-style flexibility additions (scene metadata, decorator strategies, etc.) | landed | `2776d09f` |
-| 6 — internal refactors (`PrepareBackStack` + optional `sharedTransitionScope` param) | in progress | — |
+| 6 — internal refactors (`PrepareBackStack` + optional `sharedTransitionScope` param) | landed | `44a96394` |
 
 ## Remaining alignment work
 
