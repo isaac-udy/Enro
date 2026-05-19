@@ -66,10 +66,7 @@ Code that knowingly diverges from Nav3 carries an inline comment of the form:
 
 ## Deliberate divergences (and why)
 
-This list is the source of truth for "we don't match Nav3 here, on purpose."
-
-> _Each subsequent batch of the alignment work adds entries to this list as
-> the relevant code lands._
+This list is the source of truth for "Enro doesn't match Nav3 here, on purpose."
 
 - **`NavigationScene` is non-generic.** Nav3 carries `T : Any` through
   `Scene<T>` so the scene knows the key type. Enro's key system is closed
@@ -106,59 +103,63 @@ This list is the source of truth for "we don't match Nav3 here, on purpose."
   outer wrap.** Nav3's `decorateEntry` registers the equivalent
   `DisposableEffect` at the *outermost* wrap — the wrapped entry's
   `Content()` runs `DisposableEffect(...) { … }` *before* invoking the
-  decorator chain. We initially mirrored that shape (Batch 6) but had to
-  back it out because of a disposal-order problem unique to Enro:
+  decorator chain. Enro can't mirror that shape because some Enro
+  decorators' `onPop` callbacks tear down state that other decorators
+  read at composition time:
 
-  Enro's `viewModelStoreDecorator.onPop` clears the destination's child
-  `ViewModelStore`, and `savedStateDecorator.onPop` transitions the
-  destination's `LifecycleRegistry` to `DESTROYED`. Both of those tear
-  down state that **other parts of the chain read at composition time**
-  — `LocalNavigationContext.current` consumers call
-  `viewModel(viewModelStoreOwner = …)` to retrieve the
-  `NavigationHandleHolder`, and `DestinationDisposedEffect.onDispose`
-  transitions the registry back to `CREATED`.
+  - `viewModelStoreDecorator.onPop` clears the destination's child
+    `ViewModelStore`, which `LocalNavigationContext.current` consumers
+    read via `viewModel(viewModelStoreOwner = …)` to retrieve the
+    `NavigationHandleHolder`.
+  - `savedStateDecorator.onPop` transitions the destination's
+    `LifecycleRegistry` to `DESTROYED`, which
+    `DestinationDisposedEffect.onDispose` would otherwise try to push
+    back to `CREATED`.
 
-  When the `DisposableEffect` is in the outer wrap (outside the
-  `movableContent` that `movableContentDecorator` sets up), its
-  `onDispose` fires when the outer call-site disposes — which can be
-  noticeably earlier than when Compose's `disposeUnusedMovableContent`
-  actually tears down the inner slot table. If a recomposition lands
-  between "outer `onPop` fired" and "movable content discarded", it
-  finds either an empty `ViewModelStore` (→
-  `IllegalStateException: No NavigationHandle found`) or a `DESTROYED`
-  registry being asked to transition to `CREATED` (→
+  When the tracking `DisposableEffect` is in the outer wrap (outside
+  the `movableContent` that `movableContentDecorator` sets up), its
+  `onDispose` fires when the outer call-site disposes — earlier than
+  Compose's `disposeUnusedMovableContent` actually tears down the
+  inner slot table. A recomposition that lands between "outer `onPop`
+  fired" and "movable content discarded" sees the half-torn-down state
+  and crashes with either `IllegalStateException: No NavigationHandle
+  found` (the holder lookup races the `ViewModelStore` clear) or
   `IllegalStateException: State is 'DESTROYED' and cannot be moved to
-  'CREATED'`).
+  'CREATED'` (the lifecycle transition race).
 
-  Moving the tracking `DisposableEffect` to an innermost decorator
-  puts it **inside** the movable content. Its `onDispose` then runs in
-  the same synchronous slot-table-teardown as the inner
-  `CompositionLocalProvider`s, so there's no window in which `onPop` has
-  fired but a downstream recompose can still consult the (now-gone)
-  state.
+  Putting the tracking `DisposableEffect` in an innermost decorator
+  places it **inside** the movable content. Its `onDispose` then runs
+  in the same synchronous slot-table-teardown pass as the inner
+  `CompositionLocalProvider`s (saved state, view-model store,
+  navigation context). There is no window in which `onPop` has fired
+  but a downstream recompose can still consult the (now-gone) state.
 
-  Nav3 doesn't have this problem because its bundled decorators'
-  `onPop` callbacks are all lightweight map removals
-  (`SaveableStateHolder.removeState`, `movableContentMap.remove`) — no
-  state another decorator's `decorate` body relies on. Enro stacks
-  more responsibilities on `onPop`, and the safe disposal-order
-  invariant requires keeping the tracking inside the chain.
+  Nav3 doesn't hit this because its bundled decorators' `onPop`
+  callbacks are lightweight map removals (`SaveableStateHolder.removeState`,
+  `movableContentMap.remove`) — nothing else in the chain reads what
+  they tear down. Enro stacks more responsibilities on `onPop`, and
+  the safe disposal-order invariant requires keeping the tracking
+  inside the chain.
 
-  Net result:
-  - `decorateNavigationDestination` is a pure `foldRight` again, like
+  Concrete shape:
+  - `decorateNavigationDestination` is a pure `foldRight`, the same as
     Nav3's `decorateEntry` minus the outer `DisposableEffect`.
   - `rememberDecoratedDestinations` appends a
-    `compositionTrackingDecorator` to the decorator list (innermost
-    wrap). The tracker registers the composition `DisposableEffect`
-    and fires `onPop` on every other decorator in reverse order.
-  - `PrepareBackStack` is unchanged — it still catches the
-    "left the backstack while not in composition" case.
+    `compositionTrackingDecorator` to the decorator list as the **last**
+    element. `foldRight` makes the last element the innermost wrap, so
+    the tracker's `DisposableEffect` is composed inside the movable
+    content. The tracker fires `onPop` on every other decorator in
+    reverse decoration order when the destination has left both the
+    backstack and composition.
+  - `PrepareBackStack` is the same as Nav3 — it catches the inverse
+    case (destination left the backstack while not in composition).
 
 - **`EmptyBehavior`, `NavigationContainer`, `NavigationOperation`,
   `NavigationInterceptor`, `NavigationPlugin`, `EnroController`,
   `NavigationKey.WithResult<T>`, `registerForNavigationResult`,
-  `NavigationFlow`** — these are Enro features Nav3 doesn't have. Out of
-  scope for this alignment.
+  `NavigationFlow`** — Enro features Nav3 doesn't have. They sit on
+  top of the rendering/scene model rather than inside it, so
+  cross-framework alignment doesn't apply.
 
 ## Out-of-scope (Nav3 features Enro hasn't ported)
 
@@ -168,17 +169,17 @@ This list is the source of truth for "we don't match Nav3 here, on purpose."
 - `EntryProvider` DSL. Enro uses `@NavigationDestination` annotations +
   KSP-generated bindings, registered through `EnroController`.
 
-## Alignment progress
+## Known gaps
 
-| Batch | Status | Commit |
-|--|--|--|
-| 1 — renames + scenes as data classes + cleanup | landed | `1d5e06c9` |
-| 2 — typed metadata (`NavigationDestination.MetadataKey<T>`) | landed | `9056dd22` |
-| 3 — invert exclusion polarity to match Nav3 | landed | `b307882f` |
-| 4 — hoistable scene state | landed | `b74214b4` |
-| 5 — Nav3-style flexibility additions (scene metadata, decorator strategies, etc.) | landed | `2776d09f` |
-| 6 — internal refactors (`PrepareBackStack` + optional `sharedTransitionScope` param) | landed | `44a96394` |
+Differences from Nav3 that aren't yet aligned but aren't permanent either —
+either they're on the roadmap or they need a deliberate API change.
 
-## Remaining alignment work
-
-- **Factory-style scene strategies.** Nav3's `SceneStrategy<T>` is a plain (non-`@Composable`) interface; strategies that need Compose state expose a `rememberXxxStrategy()` factory that captures it. Enro's `NavigationSceneStrategy.calculateScene` is still `@Composable`. Migrating would mean removing the `@Composable` annotation and updating the in-tree recipe strategies (`ListDetailSceneStrategy`, `TwoPaneSceneStrategy`) to use a factory pattern. Deferred from Batch 6 — meaningful API churn, separately commit-worthy.
+- **Factory-style scene strategies.** Nav3's `SceneStrategy<T>` is a plain
+  (non-`@Composable`) interface; strategies that need Compose state expose
+  a `rememberXxxStrategy()` factory that captures it.
+  `NavigationSceneStrategy.calculateScene` is still `@Composable` and
+  reads Compose locals directly. Migrating means dropping the
+  `@Composable` annotation and reshaping the built-in plus recipe
+  strategies (`ListDetailSceneStrategy`, `TwoPaneSceneStrategy`,
+  `DoublePaneScene`, ...) to capture their Compose-side inputs through
+  a `remember…()` factory.
