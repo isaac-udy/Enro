@@ -11,6 +11,7 @@ import dev.enro.NavigationKey
 import dev.enro.ui.decorators.NavigationDestinationDecorator
 import dev.enro.ui.decorators.NavigationSavedStateHolder
 import dev.enro.ui.decorators.decorateNavigationDestination
+import dev.enro.ui.decorators.rememberCompositionTrackingDecorator
 import dev.enro.ui.decorators.rememberLifecycleDecorator
 import dev.enro.ui.decorators.rememberMovableContentDecorator
 import dev.enro.ui.decorators.rememberNavigationContextDecorator
@@ -63,6 +64,18 @@ internal fun rememberDecoratedDestinations(
 
     val idsInBackstack: MutableSet<String> = remember { mutableSetOf() }
     val idsInComposition: MutableSet<String> = remember { mutableSetOf() }
+
+    // Innermost decorator: tracks composition and fires onPop on every
+    // other decorator. Appending it as the LAST element makes foldRight
+    // wrap it as the innermost — which puts its DisposableEffect inside
+    // the movable content set up by movableContentDecorator. See
+    // docs/NAV3-COMPARISON.md for the rationale.
+    val trackingDecorator = rememberCompositionTrackingDecorator(
+        decoratorsToInvokeOnPop = decorators,
+        idsInBackstack = idsInBackstack,
+        idsInComposition = idsInComposition,
+    )
+    val decoratorsWithTracking = decorators + trackingDecorator
     val decoratedDestinations = remember {
         mutableMapOf<String, NavigationDestination<NavigationKey>>()
     }
@@ -78,9 +91,7 @@ internal fun rememberDecoratedDestinations(
                     val destination = controller.bindings.destinationFor(instance)
                     decorateNavigationDestination(
                         destination = destination,
-                        decorators = decorators,
-                        idsInBackstack = idsInBackstack,
-                        idsInComposition = idsInComposition,
+                        decorators = decoratorsWithTracking,
                     )
                 }
             }

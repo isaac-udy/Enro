@@ -101,6 +101,59 @@ This list is the source of truth for "we don't match Nav3 here, on purpose."
   with a `NavigationHandle<T>`, a `NavigationContext`, and the result/flow
   routing. This is the core of Enro's API surface and has no Nav3 analog.
 
+- **Composition tracking + `onPop` dispatch lives in an innermost
+  `compositionTrackingDecorator`, not in `decorateNavigationDestination`'s
+  outer wrap.** Nav3's `decorateEntry` registers the equivalent
+  `DisposableEffect` at the *outermost* wrap — the wrapped entry's
+  `Content()` runs `DisposableEffect(...) { … }` *before* invoking the
+  decorator chain. We initially mirrored that shape (Batch 6) but had to
+  back it out because of a disposal-order problem unique to Enro:
+
+  Enro's `viewModelStoreDecorator.onPop` clears the destination's child
+  `ViewModelStore`, and `savedStateDecorator.onPop` transitions the
+  destination's `LifecycleRegistry` to `DESTROYED`. Both of those tear
+  down state that **other parts of the chain read at composition time**
+  — `LocalNavigationContext.current` consumers call
+  `viewModel(viewModelStoreOwner = …)` to retrieve the
+  `NavigationHandleHolder`, and `DestinationDisposedEffect.onDispose`
+  transitions the registry back to `CREATED`.
+
+  When the `DisposableEffect` is in the outer wrap (outside the
+  `movableContent` that `movableContentDecorator` sets up), its
+  `onDispose` fires when the outer call-site disposes — which can be
+  noticeably earlier than when Compose's `disposeUnusedMovableContent`
+  actually tears down the inner slot table. If a recomposition lands
+  between "outer `onPop` fired" and "movable content discarded", it
+  finds either an empty `ViewModelStore` (→
+  `IllegalStateException: No NavigationHandle found`) or a `DESTROYED`
+  registry being asked to transition to `CREATED` (→
+  `IllegalStateException: State is 'DESTROYED' and cannot be moved to
+  'CREATED'`).
+
+  Moving the tracking `DisposableEffect` to an innermost decorator
+  puts it **inside** the movable content. Its `onDispose` then runs in
+  the same synchronous slot-table-teardown as the inner
+  `CompositionLocalProvider`s, so there's no window in which `onPop` has
+  fired but a downstream recompose can still consult the (now-gone)
+  state.
+
+  Nav3 doesn't have this problem because its bundled decorators'
+  `onPop` callbacks are all lightweight map removals
+  (`SaveableStateHolder.removeState`, `movableContentMap.remove`) — no
+  state another decorator's `decorate` body relies on. Enro stacks
+  more responsibilities on `onPop`, and the safe disposal-order
+  invariant requires keeping the tracking inside the chain.
+
+  Net result:
+  - `decorateNavigationDestination` is a pure `foldRight` again, like
+    Nav3's `decorateEntry` minus the outer `DisposableEffect`.
+  - `rememberDecoratedDestinations` appends a
+    `compositionTrackingDecorator` to the decorator list (innermost
+    wrap). The tracker registers the composition `DisposableEffect`
+    and fires `onPop` on every other decorator in reverse order.
+  - `PrepareBackStack` is unchanged — it still catches the
+    "left the backstack while not in composition" case.
+
 - **`EmptyBehavior`, `NavigationContainer`, `NavigationOperation`,
   `NavigationInterceptor`, `NavigationPlugin`, `EnroController`,
   `NavigationKey.WithResult<T>`, `registerForNavigationResult`,

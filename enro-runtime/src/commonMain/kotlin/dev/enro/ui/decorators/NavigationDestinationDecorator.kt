@@ -1,7 +1,6 @@
 package dev.enro.ui.decorators
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 
@@ -40,50 +39,27 @@ public fun <T : NavigationKey> navigationDestinationDecorator(
  * Decorators are applied from first to last, meaning the first decorator in the list will be
  * the outermost wrapper.
  *
- * The returned destination's `Content()` also registers a [DisposableEffect] that updates
- * [idsInComposition] and fires `onPop` callbacks if the destination has both left the backstack
- * and left composition. Mirrors Nav3's `decorateEntry` setup.
+ * For composition-tracking + `onPop`-firing semantics, append a `compositionTrackingDecorator`
+ * to the decorator list as the **last** element (innermost wrap). See
+ * `docs/NAV3-COMPARISON.md` for why Enro tracks composition from inside the chain rather than
+ * from an outer `DisposableEffect`, the way Nav3's `decorateEntry` does.
  *
  * @param destination The destination to decorate
  * @param decorators The list of decorators to apply
- * @param idsInBackstack Shared set of destination ids currently in the backstack. Mutated by
- *   the [PrepareBackStack] composable that pairs with this function.
- * @param idsInComposition Shared set of destination ids currently in composition. Mutated by
- *   the [DisposableEffect] this function attaches to the decorated content.
  * @return The decorated navigation destination
  */
 public fun <T : NavigationKey> decorateNavigationDestination(
     destination: NavigationDestination<T>,
     decorators: List<NavigationDestinationDecorator<*>>,
-    idsInBackstack: MutableSet<String>,
-    idsInComposition: MutableSet<String>,
 ): NavigationDestination<T> {
     @Suppress("UNCHECKED_CAST")
-    val typed = (decorators as List<NavigationDestinationDecorator<T>>).distinct()
-    val wrapped = typed.foldRight(initial = destination) { decorator, dest ->
-        NavigationDestination.createWithoutScope(
-            instance = destination.instance,
-            metadata = destination.metadata,
-            content = { decorator.decorate(dest) }
-        )
-    }
-    return NavigationDestination.createWithoutScope(
-        instance = destination.instance,
-        metadata = destination.metadata,
-        content = {
-            val id = destination.instance.id
-            DisposableEffect(id) {
-                idsInComposition.add(id)
-                onDispose {
-                    val notInComposition = idsInComposition.remove(id)
-                    val popped = id !in idsInBackstack
-                    if (popped && notInComposition) {
-                        // Reverse so cleanup runs in the inverse order of decoration.
-                        typed.asReversed().forEach { it.onPop(destination.instance) }
-                    }
-                }
-            }
-            wrapped.Content()
+    return (decorators as List<NavigationDestinationDecorator<T>>)
+        .distinct()
+        .foldRight(initial = destination) { decorator, dest ->
+            NavigationDestination.createWithoutScope(
+                instance = destination.instance,
+                metadata = destination.metadata,
+                content = { decorator.decorate(dest) }
+            )
         }
-    )
 }
