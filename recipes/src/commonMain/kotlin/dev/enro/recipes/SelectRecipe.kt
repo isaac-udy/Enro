@@ -43,6 +43,7 @@ import dev.enro.recipes.plugins.OpenedTimestampPluginRecipe
 import dev.enro.recipes.requestclose.RequestCloseConfirmationRecipe
 import dev.enro.recipes.results.ResultsRecipe
 import dev.enro.recipes.saveable.SaveableRecipe
+import dev.enro.recipes.scenedecoration.SceneDecorationRecipe
 import dev.enro.recipes.sharedelements.SharedElementAnimationsRecipe
 import dev.enro.recipes.tabs.TabsRecipe
 import dev.enro.recipes.twopane.TwoPaneRecipe
@@ -136,6 +137,13 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 key = MultipleBackStacksRecipe,
                 title = "Multiple Back Stacks",
                 description = "Independent backstacks per tab using NavigationContainerGroup.",
+            ),
+            RecipeEntry(
+                key = SceneDecorationRecipe,
+                title = "Scene Decoration",
+                description = "A SceneDecoratorStrategy that wraps the current scene in a " +
+                    "sidebar (wide windows) or a bottom navigation bar (narrow windows) " +
+                    "without re-animating the chrome when the section changes.",
             ),
         ),
     ),
