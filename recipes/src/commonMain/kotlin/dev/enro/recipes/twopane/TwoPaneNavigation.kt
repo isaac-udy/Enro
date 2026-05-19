@@ -32,19 +32,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.enro.NavigationKey
+import dev.enro.*
 import dev.enro.annotations.NavigationDestination
-import dev.enro.asInstance
-import dev.enro.backstackOf
-import dev.enro.close
-import dev.enro.navigationHandle
-import dev.enro.open
 import dev.enro.recipes.RecipeScaffold
-import dev.enro.ui.NavigationDestinationProvider
-import dev.enro.ui.NavigationDisplay
-import dev.enro.ui.NavigationSceneStrategy
-import dev.enro.ui.navigationDestination
-import dev.enro.ui.rememberNavigationContainer
+import dev.enro.ui.*
 import dev.enro.ui.scenes.DialogSceneStrategy
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
@@ -142,7 +133,7 @@ val twoPaneProductDestination: NavigationDestinationProvider<TwoPaneProduct> =
                 Text("View profile (single-pane only)")
             }
             Button(onClick = { navigation.close() }) {
-                Text("Back")
+                Text("Close")
             }
         }
     }
