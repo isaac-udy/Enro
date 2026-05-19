@@ -123,5 +123,9 @@ This list is the source of truth for "we don't match Nav3 here, on purpose."
 | 2 — typed metadata (`NavigationDestination.MetadataKey<T>`) | landed | `9056dd22` |
 | 3 — invert exclusion polarity to match Nav3 | landed | `b307882f` |
 | 4 — hoistable scene state | landed | `b74214b4` |
-| 5 — Nav3-style flexibility additions (scene metadata, decorator strategies, etc.) | in progress | — |
-| 6 — internal refactors (`PrepareBackStack`, optional `sharedTransitionScope` param, factory-style strategies) | pending | — |
+| 5 — Nav3-style flexibility additions (scene metadata, decorator strategies, etc.) | landed | `2776d09f` |
+| 6 — internal refactors (`PrepareBackStack` + optional `sharedTransitionScope` param) | in progress | — |
+
+## Remaining alignment work
+
+- **Factory-style scene strategies.** Nav3's `SceneStrategy<T>` is a plain (non-`@Composable`) interface; strategies that need Compose state expose a `rememberXxxStrategy()` factory that captures it. Enro's `NavigationSceneStrategy.calculateScene` is still `@Composable`. Migrating would mean removing the `@Composable` annotation and updating the in-tree recipe strategies (`ListDetailSceneStrategy`, `TwoPaneSceneStrategy`) to use a factory pattern. Deferred from Batch 6 — meaningful API churn, separately commit-worthy.

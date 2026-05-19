@@ -1,30 +1,8 @@
 package dev.enro.ui
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.core.SeekableTransitionState
-import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.rememberTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigationevent.NavigationEvent
@@ -37,7 +15,6 @@ import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.platform.EnroLog
 import dev.enro.requestClose
-import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
 import dev.enro.ui.scenes.DialogSceneStrategy
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.ui.scenes.OverlayTransitions
@@ -106,7 +83,7 @@ public object NavigationDisplay {
  * [NavigationDisplay.TransitionKey] and [NavigationDisplay.PopTransitionKey].
  */
 public typealias TransitionSpec =
-    AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform
+        AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform
 
 /**
  * Type alias for the per-scene predictive pop spec lambda used with
@@ -114,7 +91,8 @@ public typealias TransitionSpec =
  * the `NavigationEvent.SwipeEdge` reported by the back gesture.
  */
 public typealias PredictivePopTransitionSpec =
-    AnimatedContentTransitionScope<out SceneTransitionData>.(swipeEdge: Int) -> ContentTransform
+        AnimatedContentTransitionScope<out SceneTransitionData>.(swipeEdge: Int) -> ContentTransform
+
 @Composable
 public fun NavigationDisplay(
     state: NavigationContainerState,
@@ -127,6 +105,7 @@ public fun NavigationDisplay(
         )
     },
     sceneDecoratorStrategies: List<SceneDecoratorStrategy> = emptyList(),
+    sharedTransitionScope: SharedTransitionScope? = null,
     contentAlignment: Alignment = Alignment.TopStart,
     sizeTransform: SizeTransform? = null,
     animations: NavigationAnimations = NavigationAnimations.Default,
@@ -407,11 +386,13 @@ public fun NavigationDisplay(
                     ?.invoke(this, swipeEdge)
                     ?: animations.predictivePopTransitionSpec(this, swipeEdge)
             }
+
             isPop -> {
                 transitionScene.metadata[NavigationDisplay.PopTransitionKey]
                     ?.invoke(this)
                     ?: animations.popTransitionSpec(this)
             }
+
             else -> {
                 transitionScene.metadata[NavigationDisplay.TransitionKey]
                     ?.invoke(this)
@@ -425,75 +406,96 @@ public fun NavigationDisplay(
         LocalNavigationContainer provides state,
         LocalNavigationContext provides state.context,
     ) {
-        ProvideRemovalTrackingInfo {
-            SharedTransitionLayout {
-                transition.AnimatedContent(
-                    // contentKey collapses SceneTransitionFrame -> SceneIdentity, so
-                    // a new SceneTransitionFrame with the same identity (e.g. a
-                    // TwoPaneScene where the right-pane entry changed)
-                    // reuses the same AnimatedContent slot and does not
-                    // run an enter/exit transition. Within that slot,
-                    // Compose still recomposes with the new SceneTransitionFrame's
-                    // scene.content(), so updated entries render.
-                    contentKey = { it.identity },
-                    contentAlignment = contentAlignment,
-                    modifier = modifier,
-                    transitionSpec = {
-                        ContentTransform(
-                            targetContentEnter = contentTransform(this).targetContentEnter,
-                            initialContentExit = contentTransform(this).initialContentExit,
-                            // z-index increases during navigate and decreases during pop
-                            targetContentZIndex = zIndices[transition.targetState.identity] ?: 0f,
-                            sizeTransform = sizeTransform,
-                        )
-                    }
-                ) { targetState ->
-                    val targetScene = targetState.scene
-                    val targetIdentityForContent = targetState.identity
-                    // Provide necessary composition locals for the scene content
-                    CompositionLocalProvider(
-                        LocalNavigationAnimatedVisibilityScope provides this@AnimatedContent,
-                        LocalNavigationAnimatedVisibilityScopeOrNull provides this@AnimatedContent,
-                        LocalNavigationSharedTransitionScope provides this@SharedTransitionLayout,
-                        LocalNavigationSharedTransitionScopeOrNull provides this@SharedTransitionLayout,
-                        LocalEntriesToExcludeFromCurrentScene provides
+        WithSharedTransitionScope(sharedTransitionScope) sharedScope@{
+            transition.AnimatedContent(
+                // contentKey collapses SceneTransitionFrame -> SceneIdentity, so
+                // a new SceneTransitionFrame with the same identity (e.g. a
+                // TwoPaneScene where the right-pane entry changed)
+                // reuses the same AnimatedContent slot and does not
+                // run an enter/exit transition. Within that slot,
+                // Compose still recomposes with the new SceneTransitionFrame's
+                // scene.content(), so updated entries render.
+                contentKey = { it.identity },
+                contentAlignment = contentAlignment,
+                modifier = modifier,
+                transitionSpec = {
+                    ContentTransform(
+                        targetContentEnter = contentTransform(this).targetContentEnter,
+                        initialContentExit = contentTransform(this).initialContentExit,
+                        // z-index increases during navigate and decreases during pop
+                        targetContentZIndex = zIndices[transition.targetState.identity] ?: 0f,
+                        sizeTransform = sizeTransform,
+                    )
+                }
+            ) { targetState ->
+                val targetScene = targetState.scene
+                val targetIdentityForContent = targetState.identity
+                // Provide necessary composition locals for the scene content
+                CompositionLocalProvider(
+                    LocalNavigationAnimatedVisibilityScope provides this@AnimatedContent,
+                    LocalNavigationAnimatedVisibilityScopeOrNull provides this@AnimatedContent,
+                    LocalNavigationSharedTransitionScope provides this@sharedScope,
+                    LocalNavigationSharedTransitionScopeOrNull provides this@sharedScope,
+                    LocalEntriesToExcludeFromCurrentScene provides
                             (sceneToExcludedEntryMap[targetIdentityForContent] ?: emptySet())
-                    ) {
-                        targetScene.content()
-                    }
+                ) {
+                    targetScene.content()
                 }
             }
+        }
 
-            // Clean up scene book-keeping once the transition is finished (like NavDisplay)
-            LaunchedEffect(transition) {
-                snapshotFlow { transition.isRunning }
-                    .filter { !it }
-                    .collect {
-                        val currentTargetIdentity = transition.targetState.identity
-                        // Creating a copy to avoid ConcurrentModificationException
-                        sceneMap.keys.toList().forEach { key ->
-                            if (key != currentTargetIdentity) {
-                                sceneMap.remove(key)
-                            }
-                        }
-                        // Creating a copy to avoid ConcurrentModificationException
-                        zIndices.keys.toList().forEach { key ->
-                            if (key != currentTargetIdentity) {
-                                zIndices.remove(key)
-                            }
+        // Clean up scene book-keeping once the transition is finished (like NavDisplay)
+        LaunchedEffect(transition) {
+            snapshotFlow { transition.isRunning }
+                .filter { !it }
+                .collect {
+                    val currentTargetIdentity = transition.targetState.identity
+                    // Creating a copy to avoid ConcurrentModificationException
+                    sceneMap.keys.toList().forEach { key ->
+                        if (key != currentTargetIdentity) {
+                            sceneMap.remove(key)
                         }
                     }
-            }
-
-            // Update settled state based on transition progress
-            LaunchedEffect(transition.currentState, transition.targetState) {
-                val settled = transition.currentState == transition.targetState
-                state.isSettled = settled
-            }
-
-            // Show all overlay scenes above the AnimatedContent (like NavDisplay)
-            RenderOverlayScenes(overlayScenes)
+                    // Creating a copy to avoid ConcurrentModificationException
+                    zIndices.keys.toList().forEach { key ->
+                        if (key != currentTargetIdentity) {
+                            zIndices.remove(key)
+                        }
+                    }
+                }
         }
+
+        // Update settled state based on transition progress
+        LaunchedEffect(transition.currentState, transition.targetState) {
+            val settled = transition.currentState == transition.targetState
+            state.isSettled = settled
+        }
+
+        // Show all overlay scenes above the AnimatedContent (like NavDisplay)
+        RenderOverlayScenes(overlayScenes)
+    }
+}
+
+/**
+ * Runs [content] inside a [SharedTransitionScope]. If [external] is
+ * supplied, the caller already owns a `SharedTransitionLayout` and we
+ * just use their scope (so shared elements bridge across whatever they
+ * wrap — typically multiple displays in a tab layout). Otherwise we
+ * create our own internal `SharedTransitionLayout` around the content.
+ *
+ * Mirrors Nav3's `NavDisplay(sharedTransitionScope = null)` default
+ * versus user-provided overload.
+ */
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun WithSharedTransitionScope(
+    external: SharedTransitionScope?,
+    content: @Composable SharedTransitionScope.() -> Unit,
+) {
+    if (external != null) {
+        with(external) { content() }
+    } else {
+        SharedTransitionLayout { content() }
     }
 }
 
@@ -501,7 +503,7 @@ public fun NavigationDisplay(
 internal fun SceneRecompositionDebugger(
     scene: NavigationScene,
     overlayScenes: List<NavigationScene>,
-    destinations: List<NavigationDestination<NavigationKey>>
+    destinations: List<NavigationDestination<NavigationKey>>,
 ) {
     val sceneHashes = remember {
         mutableStateOf(
@@ -537,7 +539,7 @@ internal fun SceneRecompositionDebugger(
 private data class SceneHash(
     val scene: NavigationScene,
     val overlayScenes: List<NavigationScene>,
-    val destinationIds: Set<String>
+    val destinationIds: Set<String>,
 )
 
 /**
