@@ -12,6 +12,7 @@ import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
+import dev.enro.ui.SceneStrategyScope
 
 /**
  * The 2-entry [NavigationScene] returned by [DoublePaneScene]. Decides
@@ -45,7 +46,7 @@ internal data class DoublePaneSceneState(
 
 public class DoublePaneScene : NavigationSceneStrategy {
     @Composable
-    override fun calculateScene(
+    override fun SceneStrategyScope.calculateScene(
         entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene {
         val secondEntry = entries.last()

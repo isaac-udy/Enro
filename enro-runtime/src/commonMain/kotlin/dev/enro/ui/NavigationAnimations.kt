@@ -10,20 +10,26 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 
 public data class NavigationAnimations(
-    val transitionSpec: AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform = {
+    val transitionSpec: TransitionSpec = {
         ContentTransform(
             targetContentEnter = fadeIn(spring(stiffness = Spring.StiffnessMedium)) + slideInHorizontally { it / 3 },
             initialContentExit = slideOutHorizontally { -it / 4 },
         )
     },
-    val popTransitionSpec: AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform = {
+    val popTransitionSpec: TransitionSpec = {
         ContentTransform(
             targetContentEnter = slideInHorizontally { -it / 4 },
             initialContentExit = fadeOut(spring(stiffness = Spring.StiffnessMedium)) + slideOutHorizontally { it / 3 },
         )
     },
-    val predictivePopTransitionSpec: AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform = popTransitionSpec,
-    val containerTransitionSpec: AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform = {
+    /**
+     * The lambda now receives the `NavigationEvent.SwipeEdge` reported by
+     * the back gesture, mirroring Nav3's `predictivePopTransitionSpec(swipeEdge)`.
+     */
+    val predictivePopTransitionSpec: PredictivePopTransitionSpec = { _ ->
+        popTransitionSpec()
+    },
+    val containerTransitionSpec: TransitionSpec = {
         ContentTransform(
             targetContentEnter = fadeIn(spring(stiffness = Spring.StiffnessMedium)),
             initialContentExit = fadeOut(),
@@ -47,7 +53,7 @@ public data class NavigationAnimations(
                     initialContentExit = fadeOut(spring(stiffness = Spring.StiffnessMedium)) + slideOutHorizontally { it / 3 },
                 )
             },
-            predictivePopTransitionSpec = {
+            predictivePopTransitionSpec = { _ ->
                 ContentTransform(
                     targetContentEnter = slideInHorizontally { -it / 4 },
                     initialContentExit = fadeOut(spring(stiffness = Spring.StiffnessMedium)) + slideOutHorizontally { it / 3 },

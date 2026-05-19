@@ -14,6 +14,37 @@ public interface NavigationScene {
     public val content: @Composable () -> Unit
 
     /**
+     * Optional scene-level metadata. Used by [NavigationDisplay] to look up
+     * per-scene transition overrides (e.g. [NavigationDisplay.TransitionKey])
+     * before falling back to the container-level animations.
+     *
+     * Defaults to the metadata of the last entry, mirroring Nav3's
+     * `Scene.metadata` default. Scene strategies that want to expose their
+     * own metadata (or compose it from the entries) should override.
+     */
+    public val metadata: Map<String, Any>
+        get() = entries.lastOrNull()?.metadata ?: emptyMap()
+
+    /**
+     * A typed key for values stored in a [NavigationScene]'s metadata map.
+     * Parallel to [NavigationDestination.MetadataKey] — same shape, just
+     * scoped to scene-level metadata.
+     *
+     * Example:
+     * ```
+     * object MyKey : NavigationScene.MetadataKey<String?>(default = null)
+     * scene.metadata[MyKey]  // typed access
+     * ```
+     */
+    public abstract class MetadataKey<T>(
+        public val default: T,
+    ) {
+        public val name: String by lazy {
+            this::class.qualifiedName ?: error("MetadataKeys must have a valid qualifiedName")
+        }
+    }
+
+    /**
      * A specific scene to render 1 or more NavigationDestination instances as an overlay.
      *
      * It is expected that the [content] is rendered in one or more separate windows (e.g., a dialog,
@@ -32,6 +63,33 @@ public interface NavigationScene {
          * This *must* always be a non-empty list to correctly display entries below the overlay.
          */
         public val overlaidEntries: List<NavigationDestination<NavigationKey>>
+
+        /**
+         * Invoked after this overlay has been popped from the backstack but
+         * **before** it leaves composition. The overlay renderer awaits the
+         * returned suspending value so the overlay can play its dismissal
+         * animation (or any other suspending teardown work) without being
+         * yanked out of composition mid-animation.
+         *
+         * Mirrors Nav3's `OverlayScene.onRemove`. Default is a no-op.
+         */
+        public suspend fun onRemove() {}
     }
+}
+
+/**
+ * Typed accessor for a value stored under a [NavigationScene.MetadataKey].
+ * Returns [NavigationScene.MetadataKey.default] when the key is absent.
+ */
+@Suppress("UNCHECKED_CAST")
+public operator fun <T> Map<String, Any>.get(key: NavigationScene.MetadataKey<T>): T {
+    return get(key.name) as T? ?: key.default
+}
+
+/**
+ * Returns `true` if this metadata map contains a value for [key].
+ */
+public operator fun <T> Map<String, Any>.contains(key: NavigationScene.MetadataKey<T>): Boolean {
+    return containsKey(key.name)
 }
 

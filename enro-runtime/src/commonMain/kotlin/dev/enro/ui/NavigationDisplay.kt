@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigationevent.NavigationEvent
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.NavigationBackHandler
@@ -72,6 +73,48 @@ import kotlin.reflect.KClass
  * @param animations Animation specs for navigation transitions
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
+public object NavigationDisplay {
+    /**
+     * Scene metadata key for overriding the enter transition used when
+     * pushing onto the backstack. Looked up on the resulting scene's
+     * metadata before falling back to the [NavigationAnimations]
+     * supplied at the display level.
+     *
+     * Mirrors Nav3's `NavDisplay.TransitionKey`.
+     */
+    public object TransitionKey :
+        NavigationScene.MetadataKey<TransitionSpec?>(default = null)
+
+    /**
+     * Scene metadata key for overriding the pop transition. Looked up
+     * the same way as [TransitionKey].
+     */
+    public object PopTransitionKey :
+        NavigationScene.MetadataKey<TransitionSpec?>(default = null)
+
+    /**
+     * Scene metadata key for overriding the predictive-back transition.
+     * The lambda receives the [androidx.navigationevent.NavigationEvent.SwipeEdge]
+     * so the spec can vary by left/right edge.
+     */
+    public object PredictivePopTransitionKey :
+        NavigationScene.MetadataKey<PredictivePopTransitionSpec?>(default = null)
+}
+
+/**
+ * Type alias for the per-scene transition spec lambda used with
+ * [NavigationDisplay.TransitionKey] and [NavigationDisplay.PopTransitionKey].
+ */
+public typealias TransitionSpec =
+    AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform
+
+/**
+ * Type alias for the per-scene predictive pop spec lambda used with
+ * [NavigationDisplay.PredictivePopTransitionKey]. The integer argument is
+ * the `NavigationEvent.SwipeEdge` reported by the back gesture.
+ */
+public typealias PredictivePopTransitionSpec =
+    AnimatedContentTransitionScope<out SceneTransitionData>.(swipeEdge: Int) -> ContentTransform
 @Composable
 public fun NavigationDisplay(
     state: NavigationContainerState,
@@ -83,6 +126,7 @@ public fun NavigationDisplay(
             SinglePaneSceneStrategy(),
         )
     },
+    sceneDecoratorStrategies: List<SceneDecoratorStrategy> = emptyList(),
     contentAlignment: Alignment = Alignment.TopStart,
     sizeTransform: SizeTransform? = null,
     animations: NavigationAnimations = NavigationAnimations.Default,
@@ -94,10 +138,32 @@ public fun NavigationDisplay(
         }
     }
 
+    // Forward-ref to the scene state so the onBack lambda can read the
+    // current scene's previousEntries at click time. The Ref is updated
+    // immediately after rememberNavigationSceneState computes the state.
+    val sceneStateRef = remember { mutableStateOf<NavigationSceneState?>(null) }
+    val onBackInternal: () -> Unit = remember(state) {
+        {
+            val current = sceneStateRef.value?.currentScene
+            if (current != null) {
+                val previousIds = current.previousEntries.map { it.instance.id }.toSet()
+                state.context.children
+                    .filter { it.id !in previousIds }
+                    .forEach { it.getNavigationHandle<NavigationKey>().requestClose() }
+            }
+        }
+    }
+
     // Resolve the full scene hierarchy (current scene, overlays, predictive-back
     // previous scenes) via the hoistable rememberNavigationSceneState — same
     // shape as Nav3's rememberSceneState.
-    val sceneState = rememberNavigationSceneState(state, sceneStrategy)
+    val sceneState = rememberNavigationSceneState(
+        containerState = state,
+        sceneStrategy = sceneStrategy,
+        onBack = onBackInternal,
+        sceneDecoratorStrategies = sceneDecoratorStrategies,
+    )
+    sceneStateRef.value = sceneState
     val scene = sceneState.currentScene
     val overlayScenes = sceneState.overlayScenes
 
@@ -124,7 +190,9 @@ public fun NavigationDisplay(
     val zIndices = remember { mutableMapOf<SceneIdentity, Float>() }
     sceneMap[sceneIdentity] = scene
 
-    val navigationEventState = rememberNavigationEventState(NavigationEventInfo.None)
+    // Provide the current scene to the navigation event system so back
+    // handlers can reason about it. Mirrors Nav3's SceneInfo<T> plumbing.
+    val navigationEventState = rememberNavigationEventState(NavigationSceneInfo(scene))
 
     // Set up predictive back gesture handling
     HandlePredictiveBack(
@@ -304,7 +372,25 @@ public fun NavigationDisplay(
         }
     }
 
-    // Select the appropriate transition spec based on navigation type
+    // Capture the swipe edge from the latest predictive-back event so
+    // per-scene PredictivePopTransitionKey specs and the NavigationAnimations
+    // default both have access to it. Mirrors Nav3's swipeEdge plumbing.
+    val swipeEdge = when (val gt = gestureTransition) {
+        is NavigationEventTransitionState.Idle -> NavigationEvent.EDGE_NONE
+        is NavigationEventTransitionState.InProgress -> gt.latestEvent.swipeEdge
+    }
+
+    // The scene whose metadata governs the transition: when the target has
+    // a higher z-index (push) we read off the target; when the initial is
+    // higher (pop) we read off the initial. Matches Nav3's `transitionScene`.
+    val transitionScene = if (initialZIndex >= targetZIndex) {
+        transition.currentState.scene
+    } else {
+        transition.targetState.scene
+    }
+
+    // Select the appropriate transition spec based on navigation type.
+    // Priority: per-scene metadata override > container-level NavigationAnimations default.
     val contentTransform: AnimatedContentTransitionScope<out SceneTransitionData>.() -> ContentTransform = {
         val isDifferentContainer = initialState.containerKey != targetState.containerKey
         val useContainerTransition = when {
@@ -316,9 +402,21 @@ public fun NavigationDisplay(
         }
         when {
             useContainerTransition -> animations.containerTransitionSpec(this)
-            inPredictiveBack -> animations.predictivePopTransitionSpec(this)
-            isPop -> animations.popTransitionSpec(this)
-            else -> animations.transitionSpec(this)
+            inPredictiveBack -> {
+                transitionScene.metadata[NavigationDisplay.PredictivePopTransitionKey]
+                    ?.invoke(this, swipeEdge)
+                    ?: animations.predictivePopTransitionSpec(this, swipeEdge)
+            }
+            isPop -> {
+                transitionScene.metadata[NavigationDisplay.PopTransitionKey]
+                    ?.invoke(this)
+                    ?: animations.popTransitionSpec(this)
+            }
+            else -> {
+                transitionScene.metadata[NavigationDisplay.TransitionKey]
+                    ?.invoke(this)
+                    ?: animations.transitionSpec(this)
+            }
         }
     }
 
@@ -611,12 +709,15 @@ private fun OverlaySceneRenderer(
     LaunchedEffect(visible) {
         visibleState.value = visible
     }
-    // The exit transition has settled once `transition.currentState` is false AND the
-    // transition is no longer running. Drop the scene from tracking so
-    // its destinations can finish their removal lifecycle.
+    // The exit transition has settled once `transition.currentState` is
+    // false AND the transition is no longer running. Before dropping the
+    // scene from tracking, invoke its suspending onRemove() — mirrors
+    // Nav3's OverlayScene.onRemove contract (runs after the scene is
+    // popped from the backstack, before it leaves composition).
     LaunchedEffect(transition.currentState, transition.isRunning) {
         if (transition.currentState) return@LaunchedEffect
         if (transition.isRunning) return@LaunchedEffect
+        scene.onRemove()
         onFullyHidden()
     }
 

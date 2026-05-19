@@ -155,7 +155,9 @@ private fun DualPaneLayout(
                 animations = NavigationAnimations(
                     transitionSpec = NavigationAnimations.Default.containerTransitionSpec,
                     popTransitionSpec = NavigationAnimations.Default.containerTransitionSpec,
-                    predictivePopTransitionSpec = NavigationAnimations.Default.containerTransitionSpec,
+                    predictivePopTransitionSpec = { _ ->
+                        NavigationAnimations.Default.containerTransitionSpec(this)
+                    },
                 )
             )
         }

@@ -48,6 +48,15 @@ Code that knowingly diverges from Nav3 carries an inline comment of the form:
 | `AnimatedSceneKey` | `SceneIdentity` (private) | `(class, key, containerKey)`. Used as the `AnimatedContent.contentKey`. |
 | `SceneState<T>` | `NavigationSceneState` | Hoistable scene-hierarchy snapshot. Same fields: `entries`, `overlayScenes`, `currentScene`, `previousScenes`. |
 | `rememberSceneState` | `rememberNavigationSceneState` | Computes the state; consumed internally by `NavigationDisplay` if not hoisted. |
+| `SceneStrategyScope<T>` | `SceneStrategyScope` | Carries the `onBack` callback for scene-internal back affordances. Receiver of `NavigationSceneStrategy.calculateScene`. |
+| `SceneDecoratorStrategy<T>` | `SceneDecoratorStrategy` | Wraps a non-overlay scene in another scene to add chrome (drawer, app bar, nav rail). Passed via `NavigationDisplay(sceneDecoratorStrategies = ...)`. |
+| `SceneDecoratorStrategyScope<T>` | `SceneDecoratorStrategyScope` | Receiver of `SceneDecoratorStrategy.decorateScene`. Extends `SceneStrategyScope`. |
+| `Scene.metadata` | `NavigationScene.metadata` | Defaults to the last entry's metadata. Used by `NavigationDisplay` to look up per-scene transition overrides. |
+| `NavMetadataKey<T>` (for scene metadata) | `NavigationScene.MetadataKey<T>` | Parallel to `NavigationDestination.MetadataKey<T>`; same shape, scoped to scene-level metadata. |
+| `NavDisplay.TransitionKey` etc. | `NavigationDisplay.TransitionKey` / `PopTransitionKey` / `PredictivePopTransitionKey` | Per-scene transition overrides. Looked up before falling back to `NavigationAnimations` defaults. |
+| `SceneInfo<T>` | `NavigationSceneInfo` | Wraps the current scene as a `NavigationEventInfo` for predictive back handlers. |
+| `OverlayScene.onRemove()` (suspend) | `NavigationScene.Overlay.onRemove()` | Runs after the overlay pops from the backstack, before it leaves composition. The display awaits it. |
+| `predictivePopTransitionSpec(swipeEdge)` | `predictivePopTransitionSpec` in `NavigationAnimations` (and the `PredictivePopTransitionKey` value) now take a `swipeEdge: Int`. | Mirrors Nav3's swipe-edge plumbing. |
 | `LocalNavAnimatedContentScope` | `LocalNavigationAnimatedVisibilityScope` | Same `AnimatedVisibilityScope` provided. |
 | `SharedEntryInSceneNavEntryDecorator` | `sharedElementDecorator()` | Auto-wraps entries in `Modifier.sharedElement` keyed by instance id. |
 | `SceneSetupNavEntryDecorator` | `movableContentDecorator()` | Wraps entries in `movableContentOf` and gates rendering by exclusion. |
@@ -113,6 +122,6 @@ This list is the source of truth for "we don't match Nav3 here, on purpose."
 | 1 — renames + scenes as data classes + cleanup | landed | `1d5e06c9` |
 | 2 — typed metadata (`NavigationDestination.MetadataKey<T>`) | landed | `9056dd22` |
 | 3 — invert exclusion polarity to match Nav3 | landed | `b307882f` |
-| 4 — hoistable scene state | in progress | — |
-| 5 — Nav3-style flexibility additions (scene metadata, decorator strategies, etc.) | pending | — |
+| 4 — hoistable scene state | landed | `b74214b4` |
+| 5 — Nav3-style flexibility additions (scene metadata, decorator strategies, etc.) | in progress | — |
 | 6 — internal refactors (`PrepareBackStack`, optional `sharedTransitionScope` param, factory-style strategies) | pending | — |

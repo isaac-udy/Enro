@@ -5,6 +5,7 @@ import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
+import dev.enro.ui.SceneStrategyScope
 
 /**
  * The 1-entry [NavigationScene] returned by [SinglePaneSceneStrategy]. Mirrors
@@ -27,7 +28,7 @@ internal data class SinglePaneScene(
  */
 public class SinglePaneSceneStrategy : NavigationSceneStrategy {
     @Composable
-    override fun calculateScene(
+    override fun SceneStrategyScope.calculateScene(
         entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene {
         val last = entries.last()

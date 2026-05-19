@@ -15,6 +15,7 @@ import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
+import dev.enro.ui.SceneStrategyScope
 import dev.enro.ui.get
 
 // ─────────────────────────────────────────────────────────────────────
@@ -57,7 +58,7 @@ class TwoPaneSceneStrategy(
 ) : NavigationSceneStrategy {
 
     @Composable
-    override fun calculateScene(
+    override fun SceneStrategyScope.calculateScene(
         entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene? {
         if (entries.size < 2) return null

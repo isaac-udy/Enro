@@ -12,6 +12,7 @@ import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
+import dev.enro.ui.SceneStrategyScope
 import dev.enro.ui.get
 
 /**
@@ -69,7 +70,7 @@ public data class OverlayTransitions(
  */
 public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
     @Composable
-    public override fun calculateScene(
+    public override fun SceneStrategyScope.calculateScene(
         entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene? {
         val lastEntry = entries.lastOrNull() ?: return null
