@@ -12,6 +12,7 @@ import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
+import dev.enro.ui.get
 
 /**
  * A [NavigationScene.Overlay] that renders the overlaid content directly on top of the current scene, and
@@ -61,16 +62,8 @@ public data class OverlayTransitions(
 )
 
 /**
- * Metadata key under which [OverlayTransitions] are stored when a
- * destination opts in via [directOverlay] / [directOverlayWithFade].
- * Public so the navigation display can read the value; not intended
- * for direct use by feature code.
- */
-public const val OverlayTransitionsKey: String = "dev.enro.ui.scenes.OverlayTransitionsKey"
-
-/**
- * A [NavigationSceneStrategy] that displays entries that have added [dialog] to their metadata
- * within a [Dialog] instance.
+ * A [NavigationSceneStrategy] that displays entries which have opted
+ * into direct-overlay rendering via [directOverlay] / [directOverlayWithFade].
  *
  * This strategy should always be added before any non-overlay scene strategies.
  */
@@ -79,32 +72,31 @@ public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
     public override fun calculateScene(
         entries: List<NavigationDestination<NavigationKey>>,
     ): NavigationScene? {
-        val lastEntry = entries.lastOrNull()
-
-        val directOverlayMetadata = lastEntry?.metadata?.get(DirectOverlayKey) as? Unit
-        val isDirectOverlay = directOverlayMetadata != null
-
-        return if (isDirectOverlay) {
-            DirectOverlayScene(
-                key = lastEntry.instance.id,
-                previousEntries = entries.dropLast(1),
-                overlaidEntries = entries.dropLast(1),
-                entry = lastEntry,
-            )
-        } else null
+        val lastEntry = entries.lastOrNull() ?: return null
+        if (!lastEntry.metadata[IsDirectOverlayKey]) return null
+        return DirectOverlayScene(
+            key = lastEntry.instance.id,
+            previousEntries = entries.dropLast(1),
+            overlaidEntries = entries.dropLast(1),
+            entry = lastEntry,
+        )
     }
 
-    public companion object {
-        internal const val DirectOverlayKey = "dev.enro.ui.scenes.DirectOverlayKey"
+    /**
+     * Metadata flag indicating that a destination should be rendered
+     * as a direct overlay. Default `false`.
+     */
+    public object IsDirectOverlayKey :
+        NavigationDestination.MetadataKey<Boolean>(default = false)
 
-        /**
-         * Function to create a metadata map with dialog properties to mark this entry as something that
-         * should be displayed within a [Dialog].
-         *
-         * @param dialogProperties properties that should be passed to the containing [Dialog].
-         */
-        public fun overlay(): Pair<String, Unit> = DirectOverlayKey to Unit
-    }
+    /**
+     * Optional metadata key carrying [OverlayTransitions] for animated
+     * appearance/disappearance. Default `null`.
+     */
+    public object OverlayTransitionsKey :
+        NavigationDestination.MetadataKey<OverlayTransitions?>(default = null)
+
+    public companion object
 }
 
 /**
@@ -114,7 +106,7 @@ public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
  * `enter` / `exit` overload below) to animate the appearance.
  */
 public fun NavigationDestination.MetadataBuilder<*>.directOverlay() {
-    add(DirectOverlaySceneStrategy.overlay())
+    add(DirectOverlaySceneStrategy.IsDirectOverlayKey, true)
 }
 
 /**
@@ -129,8 +121,8 @@ public fun NavigationDestination.MetadataBuilder<*>.directOverlay(
     enter: EnterTransition,
     exit: ExitTransition,
 ) {
-    add(DirectOverlaySceneStrategy.overlay())
-    add(OverlayTransitionsKey to OverlayTransitions(enter, exit))
+    add(DirectOverlaySceneStrategy.IsDirectOverlayKey, true)
+    add(DirectOverlaySceneStrategy.OverlayTransitionsKey, OverlayTransitions(enter, exit))
 }
 
 /**
@@ -149,5 +141,5 @@ public fun NavigationDestination.MetadataBuilder<*>.directOverlayWithFade(
 }
 
 public fun NavigationDestination<*>.isDirectOverlay(): Boolean {
-    return metadata[DirectOverlaySceneStrategy.DirectOverlayKey] != null
+    return metadata[DirectOverlaySceneStrategy.IsDirectOverlayKey]
 }

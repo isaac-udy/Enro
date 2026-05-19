@@ -51,7 +51,7 @@ Code that knowingly diverges from Nav3 carries an inline comment of the form:
 | `SceneSetupNavEntryDecorator` | `movableContentDecorator()` | Wraps entries in `movableContentOf` and gates rendering by exclusion. |
 | `BackStackAwareLifecycleNavEntryDecorator` | `navigationLifecycleDecorator(...)` | Provides per-destination `LifecycleOwner` capped at the destination's state. |
 | `SaveableStateHolderNavEntryDecorator` | `savedStateDecorator(...)` | Saveable + saved state registries. Enro's is more capable but the factory shape mirrors Nav3. |
-| `NavMetadataKey<T>` | `NavigationDestination.MetadataKey<T>` _(coming)_ | Typed metadata keys, aligned with the existing `NavigationKey.MetadataKey<T>`. |
+| `NavMetadataKey<T>` | `NavigationDestination.MetadataKey<T>` | Typed metadata keys, aligned with the existing `NavigationKey.MetadataKey<T>`. `metadata.get(key)` and `metadata.contains(key)` operators are extensions on `Map<String, Any>` in `dev.enro.ui` — import them via `import dev.enro.ui.get` / `import dev.enro.ui.contains` outside that package. |
 
 ## Deliberate divergences (and why)
 
@@ -108,8 +108,8 @@ This list is the source of truth for "we don't match Nav3 here, on purpose."
 
 | Batch | Status | Commit |
 |--|--|--|
-| 1 — renames + scenes as data classes + cleanup | in progress | — |
-| 2 — typed metadata (`NavigationDestination.MetadataKey<T>`) | pending | — |
+| 1 — renames + scenes as data classes + cleanup | landed | `1d5e06c9` |
+| 2 — typed metadata (`NavigationDestination.MetadataKey<T>`) | in progress | — |
 | 3 — invert exclusion polarity to match Nav3 | pending | — |
 | 4 — hoistable scene state | pending | — |
 | 5 — Nav3-style flexibility additions (scene metadata, decorator strategies, etc.) | pending | — |

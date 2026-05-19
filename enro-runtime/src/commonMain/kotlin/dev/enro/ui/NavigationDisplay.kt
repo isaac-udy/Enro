@@ -40,7 +40,6 @@ import dev.enro.ui.decorators.ProvideRemovalTrackingInfo
 import dev.enro.ui.scenes.DialogSceneStrategy
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.ui.scenes.OverlayTransitions
-import dev.enro.ui.scenes.OverlayTransitionsKey
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import dev.enro.ui.scenes.calculateSceneWithSinglePaneFallback
 import dev.enro.viewmodel.getNavigationHandle
@@ -704,7 +703,7 @@ private fun OverlaySceneRenderer(
  */
 private fun NavigationScene.Overlay.overlayTransitions(): OverlayTransitions? {
     val entry = entries.lastOrNull() ?: return null
-    return entry.metadata[OverlayTransitionsKey] as? OverlayTransitions
+    return entry.metadata[DirectOverlaySceneStrategy.OverlayTransitionsKey]
 }
 
 /**
