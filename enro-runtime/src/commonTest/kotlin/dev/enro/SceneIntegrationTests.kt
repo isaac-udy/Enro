@@ -109,6 +109,111 @@ class SceneIntegrationTests {
     }
 
     @Test
+    fun `Nested overlay scenes render content from every layer`() = runEnroComposeTest {
+        // Backstack: [A, OverlayB, OverlayC]. The runtime should resolve this
+        // into three composed scenes — SinglePane(A) underneath, OverlayB above
+        // it, OverlayC on top — with content from each layer visible at once
+        // because overlays don't replace the underlying scene chain.
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<TestSceneKey>(
+                    navigationDestination<TestSceneKey> { Text("underlying A") }
+                )
+                destination<OverlaySceneKey>(
+                    navigationDestination<OverlaySceneKey>(
+                        metadata = { directOverlay() },
+                    ) { Text("overlay B") }
+                )
+                destination<SecondOverlaySceneKey>(
+                    navigationDestination<SecondOverlaySceneKey>(
+                        metadata = { directOverlay() },
+                    ) { Text("overlay C") }
+                )
+            }
+        )
+        val rootContext = NavigationContextFixtures.createRootContext()
+
+        setContent {
+            CompositionLocalProvider(LocalNavigationContext provides rootContext) {
+                val container = rememberNavigationContainer(
+                    backstack = backstackOf(
+                        TestSceneKey.asInstance(),
+                        OverlaySceneKey.asInstance(),
+                        SecondOverlaySceneKey.asInstance(),
+                    ),
+                )
+                NavigationDisplay(state = container)
+            }
+        }
+
+        onNodeWithText("underlying A").assertIsDisplayed()
+        onNodeWithText("overlay B").assertIsDisplayed()
+        onNodeWithText("overlay C").assertIsDisplayed()
+    }
+
+    @Test
+    fun `Overlay scenes resolve their underlying scene chain via previousEntries`() = runEnroComposeTest {
+        // When an overlay is on top of the backstack, NavigationDisplay must
+        // still resolve and render the scene corresponding to
+        // overlay.previousEntries underneath. The decorator (which skips
+        // overlays) is a convenient window into what scene was resolved for
+        // that underlying chain — we can assert its entries contain exactly
+        // the underlying destination.
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<TestSceneKey>(
+                    navigationDestination<TestSceneKey> { Text("underlying entry") }
+                )
+                destination<OverlaySceneKey>(
+                    navigationDestination<OverlaySceneKey>(
+                        metadata = { directOverlay() },
+                    ) { Text("overlay on top") }
+                )
+            }
+        )
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val underlyingInstance = TestSceneKey.asInstance()
+        val overlayInstance = OverlaySceneKey.asInstance()
+
+        val decoratedScenes = mutableListOf<NavigationScene>()
+        val recordingDecorator = SceneDecoratorStrategy { scene ->
+            decoratedScenes += scene
+            scene
+        }
+
+        setContent {
+            CompositionLocalProvider(LocalNavigationContext provides rootContext) {
+                val container = rememberNavigationContainer(
+                    backstack = backstackOf(underlyingInstance, overlayInstance),
+                )
+                NavigationDisplay(
+                    state = container,
+                    sceneDecoratorStrategies = listOf(recordingDecorator),
+                )
+            }
+        }
+
+        onNodeWithText("overlay on top").assertIsDisplayed()
+
+        val nonOverlayScenes = decoratedScenes.filter { it !is NavigationScene.Overlay }
+        assertTrue(
+            actual = nonOverlayScenes.isNotEmpty(),
+            message = "An underlying scene should have been resolved and passed through the decorator",
+        )
+        val underlyingEntryIds = nonOverlayScenes.flatMap { it.entries.map { entry -> entry.id } }
+        assertTrue(
+            actual = underlyingEntryIds.contains(underlyingInstance.id),
+            message = "Underlying scene's entries should include the underlying instance " +
+                "(${underlyingInstance.id}); saw entry ids: $underlyingEntryIds",
+        )
+        assertFalse(
+            actual = underlyingEntryIds.contains(overlayInstance.id),
+            message = "Underlying scene must not include the overlay's own instance; " +
+                "saw entry ids: $underlyingEntryIds",
+        )
+    }
+
+    @Test
     fun `Scene decorators are NOT applied to Overlay scenes`() = runEnroComposeTest {
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
@@ -166,6 +271,9 @@ data object TestSceneKey : NavigationKey
 
 @Serializable
 data object OverlaySceneKey : NavigationKey
+
+@Serializable
+data object SecondOverlaySceneKey : NavigationKey
 
 /**
  * Wrap [runComposeUiTest] with the same install/uninstall lifecycle that
