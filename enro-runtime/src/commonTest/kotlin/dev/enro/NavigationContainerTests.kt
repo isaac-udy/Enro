@@ -4,6 +4,7 @@ import dev.enro.context.ContainerContext
 import dev.enro.context.NavigationContext
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.interceptor.builder.navigationInterceptor
+import dev.enro.test.EnroTest
 import dev.enro.test.NavigationKeyFixtures
 import dev.enro.test.fixtures.NavigationContextFixtures
 import dev.enro.test.fixtures.NavigationDestinationFixtures
@@ -393,6 +394,123 @@ class NavigationContainerTests {
 
         assertTrue(emptyInterceptorCalled)
         assertEquals(0, container.backstack.size)
+    }
+
+    @Test
+    fun `Multiple EmptyInterceptors any deny wins and side effects from every deny run`() = runEnroTest {
+        // The current logic is `emptyInterceptorResults.any { it is DenyEmpty }`
+        // — every DenyEmpty result has its side effect run via
+        // `filterIsInstance<DenyEmpty>().onEach { performSideEffect() }`. So if
+        // two interceptors register and only one denies (with a side effect),
+        // the deny wins and that side effect runs. If both deny with side
+        // effects, BOTH side effects run.
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        val instance = NavigationKeyFixtures.SimpleKey().asInstance()
+        container.setBackstackDirect(backstackOf(instance))
+
+        var denySideEffectRan = false
+        var allowInterceptorCalled = false
+
+        val denyInterceptor = object : NavigationContainer.EmptyInterceptor() {
+            override fun onEmpty(transition: NavigationTransition): Result {
+                return denyEmptyAnd { denySideEffectRan = true }
+            }
+        }
+        val allowInterceptor = object : NavigationContainer.EmptyInterceptor() {
+            override fun onEmpty(transition: NavigationTransition): Result {
+                allowInterceptorCalled = true
+                return allowEmpty()
+            }
+        }
+        container.addEmptyInterceptor(denyInterceptor)
+        container.addEmptyInterceptor(allowInterceptor)
+
+        container.execute(destinationContext, NavigationOperation.Close(instance))
+
+        assertTrue(allowInterceptorCalled, "Allow interceptor should still be consulted")
+        assertTrue(denySideEffectRan, "Side effect from a DenyEmpty result should run even when another interceptor returns AllowEmpty")
+        assertEquals(1, container.backstack.size, "A single DenyEmpty wins over AllowEmpty — backstack should not be emptied")
+    }
+
+    @Test
+    fun `Controller-level interceptors run after container-level interceptors`() = runEnroTest {
+        // Documented order: interceptors registered on the container run first,
+        // followed by interceptors from controller.interceptors.aggregateInterceptor.
+        // See NavigationContainer.execute -- `interceptors + controller.interceptors.aggregateInterceptor`.
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+        container.setFilter(acceptAll())
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        val ordering = mutableListOf<String>()
+        val containerInterceptor = navigationInterceptor {
+            onOpened<NavigationKeyFixtures.SimpleKey> {
+                ordering += "container"
+                continueWithOpen()
+            }
+        }
+        val controllerInterceptor = navigationInterceptor {
+            onOpened<NavigationKeyFixtures.SimpleKey> {
+                ordering += "controller"
+                continueWithOpen()
+            }
+        }
+        container.addInterceptor(containerInterceptor)
+        EnroTest.getCurrentNavigationController().interceptors.addInterceptor(controllerInterceptor)
+
+        container.execute(
+            destinationContext,
+            NavigationOperation.Open(NavigationKeyFixtures.SimpleKey().asInstance()),
+        )
+
+        assertEquals(listOf("container", "controller"), ordering)
+    }
+
+    @Test
+    fun `Open of an instance already in the backstack reorders without firing onOpened interceptor`() = runEnroTest {
+        // processOperations short-circuits the interceptor chain for Opens
+        // whose instance.id is already in backstackById — these are treated as
+        // reorders, not new entries. Asserts that contract.
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+        container.setFilter(acceptAll())
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        val existing = NavigationKeyFixtures.SimpleKey().asInstance()
+        val top = NavigationKeyFixtures.SimpleKey().asInstance()
+        container.setBackstackDirect(backstackOf(existing, top))
+
+        var onOpenedCount = 0
+        val interceptor = navigationInterceptor {
+            onOpened<NavigationKeyFixtures.SimpleKey> {
+                onOpenedCount++
+                continueWithOpen()
+            }
+        }
+        container.addInterceptor(interceptor)
+
+        container.execute(destinationContext, NavigationOperation.Open(existing))
+
+        assertEquals(
+            expected = 0,
+            actual = onOpenedCount,
+            message = "Reordering an already-present instance should bypass onOpened entirely",
+        )
+        assertEquals(2, container.backstack.size)
+        assertEquals(top.id, container.backstack[0].id, "previous top should drop to the bottom")
+        assertEquals(existing.id, container.backstack[1].id, "reordered instance should move to the top")
     }
 
     @Test
