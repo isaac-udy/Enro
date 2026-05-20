@@ -10,7 +10,9 @@ import dev.enro.test.fixtures.NavigationDestinationFixtures
 import dev.enro.test.runEnroTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class NavigationContainerTests {
@@ -469,6 +471,243 @@ class NavigationContainerTests {
         assertTrue(interceptor2Called)
         assertEquals(1, container.backstack.size)
         assertEquals(key3, container.backstack.first().key)
+    }
+
+    @Test
+    fun `Interceptor returning AggregateOperation containing the original op does not recurse`() = runEnroTest {
+        // Regression test for the aggregate-handling branch in
+        // NavigationInterceptor.processOperations. When an interceptor returns
+        // an AggregateOperation that includes the operation it was just given
+        // (singleton-after-anchor pattern: "do the original Open, AND also
+        // close these other entries"), the original op must be counted once
+        // — feeding it back through the interceptor would loop indefinitely
+        // because the interceptor would keep returning the same aggregate.
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+        container.setFilter(acceptAll())
+
+        val anchorInstance = NavigationKeyFixtures.SimpleKey().asInstance()
+        val existingDetailInstance = NavigationKeyFixtures.SimpleKey().asInstance()
+        container.setBackstackDirect(backstackOf(anchorInstance, existingDetailInstance))
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        val newDetailInstance = NavigationKeyFixtures.SimpleKey().asInstance()
+
+        var interceptCount = 0
+        val interceptor = navigationInterceptor {
+            onOpened<NavigationKeyFixtures.SimpleKey> {
+                // Only react to the new detail Open — the recursion guard
+                // failure mode would manifest as this counter blowing past 1.
+                if (instance.id != newDetailInstance.id) continueWithOpen()
+                interceptCount++
+                replaceWith(
+                    NavigationOperation.AggregateOperation(
+                        instance.asOpenOperation(),
+                        existingDetailInstance.asCloseOperation(),
+                    )
+                )
+            }
+        }
+        container.addInterceptor(interceptor)
+
+        container.execute(destinationContext, NavigationOperation.Open(newDetailInstance))
+
+        assertEquals(
+            expected = 1,
+            actual = interceptCount,
+            message = "Interceptor must fire exactly once — re-feeding the original op would re-invoke it.",
+        )
+        assertEquals(2, container.backstack.size)
+        assertEquals(anchorInstance.id, container.backstack[0].id)
+        assertEquals(newDetailInstance.id, container.backstack[1].id)
+    }
+
+    @Test
+    fun `OnNavigationKeyOpenedScope exposes backstack fromContext and containerContext`() = runEnroTest {
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+        container.setFilter(acceptAll())
+
+        val existingInstance = NavigationKeyFixtures.SimpleKey().asInstance()
+        container.setBackstackDirect(backstackOf(existingInstance))
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        var capturedBackstack: NavigationBackstack? = null
+        var capturedFromContext: NavigationContext<*, *>? = null
+        var capturedContainerContext: ContainerContext? = null
+
+        val interceptor = navigationInterceptor {
+            onOpened<NavigationKeyFixtures.SimpleKey> {
+                capturedBackstack = backstack
+                capturedFromContext = fromContext
+                capturedContainerContext = containerContext
+                continueWithOpen()
+            }
+        }
+        container.addInterceptor(interceptor)
+
+        val triggerInstance = NavigationKeyFixtures.SimpleKey().asInstance()
+        container.execute(destinationContext, NavigationOperation.Open(triggerInstance))
+
+        assertEquals(
+            expected = listOf(existingInstance.id),
+            actual = capturedBackstack?.map { it.id },
+            message = "backstack should reflect the state PRIOR to the new Open operation",
+        )
+        assertSame(destinationContext, capturedFromContext, "fromContext should be the originating destination context")
+        assertSame(containerContext, capturedContainerContext, "containerContext should be the target container's context")
+    }
+
+    @Test
+    fun `OnNavigationKeyClosedScope exposes backstack fromContext and containerContext`() = runEnroTest {
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+
+        val instance = NavigationKeyFixtures.SimpleKey().asInstance()
+        container.setBackstackDirect(backstackOf(instance))
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        var capturedBackstack: NavigationBackstack? = null
+        var capturedFromContext: NavigationContext<*, *>? = null
+        var capturedContainerContext: ContainerContext? = null
+
+        val interceptor = navigationInterceptor {
+            onClosed<NavigationKeyFixtures.SimpleKey> {
+                capturedBackstack = backstack
+                capturedFromContext = fromContext
+                capturedContainerContext = containerContext
+                continueWithClose()
+            }
+        }
+        container.addInterceptor(interceptor)
+
+        container.execute(destinationContext, NavigationOperation.Close(instance))
+
+        assertEquals(listOf(instance.id), capturedBackstack?.map { it.id })
+        assertSame(destinationContext, capturedFromContext)
+        assertSame(containerContext, capturedContainerContext)
+    }
+
+    @Test
+    fun `OnNavigationKeyCompletedScope exposes backstack fromContext and containerContext`() = runEnroTest {
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+
+        val instance = NavigationKeyFixtures.SimpleKey().asInstance()
+        container.setBackstackDirect(backstackOf(instance))
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        var capturedBackstack: NavigationBackstack? = null
+        var capturedFromContext: NavigationContext<*, *>? = null
+        var capturedContainerContext: ContainerContext? = null
+
+        val interceptor = navigationInterceptor {
+            onCompleted<NavigationKeyFixtures.SimpleKey> {
+                capturedBackstack = backstack
+                capturedFromContext = fromContext
+                capturedContainerContext = containerContext
+                continueWithComplete()
+            }
+        }
+        container.addInterceptor(interceptor)
+
+        container.execute(destinationContext, NavigationOperation.Complete(instance))
+
+        assertEquals(listOf(instance.id), capturedBackstack?.map { it.id })
+        assertSame(destinationContext, capturedFromContext)
+        assertSame(containerContext, capturedContainerContext)
+    }
+
+    @Test
+    fun `replaceWith operation on OnNavigationKeyOpenedScope can rewrite Open into a SetBackstack`() = runEnroTest {
+        // Locks in the replaceWith(operation: NavigationOperation) overload on
+        // OnNavigationKeyOpenedScope by returning a full SetBackstack transition
+        // — i.e. swapping the entire backstack out from under the original Open.
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+        container.setFilter(acceptAll())
+
+        val firstInstance = NavigationKeyFixtures.SimpleKey().asInstance()
+        val secondInstance = NavigationKeyFixtures.SimpleKey().asInstance()
+        container.setBackstackDirect(backstackOf(firstInstance, secondInstance))
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        val triggerInstance = NavigationKeyFixtures.SimpleKey().asInstance()
+        val firstReplacement = NavigationKeyFixtures.SimpleKey().asInstance()
+        val secondReplacement = NavigationKeyFixtures.SimpleKey().asInstance()
+
+        val interceptor = navigationInterceptor {
+            onOpened<NavigationKeyFixtures.SimpleKey> {
+                // Only react to the trigger — anything else (including the
+                // SetBackstack-derived Opens of the replacements) should just
+                // continue, otherwise we'd loop on our own rewrite.
+                if (instance.id != triggerInstance.id) continueWithOpen()
+                replaceWith(
+                    NavigationOperation.SetBackstack(
+                        currentBackstack = backstack,
+                        targetBackstack = backstackOf(firstReplacement, secondReplacement),
+                    )
+                )
+            }
+        }
+        container.addInterceptor(interceptor)
+
+        container.execute(destinationContext, NavigationOperation.Open(triggerInstance))
+
+        assertEquals(2, container.backstack.size)
+        assertEquals(firstReplacement.id, container.backstack[0].id)
+        assertEquals(secondReplacement.id, container.backstack[1].id)
+    }
+
+    @Test
+    fun `Re-entrant execute from within an interceptor throws IllegalStateException`() = runEnroTest {
+        // Exercises NavigationContainer.executionMutex's re-entry guard. If an
+        // interceptor tries to drive another navigation operation through the
+        // same container mid-execute, we want a fast, descriptive error rather
+        // than silent corruption.
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+        container.setFilter(acceptAll())
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        val intruderInstance = NavigationKeyFixtures.SimpleKey().asInstance()
+        val interceptor = navigationInterceptor {
+            onOpened<NavigationKeyFixtures.SimpleKey> {
+                containerContext.container.execute(
+                    destinationContext,
+                    NavigationOperation.Open(intruderInstance),
+                )
+                continueWithOpen()
+            }
+        }
+        container.addInterceptor(interceptor)
+
+        val triggerInstance = NavigationKeyFixtures.SimpleKey().asInstance()
+        val error = assertFailsWith<IllegalStateException> {
+            container.execute(destinationContext, NavigationOperation.Open(triggerInstance))
+        }
+        assertTrue(
+            actual = error.message?.contains("navigationInterceptor") == true,
+            message = "Error should call out the interceptor as the cause; was: ${error.message}",
+        )
     }
 
     @Test
