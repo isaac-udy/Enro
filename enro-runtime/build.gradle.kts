@@ -27,6 +27,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(project(":enro-test"))
+            implementation(libs.compose.uiTest)
         }
         androidMain.dependencies {
             implementation(libs.androidx.core)
