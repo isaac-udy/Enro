@@ -18,6 +18,7 @@ import dev.enro.test.fixtures.NavigationContextFixtures
 import dev.enro.ui.LocalNavigationAnimatedVisibilityScopeOrNull
 import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.LocalNavigationSharedTransitionScopeOrNull
+import dev.enro.ui.NavigationContainerState
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.NavigationScene
@@ -28,6 +29,8 @@ import dev.enro.ui.navigationDestination
 import dev.enro.ui.rememberNavigationContainer
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import dev.enro.ui.scenes.directOverlay
+import dev.enro.ui.scenes.isDirectOverlay
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -283,6 +286,89 @@ class SceneIntegrationTests {
     }
 
     @Test
+    fun `Overlay onRemove suspends until completed before the scene fully leaves composition`() = runEnroComposeTest {
+        // NavigationDisplay invokes scene.onRemove() in a LaunchedEffect once
+        // the exit transition settles, and only calls onFullyHidden() (which
+        // drops the scene from its tracking map) AFTER onRemove returns. So
+        // an onRemove that suspends should keep the scene "alive" — present
+        // in the rendered set — until it resolves.
+        //
+        // We can't observe NavigationDisplay's internal rendered map directly,
+        // but we capture onRemove start / end events through the suspending
+        // hook itself and assert the suspension contract that way.
+        //
+        // Note on "at least N" assertions: OverlaySceneRenderer initialises
+        // its visibleState to false and then a LaunchedEffect flips it to
+        // `true`. Between those two points there is a transient window where
+        // the (transition.currentState, transition.isRunning) keys are
+        // (false, false), which triggers the onRemove LaunchedEffect once on
+        // initial composition. That first invocation is cancelled when the
+        // visibility setter promotes the state, but its "onRemove-start"
+        // event has already been recorded. We assert >=1 starts and >=1
+        // ends rather than exactly-once to be robust to that initial
+        // transient.
+        val onRemoveSignal = CompletableDeferred<Unit>()
+        val events = mutableListOf<String>()
+
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<TestSceneKey>(
+                    navigationDestination<TestSceneKey> { Text("underlying") }
+                )
+                destination<OverlaySceneKey>(
+                    navigationDestination<OverlaySceneKey>(
+                        metadata = { directOverlay() },
+                    ) { Text("controlled overlay") }
+                )
+            }
+        )
+        val rootContext = NavigationContextFixtures.createRootContext()
+
+        val underlyingInstance = TestSceneKey.asInstance()
+        val overlayInstance = OverlaySceneKey.asInstance()
+        var capturedContainer: NavigationContainerState? = null
+
+        setContent {
+            CompositionLocalProvider(LocalNavigationContext provides rootContext) {
+                val container = rememberNavigationContainer(
+                    backstack = backstackOf(underlyingInstance, overlayInstance),
+                )
+                capturedContainer = container
+                NavigationDisplay(
+                    state = container,
+                    sceneStrategy = NavigationSceneStrategy.from(
+                        TestOverlayStrategy(onRemoveSignal, events),
+                        SinglePaneSceneStrategy(),
+                    ),
+                )
+            }
+        }
+
+        onNodeWithText("controlled overlay").assertIsDisplayed()
+
+        capturedContainer!!.updateBackstack { it.dropLast(1).asBackstack() }
+        waitForIdle()
+
+        assertTrue(
+            actual = events.count { it == "onRemove-start" } >= 1,
+            message = "After popping the overlay, at least one onRemove invocation should have started; events: $events",
+        )
+        assertEquals(
+            expected = 0,
+            actual = events.count { it == "onRemove-end" },
+            message = "No onRemove invocation should have completed while the signal is still pending; events: $events",
+        )
+
+        onRemoveSignal.complete(Unit)
+        waitForIdle()
+
+        assertTrue(
+            actual = events.count { it == "onRemove-end" } >= 1,
+            message = "Completing the signal should unblock at least one onRemove invocation through to its end; events: $events",
+        )
+    }
+
+    @Test
     fun `Scene decorators are NOT applied to Overlay scenes`() = runEnroComposeTest {
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
@@ -343,6 +429,48 @@ data object OverlaySceneKey : NavigationKey
 
 @Serializable
 data object SecondOverlaySceneKey : NavigationKey
+
+/**
+ * A scene strategy that wraps any `directOverlay()` destination in a
+ * [TestOverlayScene] with a controllable [onRemove] — used by the
+ * overlay-onRemove-suspension test.
+ */
+private class TestOverlayStrategy(
+    private val onRemoveSignal: CompletableDeferred<Unit>,
+    private val events: MutableList<String>,
+) : NavigationSceneStrategy {
+    @Composable
+    override fun SceneStrategyScope.calculateScene(
+        entries: List<NavigationDestination<NavigationKey>>,
+    ): NavigationScene? {
+        val top = entries.lastOrNull() ?: return null
+        if (!top.isDirectOverlay()) return null
+        return TestOverlayScene(
+            key = top.instance.id,
+            entry = top,
+            overlaidEntries = entries.dropLast(1),
+            onRemoveSignal = onRemoveSignal,
+            events = events,
+        )
+    }
+}
+
+private class TestOverlayScene(
+    override val key: Any,
+    val entry: NavigationDestination<NavigationKey>,
+    override val overlaidEntries: List<NavigationDestination<NavigationKey>>,
+    private val onRemoveSignal: CompletableDeferred<Unit>,
+    private val events: MutableList<String>,
+) : NavigationScene.Overlay {
+    override val entries: List<NavigationDestination<NavigationKey>> = listOf(entry)
+    override val previousEntries: List<NavigationDestination<NavigationKey>> = overlaidEntries
+    override val content: @Composable () -> Unit = { entry.Content() }
+    override suspend fun onRemove() {
+        events += "onRemove-start"
+        onRemoveSignal.await()
+        events += "onRemove-end"
+    }
+}
 
 /**
  * Wrap [runComposeUiTest] with the same install/uninstall lifecycle that
