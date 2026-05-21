@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -11,6 +12,7 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
 import dev.enro.controller.createNavigationModule
 import dev.enro.test.EnroTest
@@ -369,6 +371,70 @@ class SceneIntegrationTests {
     }
 
     @Test
+    fun `requestClose routes through onCloseRequested callback when one is registered in an overlay destination`() = runEnroComposeTest {
+        // Integration counterpart to NavigationHandleConfigurationTests:
+        // verifies that the requestClose() path running through a real
+        // DestinationNavigationHandle (created by NavigationDisplay for the
+        // rendered overlay) consults a callback registered via
+        // navigation.configure { onCloseRequested { ... } } AND that a
+        // callback which doesn't itself call close() actually prevents the
+        // overlay from being dismissed. This is the key user-visible
+        // behaviour of onCloseRequested -- it lets a destination veto its
+        // own close so it can prompt for confirmation, etc.
+        var callbackInvocations = 0
+
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<TestSceneKey>(
+                    navigationDestination<TestSceneKey> { Text("underlying") }
+                )
+                destination<OverlaySceneKey>(
+                    navigationDestination<OverlaySceneKey>(
+                        metadata = { directOverlay() },
+                    ) {
+                        navigation.configure {
+                            onCloseRequested {
+                                callbackInvocations++
+                                // Intentionally do NOT call close() — registering this
+                                // callback should suppress the default close behaviour.
+                            }
+                        }
+                        Button(onClick = { navigation.requestClose() }) {
+                            Text("dismiss overlay")
+                        }
+                    }
+                )
+            }
+        )
+        val rootContext = NavigationContextFixtures.createRootContext()
+
+        setContent {
+            CompositionLocalProvider(LocalNavigationContext provides rootContext) {
+                val container = rememberNavigationContainer(
+                    backstack = backstackOf(
+                        TestSceneKey.asInstance(),
+                        OverlaySceneKey.asInstance(),
+                    ),
+                )
+                NavigationDisplay(state = container)
+            }
+        }
+
+        onNodeWithText("dismiss overlay").assertIsDisplayed()
+        assertEquals(0, callbackInvocations)
+
+        onNodeWithText("dismiss overlay").performClick()
+        waitForIdle()
+
+        assertEquals(
+            expected = 1,
+            actual = callbackInvocations,
+            message = "onCloseRequested callback should have fired exactly once after requestClose",
+        )
+        onNodeWithText("dismiss overlay").assertIsDisplayed()
+    }
+
+    @Test
     fun `Scene decorators are NOT applied to Overlay scenes`() = runEnroComposeTest {
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
@@ -484,6 +550,16 @@ internal fun runEnroComposeTest(block: ComposeUiTest.() -> Unit) = runComposeUiT
     try {
         block()
     } finally {
+        // Tear down the composition while the controller is still installed.
+        // runComposeUiTest's own cleanup happens AFTER this finally block, so
+        // any DisposableEffect onDispose that touches EnroController.instance
+        // (notably NavigationHandleConfiguration.close, which strips the
+        // OnCloseCallbacks via metadata.set -> verifyMetadataSerialization ->
+        // requireInstance) would crash with "EnroController has not been
+        // installed". Replacing the content with an empty composable triggers
+        // a clean dispose pass while the controller's still around.
+        setContent { }
+        waitForIdle()
         EnroTest.uninstallNavigationController()
     }
 }
