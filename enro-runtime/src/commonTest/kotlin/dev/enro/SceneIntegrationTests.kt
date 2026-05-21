@@ -1,5 +1,9 @@
 package dev.enro
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -11,7 +15,9 @@ import androidx.compose.ui.test.runComposeUiTest
 import dev.enro.controller.createNavigationModule
 import dev.enro.test.EnroTest
 import dev.enro.test.fixtures.NavigationContextFixtures
+import dev.enro.ui.LocalNavigationAnimatedVisibilityScopeOrNull
 import dev.enro.ui.LocalNavigationContext
+import dev.enro.ui.LocalNavigationSharedTransitionScopeOrNull
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.NavigationScene
@@ -24,7 +30,9 @@ import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import dev.enro.ui.scenes.directOverlay
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
@@ -210,6 +218,67 @@ class SceneIntegrationTests {
             actual = underlyingEntryIds.contains(overlayInstance.id),
             message = "Underlying scene must not include the overlay's own instance; " +
                 "saw entry ids: $underlyingEntryIds",
+        )
+    }
+
+    @OptIn(ExperimentalSharedTransitionApi::class)
+    @Test
+    fun `AnimatedVisibility and SharedTransition scopes propagate into decorated scene content`() = runEnroComposeTest {
+        // SceneDecoratorStrategy.decorateScene itself runs before the
+        // AnimatedContent / SharedTransitionLayout that NavigationDisplay
+        // sets up — but the SCENE'S CONTENT lambda returned from a decorator
+        // runs inside both, so reading LocalNavigationAnimatedVisibilityScope
+        // / LocalNavigationSharedTransitionScope from there should yield the
+        // real scopes (with their transition state etc.). This test locks
+        // that contract down.
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<TestSceneKey>(
+                    navigationDestination<TestSceneKey> { Text("animated scene content") }
+                )
+            }
+        )
+        val rootContext = NavigationContextFixtures.createRootContext()
+
+        var capturedAnimatedScope: AnimatedVisibilityScope? = null
+        var capturedSharedScope: SharedTransitionScope? = null
+        val capturingDecorator = SceneDecoratorStrategy { scene ->
+            object : NavigationScene by scene {
+                override val content: @Composable () -> Unit = {
+                    capturedAnimatedScope = LocalNavigationAnimatedVisibilityScopeOrNull.current
+                    capturedSharedScope = LocalNavigationSharedTransitionScopeOrNull.current
+                    scene.content()
+                }
+            }
+        }
+
+        setContent {
+            CompositionLocalProvider(LocalNavigationContext provides rootContext) {
+                val container = rememberNavigationContainer(
+                    backstack = backstackOf(TestSceneKey.asInstance()),
+                )
+                NavigationDisplay(
+                    state = container,
+                    sceneDecoratorStrategies = listOf(capturingDecorator),
+                )
+            }
+        }
+
+        onNodeWithText("animated scene content").assertIsDisplayed()
+        waitForIdle()
+
+        val animatedScope = assertNotNull(
+            capturedAnimatedScope,
+            "LocalNavigationAnimatedVisibilityScope must be non-null inside decorated scene content",
+        )
+        assertNotNull(
+            capturedSharedScope,
+            "LocalNavigationSharedTransitionScope must be non-null inside decorated scene content",
+        )
+        assertEquals(
+            expected = EnterExitState.Visible,
+            actual = animatedScope.transition.targetState,
+            message = "After idle, the captured scope's transition target should be Visible",
         )
     }
 
