@@ -149,9 +149,15 @@ public sealed class NavigationOperation {
             targetBackstack: NavigationBackstack,
         ): AggregateOperation {
             val transition = NavigationTransition(currentBackstack, targetBackstack)
-            return AggregateOperation(
-                transition.targetBackstack.map { Open(it) } + transition.closed.map { Close(it) },
-            )
+            // Explicit RootOperation typing on the intermediate lists keeps
+            // K/Native's runtime element type as RootOperation rather than
+            // widening to NavigationOperation via inference -- the latter
+            // surfaces as a downstream cast failure in
+            // NavigationInterceptor.processOperations when the resulting
+            // AggregateOperation is rewritten through an interceptor.
+            val opens: List<RootOperation> = transition.targetBackstack.map { Open(it) }
+            val closes: List<RootOperation> = transition.closed.map { Close(it) }
+            return AggregateOperation(opens + closes)
         }
     }
 }
