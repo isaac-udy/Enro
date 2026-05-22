@@ -541,16 +541,6 @@ internal fun runEnroComposeTest(block: ComposeUiTest.() -> Unit) = runComposeUiT
     try {
         block()
     } finally {
-        // Tear down the composition while the controller is still installed.
-        // runComposeUiTest's own cleanup happens AFTER this finally block, so
-        // any DisposableEffect onDispose that touches EnroController.instance
-        // (notably NavigationHandleConfiguration.close, which strips the
-        // OnCloseCallbacks via metadata.set -> verifyMetadataSerialization ->
-        // requireInstance) would crash with "EnroController has not been
-        // installed". Replacing the content with an empty composable triggers
-        // a clean dispose pass while the controller's still around.
-        setContent { }
-        waitForIdle()
         EnroTest.uninstallNavigationController()
     }
 }
