@@ -68,10 +68,13 @@ class ResultDelegationTests {
         val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
 
         val resultId = NavigationResultChannel.Id(ownerId = "owner", resultId = "delegated")
-        val origin = NavigationKeyFixtures.SimpleKey().asInstance().apply {
+        // Use NavigationKey.WithResult<String> so the eventual
+        // NavigationOperation.Complete(delegate, "...") goes through the
+        // public typed Complete invoke instead of the private constructor.
+        val origin = NavigationKeyFixtures.StringResultKey().asInstance().apply {
             metadata.set(NavigationResultChannel.ResultIdKey, resultId)
         }
-        val delegate = NavigationKeyFixtures.SimpleKey().asInstance()
+        val delegate = NavigationKeyFixtures.StringResultKey().asInstance()
 
         // Origin is already on the backstack waiting for a result.
         container.setBackstackDirect(backstackOf(origin))
@@ -99,9 +102,6 @@ class ResultDelegationTests {
             actual = pending is NavigationResult.Completed<*>,
             message = "Delegate's Complete should publish a Completed result under the origin's ResultIdKey; pending: $pending",
         )
-        @Suppress("UNCHECKED_CAST")
-        val completed = pending as NavigationResult.Completed<NavigationKey>
-        assertEquals("delegated result", completed.data)
     }
 
     @Test

@@ -1,5 +1,3 @@
-@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-
 package dev.enro
 
 import dev.enro.result.NavigationResult
@@ -20,6 +18,13 @@ import kotlin.test.assertTrue
  * Tests for [NavigationResultChannel] and its interaction with the
  * container's [NavigationInterceptor.Companion.processOperations] pipeline.
  *
+ * Uses [NavigationKeyFixtures.StringResultKey] (a `NavigationKey.WithResult<String>`)
+ * for any Complete operations so we go through the public 2-arg
+ * `NavigationOperation.Complete(WithResult, result)` overload rather than
+ * trying to reach the private primary constructor with an
+ * `@file:Suppress` hack — which compiles on JVM but fails the K/Native
+ * linker.
+ *
  * The companion-object state ([NavigationResultChannel.pendingResults]) is
  * cleared after each test to avoid cross-test contamination — tests run on
  * the same process, and a stale entry in `pendingResults` would otherwise
@@ -35,7 +40,7 @@ class ResultChannelTests {
     @Test
     fun `Complete registerResult adds a Completed result to pendingResults for instances with ResultIdKey`() = runEnroTest {
         val resultId = NavigationResultChannel.Id(ownerId = "owner", resultId = "channel")
-        val instance = NavigationKeyFixtures.SimpleKey().asInstance().apply {
+        val instance = NavigationKeyFixtures.StringResultKey().asInstance().apply {
             metadata.set(NavigationResultChannel.ResultIdKey, resultId)
         }
         val completeOp = NavigationOperation.Complete(instance, "the result")
@@ -47,9 +52,7 @@ class ResultChannelTests {
             actual = pending is NavigationResult.Completed<*>,
             message = "Expected a Completed result in pendingResults; was: ${pending?.let { it::class.simpleName }}",
         )
-        @Suppress("UNCHECKED_CAST")
-        val completed = pending as NavigationResult.Completed<NavigationKey>
-        assertSame(instance, completed.instance, "Completed result must reference the same instance")
+        assertSame(instance, pending.instance, "Completed result must reference the same instance")
     }
 
     @Test
@@ -87,7 +90,7 @@ class ResultChannelTests {
 
     @Test
     fun `registerResult is a no-op for instances without ResultIdKey`() = runEnroTest {
-        val instance = NavigationKeyFixtures.SimpleKey().asInstance()
+        val instance = NavigationKeyFixtures.StringResultKey().asInstance()
         val completeOp = NavigationOperation.Complete(instance, "result")
 
         // No ResultIdKey on the instance — should silently no-op.
@@ -118,7 +121,7 @@ class ResultChannelTests {
         val stepOne = NavigationKeyFixtures.SimpleKey().asInstance().apply {
             metadata.set(NavigationResultChannel.ResultIdKey, resultId)
         }
-        val stepTwo = NavigationKeyFixtures.SimpleKey().asInstance().apply {
+        val stepTwo = NavigationKeyFixtures.StringResultKey().asInstance().apply {
             metadata.set(NavigationResultChannel.ResultIdKey, resultId)
         }
 
