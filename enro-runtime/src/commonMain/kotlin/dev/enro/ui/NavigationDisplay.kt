@@ -701,9 +701,19 @@ private fun OverlaySceneRenderer(
     // scene from tracking, invoke its suspending onRemove() — mirrors
     // Nav3's OverlayScene.onRemove contract (runs after the scene is
     // popped from the backstack, before it leaves composition).
+    //
+    // `visible` (the incoming parameter) acts as the pre-entry guard:
+    // `visibleState` starts at false and is only promoted to true by the
+    // LaunchedEffect above, so initial composition lands at
+    // (currentState=false, isRunning=false) before the visibility setter
+    // has had a chance to run. Without the `visible` check, that
+    // transient triggers the onRemove path spuriously on every entry.
+    // When the overlay is genuinely being popped, the caller passes
+    // visible=false, the keys change again, and the block proceeds.
     LaunchedEffect(transition.currentState, transition.isRunning) {
         if (transition.currentState) return@LaunchedEffect
         if (transition.isRunning) return@LaunchedEffect
+        if (visible) return@LaunchedEffect
         scene.onRemove()
         onFullyHidden()
     }

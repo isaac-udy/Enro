@@ -298,17 +298,6 @@ class SceneIntegrationTests {
         // We can't observe NavigationDisplay's internal rendered map directly,
         // but we capture onRemove start / end events through the suspending
         // hook itself and assert the suspension contract that way.
-        //
-        // Note on "at least N" assertions: OverlaySceneRenderer initialises
-        // its visibleState to false and then a LaunchedEffect flips it to
-        // `true`. Between those two points there is a transient window where
-        // the (transition.currentState, transition.isRunning) keys are
-        // (false, false), which triggers the onRemove LaunchedEffect once on
-        // initial composition. That first invocation is cancelled when the
-        // visibility setter promotes the state, but its "onRemove-start"
-        // event has already been recorded. We assert >=1 starts and >=1
-        // ends rather than exactly-once to be robust to that initial
-        // transient.
         val onRemoveSignal = CompletableDeferred<Unit>()
         val events = mutableListOf<String>()
 
@@ -347,26 +336,28 @@ class SceneIntegrationTests {
         }
 
         onNodeWithText("controlled overlay").assertIsDisplayed()
+        assertEquals(
+            expected = emptyList<String>(),
+            actual = events.toList(),
+            message = "onRemove must not fire while the overlay is on the backstack",
+        )
 
         capturedContainer!!.updateBackstack { it.dropLast(1).asBackstack() }
         waitForIdle()
 
-        assertTrue(
-            actual = events.count { it == "onRemove-start" } >= 1,
-            message = "After popping the overlay, at least one onRemove invocation should have started; events: $events",
-        )
         assertEquals(
-            expected = 0,
-            actual = events.count { it == "onRemove-end" },
-            message = "No onRemove invocation should have completed while the signal is still pending; events: $events",
+            expected = listOf("onRemove-start"),
+            actual = events.toList(),
+            message = "After popping the overlay, onRemove should have started exactly once and be suspended on the signal",
         )
 
         onRemoveSignal.complete(Unit)
         waitForIdle()
 
-        assertTrue(
-            actual = events.count { it == "onRemove-end" } >= 1,
-            message = "Completing the signal should unblock at least one onRemove invocation through to its end; events: $events",
+        assertEquals(
+            expected = listOf("onRemove-start", "onRemove-end"),
+            actual = events.toList(),
+            message = "Completing the signal should resume the suspended onRemove through to its end",
         )
     }
 
