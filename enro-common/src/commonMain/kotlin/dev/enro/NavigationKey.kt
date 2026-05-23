@@ -3,6 +3,8 @@ package dev.enro
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import dev.enro.annotations.AdvancedEnroApi
+import dev.enro.annotations.ExperimentalEnroApi
+import dev.enro.path.PathData
 import dev.enro.serialization.internalUnwrapForSerialization
 import dev.enro.serialization.internalWrapForSerialization
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -52,6 +54,23 @@ public interface NavigationKey {
      * to return a typed value to its caller, enabling type-safe result handling.
      */
     public interface WithResult<T: Any> : NavigationKey
+
+    /**
+     * Describes how to convert between a URL-style path string and an instance of a
+     * [NavigationKey] of type [T]. Implement this interface (typically as a nested
+     * `object` on the key class) and reference it from
+     * [dev.enro.annotations.NavigationPath.FromBinding] for cases that don't fit the
+     * simple property-based mapping driven by [dev.enro.annotations.NavigationPath].
+     *
+     * The [pattern] follows the standard Enro path-pattern grammar
+     * (e.g. `"/users/{id}?source={source?}"`).
+     */
+    @ExperimentalEnroApi
+    public interface PathBinding<T : NavigationKey> {
+        public val pattern: String
+        public fun deserialize(data: PathData): T
+        public fun serialize(builder: PathData.Builder, key: T)
+    }
 
     /**
      * A data class that bundles a [key] of type [T] with its associated [metadata].

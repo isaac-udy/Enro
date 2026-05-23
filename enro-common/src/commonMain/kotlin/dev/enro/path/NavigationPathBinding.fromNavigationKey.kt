@@ -1,8 +1,30 @@
 package dev.enro.path
 
 import dev.enro.NavigationKey
+import dev.enro.annotations.ExperimentalEnroApi
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.typeOf
+
+/**
+ * Wraps a user-implemented [NavigationKey.PathBinding] into a runtime
+ * [NavigationPathBinding] that can be registered on a [dev.enro.controller.NavigationModule].
+ *
+ * Used by code generated for `@NavigationPath.FromBinding(MyBinding::class)`, but also
+ * usable directly from hand-written modules.
+ */
+@OptIn(ExperimentalEnroApi::class)
+public fun <T : NavigationKey> NavigationPathBinding.Companion.fromBinding(
+    keyType: KClass<T>,
+    binding: NavigationKey.PathBinding<T>,
+): NavigationPathBinding<T> {
+    return NavigationPathBinding(
+        keyType = keyType,
+        pattern = binding.pattern,
+        deserialize = { binding.deserialize(this) },
+        serialize = { key -> binding.serialize(this, key) },
+    )
+}
 
 @PublishedApi
 internal inline fun <reified P> checkParameterIsSupported(

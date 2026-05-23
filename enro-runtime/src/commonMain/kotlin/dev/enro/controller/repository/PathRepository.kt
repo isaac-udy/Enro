@@ -28,4 +28,13 @@ public class PathRepository {
         }
         return matching.single()
     }
+
+    public fun <T : NavigationKey> getPathBindingForKey(key: T): NavigationPathBinding<T>? {
+        @Suppress("UNCHECKED_CAST")
+        return bindings.firstOrNull { it.matches(key) } as NavigationPathBinding<T>?
+    }
+
+    public fun getPathBindingsForKey(key: NavigationKey): List<NavigationPathBinding<*>> {
+        return bindings.filter { it.matches(key) }
+    }
 }

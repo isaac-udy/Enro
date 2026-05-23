@@ -5,8 +5,8 @@ import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.context.NavigationContext
 
 @ExperimentalEnroApi
-public fun NavigationContext<*, *>.getNavigationKeyFromPath(
-    path: String,
-): NavigationKey? {
-    return controller.getNavigationKeyFromPath(path)
+public fun NavigationContext<*, *>.getPathFromNavigationKey(
+    key: NavigationKey,
+): String? {
+    return controller.getPathFromNavigationKey(key)
 }

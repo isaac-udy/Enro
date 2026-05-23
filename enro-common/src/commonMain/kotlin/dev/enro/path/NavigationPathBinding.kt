@@ -26,6 +26,10 @@ public class NavigationPathBinding<T : NavigationKey> @PublishedApi internal con
         return pattern.matches(path)
     }
 
+    public fun matches(key: NavigationKey): Boolean {
+        return keyType.isInstance(key)
+    }
+
     public fun fromPath(path: ParsedPath): T {
         if (!matches(path)) {
             throw IllegalArgumentException("Path does not match the pattern")
