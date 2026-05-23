@@ -6,10 +6,13 @@ import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationHandle
 import dev.enro.annotations.ExperimentalEnroApi
+import dev.enro.asInstance
+import dev.enro.backstackOf
 import dev.enro.context.ContainerContext
 import dev.enro.context.activeLeafDestination
 import dev.enro.controller.createNavigationModule
 import dev.enro.emptyBackstack
+import dev.enro.path.getNavigationKeyFromPath
 import dev.enro.path.getPathFromNavigationKey
 import dev.enro.plugin.NavigationPlugin
 import kotlinx.browser.window
@@ -89,6 +92,24 @@ internal class WebHistoryPlugin(
         return rootContainer.controller.getPathFromNavigationKey(leafKey) ?: "#$fallbackIndex"
     }
 
+    /**
+     * Synthesizes a [ContainerNode] for the root container from the current
+     * `window.location`, when the browser fires popstate without a state payload.
+     * Returns `null` when the URL doesn't resolve to a known [@NavigationPath].
+     */
+    @OptIn(ExperimentalEnroApi::class)
+    private fun deriveContainerNodeFromUrl(): ContainerNode? {
+        val path = window.location.pathname + window.location.search
+        val resolvedKey = runCatching {
+            rootContainer.controller.getNavigationKeyFromPath(path)
+        }.getOrNull() ?: return null
+        return ContainerNode(
+            containerKey = rootContainer.container.key,
+            backstack = backstackOf(resolvedKey.asInstance()),
+            children = emptyList(),
+        )
+    }
+
     @OptIn(ExperimentalWasmJsInterop::class)
     private fun updateHistoryState(
         event: PopStateEvent? = null,
@@ -126,6 +147,33 @@ internal class WebHistoryPlugin(
                         historyStates.add(poppedState)
                         historyIndex = historyStates.lastIndex
                     }
+                }
+            } else if (event != null) {
+                // popstate fired without a state payload (e.g. the user manually
+                // edited the address bar, or arrived via a history entry without
+                // rich state). Derive a key from the URL and apply it as a
+                // single-entry backstack on the root container.
+                val derivedState = deriveContainerNodeFromUrl()
+                if (derivedState != null && derivedState != currentState) {
+                    applyNodeFor(container, derivedState)
+                    val updatedState = createNodeFor(container, rootOnly)
+                    if (updatedState != derivedState) {
+                        return@launch
+                    }
+                    val existingIndex = historyStates.indexOfFirst { it == derivedState }
+                    if (existingIndex != -1) {
+                        historyIndex = existingIndex
+                    } else {
+                        historyStates.add(derivedState)
+                        historyIndex = historyStates.lastIndex
+                    }
+                    window.history.replaceState(
+                        EnroController.jsonConfiguration
+                            .encodeToString(derivedState)
+                            .toJsString(),
+                        "example",
+                        computeUrl(historyIndex),
+                    )
                 }
             } else { // Not a popstate event (opened, active, closed, init)
                 val isInit = historyStates.isEmpty() && historyIndex == -1
