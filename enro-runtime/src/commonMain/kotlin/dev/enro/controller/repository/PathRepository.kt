@@ -21,11 +21,15 @@ public class PathRepository {
     }
 
     public fun getPathBinding(path: ParsedPath): NavigationPathBinding<*>? {
-        val matching = bindings.filter { it.matches(path) }
-        if (matching.isEmpty()) return null
-        require(matching.size == 1) {
-            "Multiple path bindings found for path: $path"
-        }
-        return matching.single()
+        return NavigationPathBinding.resolveForPath(bindings, path)
+    }
+
+    public fun <T : NavigationKey> getPathBindingForKey(key: T): NavigationPathBinding<T>? {
+        @Suppress("UNCHECKED_CAST")
+        return bindings.firstOrNull { it.matches(key) } as NavigationPathBinding<T>?
+    }
+
+    public fun getPathBindingsForKey(key: NavigationKey): List<NavigationPathBinding<*>> {
+        return bindings.filter { it.matches(key) }
     }
 }

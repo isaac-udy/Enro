@@ -32,6 +32,18 @@ internal data class PathPattern(
         return true
     }
 
+    /**
+     * A specificity score used to disambiguate between multiple bindings that all
+     * [matches] the same path. Higher is more specific. Literal path segments dominate
+     * (weighted ahead of query params), then required query parameters.
+     */
+    internal val specificityScore: Int
+        get() {
+            val literalSegments = pathElements.count { it is PathElement.Segment }
+            val requiredQueryParams = queryElements.count { it is QueryElement.QueryParam }
+            return literalSegments * 1_000 + requiredQueryParams
+        }
+
     fun toPathData(parsedPath: ParsedPath): PathData {
         val data = mutableMapOf<String, String>()
         for (i in pathElements.indices) {
