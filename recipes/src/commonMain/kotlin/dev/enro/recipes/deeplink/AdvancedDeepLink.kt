@@ -3,7 +3,14 @@
  *
  * Demonstrates how Enro handles synthetic backstacks for deep links by
  * pre-populating the backstack so the user has a sensible navigation history.
+ *
+ * The recipe entry key has a `@NavigationPath` so the web platform plugin
+ * writes `/advanced-deep-link` to the URL bar when active. Inner-container
+ * navigation (Category -> Article) is session-local — see the web platform
+ * docs for the root-only URL routing model.
  */
+@file:OptIn(ExperimentalEnroApi::class)
+
 package dev.enro.recipes.deeplink
 
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +28,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.NavigationKey
+import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
+import dev.enro.annotations.NavigationPath
 import dev.enro.asInstance
 import dev.enro.backstackOf
 import dev.enro.close
@@ -35,6 +44,7 @@ import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 @Serializable
+@NavigationPath("/advanced-deep-link")
 object AdvancedDeepLinkRecipe : NavigationKey
 
 @Serializable
@@ -45,6 +55,9 @@ data class Category(val categoryId: String) : NavigationKey
 
 @Serializable
 data class Article(val articleId: String, val categoryId: String) : NavigationKey
+
+// Illustrative: nested hand-written path bindings for the manual API.
+// Not registered with the controller; shown for API reference only.
 
 val categoryPathBinding: NavigationPathBinding<Category> = NavigationPathBinding.createPathBinding(
     pattern = "/categories/{categoryId}",

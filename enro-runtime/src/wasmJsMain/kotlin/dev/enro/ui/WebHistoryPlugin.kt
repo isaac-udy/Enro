@@ -9,6 +9,7 @@ import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.context.ContainerContext
 import dev.enro.controller.createNavigationModule
 import dev.enro.emptyBackstack
+import dev.enro.path.getPathFromNavigationKey
 import dev.enro.plugin.NavigationPlugin
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
@@ -23,23 +24,17 @@ import org.w3c.dom.PopStateEvent
 import org.w3c.dom.Window
 import org.w3c.dom.events.Event
 
-// TODO: rootOnly=true is pretty safe, but probably need to do a bit more exploring with rootOnly=flase,
-//  as it appears to work correctly in many cases, but there still seem to be some cases where the
-//  synthetic backstack history gets out of sync with the browser history. There's also the case
-//  with managed flows where things don't quite work as you might expect with the browser history,
-//  resulting in some strange forward/back behavior and some steps getting skipped. One solution to
-//  explore here is to make sure to clear the results for steps when they are navigated away from
-//  due to browser back presses. Another option might be to use some kind of "reset" on the history
-//  state when things appear to be getting out-of-sync (or some pop-and-then-push forward resets).
-//  It may also be interesting to do some kind of middle ground here, where certain destinations
-//  or containers are allowed within the history, but not all of them. This would be a reasonable
-//  way to allow for some more complex navigation while avoiding certain issues that may
-//  be present with the full/deep container history.
+// Root-container-only history: only the root container's backstack participates in
+// browser history. Inner-container navigation (modals, tabs, list-detail panes, etc.)
+// is session-local and not reflected in the URL or back/forward history. This is the
+// "Twitter/X / Reddit" model — pages get URLs, page-internal state does not.
+//
+// Nested URL routing is a known future direction; see docs/ghpages/docs/platform/web.md
+// for the model we ship in beta.
 @ExperimentalEnroApi
 internal class WebHistoryPlugin(
     private val window: Window,
     private val rootContainer: ContainerContext,
-    private val rootOnly: Boolean = true,
 ) : NavigationPlugin() {
 
     private var activeHistoryJob: Job? = null
@@ -74,6 +69,27 @@ internal class WebHistoryPlugin(
         updateHistoryState()
     }
 
+    /**
+     * Computes the URL to write to `window.history`. Uses the `@NavigationPath`
+     * registered against the root container's active destination. When that key
+     * has no path binding, the existing address-bar URL is preserved — `pushState`
+     * still fires (so back/forward works through `history.state`), but the
+     * visible URL doesn't change. That keeps bookmarkable URLs honest: only
+     * destinations that opt in to a path produce a path.
+     *
+     * Inner-container navigation is also invisible to the URL — see the web
+     * platform docs for the model.
+     */
+    @OptIn(ExperimentalEnroApi::class)
+    private fun computeUrl(): String {
+        val rootKey = rootContainer.activeChild?.key ?: return currentUrl()
+        return rootContainer.controller.getPathFromNavigationKey(rootKey) ?: currentUrl()
+    }
+
+    private fun currentUrl(): String {
+        return window.location.pathname + window.location.search
+    }
+
     @OptIn(ExperimentalWasmJsInterop::class)
     private fun updateHistoryState(
         event: PopStateEvent? = null,
@@ -84,7 +100,7 @@ internal class WebHistoryPlugin(
             return
         }
         activeHistoryJob = CoroutineScope(Dispatchers.Main).launch {
-            val currentState = createNodeFor(container, rootOnly)
+            val currentState = createNodeFor(container)
             val serializedCurrentState = EnroController.jsonConfiguration
                 .encodeToString(currentState)
                 .toJsString()
@@ -99,7 +115,7 @@ internal class WebHistoryPlugin(
                     .decodeFromString<ContainerNode>(event.state.toString())
                 if (currentState != poppedState) {
                     applyNodeFor(container, poppedState)
-                    val updatedState = createNodeFor(container, rootOnly)
+                    val updatedState = createNodeFor(container)
                     if (updatedState != poppedState) {
                         window.history.back()
                         return@launch
@@ -112,6 +128,12 @@ internal class WebHistoryPlugin(
                         historyIndex = historyStates.lastIndex
                     }
                 }
+            } else if (event != null) {
+                // popstate fired without a state payload (manual address-bar edit,
+                // cross-origin nav). Under root-only routing we can't safely restore
+                // a sensible app state from URL alone — no-op and let the user
+                // reload if they want the URL to take effect.
+                return@launch
             } else { // Not a popstate event (opened, active, closed, init)
                 val isInit = historyStates.isEmpty() && historyIndex == -1
                 val isNoOp = windowState != null && windowState == currentState
@@ -126,7 +148,7 @@ internal class WebHistoryPlugin(
                         window.history.replaceState(
                             serializedCurrentState,
                             "example",
-                            "#${historyIndex}"
+                            computeUrl(),
                         )
                     }
 
@@ -137,7 +159,7 @@ internal class WebHistoryPlugin(
                         window.history.replaceState(
                             serializedCurrentState,
                             "example",
-                            "#${historyIndex}"
+                            computeUrl(),
                         )
                     }
 
@@ -154,7 +176,7 @@ internal class WebHistoryPlugin(
                             window.history.replaceState(
                                 serializedCurrentState,
                                 "example",
-                                "#${historyIndex}"
+                                computeUrl(),
                             )
                         } else {
                             println("going back delta push: ${goDelta}")
@@ -163,7 +185,7 @@ internal class WebHistoryPlugin(
                             window.history.pushState(
                                 serializedCurrentState,
                                 "example",
-                                "#${historyIndex}"
+                                computeUrl(),
                             )
                         }
                     }
@@ -176,7 +198,7 @@ internal class WebHistoryPlugin(
                             window.history.pushState(
                                 serializedCurrentState,
                                 "example",
-                                "#${historyIndex}"
+                                computeUrl(),
                             )
                         } else {
                             val previousIndex = historyIndex
@@ -187,7 +209,7 @@ internal class WebHistoryPlugin(
                             window.history.pushState(
                                 serializedCurrentState,
                                 "example",
-                                "#${historyIndex}"
+                                computeUrl(),
                             )
                         }
                     }
@@ -255,20 +277,11 @@ internal data class ContainerNode(
 
 internal fun createNodeFor(
     container: ContainerContext,
-    rootOnly: Boolean,
 ): ContainerNode {
     return ContainerNode(
         containerKey = container.container.key,
         backstack = container.container.backstack,
-        // When we're in the "rootOnly" navigation mode, we just want to ignore
-        // any changes in child containers, as they are not relevant to the back navigation
-        children = when {
-            rootOnly -> emptyList()
-            else -> container.activeChild?.children.orEmpty()
-                .map { createNodeFor(it, false) }
-                .sortedBy { it.containerKey.name }
-
-        }
+        children = emptyList(),
     )
 }
 

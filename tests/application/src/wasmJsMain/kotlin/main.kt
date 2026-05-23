@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.window.ComposeViewport
+import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.asInstance
 import dev.enro.backstackOf
 import dev.enro.tests.application.SelectDestination
@@ -14,6 +15,7 @@ import dev.enro.tests.application.installNavigationController
 import dev.enro.ui.EnroBrowserContent
 import dev.enro.ui.InstallWebHistoryPlugin
 import dev.enro.ui.NavigationDisplay
+import dev.enro.ui.rememberInitialBackstackFromUrl
 import dev.enro.ui.rememberNavigationContainer
 import enro.tests.application.generated.resources.NotoEmoji_SemiBold
 import enro.tests.application.generated.resources.Res
@@ -22,7 +24,7 @@ import org.jetbrains.compose.resources.configureWebResources
 import org.jetbrains.compose.resources.getFontResourceBytes
 import org.jetbrains.compose.resources.rememberResourceEnvironment
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalEnroApi::class)
 fun main() {
     TestApplicationComponent.installNavigationController(document)
     configureWebResources {
@@ -39,7 +41,9 @@ fun main() {
         }
         EnroBrowserContent {
             val container = rememberNavigationContainer(
-                backstack = backstackOf(SelectDestination().asInstance())
+                backstack = rememberInitialBackstackFromUrl {
+                    backstackOf(SelectDestination().asInstance())
+                },
             )
             InstallWebHistoryPlugin(container)
             NavigationDisplay(container)

@@ -1,12 +1,17 @@
 /**
  * Enro Recipe: Basic Deep Link
  *
- * Demonstrates how Enro maps URLs to NavigationKeys using NavigationPathBinding.
- *
- * The path bindings here are illustrative; in a full app you would register them
- * through a NavigationModule on your controller. For this recipe we just show the
- * destination contracts and bindings as code.
+ * Demonstrates two ways of mapping URLs to NavigationKeys:
+ *  - `@NavigationPath` on the recipe entry key, which is what the web platform
+ *    plugin actually uses to drive the URL bar. Only root-level destinations
+ *    participate in URL routing today; see the web platform docs.
+ *  - The manual `NavigationPathBinding.createPathBinding(...)` API, shown
+ *    below as illustrative code. The bindings here are NOT registered with
+ *    the controller — they're examples of the hand-written form for cases
+ *    where you want full control over deserialize/serialize.
  */
+@file:OptIn(ExperimentalEnroApi::class)
+
 package dev.enro.recipes.deeplink
 
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +25,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.NavigationKey
+import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
+import dev.enro.annotations.NavigationPath
 import dev.enro.asInstance
 import dev.enro.backstackOf
 import dev.enro.close
@@ -36,6 +43,7 @@ import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 @Serializable
+@NavigationPath("/basic-deep-link")
 object BasicDeepLinkRecipe : NavigationKey
 
 @Serializable
@@ -47,7 +55,8 @@ data class ProductDetail(val productId: String, val source: String? = null) : Na
 @Serializable
 data object DeepLinkHome : NavigationKey
 
-// Path bindings (registered in deepLinkModule below in a real app)
+// Illustrative: hand-written path bindings using the createPathBinding API.
+// Not registered with the controller — this recipe shows the shape of the API.
 
 val userProfilePathBinding: NavigationPathBinding<UserProfile> = NavigationPathBinding.createPathBinding(
     pattern = "/users/{userId}",
@@ -56,7 +65,7 @@ val userProfilePathBinding: NavigationPathBinding<UserProfile> = NavigationPathB
 )
 
 val productDetailPathBinding: NavigationPathBinding<ProductDetail> = NavigationPathBinding.createPathBinding(
-    pattern = "/products/{productId}?source={source}",
+    pattern = "/products/{productId}?source={source?}",
     propertyOne = ProductDetail::productId,
     propertyTwo = ProductDetail::source,
     constructor = ::ProductDetail,
@@ -103,7 +112,7 @@ fun DeepLinkHomeDestination() {
     ) {
         Text("Deep Link Home", style = MaterialTheme.typography.titleLarge)
         Text(
-            "Bindings: /home, /users/{userId}, /products/{productId}?source={source}",
+            "Illustrative bindings: /home, /users/{userId}, /products/{productId}?source={source?}",
             style = MaterialTheme.typography.bodySmall,
         )
         Button(onClick = { navigation.open(UserProfile("alice")) }) {

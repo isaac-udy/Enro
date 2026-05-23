@@ -6,6 +6,7 @@ import dev.enro.path.NavigationPathBinding
 import dev.enro.path.PathData
 import dev.enro.path.createPathBinding
 import dev.enro.path.fromBinding
+import dev.enro.path.getBackstackFromPath
 import dev.enro.path.getNavigationKeyFromPath
 import dev.enro.path.getPathFromNavigationKey
 import dev.enro.test.EnroTest
@@ -216,6 +217,38 @@ class PathBindingIntegrationTests {
             expected = "/binding/products?id=p-7",
             actual = serialized,
             message = "fromBinding should drive the serialize side via the user's PathBinding",
+        )
+    }
+
+    @Test
+    fun `getBackstackFromPath produces a single-entry backstack for a matching URL`() = runEnroTest {
+        val binding = NavigationPathBinding.createPathBinding<String, ProductDetailPathKey>(
+            pattern = "products/{productId}",
+            propertyOne = ProductDetailPathKey::productId,
+            constructor = { id -> ProductDetailPathKey(id) },
+        )
+        val controller = EnroTest.getCurrentNavigationController()
+        controller.addModule(createNavigationModule { path(binding) })
+
+        val backstack = controller.getBackstackFromPath("/products/c-1")
+
+        assertEquals(
+            expected = listOf<NavigationKey>(ProductDetailPathKey("c-1")),
+            actual = backstack?.keys,
+            message = "getBackstackFromPath should wrap a resolved key in a single-entry backstack",
+        )
+    }
+
+    @Test
+    fun `getBackstackFromPath returns null for an unresolvable URL`() = runEnroTest {
+        val controller = EnroTest.getCurrentNavigationController()
+        controller.addModule(createNavigationModule { })
+
+        val backstack = controller.getBackstackFromPath("/something/nobody/registered")
+
+        assertNull(
+            actual = backstack,
+            message = "Unmatched URL should produce null, leaving the caller to fall back",
         )
     }
 

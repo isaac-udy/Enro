@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalEnroApi::class)
+
 package dev.enro.recipes
 
 import androidx.compose.foundation.background
@@ -21,7 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.NavigationKey
+import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
+import dev.enro.annotations.NavigationPath
 import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.recipes.animations.AnimationsRecipe
@@ -53,6 +57,7 @@ import dev.enro.recipes.viewmodel.SharedViewModelRecipe
 import kotlinx.serialization.Serializable
 
 @Serializable
+@NavigationPath("/")
 object SelectRecipe : NavigationKey
 
 internal data class RecipeEntry(
