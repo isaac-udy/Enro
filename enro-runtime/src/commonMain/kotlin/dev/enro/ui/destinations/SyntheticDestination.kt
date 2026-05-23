@@ -10,10 +10,10 @@ import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.navigationDestination
 
-public class SyntheticDestination<K : NavigationKey>(
+internal class SyntheticDestination<K : NavigationKey>(
     internal val block: SyntheticDestinationScope<K>.() -> Unit,
 ) {
-    public companion object {
+    internal companion object {
         internal const val SyntheticDestinationKey = "dev.enro.ui.destinations.SyntheticDestinationKey"
 
         internal val interceptor = object : NavigationInterceptor() {
@@ -23,17 +23,19 @@ public class SyntheticDestination<K : NavigationKey>(
                 operation: NavigationOperation.Open<NavigationKey>,
             ): NavigationOperation? {
                 if (!isSyntheticDestination(operation.instance)) return operation
-                return NavigationOperation.SideEffect{
+                return NavigationOperation.SideEffect {
                     executeSynthetic(
                         fromContext = fromContext,
-                        instance = operation.instance
+                        containerContext = containerContext,
+                        instance = operation.instance,
                     )
                 }
             }
         }
 
-        public fun executeSynthetic(
+        internal fun executeSynthetic(
             fromContext: NavigationContext,
+            containerContext: ContainerContext,
             instance: NavigationKey.Instance<NavigationKey>,
         ) {
             val controller = fromContext.controller
@@ -41,21 +43,49 @@ public class SyntheticDestination<K : NavigationKey>(
             val syntheticDestination = bindings.provider.peekMetadata(instance)[SyntheticDestinationKey]
             @Suppress("UNCHECKED_CAST")
             val synthetic = requireNotNull(syntheticDestination) as SyntheticDestination<NavigationKey>
-            synthetic.block(
-                SyntheticDestinationScope(
-                    context = fromContext,
-                    instance = instance,
-                )
+            val scope = SyntheticDestinationScope(
+                context = fromContext,
+                instance = instance,
             )
-        }
+            val thrown = try {
+                synthetic.block(scope)
+                null
+            } catch (outcome: SyntheticDestinationOutcome) {
+                outcome
+            }
 
+            // If the block fell through without calling an outcome method, settle
+            // the scope on a silent close. This locks the scope so any subsequent
+            // call from a stray coroutine throws the "already finished" error.
+            val effectiveOutcome = thrown ?: scope.finalizeAsSilentCloseIfNoOutcome()
+
+            val operation = when (effectiveOutcome) {
+                is SyntheticDestinationOutcome.Open ->
+                    NavigationOperation.Open(effectiveOutcome.target)
+                is SyntheticDestinationOutcome.Close ->
+                    NavigationOperation.Close(instance, silent = effectiveOutcome.silent)
+                is SyntheticDestinationOutcome.Complete -> when (val result = effectiveOutcome.result) {
+                    null -> NavigationOperation.Complete(instance)
+                    else -> {
+                        @Suppress("UNCHECKED_CAST")
+                        NavigationOperation.Complete(
+                            instance = instance as NavigationKey.Instance<NavigationKey.WithResult<Any>>,
+                            result = result,
+                        )
+                    }
+                }
+                is SyntheticDestinationOutcome.CompleteFrom ->
+                    NavigationOperation.CompleteFrom(instance, effectiveOutcome.target)
+            }
+            containerContext.container.execute(fromContext, operation)
+        }
     }
 }
 
 public fun <K : NavigationKey> syntheticDestination(
     metadata: NavigationDestination.MetadataBuilder<K>.() -> Unit = {},
-    block: SyntheticDestinationScope<K>.() -> Unit
-) : NavigationDestinationProvider<K> {
+    block: SyntheticDestinationScope<K>.() -> Unit,
+): NavigationDestinationProvider<K> {
     return navigationDestination(
         metadata = {
             metadata.invoke(this)
@@ -67,7 +97,7 @@ public fun <K : NavigationKey> syntheticDestination(
 }
 
 public fun isSyntheticDestination(
-    instance: NavigationKey.Instance<*>
+    instance: NavigationKey.Instance<*>,
 ): Boolean {
     return EnroController.instance?.bindings?.bindingFor(instance)
         ?.provider
@@ -75,4 +105,3 @@ public fun isSyntheticDestination(
         ?.contains(SyntheticDestination.SyntheticDestinationKey)
         ?: false
 }
-
