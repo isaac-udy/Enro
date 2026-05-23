@@ -7,8 +7,10 @@ import dev.enro.NavigationContainer
 import dev.enro.NavigationHandle
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.context.ContainerContext
+import dev.enro.context.activeLeafDestination
 import dev.enro.controller.createNavigationModule
 import dev.enro.emptyBackstack
+import dev.enro.path.getPathFromNavigationKey
 import dev.enro.plugin.NavigationPlugin
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
@@ -74,6 +76,19 @@ internal class WebHistoryPlugin(
         updateHistoryState()
     }
 
+    /**
+     * Computes the URL to write to `window.history`. Prefers a `@NavigationPath`-driven
+     * path string derived from the active leaf key; falls back to a positional hash
+     * fragment when the active key has no registered path binding. The full container
+     * tree is always stored in `history.state` separately, so the URL is purely
+     * cosmetic/bookmarkable.
+     */
+    @OptIn(ExperimentalEnroApi::class)
+    private fun computeUrl(fallbackIndex: Int): String {
+        val leafKey = rootContainer.activeLeafDestination()?.key ?: return "#$fallbackIndex"
+        return rootContainer.controller.getPathFromNavigationKey(leafKey) ?: "#$fallbackIndex"
+    }
+
     @OptIn(ExperimentalWasmJsInterop::class)
     private fun updateHistoryState(
         event: PopStateEvent? = null,
@@ -126,7 +141,7 @@ internal class WebHistoryPlugin(
                         window.history.replaceState(
                             serializedCurrentState,
                             "example",
-                            "#${historyIndex}"
+                            computeUrl(historyIndex),
                         )
                     }
 
@@ -137,7 +152,7 @@ internal class WebHistoryPlugin(
                         window.history.replaceState(
                             serializedCurrentState,
                             "example",
-                            "#${historyIndex}"
+                            computeUrl(historyIndex),
                         )
                     }
 
@@ -154,7 +169,7 @@ internal class WebHistoryPlugin(
                             window.history.replaceState(
                                 serializedCurrentState,
                                 "example",
-                                "#${historyIndex}"
+                                computeUrl(historyIndex),
                             )
                         } else {
                             println("going back delta push: ${goDelta}")
@@ -163,7 +178,7 @@ internal class WebHistoryPlugin(
                             window.history.pushState(
                                 serializedCurrentState,
                                 "example",
-                                "#${historyIndex}"
+                                computeUrl(historyIndex),
                             )
                         }
                     }
@@ -176,7 +191,7 @@ internal class WebHistoryPlugin(
                             window.history.pushState(
                                 serializedCurrentState,
                                 "example",
-                                "#${historyIndex}"
+                                computeUrl(historyIndex),
                             )
                         } else {
                             val previousIndex = historyIndex
@@ -187,7 +202,7 @@ internal class WebHistoryPlugin(
                             window.history.pushState(
                                 serializedCurrentState,
                                 "example",
-                                "#${historyIndex}"
+                                computeUrl(historyIndex),
                             )
                         }
                     }
