@@ -29,7 +29,14 @@ public fun <R : Any> Fragment.registerForNavigationResult(
     return PropertyDelegateProvider<Fragment, ReadOnlyProperty<Fragment, NavigationResultChannel<R>>> { thisRef, property ->
         val resultId = "${thisRef::class.java.name}.${property.name}"
         val lazyResultChannel = lazy {
-            val id = arguments?.getNavigationKeyInstance()?.id ?: TODO()
+            val id = arguments?.getNavigationKeyInstance()?.id
+                ?: error(
+                    "registerForNavigationResult on Fragment ${thisRef::class.qualifiedName} " +
+                        "requires the Fragment to be hosted via an Enro navigation flow — its " +
+                        "arguments bundle is missing a NavigationKey.Instance. Open the Fragment " +
+                        "through a NavigationContainer / NavigationHandle, not via FragmentManager " +
+                        "directly."
+                )
             NavigationResultChannel<R>(
                 id = NavigationResultChannel.Id(
                     ownerId = id,
