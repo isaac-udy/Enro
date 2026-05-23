@@ -23,10 +23,11 @@ public class SyntheticDestination<K : NavigationKey>(
                 operation: NavigationOperation.Open<NavigationKey>,
             ): NavigationOperation? {
                 if (!isSyntheticDestination(operation.instance)) return operation
-                return NavigationOperation.SideEffect{
+                return NavigationOperation.SideEffect {
                     executeSynthetic(
                         fromContext = fromContext,
-                        instance = operation.instance
+                        containerContext = containerContext,
+                        instance = operation.instance,
                     )
                 }
             }
@@ -34,6 +35,7 @@ public class SyntheticDestination<K : NavigationKey>(
 
         public fun executeSynthetic(
             fromContext: NavigationContext,
+            containerContext: ContainerContext,
             instance: NavigationKey.Instance<NavigationKey>,
         ) {
             val controller = fromContext.controller
@@ -41,14 +43,38 @@ public class SyntheticDestination<K : NavigationKey>(
             val syntheticDestination = bindings.provider.peekMetadata(instance)[SyntheticDestinationKey]
             @Suppress("UNCHECKED_CAST")
             val synthetic = requireNotNull(syntheticDestination) as SyntheticDestination<NavigationKey>
-            synthetic.block(
-                SyntheticDestinationScope(
-                    context = fromContext,
-                    instance = instance,
-                )
+            val scope = SyntheticDestinationScope(
+                context = fromContext,
+                instance = instance,
             )
-        }
+            val outcome = try {
+                synthetic.block(scope)
+                null
+            } catch (outcome: SyntheticDestinationOutcome) {
+                outcome
+            }
+            if (outcome == null) return
 
+            val operation = when (outcome) {
+                is SyntheticDestinationOutcome.Open ->
+                    NavigationOperation.Open(outcome.target)
+                is SyntheticDestinationOutcome.Close ->
+                    NavigationOperation.Close(instance)
+                is SyntheticDestinationOutcome.Complete -> when (val result = outcome.result) {
+                    null -> NavigationOperation.Complete(instance)
+                    else -> {
+                        @Suppress("UNCHECKED_CAST")
+                        NavigationOperation.Complete(
+                            instance = instance as NavigationKey.Instance<NavigationKey.WithResult<Any>>,
+                            result = result,
+                        )
+                    }
+                }
+                is SyntheticDestinationOutcome.CompleteFrom ->
+                    NavigationOperation.CompleteFrom(instance, outcome.target)
+            }
+            containerContext.container.execute(fromContext, operation)
+        }
     }
 }
 
