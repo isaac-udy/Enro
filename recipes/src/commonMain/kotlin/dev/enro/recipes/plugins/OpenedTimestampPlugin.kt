@@ -40,8 +40,12 @@ import kotlin.time.Clock
  * Epoch-millisecond timestamp captured the first time an instance is opened.
  * Defaults to null so the absence of the value is observable (for example,
  * the plugin might not be installed in tests).
+ *
+ * `internal` is required for K/Native's ObjC export — NavigationKey
+ * .MetadataKey is a generic type and gets auto-marked @HiddenFromObjC by
+ * the compiler, and public subtypes of a HiddenFromObjC type are rejected.
  */
-object OpenedAt : NavigationKey.MetadataKey<Long?>(default = null)
+internal object OpenedAt : NavigationKey.MetadataKey<Long?>(default = null)
 
 // -- The plugin --
 

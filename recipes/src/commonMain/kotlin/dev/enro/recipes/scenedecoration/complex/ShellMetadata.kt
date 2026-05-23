@@ -23,9 +23,13 @@ import dev.enro.ui.get
  * destination occupies the main slot when it's the right one to do so.
  */
 internal object ShellPaneMetadata {
-    object IsLeftPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
-    object IsRightPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
-    object IsFullScreenKey : NavigationDestination.MetadataKey<Boolean>(default = false)
+    // Explicit `internal` is needed (not implied by the enclosing internal
+    // object) for K/Native's ObjC export — NavigationDestination.MetadataKey
+    // is a generic type and gets auto-marked @HiddenFromObjC by the
+    // compiler, and public subtypes of a HiddenFromObjC type are rejected.
+    internal object IsLeftPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
+    internal object IsRightPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
+    internal object IsFullScreenKey : NavigationDestination.MetadataKey<Boolean>(default = false)
 }
 
 /** "I can render as the **left companion** when something is pushed on top of me." */
