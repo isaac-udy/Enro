@@ -3,7 +3,12 @@
  *
  * Demonstrates how Enro handles synthetic backstacks for deep links by
  * pre-populating the backstack so the user has a sensible navigation history.
+ * Path bindings are declared with `@NavigationPath`, so on the web the URL
+ * bar reflects the deep-link state and bookmarks resolve back to the right
+ * destination.
  */
+@file:OptIn(ExperimentalEnroApi::class)
+
 package dev.enro.recipes.deeplink
 
 import androidx.compose.foundation.layout.Arrangement
@@ -21,43 +26,34 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.NavigationKey
+import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.annotations.NavigationDestination
+import dev.enro.annotations.NavigationPath
 import dev.enro.asInstance
 import dev.enro.backstackOf
 import dev.enro.close
 import dev.enro.navigationHandle
 import dev.enro.open
-import dev.enro.path.NavigationPathBinding
-import dev.enro.path.createPathBinding
 import dev.enro.recipes.RecipeScaffold
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 @Serializable
+@NavigationPath("/advanced-deep-link")
 object AdvancedDeepLinkRecipe : NavigationKey
 
 @Serializable
+@NavigationPath("/app-home")
 data object AppHome : NavigationKey
 
 @Serializable
+@NavigationPath("/categories/{categoryId}")
 data class Category(val categoryId: String) : NavigationKey
 
 @Serializable
+@NavigationPath("/categories/{categoryId}/articles/{articleId}")
 data class Article(val articleId: String, val categoryId: String) : NavigationKey
-
-val categoryPathBinding: NavigationPathBinding<Category> = NavigationPathBinding.createPathBinding(
-    pattern = "/categories/{categoryId}",
-    propertyOne = Category::categoryId,
-    constructor = ::Category,
-)
-
-val articlePathBinding: NavigationPathBinding<Article> = NavigationPathBinding.createPathBinding(
-    pattern = "/categories/{categoryId}/articles/{articleId}",
-    propertyOne = Article::articleId,
-    propertyTwo = Article::categoryId,
-    constructor = ::Article,
-)
 
 @Composable
 @NavigationDestination(AdvancedDeepLinkRecipe::class)
