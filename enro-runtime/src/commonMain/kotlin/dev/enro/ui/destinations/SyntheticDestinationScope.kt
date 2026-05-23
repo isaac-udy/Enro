@@ -15,21 +15,29 @@ import dev.enro.context.RootContext
  *
  * The block can return without calling any outcome method — in that case the
  * synthetic acts purely as a side-effect bridge (e.g. launching an `Intent`
- * to Chrome Custom Tabs) and Enro takes no further navigation action.
+ * to Chrome Custom Tabs) and the synthetic is considered to have closed
+ * silently. No result-channel callback fires for the original caller.
  *
  * Alternatively, the block can short-circuit by calling one of the outcome
  * methods:
  *
- * - [open] — open another [NavigationKey] instead of the synthetic.
+ * - [open] — open another [NavigationKey] in place of the synthetic.
  * - [close] — register a `Closed` result for whoever called the synthetic.
+ * - [closeSilently] — close without firing the result-channel callback.
  * - [complete] — register a `Completed` result. For result-bearing
- *   synthetics, see the `complete(result: T)` extension.
+ *   synthetics see the `complete(result: T)` extension.
  * - [completeFrom] — open another key and have *its* completion fulfil the
  *   synthetic's contract. Useful for "decider" synthetics that pick one of
  *   several destinations at runtime.
  *
  * Each outcome method throws a sentinel and returns [Nothing], so calls
  * inside conditionals flow naturally without needing explicit `return`.
+ *
+ * The scope tracks the outcome it settles on. Once an outcome is set —
+ * whether by an explicit method call inside the block, or by the dispatcher
+ * defaulting to a silent close after the block returns — any subsequent
+ * call (typically from an async coroutine that outlived the block) throws
+ * a clear error instead of silently double-handling.
  */
 public class SyntheticDestinationScope<K : NavigationKey> @PublishedApi internal constructor(
     // context is the NavigationContext that is executing this SyntheticDestination,
@@ -60,22 +68,77 @@ public class SyntheticDestinationScope<K : NavigationKey> @PublishedApi internal
     public val instruction: NavigationKey.Instance<K> = instance
 
     /**
+     * The outcome the synthetic settled on. Null while the block is running and
+     * before any method is called; set the first time one of the scope's
+     * outcome methods runs (or by the dispatcher after the block falls through).
+     * Read by the dispatcher; written via [setOutcome].
+     */
+    internal var outcome: SyntheticDestinationOutcome? = null
+        private set
+
+    /**
+     * Records [newOutcome] and throws it. If an outcome is already set,
+     * throws an [IllegalStateException] instead — this catches the case
+     * where an async coroutine outlived the block and tried to complete /
+     * close the synthetic after the dispatcher already moved on.
+     */
+    internal fun setOutcome(newOutcome: SyntheticDestinationOutcome): Nothing {
+        val current = outcome
+        if (current != null) {
+            error(
+                "SyntheticDestination for ${instance.key} has already finished with " +
+                    "${current::class.simpleName}. A second outcome cannot be set — this " +
+                    "usually means an async coroutine outlived the synthetic block and " +
+                    "tried to complete/close it after the dispatcher had already moved on. " +
+                    "Do any async work before opening the synthetic, or forward to a " +
+                    "destination that owns the work itself."
+            )
+        }
+        outcome = newOutcome
+        throw newOutcome
+    }
+
+    /**
+     * Used by the dispatcher when the block falls through without calling an
+     * outcome method. Records a silent close so that any later coroutine
+     * call sees [outcome] is non-null and throws the "already finished"
+     * error from [setOutcome].
+     */
+    internal fun finalizeAsSilentCloseIfNoOutcome(): SyntheticDestinationOutcome {
+        val existing = outcome
+        if (existing != null) return existing
+        val silent = SyntheticDestinationOutcome.Close(silent = true)
+        outcome = silent
+        return silent
+    }
+
+    /**
      * End the synthetic's outcome decision by opening another [NavigationKey]
      * in place of this synthetic. The synthetic instance itself never lands
      * in any backstack.
      */
     public fun open(key: NavigationKey): Nothing =
-        throw SyntheticDestinationOutcome.Open(key.asInstance())
+        setOutcome(SyntheticDestinationOutcome.Open(key.asInstance()))
 
     public fun open(key: NavigationKey.WithMetadata<*>): Nothing =
-        throw SyntheticDestinationOutcome.Open(key.asInstance())
+        setOutcome(SyntheticDestinationOutcome.Open(key.asInstance()))
 
     /**
      * End the synthetic's outcome decision by registering a `Closed` result
      * against whichever [dev.enro.result.NavigationResultChannel] originally
      * opened this synthetic.
      */
-    public fun close(): Nothing = throw SyntheticDestinationOutcome.Close()
+    public fun close(): Nothing =
+        setOutcome(SyntheticDestinationOutcome.Close(silent = false))
+
+    /**
+     * Close the synthetic without firing the result-channel callback. The
+     * caller's `onClosed` won't run. Use this when the synthetic acts as a
+     * pure side-effect bridge and the original caller doesn't need to know
+     * the synthetic finished.
+     */
+    public fun closeSilently(): Nothing =
+        setOutcome(SyntheticDestinationOutcome.Close(silent = true))
 
     /**
      * End the synthetic's outcome decision by registering a `Completed`
@@ -85,7 +148,8 @@ public class SyntheticDestinationScope<K : NavigationKey> @PublishedApi internal
      * overload is shadowed by a deprecated-error extension — you must call
      * the typed `complete(result: T)` extension instead.
      */
-    public fun complete(): Nothing = throw SyntheticDestinationOutcome.Complete(result = null)
+    public fun complete(): Nothing =
+        setOutcome(SyntheticDestinationOutcome.Complete(result = null))
 
     /**
      * End the synthetic's outcome decision by opening [key] and routing its
@@ -99,5 +163,5 @@ public class SyntheticDestinationScope<K : NavigationKey> @PublishedApi internal
      * extension.
      */
     public fun completeFrom(key: NavigationKey): Nothing =
-        throw SyntheticDestinationOutcome.CompleteFrom(key.asInstance())
+        setOutcome(SyntheticDestinationOutcome.CompleteFrom(key.asInstance()))
 }

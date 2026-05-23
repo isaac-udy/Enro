@@ -11,7 +11,7 @@ import kotlin.jvm.JvmName
  */
 public fun <R : Any> SyntheticDestinationScope<out NavigationKey.WithResult<R>>.complete(
     result: R,
-): Nothing = throw SyntheticDestinationOutcome.Complete(result = result)
+): Nothing = setOutcome(SyntheticDestinationOutcome.Complete(result = result))
 
 /**
  * End the synthetic's outcome decision by opening [key] and routing its
@@ -20,11 +20,11 @@ public fun <R : Any> SyntheticDestinationScope<out NavigationKey.WithResult<R>>.
  */
 public fun <R : Any> SyntheticDestinationScope<out NavigationKey.WithResult<R>>.completeFrom(
     key: NavigationKey.WithResult<R>,
-): Nothing = throw SyntheticDestinationOutcome.CompleteFrom(key.asInstance())
+): Nothing = setOutcome(SyntheticDestinationOutcome.CompleteFrom(key.asInstance()))
 
 public fun <R : Any> SyntheticDestinationScope<out NavigationKey.WithResult<R>>.completeFrom(
     key: NavigationKey.WithMetadata<NavigationKey.WithResult<R>>,
-): Nothing = throw SyntheticDestinationOutcome.CompleteFrom(key.asInstance())
+): Nothing = setOutcome(SyntheticDestinationOutcome.CompleteFrom(key.asInstance()))
 
 @JvmName("completeWithoutResult")
 @Deprecated(

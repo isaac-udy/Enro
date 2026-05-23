@@ -238,6 +238,99 @@ class SyntheticDestinationTests {
     }
 
     @Test
+    fun `Synthetic closeSilently does not register a result for the synthetic's channel`() = runEnroTest {
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<SyntheticTestKey>(
+                    syntheticDestination<SyntheticTestKey> { closeSilently() }
+                )
+            }
+        )
+        val resultId = NavigationResultChannel.Id(ownerId = "owner", resultId = "ch")
+        val syntheticInstance = SyntheticTestKey.asInstance().apply {
+            metadata.set(NavigationResultChannel.ResultIdKey, resultId)
+        }
+
+        openSynthetic(syntheticInstance)
+
+        assertNull(
+            actual = NavigationResultChannel.pendingResults.value[resultId],
+            message = "closeSilently() must not publish a result; the original caller's onClosed should not fire",
+        )
+    }
+
+    @Test
+    fun `Synthetic close does not strip the parent destination from the backstack`() = runEnroTest {
+        // Belt-and-braces test: the synthetic's Close operation targets the
+        // synthetic's instance (which is never in any backstack), so the
+        // parent destination — the one that opened the synthetic — must
+        // remain on the backstack untouched.
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<SyntheticTestKey>(
+                    syntheticDestination<SyntheticTestKey> { close() }
+                )
+                destination<NavigationKeyFixtures.SimpleKey>(
+                    navigationDestination<NavigationKeyFixtures.SimpleKey> { Text("parent") }
+                )
+            }
+        )
+
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+        container.setFilter(acceptAll())
+        container.addInterceptor(SyntheticDestination.interceptor)
+
+        val parentKey = NavigationKeyFixtures.SimpleKey()
+        val parentInstance = parentKey.asInstance()
+        container.setBackstackDirect(backstackOf(parentInstance))
+
+        val parentDestination = NavigationDestinationFixtures.create(parentKey)
+        val parentContext = NavigationContextFixtures.createDestinationContext(containerContext, parentDestination)
+
+        container.execute(parentContext, NavigationOperation.Open(SyntheticTestKey.asInstance()))
+
+        assertEquals(
+            expected = listOf(parentInstance.id),
+            actual = container.backstack.map { it.id },
+            message = "Synthetic close must not affect the backstack of whichever destination opened it",
+        )
+    }
+
+    @Test
+    fun `Calling an outcome method after the synthetic finished throws already-finished`() = runEnroTest {
+        // Simulates the "block launched a coroutine that outlived the
+        // block" case. We can't easily await a real coroutine in a test,
+        // so we capture the scope and invoke an outcome method after the
+        // dispatcher has moved on — same shape, same failure mode.
+        var capturedScope: dev.enro.ui.destinations.SyntheticDestinationScope<SyntheticTestKey>? = null
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<SyntheticTestKey>(
+                    syntheticDestination<SyntheticTestKey> {
+                        capturedScope = this
+                        // Falling through — dispatcher will mark this as silent close.
+                    }
+                )
+            }
+        )
+
+        openSynthetic(SyntheticTestKey.asInstance())
+
+        val scope = requireNotNull(capturedScope) { "scope should have been captured by the block" }
+        val error = kotlin.runCatching { scope.close() }.exceptionOrNull()
+        assertTrue(
+            actual = error is IllegalStateException,
+            message = "Late outcome call after fall-through should throw IllegalStateException; was: ${error?.let { it::class.simpleName }}",
+        )
+        assertTrue(
+            actual = error?.message?.contains("already finished") == true,
+            message = "Error message should mention the synthetic already finished; was: ${error?.message}",
+        )
+    }
+
+    @Test
     fun `Synthetic completeFrom forwards result-channel routing to the chosen destination`() = runEnroTest {
         val forwarded = ResultBearingSyntheticTestKey()
         EnroTest.getCurrentNavigationController().addModule(
