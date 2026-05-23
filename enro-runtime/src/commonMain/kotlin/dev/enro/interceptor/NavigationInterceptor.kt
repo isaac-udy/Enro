@@ -5,7 +5,6 @@ import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.context.ContainerContext
-import dev.enro.platform.EnroLog
 import dev.enro.result.NavigationResultChannel
 
 /**
@@ -127,22 +126,17 @@ public abstract class NavigationInterceptor {
                 when (it) {
                     is NavigationOperation.Close<NavigationKey> -> {
                         closedIds.add(it.instance.id)
-                        if (!backstackById.containsKey(it.instance.id)) {
-                            EnroLog.warn(
-                                "Attempted to close a NavigationKey.Instance that was not on the backstack: ${it.instance}."
-                            )
-                            return@mapNotNull null
-                        }
+                        // We don't filter Close operations whose instance isn't on
+                        // the backstack — synthetic destinations legitimately
+                        // dispatch a Close for an instance that never landed in
+                        // any backstack so their result channel still fires.
                     }
                     is NavigationOperation.Complete<NavigationKey> -> {
                         closedIds.add(it.instance.id)
                         completedResultIds.add(it.instance.metadata.get(NavigationResultChannel.ResultIdKey))
-                        if (!backstackById.containsKey(it.instance.id)) {
-                            EnroLog.warn(
-                                "Attempted to complete a NavigationKey.Instance that was not on the backstack: ${it.instance}."
-                            )
-                            return@mapNotNull null
-                        }
+                        // Same reasoning as Close above — synthetics complete
+                        // off-backstack instances; the result-channel side
+                        // effect is the important bit and must still fire.
                     }
                     is NavigationOperation.Open<NavigationKey> -> {
                         openedIds.add(it.instance.id)
