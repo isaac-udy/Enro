@@ -1,11 +1,14 @@
 /**
  * Enro Recipe: Basic Deep Link
  *
- * Demonstrates how Enro maps URLs to NavigationKeys via the `@NavigationPath`
- * annotation. The annotation processor generates the path bindings and registers
- * them alongside each `@NavigationDestination`, so on platforms with URL
- * integration (currently the browser) the URL bar updates automatically and
- * bookmarked URLs resolve back to the right destination.
+ * Demonstrates two ways of mapping URLs to NavigationKeys:
+ *  - `@NavigationPath` on the recipe entry key, which is what the web platform
+ *    plugin actually uses to drive the URL bar. Only root-level destinations
+ *    participate in URL routing today; see the web platform docs.
+ *  - The manual `NavigationPathBinding.createPathBinding(...)` API, shown
+ *    below as illustrative code. The bindings here are NOT registered with
+ *    the controller — they're examples of the hand-written form for cases
+ *    where you want full control over deserialize/serialize.
  */
 @file:OptIn(ExperimentalEnroApi::class)
 
@@ -28,8 +31,12 @@ import dev.enro.annotations.NavigationPath
 import dev.enro.asInstance
 import dev.enro.backstackOf
 import dev.enro.close
+import dev.enro.controller.NavigationModule
+import dev.enro.controller.createNavigationModule
 import dev.enro.navigationHandle
 import dev.enro.open
+import dev.enro.path.NavigationPathBinding
+import dev.enro.path.createPathBinding
 import dev.enro.recipes.RecipeScaffold
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
@@ -40,16 +47,42 @@ import kotlinx.serialization.Serializable
 object BasicDeepLinkRecipe : NavigationKey
 
 @Serializable
-@NavigationPath("/users/{userId}")
 data class UserProfile(val userId: String) : NavigationKey
 
 @Serializable
-@NavigationPath("/products/{productId}?source={source?}")
 data class ProductDetail(val productId: String, val source: String? = null) : NavigationKey
 
 @Serializable
-@NavigationPath("/home")
 data object DeepLinkHome : NavigationKey
+
+// Illustrative: hand-written path bindings using the createPathBinding API.
+// Not registered with the controller — this recipe shows the shape of the API.
+
+val userProfilePathBinding: NavigationPathBinding<UserProfile> = NavigationPathBinding.createPathBinding(
+    pattern = "/users/{userId}",
+    propertyOne = UserProfile::userId,
+    constructor = ::UserProfile,
+)
+
+val productDetailPathBinding: NavigationPathBinding<ProductDetail> = NavigationPathBinding.createPathBinding(
+    pattern = "/products/{productId}?source={source?}",
+    propertyOne = ProductDetail::productId,
+    propertyTwo = ProductDetail::source,
+    constructor = ::ProductDetail,
+)
+
+val homePathBinding: NavigationPathBinding<DeepLinkHome> = NavigationPathBinding(
+    keyType = DeepLinkHome::class,
+    pattern = "/home",
+    deserialize = { DeepLinkHome },
+    serialize = { },
+)
+
+val deepLinkModule: NavigationModule = createNavigationModule {
+    path(userProfilePathBinding)
+    path(productDetailPathBinding)
+    path(homePathBinding)
+}
 
 @Composable
 @NavigationDestination(BasicDeepLinkRecipe::class)
@@ -79,7 +112,7 @@ fun DeepLinkHomeDestination() {
     ) {
         Text("Deep Link Home", style = MaterialTheme.typography.titleLarge)
         Text(
-            "Bindings: /home, /users/{userId}, /products/{productId}?source={source?}",
+            "Illustrative bindings: /home, /users/{userId}, /products/{productId}?source={source?}",
             style = MaterialTheme.typography.bodySmall,
         )
         Button(onClick = { navigation.open(UserProfile("alice")) }) {
