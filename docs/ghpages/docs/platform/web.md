@@ -48,15 +48,29 @@ The pieces:
   doesn't, the lambda's default is used.
 - `InstallWebHistoryPlugin(container)` wires your container's backstack
   into the browser history API. The URL bar reflects the current
-  destination, and the browser's back/forward buttons navigate the
-  container.
+  root-container destination, and the browser's back/forward buttons
+  navigate that root backstack.
 
-## URL routing with `@NavigationPath`
+## URL routing model
 
-A `NavigationKey` annotated with `@NavigationPath` opts into having its
-URL form derived automatically. Whenever that key becomes the active
-destination, the plugin writes the corresponding URL into the address
-bar, and bookmarks / shared links resolve back to that key on cold load:
+Enro's web URL routing is **root-container-only** in beta:
+
+- The URL bar always reflects the active destination of the **root
+  navigation container** — the one you create with
+  `rememberNavigationContainer` directly inside `EnroBrowserContent`.
+- Browser back/forward navigates that root container's backstack.
+- Inner-container navigation (modals, tabs, list/detail panes, anything
+  hosted inside another destination) is **session-local** — it doesn't
+  change the URL and doesn't create history entries.
+
+This is the model most modern web apps use — going to a different page
+on Twitter writes a URL, switching tabs within a profile doesn't.
+Browser back goes between pages, not between page-internal tabs.
+
+### What gets a URL
+
+A `NavigationKey` annotated with `@NavigationPath` participates in URL
+routing **when it is the active destination of the root container**:
 
 ```kotlin
 @Serializable
@@ -67,61 +81,69 @@ data class ProductDetail(
 ) : NavigationKey
 ```
 
-With this key registered, navigating to `ProductDetail("abc-123")`
-updates the URL to `/products/abc-123`, and pasting
-`/products/abc-123?source=email` into a new tab boots directly into the
-`ProductDetail("abc-123", "email")` screen.
+If `ProductDetail` is at the top of the root container, the URL bar
+will show `/products/abc?source=email`. If it's the top of a *nested*
+container hosted inside some other destination, the URL bar continues
+to show the outer (root) destination's path.
 
-See the [path-binding recipes][deeplink-recipes] for the full set of
-patterns, including value-class parameters and custom
-`NavigationKey.PathBinding` implementations.
+Destinations without a `@NavigationPath`, or destinations active only
+in nested containers, get a positional `#N` hash fragment instead of a
+semantic URL.
+
+### Cold loading from a URL
+
+`rememberInitialBackstackFromUrl { default() }` reads the address bar
+on first composition and resolves it through the controller's path
+bindings. The resolved key becomes a single-entry backstack on the
+root container. If you bookmark `/products/abc-123` and reopen it,
+the app boots directly into the `ProductDetail("abc-123")` screen —
+provided that destination is something you're willing to host at the
+root.
+
+If you also want pretty URLs for state that lives inside a nested
+container (e.g. a list/detail pane), the synthetic-backstack approach
+from the *Advanced Deep Link* recipe is the recommended pattern: read
+the URL yourself, derive the parent context, and seed the backstack
+manually.
 
 ## What the URL bar shows
 
-The plugin uses two slots in `window.history` and treats them as
-independent concerns:
+The plugin uses two slots in `window.history`:
 
 - **URL** (`location.pathname + location.search`) — derived from the
-  active leaf destination's `@NavigationPath`. This is the part users
-  see and share.
-- **`history.state`** — the full container tree as JSON, used for
-  accurate back/forward restoration mid-session (modals, sibling
-  containers, results in flight, etc.).
+  root container's active destination's `@NavigationPath`. This is the
+  part users see and share.
+- **`history.state`** — the root container's backstack as JSON, used
+  for accurate back/forward restoration mid-session.
 
-Destinations without a `@NavigationPath` still work — they just produce
-a positional `#N` hash instead of a semantic URL. Adoption is
-incremental: you can annotate the destinations you want bookmarkable and
-leave the rest alone.
-
-## Browser history
-
-`InstallWebHistoryPlugin` is what makes the back button do what users
-expect. Without it, the navigation container still works but the URL bar
-won't move and the browser's back button will leave the page.
-
-Install it as close as possible to where you create the container — same
-composable, ideally — so the plugin and the container share a lifetime.
+Inner-container state is **not** serialised into either slot. If you
+need it to survive page reloads, handle it via your own
+`saveable`/`rememberSaveable` storage as you would on other platforms.
 
 ## What Enro provides on Web
 
-- A real backstack that mirrors browser history.
+- A real backstack for the root container that mirrors browser history.
 - The full common API: `NavigationKey`, `NavigationKey.WithResult<T>`,
   `navigationHandle<T>()`, `registerForNavigationResult`,
   `NavigationDisplay`, scene strategies, plugins, decorators.
-- Deep linking from a URL on first load via
-  `rememberInitialBackstackFromUrl` + `@NavigationPath` bindings.
-- Saved state across in-page navigation. Full-page reloads start fresh —
-  if you need persistence across reload, write to `localStorage` /
-  `sessionStorage` yourself.
+- Deep linking from a URL on cold load via
+  `rememberInitialBackstackFromUrl` + `@NavigationPath` bindings on
+  root destinations.
+- Saved state across in-page navigation. Full-page reloads start fresh
+  except for what the URL itself encodes — if you need persistence
+  across reload, write to `localStorage` / `sessionStorage` yourself.
 
-## Notes
+## Known limitations
 
-- The WasmJS target requires the Compose for Web toolchain (Kotlin/Wasm).
-  See [the Compose Multiplatform docs][cmp-web] for the project setup.
-- `rememberInitialBackstackFromUrl` only fires once at composition. To
-  react to mid-session URL changes (e.g. the user editing the address
-  bar manually), the plugin falls back to parsing
-  `window.location` on `popstate` and applying the resolved key.
+- **Nested URL routing**: there's no built-in way today to encode the
+  state of inner containers in the URL. A URL like `/recipe/page-2`
+  that maps to `[Recipe, Page2-in-inner-container]` is something we'll
+  add in a future release. For now, leaf URLs inside nested containers
+  are session-local.
+- **Manual address-bar edits**: if the user edits the URL by hand
+  without a full-page reload, the plugin no-ops on the resulting
+  `popstate`. Reloading the page applies the new URL via the cold-load
+  path.
 
 ## See also
 
@@ -130,4 +152,3 @@ composable, ideally — so the plugin and the container share a lifetime.
 
 [cmp-web]: https://github.com/JetBrains/compose-multiplatform/blob/master/web/README.md
 [web-main]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/wasmJsMain/kotlin/main.kt
-[deeplink-recipes]: https://github.com/isaac-udy/Enro/tree/main/recipes/src/commonMain/kotlin/dev/enro/recipes/deeplink
