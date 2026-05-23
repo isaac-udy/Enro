@@ -86,9 +86,13 @@ will show `/products/abc?source=email`. If it's the top of a *nested*
 container hosted inside some other destination, the URL bar continues
 to show the outer (root) destination's path.
 
-Destinations without a `@NavigationPath`, or destinations active only
-in nested containers, get a positional `#N` hash fragment instead of a
-semantic URL.
+When a destination has no `@NavigationPath`, or the active destination
+lives inside a nested container, the URL bar **doesn't change** — it
+keeps whatever path was last set by an annotated destination (or the
+URL the user originally landed on, if no annotated destination has been
+active yet). `pushState` still fires, so browser back/forward continues
+to work through `history.state`; the URL just doesn't pretend to
+identify state that isn't bookmarkable.
 
 ### Cold loading from a URL
 

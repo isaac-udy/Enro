@@ -71,17 +71,23 @@ internal class WebHistoryPlugin(
 
     /**
      * Computes the URL to write to `window.history`. Uses the `@NavigationPath`
-     * registered against the root container's active destination. Falls back to a
-     * positional hash fragment when that key has no path binding. The full root
-     * container state is stored in `history.state` separately.
+     * registered against the root container's active destination. When that key
+     * has no path binding, the existing address-bar URL is preserved — `pushState`
+     * still fires (so back/forward works through `history.state`), but the
+     * visible URL doesn't change. That keeps bookmarkable URLs honest: only
+     * destinations that opt in to a path produce a path.
      *
-     * Inner-container navigation is deliberately invisible to the URL — see the
-     * web platform docs for the model.
+     * Inner-container navigation is also invisible to the URL — see the web
+     * platform docs for the model.
      */
     @OptIn(ExperimentalEnroApi::class)
-    private fun computeUrl(fallbackIndex: Int): String {
-        val rootKey = rootContainer.activeChild?.key ?: return "#$fallbackIndex"
-        return rootContainer.controller.getPathFromNavigationKey(rootKey) ?: "#$fallbackIndex"
+    private fun computeUrl(): String {
+        val rootKey = rootContainer.activeChild?.key ?: return currentUrl()
+        return rootContainer.controller.getPathFromNavigationKey(rootKey) ?: currentUrl()
+    }
+
+    private fun currentUrl(): String {
+        return window.location.pathname + window.location.search
     }
 
     @OptIn(ExperimentalWasmJsInterop::class)
@@ -142,7 +148,7 @@ internal class WebHistoryPlugin(
                         window.history.replaceState(
                             serializedCurrentState,
                             "example",
-                            computeUrl(historyIndex),
+                            computeUrl(),
                         )
                     }
 
@@ -153,7 +159,7 @@ internal class WebHistoryPlugin(
                         window.history.replaceState(
                             serializedCurrentState,
                             "example",
-                            computeUrl(historyIndex),
+                            computeUrl(),
                         )
                     }
 
@@ -170,7 +176,7 @@ internal class WebHistoryPlugin(
                             window.history.replaceState(
                                 serializedCurrentState,
                                 "example",
-                                computeUrl(historyIndex),
+                                computeUrl(),
                             )
                         } else {
                             println("going back delta push: ${goDelta}")
@@ -179,7 +185,7 @@ internal class WebHistoryPlugin(
                             window.history.pushState(
                                 serializedCurrentState,
                                 "example",
-                                computeUrl(historyIndex),
+                                computeUrl(),
                             )
                         }
                     }
@@ -192,7 +198,7 @@ internal class WebHistoryPlugin(
                             window.history.pushState(
                                 serializedCurrentState,
                                 "example",
-                                computeUrl(historyIndex),
+                                computeUrl(),
                             )
                         } else {
                             val previousIndex = historyIndex
@@ -203,7 +209,7 @@ internal class WebHistoryPlugin(
                             window.history.pushState(
                                 serializedCurrentState,
                                 "example",
-                                computeUrl(historyIndex),
+                                computeUrl(),
                             )
                         }
                     }
