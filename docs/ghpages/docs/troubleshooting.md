@@ -143,6 +143,40 @@ a flow that goes past the close, or the assertion is at the wrong point.
 If you intentionally want to continue using the handle after a close,
 call `handle.clearOperationHistory()` between scenarios.
 
+### `SyntheticDestination for [Key] has already finished with [Outcome]`
+
+An outcome method (`open`, `close`, `closeSilently`, `complete`,
+`completeFrom`) was called on a synthetic's scope after the synthetic
+had already concluded. The dispatcher catches the first outcome the
+block emits and converts it to a navigation operation; subsequent calls
+have nothing to do.
+
+The usual cause is launching a coroutine inside a synthetic block:
+
+```kotlin
+@NavigationDestination(BadSynthetic::class)
+val badSynthetic = syntheticDestination<BadSynthetic> {
+    context.lifecycleOwner.lifecycleScope.launch {
+        someAsyncWork()
+        complete()      // ← block has long since returned; throws "already finished"
+    }
+}
+```
+
+Synthetics are intentionally synchronous decision points — they don't
+have their own lifecycle, view-model store, or persisted state. The fix
+is one of:
+
+- **Do the async work before opening the synthetic** and pass the
+  result into the synthetic's key as a parameter.
+- **Forward to a real destination** that owns the work as part of its
+  own lifecycle: `syntheticDestination<...> { completeFrom(LoadingScreen) }`.
+- **Restructure as a regular destination with a loading state** if the
+  synthetic was really trying to be a "do some work then close" UI.
+
+See [Synthetic Destinations](advanced/synthetic-destinations.md) for the
+full design rationale.
+
 ## Result errors
 
 ### `Received result for id ${id}, but no active steps had that id`

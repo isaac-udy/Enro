@@ -165,8 +165,34 @@ result type. If you want a screen that picks "either a contact or a phone
 number," model that as a sealed class for the result type, not as two
 channels racing each other.
 
+## Forwarding from a "decider" destination
+
+When several concrete screens implement the same result contract — a
+legacy and a redesigned edit-profile flow, an A/B test variant, a
+platform-specific picker — a synthetic destination can sit in front of
+them and pick at runtime, while callers see only the stable contract:
+
+```kotlin
+@Serializable object EditProfile : NavigationKey.WithResult<ProfileUpdate>
+@Serializable object EditProfileLegacy : NavigationKey.WithResult<ProfileUpdate>
+@Serializable object EditProfileV2 : NavigationKey.WithResult<ProfileUpdate>
+
+@NavigationDestination(EditProfile::class)
+val editProfile = syntheticDestination<EditProfile> {
+    if (featureFlags.useNewProfileUi) completeFrom(EditProfileV2)
+    else completeFrom(EditProfileLegacy)
+}
+```
+
+`completeFrom` opens the chosen key with the synthetic's result-channel
+metadata copied across, so the chosen screen's `complete(value)` routes
+back to whoever opened `EditProfile`. See
+[synthetic destinations](synthetic-destinations.md) for the full pattern.
+
 ## See also
 
+- [Synthetic Destinations](synthetic-destinations.md) — `completeFrom`
+  and the result-decider pattern.
 - [Navigation Handles — closing vs completing](../core-concepts/navigation-handles.md#closing-vs-completing).
 - [Returning Results recipe][results-recipe] — small worked example with
   both Composable and ViewModel forms.
