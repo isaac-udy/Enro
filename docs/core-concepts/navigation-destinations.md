@@ -112,6 +112,33 @@ val itemDetailDestination = navigationDestination<ItemDetail>(
 See the [destination registration recipe][entryprovider-recipe] for a worked
 example covering both styles and conditional metadata side-by-side.
 
+## Synthetic destinations
+
+A third declaration form, `syntheticDestination<K>`, binds a key to a block
+of code instead of a UI. The key still exposes the same `open(...)` /
+`complete(...)` API to callers, but when opened the synthetic runs its
+block and never lands on a backstack:
+
+```kotlin
+@Serializable
+object Logout : NavigationKey
+
+@NavigationDestination(Logout::class)
+val logout = syntheticDestination<Logout> {
+    sessionRepository.clearSession()
+    open(LoginScreen())
+}
+```
+
+Synthetics are the right tool for side-effect bridges (launching an
+external browser, sharing a system intent), conditional redirects (auth
+gates), and "decider" patterns that pick one of several real destinations
+to fulfil a single result contract.
+
+See [Synthetic Destinations](../advanced/synthetic-destinations.md) for the
+full surface — outcome methods, the result-decider pattern via
+`completeFrom`, and the rules of thumb for when to reach for one.
+
 ## Scene strategies
 
 A `NavigationSceneStrategy` decides *how* the current backstack is laid out

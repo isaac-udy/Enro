@@ -20,7 +20,9 @@ fun main() {
     ComposeViewport {
         EnroBrowserContent {
             val container = rememberNavigationContainer(
-                backstack = backstackOf(Home.asInstance()),
+                backstack = rememberInitialBackstackFromUrl {
+                    backstackOf(Home.asInstance())
+                },
             )
             InstallWebHistoryPlugin(container)
             NavigationDisplay(state = container)
@@ -39,37 +41,113 @@ The pieces:
 - `EnroBrowserContent { }` provides the Compose locals Enro needs for
   browser-specific behaviour. Treat it like Compose Multiplatform's
   outermost theme wrapper.
+- `rememberInitialBackstackFromUrl { ... }` reads `window.location` once
+  on first composition and tries to resolve it to a backstack via the
+  controller's registered path bindings. If the URL matches a
+  `@NavigationPath`, the app boots straight into that destination; if it
+  doesn't, the lambda's default is used.
 - `InstallWebHistoryPlugin(container)` wires your container's backstack
   into the browser history API. The URL bar reflects the current
-  destination, and the browser's back/forward buttons navigate the
-  container.
+  root-container destination, and the browser's back/forward buttons
+  navigate that root backstack.
 
-## Browser history
+## URL routing model
 
-`InstallWebHistoryPlugin` is what makes the back button do what users
-expect. Without it, the navigation container still works but the URL bar
-won't move and the browser's back button will leave the page.
+Enro's web URL routing is **root-container-only** in beta:
 
-Install it as close as possible to where you create the container — same
-composable, ideally — so the plugin and the container share a lifetime.
+- The URL bar always reflects the active destination of the **root
+  navigation container** — the one you create with
+  `rememberNavigationContainer` directly inside `EnroBrowserContent`.
+- Browser back/forward navigates that root container's backstack.
+- Inner-container navigation (modals, tabs, list/detail panes, anything
+  hosted inside another destination) is **session-local** — it doesn't
+  change the URL and doesn't create history entries.
+
+This is the model most modern web apps use — going to a different page
+on Twitter writes a URL, switching tabs within a profile doesn't.
+Browser back goes between pages, not between page-internal tabs.
+
+### What gets a URL
+
+A `NavigationKey` annotated with `@NavigationPath` participates in URL
+routing **when it is the active destination of the root container**:
+
+```kotlin
+@Serializable
+@NavigationPath("/products/{productId}?source={source?}")
+data class ProductDetail(
+    val productId: String,
+    val source: String? = null,
+) : NavigationKey
+```
+
+If `ProductDetail` is at the top of the root container, the URL bar
+will show `/products/abc?source=email`. If it's the top of a *nested*
+container hosted inside some other destination, the URL bar continues
+to show the outer (root) destination's path.
+
+When a destination has no `@NavigationPath`, or the active destination
+lives inside a nested container, the URL bar **doesn't change** — it
+keeps whatever path was last set by an annotated destination (or the
+URL the user originally landed on, if no annotated destination has been
+active yet). `pushState` still fires, so browser back/forward continues
+to work through `history.state`; the URL just doesn't pretend to
+identify state that isn't bookmarkable.
+
+### Cold loading from a URL
+
+`rememberInitialBackstackFromUrl { default() }` reads the address bar
+on first composition and resolves it through the controller's path
+bindings. The resolved key becomes a single-entry backstack on the
+root container. If you bookmark `/products/abc-123` and reopen it,
+the app boots directly into the `ProductDetail("abc-123")` screen —
+provided that destination is something you're willing to host at the
+root.
+
+If you also want pretty URLs for state that lives inside a nested
+container (e.g. a list/detail pane), the synthetic-backstack approach
+from the *Advanced Deep Link* recipe is the recommended pattern: read
+the URL yourself, derive the parent context, and seed the backstack
+manually.
+
+## What the URL bar shows
+
+The plugin uses two slots in `window.history`:
+
+- **URL** (`location.pathname + location.search`) — derived from the
+  root container's active destination's `@NavigationPath`. This is the
+  part users see and share.
+- **`history.state`** — the root container's backstack as JSON, used
+  for accurate back/forward restoration mid-session.
+
+Inner-container state is **not** serialised into either slot. If you
+need it to survive page reloads, handle it via your own
+`saveable`/`rememberSaveable` storage as you would on other platforms.
 
 ## What Enro provides on Web
 
-- A real backstack that mirrors browser history.
+- A real backstack for the root container that mirrors browser history.
 - The full common API: `NavigationKey`, `NavigationKey.WithResult<T>`,
   `navigationHandle<T>()`, `registerForNavigationResult`,
   `NavigationDisplay`, scene strategies, plugins, decorators.
-- Saved state across in-page navigation. Full-page reloads start fresh —
-  if you need persistence across reload, write to `localStorage` /
-  `sessionStorage` yourself.
+- Deep linking from a URL on cold load via
+  `rememberInitialBackstackFromUrl` + `@NavigationPath` bindings on
+  root destinations.
+- Saved state across in-page navigation. Full-page reloads start fresh
+  except for what the URL itself encodes — if you need persistence
+  across reload, write to `localStorage` / `sessionStorage` yourself.
 
-## Notes
+## Known limitations
 
-- The WasmJS target requires the Compose for Web toolchain (Kotlin/Wasm).
-  See [the Compose Multiplatform docs][cmp-web] for the project setup.
-- Deep linking from a URL on first load is on the roadmap; for now, you
-  control the initial backstack with the same `backstackOf(...)` call
-  you'd use on any other platform.
+- **Nested URL routing**: there's no built-in way today to encode the
+  state of inner containers in the URL. A URL like `/recipe/page-2`
+  that maps to `[Recipe, Page2-in-inner-container]` is something we'll
+  add in a future release. For now, leaf URLs inside nested containers
+  are session-local.
+- **Manual address-bar edits**: if the user edits the URL by hand
+  without a full-page reload, the plugin no-ops on the resulting
+  `popstate`. Reloading the page applies the new URL via the cold-load
+  path.
 
 ## See also
 

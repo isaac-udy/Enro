@@ -25,3 +25,8 @@ Patterns that build on the core concepts.
 - [Plugins](plugins.md) — observe every destination's lifecycle (open,
   active, close) for cross-cutting concerns like analytics, telemetry,
   and instance-metadata tagging.
+- [Synthetic Destinations](synthetic-destinations.md) — `NavigationKey`s
+  whose "destination" is a block of code instead of a screen. Bridges
+  to non-Enro side effects, conditional redirects, and runtime "decider"
+  patterns that pick between several implementations of a single
+  result-bearing contract.

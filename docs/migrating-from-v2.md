@@ -58,6 +58,8 @@ Fragment/Activity story working alongside new Compose destinations. See
 | `kapt("dev.enro:enro-processor:...")` | `ksp("dev.enro:enro-processor:...")` |
 | `composableDestination<Key> { MyScreen() }` (in DSL) | Either `@NavigationDestination(Key::class)` on a Composable, or `val foo = navigationDestination<Key> { ... }` with `destination(foo)` in `createNavigationModule`. |
 | `composeEnvironment { content -> ... }` in module | Deprecated. Use `decorator { navigationDestinationDecorator { ... } }`. |
+| `syntheticDestination { sendResult(value) }` | `syntheticDestination { complete(value) }` — see [Synthetic Destinations](advanced/synthetic-destinations.md). The v2 `sendResult` and `forwardResult` extensions still exist in `enro-compat` as `@Deprecated` shims pointing at the new methods. |
+| `syntheticDestination { forwardResult(otherKey) }` | `syntheticDestination { completeFrom(otherKey) }` |
 | `EnroTestRule` (JUnit) | Still available on JVM; the KMP form is `runEnroTest { ... }`. |
 | `expectInstruction { ... }` test helpers | `TestNavigationHandle<T>` with `assertOpened`, `assertClosed`, `assertCompleted`, `assertOperationExecuted`. The old helpers remain in `enro-test`'s compat layer. |
 
