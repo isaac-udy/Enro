@@ -71,7 +71,12 @@ public class EnroController {
         init {
             @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
             NavigationKey.verifyMetadataSerialization = verifyMetadataSerialization@ { key, value ->
-                val controller = requireInstance()
+                // The verification is a debug-mode safety check; if no
+                // controller is installed (e.g. teardown is racing
+                // composition disposal in a test), there's nothing to check
+                // against, so silently no-op rather than throw out of a
+                // DisposableEffect's onDispose path.
+                val controller = instance ?: return@verifyMetadataSerialization
                 if (!controller.isDebug) return@verifyMetadataSerialization
                 val isTransient = key is NavigationKey.TransientMetadataKey
                 if (isTransient) return@verifyMetadataSerialization

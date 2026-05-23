@@ -9,30 +9,28 @@ object EnroTest {
     private var navigationController: EnroController? = null
     private var wasInstalled = false
 
-    private val application: Any?
-        get() {
-            runCatching {
-                return TODO("Application install support android")//ApplicationProvider.getApplicationContext()
-            }
-            return null
-        }
-
     // TODO: Would be nice to add functionality to temporarily install a NavigationModule for a particular test
     fun installNavigationController() {
         if (navigationController != null) {
             uninstallNavigationController()
         }
 
-        // Check if there's already an installed controller
+        // Reuse an already-installed controller if one is present — this is the
+        // path Android-instrumented tests take, where the test Application has
+        // already installed Enro via ActivityPlugin before the test rule runs.
         navigationController = EnroController.instance
         if (navigationController != null) {
             wasInstalled = true
             return
         }
 
-        // Create a new controller for testing
+        // For commonTest running on desktop/iOS/wasm — and for unit tests that
+        // need a fresh controller without going through an Application — we
+        // install with a null platform reference. EnroController.platformReference
+        // is only consumed by Android-specific runtime code (ActivityPlugin,
+        // EnroLog.android), all of which null-check before use, so this is safe.
         navigationController = EnroController().apply {
-            install(application)
+            install(reference = null)
         }
         wasInstalled = false
     }

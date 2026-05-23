@@ -87,7 +87,6 @@ public abstract class NavigationInterceptor {
                     )
                     else -> operation
                 }
-
                 when {
                     intercepted == null -> {
                         // Operation was consumed by interceptor, skip it
@@ -96,10 +95,13 @@ public abstract class NavigationInterceptor {
                         // Same operation returned, add to result
                         result.add(operation)
                     }
-                    intercepted is NavigationOperation.RootOperation -> {
-                        // Different operation returned, add to processing queue
-                        toProcess.add(0, intercepted)
-                    }
+                    // The AggregateOperation branch must come BEFORE the
+                    // RootOperation branch -- on K/Native, `is RootOperation`
+                    // currently (incorrectly) returns true for
+                    // AggregateOperation instances even though
+                    // AggregateOperation extends NavigationOperation directly,
+                    // not RootOperation. Checking AggregateOperation first
+                    // ensures the correct branch runs everywhere.
                     intercepted is NavigationOperation.AggregateOperation -> {
                         // if we get an aggregate operation that contains the SAME operation we started with,
                         // that means we still want to count that operation as being added to the result,
@@ -110,6 +112,10 @@ public abstract class NavigationInterceptor {
                         }
                         // Different operation returned, add to processing queue
                         toProcess.addAll(0, filtered)
+                    }
+                    intercepted is NavigationOperation.RootOperation -> {
+                        // Different operation returned, add to processing queue
+                        toProcess.add(0, intercepted)
                     }
                 }
             }

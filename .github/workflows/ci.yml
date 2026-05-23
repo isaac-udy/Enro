@@ -11,15 +11,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-continuous-integration:
-    name: Run Continuous Integration
+  ci-linux:
+    name: CI / Linux (Android, Desktop, wasmJs)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Changes
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         id: changes
         with:
           filters: |
@@ -30,17 +30,49 @@ jobs:
 
       - name: Set up JDK 21
         if: steps.changes.outputs.isCodeChange == 'true'
-        uses: actions/setup-java@v3.9.0
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 21
 
       - name: Setup gradle
         if: steps.changes.outputs.isCodeChange == 'true'
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Run
+      - name: Run continuous integration
         if: steps.changes.outputs.isCodeChange == 'true'
         env:
           EW_API_TOKEN: ${{ secrets.EW_API_TOKEN }}
         run: ./gradlew continuousIntegration --continue
+
+  ci-macos:
+    name: CI / macOS (iOS)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            isCodeChange:
+              - '**/*.kt'
+              - '**/*.kts'
+              - '**/*.toml'
+
+      - name: Set up JDK 21
+        if: steps.changes.outputs.isCodeChange == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Setup gradle
+        if: steps.changes.outputs.isCodeChange == 'true'
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run continuous integration (macOS)
+        if: steps.changes.outputs.isCodeChange == 'true'
+        run: ./gradlew continuousIntegrationMacOs --continue

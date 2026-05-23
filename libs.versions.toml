@@ -63,6 +63,7 @@ compose-accompanist-systemUiController = "com.google.accompanist:accompanist-sys
 
 compose-materialIcons = "androidx.compose.material:material-icons-core:1.7.8"
 compose-materialIconsExtended = "androidx.compose.material:material-icons-extended:1.7.8"
+compose-uiTest = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose-plugin" }
 
 kotlin-stdLib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }

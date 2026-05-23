@@ -25,8 +25,14 @@ import dev.enro.ui.get
 /**
  * Metadata flag: declares the destination is willing to participate
  * in a two-pane layout under [TwoPaneSceneStrategy]. Default `false`.
+ *
+ * `internal` is required for K/Native's ObjC export — NavigationDestination
+ * .MetadataKey is a generic type and gets auto-marked @HiddenFromObjC by
+ * the compiler, and public subtypes of a HiddenFromObjC type are rejected.
+ * Recipe code accesses this via [twoPane] / [isTwoPane] anyway, both of
+ * which live in this module.
  */
-object IsTwoPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
+internal object IsTwoPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
 
 /**
  * Marks a destination as eligible for two-pane rendering. The
