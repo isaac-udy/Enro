@@ -13,18 +13,11 @@ import dev.enro.test.fixtures.NavigationDestinationFixtures
 import dev.enro.test.runEnroTest
 import dev.enro.ui.destinations.SyntheticDestination
 import dev.enro.ui.destinations.complete
-import dev.enro.ui.destinations.completeFrom
 import dev.enro.ui.destinations.isSyntheticDestination
 import dev.enro.ui.destinations.syntheticDestination
 import dev.enro.ui.navigationDestination
 import kotlinx.serialization.Serializable
-import kotlin.test.AfterTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 /**
  * Coverage for [SyntheticDestination] and its registered interceptor.
@@ -163,7 +156,7 @@ class SyntheticDestinationTests {
     }
 
     @Test
-    fun `Synthetic open(otherKey) opens that key on the originating container`() = runEnroTest {
+    fun `Synthetic open otherKey opens that key on the originating container`() = runEnroTest {
         val targetKey = NavigationKeyFixtures.SimpleKey()
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
@@ -210,7 +203,7 @@ class SyntheticDestinationTests {
     }
 
     @Test
-    fun `Synthetic complete(result) registers a Completed result with that value`() = runEnroTest {
+    fun `Synthetic complete with result registers a Completed result with that value`() = runEnroTest {
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
                 destination<ResultBearingSyntheticTestKey>(
