@@ -50,6 +50,9 @@ import dev.enro.recipes.saveable.SaveableRecipe
 import dev.enro.recipes.scenedecoration.complex.ShellSceneRecipe
 import dev.enro.recipes.scenedecoration.simple.SceneDecorationRecipe
 import dev.enro.recipes.sharedelements.SharedElementAnimationsRecipe
+import dev.enro.recipes.synthetic.AuthGateSyntheticRecipe
+import dev.enro.recipes.synthetic.ExternalUrlSyntheticRecipe
+import dev.enro.recipes.synthetic.ProfileDeciderSyntheticRecipe
 import dev.enro.recipes.tabs.TabsRecipe
 import dev.enro.recipes.twopane.TwoPaneRecipe
 import dev.enro.recipes.viewmodel.BasicViewModelRecipe
@@ -229,6 +232,32 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 key = OpenedTimestampPluginRecipe,
                 title = "Opened Timestamp Plugin",
                 description = "A NavigationPlugin that stamps every instance with an opened-at timestamp.",
+            ),
+        ),
+    ),
+    RecipeGroup(
+        title = "Synthetic Destinations",
+        recipes = listOf(
+            RecipeEntry(
+                key = ExternalUrlSyntheticRecipe,
+                title = "External URL Launcher",
+                description = "A synthetic that bridges to a non-Enro side effect (e.g. " +
+                    "launching a browser). The block falls through with no outcome, so no " +
+                    "Enro state changes.",
+            ),
+            RecipeEntry(
+                key = AuthGateSyntheticRecipe,
+                title = "Auth Gate",
+                description = "A synthetic that checks the auth state and forwards to either " +
+                    "the requested destination or a login screen. Callers just open the " +
+                    "synthetic; the gate logic lives in one place.",
+            ),
+            RecipeEntry(
+                key = ProfileDeciderSyntheticRecipe,
+                title = "Result Decider",
+                description = "A result-bearing synthetic that picks between several " +
+                    "implementations at runtime (feature flag / A-B) and forwards the chosen " +
+                    "one's result back to the caller via completeFrom.",
             ),
         ),
     ),
