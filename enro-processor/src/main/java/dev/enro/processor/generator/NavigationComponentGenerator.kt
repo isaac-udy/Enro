@@ -77,6 +77,11 @@ object NavigationComponentGenerator {
             .returns(ClassNames.Kotlin.navigationController)
             .addPlatformParameter()
             .addParameter(
+                ParameterSpec.builder("isDebug", Boolean::class)
+                    .defaultValue("false")
+                    .build()
+            )
+            .addParameter(
                 ParameterSpec.builder(
                     "block",
                     LambdaTypeName.get(
@@ -103,10 +108,11 @@ object NavigationComponentGenerator {
             .addCode(
                 """
                     val controller = internalCreateEnroController(
+                        isDebug = isDebug,
                         builder = {
-                            ${generatedComponent.name}().apply { 
+                            ${generatedComponent.name}().apply {
                                 module(module)
-                                invoke() 
+                                invoke()
                             }
                             block()
                         }
@@ -148,6 +154,7 @@ object NavigationComponentGenerator {
                         return androidx.compose.runtime.remember {
                             installNavigationController(
                                 $platformParameterName = Unit,
+                                isDebug = isDebug,
                                 block = block,
                             )
                         }

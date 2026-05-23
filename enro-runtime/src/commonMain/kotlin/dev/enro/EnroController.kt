@@ -17,8 +17,9 @@ import kotlinx.serialization.json.Json
 
 @Stable
 public class EnroController {
-    // TODO NEED TO CONFIGURE THIS
-    internal val isDebug = false
+    // Set during construction by internalCreateEnroController, plumbed through
+    // from the isDebug parameter on the generated installNavigationController.
+    internal var isDebug: Boolean = false
     internal var platformReference: Any? = null
     internal val plugins = PluginRepository()
     internal val bindings = BindingRepository(plugins)
