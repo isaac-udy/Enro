@@ -5,9 +5,7 @@ import androidx.compose.runtime.remember
 import dev.enro.EnroController
 import dev.enro.NavigationBackstack
 import dev.enro.annotations.ExperimentalEnroApi
-import dev.enro.asInstance
-import dev.enro.backstackOf
-import dev.enro.path.getNavigationKeyFromPath
+import dev.enro.path.getBackstackFromPath
 import kotlinx.browser.window
 
 /**
@@ -37,12 +35,6 @@ public fun rememberInitialBackstackFromUrl(
 ): NavigationBackstack {
     return remember {
         val path = window.location.pathname + window.location.search
-        val controller = EnroController.instance
-        val key = if (controller == null) {
-            null
-        } else {
-            runCatching { controller.getNavigationKeyFromPath(path) }.getOrNull()
-        }
-        if (key != null) backstackOf(key.asInstance()) else default()
+        EnroController.instance?.getBackstackFromPath(path) ?: default()
     }
 }
