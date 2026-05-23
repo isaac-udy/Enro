@@ -30,6 +30,13 @@ public class NavigationPathBinding<T : NavigationKey> @PublishedApi internal con
         return keyType.isInstance(key)
     }
 
+    /**
+     * How specific this binding's pattern is. When multiple bindings [matches] the
+     * same path, [getPathBinding][dev.enro.controller.repository.PathRepository.getPathBinding]
+     * picks the one with the highest specificity. Higher = more specific.
+     */
+    public val specificity: Int get() = pattern.specificityScore
+
     public fun fromPath(path: ParsedPath): T {
         if (!matches(path)) {
             throw IllegalArgumentException("Path does not match the pattern")

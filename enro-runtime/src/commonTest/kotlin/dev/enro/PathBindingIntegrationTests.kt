@@ -101,6 +101,37 @@ class PathBindingIntegrationTests {
     }
 
     @Test
+    fun `getNavigationKeyFromPath prefers the most specific matching binding`() = runEnroTest {
+        val genericProduct = NavigationPathBinding.createPathBinding<String, ProductDetailPathKey>(
+            pattern = "products/{productId}",
+            propertyOne = ProductDetailPathKey::productId,
+            constructor = { id -> ProductDetailPathKey(id) },
+        )
+        val specialProduct = NavigationPathBinding.createPathBinding<SettingsPathKey>(
+            pattern = "products/special",
+            constructor = { SettingsPathKey },
+        )
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                path(genericProduct)
+                path(specialProduct)
+            }
+        )
+        val rootContext = NavigationContextFixtures.createRootContext()
+
+        assertEquals(
+            expected = SettingsPathKey,
+            actual = rootContext.getNavigationKeyFromPath("products/special"),
+            message = "Literal segment should win over parameter segment for the same path",
+        )
+        assertEquals(
+            expected = ProductDetailPathKey("p-1"),
+            actual = rootContext.getNavigationKeyFromPath("products/p-1"),
+            message = "Generic binding should still match other paths",
+        )
+    }
+
+    @Test
     fun `Two bindings that match the same path throw IllegalArgumentException when resolving`() = runEnroTest {
         val first = NavigationPathBinding.createPathBinding<SettingsPathKey>(
             pattern = "ambiguous",

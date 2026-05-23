@@ -23,10 +23,14 @@ public class PathRepository {
     public fun getPathBinding(path: ParsedPath): NavigationPathBinding<*>? {
         val matching = bindings.filter { it.matches(path) }
         if (matching.isEmpty()) return null
-        require(matching.size == 1) {
+        if (matching.size == 1) return matching.single()
+
+        val topScore = matching.maxOf { it.specificity }
+        val mostSpecific = matching.filter { it.specificity == topScore }
+        require(mostSpecific.size == 1) {
             "Multiple path bindings found for path: $path"
         }
-        return matching.single()
+        return mostSpecific.single()
     }
 
     public fun <T : NavigationKey> getPathBindingForKey(key: T): NavigationPathBinding<T>? {
