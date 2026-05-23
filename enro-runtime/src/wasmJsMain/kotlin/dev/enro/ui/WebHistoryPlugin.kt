@@ -10,6 +10,7 @@ import dev.enro.context.ContainerContext
 import dev.enro.controller.createNavigationModule
 import dev.enro.emptyBackstack
 import dev.enro.path.getPathFromNavigationKey
+import dev.enro.platform.EnroLog
 import dev.enro.plugin.NavigationPlugin
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
@@ -164,14 +165,12 @@ internal class WebHistoryPlugin(
                     }
 
                     isClose -> {
-                        println("History close")
                         // when the target state is a close, we need to pop back to that element in the history
                         val previousIndex = historyIndex
                         historyIndex = closeIndex
                         historyStates[historyIndex] = currentState
                         val goDelta = closeIndex - previousIndex
                         if (closeIndex == 0) {
-                            println("going back delta replace: ${goDelta}")
                             window.history.go(goDelta)
                             window.history.replaceState(
                                 serializedCurrentState,
@@ -179,7 +178,6 @@ internal class WebHistoryPlugin(
                                 computeUrl(),
                             )
                         } else {
-                            println("going back delta push: ${goDelta}")
                             window.history.go(goDelta - 1)
                             delay(1)
                             window.history.pushState(
@@ -303,7 +301,7 @@ internal suspend fun applyNodeFor(
         container.activeChild
     }
     if (childContext == null) {
-        println("Failed to restore")
+        EnroLog.warn("WebHistoryPlugin: failed to restore child container while applying popped state")
         return
     }
     val containers = childContext.children

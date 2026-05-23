@@ -75,11 +75,6 @@ public class NavigationFlow<T> internal constructor(
 
         val oldSteps = steps
         steps = flowScope.steps
-        println("\nSTEPS")
-        steps.forEach {
-            println(it)
-        }
-        println("-----")
         val container = container ?: return
 
         val existingInstances = container.backstack
