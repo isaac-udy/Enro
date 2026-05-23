@@ -57,6 +57,7 @@ subprojects {
             tasks.findByName("lintDebug")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("testDebugUnitTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("desktopTest")?.let { continuousIntegration.dependsOn(it) }
+            tasks.findByName("wasmJsBrowserTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("testDebugWithEmulatorWtf")?.let { continuousIntegration.dependsOn(it) }
             // Compile-only fallbacks so modules without tests (e.g. recipes)
             // are still build-checked by CI. For modules with tests, these are
@@ -64,6 +65,17 @@ subprojects {
             tasks.findByName("compileKotlinDesktop")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("compileDebugKotlinAndroid")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("compileKotlinWasmJs")?.let { continuousIntegration.dependsOn(it) }
+        }
+
+        // Separate aggregate task for the macOS CI runner — runs only the
+        // iOS-platform tests (the rest already runs on Linux via
+        // continuousIntegration). Keeps the macOS minutes spend tight.
+        tasks.register("continuousIntegrationMacOs") {
+            val ci = this
+            tasks.findByName("iosSimulatorArm64Test")?.let { ci.dependsOn(it) }
+            // Compile-only fallback for modules without iOS tests, so a
+            // K/Native compile failure still shows up.
+            tasks.findByName("compileKotlinIosSimulatorArm64")?.let { ci.dependsOn(it) }
         }
     }
 }
