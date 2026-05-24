@@ -3,6 +3,7 @@ package dev.enro.ui.destinations
 import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.asInstance
+import dev.enro.context.AnyNavigationContext
 import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.context.RootContext
@@ -73,6 +74,13 @@ public class SyntheticDestinationScope<K : NavigationKey> @PublishedApi internal
             is ContainerContext -> context.activeChild
             is RootContext -> context.activeChild?.activeChild
         }
+
+    @Deprecated("Use destinationContext or context instead for greater clarity about the context being used")
+    public val navigationContext: AnyNavigationContext
+        get() = context
+
+    @Deprecated("Use instance")
+    public val instruction: NavigationKey.Instance<K> = instance
 
     /**
      * The outcome the synthetic settled on. Null while the block is running
