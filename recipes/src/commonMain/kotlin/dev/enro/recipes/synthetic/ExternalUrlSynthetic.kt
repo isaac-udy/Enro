@@ -3,20 +3,21 @@
  *
  * Demonstrates the side-effect-bridge pattern: a `NavigationKey` whose
  * destination doesn't render any UI and doesn't change the Enro navigation
- * state. The synthetic block runs imperative work and then falls through;
- * the dispatcher treats fall-through as a silent close (no result-channel
- * callback fires).
+ * state. The synthetic's outcome is `sideEffect { ... }`, which runs the
+ * body deferred — after the surrounding navigation pass has settled —
+ * with platform context and the container reference available. The
+ * synthetic itself is treated as silently closed; no result-channel
+ * callback fires for the caller.
  *
- * In a real app this synthetic would invoke a platform-specific API:
- *  - Android: `activity.startActivity(Intent(ACTION_VIEW, Uri.parse(url)))`
+ * In a real app the side-effect body would invoke a platform-specific API:
+ *  - Android: `context.findActivity().startActivity(Intent(ACTION_VIEW, Uri.parse(url)))`
  *    or Chrome Custom Tabs via androidx.browser
  *  - Desktop:  `java.awt.Desktop.getDesktop().browse(URI(url))`
  *  - Web:     `window.open(url, "_blank")`
  *
  * Cross-platform launch from common code is out of scope for the recipe
- * itself, so the synthetic just records each requested URL in an in-memory
- * log that the recipe screen displays. The shape of the synthetic is what
- * matters here — the block runs, no Enro navigation happens.
+ * itself, so the side effect just records each requested URL in an
+ * in-memory log that the recipe screen displays.
  */
 package dev.enro.recipes.synthetic
 
@@ -52,13 +53,15 @@ private val openedUrls = mutableStateListOf<String>()
 
 @NavigationDestination(OpenExternalUrl::class)
 val openExternalUrl = syntheticDestination<OpenExternalUrl> {
-    // In a real app: launch CCT on Android, Desktop.browse on desktop,
-    // window.open on web. See the file header for snippets.
-    openedUrls.add(key.url)
-    // No outcome method is called — the block falls through. The dispatcher
-    // treats that as a silent close: no result-channel callback fires for
-    // the caller, the synthetic instance never lands on any backstack, and
-    // the Enro state is unchanged.
+    sideEffect {
+        // In a real app: context.findActivity() on Android then start the
+        // CCT intent; Desktop.browse() on desktop; window.open on web.
+        // See the file header for snippets.
+        openedUrls.add(key.url)
+        // The side effect dispatched, so the synthetic is silently closed
+        // — no result-channel callback fires, the synthetic instance
+        // never lands on any backstack, and the Enro state is unchanged.
+    }
 }
 
 @Composable

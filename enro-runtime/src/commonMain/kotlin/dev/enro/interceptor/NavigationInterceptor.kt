@@ -60,7 +60,22 @@ public abstract class NavigationInterceptor {
             ).toMutableList()
 
             val backstackById = containerContext.container.backstack.associateBy { it.id }
+            // Guards against infinite interceptor loops -- chiefly synthetic
+            // destinations whose outcomes (directly or transitively) re-open
+            // the same synthetic. Real navigation passes rarely exceed a few
+            // dozen iterations; 256 leaves room for deep aggregates without
+            // letting a runaway loop hang the whole controller.
+            val maxIterations = 256
+            var iterations = 0
             while (toProcess.isNotEmpty()) {
+                if (++iterations > maxIterations) {
+                    error(
+                        "Navigation interceptor processing exceeded $maxIterations iterations. " +
+                            "This usually means a synthetic destination's outcome opens (directly or " +
+                            "transitively) the same synthetic again, or an interceptor is rewriting " +
+                            "an operation back to itself. Most recent operation: ${toProcess.first()}"
+                    )
+                }
                 val operation = toProcess.removeAt(0)
                 val intercepted = when (operation) {
                     // If we're getting an Open operation and the backstack already contains
