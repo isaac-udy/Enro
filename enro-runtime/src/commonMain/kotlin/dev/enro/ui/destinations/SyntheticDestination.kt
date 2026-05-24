@@ -23,21 +23,30 @@ internal class SyntheticDestination<K : NavigationKey>(
                 operation: NavigationOperation.Open<NavigationKey>,
             ): NavigationOperation? {
                 if (!isSyntheticDestination(operation.instance)) return operation
-                return NavigationOperation.SideEffect {
-                    executeSynthetic(
-                        fromContext = fromContext,
-                        containerContext = containerContext,
-                        instance = operation.instance,
-                    )
-                }
+                return resolveSyntheticOutcome(
+                    fromContext = fromContext,
+                    containerContext = containerContext,
+                    instance = operation.instance,
+                )
             }
         }
 
-        internal fun executeSynthetic(
+        /**
+         * Runs the synthetic's block synchronously and converts the outcome
+         * into a [NavigationOperation] that takes the place of the original
+         * `Open(synthetic)` in the surrounding `processOperations` pass.
+         *
+         * Pure outcomes (open/close/complete/completeFrom) become the
+         * equivalent operation; the side-effect outcome becomes a
+         * [NavigationOperation.SideEffect] whose body constructs the
+         * [SyntheticSideEffectScope] and invokes the user block in
+         * `afterExecution`.
+         */
+        private fun resolveSyntheticOutcome(
             fromContext: NavigationContext,
             containerContext: ContainerContext,
             instance: NavigationKey.Instance<NavigationKey>,
-        ) {
+        ): NavigationOperation {
             val controller = fromContext.controller
             val bindings = controller.bindings.bindingFor(instance = instance)
             val syntheticDestination = bindings.provider.peekMetadata(instance)[SyntheticDestinationKey]
@@ -53,13 +62,9 @@ internal class SyntheticDestination<K : NavigationKey>(
             } catch (outcome: SyntheticDestinationOutcome) {
                 outcome
             }
-
-            // If the block fell through without calling an outcome method, settle
-            // the scope on a silent close. This locks the scope so any subsequent
-            // call from a stray coroutine throws the "already finished" error.
             val effectiveOutcome = thrown ?: scope.finalizeAsSilentCloseIfNoOutcome()
 
-            val operation = when (effectiveOutcome) {
+            return when (effectiveOutcome) {
                 is SyntheticDestinationOutcome.Open ->
                     NavigationOperation.Open(effectiveOutcome.target)
                 is SyntheticDestinationOutcome.Close ->
@@ -76,8 +81,15 @@ internal class SyntheticDestination<K : NavigationKey>(
                 }
                 is SyntheticDestinationOutcome.CompleteFrom ->
                     NavigationOperation.CompleteFrom(instance, effectiveOutcome.target)
+                is SyntheticDestinationOutcome.SideEffect -> NavigationOperation.SideEffect {
+                    val sideEffectScope = SyntheticSideEffectScope(
+                        context = fromContext,
+                        container = containerContext.container,
+                        instance = instance,
+                    )
+                    effectiveOutcome.block(sideEffectScope)
+                }
             }
-            containerContext.container.execute(fromContext, operation)
         }
     }
 }

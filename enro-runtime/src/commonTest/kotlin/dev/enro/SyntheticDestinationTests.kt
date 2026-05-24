@@ -324,6 +324,173 @@ class SyntheticDestinationTests {
     }
 
     @Test
+    fun `Pure synthetic outcomes are rewritten in place and preserve initial-backstack ordering`() = runEnroTest {
+        // A synthetic that opens TargetKey, placed as the FIRST entry in an
+        // AggregateOperation alongside RegularKey, should land as
+        // [TargetKey, RegularKey]. The synthetic's outcome must replace
+        // the synthetic's Open in the same processing pass — not be
+        // appended at the end via a separate execute call.
+        val targetKey = NavigationKeyFixtures.SimpleKey()
+        val regularKey = NavigationKeyFixtures.SimpleKey()
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<SyntheticTestKey>(
+                    syntheticDestination<SyntheticTestKey> { open(targetKey) }
+                )
+                destination<NavigationKeyFixtures.SimpleKey>(
+                    navigationDestination<NavigationKeyFixtures.SimpleKey> { Text("regular") }
+                )
+            }
+        )
+
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+        container.setFilter(acceptAll())
+        container.addInterceptor(SyntheticDestination.interceptor)
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        container.execute(
+            destinationContext,
+            NavigationOperation.AggregateOperation(
+                NavigationOperation.Open(SyntheticTestKey.asInstance()),
+                NavigationOperation.Open(regularKey.asInstance()),
+            ),
+        )
+
+        assertEquals(
+            expected = listOf(targetKey, regularKey),
+            actual = container.backstack.map { it.key },
+            message = "Pure synthetic outcomes must be rewritten in place — backstack ordering was: ${container.backstack.map { it.key }}",
+        )
+    }
+
+    @Test
+    fun `Side-effect synthetic runs after the surrounding pass settles`() = runEnroTest {
+        // Assert that when the side-effect block runs, the container's
+        // backstack already reflects the other operations from the same
+        // processing pass — i.e. the side effect is deferred to
+        // afterExecution as advertised.
+        var observedBackstackAtSideEffect: List<NavigationKey>? = null
+        val regularKey = NavigationKeyFixtures.SimpleKey()
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<SyntheticTestKey>(
+                    syntheticDestination<SyntheticTestKey> {
+                        sideEffect {
+                            observedBackstackAtSideEffect = container.backstack.map { it.key }
+                        }
+                    }
+                )
+                destination<NavigationKeyFixtures.SimpleKey>(
+                    navigationDestination<NavigationKeyFixtures.SimpleKey> { Text("regular") }
+                )
+            }
+        )
+
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+        container.setFilter(acceptAll())
+        container.addInterceptor(SyntheticDestination.interceptor)
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        container.execute(
+            destinationContext,
+            NavigationOperation.AggregateOperation(
+                NavigationOperation.Open(SyntheticTestKey.asInstance()),
+                NavigationOperation.Open(regularKey.asInstance()),
+            ),
+        )
+
+        assertEquals(
+            expected = listOf<NavigationKey>(regularKey),
+            actual = observedBackstackAtSideEffect,
+            message = "Side-effect block should run after the surrounding pass settled; observed: $observedBackstackAtSideEffect",
+        )
+    }
+
+    @Test
+    fun `Side-effect synthetic can rewrite the backstack via container execute`() = runEnroTest {
+        // Use sideEffect's container reference to perform a SetBackstack —
+        // the deferred-execution model that the framework prescribes for
+        // anything that can't be expressed as a pure outcome.
+        val newRootKey = NavigationKeyFixtures.SimpleKey()
+        val newTopKey = NavigationKeyFixtures.SimpleKey()
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<SyntheticTestKey>(
+                    syntheticDestination<SyntheticTestKey> {
+                        sideEffect {
+                            container.execute(
+                                context,
+                                NavigationOperation.SetBackstack(
+                                    currentBackstack = container.backstack,
+                                    targetBackstack = backstackOf(
+                                        newRootKey.asInstance(),
+                                        newTopKey.asInstance(),
+                                    ),
+                                ),
+                            )
+                        }
+                    }
+                )
+                destination<NavigationKeyFixtures.SimpleKey>(
+                    navigationDestination<NavigationKeyFixtures.SimpleKey> { Text("any") }
+                )
+            }
+        )
+
+        val container = openSynthetic(SyntheticTestKey.asInstance()).container
+
+        assertEquals(
+            expected = listOf(newRootKey, newTopKey),
+            actual = container.backstack.map { it.key },
+            message = "Side-effect's SetBackstack should have rewritten the backstack; was: ${container.backstack.map { it.key }}",
+        )
+    }
+
+    @Test
+    fun `Self-referential synthetic outcome trips the recursion guard`() = runEnroTest {
+        // A synthetic whose pure outcome opens itself would loop forever
+        // inside processOperations without a guard. We expect a clear
+        // IllegalStateException naming the offender.
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<SyntheticTestKey>(
+                    syntheticDestination<SyntheticTestKey> { open(SyntheticTestKey) }
+                )
+            }
+        )
+
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
+        val container = containerContext.container
+        container.setFilter(acceptAll())
+        container.addInterceptor(SyntheticDestination.interceptor)
+
+        val sourceDestination = NavigationDestinationFixtures.create(NavigationKeyFixtures.SimpleKey())
+        val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
+
+        val error = kotlin.runCatching {
+            container.execute(destinationContext, NavigationOperation.Open(SyntheticTestKey.asInstance()))
+        }.exceptionOrNull()
+
+        assertTrue(
+            actual = error is IllegalStateException,
+            message = "Expected IllegalStateException from the recursion guard; got: ${error?.let { it::class.simpleName }}",
+        )
+        assertTrue(
+            actual = error?.message?.contains("exceeded") == true,
+            message = "Recursion guard error should mention exceeding the iteration limit; was: ${error?.message}",
+        )
+    }
+
+    @Test
     fun `Synthetic completeFrom forwards result-channel routing to the chosen destination`() = runEnroTest {
         val forwarded = ResultBearingSyntheticTestKey()
         EnroTest.getCurrentNavigationController().addModule(
