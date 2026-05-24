@@ -70,20 +70,61 @@ the key and instance available, plus the outcome methods covered below.
 ## The outcome methods
 
 Each method ends the synthetic by deciding what should happen next. They
-all return `Nothing` — calling one short-circuits the block.
+all return `Nothing` — calling one short-circuits the block. They split
+into two kinds: **pure outcomes** that are rewritten in place as the
+synthetic's surrounding `processOperations` pass runs, and a
+**side-effect outcome** that runs deferred after the pass settles.
+
+### Pure outcomes — rewritten in place
 
 | Method | What it does |
 |---|---|
-| `open(key)` | Opens `key` on the same container the synthetic was opened on. The synthetic instance itself never lands on any backstack. |
+| `open(key)` | Opens `key` on the same container the synthetic was opened on. The dispatcher rewrites the original `Open(synthetic)` into `Open(key)` inside `processOperations`, so the new operation flows through the interceptor chain in the same pass. Ordering is preserved when synthetics appear in an initial backstack alongside normal destinations. |
 | `close()` | Ends the synthetic and registers a `Closed` result against whoever opened the synthetic. The caller's `onClosed` callback fires. |
 | `closeSilently()` | Same as `close()` but the result-channel callback does **not** fire. Use when the caller doesn't need to be notified. |
 | `complete()` | Ends the synthetic and registers a `Completed` result with no payload. Only available for non-result keys. |
 | `complete(result)` | Same as `complete()` but with a typed payload. Only available when the synthetic's key implements `NavigationKey.WithResult<R>`. |
 | `completeFrom(key)` | Opens `key` and routes *its* eventual completion back to whoever opened the synthetic. The synthetic doesn't produce the result; the forwarded key does. |
 
+### Side-effect outcome — runs deferred
+
+| Method | What it does |
+|---|---|
+| `sideEffect { ... }` | The block runs in `afterExecution`, with a [`SyntheticSideEffectScope`](#side-effect-scope) receiver carrying `context`, `container`, `instance`, and `key`. The synthetic is treated as silently closed once the side effect dispatches. Use this when you need platform handles, the container reference, or any imperative work that doesn't fit a single navigation operation. |
+
 The methods throw a sentinel exception that the synthetic dispatcher
 catches and converts into a `NavigationOperation`. Don't catch
 `Throwable` inside a synthetic block — you'll swallow the outcome.
+
+## Pure outcomes vs side effects
+
+The split matters because the two kinds run at different points in the
+operation lifecycle.
+
+A **pure outcome** is a deterministic rewrite of the synthetic's `Open`.
+The dispatcher catches the outcome and returns the equivalent operation
+from inside its interceptor — so the rewrite is part of the same
+`processOperations` pass that handled the original `Open(synthetic)`.
+For example, if an initial backstack is `[ASynthetic, B]` and the
+synthetic opens `Target`, the resulting backstack is `[Target, B]` —
+the synthetic's outcome takes the synthetic's slot in the queue, not the
+end of the queue.
+
+A **side-effect outcome** runs deferred, in `afterExecution`. By the time
+the block runs, every other operation in the same pass has already
+settled. That's the point at which you can safely:
+
+- Touch platform handles (find an `Activity`, get a Compose
+  `WindowInfo`, etc.).
+- Read or rewrite the container's backstack
+  (`container.execute(context, NavigationOperation.SetBackstack(...))`).
+- Make any other imperative call that doesn't fit a single
+  `NavigationOperation`.
+
+The two recipes that ship in `recipes/synthetic` illustrate the split:
+the auth gate and profile decider both use pure outcomes; the external
+URL launcher uses `sideEffect { ... }` because it bridges to a non-Enro
+API.
 
 ## Falling through
 
@@ -92,18 +133,13 @@ treated as a **silent close**. No result-channel callback fires; no
 navigation operation is dispatched against the synthetic's instance. The
 block ran, did its thing, and Enro doesn't need to do anything further.
 
-```kotlin
-@NavigationDestination(OpenExternalUrl::class)
-val openExternalUrl = syntheticDestination<OpenExternalUrl> {
-    val activity = context.findActivity()
-    activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(key.url)))
-    // no outcome method — falls through to silent close
-}
-```
-
-This is the most common shape for pure side-effect bridges. Callers
-generally don't subscribe to a result for these, so the silent close
-is the right default.
+This is the default for synthetics that only do pure side effects — but
+note that in the current model you should prefer `sideEffect { ... }`
+for that work, so you get explicit access to `container` and `context`
+deferred to the right point. Pure synthetics that genuinely do *no*
+imperative work and only return a fixed outcome (like a decider that
+always picks one of two destinations) tend to be one-line bodies that
+short-circuit through `open()` or `completeFrom(...)`.
 
 ## Forwarding results with `completeFrom`
 
@@ -181,20 +217,51 @@ synthetic" mode but isn't on the current roadmap.
 
 ## Accessing the originating context
 
-The scope exposes `context: NavigationContext` — the context from which
-the synthetic was opened. Use it when the block needs platform handles
-that aren't part of Enro itself:
+### From the pure scope — reads only
+
+`SyntheticDestinationScope<K>` exposes `context: NavigationContext` and
+the derived `destinationContext`. These are intended for **reads**:
+inspecting `controller`, walking parent contexts, checking which
+destination opened the synthetic. They're available so a pure outcome
+can be informed by the surrounding navigation state.
+
+You can technically reach `context.controller` and other writable handles
+from inside a pure block, but doing so runs while the container's
+execute mutex is held — direct `controller.execute(...)` or
+`container.execute(...)` calls deadlock. That's the framework signalling
+that you should be using `sideEffect { ... }` instead.
+
+### From the side-effect scope — full access
+
+`SyntheticSideEffectScope<K>` (the receiver of the `sideEffect` block)
+exposes `context`, `container`, `instance`, and `key`. By the time the
+side-effect block runs, the mutex is released and the backstack has
+settled, so imperative work is safe:
 
 ```kotlin
 @NavigationDestination(OpenExternalUrl::class)
 val openExternalUrl = syntheticDestination<OpenExternalUrl> {
-    val activity = context.findActivity()  // Android extension
-    activity.startActivity(Intent(ACTION_VIEW, Uri.parse(key.url)))
+    sideEffect {
+        val activity = context.findActivity()  // Android extension
+        activity.startActivity(Intent(ACTION_VIEW, Uri.parse(key.url)))
+    }
+}
+
+@NavigationDestination(DeepLinkResolver::class)
+val deepLinkResolver = syntheticDestination<DeepLinkResolver> {
+    sideEffect {
+        val resolved = context.controller.getNavigationKeyFromPath(key.url)
+            ?: return@sideEffect
+        container.execute(
+            context = context,
+            operation = NavigationOperation.SetBackstack(
+                currentBackstack = container.backstack,
+                targetBackstack = backstackOf(Home.asInstance(), resolved.asInstance()),
+            ),
+        )
+    }
 }
 ```
-
-`context.controller` reaches the `EnroController`, which is the entry
-point to the path-binding APIs, registered serializers, and so on.
 
 ## See also
 
