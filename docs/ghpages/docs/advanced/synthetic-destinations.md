@@ -263,6 +263,95 @@ val deepLinkResolver = syntheticDestination<DeepLinkResolver> {
 }
 ```
 
+## Testing synthetic destinations
+
+enro-test provides `testSyntheticDestination(...)` for unit-testing
+synthetic logic without going through a real container or interceptor
+pipeline. It runs the synthetic's block in a sandbox scope and returns
+a [`SyntheticOutcome`][synthetic-outcome] describing what the block
+decided.
+
+Two entry points cover the two common test shapes:
+
+### Registered path — via the installed controller
+
+Use this when the synthetic is registered through a `NavigationModule` on
+your component, as it would be in production:
+
+```kotlin
+@Test
+fun `auth gate forwards to protected screen when logged in`() = runEnroTest {
+    MyComponent.installNavigationController(this)
+    isLoggedIn = true  // app-state setup
+
+    val outcome = testSyntheticDestination(RequireProtectedFeature)
+
+    outcome.assertOpens<AuthGateProtectedFeature>()
+}
+```
+
+### Direct path — provider passed in
+
+Use this for pure unit tests that don't need a controller installed. Pass
+the `NavigationDestinationProvider` value directly:
+
+```kotlin
+val authGate = syntheticDestination<RequireProtectedFeature> {
+    if (sessionRepository.isLoggedIn) open(AuthGateProtectedFeature)
+    else open(AuthGateLogin)
+}
+
+@Test
+fun `auth gate redirects to login when logged out`() {
+    sessionRepository.signOut()
+
+    val outcome = testSyntheticDestination(RequireProtectedFeature, authGate)
+
+    outcome.assertOpens<AuthGateLogin>()
+}
+```
+
+### Assertion helpers
+
+| Helper | Asserts |
+|---|---|
+| `assertOpens<T>(predicate?)` | Outcome is `Open` of a key of type `T`, optionally matching `predicate`. Returns the typed key. |
+| `assertCompletesFrom<T>(predicate?)` | Outcome is `CompleteFrom` of a key of type `T`. Returns the typed key. |
+| `assertCloses(silent?)` | Outcome is `Close`, optionally matching the `silent` flag. |
+| `assertCompletes(expectedResult)` | Outcome is `Complete` with the given payload. Pass `null` for non-result synthetics. |
+| `assertSideEffect()` | Outcome is `SideEffect`. Returns the side-effect so you can run it (see below). |
+
+### Executing side-effect outcomes
+
+A `SideEffect` outcome carries the block but doesn't auto-invoke it —
+the test gets to decide whether to run it, and with what scope:
+
+```kotlin
+@Test
+fun `external URL synthetic runs the launch side effect`() {
+    val outcome = testSyntheticDestination(OpenExternalUrl("https://enro.dev"), openExternalUrl)
+    outcome.assertSideEffect().runWith()
+    // …assert on whatever the side effect produced (mock state, captured intents, etc.)
+}
+```
+
+`runWith()` with no arguments uses default fixture context and container
+— enough for most tests. Pass explicit `context: NavigationContext` and
+`container: NavigationContainer` arguments when the side effect's
+behaviour depends on either.
+
+### What you DON'T get from the test helper
+
+`testSyntheticDestination` runs the block in isolation — it doesn't
+dispatch operations against any container's backstack. So if your
+synthetic calls `open(Other)`, the test sees a `SyntheticOutcome.Open(Other)`
+but `Other` doesn't actually land in any backstack. For end-to-end
+backstack assertions, fall back to the container fixtures and execute
+the operation through `container.execute(...)` as the
+`SyntheticDestinationTests` in enro-runtime do.
+
+[synthetic-outcome]: https://github.com/isaac-udy/Enro/blob/main/enro-runtime/src/commonMain/kotlin/dev/enro/ui/destinations/SyntheticOutcome.kt
+
 ## See also
 
 - [Returning results](results.md) — the result contract that `complete`
