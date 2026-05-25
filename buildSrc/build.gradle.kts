@@ -29,6 +29,7 @@ dependencies {
     implementation(libs.compose.gradle)
     implementation(libs.emulator.wtf.gradle)
     implementation(libs.maven.publish.gradle)
+    implementation(libs.dokka.gradle)
 }
 
 

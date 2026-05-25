@@ -14,7 +14,26 @@ buildscript {
         classpath(libs.processing.ksp.gradle)
         classpath(libs.emulator.wtf.gradle)
         classpath(libs.maven.publish.gradle)
+        classpath(libs.dokka.gradle)
     }
+}
+
+// Aggregate API reference site: each published module is registered as
+// a `dokka(...)` dependency below, and the root `dokkaGenerate` task
+// combines their per-module outputs into one multi-module HTML site at
+// `build/dokka/html`. Per-module Dokka is wired up in
+// `ConfigurePublishing` — anything that doesn't apply
+// `configure-publishing` is excluded from the API reference.
+apply(plugin = "org.jetbrains.dokka")
+
+dependencies {
+    "dokka"(project(":enro"))
+    "dokka"(project(":enro-annotations"))
+    "dokka"(project(":enro-common"))
+    "dokka"(project(":enro-compat"))
+    "dokka"(project(":enro-processor"))
+    "dokka"(project(":enro-runtime"))
+    "dokka"(project(":enro-test"))
 }
 
 allprojects {

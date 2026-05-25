@@ -112,6 +112,7 @@ That's the whole flow. See [enro.dev](https://enro.dev) for the full guide.
 
 - **Documentation:** [enro.dev](https://enro.dev) — installation, concepts, results, animations, testing, platform guides, and the migration guide from Enro 2.
 - **Recipes:** [`recipes/`](./recipes/src/commonMain/kotlin/dev/enro/recipes) — every concept (dialogs, bottom sheets, list-detail, tabs, deep links, managed flows, shared view models, custom animations) is a small runnable sample.
+- **API reference:** generate with `./gradlew dokkaGenerate`; the multi-module site lands at `build/dokka/html/index.html`. Also published as a `-javadoc.jar` alongside each artifact on Maven Central.
 - **Changelog:** [CHANGELOG.md](./CHANGELOG.md).
 
 ## Migrating from Enro 2
