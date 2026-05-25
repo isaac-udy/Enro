@@ -23,6 +23,7 @@ class ConfigurePublishing : Plugin<Project> {
             with(pluginManager) {
                 apply("com.vanniktech.maven.publish")
                 apply("signing")
+                apply("org.jetbrains.dokka")
             }
 
             val localProperties = Properties()

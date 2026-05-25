@@ -21,6 +21,16 @@ public class NavigationFlowReference internal constructor(
     internal object MetadataKey : NavigationKey.TransientMetadataKey<NavigationFlow<*>?>(null)
 }
 
+/**
+ * Resolves [reference] back to the live [NavigationFlow] from this
+ * destination's metadata. The reference is the serialisation-safe handle
+ * you pass into a destination's [NavigationKey] when you want that
+ * destination to be able to call back into the flow (e.g. to jump back
+ * to an earlier step for editing).
+ *
+ * Throws if the destination wasn't opened as part of a flow, or if the
+ * reference's id doesn't match the attached flow.
+ */
 @ExperimentalEnroApi
 public fun NavigationHandle<*>.getNavigationFlow(reference: NavigationFlowReference): NavigationFlow<*> {
     val flow = instance.metadata.get(NavigationFlowReference.MetadataKey)
