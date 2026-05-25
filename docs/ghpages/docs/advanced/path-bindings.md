@@ -204,10 +204,10 @@ other destinations are *state*, not *URL state*, and don't write to
 
 This is deliberate, and matches how most modern web apps behave:
 
-- Navigating to a different page on this very docs site writes the URL
-  (`/docs/advanced/path-bindings`).
-- Toggling the sidebar nav, jumping to a heading, or expanding a
-  collapsible code block doesn't.
+- Going to a different profile on Bluesky writes the URL
+  (`bsky.app/profile/some.handle`).
+- Switching tabs within that profile (Posts / Replies / Media /
+  Videos / Likes / Feeds) doesn't — the URL stays on the profile.
 
 Path bindings declare what's URL-shaped; the runtime treats unbound
 destinations as session-local. If you have a destination that you'd
