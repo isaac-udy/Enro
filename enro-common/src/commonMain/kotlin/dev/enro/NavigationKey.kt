@@ -224,7 +224,7 @@ public interface NavigationKey {
         public val default: T,
     ) {
         public val name: String by lazy {
-            this::class.qualifiedName ?: error("MetadataKeys must have a valid qualifiedName")
+            metadataKeyName(this::class)
         }
     }
 
