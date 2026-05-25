@@ -204,9 +204,10 @@ other destinations are *state*, not *URL state*, and don't write to
 
 This is deliberate, and matches how most modern web apps behave:
 
-- Going to a different *page* on Twitter writes the URL
-  (`/elonmusk/status/123`).
-- Switching tabs within a profile (Tweets / Replies / Media) doesn't.
+- Navigating to a different page on this very docs site writes the URL
+  (`/docs/advanced/path-bindings`).
+- Toggling the sidebar nav, jumping to a heading, or expanding a
+  collapsible code block doesn't.
 
 Path bindings declare what's URL-shaped; the runtime treats unbound
 destinations as session-local. If you have a destination that you'd
