@@ -5,10 +5,12 @@ import dev.enro.platform.platformNavigationModule
 
 // Marked as internal, but is used in generated code with a @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal fun internalCreateEnroController(
+    isDebug: Boolean = false,
     builder: NavigationModule.BuilderScope.() -> Unit = {},
 ) : EnroController {
     val module = createNavigationModule(builder)
     return EnroController().apply {
+        this.isDebug = isDebug
         addModule(defaultNavigationModule)
         addModule(platformNavigationModule)
         addModule(module)
