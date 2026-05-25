@@ -19,14 +19,14 @@ plugins {
 
 dependencies {
     // Core library
-    implementation("dev.enro:enro:3.0.0-alpha10")
+    implementation("dev.enro:enro:3.0.0-beta01")
 
     // KSP processor — generates the install function for your NavigationComponent
     // and discovers @NavigationDestination annotations
-    ksp("dev.enro:enro-processor:3.0.0-alpha10")
+    ksp("dev.enro:enro-processor:3.0.0-beta01")
 
     // Optional: test utilities
-    testImplementation("dev.enro:enro-test:3.0.0-alpha10")
+    testImplementation("dev.enro:enro-test:3.0.0-beta01")
 }
 ```
 
@@ -38,7 +38,7 @@ to adopt Enro incrementally, also add the compatibility module:
 
 ```kotlin
 dependencies {
-    implementation("dev.enro:enro-compat:3.0.0-alpha10")
+    implementation("dev.enro:enro-compat:3.0.0-beta01")
 }
 ```
 

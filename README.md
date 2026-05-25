@@ -43,9 +43,9 @@ Enro is published to [Maven Central](https://search.maven.org/). Add the
 
 ```kotlin
 dependencies {
-    implementation("dev.enro:enro:3.0.0-alpha10")
-    ksp("dev.enro:enro-processor:3.0.0-alpha10")
-    testImplementation("dev.enro:enro-test:3.0.0-alpha10")
+    implementation("dev.enro:enro:3.0.0-beta01")
+    ksp("dev.enro:enro-processor:3.0.0-beta01")
+    testImplementation("dev.enro:enro-test:3.0.0-beta01")
 }
 ```
 

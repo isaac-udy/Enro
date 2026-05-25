@@ -33,8 +33,8 @@ plugins {
 }
 
 dependencies {
-    implementation("dev.enro:enro:3.0.0-alpha10")
-    ksp("dev.enro:enro-processor:3.0.0-alpha10")
+    implementation("dev.enro:enro:3.0.0-beta01")
+    ksp("dev.enro:enro-processor:3.0.0-beta01")
 }
 ```
 

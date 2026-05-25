@@ -37,7 +37,7 @@ supports.
 
 ```kotlin
 dependencies {
-    testImplementation("dev.enro:enro-test:3.0.0-alpha10")
+    testImplementation("dev.enro:enro-test:3.0.0-beta01")
 }
 ```
 
