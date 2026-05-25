@@ -36,6 +36,6 @@ want the annotation types without the rest of the runtime (e.g. in a
 
 ```kotlin
 dependencies {
-    implementation("dev.enro:enro-annotations:3.0.0-alpha10")
+    implementation("dev.enro:enro-annotations:3.0.0-beta01")
 }
 ```
