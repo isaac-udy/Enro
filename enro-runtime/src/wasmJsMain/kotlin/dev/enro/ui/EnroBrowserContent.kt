@@ -1,10 +1,18 @@
 package dev.enro.ui
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -39,10 +47,18 @@ import kotlin.uuid.Uuid
  * }
  * ```
  *
+ * @param suppressEscapeAsBack When `true` (the default), pressing the
+ *   Escape key inside the Compose composition is consumed before
+ *   Compose Multiplatform's built-in `BackNavigationEventInput` can
+ *   translate it into a back-navigation event. Browser back/forward via
+ *   the history API is unaffected (it routes through `popstate`, not the
+ *   navigation event dispatcher). Set to `false` if your app deliberately
+ *   wants Escape→back behaviour.
  * @param content The composable content of your application
  */
 @Composable
 public fun EnroBrowserContent(
+    suppressEscapeAsBack: Boolean = true,
     content: @Composable EnroBrowserScope.() -> Unit,
 ) {
     val instance = remember { GenericBrowserKey.asInstance() }
@@ -105,7 +121,24 @@ public fun EnroBrowserContent(
         LocalNavigationHandle provides navigationHandle,
         LocalViewModelStoreOwner provides viewModelStoreOwner,
     ) {
-        browserScope.content()
+        if (suppressEscapeAsBack) {
+            // Consumes Escape KeyDown via Compose's preview key chain
+            // (outer → inner) before Compose Multiplatform's
+            // BackNavigationEventInput can translate it into a back event.
+            // Inner Popups/Dialogs run in their own focus tree and still
+            // see Escape — only the main composition's Escape is swallowed.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onPreviewKeyEvent { event ->
+                        event.type == KeyEventType.KeyDown && event.key == Key.Escape
+                    },
+            ) {
+                browserScope.content()
+            }
+        } else {
+            browserScope.content()
+        }
     }
 }
 
