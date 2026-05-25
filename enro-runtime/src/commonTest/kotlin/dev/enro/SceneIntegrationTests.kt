@@ -18,6 +18,7 @@ import dev.enro.controller.createNavigationModule
 import dev.enro.test.EnroTest
 import dev.enro.test.fixtures.NavigationContextFixtures
 import dev.enro.ui.LocalNavigationAnimatedVisibilityScopeOrNull
+import dev.enro.ui.LocalNavigationContainer
 import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.LocalNavigationSharedTransitionScopeOrNull
 import dev.enro.ui.NavigationContainerState
@@ -423,6 +424,66 @@ class SceneIntegrationTests {
             message = "onCloseRequested callback should have fired exactly once after requestClose",
         )
         onNodeWithText("dismiss overlay").assertIsDisplayed()
+    }
+
+    @Test
+    fun `LocalNavigationContainer and LocalNavigationContext are readable inside decorateScene`() = runEnroComposeTest {
+        // A scene decorator may need to consult the live container (e.g. read
+        // the backstack to decide what wrapper to produce) without deferring
+        // that work into the returned scene's content lambda. The locals must
+        // therefore be in scope during decorateScene composition, not only
+        // during scene.content().
+        EnroTest.getCurrentNavigationController().addModule(
+            createNavigationModule {
+                destination<TestSceneKey>(
+                    navigationDestination<TestSceneKey> { Text("decorated content") }
+                )
+            }
+        )
+        val rootContext = NavigationContextFixtures.createRootContext()
+
+        var capturedContainer: NavigationContainerState? = null
+        var capturedContext: dev.enro.NavigationContext? = null
+        val capturingDecorator = SceneDecoratorStrategy { scene ->
+            // Reading LocalNavigationContainer.current here throws on the
+            // pre-fix runtime — the local was only provided around scene
+            // rendering, not around decorateScene composition.
+            capturedContainer = LocalNavigationContainer.current
+            capturedContext = LocalNavigationContext.current
+            scene
+        }
+
+        var expectedContainer: NavigationContainerState? = null
+        setContent {
+            CompositionLocalProvider(LocalNavigationContext provides rootContext) {
+                val container = rememberNavigationContainer(
+                    backstack = backstackOf(TestSceneKey.asInstance()),
+                )
+                expectedContainer = container
+                NavigationDisplay(
+                    state = container,
+                    sceneDecoratorStrategies = listOf(capturingDecorator),
+                )
+            }
+        }
+
+        onNodeWithText("decorated content").assertIsDisplayed()
+        waitForIdle()
+
+        val seenContainer = assertNotNull(
+            capturedContainer,
+            "LocalNavigationContainer.current must resolve inside decorateScene",
+        )
+        assertEquals(
+            expected = expectedContainer,
+            actual = seenContainer,
+            message = "Decorator should see the same NavigationContainerState that NavigationDisplay was given",
+        )
+        assertEquals(
+            expected = expectedContainer!!.context,
+            actual = capturedContext,
+            message = "Decorator should see the container's own context via LocalNavigationContext, not a fallback root context",
+        )
     }
 
     @Test

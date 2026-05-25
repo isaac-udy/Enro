@@ -1,6 +1,7 @@
 package dev.enro.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -101,8 +102,8 @@ public fun rememberNavigationSceneState(
 
     val resolved = resolveSceneChain(scope, destinations, sceneStrategy)
     val overlayScenes = resolved.dropLast(1).filterIsInstance<NavigationScene.Overlay>()
-    val currentScene = applyDecorators(decoratorScope, resolved.last(), sceneDecoratorStrategies)
-    val previousScenes = computePreviousScenes(scope, decoratorScope, currentScene, sceneStrategy, sceneDecoratorStrategies)
+    val currentScene = applyDecorators(decoratorScope, resolved.last(), sceneDecoratorStrategies, containerState)
+    val previousScenes = computePreviousScenes(scope, decoratorScope, currentScene, sceneStrategy, sceneDecoratorStrategies, containerState)
     return NavigationSceneState(
         entries = destinations,
         overlayScenes = overlayScenes,
@@ -116,17 +117,33 @@ public fun rememberNavigationSceneState(
  * (first decorator becomes the outermost wrapper). Overlay scenes are
  * skipped — mirroring Nav3, which only applies scene decorators to
  * non-overlay scenes.
+ *
+ * Each `decorateScene` invocation runs inside a `CompositionLocalProvider`
+ * for [LocalNavigationContainer] / [LocalNavigationContext] so a decorator
+ * can read either local directly — e.g. to branch on the live backstack
+ * before deciding what scene to return. Without this, the decorator
+ * composes outside the provider [NavigationDisplay] sets up later for
+ * scene-content rendering, so `LocalNavigationContainer.current` would
+ * throw.
  */
 @Composable
 private fun applyDecorators(
     scope: SceneDecoratorStrategyScope,
     scene: NavigationScene,
     sceneDecoratorStrategies: List<SceneDecoratorStrategy>,
+    containerState: NavigationContainerState,
 ): NavigationScene {
     if (scene is NavigationScene.Overlay) return scene
     var result = scene
     for (decorator in sceneDecoratorStrategies) {
-        result = with(decorator) { scope.decorateScene(result) }
+        var decorated: NavigationScene = result
+        CompositionLocalProvider(
+            LocalNavigationContainer provides containerState,
+            LocalNavigationContext provides containerState.context,
+        ) {
+            decorated = with(decorator) { scope.decorateScene(result) }
+        }
+        result = decorated
     }
     return result
 }
@@ -163,12 +180,13 @@ private fun computePreviousScenes(
     scene: NavigationScene,
     sceneStrategy: NavigationSceneStrategy,
     sceneDecoratorStrategies: List<SceneDecoratorStrategy>,
+    containerState: NavigationContainerState,
 ): List<NavigationScene> {
     val result = mutableListOf<NavigationScene>()
     var entries = scene.previousEntries
     while (entries.isNotEmpty()) {
         val previous = sceneStrategy.calculateSceneWithSinglePaneFallback(scope, entries)
-        val decorated = applyDecorators(decoratorScope, previous, sceneDecoratorStrategies)
+        val decorated = applyDecorators(decoratorScope, previous, sceneDecoratorStrategies, containerState)
         result += decorated
         entries = decorated.previousEntries
     }
