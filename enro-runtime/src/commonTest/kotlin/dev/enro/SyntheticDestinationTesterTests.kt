@@ -35,7 +35,7 @@ class SyntheticDestinationTesterTests {
     // ---- Registered-path tests ----
 
     @Test
-    fun `testSyntheticDestination(key) finds the synthetic via controller bindings`() = runEnroTest {
+    fun `testSyntheticDestination by key finds the synthetic via controller bindings`() = runEnroTest {
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
                 destination<SyntheticTesterOpenKey>(
@@ -121,7 +121,7 @@ class SyntheticDestinationTesterTests {
     }
 
     @Test
-    fun `testSyntheticDestination(key) throws a clear error when key isn't bound`() = runEnroTest {
+    fun `testSyntheticDestination by key throws a clear error when key isn't bound`() = runEnroTest {
         EnroTest.getCurrentNavigationController().addModule(createNavigationModule {})
 
         val error = assertFailsWith<IllegalStateException> {
@@ -134,7 +134,7 @@ class SyntheticDestinationTesterTests {
     }
 
     @Test
-    fun `testSyntheticDestination(key) throws when the bound destination is not a synthetic`() = runEnroTest {
+    fun `testSyntheticDestination by key throws when the bound destination is not a synthetic`() = runEnroTest {
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
                 destination<SyntheticTesterOpenKey>(
@@ -155,7 +155,7 @@ class SyntheticDestinationTesterTests {
     // ---- Direct-path (no controller install) tests ----
 
     @Test
-    fun `testSyntheticDestination(key, provider) works without installing the synthetic on the controller`() = runEnroTest {
+    fun `testSyntheticDestination by key and provider works without installing the synthetic on the controller`() = runEnroTest {
         // No addModule call — the synthetic provider is passed directly.
         val provider = syntheticDestination<SyntheticTesterOpenKey> { open(SyntheticTesterTargetKey()) }
 
