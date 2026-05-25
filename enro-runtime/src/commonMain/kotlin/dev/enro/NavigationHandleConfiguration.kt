@@ -8,12 +8,47 @@ import dev.enro.interceptor.builder.navigationInterceptor
 
 private typealias OnCloseCallback<T> = NavigationHandle<T>.() -> Unit
 
+/**
+ * Scope for configuring lifecycle-aware behaviour on a [NavigationHandle].
+ *
+ * Obtain one of these via `NavigationHandle.configure { … }` inside a
+ * Composable or via the `config` lambda on the `ViewModel.navigationHandle`
+ * delegated property. The configuration's lifetime is tied to the call
+ * site:
+ *
+ * - In a Composable, `configure` wraps a [androidx.compose.runtime.DisposableEffect],
+ *   so the registrations are torn down when the composable leaves
+ *   composition.
+ * - In a `ViewModel`, the configuration is attached to the ViewModel's
+ *   `addCloseable`, so it lives as long as the ViewModel does.
+ *
+ * Registrations made in this scope (currently only [onCloseRequested]) are
+ * automatically removed when the configuration is closed — you can
+ * register without worrying about manual cleanup.
+ */
 public class NavigationHandleConfiguration<T : NavigationKey>(
     private val navigation: NavigationHandle<T>,
 ) {
     private val closeables: MutableList<AutoCloseable> = mutableListOf()
 
-    // TODO: Add documentation here
+    /**
+     * Registers [callback] to run when something asks the destination to
+     * close via [requestClose] (system back gesture, predictive back,
+     * "X" affordances calling `requestClose`).
+     *
+     * Use this to insert pre-close work — a confirmation dialog, a "save
+     * draft?" prompt, an unsaved-changes guard. Inside the callback, call
+     * [close] yourself when you actually want the destination to close;
+     * if you don't, the destination stays.
+     *
+     * Only one callback may be active per handle at a time — registering a
+     * second while the first is still in scope throws at the moment the
+     * close is requested. Register in exactly one place per destination
+     * (typically the ViewModel; otherwise the top-level Composable).
+     *
+     * The registration is removed automatically when the surrounding
+     * configuration is disposed, so you don't need to unregister manually.
+     */
     public fun onCloseRequested(
         callback: OnCloseCallback<T>,
     ) {
