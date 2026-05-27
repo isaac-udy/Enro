@@ -273,7 +273,7 @@ includes:
 
 - The full stack trace.
 - A minimal code snippet showing the call site.
-- The Enro version you're on (`3.0.0-alphaXX`).
+- The Enro version you're on (e.g. `3.0.0-beta01`).
 - The platform (Android API level, iOS version, JDK version, browser).
 
 [modular-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/modular/ModularNavigation.kt
