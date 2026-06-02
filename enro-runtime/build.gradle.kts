@@ -9,7 +9,7 @@ plugins {
 kotlin {
     // AGP 9: enable the Android host (unit) test component so commonTest also runs on
     // the Android JVM target. Was `android { testOptions.unitTests.isReturnDefaultValues }`.
-    android {
+    androidLibrary {
         withHostTest {
             // Return default values for unmocked Android framework methods
             // rather than throwing "Method ... not mocked" — defensive against

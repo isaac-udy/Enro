@@ -19,7 +19,7 @@ kotlin {
     // AGP 9: per-module Android config that used to live in the top-level `android {}`
     // block now goes on the KMP library target. (testOptions.animationsDisabled was
     // dropped — this module has no Android instrumented tests.)
-    android {
+    androidLibrary {
         lint {
             textReport = true
         }

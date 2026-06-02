@@ -143,8 +143,10 @@ internal fun Project.configureKotlinMultiplatform(
         val androidNamespace = project.projectName.packageName
         val compileSdkVersion = libs.versions.android.compileSdk.get().toInt()
         val minSdkVersion = libs.versions.android.minSdk.get().toInt()
+        // "androidLibrary" (rather than the 9.1+ "android" alias) so this resolves on
+        // AGP 9.0 too. Both names refer to the same target on 9.1/9.2.
         val androidLibrary = (kotlinMultiplatformExtension as ExtensionAware).extensions
-            .getByName("android") as KotlinMultiplatformAndroidLibraryTarget
+            .getByName("androidLibrary") as KotlinMultiplatformAndroidLibraryTarget
         androidLibrary.apply {
             namespace = androidNamespace
             compileSdk = compileSdkVersion

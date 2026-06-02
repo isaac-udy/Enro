@@ -71,7 +71,7 @@ class ProjectChangeTests {
     @Test
     fun givenFileInModule_whenDestinationFileContentsUpdated_thenBuildSucceeds() {
         execAssembleDebug()
-        val editableFile = File("../module-one/src/main/java/dev/enro/tests/module/TestModuleEditableDestination.kt")
+        val editableFile = File("../../module-one/src/androidMain/kotlin/dev/enro/tests/module/TestModuleEditableDestination.kt")
         val editedContent = editableFile.readText()
             .replace("TestModuleEditableDestination", "TestModuleEditableDestination_Edited_5")
             .replace("TestModuleEditableScreen", "TestModuleEditableScreen_Edited_5")
@@ -82,8 +82,8 @@ class ProjectChangeTests {
     @Test
     fun givenFileInModule_whenDestinationFileRenamed_thenBuildSucceeds() {
         execAssembleDebug()
-        val editableFile = File("../module-one/src/main/java/dev/enro/tests/module/TestModuleEditableDestination.kt")
-        val renamedFile = File("../module-one/src/main/java/dev/enro/tests/module/TestModuleEditableDestination_Edited_6.kt")
+        val editableFile = File("../../module-one/src/androidMain/kotlin/dev/enro/tests/module/TestModuleEditableDestination.kt")
+        val renamedFile = File("../../module-one/src/androidMain/kotlin/dev/enro/tests/module/TestModuleEditableDestination_Edited_6.kt")
         editableFile.renameTo(renamedFile)
         execAssembleDebug()
     }
@@ -91,7 +91,7 @@ class ProjectChangeTests {
     @Test
     fun givenFileInModule_whenDestinationFileDeleted_thenBuildSucceeds() {
         execAssembleDebug()
-        val editableFile = File("../module-one/src/main/java/dev/enro/tests/module/TestModuleEditableDestination.kt")
+        val editableFile = File("../../module-one/src/androidMain/kotlin/dev/enro/tests/module/TestModuleEditableDestination.kt")
         editableFile.delete()
         execAssembleDebug()
     }
@@ -99,19 +99,19 @@ class ProjectChangeTests {
     @Test
     fun givenFileInModule_whenFileIsRenamedAndContentsUpdated_thenBuildSucceeds() {
         execAssembleDebug()
-        val editableFile = File("../module-one/src/main/java/dev/enro/tests/module/TestModuleEditableDestination.kt")
+        val editableFile = File("../../module-one/src/androidMain/kotlin/dev/enro/tests/module/TestModuleEditableDestination.kt")
         val editedContent = editableFile.readText()
             .replace("TestModuleEditableDestination", "TestModuleEditableDestination_Edited_8")
             .replace("TestModuleEditableScreen", "TestModuleEditableScreen_Edited_8")
         editableFile.writeText(editedContent)
-        val renamedFile = File("../module-one/src/main/java/dev/enro/tests/module/TestModuleEditableDestination_Edited_8.kt")
+        val renamedFile = File("../../module-one/src/androidMain/kotlin/dev/enro/tests/module/TestModuleEditableDestination_Edited_8.kt")
         editableFile.renameTo(renamedFile)
         execAssembleDebug()
     }
 }
 
 private fun execAssembleDebug() {
-    exec("./gradlew", ":tests:application:assembleDebug", "--no-build-cache")
+    exec("./gradlew", ":tests:application:app:android:assembleDebug", "--no-build-cache")
 }
 
 private fun isGitClean(): Boolean {
@@ -129,11 +129,11 @@ private fun exec(
         ProcessBuilder()
             .command(*command)
             .directory(
-                File(".")
-                    .absoluteFile
-                    .parentFile!!
-                    .parentFile!!
-                    .parentFile!!
+                // Walk up from the module dir to the repository root (where
+                // settings.gradle.kts lives) so git + ./gradlew run from the root,
+                // regardless of how deeply nested this module is.
+                generateSequence(File(".").absoluteFile) { it.parentFile }
+                    .first { File(it, "settings.gradle.kts").exists() }
             )
             .apply {
                 environment().apply {

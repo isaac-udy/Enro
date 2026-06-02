@@ -17,7 +17,7 @@ kotlin {
     // device (instrumented) test components are enabled here so the 53 instrumented tests
     // keep same-module visibility to the content/destinations they exercise. The runnable
     // APK / desktop / web / iOS entry points live in the sibling :app:* modules.
-    android {
+    androidLibrary {
         // Override the convention's path-derived namespace (which would become
         // dev.enro.tests.application.common) so the generated R class stays at
         // dev.enro.tests.application.R, matching the existing source imports.
