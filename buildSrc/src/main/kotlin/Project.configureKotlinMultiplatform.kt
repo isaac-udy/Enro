@@ -1,8 +1,8 @@
 
 import com.android.build.api.dsl.*
 import org.gradle.accessors.dm.LibrariesForLibs
-import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JsSourceMapEmbedMode
@@ -38,19 +38,6 @@ internal fun Project.configureKotlinMultiplatform(
         project.extensions.getByType(KotlinMultiplatformExtension::class.java)
     kotlinMultiplatformExtension.apply {
         explicitApi = ExplicitApiMode.Strict
-        if (android) {
-            androidTarget {
-                compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_11)
-                    freeCompilerArgs.addAll(
-                        "-P",
-                        "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=dev.enro.annotations.Parcelize"
-                    )
-                    freeCompilerArgs.addAll("-Xexpect-actual-classes")
-                    optIn.addAll(*optIns)
-                }
-            }
-        }
 
         if (desktop) {
             jvm("desktop") {
@@ -147,35 +134,34 @@ internal fun Project.configureKotlinMultiplatform(
     }
 
     if (android) {
-        @Suppress("UNCHECKED_CAST")
-        val androidExtension =
-            project.extensions.getByType(CommonExtension::class) as CommonExtension<BuildFeatures, BuildType, DefaultConfig, ProductFlavor, AndroidResources, Installation>
+        // AGP 9: configure the Android library target contributed by the
+        // `com.android.kotlin.multiplatform.library` plugin. In build scripts this is
+        // the `kotlin { androidLibrary { ... } }` accessor; from a binary convention
+        // plugin we reach the same target via the KMP extension's ExtensionAware
+        // container. The legacy `androidTarget {}` + standalone `android {}` /
+        // `CommonExtension` block is no longer supported alongside the KMP plugin.
+        val androidNamespace = project.projectName.packageName
+        val compileSdkVersion = libs.versions.android.compileSdk.get().toInt()
+        val minSdkVersion = libs.versions.android.minSdk.get().toInt()
+        val androidLibrary = (kotlinMultiplatformExtension as ExtensionAware).extensions
+            .getByName("android") as KotlinMultiplatformAndroidLibraryTarget
+        androidLibrary.apply {
+            namespace = androidNamespace
+            compileSdk = compileSdkVersion
+            minSdk = minSdkVersion
 
-        androidExtension.apply {
-            namespace = project.projectName.packageName
-            compileSdk = libs.versions.android.compileSdk.get().toInt()
-            defaultConfig {
-                minSdk = libs.versions.android.minSdk.get().toInt()
-                testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-            }
+            // Android test components (`withHostTest`/`withDeviceTest`) can each be
+            // enabled at most once, so they're opted into per-module rather than here
+            // (only enro-runtime currently runs Android host tests for its commonTest).
 
-            sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-            sourceSets["main"].res.srcDirs("src/androidMain/res")
-            sourceSets["main"].resources.srcDirs("src/commonMain/resources")
-
-            packaging {
-                resources {
-                    excludes += "/META-INF/{AL2.0,LGPL2.1}"
-                }
-            }
-            buildTypes {
-                getByName("release") {
-                    isMinifyEnabled = false
-                }
-            }
-            compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_11
-                targetCompatibility = JavaVersion.VERSION_11
+            compilerOptions {
+                jvmTarget.set(JvmTarget.JVM_11)
+                freeCompilerArgs.addAll(
+                    "-P",
+                    "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=dev.enro.annotations.Parcelize"
+                )
+                freeCompilerArgs.addAll("-Xexpect-actual-classes")
+                optIn.addAll(*optIns)
             }
         }
     }

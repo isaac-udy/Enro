@@ -1,34 +1,24 @@
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
-    id("configure-application")
+    id("configure-library")
     id("com.google.devtools.ksp")
+    id("configure-compose")
     kotlin("plugin.serialization")
 }
 
 kotlin {
     explicitApi = ExplicitApiMode.Disabled
-}
 
-kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("dev.enro:enro:${project.enroVersionName}")
-            implementation("dev.enro:enro-compat:${project.enroVersionName}")
+            // `api` so the split-out per-platform app modules (:recipes:app:*) get the
+            // Enro APIs (incl. platform entry points like EnroUIViewController /
+            // GenericRootWindow / EnroBrowserContent) transitively from :recipes:common.
+            api("dev.enro:enro:${project.enroVersionName}")
+            api("dev.enro:enro-compat:${project.enroVersionName}")
             implementation(libs.kotlinx.serialization)
             implementation(libs.compose.lifecycle)
-        }
-
-        androidMain.dependencies {
-            implementation(libs.compose.material)
-            implementation(libs.kotlin.stdLib)
-            implementation(libs.androidx.core)
-            implementation(libs.androidx.appcompat)
-            implementation(libs.androidx.viewmodel)
-            implementation(libs.androidx.fragment)
-            implementation(libs.androidx.fragment.compose)
-            implementation(libs.androidx.activity)
-            implementation(libs.material)
         }
 
         desktopMain.dependencies {

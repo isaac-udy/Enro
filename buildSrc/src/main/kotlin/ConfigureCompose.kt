@@ -1,10 +1,3 @@
-import com.android.build.api.dsl.AndroidResources
-import com.android.build.api.dsl.BuildFeatures
-import com.android.build.api.dsl.BuildType
-import com.android.build.api.dsl.CommonExtension
-import com.android.build.api.dsl.DefaultConfig
-import com.android.build.api.dsl.Installation
-import com.android.build.api.dsl.ProductFlavor
 import com.android.build.gradle.BaseExtension
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.api.Plugin
@@ -64,6 +57,10 @@ internal fun Project.configureComposeMultiplatform() {
             androidMain.dependencies {
                 implementation(compose.preview)
                 implementation(libs.compose.activity)
+                // Was `debugImplementation(compose.uiTooling)` on the old AGP
+                // android extension; the AGP-9 KMP library plugin has no build
+                // variants, so ui-tooling rides on androidMain instead.
+                implementation(compose.uiTooling)
             }
             commonMain.dependencies {
                 implementation(compose.runtime)
@@ -82,17 +79,7 @@ internal fun Project.configureComposeMultiplatform() {
             }
         }
     }
-
-    @Suppress("UNCHECKED_CAST")
-    val androidExtension =
-        project.extensions.getByType(CommonExtension::class) as CommonExtension<BuildFeatures, BuildType, DefaultConfig, ProductFlavor, AndroidResources, Installation>
-
-    androidExtension.apply {
-        buildFeatures {
-            compose = true
-        }
-        project.dependencies {
-            "debugImplementation"(compose.uiTooling)
-        }
-    }
+    // AGP 9: no `buildFeatures { compose = true }` needed here — the Compose
+    // compiler is applied across all KMP targets (incl. Android) by the
+    // `org.jetbrains.kotlin.plugin.compose` plugin above, not by AGP.
 }

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.2"
+agp = "9.2.0"
 android-compileSdk = "36"
 android-minSdk = "23"
 android-targetSdk = "36"
@@ -114,6 +114,7 @@ lint-api = "com.android.tools.lint:lint-api:32.2.1"
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+androidKotlinMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
