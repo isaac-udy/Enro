@@ -32,6 +32,7 @@ struct EnroTestApplicationApp: App {
          SelectDestination_iosKt.registerIosDestinations()
          TestApplicationComponent.shared.installNavigationController(
              application: application,
+             isDebug: false,
              block: { scope in }
          )
          return true
