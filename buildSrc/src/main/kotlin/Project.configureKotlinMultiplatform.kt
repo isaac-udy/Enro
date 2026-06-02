@@ -150,6 +150,13 @@ internal fun Project.configureKotlinMultiplatform(
             compileSdk = compileSdkVersion
             minSdk = minSdkVersion
 
+            // The new KMP library plugin disables Android resource processing (and the
+            // generated R class) by default; enable it so modules with src/androidMain/res
+            // (and code that references R) build. No-op for modules without resources.
+            androidResources {
+                enable = true
+            }
+
             // Android test components (`withHostTest`/`withDeviceTest`) can each be
             // enabled at most once, so they're opted into per-module rather than here
             // (only enro-runtime currently runs Android host tests for its commonTest).

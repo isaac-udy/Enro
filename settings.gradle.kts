@@ -12,10 +12,12 @@ include(":recipes:app:desktop")
 include(":recipes:app:ios")
 include(":recipes:app:web")
 
-// TEMPORARILY DISABLED during AGP 9.2 migration — migrated in the next milestone
-// (KMP+application split into :tests:application:common / :tests:application:app:*).
-// include(":tests:application")
-// include(":tests:module-one")
+include(":tests:module-one")
+include(":tests:application:common")
+include(":tests:application:app:android")
+include(":tests:application:app:desktop")
+include(":tests:application:app:ios")
+include(":tests:application:app:web")
 
 dependencyResolutionManagement {
     versionCatalogs {
