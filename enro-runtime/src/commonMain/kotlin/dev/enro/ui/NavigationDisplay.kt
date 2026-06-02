@@ -192,11 +192,11 @@ public fun NavigationDisplay(
 
     // Gesture state
     val gestureTransition = navigationEventState.transitionState
-    val progress = when (gestureTransition) {
-        is NavigationEventTransitionState.Idle -> 0f
-        is NavigationEventTransitionState.InProgress -> gestureTransition.latestEvent.progress
-    }
     val inPredictiveBack = gestureTransition is NavigationEventTransitionState.InProgress
+    // Raw gesture progress is remapped so each gesture starts cleanly from rest before
+    // being fed into transitionState.seekTo below — see rememberRemappedBackProgress for
+    // why this matters on iOS (and why it's a no-op on Android).
+    val progress = rememberRemappedBackProgress(gestureTransition)
 
     // Calculate previous scene for predictive back (like NavDisplay's previousScene).
     // Picks the first non-overlay scene from the eagerly-computed
@@ -580,6 +580,55 @@ private fun HandlePredictiveBack(
             }
         }
     )
+}
+
+/**
+ * Remaps the raw predictive-back gesture progress carried by [gestureTransition] so that
+ * every gesture begins from rest (0f) and tracks the finger 1:1 from there, returning 0f
+ * whenever no gesture is in progress.
+ *
+ * The remapped value is fed directly into
+ * [androidx.compose.animation.core.SeekableTransitionState.seekTo], which positions the
+ * transition *instantly* rather than animating towards it. On Android the platform supplies
+ * progress that eases up from 0, so seeking is smooth. On iOS (and any platform whose
+ * gesture is sourced from a UIKit screen-edge pan recognizer) the recognizer only begins
+ * emitting events *after* its recognition slop has been crossed, so the first non-zero
+ * progress arrives as a discrete jump (often ~0.1–0.25). Seeking straight to that value
+ * snaps the scene to ~20% in a single frame, which reads as the gesture "doing nothing,
+ * then jumping".
+ *
+ * To smooth this, the first non-zero progress of each gesture is captured as an anchor and
+ * the remainder is rescaled to `[0, 1]` via `(progress - anchor) / (1 - anchor)`. The
+ * animation therefore starts at rest on the first frame that produces motion and follows
+ * the finger for the rest of the drag. On Android the anchor is effectively 0, so the
+ * rescale is a no-op.
+ */
+@Composable
+private fun rememberRemappedBackProgress(
+    gestureTransition: NavigationEventTransitionState,
+): Float {
+    val inProgress = gestureTransition is NavigationEventTransitionState.InProgress
+    val rawProgress = when (gestureTransition) {
+        is NavigationEventTransitionState.Idle -> 0f
+        is NavigationEventTransitionState.InProgress -> gestureTransition.latestEvent.progress
+    }
+    // Gesture-scoped anchor: the first non-zero raw progress seen during the current
+    // gesture, or null when no gesture is active. Updated during composition (matching the
+    // surrounding NavigationDisplay's existing write-during-composition style); the write
+    // happens at most once per gesture edge.
+    val anchor = remember { mutableStateOf<Float?>(null) }
+    if (!inProgress) {
+        if (anchor.value != null) anchor.value = null
+    } else if (anchor.value == null && rawProgress > 0f) {
+        anchor.value = rawProgress
+    }
+    return when (val anchorValue = anchor.value) {
+        null -> 0f
+        // coerceAtLeast guards the degenerate case where the gesture is first reported
+        // already at (or past) full progress, which would otherwise divide by zero.
+        else -> ((rawProgress - anchorValue) / (1f - anchorValue).coerceAtLeast(1e-4f))
+            .coerceIn(0f, 1f)
+    }
 }
 
 public interface SceneTransitionData {
