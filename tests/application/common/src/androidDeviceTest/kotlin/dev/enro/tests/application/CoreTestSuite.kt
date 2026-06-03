@@ -19,9 +19,13 @@ import org.junit.runner.RunWith
 class CoreTestSuite {
     @Test
     fun applicationLaunches() {
-        // Context of the app under test.
+        // Context of the app under test. These tests now run as the self-instrumenting
+        // androidDeviceTest of the :tests:application:common library, so the target
+        // context's package is "dev.enro.tests.application.test" rather than the
+        // "dev.enro.tests.application" of the former application module. Strip the
+        // instrumentation ".test" suffix so the assertion holds in both setups.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("dev.enro.tests.application", appContext.packageName)
+        assertEquals("dev.enro.tests.application", appContext.packageName.removeSuffix(".test"))
     }
 
     @Test

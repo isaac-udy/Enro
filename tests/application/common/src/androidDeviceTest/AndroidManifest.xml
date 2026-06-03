@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Manifest for the self-instrumenting androidDeviceTest APK of :tests:application:common.
+
+  Because the instrumented tests run against this library's own test APK (rather than a
+  separate application APK), the Activities they launch via ActivityScenario must be
+  declared here, and TestApplication must be the test APK's application so Enro is
+  installed (TestApplication.onCreate -> installNavigationController). These declarations
+  mirror :tests:application:app:android's manifest — keep them in sync if activities are
+  added/removed.
+-->
+<manifest xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Enro"
+        android:enableOnBackInvokedCallback="true"
+        android:name="dev.enro.tests.application.TestApplication"
+        tools:targetApi="tiramisu">
+        <activity
+            android:name="dev.enro.tests.application.TestActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="dev.enro.tests.application.compose.CloseRootAndPresentActivity" />
+        <activity android:name="dev.enro.tests.application.activity.SimpleActivityImpl" />
+        <activity android:name="dev.enro.tests.application.compose.results.ComposeEmbeddedResultFlowActivity" />
+        <activity android:name="dev.enro.tests.application.compose.ComposeStabilityActivity" />
+        <activity android:name="dev.enro.tests.application.activity.PictureInPictureActivity"
+            android:supportsPictureInPicture="true"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation" />
+
+        <activity android:name="dev.enro.tests.application.fragment.FragmentPresentationActivity" />
+        <activity android:name="dev.enro.tests.application.fragment.FragmentPresentationActivityPresentableActivity" />
+        <activity android:name="dev.enro.tests.application.window.SimpleWindowActivity" />
+        <activity android:name="dev.enro.tests.application.savedstate.SavedStateActivity" />
+    </application>
+
+</manifest>
