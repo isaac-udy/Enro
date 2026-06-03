@@ -1,6 +1,14 @@
 # Changelog
 
-## 3.0.0-beta01 (Unreleased)
+## 3.0.0-beta02 (Unreleased)
+
+### Predictive back
+
+* Predictive back on iOS now starts smoothly and tracks the gesture
+  one-to-one, instead of jumping to partial progress when the system back
+  gesture is first recognised.
+
+## 3.0.0-beta01
 
 First beta of the 3.x releases. Enro is now a Kotlin Multiplatform navigation
 library targeting **Android, iOS, JVM Desktop, and WasmJS** through Compose
