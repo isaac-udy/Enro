@@ -1,5 +1,9 @@
 [versions]
-agp = "8.13.2"
+# Pinned to 9.0.0 (not 9.2.0) so the project can be synced in IntelliJ IDEA, whose
+# bundled Android plugin currently supports AGP up to 9.0.0. The KMP-library DSL uses
+# the `androidLibrary {}` accessor, which is valid on 9.0–9.2, so this can be bumped
+# back to "9.2.0" once the IDE supports it (with only a deprecation warning).
+agp = "9.0.0"
 android-compileSdk = "36"
 android-minSdk = "23"
 android-targetSdk = "36"
@@ -114,6 +118,7 @@ lint-api = "com.android.tools.lint:lint-api:32.2.1"
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+androidKotlinMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

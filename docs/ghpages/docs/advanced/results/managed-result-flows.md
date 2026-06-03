@@ -106,4 +106,4 @@ with all previous results intact.
   enough.
 - [Managed flow recipe][managedflow-recipe] — full runnable example.
 
-[managedflow-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/managedflow/ManagedFlow.kt
+[managedflow-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/managedflow/ManagedFlow.kt

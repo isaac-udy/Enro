@@ -78,4 +78,4 @@ straight-line-able?* If yes, use a managed flow; if no, use callbacks.
   conditional sequences.
 - [Returning Results recipe][results-recipe] — the canonical small example.
 
-[results-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/results/ReturningResults.kt
+[results-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/results/ReturningResults.kt

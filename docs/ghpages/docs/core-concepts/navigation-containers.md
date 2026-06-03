@@ -189,6 +189,6 @@ Two recipes go deeper on this pattern:
 - [Animations](../advanced/animations.md) — `NavigationAnimations` and per-element animation.
 - Recipes: [list-detail][listdetail-recipe], [tabs][tabs-recipe], [multiple back stacks][multistack-recipe].
 
-[listdetail-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/listdetail/ListDetailNavigation.kt
-[tabs-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/tabs/TabNavigation.kt
-[multistack-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/multiplestacks/MultipleBackStacks.kt
+[listdetail-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/listdetail/ListDetailNavigation.kt
+[tabs-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/tabs/TabNavigation.kt
+[multistack-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/multiplestacks/MultipleBackStacks.kt

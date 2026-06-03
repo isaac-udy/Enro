@@ -8,18 +8,6 @@ plugins {
     kotlin("plugin.serialization")
 }
 
-android {
-    lint {
-        textReport = true
-    }
-    testOptions {
-        animationsDisabled = true
-    }
-    packaging {
-        resources.excludes.add("META-INF/*")
-    }
-}
-
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_11)
@@ -28,6 +16,14 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
 }
 
 kotlin {
+    androidLibrary {
+        lint {
+            textReport = true
+        }
+        packaging {
+            resources.excludes.add("META-INF/*")
+        }
+    }
     sourceSets {
         desktopMain.dependencies {
 
@@ -40,41 +36,6 @@ kotlin {
 
         androidMain.dependencies {
 
-        }
-        androidUnitTest.dependencies {
-            implementation(libs.testing.junit)
-            implementation(libs.testing.androidx.junit)
-            implementation(libs.testing.androidx.runner)
-            implementation(libs.testing.robolectric)
-            implementation("dev.enro:enro-test:${project.enroVersionName}")
-        }
-        androidInstrumentedTest.dependencies {
-            implementation("dev.enro:enro-test:${project.enroVersionName}")
-
-            implementation(libs.testing.junit)
-
-            implementation(libs.kotlin.reflect)
-            implementation(libs.androidx.core)
-            implementation(libs.androidx.appcompat)
-            implementation(libs.androidx.fragment)
-            implementation(libs.androidx.activity)
-            implementation(libs.androidx.recyclerview)
-
-            implementation(libs.testing.androidx.fragment)
-            implementation(libs.testing.androidx.junit)
-            implementation(libs.testing.androidx.espresso)
-            implementation(libs.testing.androidx.espressoRecyclerView)
-            implementation(libs.testing.androidx.espressoIntents)
-            implementation(libs.testing.androidx.runner)
-
-            implementation(libs.testing.androidx.compose)
-            implementation(libs.compose.materialIcons)
-
-            implementation(libs.androidx.navigation.fragment)
-            implementation(libs.androidx.navigation.ui)
-
-            implementation(libs.leakcanary)
-            implementation(libs.testing.leakcanary.instrumentation)
         }
     }
 }

@@ -74,15 +74,15 @@ subprojects {
         tasks.register("continuousIntegration") {
             val continuousIntegration = this
             tasks.findByName("lintDebug")?.let { continuousIntegration.dependsOn(it) }
-            tasks.findByName("testDebugUnitTest")?.let { continuousIntegration.dependsOn(it) }
+            tasks.findByName("testAndroidHostTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("desktopTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("wasmJsBrowserTest")?.let { continuousIntegration.dependsOn(it) }
-            tasks.findByName("testDebugWithEmulatorWtf")?.let { continuousIntegration.dependsOn(it) }
+            tasks.findByName("testWithEmulatorWtf")?.let { continuousIntegration.dependsOn(it) }
             // Compile-only fallbacks so modules without tests (e.g. recipes)
             // are still build-checked by CI. For modules with tests, these are
             // no-ops — the test tasks above already depend on compilation.
             tasks.findByName("compileKotlinDesktop")?.let { continuousIntegration.dependsOn(it) }
-            tasks.findByName("compileDebugKotlinAndroid")?.let { continuousIntegration.dependsOn(it) }
+            tasks.findByName("compileAndroidMain")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("compileKotlinWasmJs")?.let { continuousIntegration.dependsOn(it) }
         }
 
@@ -127,11 +127,11 @@ tasks.register<Exec>("publishEnroLocal") {
     commandLine(
         "./gradlew",
         ":enro-processor:publishMavenPublicationToMavenLocal",
-        ":enro-annotations:publishAndroidReleasePublicationToMavenLocal",
+        ":enro-annotations:publishAndroidPublicationToMavenLocal",
         ":enro-annotations:publishDesktopPublicationToMavenLocal",
 
         "publishKotlinMultiplatformPublicationToMavenLocal",
-        "publishAndroidReleasePublicationToMavenLocal",
+        "publishAndroidPublicationToMavenLocal",
         "publishDesktopPublicationToMavenLocal",
 //                "publishFrontendJsPublicationToMavenLocal",
         "publishIosArm64PublicationToMavenLocal",

@@ -6,26 +6,30 @@ plugins {
     kotlin("plugin.serialization")
 }
 
-android {
-    testOptions {
-        unitTests {
+kotlin {
+    // Enable the Android host (unit) test component so commonTest also runs on the
+    // Android JVM target.
+    androidLibrary {
+        withHostTest {
             // Return default values for unmocked Android framework methods
             // rather than throwing "Method ... not mocked" — defensive against
             // any test path that brushes a stub from android.jar (e.g.
             // savedstate's Bundle).
             isReturnDefaultValues = true
         }
-        unitTests.all {
-            // These tests use Compose-UI-test or platform SavedState APIs
-            // that require a real Android runtime (Robolectric or instrumentation)
-            // to function. They already run on :enro-runtime:desktopTest
-            // (and iosSimulatorArm64Test) — keep coverage there and skip the
-            // JVM-only Android unit-test pass.
-            it.filter {
-                excludeTestsMatching("dev.enro.SceneHarnessSmokeTest")
-                excludeTestsMatching("dev.enro.SceneIntegrationTests")
-                excludeTestsMatching("dev.enro.BackstackSavedStateTests")
-            }
+    }
+}
+
+// These tests use Compose-UI-test or platform SavedState APIs that require a real
+// Android runtime (Robolectric or instrumentation) to function. They already run on
+// :enro-runtime:desktopTest (and iosSimulatorArm64Test) — keep coverage there and skip
+// the JVM-only Android host-test pass.
+tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+    if (name.contains("AndroidHostTest", ignoreCase = true)) {
+        filter {
+            excludeTestsMatching("dev.enro.SceneHarnessSmokeTest")
+            excludeTestsMatching("dev.enro.SceneIntegrationTests")
+            excludeTestsMatching("dev.enro.BackstackSavedStateTests")
         }
     }
 }

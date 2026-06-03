@@ -72,7 +72,7 @@ for the API delta and a step-by-step conversion.
 
 ## Recipes
 
-The [recipes module](https://github.com/isaac-udy/Enro/tree/main/recipes/src/commonMain/kotlin/dev/enro/recipes)
+The [recipes module](https://github.com/isaac-udy/Enro/tree/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes)
 in the source repo is a set of small, runnable examples — one per concept. The
 documentation below links into them for every working snippet.
 

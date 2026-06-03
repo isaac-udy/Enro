@@ -380,4 +380,4 @@ Callers change from `push`/`present` to `open`, and from `closeWithResult` to
 - File an issue at [github.com/isaac-udy/Enro/issues](https://github.com/isaac-udy/Enro/issues)
   if you hit something not covered here.
 
-[recipes]: https://github.com/isaac-udy/Enro/tree/main/recipes/src/commonMain/kotlin/dev/enro/recipes
+[recipes]: https://github.com/isaac-udy/Enro/tree/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes
