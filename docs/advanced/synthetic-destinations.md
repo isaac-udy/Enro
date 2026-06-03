@@ -361,4 +361,4 @@ the operation through `container.execute(...)` as the
 - [Migrating from v2](../migrating-from-v2.md) — `sendResult` /
   `forwardResult` from Enro 2 are now `complete` / `completeFrom`.
 
-[synthetic-recipes]: https://github.com/isaac-udy/Enro/tree/main/recipes/src/commonMain/kotlin/dev/enro/recipes/synthetic
+[synthetic-recipes]: https://github.com/isaac-udy/Enro/tree/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/synthetic

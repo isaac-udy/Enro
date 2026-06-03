@@ -155,5 +155,5 @@ addressable.
   [interop recipe][interop-recipe] demonstrates a native `AndroidView`
   inside an Enro destination.
 
-[recipes]: https://github.com/isaac-udy/Enro/tree/main/recipes/src/commonMain/kotlin/dev/enro/recipes
-[interop-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/interop/NativeInterop.kt
+[recipes]: https://github.com/isaac-udy/Enro/tree/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes
+[interop-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/interop/NativeInterop.kt

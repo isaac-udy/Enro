@@ -83,4 +83,4 @@ desktop app.
 - [Recipes desktop main][desktop-main] — full working example with
   multi-window, `MenuBar`, key shortcuts.
 
-[desktop-main]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/desktopMain/kotlin/main.kt
+[desktop-main]: https://github.com/isaac-udy/Enro/blob/main/recipes/app/desktop/src/desktopMain/kotlin/main.kt

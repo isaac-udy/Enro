@@ -322,4 +322,4 @@ When the user navigates back, the same handle resumes.
 - [View Models](../advanced/view-models.md) — `by navigationHandle<T>()` inside a ViewModel.
 - [Request-close confirmation recipe][requestclose-recipe] — full unsaved-changes example.
 
-[requestclose-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/requestclose/RequestCloseConfirmation.kt
+[requestclose-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/requestclose/RequestCloseConfirmation.kt

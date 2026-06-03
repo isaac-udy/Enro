@@ -174,4 +174,4 @@ button and URL bar behave as users expect. See the
 - Walk through [Your First Screen](your-first-screen.md) for an end-to-end example.
 - If you're upgrading an existing app, read the [migration guide](../migrating-from-v2.md).
 
-[recipes-desktop]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/desktopMain/kotlin/main.kt
+[recipes-desktop]: https://github.com/isaac-udy/Enro/blob/main/recipes/app/desktop/src/desktopMain/kotlin/main.kt

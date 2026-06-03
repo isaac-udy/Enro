@@ -235,6 +235,6 @@ runtime takes care of bridging it. See the
 - [Animations](../advanced/animations.md) — animating destinations and their content.
 - [Recipes][recipes] — every metadata style and several custom scene strategies.
 
-[entryprovider-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/entryprovider/DestinationRegistration.kt
-[listdetail-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/listdetail/ListDetailNavigation.kt
-[recipes]: https://github.com/isaac-udy/Enro/tree/main/recipes/src/commonMain/kotlin/dev/enro/recipes
+[entryprovider-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/entryprovider/DestinationRegistration.kt
+[listdetail-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/listdetail/ListDetailNavigation.kt
+[recipes]: https://github.com/isaac-udy/Enro/tree/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes

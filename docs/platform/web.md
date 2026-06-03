@@ -155,4 +155,4 @@ need it to survive page reloads, handle it via your own
 - [Recipes web main][web-main] — full working bootstrap for the recipes app.
 
 [cmp-web]: https://github.com/JetBrains/compose-multiplatform/blob/master/web/README.md
-[web-main]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/wasmJsMain/kotlin/main.kt
+[web-main]: https://github.com/isaac-udy/Enro/blob/main/recipes/app/web/src/wasmJsMain/kotlin/main.kt
