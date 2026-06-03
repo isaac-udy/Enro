@@ -74,9 +74,6 @@ subprojects {
         tasks.register("continuousIntegration") {
             val continuousIntegration = this
             tasks.findByName("lintDebug")?.let { continuousIntegration.dependsOn(it) }
-            // AGP 9 / new KMP library plugin renamed the Android tasks:
-            // testDebugUnitTest -> testAndroidHostTest, testDebugWithEmulatorWtf ->
-            // testWithEmulatorWtf, compileDebugKotlinAndroid -> compileAndroidMain.
             tasks.findByName("testAndroidHostTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("desktopTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("wasmJsBrowserTest")?.let { continuousIntegration.dependsOn(it) }

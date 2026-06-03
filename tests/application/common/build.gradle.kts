@@ -13,9 +13,9 @@ configureEmulatorWtf()
 kotlin {
     explicitApi = ExplicitApiMode.Disabled
 
-    // AGP 9: the test-app content is now a KMP *library*. Its Android host (unit) and
-    // device (instrumented) test components are enabled here so the 53 instrumented tests
-    // keep same-module visibility to the content/destinations they exercise. The runnable
+    // The test-app content is a KMP library. Its Android host (unit) and device
+    // (instrumented) test components are enabled here so the instrumented tests keep
+    // same-module visibility to the content/destinations they exercise. The runnable
     // APK / desktop / web / iOS entry points live in the sibling :app:* modules.
     androidLibrary {
         // Override the convention's path-derived namespace (which would become
@@ -37,8 +37,8 @@ kotlin {
             implementation(libs.androidx.savedState)
         }
         commonMain.dependencies {
-            // `api` so the split-out :app:* modules get the Enro APIs (incl. platform
-            // entry points) and the test-app content transitively from :common.
+            // `api` so the :app:* modules get the Enro APIs (incl. platform entry points)
+            // and the test-app content transitively from :common.
             api("dev.enro:enro:${project.enroVersionName}")
             api("dev.enro:enro-compat:${project.enroVersionName}")
             implementation(libs.kotlinx.serialization)
@@ -83,8 +83,8 @@ dependencies {
     lintChecks(project(":enro-lint"))
 
     // Android host (unit) + device (instrumented) test dependencies. Declared via
-    // configuration names because the new KMP library plugin creates the
-    // androidHostTest / androidDeviceTest source sets dynamically (no DSL accessor).
+    // configuration names because the KMP library plugin creates the androidHostTest /
+    // androidDeviceTest source sets dynamically (no DSL accessor).
     "androidHostTestImplementation"(libs.testing.junit)
 
     "androidDeviceTestImplementation"("dev.enro:enro-test:${project.enroVersionName}")

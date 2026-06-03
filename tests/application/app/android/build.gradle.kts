@@ -7,10 +7,10 @@ plugins {
 // The instrumented test suite lives in :common's androidDeviceTest (same module as the
 // content it exercises), so there are no tests here.
 android {
-    // Distinct from :common's namespace (AGP 9 requires unique namespaces). The
-    // manifest's android:name entries are fully-qualified, so they still resolve to the
-    // dev.enro.tests.application.* classes provided by :common. applicationId keeps the
-    // original package id.
+    // Distinct from :common's namespace (Android requires unique namespaces per module).
+    // The manifest's android:name entries are fully-qualified, so they still resolve to
+    // the dev.enro.tests.application.* classes provided by :common. applicationId keeps
+    // the original package id.
     namespace = "dev.enro.tests.application.app"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {

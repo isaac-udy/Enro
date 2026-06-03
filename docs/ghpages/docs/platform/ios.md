@@ -107,4 +107,4 @@ class ViewController: UIViewController {
 - [Recipes iOS entrypoint][ios-recipe] — the working
   `MainViewController()` Enro uses for its own runnable iOS recipes.
 
-[ios-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/iosMain/kotlin/dev/enro/recipes/MainViewController.kt
+[ios-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/app/ios/src/iosMain/kotlin/dev/enro/recipes/MainViewController.kt

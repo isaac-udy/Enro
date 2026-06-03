@@ -320,7 +320,7 @@ sample items.
   shared icon and title.
 - [Navigation Destinations → Custom enter/exit on overlays](../core-concepts/navigation-destinations.md#custom-enterexit-on-overlays).
 
-[animations-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/animations/AnimatedNavigation.kt
-[staggered-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/animations/StaggeredAnimations.kt
-[sharedelements-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/sharedelements/SharedElementAnimations.kt
-[recipes-component]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/RecipesComponent.kt
+[animations-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/animations/AnimatedNavigation.kt
+[staggered-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/animations/StaggeredAnimations.kt
+[sharedelements-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/sharedelements/SharedElementAnimations.kt
+[recipes-component]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/RecipesComponent.kt

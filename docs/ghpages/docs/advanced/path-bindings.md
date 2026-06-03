@@ -235,5 +235,5 @@ The web platform docs cover the URL/history wiring in detail — see
   [Advanced Deep Link][advanced-deep-link] — full working examples of
   annotated and programmatic bindings respectively.
 
-[basic-deep-link]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/deeplink/BasicDeepLink.kt
-[advanced-deep-link]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/deeplink/AdvancedDeepLink.kt
+[basic-deep-link]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/deeplink/BasicDeepLink.kt
+[advanced-deep-link]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/deeplink/AdvancedDeepLink.kt

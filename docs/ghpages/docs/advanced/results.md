@@ -199,4 +199,4 @@ back to whoever opened `EditProfile`. See
 - [Embedded result flows](results/embedded-result-flows.md) and
   [managed result flows](results/managed-result-flows.md).
 
-[results-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/results/ReturningResults.kt
+[results-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/results/ReturningResults.kt

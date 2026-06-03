@@ -134,17 +134,16 @@ internal fun Project.configureKotlinMultiplatform(
     }
 
     if (android) {
-        // AGP 9: configure the Android library target contributed by the
-        // `com.android.kotlin.multiplatform.library` plugin. In build scripts this is
-        // the `kotlin { androidLibrary { ... } }` accessor; from a binary convention
-        // plugin we reach the same target via the KMP extension's ExtensionAware
-        // container. The legacy `androidTarget {}` + standalone `android {}` /
-        // `CommonExtension` block is no longer supported alongside the KMP plugin.
+        // Configure the Android library target contributed by the
+        // `com.android.kotlin.multiplatform.library` plugin. In build scripts this is the
+        // `kotlin { androidLibrary { ... } }` accessor; from a binary convention plugin we
+        // reach the same target via the KMP extension's ExtensionAware container.
         val androidNamespace = project.projectName.packageName
         val compileSdkVersion = libs.versions.android.compileSdk.get().toInt()
         val minSdkVersion = libs.versions.android.minSdk.get().toInt()
-        // "androidLibrary" (rather than the 9.1+ "android" alias) so this resolves on
-        // AGP 9.0 too. Both names refer to the same target on 9.1/9.2.
+        // "androidLibrary" (rather than the "android" alias) so this resolves on AGP 9.0,
+        // whose Android plugin is the latest currently supported by IntelliJ. Both names
+        // refer to the same target on AGP 9.1+.
         val androidLibrary = (kotlinMultiplatformExtension as ExtensionAware).extensions
             .getByName("androidLibrary") as KotlinMultiplatformAndroidLibraryTarget
         androidLibrary.apply {
@@ -152,7 +151,7 @@ internal fun Project.configureKotlinMultiplatform(
             compileSdk = compileSdkVersion
             minSdk = minSdkVersion
 
-            // The new KMP library plugin disables Android resource processing (and the
+            // The KMP library plugin disables Android resource processing (and the
             // generated R class) by default; enable it so modules with src/androidMain/res
             // (and code that references R) build. No-op for modules without resources.
             androidResources {

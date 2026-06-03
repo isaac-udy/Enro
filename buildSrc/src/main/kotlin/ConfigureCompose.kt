@@ -57,9 +57,8 @@ internal fun Project.configureComposeMultiplatform() {
             androidMain.dependencies {
                 implementation(compose.preview)
                 implementation(libs.compose.activity)
-                // Was `debugImplementation(compose.uiTooling)` on the old AGP
-                // android extension; the AGP-9 KMP library plugin has no build
-                // variants, so ui-tooling rides on androidMain instead.
+                // The KMP library plugin has no build variants, so ui-tooling is added to
+                // androidMain rather than a debug-only configuration.
                 implementation(compose.uiTooling)
             }
             commonMain.dependencies {
@@ -79,7 +78,7 @@ internal fun Project.configureComposeMultiplatform() {
             }
         }
     }
-    // AGP 9: no `buildFeatures { compose = true }` needed here — the Compose
-    // compiler is applied across all KMP targets (incl. Android) by the
-    // `org.jetbrains.kotlin.plugin.compose` plugin above, not by AGP.
+    // No `buildFeatures { compose = true }` needed here — the Compose compiler is applied
+    // across all KMP targets (incl. Android) by the `org.jetbrains.kotlin.plugin.compose`
+    // plugin above.
 }

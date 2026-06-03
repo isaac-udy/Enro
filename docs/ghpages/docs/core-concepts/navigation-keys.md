@@ -205,6 +205,6 @@ See the [modular navigation recipe][modular-recipe] for a worked example.
 - [Results](../advanced/results.md) — how `WithResult` keys produce and consume values.
 - [Basic recipe][basic-recipe] — minimal end-to-end example.
 
-[basic-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/basic/BasicNavigation.kt
-[modular-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/modular/ModularNavigation.kt
-[timestamp-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/plugins/OpenedTimestampPlugin.kt
+[basic-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/basic/BasicNavigation.kt
+[modular-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/modular/ModularNavigation.kt
+[timestamp-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/plugins/OpenedTimestampPlugin.kt

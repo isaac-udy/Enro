@@ -38,7 +38,7 @@ kotlin {
 
 // Keep the generated Compose resources package stable as
 // `enro.tests.application.generated.resources` (matching the entry point's imports),
-// rather than letting it derive from the new :app:web module path.
+// rather than letting it derive from the :app:web module path.
 compose.resources {
     packageOfResClass = "enro.tests.application.generated.resources"
     generateResClass = always

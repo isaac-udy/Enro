@@ -134,4 +134,4 @@ contract.
 - [OpenedTimestampPlugin recipe][timestamp-recipe] — the worked example
   above.
 
-[timestamp-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/plugins/OpenedTimestampPlugin.kt
+[timestamp-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/plugins/OpenedTimestampPlugin.kt

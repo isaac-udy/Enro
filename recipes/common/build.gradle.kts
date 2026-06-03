@@ -12,9 +12,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            // `api` so the split-out per-platform app modules (:recipes:app:*) get the
-            // Enro APIs (incl. platform entry points like EnroUIViewController /
-            // GenericRootWindow / EnroBrowserContent) transitively from :recipes:common.
+            // `api` so the per-platform app modules (:recipes:app:*) get the Enro APIs
+            // (incl. platform entry points like EnroUIViewController / GenericRootWindow /
+            // EnroBrowserContent) transitively from :recipes:common.
             api("dev.enro:enro:${project.enroVersionName}")
             api("dev.enro:enro-compat:${project.enroVersionName}")
             implementation(libs.kotlinx.serialization)

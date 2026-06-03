@@ -16,9 +16,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
 }
 
 kotlin {
-    // AGP 9: per-module Android config that used to live in the top-level `android {}`
-    // block now goes on the KMP library target. (testOptions.animationsDisabled was
-    // dropped — this module has no Android instrumented tests.)
     androidLibrary {
         lint {
             textReport = true
@@ -40,10 +37,6 @@ kotlin {
         androidMain.dependencies {
 
         }
-        // NOTE: the previous androidUnitTest / androidInstrumentedTest dependency
-        // blocks were removed during the AGP 9 migration — this module has no Android
-        // test sources (they live in :tests:application), so those source sets and
-        // their dependencies were dead config.
     }
 }
 

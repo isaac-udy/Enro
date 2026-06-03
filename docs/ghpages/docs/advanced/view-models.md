@@ -147,5 +147,5 @@ For a small inline example, see the [shared ViewModel recipe][shared-recipe].
 - [Basic ViewModel recipe][basic-recipe] and
   [Shared ViewModel recipe][shared-recipe].
 
-[basic-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/viewmodel/BasicViewModel.kt
-[shared-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/src/commonMain/kotlin/dev/enro/recipes/viewmodel/SharedViewModel.kt
+[basic-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/viewmodel/BasicViewModel.kt
+[shared-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/viewmodel/SharedViewModel.kt
