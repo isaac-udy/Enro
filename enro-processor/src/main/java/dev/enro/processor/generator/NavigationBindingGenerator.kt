@@ -554,7 +554,18 @@ private fun primitiveParseExpression(
 }
 
 private fun KSDeclaration.isValueClass(): Boolean {
-    return this is KSClassDeclaration && Modifier.VALUE in modifiers
+    if (this !is KSClassDeclaration) return false
+    if (Modifier.VALUE in modifiers || Modifier.INLINE in modifiers) return true
+    // A declaration resolved from a compiled dependency module (jar/klib) does
+    // not reliably report the Kotlin `value`/`inline` modifier through KSP — so
+    // a value class defined in another module (e.g. a typed id in
+    // :feature:core:api referenced by a destination processed in
+    // :feature:core:client) would be missed. Fall back to matching the
+    // @JvmInline annotation by simple name: every multiplatform value class
+    // carries it, and on native targets annotation *type resolution* across
+    // modules can fail, so we deliberately avoid resolving the fully-qualified
+    // name and match the short name instead.
+    return annotations.any { it.shortName.asString() == "JvmInline" }
 }
 
 private val SUPPORTED_PRIMITIVE_FQNS = setOf(
