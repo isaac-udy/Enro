@@ -2,6 +2,40 @@
 
 ## 3.0.0-beta02 (Unreleased)
 
+### Web browser history (WasmJS)
+
+* Rewrote `WebHistoryPlugin`'s history synchronisation. Updates are now
+  processed on a serial queue instead of being dropped while a sync was in
+  flight (the cause of a single browser back traversing multiple screens),
+  self-initiated `history.go()` traversals await and consume their popstate
+  echo instead of racing a `delay(1)` (the cause of double-pops), and
+  full-backstack replacements (e.g. a loading gate resolving to home, or a
+  section switch) now `replaceState` instead of `pushState`, so transient
+  screens can no longer survive as browser back targets.
+* History entries whose recorded state can't be decoded (e.g. written by an
+  older build of an app — tab history survives deploys) now restore through
+  the entry's URL via the `@NavigationPath` bindings instead of doing
+  nothing, and self-heal the entry's stored state.
+* Serialized history state is verified to round-trip at write time; a state
+  that can't restore is a hard error rather than a silently broken back
+  button later.
+
+### Serialization
+
+* `EnroController.jsonConfiguration` now uses kotlinx's default
+  (`POLYMORPHIC`) class-discriminator mode instead of `ALL_JSON_OBJECTS`.
+  With kotlinx 1.11, `ALL_JSON_OBJECTS` breaks both Json encoders for
+  realistic `NavigationKey` shapes under polymorphic dispatch: the streaming
+  encoder leaks a value-class field's deferred discriminator into the
+  next-opened object (corrupting `Instance.metadata` so persisted state
+  could not be decoded) and emits invalid JSON for collection fields, while
+  the tree encoder crashes on collection fields. `POLYMORPHIC` mode writes
+  discriminators exactly where polymorphic deserialization reads them and
+  handles all of these shapes correctly. `HistoryStateSerializationTests`
+  documents the upstream kotlinx failures so a fixed kotlinx release is
+  detected. SavedState serialization (`ALL_OBJECTS`, androidx encoder) is
+  unaffected and covered by `SavedStateSerializationTests`.
+
 ### Predictive back
 
 * Predictive back on iOS now starts smoothly and tracks the gesture
