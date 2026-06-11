@@ -5,6 +5,8 @@ import dev.enro.EnroController
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationHandle
+import dev.enro.NavigationKey
+import dev.enro.asBackstack
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.context.ContainerContext
 import dev.enro.controller.createNavigationModule
@@ -247,9 +249,7 @@ internal class WebHistoryPlugin(
             children = emptyList(),
         ))
         val currentState = createNodeFor(rootContainer)
-        val serializedCurrentState = EnroController.jsonConfiguration
-            .encodeToString(currentState)
-            .toJsString()
+        val serializedCurrentState = serializeForHistory(currentState).toJsString()
         window.history.replaceState(serializedCurrentState, "", computeUrl())
         val index = historyStates.indexOfFirst { it == currentState }
         if (index != -1) {
@@ -263,24 +263,60 @@ internal class WebHistoryPlugin(
     /**
      * The backstack changed (open/active/close): mirror it into browser history.
      */
+    /**
+     * Serializes [state] for storage in `history.state`, verifying the result
+     * actually decodes. kotlinx can encode shapes it cannot decode (e.g.
+     * polymorphic value classes degrade to bare literals), which would
+     * silently write history entries that can't restore. When verification
+     * fails, the live (pre-serialization) metadata is logged — the JSON
+     * mangles the offending entry, but the in-memory map still has the real
+     * key and value type — and a metadata-stripped state is written instead:
+     * instance ids and keys are preserved, which is all back/forward
+     * restoration strictly requires, at the cost of metadata-dependent
+     * behaviour (e.g. result channels) for restored entries.
+     */
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    @OptIn(dev.enro.annotations.AdvancedEnroApi::class)
+    private fun serializeForHistory(state: ContainerNode): String {
+        val serialized = EnroController.jsonConfiguration.encodeToString(state)
+        val verification = runCatching {
+            EnroController.jsonConfiguration.decodeFromString<ContainerNode>(serialized)
+        }
+        if (verification.isSuccess) return serialized
+
+        val metadataDescription = state.backstack.joinToString { instance ->
+            val entries = instance.metadata.map.entries.joinToString { (key, value) ->
+                "$key=${value::class.simpleName}"
+            }
+            "${instance.key::class.simpleName}[$entries]"
+        }
+        EnroLog.error(
+            "WebHistoryPlugin: serialized history state failed round-trip verification " +
+                "(${verification.exceptionOrNull()?.message}). In-memory metadata by instance: " +
+                "$metadataDescription. Falling back to a metadata-stripped history entry."
+        )
+
+        val sanitized = state.copy(
+            backstack = state.backstack
+                .map { instance -> instance.copy(metadata = NavigationKey.Metadata()) }
+                .asBackstack(),
+        )
+        val sanitizedSerialized = EnroController.jsonConfiguration.encodeToString(sanitized)
+        val sanitizedVerification = runCatching {
+            EnroController.jsonConfiguration.decodeFromString<ContainerNode>(sanitizedSerialized)
+        }
+        if (sanitizedVerification.isSuccess) return sanitizedSerialized
+        EnroLog.error(
+            "WebHistoryPlugin: metadata-stripped state also failed verification: " +
+                "${sanitizedVerification.exceptionOrNull()?.message}"
+        )
+        return serialized
+    }
+
     @OptIn(ExperimentalWasmJsInterop::class)
     private suspend fun syncFromBackstack() {
         val currentState = createNodeFor(rootContainer)
-        val serializedJson = EnroController.jsonConfiguration.encodeToString(currentState)
-        // Encode-side verification: kotlinx can encode shapes it cannot decode
-        // (e.g. polymorphic value classes degrade to bare literals), which
-        // would silently write history entries that can't restore. Catch that
-        // at write time, with the payload, so the offending shape is
-        // diagnosable instead of surfacing later as a dead back button.
-        runCatching {
-            EnroController.jsonConfiguration.decodeFromString<ContainerNode>(serializedJson)
-        }.onFailure { t ->
-            EnroLog.error(
-                "WebHistoryPlugin: serialized history state failed round-trip verification — " +
-                    "this entry will not restore on browser back. ${t.message}\nState: $serializedJson"
-            )
-        }
-        val serializedCurrentState = serializedJson.toJsString()
+        val serializedCurrentState = serializeForHistory(currentState).toJsString()
 
         val windowState = window.history.state?.let(::decodeState)
 
