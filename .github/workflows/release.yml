@@ -6,10 +6,6 @@ on:
         description: 'Version Name'
         required: true
         default: ''
-      changes:
-        description: 'Optional extra notes, prepended above the CHANGELOG "Unreleased" content in the GitHub release'
-        required: false
-        default: ''
 jobs:
   release:
     name: Release
@@ -68,17 +64,7 @@ jobs:
           message: ${{ format('Released {0}', inputs.versionname) }}
           push: true
 
-      - name: Prepare release notes
-        env:
-          EXTRA_NOTES: ${{ inputs.changes }}
-        run: |
-          if [ -n "$EXTRA_NOTES" ]; then
-            printf '%s\n\n' "$EXTRA_NOTES" | cat - build/release-notes.md > build/release-notes-final.md
-          else
-            cp build/release-notes.md build/release-notes-final.md
-          fi
-
       - name: Create Release
         env:
           GH_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
-        run: gh release create "${{ inputs.versionname }}" --title "Release ${{ inputs.versionname }}" --notes-file build/release-notes-final.md
+        run: gh release create "${{ inputs.versionname }}" --title "Release ${{ inputs.versionname }}" --notes-file build/release-notes.md
