@@ -5,8 +5,6 @@ import dev.enro.EnroController
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationHandle
-import dev.enro.NavigationKey
-import dev.enro.asBackstack
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.context.ContainerContext
 import dev.enro.controller.createNavigationModule
@@ -265,18 +263,16 @@ internal class WebHistoryPlugin(
      */
     /**
      * Serializes [state] for storage in `history.state`, verifying the result
-     * actually decodes. kotlinx can encode shapes it cannot decode (e.g.
-     * polymorphic value classes degrade to bare literals), which would
-     * silently write history entries that can't restore. When verification
-     * fails, the live (pre-serialization) metadata is logged — the JSON
-     * mangles the offending entry, but the in-memory map still has the real
-     * key and value type — and a metadata-stripped state is written instead:
-     * instance ids and keys are preserved, which is all back/forward
-     * restoration strictly requires, at the cost of metadata-dependent
-     * behaviour (e.g. result channels) for restored entries.
+     * actually decodes. kotlinx can encode shapes it cannot decode (see the
+     * discriminator-mode note on SerializerRepository.jsonConfiguration), and
+     * writing a state that can't restore would silently break browser back
+     * for the entry. That is a hard error — degrading (e.g. stripping
+     * metadata) would silently lose data such as result-channel wiring, which
+     * is worse than failing loudly. The error includes the live in-memory
+     * metadata: the serialized form mangles the offending entry, but the
+     * in-memory map still has the real keys and value types.
      */
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @OptIn(dev.enro.annotations.AdvancedEnroApi::class)
     private fun serializeForHistory(state: ContainerNode): String {
         val serialized = EnroController.jsonConfiguration.encodeToString(state)
         val verification = runCatching {
@@ -290,27 +286,12 @@ internal class WebHistoryPlugin(
             }
             "${instance.key::class.simpleName}[$entries]"
         }
-        EnroLog.error(
+        error(
             "WebHistoryPlugin: serialized history state failed round-trip verification " +
-                "(${verification.exceptionOrNull()?.message}). In-memory metadata by instance: " +
-                "$metadataDescription. Falling back to a metadata-stripped history entry."
+                "(${verification.exceptionOrNull()?.message}). This entry would not restore on " +
+                "browser back, so it has NOT been written to history. In-memory metadata by " +
+                "instance: $metadataDescription. State: $serialized"
         )
-
-        val sanitized = state.copy(
-            backstack = state.backstack
-                .map { instance -> instance.copy(metadata = NavigationKey.Metadata()) }
-                .asBackstack(),
-        )
-        val sanitizedSerialized = EnroController.jsonConfiguration.encodeToString(sanitized)
-        val sanitizedVerification = runCatching {
-            EnroController.jsonConfiguration.decodeFromString<ContainerNode>(sanitizedSerialized)
-        }
-        if (sanitizedVerification.isSuccess) return sanitizedSerialized
-        EnroLog.error(
-            "WebHistoryPlugin: metadata-stripped state also failed verification: " +
-                "${sanitizedVerification.exceptionOrNull()?.message}"
-        )
-        return serialized
     }
 
     @OptIn(ExperimentalWasmJsInterop::class)

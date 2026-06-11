@@ -45,7 +45,16 @@ internal class SerializerRepository {
     var jsonConfiguration: Json =
         Json {
             serializersModule = this@SerializerRepository.serializersModule
-            classDiscriminatorMode = kotlinx.serialization.json.ClassDiscriminatorMode.ALL_JSON_OBJECTS
+            // Deliberately the default (POLYMORPHIC) discriminator mode, NOT
+            // ALL_JSON_OBJECTS: kotlinx defers the discriminator write until
+            // the next beginStructure, and a value-class field never opens
+            // one — so under ALL_JSON_OBJECTS the pending discriminator for an
+            // inline field (e.g. a typed-id value class on a NavigationKey)
+            // leaks into whatever object opens next (Instance.metadata, in
+            // practice), corrupting the serialized form so it can't decode.
+            // POLYMORPHIC mode writes discriminators exactly where polymorphic
+            // deserialization needs them (Instance.key, metadata values) and
+            // nowhere else. Covered by HistoryStateSerializationTests.
             ignoreUnknownKeys = true
         }
         private set
