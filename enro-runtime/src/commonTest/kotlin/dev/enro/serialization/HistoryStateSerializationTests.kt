@@ -12,6 +12,7 @@ import kotlin.jvm.JvmInline
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @Serializable
 @JvmInline
@@ -24,17 +25,22 @@ internal data class HistoryTestKey(
 ) : NavigationKey
 
 /**
- * Regression tests for the serialized form of [NavigationKey.Instance] under
- * the controller's json configuration.
+ * Pins the serialization strategy for persisted navigation state (browser
+ * history, deep-link tooling) under the controller's json configuration.
  *
- * Under `ClassDiscriminatorMode.ALL_JSON_OBJECTS`, kotlinx defers each
- * discriminator write until the next `beginStructure` — and a value-class
- * field never opens a structure, so the pending discriminator for an inline
- * field (e.g. a typed-id value class on a NavigationKey) leaked into the next
- * object that opened: in practice `Instance.metadata`, which then failed to
- * decode ("Expected JsonObject, but had JsonLiteral"). These tests pin the
- * fixed (default, POLYMORPHIC) discriminator mode: instances whose keys carry
- * value-class fields must round-trip, with no discriminator leakage.
+ * kotlinx's STREAMING encoder has a bug under
+ * `ClassDiscriminatorMode.ALL_JSON_OBJECTS`: it defers each discriminator
+ * write until the next `beginStructure`, and a value-class field never opens
+ * one — so under polymorphic dispatch (`Instance.key`) the pending
+ * discriminator for an inline field (e.g. a typed-id value class on a
+ * NavigationKey) leaks into the next object that opens (`Instance.metadata`
+ * in practice), producing JSON that fails to decode with "Expected
+ * JsonObject, but had JsonLiteral". The TREE encoder (`encodeToJsonElement`)
+ * does not share the deferral and produces clean output for the same
+ * configuration, so persisted state must be encoded through the tree
+ * encoder. [streamingEncoderLeaksDiscriminator] documents the upstream bug:
+ * when it starts failing, kotlinx has fixed the streaming encoder and the
+ * tree-encode workaround can be retired.
  */
 class HistoryStateSerializationTests {
 
@@ -54,11 +60,11 @@ class HistoryStateSerializationTests {
         NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class))
 
     @Test
-    fun instanceWithValueClassKeyFieldRoundTrips() {
+    fun treeEncodedInstanceWithValueClassKeyFieldRoundTrips() {
         val json = repository().jsonConfiguration
         val instance = HistoryTestKey(id = HistoryTestId("abc-123"), name = "name").asInstance()
 
-        val encoded = json.encodeToString(instanceSerializer, instance)
+        val encoded = json.encodeToJsonElement(instanceSerializer, instance).toString()
         val decoded = json.decodeFromString(instanceSerializer, encoded)
 
         assertEquals(instance.id, decoded.id)
@@ -66,15 +72,12 @@ class HistoryStateSerializationTests {
     }
 
     @Test
-    fun valueClassFieldDiscriminatorDoesNotLeakIntoMetadata() {
+    fun treeEncodedInstanceDoesNotLeakDiscriminatorIntoMetadata() {
         val json = repository().jsonConfiguration
         val instance = HistoryTestKey(id = HistoryTestId("abc-123")).asInstance()
 
-        val encoded = json.encodeToString(instanceSerializer, instance)
+        val encoded = json.encodeToJsonElement(instanceSerializer, instance).toString()
 
-        // The leak's signature: the inline field's pending discriminator lands
-        // inside the next-opened object, so metadata gains a bogus
-        // {"type": "...HistoryTestId"} entry.
         assertFalse(
             encoded.contains("\"metadata\":{\"type\""),
             "discriminator leaked into metadata: $encoded",
@@ -82,6 +85,26 @@ class HistoryStateSerializationTests {
         assertFalse(
             encoded.contains("HistoryTestId\""),
             "inline field's class name should not appear anywhere in: $encoded",
+        )
+    }
+
+    /**
+     * Documents the upstream kotlinx streaming-encoder bug that forces the
+     * tree-encode strategy. If this test FAILS, kotlinx has fixed the
+     * deferred-discriminator leak — the tree-encode workaround in
+     * WebHistoryPlugin (and this test) can then be removed.
+     */
+    @Test
+    fun streamingEncoderLeaksDiscriminator() {
+        val json = repository().jsonConfiguration
+        val instance = HistoryTestKey(id = HistoryTestId("abc-123")).asInstance()
+
+        val encoded = json.encodeToString(instanceSerializer, instance)
+
+        assertTrue(
+            encoded.contains("\"metadata\":{\"type\":\"dev.enro.serialization.HistoryTestId\""),
+            "kotlinx appears to have fixed the streaming-encoder discriminator leak — " +
+                "the tree-encode workaround can be retired. Encoded: $encoded",
         )
     }
 }

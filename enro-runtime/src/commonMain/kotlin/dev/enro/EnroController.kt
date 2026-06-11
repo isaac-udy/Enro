@@ -13,7 +13,6 @@ import dev.enro.controller.repository.PluginRepository
 import dev.enro.controller.repository.SerializerRepository
 import dev.enro.controller.repository.ViewModelRepository
 import dev.enro.serialization.wrapForSerialization
-import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.json.Json
 
 @Stable
@@ -88,26 +87,6 @@ public class EnroController {
                     if (!hasSerializer) {
                         error("Object of type ${value::class} could not be added to NavigationKey.Metadata, make sure to register the serializer with the NavigationController.")
                     }
-                    // A registered serializer isn't enough: some shapes encode but
-                    // can't be decoded — kotlinx silently encodes a polymorphic
-                    // value class as its bare literal, which it then refuses to
-                    // read back ("Expected JsonObject, but had JsonLiteral").
-                    // Round-trip the value so a non-restorable type fails here,
-                    // at set time in debug, naming the type — instead of
-                    // producing persisted state that can't restore.
-                    val roundTrip = runCatching {
-                        val json = controller.serializers.jsonConfiguration
-                        val serializer = PolymorphicSerializer(Any::class)
-                        json.decodeFromString(serializer, json.encodeToString(serializer, wrapped))
-                    }
-                    roundTrip.onFailure { failure ->
-                        error(
-                            "Object of type ${value::class} could not be added to NavigationKey.Metadata: " +
-                                "it does not survive a serialization round-trip (${failure.message}). " +
-                                "If it is a value class, register it with valueClassSubclass / " +
-                                "BoxedValueClassSerializer instead of subclass."
-                        )
-                    }
                 }
             }
         }
@@ -119,6 +98,19 @@ public class EnroController {
             return instance ?: error("EnroController has not been installed")
         }
 
+        /**
+         * The controller's Json configuration, including all registered
+         * serializers and `ClassDiscriminatorMode.ALL_JSON_OBJECTS`.
+         *
+         * Caution: when serializing polymorphic content whose concrete
+         * classes contain value-class fields, prefer
+         * `encodeToJsonElement(...)` over `encodeToString(...)`. kotlinx's
+         * streaming encoder defers discriminator writes until the next
+         * `beginStructure`, and a value-class field never opens one — the
+         * pending discriminator leaks into the next-opened object, producing
+         * JSON that cannot be decoded. The tree encoder does not share the
+         * bug. See HistoryStateSerializationTests in enro-runtime.
+         */
         public val jsonConfiguration: Json get() {
             val instance = requireInstance()
             return instance.serializers.jsonConfiguration

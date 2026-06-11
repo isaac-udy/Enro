@@ -263,18 +263,33 @@ internal class WebHistoryPlugin(
      */
     /**
      * Serializes [state] for storage in `history.state`, verifying the result
-     * actually decodes. kotlinx can encode shapes it cannot decode (see the
-     * discriminator-mode note on SerializerRepository.jsonConfiguration), and
-     * writing a state that can't restore would silently break browser back
-     * for the entry. That is a hard error — degrading (e.g. stripping
-     * metadata) would silently lose data such as result-channel wiring, which
-     * is worse than failing loudly. The error includes the live in-memory
-     * metadata: the serialized form mangles the offending entry, but the
-     * in-memory map still has the real keys and value types.
+     * actually decodes.
+     *
+     * Encoding goes through the TREE encoder (`encodeToJsonElement`) rather
+     * than the streaming encoder (`encodeToString`): under
+     * `ClassDiscriminatorMode.ALL_JSON_OBJECTS` the streaming encoder defers
+     * each discriminator write until the next `beginStructure`, and a
+     * value-class field never opens one — so under polymorphic dispatch
+     * (`Instance.key`) the pending discriminator for an inline field leaks
+     * into the next object that opens (`Instance.metadata` in practice),
+     * producing JSON that cannot be decoded. The tree encoder does not share
+     * the deferral and produces clean, decodable output for the same
+     * configuration. See HistoryStateSerializationTests; the workaround can
+     * be removed when the upstream kotlinx streaming-encoder bug is fixed.
+     *
+     * Verification failure is a hard error — writing a state that can't
+     * restore would silently break browser back for the entry, and degrading
+     * (e.g. stripping metadata) would silently lose data such as
+     * result-channel wiring, which is worse than failing loudly. The error
+     * includes the live in-memory metadata: the serialized form mangles the
+     * offending entry, but the in-memory map still has the real keys and
+     * value types.
      */
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     private fun serializeForHistory(state: ContainerNode): String {
-        val serialized = EnroController.jsonConfiguration.encodeToString(state)
+        val serialized = EnroController.jsonConfiguration
+            .encodeToJsonElement(ContainerNode.serializer(), state)
+            .toString()
         val verification = runCatching {
             EnroController.jsonConfiguration.decodeFromString<ContainerNode>(serialized)
         }
