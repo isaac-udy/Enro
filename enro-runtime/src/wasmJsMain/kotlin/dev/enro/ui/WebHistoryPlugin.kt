@@ -263,19 +263,10 @@ internal class WebHistoryPlugin(
      */
     /**
      * Serializes [state] for storage in `history.state`, verifying the result
-     * actually decodes.
-     *
-     * Encoding goes through the TREE encoder (`encodeToJsonElement`) rather
-     * than the streaming encoder (`encodeToString`): under
-     * `ClassDiscriminatorMode.ALL_JSON_OBJECTS` the streaming encoder defers
-     * each discriminator write until the next `beginStructure`, and a
-     * value-class field never opens one — so under polymorphic dispatch
-     * (`Instance.key`) the pending discriminator for an inline field leaks
-     * into the next object that opens (`Instance.metadata` in practice),
-     * producing JSON that cannot be decoded. The tree encoder does not share
-     * the deferral and produces clean, decodable output for the same
-     * configuration. See HistoryStateSerializationTests; the workaround can
-     * be removed when the upstream kotlinx streaming-encoder bug is fixed.
+     * actually decodes. Encode-and-decode-back is cheap insurance against
+     * serialization shapes kotlinx mishandles (see the discriminator-mode
+     * note on SerializerRepository.jsonConfiguration for the class of bug
+     * this guards against).
      *
      * Verification failure is a hard error — writing a state that can't
      * restore would silently break browser back for the entry, and degrading
@@ -287,9 +278,7 @@ internal class WebHistoryPlugin(
      */
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     private fun serializeForHistory(state: ContainerNode): String {
-        val serialized = EnroController.jsonConfiguration
-            .encodeToJsonElement(ContainerNode.serializer(), state)
-            .toString()
+        val serialized = EnroController.jsonConfiguration.encodeToString(state)
         val verification = runCatching {
             EnroController.jsonConfiguration.decodeFromString<ContainerNode>(serialized)
         }

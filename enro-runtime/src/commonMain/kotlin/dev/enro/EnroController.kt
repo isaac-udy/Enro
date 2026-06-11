@@ -100,16 +100,11 @@ public class EnroController {
 
         /**
          * The controller's Json configuration, including all registered
-         * serializers and `ClassDiscriminatorMode.ALL_JSON_OBJECTS`.
-         *
-         * Caution: when serializing polymorphic content whose concrete
-         * classes contain value-class fields, prefer
-         * `encodeToJsonElement(...)` over `encodeToString(...)`. kotlinx's
-         * streaming encoder defers discriminator writes until the next
-         * `beginStructure`, and a value-class field never opens one — the
-         * pending discriminator leaks into the next-opened object, producing
-         * JSON that cannot be decoded. The tree encoder does not share the
-         * bug. See HistoryStateSerializationTests in enro-runtime.
+         * serializers. Uses the default (POLYMORPHIC) class-discriminator
+         * mode — `ALL_JSON_OBJECTS` is incompatible with kotlinx 1.11 for
+         * keys containing value-class or collection fields; see the note on
+         * SerializerRepository.jsonConfiguration and
+         * HistoryStateSerializationTests in enro-runtime.
          */
         public val jsonConfiguration: Json get() {
             val instance = requireInstance()
