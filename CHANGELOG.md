@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0-beta03 (Unreleased)
+## Unreleased
 
 ### Web browser history (WasmJS)
 
