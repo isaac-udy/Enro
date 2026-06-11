@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0-beta03 (2026-06-11)
+
 ### Web browser history (WasmJS)
 
 * Rewrote `WebHistoryPlugin`'s history synchronisation. Updates are now
