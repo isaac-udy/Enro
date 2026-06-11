@@ -115,6 +115,44 @@ tasks.register("updateVersion") {
             error("The versionName '$versionName' is the current versionName")
         }
 
+        // ------------------------------------------------------------------
+        // Changelog: changes stack under a standing "## Unreleased" header.
+        // Releasing stamps that header with the version (and date), inserts a
+        // fresh empty "## Unreleased" above it, and writes the released
+        // section's body to build/release-notes.md for the release workflow
+        // to attach to the GitHub release. All validation happens before any
+        // file is written, so a failed release leaves the repo untouched.
+        // ------------------------------------------------------------------
+        val changelogFile = rootProject.file("CHANGELOG.md")
+        val changelog = changelogFile.readText()
+        val unreleasedHeader = "## Unreleased"
+        val headerIndex = changelog.indexOf(unreleasedHeader)
+        if (headerIndex == -1) {
+            error("CHANGELOG.md must contain an '## Unreleased' section to release from")
+        }
+        val bodyStart = headerIndex + unreleasedHeader.length
+        val nextHeaderIndex = changelog.indexOf("\n## ", bodyStart)
+            .let { if (it == -1) changelog.length else it }
+        val releaseNotesBody = changelog.substring(bodyStart, nextHeaderIndex).trim()
+        if (releaseNotesBody.isEmpty()) {
+            error(
+                "The 'Unreleased' section of CHANGELOG.md is empty — " +
+                    "add release notes before releasing $versionName"
+            )
+        }
+
+        val releaseNotesFile = rootProject.layout.buildDirectory.file("release-notes.md").get().asFile
+        releaseNotesFile.parentFile.mkdirs()
+        releaseNotesFile.writeText(releaseNotesBody + "\n")
+
+        val releaseDate = java.time.LocalDate.now()
+        changelogFile.writeText(
+            changelog.replaceFirst(
+                unreleasedHeader,
+                "## Unreleased\n\n## $versionName ($releaseDate)",
+            )
+        )
+
         versionPropertiesFile.writeText("versionName=$versionName\nversionCode=$versionCode")
     }
 }
