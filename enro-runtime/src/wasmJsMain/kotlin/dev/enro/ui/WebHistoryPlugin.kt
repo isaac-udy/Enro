@@ -13,6 +13,7 @@ import dev.enro.path.getPathFromNavigationKey
 import dev.enro.platform.EnroLog
 import dev.enro.plugin.NavigationPlugin
 import kotlinx.browser.window
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -88,9 +89,20 @@ internal class WebHistoryPlugin(
         window.addEventListener("popstate", eventListener)
         processor = scope.launch {
             for (event in events) {
-                when (event) {
-                    null -> syncFromBackstack()
-                    else -> syncFromPopState(event)
+                try {
+                    when (event) {
+                        null -> syncFromBackstack()
+                        else -> syncFromPopState(event)
+                    }
+                } catch (c: CancellationException) {
+                    throw c
+                } catch (t: Throwable) {
+                    // One failed sync must not kill history handling for the
+                    // rest of the session — without this, a single throwing
+                    // serializer/interceptor/path computation would end the
+                    // processor loop and browser back would go silent while
+                    // the URL keeps changing natively.
+                    EnroLog.error("WebHistoryPlugin: history sync failed", t)
                 }
             }
         }
@@ -162,6 +174,8 @@ internal class WebHistoryPlugin(
     private fun decodeState(state: JsAny): ContainerNode? {
         return runCatching {
             EnroController.jsonConfiguration.decodeFromString<ContainerNode>(state.toString())
+        }.onFailure { t ->
+            EnroLog.warn("WebHistoryPlugin: failed to decode history state (ignoring entry): ${t.message}")
         }.getOrNull()
     }
 
