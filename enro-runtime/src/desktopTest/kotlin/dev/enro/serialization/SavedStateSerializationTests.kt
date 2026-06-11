@@ -19,7 +19,17 @@ import kotlin.test.assertEquals
  * `ClassDiscriminatorMode.ALL_OBJECTS`. This pins that an Instance whose key
  * carries a value-class field survives that round-trip — i.e. that the
  * androidx SavedState encoder does NOT share the kotlinx streaming-JSON
- * encoder's deferred-discriminator leak (see HistoryStateSerializationTests).
+ * encoder's deferred-discriminator leak (see HistoryStateSerializationTests
+ * and https://github.com/Kotlin/kotlinx.serialization/issues/3022).
+ *
+ * Lives in desktopTest rather than commonTest: the serialization logic under
+ * test is common, but on the androidHostTest target the Bundle-backed
+ * SavedState implementation is not representative of a real device — ANY
+ * polymorphic Instance round-trip fails there ("No valid saved state was
+ * found for the key 'key'"), including keys with no value classes at all.
+ * Desktop's Map-backed SavedState exercises the same common serialization
+ * code without the unrepresentative host-Bundle layer; device-faithful
+ * Android coverage would need an instrumented test.
  */
 class SavedStateSerializationTests {
 
