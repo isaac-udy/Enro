@@ -5,6 +5,7 @@ import androidx.savedstate.serialization.encodeToSavedState
 import dev.enro.NavigationKey
 import dev.enro.asInstance
 import dev.enro.controller.repository.SerializerRepository
+import dev.enro.test.platform.RobolectricHostTest
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -21,7 +22,7 @@ import kotlin.test.assertEquals
  * androidx SavedState encoder does NOT share the kotlinx streaming-JSON
  * encoder's deferred-discriminator leak (see HistoryStateSerializationTests).
  */
-class SavedStateSerializationTests {
+class SavedStateSerializationTests : RobolectricHostTest() {
 
     private fun repository(): SerializerRepository {
         return SerializerRepository().apply {
