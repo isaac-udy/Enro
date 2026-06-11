@@ -32,8 +32,9 @@
   the tree encoder crashes on collection fields. `POLYMORPHIC` mode writes
   discriminators exactly where polymorphic deserialization reads them and
   handles all of these shapes correctly. `HistoryStateSerializationTests`
-  documents the upstream kotlinx failures so a fixed kotlinx release is
-  detected. SavedState serialization (`ALL_OBJECTS`, androidx encoder) is
+  documents the upstream kotlinx failures
+  ([Kotlin/kotlinx.serialization#3022](https://github.com/Kotlin/kotlinx.serialization/issues/3022))
+  so a fixed kotlinx release is detected. SavedState serialization (`ALL_OBJECTS`, androidx encoder) is
   unaffected and covered by `SavedStateSerializationTests`.
 
 ### Predictive back

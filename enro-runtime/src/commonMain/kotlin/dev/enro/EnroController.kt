@@ -102,8 +102,9 @@ public class EnroController {
          * The controller's Json configuration, including all registered
          * serializers. Uses the default (POLYMORPHIC) class-discriminator
          * mode — `ALL_JSON_OBJECTS` is incompatible with kotlinx 1.11 for
-         * keys containing value-class or collection fields; see the note on
-         * SerializerRepository.jsonConfiguration and
+         * keys containing value-class or collection fields
+         * (https://github.com/Kotlin/kotlinx.serialization/issues/3022); see
+         * the note on SerializerRepository.jsonConfiguration and
          * HistoryStateSerializationTests in enro-runtime.
          */
         public val jsonConfiguration: Json get() {

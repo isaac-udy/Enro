@@ -53,7 +53,8 @@ internal data class HistoryTestKey(
  *
  * The documenting tests below assert those failures still exist: when one
  * starts failing, kotlinx has fixed the corresponding bug and the
- * POLYMORPHIC-mode constraint can be revisited.
+ * POLYMORPHIC-mode constraint can be revisited. Upstream issue:
+ * https://github.com/Kotlin/kotlinx.serialization/issues/3022
  */
 class HistoryStateSerializationTests {
 

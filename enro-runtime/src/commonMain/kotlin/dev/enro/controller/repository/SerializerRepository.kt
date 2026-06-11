@@ -57,7 +57,8 @@ internal class SerializerRepository {
             // reads them (Instance.key, metadata values) and handles all of
             // these shapes correctly. See HistoryStateSerializationTests,
             // which also documents the ALL_JSON_OBJECTS failures so a kotlinx
-            // upgrade that fixes them is detected.
+            // upgrade that fixes them is detected. Upstream:
+            // https://github.com/Kotlin/kotlinx.serialization/issues/3022
             ignoreUnknownKeys = true
         }
         private set
