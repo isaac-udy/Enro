@@ -266,9 +266,21 @@ internal class WebHistoryPlugin(
     @OptIn(ExperimentalWasmJsInterop::class)
     private suspend fun syncFromBackstack() {
         val currentState = createNodeFor(rootContainer)
-        val serializedCurrentState = EnroController.jsonConfiguration
-            .encodeToString(currentState)
-            .toJsString()
+        val serializedJson = EnroController.jsonConfiguration.encodeToString(currentState)
+        // Encode-side verification: kotlinx can encode shapes it cannot decode
+        // (e.g. polymorphic value classes degrade to bare literals), which
+        // would silently write history entries that can't restore. Catch that
+        // at write time, with the payload, so the offending shape is
+        // diagnosable instead of surfacing later as a dead back button.
+        runCatching {
+            EnroController.jsonConfiguration.decodeFromString<ContainerNode>(serializedJson)
+        }.onFailure { t ->
+            EnroLog.error(
+                "WebHistoryPlugin: serialized history state failed round-trip verification — " +
+                    "this entry will not restore on browser back. ${t.message}\nState: $serializedJson"
+            )
+        }
+        val serializedCurrentState = serializedJson.toJsString()
 
         val windowState = window.history.state?.let(::decodeState)
 
