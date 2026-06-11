@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0-beta02 (Unreleased)
+## 3.0.0-beta03 (Unreleased)
 
 ### Web browser history (WasmJS)
 
@@ -36,6 +36,8 @@
   ([Kotlin/kotlinx.serialization#3022](https://github.com/Kotlin/kotlinx.serialization/issues/3022))
   so a fixed kotlinx release is detected. SavedState serialization (`ALL_OBJECTS`, androidx encoder) is
   unaffected and covered by `SavedStateSerializationTests`.
+
+## 3.0.0-beta02
 
 ### Predictive back
 
