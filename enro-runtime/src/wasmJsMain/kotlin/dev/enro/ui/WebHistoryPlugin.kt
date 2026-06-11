@@ -9,6 +9,7 @@ import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.context.ContainerContext
 import dev.enro.controller.createNavigationModule
 import dev.enro.emptyBackstack
+import dev.enro.path.getBackstackFromPath
 import dev.enro.path.getPathFromNavigationKey
 import dev.enro.platform.EnroLog
 import dev.enro.plugin.NavigationPlugin
@@ -192,7 +193,9 @@ internal class WebHistoryPlugin(
         // nav). Under root-only routing we can't safely restore a sensible app
         // state from URL alone — no-op and let the user reload if they want the
         // URL to take effect.
-        var poppedState = event.state?.let(::decodeState) ?: return
+        val rawState = event.state ?: return
+        var poppedState = decodeState(rawState)
+            ?: return restoreFromUrl()
 
         var attempts = 0
         while (attempts < MAX_TRAVERSAL_ATTEMPTS) {
@@ -204,7 +207,9 @@ internal class WebHistoryPlugin(
             // The recorded state didn't take — step one entry further back and
             // try that one instead.
             traverse(-1)
-            poppedState = window.history.state?.let(::decodeState) ?: return
+            val nextRaw = window.history.state ?: return
+            poppedState = decodeState(nextRaw)
+                ?: return restoreFromUrl()
         }
 
         val poppedIndex = historyStates.indexOfFirst { it == poppedState }
@@ -212,6 +217,45 @@ internal class WebHistoryPlugin(
             historyIndex = poppedIndex
         } else {
             historyStates.add(poppedState)
+            historyIndex = historyStates.lastIndex
+        }
+    }
+
+    /**
+     * Fallback for a history entry whose recorded state can't be decoded —
+     * typically an entry written by an older build of the app whose
+     * serialization no longer matches (stale tab history survives deploys),
+     * or a metadata value that doesn't round-trip. Resolves the entry's URL
+     * through the controller's path bindings instead — degraded (single
+     * entry, same semantics as a cold-load deep link) but functional — and
+     * self-heals the entry by overwriting its unreadable state with the
+     * freshly serialized equivalent so the next visit decodes normally.
+     */
+    @OptIn(ExperimentalWasmJsInterop::class)
+    private suspend fun restoreFromUrl() {
+        val fallback = rootContainer.controller.getBackstackFromPath(currentUrl())
+        if (fallback == null) {
+            EnroLog.warn(
+                "WebHistoryPlugin: history entry state was unreadable and its URL " +
+                    "('${currentUrl()}') has no path binding — leaving app state unchanged"
+            )
+            return
+        }
+        applyNodeFor(rootContainer, ContainerNode(
+            containerKey = rootContainer.container.key,
+            backstack = fallback,
+            children = emptyList(),
+        ))
+        val currentState = createNodeFor(rootContainer)
+        val serializedCurrentState = EnroController.jsonConfiguration
+            .encodeToString(currentState)
+            .toJsString()
+        window.history.replaceState(serializedCurrentState, "", computeUrl())
+        val index = historyStates.indexOfFirst { it == currentState }
+        if (index != -1) {
+            historyIndex = index
+        } else {
+            historyStates.add(currentState)
             historyIndex = historyStates.lastIndex
         }
     }
