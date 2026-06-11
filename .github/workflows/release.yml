@@ -6,26 +6,26 @@ on:
         description: 'Version Name'
         required: true
         default: ''
-      changes:
-        description: 'Release notes'
-        required: true
-        default: ''
 jobs:
   release:
     name: Release
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          # add-and-commit pushes the release commit using the checkout
+          # credentials, so check out with the publish token.
+          token: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v3.9.0
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 21
 
       - name: Setup gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Install gpg secret key
         run: cat <(echo -e "${{ secrets.PUBLISH_SIGNING_KEY_LITERAL }}") | gpg --batch --import
@@ -36,8 +36,13 @@ jobs:
       - name: Export gpg secret key
         run: sudo gpg --export-secret-keys --pinentry-mode loopback --passphrase=${{ secrets.PUBLISH_SIGNING_KEY_PASSWORD }} ${{ secrets.PUBLISH_SIGNING_KEY_ID }} > ${{ secrets.PUBLISH_SIGNING_KEY_LOCATION }}
 
-      - name: Update Version Name
-        run: ./gradlew updateVersion -PversionName=${{ github.event.inputs.versionname }}
+      # Stamps version.properties AND the changelog: the standing
+      # "## Unreleased" section becomes "## <version> (<date>)", a fresh empty
+      # "## Unreleased" is inserted above it, and the released section's body
+      # is written to build/release-notes.md for the Create Release step.
+      # Fails (before writing anything) if the Unreleased section is empty.
+      - name: Update Version Name + Changelog
+        run: ./gradlew updateVersion -PversionName=${{ inputs.versionname }}
 
       - name: Publish Release
         env:
@@ -51,21 +56,15 @@ jobs:
         run: ./gradlew publishAllPublicationsToMavenCentralRepository -PmavenCentralUsername="${{ secrets.PUBLISH_SONATYPE_USER }}" -PmavenCentralPassword="${{ secrets.PUBLISH_SONATYPE_PASSWORD }}" --no-parallel --stacktrace --continue --exclude-task :enro-common:publishJsPublicationToMavenCentralRepository
 
       - name: Update Repo
-        uses: EndBug/add-and-commit@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+        uses: EndBug/add-and-commit@v9
         with:
-          add: "./version.properties"
-          message: ${{ format('Released {0}', github.event.inputs.versionname) }}
+          add: |
+            version.properties
+            CHANGELOG.md
+          message: ${{ format('Released {0}', inputs.versionname) }}
           push: true
 
       - name: Create Release
-        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.event.inputs.versionname }}
-          release_name: Release ${{ github.event.inputs.versionname }}
-          body: ${{  github.event.inputs.changes }}
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
+        run: gh release create "${{ inputs.versionname }}" --title "Release ${{ inputs.versionname }}" --notes-file build/release-notes.md

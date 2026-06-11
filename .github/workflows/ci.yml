@@ -10,6 +10,13 @@ on:
       - main
   workflow_dispatch:
 
+# Superseded PR runs are wasted compute: when a new push lands on a PR, cancel
+# the in-flight run for the previous commit. Pushes to main are never
+# cancelled — every main commit keeps its complete CI record for bisecting.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   ci-linux:
     name: CI / Linux (Android, Desktop, wasmJs)

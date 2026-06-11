@@ -45,7 +45,20 @@ internal class SerializerRepository {
     var jsonConfiguration: Json =
         Json {
             serializersModule = this@SerializerRepository.serializersModule
-            classDiscriminatorMode = kotlinx.serialization.json.ClassDiscriminatorMode.ALL_JSON_OBJECTS
+            // Deliberately the default (POLYMORPHIC) discriminator mode.
+            // ALL_JSON_OBJECTS is unusable with kotlinx 1.11 for realistic
+            // NavigationKey shapes: under polymorphic dispatch, the STREAMING
+            // encoder leaks a value-class field's deferred discriminator into
+            // the next-opened object (corrupting Instance.metadata), and emits
+            // INVALID JSON for collection fields (a "type" key:value pair
+            // inside an array); the TREE encoder crashes outright
+            // (NumberFormatException) on collection fields. POLYMORPHIC mode
+            // writes discriminators exactly where polymorphic deserialization
+            // reads them (Instance.key, metadata values) and handles all of
+            // these shapes correctly. See HistoryStateSerializationTests,
+            // which also documents the ALL_JSON_OBJECTS failures so a kotlinx
+            // upgrade that fixes them is detected. Upstream:
+            // https://github.com/Kotlin/kotlinx.serialization/issues/3022
             ignoreUnknownKeys = true
         }
         private set

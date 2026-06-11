@@ -14,8 +14,11 @@ kotlin {
             // Return default values for unmocked Android framework methods
             // rather than throwing "Method ... not mocked" — defensive against
             // any test path that brushes a stub from android.jar (e.g.
-            // savedstate's Bundle).
+            // savedstate's Bundle). Tests that genuinely exercise framework
+            // classes should extend dev.enro.test.platform.RobolectricHostTest
+            // to run under Robolectric on this target instead of the stubs.
             isReturnDefaultValues = true
+            isIncludeAndroidResources = true
         }
     }
 }
@@ -56,6 +59,11 @@ kotlin {
         commonTest.dependencies {
             implementation(project(":enro-test"))
             implementation(libs.compose.uiTest)
+        }
+        val androidHostTest by getting {
+            dependencies {
+                implementation(libs.testing.robolectric)
+            }
         }
         androidMain.dependencies {
             implementation(libs.androidx.core)

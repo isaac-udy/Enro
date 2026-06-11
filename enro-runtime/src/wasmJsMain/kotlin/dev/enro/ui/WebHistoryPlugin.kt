@@ -9,14 +9,18 @@ import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.context.ContainerContext
 import dev.enro.controller.createNavigationModule
 import dev.enro.emptyBackstack
+import dev.enro.path.getBackstackFromPath
 import dev.enro.path.getPathFromNavigationKey
 import dev.enro.platform.EnroLog
 import dev.enro.plugin.NavigationPlugin
 import kotlinx.browser.window
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
@@ -32,17 +36,47 @@ import org.w3c.dom.events.Event
 //
 // Nested URL routing is a known future direction; see docs/ghpages/docs/platform/web.md
 // for the model we ship in beta.
+//
+// Synchronisation model: every input (destination lifecycle callback or browser
+// popstate) is enqueued onto a single serial processor, so updates are never dropped
+// and the in-memory mirror of browser history can't silently diverge from the real
+// session history. History traversals the plugin itself initiates (`history.go`)
+// are awaited via their popstate echo, which is consumed before it can be mistaken
+// for a user-initiated back/forward.
 @ExperimentalEnroApi
 internal class WebHistoryPlugin(
     private val window: Window,
     private val rootContainer: ContainerContext,
 ) : NavigationPlugin() {
 
-    private var activeHistoryJob: Job? = null
-    private var eventListenerEnabled = true
-    private val eventListener: (Event) -> Unit = {
-        if (eventListenerEnabled && it is PopStateEvent) {
-            updateHistoryState(it)
+    private val scope = CoroutineScope(Dispatchers.Main)
+
+    /**
+     * Serial work queue. `null` means "the backstack changed, re-sync browser
+     * history"; a [PopStateEvent] means "the browser navigated, re-sync the
+     * backstack". Processing strictly in order is what keeps [historyStates]
+     * truthful — the previous implementation dropped events that arrived while
+     * a sync was in flight, which desynced the mirror and made a single
+     * browser back traverse multiple app screens.
+     */
+    private val events = Channel<PopStateEvent?>(capacity = Channel.UNLIMITED)
+
+    /**
+     * Set while the plugin is awaiting the popstate echo of its own
+     * `history.go()` call — see [traverse]. The next popstate completes it and
+     * is consumed instead of being enqueued as user navigation.
+     */
+    private var pendingTraversal: CompletableDeferred<Unit>? = null
+
+    private val eventListener: (Event) -> Unit = { event ->
+        if (event is PopStateEvent) {
+            val traversal = pendingTraversal
+            if (traversal != null) {
+                pendingTraversal = null
+                traversal.complete(Unit)
+            } else {
+                events.trySend(event)
+            }
         }
     }
 
@@ -50,24 +84,48 @@ internal class WebHistoryPlugin(
     private val historyStates = mutableListOf<ContainerNode>()
     private var historyIndex = -1 // Index of the current state in historyStates
 
+    private val processor: Job
+
     init {
         window.addEventListener("popstate", eventListener)
+        processor = scope.launch {
+            for (event in events) {
+                try {
+                    when (event) {
+                        null -> syncFromBackstack()
+                        else -> syncFromPopState(event)
+                    }
+                } catch (c: CancellationException) {
+                    throw c
+                } catch (t: Throwable) {
+                    // One failed sync must not kill history handling for the
+                    // rest of the session — without this, a single throwing
+                    // serializer/interceptor/path computation would end the
+                    // processor loop and browser back would go silent while
+                    // the URL keeps changing natively.
+                    EnroLog.error("WebHistoryPlugin: history sync failed", t)
+                }
+            }
+        }
     }
 
     override fun onAttached(controller: EnroController) {}
 
-    override fun onDetached(controller: EnroController) {}
+    override fun onDetached(controller: EnroController) {
+        window.removeEventListener("popstate", eventListener)
+        processor.cancel()
+    }
 
     override fun onOpened(navigationHandle: NavigationHandle<*>) {
-        updateHistoryState()
+        events.trySend(null)
     }
 
     override fun onActive(navigationHandle: NavigationHandle<*>) {
-        updateHistoryState()
+        events.trySend(null)
     }
 
     override fun onClosed(navigationHandle: NavigationHandle<*>) {
-        updateHistoryState()
+        events.trySend(null)
     }
 
     /**
@@ -91,135 +149,229 @@ internal class WebHistoryPlugin(
         return window.location.pathname + window.location.search
     }
 
+    /**
+     * Calls `history.go(delta)` and suspends until the browser delivers the
+     * resulting popstate, consuming that echo. `history.go` is asynchronous —
+     * the previous implementation `delay(1)`-ed and hoped, which raced the
+     * traversal (corrupting the history position) and let the echo arrive
+     * after suppression was lifted, where it was processed as a second
+     * user back. The timeout is a safety valve for browsers that elide the
+     * event (e.g. a no-op traversal at a history boundary).
+     */
+    private suspend fun traverse(delta: Int) {
+        if (delta == 0) return
+        val deferred = CompletableDeferred<Unit>()
+        pendingTraversal = deferred
+        window.history.go(delta)
+        try {
+            withTimeout(TRAVERSAL_TIMEOUT_MS) { deferred.await() }
+        } catch (t: TimeoutCancellationException) {
+            EnroLog.warn("WebHistoryPlugin: history traversal ($delta) produced no popstate within ${TRAVERSAL_TIMEOUT_MS}ms")
+            pendingTraversal = null
+        }
+    }
+
     @OptIn(ExperimentalWasmJsInterop::class)
-    private fun updateHistoryState(
-        event: PopStateEvent? = null,
-    ) {
-        val container = rootContainer
-        eventListenerEnabled = false
-        if (activeHistoryJob != null) {
+    private fun decodeState(state: JsAny): ContainerNode? {
+        return runCatching {
+            EnroController.jsonConfiguration.decodeFromString<ContainerNode>(state.toString())
+        }.onFailure { t ->
+            EnroLog.warn("WebHistoryPlugin: failed to decode history state (ignoring entry): ${t.message}")
+        }.getOrNull()
+    }
+
+    /**
+     * The browser navigated (user back/forward): drive the backstack to match
+     * the entry's recorded state. When a recorded state can't be applied (an
+     * interceptor or EmptyBehavior refuses the close, or the app rewrote the
+     * backstack concurrently), step past it — bounded, rather than blind-firing
+     * `history.back()` and re-entering through the listener.
+     */
+    @OptIn(ExperimentalWasmJsInterop::class)
+    private suspend fun syncFromPopState(event: PopStateEvent) {
+        // popstate without a state payload (manual address-bar edit, cross-origin
+        // nav). Under root-only routing we can't safely restore a sensible app
+        // state from URL alone — no-op and let the user reload if they want the
+        // URL to take effect.
+        val rawState = event.state ?: return
+        var poppedState = decodeState(rawState)
+            ?: return restoreFromUrl()
+
+        var attempts = 0
+        while (attempts < MAX_TRAVERSAL_ATTEMPTS) {
+            attempts++
+            val currentState = createNodeFor(rootContainer)
+            if (currentState == poppedState) break
+            applyNodeFor(rootContainer, poppedState)
+            if (createNodeFor(rootContainer) == poppedState) break
+            // The recorded state didn't take — step one entry further back and
+            // try that one instead.
+            traverse(-1)
+            val nextRaw = window.history.state ?: return
+            poppedState = decodeState(nextRaw)
+                ?: return restoreFromUrl()
+        }
+
+        val poppedIndex = historyStates.indexOfFirst { it == poppedState }
+        if (poppedIndex != -1) {
+            historyIndex = poppedIndex
+        } else {
+            historyStates.add(poppedState)
+            historyIndex = historyStates.lastIndex
+        }
+    }
+
+    /**
+     * Fallback for a history entry whose recorded state can't be decoded —
+     * typically an entry written by an older build of the app whose
+     * serialization no longer matches (stale tab history survives deploys),
+     * or a metadata value that doesn't round-trip. Resolves the entry's URL
+     * through the controller's path bindings instead — degraded (single
+     * entry, same semantics as a cold-load deep link) but functional — and
+     * self-heals the entry by overwriting its unreadable state with the
+     * freshly serialized equivalent so the next visit decodes normally.
+     */
+    @OptIn(ExperimentalWasmJsInterop::class)
+    private suspend fun restoreFromUrl() {
+        val fallback = rootContainer.controller.getBackstackFromPath(currentUrl())
+        if (fallback == null) {
+            EnroLog.warn(
+                "WebHistoryPlugin: history entry state was unreadable and its URL " +
+                    "('${currentUrl()}') has no path binding — leaving app state unchanged"
+            )
             return
         }
-        activeHistoryJob = CoroutineScope(Dispatchers.Main).launch {
-            val currentState = createNodeFor(container)
-            val serializedCurrentState = EnroController.jsonConfiguration
-                .encodeToString(currentState)
-                .toJsString()
+        applyNodeFor(rootContainer, ContainerNode(
+            containerKey = rootContainer.container.key,
+            backstack = fallback,
+            children = emptyList(),
+        ))
+        val currentState = createNodeFor(rootContainer)
+        val serializedCurrentState = serializeForHistory(currentState).toJsString()
+        window.history.replaceState(serializedCurrentState, "", computeUrl())
+        val index = historyStates.indexOfFirst { it == currentState }
+        if (index != -1) {
+            historyIndex = index
+        } else {
+            historyStates.add(currentState)
+            historyIndex = historyStates.lastIndex
+        }
+    }
 
-            val windowState = window.history.state?.let {
-                EnroController.jsonConfiguration
-                    .decodeFromString<ContainerNode>(it.toString())
+    /**
+     * The backstack changed (open/active/close): mirror it into browser history.
+     */
+    /**
+     * Serializes [state] for storage in `history.state`, verifying the result
+     * actually decodes. Encode-and-decode-back is cheap insurance against
+     * serialization shapes kotlinx mishandles (see the discriminator-mode
+     * note on SerializerRepository.jsonConfiguration for the class of bug
+     * this guards against).
+     *
+     * Verification failure is a hard error — writing a state that can't
+     * restore would silently break browser back for the entry, and degrading
+     * (e.g. stripping metadata) would silently lose data such as
+     * result-channel wiring, which is worse than failing loudly. The error
+     * includes the live in-memory metadata: the serialized form mangles the
+     * offending entry, but the in-memory map still has the real keys and
+     * value types.
+     */
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    private fun serializeForHistory(state: ContainerNode): String {
+        val serialized = EnroController.jsonConfiguration.encodeToString(state)
+        val verification = runCatching {
+            EnroController.jsonConfiguration.decodeFromString<ContainerNode>(serialized)
+        }
+        if (verification.isSuccess) return serialized
+
+        val metadataDescription = state.backstack.joinToString { instance ->
+            val entries = instance.metadata.map.entries.joinToString { (key, value) ->
+                "$key=${value::class.simpleName}"
+            }
+            "${instance.key::class.simpleName}[$entries]"
+        }
+        error(
+            "WebHistoryPlugin: serialized history state failed round-trip verification " +
+                "(${verification.exceptionOrNull()?.message}). This entry would not restore on " +
+                "browser back, so it has NOT been written to history. In-memory metadata by " +
+                "instance: $metadataDescription. State: $serialized"
+        )
+    }
+
+    @OptIn(ExperimentalWasmJsInterop::class)
+    private suspend fun syncFromBackstack() {
+        val currentState = createNodeFor(rootContainer)
+        val serializedCurrentState = serializeForHistory(currentState).toJsString()
+
+        val windowState = window.history.state?.let(::decodeState)
+
+        val isInit = historyStates.isEmpty() && historyIndex == -1
+        val isNoOp = windowState != null && windowState == currentState
+        val closeIndex = historyStates.indexOfLast { it == currentState }
+
+        when {
+            isInit -> {
+                historyStates.add(currentState)
+                historyIndex = 0
+                window.history.replaceState(serializedCurrentState, "", computeUrl())
             }
 
-            if (event != null && event.state != null) {
-                val poppedState = EnroController.jsonConfiguration
-                    .decodeFromString<ContainerNode>(event.state.toString())
-                if (currentState != poppedState) {
-                    applyNodeFor(container, poppedState)
-                    val updatedState = createNodeFor(container)
-                    if (updatedState != poppedState) {
-                        window.history.back()
-                        return@launch
-                    }
-                    val poppedIndex = historyStates.indexOfFirst { it == poppedState }
-                    if (poppedIndex != -1) {
-                        historyIndex = poppedIndex
-                    } else {
-                        historyStates.add(poppedState)
-                        historyIndex = historyStates.lastIndex
-                    }
+            isNoOp -> {
+                if (closeIndex >= 0) {
+                    historyIndex = closeIndex
+                    historyStates[historyIndex] = currentState
                 }
-            } else if (event != null) {
-                // popstate fired without a state payload (manual address-bar edit,
-                // cross-origin nav). Under root-only routing we can't safely restore
-                // a sensible app state from URL alone — no-op and let the user
-                // reload if they want the URL to take effect.
-                return@launch
-            } else { // Not a popstate event (opened, active, closed, init)
-                val isInit = historyStates.isEmpty() && historyIndex == -1
-                val isNoOp = windowState != null && windowState == currentState
+                window.history.replaceState(serializedCurrentState, "", computeUrl())
+            }
 
-                val closeIndex = historyStates.indexOfLast { it == currentState }
-                val isClose = closeIndex >= 0
-
-                when {
-                    isInit -> {
-                        historyStates.add(currentState)
-                        historyIndex = 0
-                        window.history.replaceState(
-                            serializedCurrentState,
-                            "example",
-                            computeUrl(),
-                        )
-                    }
-
-                    isNoOp -> {
-                        val windowIndex = historyStates.indexOfLast { it == currentState }
-                        historyIndex = windowIndex
-                        historyStates[historyIndex] = currentState
-                        window.history.replaceState(
-                            serializedCurrentState,
-                            "example",
-                            computeUrl(),
-                        )
-                    }
-
-                    isClose -> {
-                        // when the target state is a close, we need to pop back to that element in the history
-                        val previousIndex = historyIndex
-                        historyIndex = closeIndex
-                        historyStates[historyIndex] = currentState
-                        val goDelta = closeIndex - previousIndex
-                        if (closeIndex == 0) {
-                            window.history.go(goDelta)
-                            window.history.replaceState(
-                                serializedCurrentState,
-                                "example",
-                                computeUrl(),
-                            )
-                        } else {
-                            window.history.go(goDelta - 1)
-                            delay(1)
-                            window.history.pushState(
-                                serializedCurrentState,
-                                "example",
-                                computeUrl(),
-                            )
-                        }
-                    }
-                    else -> {
-                        val currentIndex = historyStates.indexOfLast { it == currentState }
-                        if (currentIndex < 0) {
-                            historyStates.subList(historyIndex + 1, historyStates.size).clear()
-                            historyStates.add(currentState)
-                            historyIndex = historyStates.lastIndex
-                            window.history.pushState(
-                                serializedCurrentState,
-                                "example",
-                                computeUrl(),
-                            )
-                        } else {
-                            val previousIndex = historyIndex
-                            historyIndex = currentIndex
-                            historyStates[historyIndex] = currentState
-                            window.history.go(previousIndex - currentIndex)
-                            delay(1)
-                            window.history.pushState(
-                                serializedCurrentState,
-                                "example",
-                                computeUrl(),
-                            )
-                        }
-                    }
+            closeIndex >= 0 -> {
+                // The current state exists earlier in the history: this is a close,
+                // pop back to that entry.
+                val previousIndex = historyIndex
+                historyIndex = closeIndex
+                historyStates[historyIndex] = currentState
+                if (closeIndex == 0) {
+                    traverse(closeIndex - previousIndex)
+                    window.history.replaceState(serializedCurrentState, "", computeUrl())
+                } else {
+                    // Land one short of the target and push it fresh: pruning the
+                    // browser's forward entries so forward can't resurrect screens
+                    // the app has closed. (Not possible at index 0 — there's no
+                    // entry before it to land on.)
+                    traverse(closeIndex - previousIndex - 1)
+                    window.history.pushState(serializedCurrentState, "", computeUrl())
+                    // The push destroyed the browser's forward entries — drop them
+                    // from the mirror too.
+                    historyStates.subList(historyIndex + 1, historyStates.size).clear()
                 }
             }
-            delay(1)
-        }.apply {
-            invokeOnCompletion {
-                activeHistoryJob = null
-                eventListenerEnabled = true
+
+            else -> {
+                // A state we haven't seen. Forward navigation (push) only when the
+                // previous state is a prefix of the new one — i.e. entries were
+                // added on top of what was already there. Anything else (a root
+                // reset such as loading → home, or a truncate-and-open section
+                // switch) REPLACES the current entry: the state it overwrites is
+                // no longer reachable in the app and must not survive as a browser
+                // back target.
+                val previous = historyStates.getOrNull(historyIndex)
+                val isPush = previous == null || isSubset(old = currentState, new = previous)
+                historyStates.subList(historyIndex + 1, historyStates.size).clear()
+                if (isPush) {
+                    historyStates.add(currentState)
+                    historyIndex = historyStates.lastIndex
+                    window.history.pushState(serializedCurrentState, "", computeUrl())
+                } else {
+                    historyStates[historyIndex] = currentState
+                    window.history.replaceState(serializedCurrentState, "", computeUrl())
+                }
             }
         }
+    }
+
+    private companion object {
+        const val TRAVERSAL_TIMEOUT_MS = 250L
+        const val MAX_TRAVERSAL_ATTEMPTS = 10
     }
 }
 
@@ -320,24 +472,12 @@ internal suspend fun applyNodeFor(
     }
 }
 
-internal fun isNewState(old: ContainerNode, new: ContainerNode): Boolean {
-    val oldInstructions = collectInstructionIds(old).toSet()
-    val newInstructions = collectInstructionIds(new).toSet()
-
-    // If the new tree has instructions not in the old tree, it's a new state
-    if (newInstructions.any { it !in oldInstructions }) {
-        return true
-    }
-
-    // Check if the new tree is a subset of the old tree
-    return !isSubset(old, new)
-}
-
-internal fun collectInstructionIds(node: ContainerNode): List<String> {
-    val instructions = node.backstack.map { it.id }
-    return instructions + node.children.flatMap { collectInstructionIds(it) }
-}
-
+/**
+ * True when [new] is a prefix-subset of [old] — i.e. [new] contains no entries
+ * that aren't already in [old], in the same order from the root. Used to
+ * distinguish a genuine forward push (the previous state is a subset of the
+ * next) from a replacement (entries were swapped out in a single transition).
+ */
 internal fun isSubset(old: ContainerNode, new: ContainerNode): Boolean {
     fun isNodeSubset(oldNode: ContainerNode, newNode: ContainerNode): Boolean {
         if (oldNode.containerKey != newNode.containerKey) {
