@@ -69,7 +69,7 @@ internal fun Project.configureKotlinMultiplatform(
                 }
                 binaries.executable()
                 compilerOptions {
-                    freeCompilerArgs.addAll("-Xexpect-actual-classes", "-Xwasm-attach-js-exception")
+                    freeCompilerArgs.addAll("-Xexpect-actual-classes")
                     freeCompilerArgs.add("-Xwasm-kclass-fqn")
                     optIn.addAll(*optIns)
                 }
