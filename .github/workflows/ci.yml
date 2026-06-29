@@ -54,7 +54,9 @@ jobs:
 
   ci-macos:
     name: CI / macOS (iOS)
-    runs-on: macos-latest
+    # macos-26 ships Xcode 26 / iOS 26 SDK, required by Compose Multiplatform 1.11+
+    # (skiko references the iOS 26 UIViewLayoutRegion API; older SDKs fail to link).
+    runs-on: macos-26
     steps:
       - name: Checkout
         uses: actions/checkout@v4

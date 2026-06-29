@@ -58,6 +58,7 @@ public sealed class NavigationDirection: Parcelable {
     @Serializable
     public data object Present : NavigationDirection()
 
+    @PublishedApi
     internal object MetadataKey : dev.enro.NavigationKey.MetadataKey<NavigationDirection?>(
         default = null,
     )
