@@ -53,6 +53,24 @@ internal class NavigationHandleHolder<T : NavigationKey>(
             EnroLog.warn("NavigationHandle with instance $instance has been cleared, but has received an operation which will be ignored")
         }
     }
+
+    internal companion object {
+        /**
+         * Creates a holder whose handle is already cleared. Used to reseed a destination's
+         * ViewModelStore after it is cleared on pop, so that ViewModel creation racing
+         * destination teardown (e.g. a Dialog window whose composition initializes on window
+         * attach, after the destination was popped) receives a no-op NavigationHandle instead
+         * of failing the strict lookup in [getNavigationHandleHolder].
+         */
+        fun cleared(
+            instance: NavigationKey.Instance<*>,
+        ): NavigationHandleHolder<*> {
+            @Suppress("UNCHECKED_CAST")
+            return NavigationHandleHolder(
+                navigationHandle = ClearedNavigationHandle(instance as NavigationKey.Instance<NavigationKey>),
+            )
+        }
+    }
 }
 
 @PublishedApi
