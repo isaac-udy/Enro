@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import dev.enro.NavigationKey
+import dev.enro.handle.NavigationHandleHolder
 import dev.enro.ui.LocalNavigationContext
 
 /**
@@ -171,7 +172,20 @@ private class ViewModelStoreStorage : ViewModel() {
     }
 
     fun clearViewModelStoreForInstance(instance: NavigationKey.Instance<*>) {
-        stores.remove(instance.id)?.clear()
+        val store = stores.remove(instance.id) ?: return
+        store.clear()
+        // A destination's composition can outlive the pop that clears its ViewModelStore:
+        // a Dialog's content composes in a separate window composition that initializes
+        // asynchronously on window attach, so a destination popped in the same frame it was
+        // opened can still create ViewModels against this store. Reseed a cleared holder so
+        // that late creation receives a no-op NavigationHandle (which logs and ignores
+        // operations) instead of crashing the strict lookup in getNavigationHandleHolder.
+        ViewModelProvider.create(
+            store = store,
+            factory = viewModelFactory {
+                initializer { NavigationHandleHolder.cleared(instance) }
+            },
+        )[NavigationHandleHolder::class]
     }
 
     override fun onCleared() {
