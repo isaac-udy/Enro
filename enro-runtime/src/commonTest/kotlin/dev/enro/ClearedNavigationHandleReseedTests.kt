@@ -2,11 +2,13 @@ package dev.enro
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import dev.enro.controller.createNavigationModule
 import dev.enro.handle.getNavigationHandleHolder
@@ -60,7 +62,8 @@ class ClearedNavigationHandleReseedTests {
                             val handle = navigationHandle()
                             compositionCount++
                             lastHandle = handle
-                            Text("state: ${handle.lifecycle.currentState}")
+                            val lifecycleState by handle.lifecycle.currentStateAsState()
+                            Text("state: $lifecycleState")
                         }
                     )
                 }
