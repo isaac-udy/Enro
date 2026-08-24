@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0-beta04 (2026-08-24)
+
 ### Stability
 
 * Fixed a production crash (`IllegalStateException: No NavigationHandle found for …` /
