@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Stability
+
+* Fixed a production crash (`IllegalStateException: No NavigationHandle found for …` /
+  `Expected NavigationHandleHolder to be present in ViewModelStoreOwner …`) that occurred
+  when a destination's content composed or recomposed after its ViewModelStore had been
+  cleared. This race is possible because Dialog windows and (on iOS) ModalBottomSheet
+  layers compose their content in a separate composition that initializes and tears down
+  asynchronously from the composition that drives navigation. A destination's cleared
+  store is now reseeded with a no-op `NavigationHandle` (which logs and ignores
+  operations), both when the destination itself is popped and when a parent destination's
+  store is cleared while children are still composing.
+
 ## 3.0.0-beta03 (2026-06-11)
 
 ### Web browser history (WasmJS)
