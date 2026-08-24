@@ -14,6 +14,8 @@
   operations), both when the destination itself is popped and when a parent destination's
   store is cleared while children are still composing.
 
+## 3.0.0-beta03 (2026-06-11)
+
 ### Web browser history (WasmJS)
 
 * Rewrote `WebHistoryPlugin`'s history synchronisation. Updates are now
