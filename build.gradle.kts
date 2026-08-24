@@ -77,7 +77,14 @@ subprojects {
             tasks.findByName("testAndroidHostTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("desktopTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("wasmJsBrowserTest")?.let { continuousIntegration.dependsOn(it) }
-            tasks.findByName("testWithEmulatorWtf")?.let { continuousIntegration.dependsOn(it) }
+            // emulator.wtf device tests need a valid EW_API_TOKEN. Fork PRs can't read
+            // repository secrets, so the token arrives empty there and the emulator.wtf
+            // plugin fails the whole build with "Http error 403: Invalid apiToken".
+            // Only wire the device tests into CI when a token is actually present
+            // (pushes to main and same-repo PRs); everything else still runs.
+            if (!System.getenv("EW_API_TOKEN").isNullOrBlank()) {
+                tasks.findByName("testWithEmulatorWtf")?.let { continuousIntegration.dependsOn(it) }
+            }
             // Compile-only fallbacks so modules without tests (e.g. recipes)
             // are still build-checked by CI. For modules with tests, these are
             // no-ops — the test tasks above already depend on compilation.
