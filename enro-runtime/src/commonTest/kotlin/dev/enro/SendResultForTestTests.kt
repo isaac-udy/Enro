@@ -4,6 +4,7 @@
 package dev.enro
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dev.enro.result.NavigationResultChannel
 import dev.enro.result.NavigationResultScope
 import dev.enro.result.open
@@ -16,6 +17,7 @@ import dev.enro.test.sendCompletedForTest
 import dev.enro.test.sendResultForTest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -41,6 +43,12 @@ import kotlin.test.assertTrue
 class SendResultForTestTests {
 
     private val testDispatcher = UnconfinedTestDispatcher()
+    private val createdViewModels = mutableListOf<ViewModel>()
+
+    private fun <T : ViewModel> T.track(): T {
+        createdViewModels += this
+        return this
+    }
 
     @BeforeTest
     fun setUp() {
@@ -49,8 +57,13 @@ class SendResultForTestTests {
 
     @AfterTest
     fun tearDown() {
-        Dispatchers.resetMain()
+        // Cancel the channels' observe collectors before resetting Main: a collector left
+        // subscribed to pendingResults would be woken by a later test's registerResult and
+        // dispatch to a Main dispatcher that no longer exists on targets without one.
+        createdViewModels.forEach { it.viewModelScope.cancel() }
+        createdViewModels.clear()
         NavigationResultChannel.pendingResults.value = emptyMap()
+        Dispatchers.resetMain()
     }
 
     @Test
@@ -59,7 +72,7 @@ class SendResultForTestTests {
             ParentKey(),
         )
 
-        val viewModel = StringResultTestViewModel()
+        val viewModel = StringResultTestViewModel().track()
         viewModel.resultChannel.open(StringResultChildKey())
 
         val child = handle.assertOpened<StringResultChildKey>()
@@ -75,7 +88,7 @@ class SendResultForTestTests {
             ParentKey(),
         )
 
-        val viewModel = UnitResultTestViewModel()
+        val viewModel = UnitResultTestViewModel().track()
         viewModel.resultChannel.open(UnitChildKey())
 
         val child = handle.assertOpened<UnitChildKey>()
@@ -91,7 +104,7 @@ class SendResultForTestTests {
             ParentKey(),
         )
 
-        val viewModel = UnitResultTestViewModel()
+        val viewModel = UnitResultTestViewModel().track()
         viewModel.resultChannel.open(UnitChildKey())
 
         val child = handle.assertOpened<UnitChildKey>()
@@ -107,7 +120,7 @@ class SendResultForTestTests {
             ParentKey(),
         )
 
-        val viewModel = StringResultTestViewModel()
+        val viewModel = StringResultTestViewModel().track()
 
         assertNull(viewModel.receivedResult)
         assertFalse(viewModel.closedCalled)
