@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### enro-test
+
+* Added `sendResultForTest(result)`, `sendCompletedForTest()`, and
+  `sendClosedForTest()` extensions on `NavigationKey.Instance` in commonMain,
+  enabling ViewModel result-channel testing on all KMP targets.
+* Deprecated the Android-only `sendResultForTest` in
+  `dev.enro.test.extensions` in favour of the new common version.
+* Widened `assertClosed()` / `assertNotClosed()` receivers from
+  `TestNavigationHandle<NavigationKey>` to `TestNavigationHandle<*>`.
+* Deprecated `EnroTest.disableAnimations()` / `enableAnimations()` (no-ops
+  in the current API).
+* Added KDoc to `TestNavigationHandle`, `putNavigationHandleForViewModel`,
+  `assertOperationExecuted`, and `assertOperationNotExecuted`.
+
+### enro-runtime
+
+* Fixed `navigationHandle<K>()` KDoc: the delegate throws at construction
+  (ViewModel init), not on first access.
+
 ## 3.0.0-beta04 (2026-08-24)
 
 ### Stability

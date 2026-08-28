@@ -4,10 +4,10 @@ import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 
 /**
- * Asserts that the NavigationContainer's backstack contains at least one NavigationKey.Instance that matches the
- * provided predicate.
+ * Asserts that the [TestNavigationHandle]'s operation history contains at least one operation of type [T]
+ * matching the provided [predicate].
  *
- * @return The first NavigationKey.Instance that matches the predicate
+ * @return The last matching operation.
  */
 inline fun <reified T : NavigationOperation.RootOperation> TestNavigationHandle<*>.assertOperationExecuted(
     predicate: (T) -> Boolean = { true },
@@ -24,8 +24,8 @@ inline fun <reified T : NavigationOperation.RootOperation> TestNavigationHandle<
 }
 
 /**
- * Asserts that the NavigationContainer's backstack does not contain a NavigationKey.Instance that matches the provided
- * predicate
+ * Asserts that the [TestNavigationHandle]'s operation history does not contain an [Open] operation
+ * of type [T] matching the provided [predicate].
  */
 inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOperationNotExecuted(
     predicate: (NavigationKey.Instance<T>) -> Boolean,

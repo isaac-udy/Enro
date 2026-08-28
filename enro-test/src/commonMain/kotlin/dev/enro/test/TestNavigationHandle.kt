@@ -10,6 +10,17 @@ import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.asInstance
 
+/**
+ * A [NavigationHandle] implementation that records every [NavigationOperation] executed
+ * against it, instead of dispatching to a real navigation container.
+ *
+ * Recorded operations are stored in [operations] and can be inspected with the typed
+ * assertion helpers ([assertOpened], [assertClosed], [assertCompleted], etc.).
+ * Call [clearOperationHistory] to reset the list for a subsequent scenario.
+ *
+ * Once a [Close] or [Complete] targeting this handle's own [instance] has been recorded,
+ * the handle rejects further operations until [clearOperationHistory] is called.
+ */
 class TestNavigationHandle<out T : NavigationKey>(
     override val instance: NavigationKey.Instance<T>,
     override val savedStateHandle: SavedStateHandle = SavedStateHandle(),

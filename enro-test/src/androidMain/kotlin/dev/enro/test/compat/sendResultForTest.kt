@@ -4,6 +4,14 @@ import dev.enro.NavigationKey
 import dev.enro.asCompleteOperation
 import dev.enro.test.fixtures.NavigationContainerFixtures.ContainerFixtureKey
 
+@Deprecated(
+    message = "Use the common sendResultForTest from dev.enro.test instead",
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith(
+        "sendResultForTest(result)",
+        "dev.enro.test.sendResultForTest"
+    )
+)
 fun <T : Any> NavigationKey.Instance<NavigationKey.WithResult<T>>.sendResultForTest(
     result: T
 ) {
