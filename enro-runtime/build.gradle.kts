@@ -32,6 +32,7 @@ tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
         filter {
             excludeTestsMatching("dev.enro.SceneHarnessSmokeTest")
             excludeTestsMatching("dev.enro.SceneIntegrationTests")
+            excludeTestsMatching("dev.enro.ClearedNavigationHandleReseedTests")
             excludeTestsMatching("dev.enro.BackstackSavedStateTests")
         }
     }

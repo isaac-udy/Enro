@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import dev.enro.NavigationKey
+import dev.enro.handle.NavigationHandleHolder
 import dev.enro.ui.LocalNavigationContext
 
 /**
@@ -164,20 +165,49 @@ private class DestinationViewModelStoreOwner(
  * This ViewModel is stored in the parent ViewModelStore and manages child stores.
  */
 private class ViewModelStoreStorage : ViewModel() {
-    private val stores = mutableMapOf<String, ViewModelStore>()
+    private val stores = mutableMapOf<String, StoreEntry>()
+
+    private class StoreEntry(
+        val instance: NavigationKey.Instance<*>,
+        val store: ViewModelStore,
+    )
 
     fun viewModelStoreForInstance(instance: NavigationKey.Instance<*>): ViewModelStore {
-        return stores.getOrPut(instance.id) { ViewModelStore() }
+        return stores.getOrPut(instance.id) { StoreEntry(instance, ViewModelStore()) }.store
     }
 
     fun clearViewModelStoreForInstance(instance: NavigationKey.Instance<*>) {
-        stores.remove(instance.id)?.clear()
+        val entry = stores.remove(instance.id) ?: return
+        entry.store.clearAndReseedNavigationHandle(instance)
     }
 
     override fun onCleared() {
-        stores.forEach { (_, store) -> store.clear() }
+        stores.forEach { (_, entry) ->
+            entry.store.clearAndReseedNavigationHandle(entry.instance)
+        }
         stores.clear()
     }
+}
+
+/**
+ * A destination's composition can outlive the clear of its ViewModelStore:
+ * a Dialog's content (or a ModalBottomSheet's, on iOS) composes in a separate
+ * window/layer composition that initializes and tears down asynchronously, so a
+ * destination that is popped — or whose parent destination is popped, which clears
+ * every child store through [ViewModelStoreStorage.onCleared] — can still create
+ * ViewModels against this store for a frame. Reseed a cleared holder so that late
+ * creation receives a no-op NavigationHandle (which logs and ignores operations)
+ * instead of crashing the strict lookup in getNavigationHandleHolder or the
+ * `navigationHandle()` composable's "No NavigationHandle found" initializer.
+ */
+private fun ViewModelStore.clearAndReseedNavigationHandle(instance: NavigationKey.Instance<*>) {
+    clear()
+    ViewModelProvider.create(
+        store = this,
+        factory = viewModelFactory {
+            initializer { NavigationHandleHolder.cleared(instance) }
+        },
+    )[NavigationHandleHolder::class]
 }
 
 /**
