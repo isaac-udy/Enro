@@ -50,13 +50,17 @@ object EnroTest {
         return navigationController ?: throw IllegalStateException("NavigationController is not installed")
     }
 
+    @Deprecated(
+        message = "This function is a no-op in the current API and will be removed in a future release.",
+        level = DeprecationLevel.WARNING,
+    )
     fun disableAnimations(controller: EnroController) {
-        // Animation control might need to be handled differently in the new API
-        // For now, we'll leave this as a no-op
     }
 
+    @Deprecated(
+        message = "This function is a no-op in the current API and will be removed in a future release.",
+        level = DeprecationLevel.WARNING,
+    )
     fun enableAnimations(controller: EnroController) {
-        // Animation control might need to be handled differently in the new API
-        // For now, we'll leave this as a no-op
     }
 }

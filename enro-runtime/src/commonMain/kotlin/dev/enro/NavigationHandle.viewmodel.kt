@@ -22,9 +22,10 @@ import kotlin.reflect.KClass
  * }
  * ```
  *
- * If [K] doesn't match the destination's actual key type, the property
- * throws on first access with a clear message — usually a sign the wrong
- * ViewModel was wired to the destination. Configuration registered via
+ * If [K] doesn't match the destination's actual key type, the delegate
+ * throws at construction (during ViewModel init) with a clear message —
+ * usually a sign the wrong ViewModel was wired to the destination.
+ * Configuration registered via
  * [config] is torn down when the ViewModel itself is cleared.
  */
 public inline fun <reified K : NavigationKey> ViewModel.navigationHandle(

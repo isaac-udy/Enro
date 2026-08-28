@@ -7,7 +7,7 @@ import dev.enro.NavigationOperation
 /**
  * Asserts that the NavigationHandle's instance has been closed
  */
-fun TestNavigationHandle<NavigationKey>.assertClosed() {
+fun TestNavigationHandle<*>.assertClosed() {
     val last = operations.lastOrNull()
     enroAssert(last != null) {
         "Expected the last operation to be a close operation, but there were no operations"
@@ -20,7 +20,7 @@ fun TestNavigationHandle<NavigationKey>.assertClosed() {
     }
 }
 
-fun TestNavigationHandle<NavigationKey>.assertNotClosed() {
+fun TestNavigationHandle<*>.assertNotClosed() {
     val last = operations.lastOrNull()
     if (last !is NavigationOperation.Close<*>) return
     enroAssert(last.instance.id != instance.id) {
