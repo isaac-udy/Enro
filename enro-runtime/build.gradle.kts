@@ -59,6 +59,7 @@ kotlin {
         commonTest.dependencies {
             implementation(project(":enro-test"))
             implementation(libs.compose.uiTest)
+            implementation(libs.kotlinx.coroutines.test)
         }
         val androidHostTest by getting {
             dependencies {
