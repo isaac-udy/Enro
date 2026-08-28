@@ -162,6 +162,41 @@ The injected handle survives until you put a new one for the same ViewModel
 type. Pair it with `runEnroTest` (or `EnroTestRule`) so the underlying
 controller is set up.
 
+### Simulating child results
+
+When a ViewModel opens a child destination through a `NavigationResultChannel`,
+use the `send*ForTest` extensions on the child's `NavigationKey.Instance`
+(returned by `assertOpened`) to simulate the child completing or closing:
+
+```kotlin
+// sendResultForTest — typed result
+val child = handle.assertOpened<ConfirmDestination>()
+child.sendResultForTest("confirmed")
+
+// sendCompletedForTest — Unit/no-payload completion
+val dialog = handle.assertOpened<AcknowledgeDialog>()
+dialog.sendCompletedForTest()
+
+// sendClosedForTest — the child was dismissed without a result
+val picker = handle.assertOpened<DatePicker>()
+picker.sendClosedForTest()
+```
+
+Result channels observe in `viewModelScope`, which dispatches on `Dispatchers.Main`.
+In tests, replace Main with an unconfined dispatcher so callbacks fire eagerly:
+
+```kotlin
+@BeforeTest
+fun setUp() {
+    Dispatchers.setMain(UnconfinedTestDispatcher())
+}
+
+@AfterTest
+fun tearDown() {
+    Dispatchers.resetMain()
+}
+```
+
 ## Strict mode
 
 When `runEnroTest { }` or `EnroTestRule` is active, attempting to perform
