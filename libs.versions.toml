@@ -1,12 +1,12 @@
 [versions]
-# Pinned to 9.0.0 (not 9.2.0) so the project can be synced in IntelliJ IDEA, whose
-# bundled Android plugin currently supports AGP up to 9.0.0. The KMP-library DSL uses
-# the `androidLibrary {}` accessor, which is valid on 9.0–9.2, so this can be bumped
-# back to "9.2.0" once the IDE supports it (with only a deprecation warning).
-agp = "9.0.0"
-android-compileSdk = "36"
+# Must match the AGP version of every build that includes this one as a composite (ukpt,
+# udytils): Gradle refuses to load two AGP versions in one build. androidx Compose 1.12
+# (Compose Multiplatform 1.12) requires AGP 9.1.0+ and compileSdk 37. IntelliJ IDEA 2026.1
+# syncs AGP only up to 9.0.0; use Android Studio for Android work until the IDE catches up.
+agp = "9.2.1"
+android-compileSdk = "37"
 android-minSdk = "23"
-android-targetSdk = "36"
+android-targetSdk = "37"
 kotlin = "2.4.0"
 compose-plugin = "1.11.1"
 compose = "1.11.1"
