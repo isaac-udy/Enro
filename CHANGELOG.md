@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0-beta05 (2026-09-17)
+
 ### enro-test
 
 * Added `sendResultForTest(result)`, `sendCompletedForTest()`, and
