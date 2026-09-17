@@ -54,7 +54,7 @@ class HistoryTransitionTests {
     )
 
     @Test
-    fun `equality is by instance id, includes the active child, and ignores empty children`() {
+    fun `equality is by instance id and active child and ignores empty children`() {
         assertEquals(shellNode(), shellNode())
         assertNotEquals(shellNode(activeChild = homeTab), shellNode(activeChild = predictTab))
         assertNotEquals(shellNode(), shellNode(predictBackstack = listOf(predict, round)))
@@ -121,7 +121,7 @@ class HistoryTransitionTests {
     }
 
     @Test
-    fun `the first active container, or one that has just appeared, is a replace`() {
+    fun `the first active container or one that has just appeared is a replace`() {
         val noActive = shellNode(activeChild = null)
         assertEquals(HistoryTransition.Replace, classifyTransition(noActive, shellNode(activeChild = homeTab)))
 
