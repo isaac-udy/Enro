@@ -39,6 +39,10 @@ import org.w3c.dom.events.Event
 // which nested container is active, which is a tab switch. The URL is the path of the deepest
 // active destination that has one.
 //
+// With `nestedContainers` false only the root container's backstack is mirrored, and the URL
+// is the root destination's path — the model of releases before nested containers were
+// recorded, kept so an app can adopt the tree on its own schedule.
+//
 // Synchronisation model: every input (destination lifecycle callback or browser
 // popstate) is enqueued onto a single serial processor, so updates are never dropped
 // and the in-memory mirror of browser history can't silently diverge from the real
@@ -49,6 +53,7 @@ import org.w3c.dom.events.Event
 internal class WebHistoryPlugin(
     private val window: Window,
     private val rootContainer: ContainerContext,
+    private val nestedContainers: Boolean,
 ) : NavigationPlugin() {
 
     private val scope = CoroutineScope(Dispatchers.Main)
@@ -151,7 +156,7 @@ internal class WebHistoryPlugin(
         var container: ContainerContext? = rootContainer
         while (container != null) {
             keys += container.container.backstack.lastOrNull()?.key ?: break
-            container = container.topDestination()?.activeChild
+            container = container.topDestination()?.activeChild.takeIf { nestedContainers }
         }
         return keys.asReversed()
             .firstNotNullOfOrNull { rootContainer.controller.getPathFromNavigationKey(it) }
@@ -215,15 +220,15 @@ internal class WebHistoryPlugin(
         var attempts = 0
         while (attempts < MAX_TRAVERSAL_ATTEMPTS) {
             attempts++
-            val currentState = createNodeFor(rootContainer)
+            val currentState = createNodeFor(rootContainer, nestedContainers)
             if (currentState == poppedState) break
             applyNodeFor(rootContainer, poppedState)
-            if (awaitNodeFor(rootContainer, poppedState)) break
+            if (awaitNodeFor(rootContainer, poppedState, nestedContainers)) break
             // The recorded state didn't take — step one entry further back and
             // try that one instead.
             EnroLog.debug(
                 "WebHistoryPlugin: popped state did not apply (attempt $attempts), stepping back.\n" +
-                    "expected: $poppedState\nactual: ${createNodeFor(rootContainer)}"
+                    "expected: $poppedState\nactual: ${createNodeFor(rootContainer, nestedContainers)}"
             )
             traverse(-1)
             val nextRaw = window.history.state ?: return
@@ -264,7 +269,7 @@ internal class WebHistoryPlugin(
             containerKey = rootContainer.container.key,
             backstack = fallback,
         ))
-        val currentState = createNodeFor(rootContainer)
+        val currentState = createNodeFor(rootContainer, nestedContainers)
         val serializedCurrentState = serializeForHistory(currentState).toJsString()
         window.history.replaceState(serializedCurrentState, "", computeUrl())
         val index = historyStates.indexOfFirst { it == currentState }
@@ -318,7 +323,7 @@ internal class WebHistoryPlugin(
      */
     @OptIn(ExperimentalWasmJsInterop::class)
     private suspend fun syncFromBackstack() {
-        val currentState = createNodeFor(rootContainer)
+        val currentState = createNodeFor(rootContainer, nestedContainers)
         val serializedCurrentState = serializeForHistory(currentState).toJsString()
 
         val windowState = window.history.state?.let(::decodeState)
@@ -392,12 +397,19 @@ internal class WebHistoryPlugin(
 }
 
 /**
- * Experimental browser-based back handling
+ * Experimental browser-based back handling.
+ *
+ * @param nestedContainerHistory whether the containers nested under [container]'s destinations
+ *  take part in browser history: a push inside one, or a change of which one a destination has
+ *  active, becomes an entry, and the URL is the deepest active destination's path. `false` mirrors
+ *  the root container alone, the model of releases before nested containers were recorded, for
+ *  an app that wants to adopt the tree on its own schedule.
  */
 @ExperimentalEnroApi
 @Composable
 public fun InstallWebHistoryPlugin(
     container: NavigationContainerState,
+    nestedContainerHistory: Boolean = true,
 ) {
     LaunchedEffect(Unit) {
         container.context.controller.addModule(
@@ -405,6 +417,7 @@ public fun InstallWebHistoryPlugin(
                 plugin(WebHistoryPlugin(
                     window = window,
                     rootContainer = container.context,
+                    nestedContainers = nestedContainerHistory,
                 ))
             }
         )

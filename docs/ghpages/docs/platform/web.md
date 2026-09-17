@@ -68,6 +68,11 @@ directly inside `EnroBrowserContent`:
   same way it does for the root, so back never resurrects a screen the
   app has already closed.
 
+To keep nested navigation session-local instead — the root-only model
+of earlier releases — pass `InstallWebHistoryPlugin(container,
+nestedContainerHistory = false)`: only the root container's backstack
+is recorded, and the URL is the root destination's path.
+
 Two things are deliberately *not* navigation. A nested container
 appearing for the first time — a destination composing its tabs, a
 deep link seeding a tab several screens deep — fills in the entry it

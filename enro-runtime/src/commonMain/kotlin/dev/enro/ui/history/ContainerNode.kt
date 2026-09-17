@@ -79,10 +79,16 @@ internal fun ContainerContext.topDestination(): DestinationContext<NavigationKey
     return children.firstOrNull { it.instance.id == topId }
 }
 
+/**
+ * Reads the tree under [container]. With [nestedContainers] false only the container's own
+ * backstack is read, which is the root-only history of releases before nested containers were
+ * recorded.
+ */
 internal fun createNodeFor(
     container: ContainerContext,
+    nestedContainers: Boolean = true,
 ): ContainerNode {
-    val top = container.topDestination()
+    val top = container.topDestination().takeIf { nestedContainers }
     return ContainerNode(
         containerKey = container.container.key,
         backstack = container.container.backstack,
@@ -149,9 +155,10 @@ internal suspend fun applyNodeFor(
 internal suspend fun awaitNodeFor(
     container: ContainerContext,
     node: ContainerNode,
+    nestedContainers: Boolean = true,
 ): Boolean {
     return withTimeoutOrNull(SETTLE_TIMEOUT_MS) {
-        while (createNodeFor(container) != node) {
+        while (createNodeFor(container, nestedContainers) != node) {
             yield()
         }
         true
