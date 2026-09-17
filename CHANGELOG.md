@@ -18,6 +18,20 @@
 
 ### enro-runtime
 
+* Web history now mirrors the whole container tree under the root container,
+  not just the root backstack. A push inside a nested container (a screen
+  opened within a tab, a detail pane) and a change of a destination's active
+  container (a tab switch) are browser history entries; back and forward
+  restore every container's backstack and each destination's active
+  container. The URL is the path of the deepest active destination that has
+  one. A nested container appearing for the first time — a destination
+  composing, or a deep link seeding a tab — fills in the current entry
+  rather than pushing one. **This is the default.** An app whose nested
+  navigation should stay session-local for now can pass
+  `InstallWebHistoryPlugin(container, nestedContainerHistory = false)` to
+  keep the previous root-only behaviour.
+* The web history plugin records the destinations already on screen when it
+  is installed, rather than waiting for the next navigation.
 * Fixed `navigationHandle<K>()` KDoc: the delegate throws at construction
   (ViewModel init), not on first access.
 
