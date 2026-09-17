@@ -2,17 +2,22 @@ package dev.enro.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import dev.enro.EnroController
-import dev.enro.NavigationBackstack
-import dev.enro.NavigationContainer
 import dev.enro.NavigationHandle
+import dev.enro.NavigationKey
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.context.ContainerContext
 import dev.enro.controller.createNavigationModule
-import dev.enro.emptyBackstack
 import dev.enro.path.getBackstackFromPath
 import dev.enro.path.getPathFromNavigationKey
 import dev.enro.platform.EnroLog
 import dev.enro.plugin.NavigationPlugin
+import dev.enro.ui.history.ContainerNode
+import dev.enro.ui.history.HistoryTransition
+import dev.enro.ui.history.applyNodeFor
+import dev.enro.ui.history.awaitNodeFor
+import dev.enro.ui.history.classifyTransition
+import dev.enro.ui.history.createNodeFor
+import dev.enro.ui.history.topDestination
 import kotlinx.browser.window
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -23,19 +28,16 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.yield
-import kotlinx.serialization.Serializable
 import org.w3c.dom.PopStateEvent
 import org.w3c.dom.Window
 import org.w3c.dom.events.Event
 
-// Root-container-only history: only the root container's backstack participates in
-// browser history. Inner-container navigation (modals, tabs, list-detail panes, etc.)
-// is session-local and not reflected in the URL or back/forward history. This is the
-// "Twitter/X / Reddit" model — pages get URLs, page-internal state does not.
-//
-// Nested URL routing is a known future direction; see docs/ghpages/docs/platform/web.md
-// for the model we ship in beta.
+// Browser history mirrors the whole container tree under the root: the root container's
+// backstack, and beneath the destination on top of it the containers that destination hosts,
+// recursively (see ContainerNode). A push inside a nested container — a screen opened within
+// a tab, a detail pane — is a history entry like a push on the root, and so is a change of
+// which nested container is active, which is a tab switch. The URL is the path of the deepest
+// active destination that has one.
 //
 // Synchronisation model: every input (destination lifecycle callback or browser
 // popstate) is enqueued onto a single serial processor, so updates are never dropped
@@ -109,7 +111,13 @@ internal class WebHistoryPlugin(
         }
     }
 
-    override fun onAttached(controller: EnroController) {}
+    /**
+     * The destinations already on screen opened before the plugin was installed, so their
+     * callbacks never reached it; this records them as the first entry.
+     */
+    override fun onAttached(controller: EnroController) {
+        events.trySend(null)
+    }
 
     override fun onDetached(controller: EnroController) {
         window.removeEventListener("popstate", eventListener)
@@ -129,20 +137,25 @@ internal class WebHistoryPlugin(
     }
 
     /**
-     * Computes the URL to write to `window.history`. Uses the `@NavigationPath`
-     * registered against the root container's active destination. When that key
-     * has no path binding, the existing address-bar URL is preserved — `pushState`
-     * still fires (so back/forward works through `history.state`), but the
-     * visible URL doesn't change. That keeps bookmarkable URLs honest: only
-     * destinations that opt in to a path produce a path.
-     *
-     * Inner-container navigation is also invisible to the URL — see the web
-     * platform docs for the model.
+     * Computes the URL to write to `window.history`: the `@NavigationPath` of the
+     * deepest active destination that has one, walking from the root container
+     * through each destination's active container. When no destination on that
+     * walk has a path binding, the existing address-bar URL is preserved —
+     * `pushState` still fires (so back/forward works through `history.state`),
+     * but the visible URL doesn't change. That keeps bookmarkable URLs honest:
+     * only destinations that opt in to a path produce a path.
      */
     @OptIn(ExperimentalEnroApi::class)
     private fun computeUrl(): String {
-        val rootKey = rootContainer.activeChild?.key ?: return currentUrl()
-        return rootContainer.controller.getPathFromNavigationKey(rootKey) ?: currentUrl()
+        val keys = mutableListOf<NavigationKey>()
+        var container: ContainerContext? = rootContainer
+        while (container != null) {
+            keys += container.container.backstack.lastOrNull()?.key ?: break
+            container = container.topDestination()?.activeChild
+        }
+        return keys.asReversed()
+            .firstNotNullOfOrNull { rootContainer.controller.getPathFromNavigationKey(it) }
+            ?: currentUrl()
     }
 
     private fun currentUrl(): String {
@@ -181,18 +194,20 @@ internal class WebHistoryPlugin(
     }
 
     /**
-     * The browser navigated (user back/forward): drive the backstack to match
-     * the entry's recorded state. When a recorded state can't be applied (an
-     * interceptor or EmptyBehavior refuses the close, or the app rewrote the
-     * backstack concurrently), step past it — bounded, rather than blind-firing
+     * The browser navigated (user back/forward): drive the container tree to
+     * match the entry's recorded state. Applying takes a frame or two to show
+     * in the tree — a restored destination registers its context and its
+     * containers on the next composition — so the tree is awaited before it is
+     * judged. When a recorded state can't be applied (an interceptor or
+     * EmptyBehavior refuses the close, or the app rewrote the backstack
+     * concurrently), step past it — bounded, rather than blind-firing
      * `history.back()` and re-entering through the listener.
      */
     @OptIn(ExperimentalWasmJsInterop::class)
     private suspend fun syncFromPopState(event: PopStateEvent) {
         // popstate without a state payload (manual address-bar edit, cross-origin
-        // nav). Under root-only routing we can't safely restore a sensible app
-        // state from URL alone — no-op and let the user reload if they want the
-        // URL to take effect.
+        // nav). We can't safely restore a sensible app state from URL alone —
+        // no-op and let the user reload if they want the URL to take effect.
         val rawState = event.state ?: return
         var poppedState = decodeState(rawState)
             ?: return restoreFromUrl()
@@ -203,9 +218,13 @@ internal class WebHistoryPlugin(
             val currentState = createNodeFor(rootContainer)
             if (currentState == poppedState) break
             applyNodeFor(rootContainer, poppedState)
-            if (createNodeFor(rootContainer) == poppedState) break
+            if (awaitNodeFor(rootContainer, poppedState)) break
             // The recorded state didn't take — step one entry further back and
             // try that one instead.
+            EnroLog.debug(
+                "WebHistoryPlugin: popped state did not apply (attempt $attempts), stepping back.\n" +
+                    "expected: $poppedState\nactual: ${createNodeFor(rootContainer)}"
+            )
             traverse(-1)
             val nextRaw = window.history.state ?: return
             poppedState = decodeState(nextRaw)
@@ -244,7 +263,6 @@ internal class WebHistoryPlugin(
         applyNodeFor(rootContainer, ContainerNode(
             containerKey = rootContainer.container.key,
             backstack = fallback,
-            children = emptyList(),
         ))
         val currentState = createNodeFor(rootContainer)
         val serializedCurrentState = serializeForHistory(currentState).toJsString()
@@ -258,9 +276,6 @@ internal class WebHistoryPlugin(
         }
     }
 
-    /**
-     * The backstack changed (open/active/close): mirror it into browser history.
-     */
     /**
      * Serializes [state] for storage in `history.state`, verifying the result
      * actually decodes. Encode-and-decode-back is cheap insurance against
@@ -298,6 +313,9 @@ internal class WebHistoryPlugin(
         )
     }
 
+    /**
+     * The backstack changed (open/active/close): mirror it into browser history.
+     */
     @OptIn(ExperimentalWasmJsInterop::class)
     private suspend fun syncFromBackstack() {
         val currentState = createNodeFor(rootContainer)
@@ -347,17 +365,15 @@ internal class WebHistoryPlugin(
             }
 
             else -> {
-                // A state we haven't seen. Forward navigation (push) only when the
-                // previous state is a prefix of the new one — i.e. entries were
-                // added on top of what was already there. Anything else (a root
-                // reset such as loading → home, or a truncate-and-open section
-                // switch) REPLACES the current entry: the state it overwrites is
-                // no longer reachable in the app and must not survive as a browser
-                // back target.
+                // A state we haven't seen: forward navigation pushes an entry,
+                // anything else — a root reset such as loading → home, a
+                // truncate-and-open section switch, or a destination's containers
+                // still filling in — replaces the current one. See
+                // classifyTransition for the line between them.
                 val previous = historyStates.getOrNull(historyIndex)
-                val isPush = previous == null || isSubset(old = currentState, new = previous)
+                val transition = previous?.let { classifyTransition(it, currentState) }
                 historyStates.subList(historyIndex + 1, historyStates.size).clear()
-                if (isPush) {
+                if (transition == null || transition == HistoryTransition.Push) {
                     historyStates.add(currentState)
                     historyIndex = historyStates.lastIndex
                     window.history.pushState(serializedCurrentState, "", computeUrl())
@@ -373,153 +389,6 @@ internal class WebHistoryPlugin(
         const val TRAVERSAL_TIMEOUT_MS = 250L
         const val MAX_TRAVERSAL_ATTEMPTS = 10
     }
-}
-
-
-@Serializable
-internal data class ContainerNode(
-    val containerKey: NavigationContainer.Key,
-    val backstack: NavigationBackstack,
-    val children: List<ContainerNode>,
-) {
-    override fun toString(): String {
-        val content = "backstack = [${backstack.joinToString { it.navigationKey.toString() }}],\n" +
-                "children = [${children.joinToString { it.toString() }}],\n"
-        return buildString {
-            appendLine("ContainerNode(")
-            content.lines().forEach {
-                appendLine(it.prependIndent("    "))
-            }
-            append(")")
-        }
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null) return false
-        if (other::class != this::class) return false
-
-        other as ContainerNode
-
-        if (containerKey != other.containerKey) return false
-        if (backstack.map { it.id } != other.backstack.map { it.id }) return false
-
-        val filteredChildren =
-            children.filter { it.backstack.isNotEmpty() }.sortedBy { it.containerKey.name }
-        val otherFilteredChildren =
-            other.children.filter { it.backstack.isNotEmpty() }.sortedBy { it.containerKey.name }
-        if (filteredChildren.size != otherFilteredChildren.size) return false
-        filteredChildren.forEachIndexed { index, child ->
-            if (child != otherFilteredChildren[index]) return false
-        }
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = containerKey.hashCode()
-        result = 31 * result + backstack.map { it.id }.hashCode()
-        result = 31 * result + children.filter { it.backstack.isNotEmpty() }
-            .sortedBy { it.containerKey.name }.hashCode()
-        return result
-    }
-}
-
-internal fun createNodeFor(
-    container: ContainerContext,
-): ContainerNode {
-    return ContainerNode(
-        containerKey = container.container.key,
-        backstack = container.container.backstack,
-        children = emptyList(),
-    )
-}
-
-internal suspend fun applyNodeFor(
-    container: ContainerContext,
-    node: ContainerNode,
-) {
-    if (container.container.backstack != node.backstack) {
-        container.container.updateBackstack(container) { node.backstack }
-    }
-    // If the backstack is empty, we don't need to do anything else,
-    // so can return early, otherwise we're going to wait for the
-    // child context to be set before we continue
-    if (node.children.isEmpty()) return
-    val childContext = withTimeout(64) {
-        while (container.activeChild?.instance?.id != node.backstack.lastOrNull()?.id) {
-            yield()
-        }
-        container.activeChild
-    }
-    if (childContext == null) {
-        EnroLog.warn("WebHistoryPlugin: failed to restore child container while applying popped state")
-        return
-    }
-    val containers = childContext.children
-        .associateBy { it.container.key }
-        .toMutableMap()
-
-    node.children.forEach { childNode ->
-        val child = containers[childNode.containerKey]
-        if (child != null) {
-            applyNodeFor(child, childNode)
-        }
-        containers.remove(childNode.containerKey)
-    }
-    containers.forEach { (_, child) ->
-        child.container.updateBackstack(child) { emptyBackstack() }
-    }
-}
-
-/**
- * True when [new] is a prefix-subset of [old] — i.e. [new] contains no entries
- * that aren't already in [old], in the same order from the root. Used to
- * distinguish a genuine forward push (the previous state is a subset of the
- * next) from a replacement (entries were swapped out in a single transition).
- */
-internal fun isSubset(old: ContainerNode, new: ContainerNode): Boolean {
-    fun isNodeSubset(oldNode: ContainerNode, newNode: ContainerNode): Boolean {
-        if (oldNode.containerKey != newNode.containerKey) {
-            return false
-        }
-
-        val oldInstructionIds = oldNode.backstack.map { it.id }
-        val newInstructionIds = newNode.backstack.map { it.id }
-
-        // Check if the new backstack is a prefix of the old backstack
-        if (!newInstructionIds.zip(oldInstructionIds)
-                .all { it.first == it.second } || newInstructionIds.size > oldInstructionIds.size
-        ) {
-            return false
-        }
-
-        val oldChildrenSorted = oldNode.children.sortedBy { it.containerKey.name }
-        val newChildrenSorted = newNode.children.sortedBy { it.containerKey.name }
-
-        if (newChildrenSorted.size > oldChildrenSorted.size) return false
-
-        for (i in newChildrenSorted.indices) {
-            val matchingOldChild = oldChildrenSorted.getOrNull(i)
-            if (matchingOldChild == null || !isNodeSubset(matchingOldChild, newChildrenSorted[i])) {
-                return false
-            }
-        }
-        return true
-    }
-
-    // We need to find a path in the old tree that matches the structure of the new tree
-    fun findMatchInOld(oldRoot: ContainerNode, newRoot: ContainerNode): Boolean {
-        if (oldRoot.containerKey == newRoot.containerKey && isNodeSubset(oldRoot, newRoot)) {
-            if (newRoot.children.isEmpty()) return true
-            return newRoot.children.all { newChild ->
-                oldRoot.children.any { oldChild -> findMatchInOld(oldChild, newChild) }
-            }
-        }
-        return oldRoot.children.any { findMatchInOld(it, newRoot) }
-    }
-
-    return findMatchInOld(old, new)
 }
 
 /**

@@ -46,31 +46,40 @@ The pieces:
   controller's registered path bindings. If the URL matches a
   `@NavigationPath`, the app boots straight into that destination; if it
   doesn't, the lambda's default is used.
-- `InstallWebHistoryPlugin(container)` wires your container's backstack
-  into the browser history API. The URL bar reflects the current
-  root-container destination, and the browser's back/forward buttons
-  navigate that root backstack.
+- `InstallWebHistoryPlugin(container)` wires the container tree under
+  your root container into the browser history API. The URL bar
+  reflects the deepest active destination, and the browser's
+  back/forward buttons navigate whichever container the entry changed.
 
 ## URL routing model
 
-Enro's web URL routing is **root-container-only** in beta:
+Browser history mirrors the **whole container tree** beneath the root
+container — the one you create with `rememberNavigationContainer`
+directly inside `EnroBrowserContent`:
 
-- The URL bar always reflects the active destination of the **root
-  navigation container** — the one you create with
-  `rememberNavigationContainer` directly inside `EnroBrowserContent`.
-- Browser back/forward navigates that root container's backstack.
-- Inner-container navigation (modals, tabs, list/detail panes, anything
-  hosted inside another destination) is **session-local** — it doesn't
-  change the URL and doesn't create history entries.
+- A push on the root container is a history entry, and so is a push
+  inside a nested container hosted by the destination on top of the
+  root (a screen opened within a tab, a detail pane), recursively.
+- Switching which nested container a destination has active — a tab
+  switch — is a history entry too.
+- Browser back/forward restores the recorded tree: every container's
+  backstack and each destination's active container.
+- Closing screens inside the app walks the browser history back the
+  same way it does for the root, so back never resurrects a screen the
+  app has already closed.
 
-This is the model most modern web apps use — going to a different page
-on Twitter writes a URL, switching tabs within a profile doesn't.
-Browser back goes between pages, not between page-internal tabs.
+Two things are deliberately *not* navigation. A nested container
+appearing for the first time — a destination composing its tabs, a
+deep link seeding a tab several screens deep — fills in the entry it
+belongs to rather than pushing one on top of it. And a change that
+removes or swaps entries (a root reset such as loading → home) replaces
+the current entry, since the state it overwrites is no longer reachable
+in the app.
 
 ### What gets a URL
 
 A `NavigationKey` annotated with `@NavigationPath` participates in URL
-routing **when it is the active destination of the root container**:
+routing:
 
 ```kotlin
 @Serializable
@@ -81,18 +90,18 @@ data class ProductDetail(
 ) : NavigationKey
 ```
 
-If `ProductDetail` is at the top of the root container, the URL bar
-will show `/products/abc?source=email`. If it's the top of a *nested*
-container hosted inside some other destination, the URL bar continues
-to show the outer (root) destination's path.
+The URL bar shows the path of the **deepest active destination that has
+one**, walking from the root container's top destination through each
+destination's active container. If `ProductDetail` is on top of the
+root, or on top of the active tab inside a shell on the root, the URL
+bar shows `/products/abc?source=email`.
 
-When a destination has no `@NavigationPath`, or the active destination
-lives inside a nested container, the URL bar **doesn't change** — it
-keeps whatever path was last set by an annotated destination (or the
-URL the user originally landed on, if no annotated destination has been
-active yet). `pushState` still fires, so browser back/forward continues
-to work through `history.state`; the URL just doesn't pretend to
-identify state that isn't bookmarkable.
+When no destination on that walk has a `@NavigationPath`, the URL bar
+**doesn't change** — it keeps whatever path was last set by an annotated
+destination (or the URL the user originally landed on, if no annotated
+destination has been active yet). `pushState` still fires, so browser
+back/forward continues to work through `history.state`; the URL just
+doesn't pretend to identify state that isn't bookmarkable.
 
 ### Cold loading from a URL
 
@@ -114,19 +123,22 @@ manually.
 
 The plugin uses two slots in `window.history`:
 
-- **URL** (`location.pathname + location.search`) — derived from the
-  root container's active destination's `@NavigationPath`. This is the
-  part users see and share.
-- **`history.state`** — the root container's backstack as JSON, used
-  for accurate back/forward restoration mid-session.
+- **URL** (`location.pathname + location.search`) — the `@NavigationPath`
+  of the deepest active destination that has one. This is the part
+  users see and share.
+- **`history.state`** — the container tree under the root as JSON:
+  each container's backstack and each destination's active container.
+  Used for accurate back/forward restoration mid-session.
 
-Inner-container state is **not** serialised into either slot. If you
-need it to survive page reloads, handle it via your own
-`saveable`/`rememberSaveable` storage as you would on other platforms.
+A full-page reload starts from the URL alone, so only what the URL
+encodes survives it. If nested state needs to survive a reload, handle
+it via your own `saveable`/`rememberSaveable` storage as you would on
+other platforms.
 
 ## What Enro provides on Web
 
-- A real backstack for the root container that mirrors browser history.
+- A container tree under the root that mirrors browser history —
+  nested pushes and tab switches included.
 - The full common API: `NavigationKey`, `NavigationKey.WithResult<T>`,
   `navigationHandle<T>()`, `registerForNavigationResult`,
   `NavigationDisplay`, scene strategies, plugins, decorators.
@@ -139,11 +151,11 @@ need it to survive page reloads, handle it via your own
 
 ## Known limitations
 
-- **Nested URL routing**: there's no built-in way today to encode the
-  state of inner containers in the URL. A URL like `/recipe/page-2`
-  that maps to `[Recipe, Page2-in-inner-container]` is something we'll
-  add in a future release. For now, leaf URLs inside nested containers
-  are session-local.
+- **Cold loading nested state**: `rememberInitialBackstackFromUrl`
+  resolves a URL to a single root entry. A URL whose destination lives
+  inside a nested container needs the synthetic-backstack approach
+  above to seed its parents; the plugin then records that seeded tree
+  as the first entry.
 - **Manual address-bar edits**: if the user edits the URL by hand
   without a full-page reload, the plugin no-ops on the resulting
   `popstate`. Reloading the page applies the new URL via the cold-load
