@@ -15,6 +15,7 @@ import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.platform.EnroLog
 import dev.enro.requestClose
+import dev.enro.ui.animation.NonDecreasingFrameTime
 import dev.enro.ui.scenes.DialogSceneStrategy
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.ui.scenes.OverlayTransitions
@@ -183,6 +184,9 @@ public fun NavigationDisplay(
     // Create the transition state that manages animations between scenes
     val transitionState = remember { SeekableTransitionState(sceneFrame) }
     val transition = rememberTransition(transitionState, label = "scene")
+    // Shared across every place that drives transitionState, so the frame time can never
+    // regress between phases of one transition (see NonDecreasingFrameTime for why).
+    val transitionFrameTime = remember { NonDecreasingFrameTime() }
 
     // Track entries from the transition's current state for isPop detection
     // (like NavDisplay's transitionCurrentStateEntries)
@@ -243,14 +247,18 @@ public fun NavigationDisplay(
         // During predictive back, seek to the previous scene based on gesture progress
         if (transition.currentState != previousSceneFrame) {
             LaunchedEffect(previousSceneFrame, progress) {
-                transitionState.seekTo(progress, previousSceneFrame)
+                transitionFrameTime.runPreventingFrameTimeRegression {
+                    transitionState.seekTo(progress, previousSceneFrame)
+                }
             }
         }
     } else {
         LaunchedEffect(sceneFrame) {
             if (transitionState.currentState != sceneFrame) {
                 // Animate to the new scene
-                transitionState.animateTo(sceneFrame)
+                transitionFrameTime.runPreventingFrameTimeRegression {
+                    transitionState.animateTo(sceneFrame)
+                }
             } else {
                 // Predictive back has either been completed or cancelled
                 // so now we need to seekTo+snapTo the final state
@@ -276,13 +284,15 @@ public fun NavigationDisplay(
                     animationSpec = tween(remainingDuration),
                 ) { value, _ ->
                     this@LaunchedEffect.launch {
-                        if (value != finalFraction) {
-                            // Seek the transition towards the finalFraction
-                            transitionState.seekTo(value)
-                        }
-                        if (value == finalFraction) {
-                            // Once the animation finishes, we need to snap to the right state.
-                            transitionState.snapTo(sceneFrame)
+                        transitionFrameTime.runPreventingFrameTimeRegression {
+                            if (value != finalFraction) {
+                                // Seek the transition towards the finalFraction
+                                transitionState.seekTo(value)
+                            }
+                            if (value == finalFraction) {
+                                // Once the animation finishes, we need to snap to the right state.
+                                transitionState.snapTo(sceneFrame)
+                            }
                         }
                     }
                 }
