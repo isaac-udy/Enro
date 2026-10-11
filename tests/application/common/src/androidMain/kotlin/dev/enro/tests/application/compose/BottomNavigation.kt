@@ -33,6 +33,7 @@ import dev.enro.core.container.backstackOf
 import dev.enro.core.container.setBackstack
 import dev.enro.core.push
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -72,7 +73,7 @@ fun BottomNavigationScreen() {
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        container.Render()
+        NavigationDisplay(container)
     }
 }
 
@@ -139,7 +140,7 @@ fun MultiContainerBottomNavigationScreen() {
             targetState = group.activeContainer,
             label = "",
         ) {
-            it.Render()
+            NavigationDisplay(it)
         }
         BottomNavigation {
             group.containers.forEach {
@@ -166,7 +167,7 @@ fun SingleContainerReplaceBottomNavigation() {
 
     Column {
         Box(modifier = Modifier.weight(1f)) {
-            container.Render()
+            NavigationDisplay(container)
         }
         BottomNavigation {
             listOf(
@@ -203,7 +204,7 @@ fun SingleContainerBackstackManipulationBottomNavigation() {
 
     Column {
         Box(modifier = Modifier.weight(1f)) {
-            container.Render()
+            NavigationDisplay(container)
         }
         BottomNavigation {
             val tabs = listOf(

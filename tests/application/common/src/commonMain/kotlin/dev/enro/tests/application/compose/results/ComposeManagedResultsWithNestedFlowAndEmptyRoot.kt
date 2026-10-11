@@ -22,6 +22,7 @@ import dev.enro.navigationHandle
 import dev.enro.result.flow.registerForFlowResult
 import dev.enro.result.flow.rememberNavigationContainerForFlow
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
 import dev.enro.viewmodel.createEnroViewModel
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
@@ -101,7 +102,7 @@ internal fun ComposeManagedResultsWithNestedFlowAndEmptyRootDestination(
         title = "Results with Nested Flow and Empty Root"
     ) {
         Box(Modifier.fillMaxSize()) {
-            container.Render()
+            NavigationDisplay(container)
             if (container.backstack.isEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }

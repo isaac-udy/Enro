@@ -39,6 +39,7 @@ import dev.enro.navigationHandle
 import dev.enro.result.flow.registerForFlowResult
 import dev.enro.result.flow.rememberNavigationContainerForFlow
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
 import dev.enro.viewmodel.createEnroViewModel
 import dev.enro.withMetadata
 import kotlinx.coroutines.delay
@@ -194,7 +195,7 @@ fun ComposeAsyncManagedResultFlowScreen(viewModel: ComposeAsyncManagedResultView
                     .border(width = 1.dp, color = Color.Black.copy(alpha = ContentAlpha.disabled))
                     .clipToBounds()
             ) {
-                container.Render()
+                NavigationDisplay(container)
             }
         }
 
