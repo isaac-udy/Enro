@@ -6,7 +6,6 @@ import dev.enro.EnroController
 import dev.enro.NavigationBackstack
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.path.getBackstackFromPath
-import kotlinx.browser.window
 
 /**
  * Reads the current `window.location` once at composition and tries to resolve it
@@ -34,7 +33,6 @@ public fun rememberInitialBackstackFromUrl(
     default: () -> NavigationBackstack,
 ): NavigationBackstack {
     return remember {
-        val path = window.location.pathname + window.location.search
-        EnroController.instance?.getBackstackFromPath(path) ?: default()
+        EnroController.instance?.getBackstackFromPath(BrowserHistory.path) ?: default()
     }
 }
