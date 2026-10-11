@@ -2,6 +2,7 @@ package dev.enro.result.flow
 
 import dev.enro.NavigationKey
 import dev.enro.annotations.AdvancedEnroApi
+import dev.enro.platform.callSiteClassName
 import dev.enro.withMetadata
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -105,7 +106,7 @@ public open class NavigationFlowScope internal constructor(
         dependsOn: List<Any?> = emptyList(),
         noinline block: suspend () -> T,
     ): T {
-        val baseId = block::class.qualifiedName ?: block::class.toString()
+        val baseId = callSiteClassName(block::class) ?: "async"
         val count = suspendingSteps.count { it.startsWith(baseId) }
         val stepId = "$baseId@$count"
         suspendingSteps.add(stepId)

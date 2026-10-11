@@ -224,7 +224,7 @@ public interface NavigationKey {
         public val default: T,
     ) {
         public val name: String by lazy {
-            metadataKeyName(this::class)
+            stableClassName(this::class)
         }
     }
 

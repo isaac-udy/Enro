@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import dev.enro.NavigationKey
+import dev.enro.stableClassName
 
 @Immutable
 @Stable
@@ -40,7 +41,7 @@ public interface NavigationScene {
         public val default: T,
     ) {
         public val name: String by lazy {
-            this::class.qualifiedName ?: error("MetadataKeys must have a valid qualifiedName")
+            stableClassName(this::class)
         }
     }
 

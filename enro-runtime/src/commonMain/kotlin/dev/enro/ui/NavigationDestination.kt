@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.navigationHandle
+import dev.enro.stableClassName
 
 public open class NavigationDestinationProvider<T : NavigationKey>(
     private val metadata:  NavigationDestination.MetadataBuilder<T>.() -> Unit = {},
@@ -128,7 +129,7 @@ public data class NavigationDestination<out T : NavigationKey> private construct
         public val default: T,
     ) {
         public val name: String by lazy {
-            this::class.qualifiedName ?: error("MetadataKeys must have a valid qualifiedName")
+            stableClassName(this::class)
         }
     }
 
