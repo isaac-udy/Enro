@@ -18,7 +18,6 @@ import dev.enro.ui.history.awaitNodeFor
 import dev.enro.ui.history.classifyTransition
 import dev.enro.ui.history.createNodeFor
 import dev.enro.ui.history.topDestination
-import kotlinx.browser.window
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -28,9 +27,6 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import org.w3c.dom.PopStateEvent
-import org.w3c.dom.Window
-import org.w3c.dom.events.Event
 
 // Browser history mirrors the whole container tree under the root: the root container's
 // backstack, and beneath the destination on top of it the containers that destination hosts,
@@ -51,22 +47,23 @@ import org.w3c.dom.events.Event
 // for a user-initiated back/forward.
 @ExperimentalEnroApi
 internal class WebHistoryPlugin(
-    private val window: Window,
     private val rootContainer: ContainerContext,
     private val nestedContainers: Boolean,
 ) : NavigationPlugin() {
 
     private val scope = CoroutineScope(Dispatchers.Main)
 
+    private class PopState(val state: String?)
+
     /**
      * Serial work queue. `null` means "the backstack changed, re-sync browser
-     * history"; a [PopStateEvent] means "the browser navigated, re-sync the
+     * history"; a [PopState] means "the browser navigated, re-sync the
      * backstack". Processing strictly in order is what keeps [historyStates]
      * truthful — the previous implementation dropped events that arrived while
      * a sync was in flight, which desynced the mirror and made a single
      * browser back traverse multiple app screens.
      */
-    private val events = Channel<PopStateEvent?>(capacity = Channel.UNLIMITED)
+    private val events = Channel<PopState?>(capacity = Channel.UNLIMITED)
 
     /**
      * Set while the plugin is awaiting the popstate echo of its own
@@ -75,17 +72,17 @@ internal class WebHistoryPlugin(
      */
     private var pendingTraversal: CompletableDeferred<Unit>? = null
 
-    private val eventListener: (Event) -> Unit = { event ->
-        if (event is PopStateEvent) {
-            val traversal = pendingTraversal
-            if (traversal != null) {
-                pendingTraversal = null
-                traversal.complete(Unit)
-            } else {
-                events.trySend(event)
-            }
+    private val eventListener: (String?) -> Unit = { state ->
+        val traversal = pendingTraversal
+        if (traversal != null) {
+            pendingTraversal = null
+            traversal.complete(Unit)
+        } else {
+            events.trySend(PopState(state))
         }
     }
+
+    private val removeEventListener: () -> Unit
 
     // In-memory representation of the browser history for this session
     private val historyStates = mutableListOf<ContainerNode>()
@@ -94,7 +91,7 @@ internal class WebHistoryPlugin(
     private val processor: Job
 
     init {
-        window.addEventListener("popstate", eventListener)
+        removeEventListener = BrowserHistory.addPopStateListener(eventListener)
         processor = scope.launch {
             for (event in events) {
                 try {
@@ -125,7 +122,7 @@ internal class WebHistoryPlugin(
     }
 
     override fun onDetached(controller: EnroController) {
-        window.removeEventListener("popstate", eventListener)
+        removeEventListener()
         processor.cancel()
     }
 
@@ -163,9 +160,7 @@ internal class WebHistoryPlugin(
             ?: currentUrl()
     }
 
-    private fun currentUrl(): String {
-        return window.location.pathname + window.location.search
-    }
+    private fun currentUrl(): String = BrowserHistory.path
 
     /**
      * Calls `history.go(delta)` and suspends until the browser delivers the
@@ -180,7 +175,7 @@ internal class WebHistoryPlugin(
         if (delta == 0) return
         val deferred = CompletableDeferred<Unit>()
         pendingTraversal = deferred
-        window.history.go(delta)
+        BrowserHistory.go(delta)
         try {
             withTimeout(TRAVERSAL_TIMEOUT_MS) { deferred.await() }
         } catch (t: TimeoutCancellationException) {
@@ -189,10 +184,9 @@ internal class WebHistoryPlugin(
         }
     }
 
-    @OptIn(ExperimentalWasmJsInterop::class)
-    private fun decodeState(state: JsAny): ContainerNode? {
+    private fun decodeState(state: String): ContainerNode? {
         return runCatching {
-            EnroController.jsonConfiguration.decodeFromString<ContainerNode>(state.toString())
+            EnroController.jsonConfiguration.decodeFromString<ContainerNode>(state)
         }.onFailure { t ->
             EnroLog.warn("WebHistoryPlugin: failed to decode history state (ignoring entry): ${t.message}")
         }.getOrNull()
@@ -208,8 +202,7 @@ internal class WebHistoryPlugin(
      * concurrently), step past it — bounded, rather than blind-firing
      * `history.back()` and re-entering through the listener.
      */
-    @OptIn(ExperimentalWasmJsInterop::class)
-    private suspend fun syncFromPopState(event: PopStateEvent) {
+    private suspend fun syncFromPopState(event: PopState) {
         // popstate without a state payload (manual address-bar edit, cross-origin
         // nav). We can't safely restore a sensible app state from URL alone —
         // no-op and let the user reload if they want the URL to take effect.
@@ -231,7 +224,7 @@ internal class WebHistoryPlugin(
                     "expected: $poppedState\nactual: ${createNodeFor(rootContainer, nestedContainers)}"
             )
             traverse(-1)
-            val nextRaw = window.history.state ?: return
+            val nextRaw = BrowserHistory.state() ?: return
             poppedState = decodeState(nextRaw)
                 ?: return restoreFromUrl()
         }
@@ -255,7 +248,6 @@ internal class WebHistoryPlugin(
      * self-heals the entry by overwriting its unreadable state with the
      * freshly serialized equivalent so the next visit decodes normally.
      */
-    @OptIn(ExperimentalWasmJsInterop::class)
     private suspend fun restoreFromUrl() {
         val fallback = rootContainer.controller.getBackstackFromPath(currentUrl())
         if (fallback == null) {
@@ -270,8 +262,7 @@ internal class WebHistoryPlugin(
             backstack = fallback,
         ))
         val currentState = createNodeFor(rootContainer, nestedContainers)
-        val serializedCurrentState = serializeForHistory(currentState).toJsString()
-        window.history.replaceState(serializedCurrentState, "", computeUrl())
+        BrowserHistory.replaceState(serializeForHistory(currentState), computeUrl())
         val index = historyStates.indexOfFirst { it == currentState }
         if (index != -1) {
             historyIndex = index
@@ -321,12 +312,11 @@ internal class WebHistoryPlugin(
     /**
      * The backstack changed (open/active/close): mirror it into browser history.
      */
-    @OptIn(ExperimentalWasmJsInterop::class)
     private suspend fun syncFromBackstack() {
         val currentState = createNodeFor(rootContainer, nestedContainers)
-        val serializedCurrentState = serializeForHistory(currentState).toJsString()
+        val serializedCurrentState = serializeForHistory(currentState)
 
-        val windowState = window.history.state?.let(::decodeState)
+        val windowState = BrowserHistory.state()?.let(::decodeState)
 
         val isInit = historyStates.isEmpty() && historyIndex == -1
         val isNoOp = windowState != null && windowState == currentState
@@ -336,7 +326,7 @@ internal class WebHistoryPlugin(
             isInit -> {
                 historyStates.add(currentState)
                 historyIndex = 0
-                window.history.replaceState(serializedCurrentState, "", computeUrl())
+                BrowserHistory.replaceState(serializedCurrentState, computeUrl())
             }
 
             isNoOp -> {
@@ -344,7 +334,7 @@ internal class WebHistoryPlugin(
                     historyIndex = closeIndex
                     historyStates[historyIndex] = currentState
                 }
-                window.history.replaceState(serializedCurrentState, "", computeUrl())
+                BrowserHistory.replaceState(serializedCurrentState, computeUrl())
             }
 
             closeIndex >= 0 -> {
@@ -355,14 +345,14 @@ internal class WebHistoryPlugin(
                 historyStates[historyIndex] = currentState
                 if (closeIndex == 0) {
                     traverse(closeIndex - previousIndex)
-                    window.history.replaceState(serializedCurrentState, "", computeUrl())
+                    BrowserHistory.replaceState(serializedCurrentState, computeUrl())
                 } else {
                     // Land one short of the target and push it fresh: pruning the
                     // browser's forward entries so forward can't resurrect screens
                     // the app has closed. (Not possible at index 0 — there's no
                     // entry before it to land on.)
                     traverse(closeIndex - previousIndex - 1)
-                    window.history.pushState(serializedCurrentState, "", computeUrl())
+                    BrowserHistory.pushState(serializedCurrentState, computeUrl())
                     // The push destroyed the browser's forward entries — drop them
                     // from the mirror too.
                     historyStates.subList(historyIndex + 1, historyStates.size).clear()
@@ -381,10 +371,10 @@ internal class WebHistoryPlugin(
                 if (transition == null || transition == HistoryTransition.Push) {
                     historyStates.add(currentState)
                     historyIndex = historyStates.lastIndex
-                    window.history.pushState(serializedCurrentState, "", computeUrl())
+                    BrowserHistory.pushState(serializedCurrentState, computeUrl())
                 } else {
                     historyStates[historyIndex] = currentState
-                    window.history.replaceState(serializedCurrentState, "", computeUrl())
+                    BrowserHistory.replaceState(serializedCurrentState, computeUrl())
                 }
             }
         }
@@ -415,7 +405,6 @@ public fun InstallWebHistoryPlugin(
         container.context.controller.addModule(
             createNavigationModule {
                 plugin(WebHistoryPlugin(
-                    window = window,
                     rootContainer = container.context,
                     nestedContainers = nestedContainerHistory,
                 ))
