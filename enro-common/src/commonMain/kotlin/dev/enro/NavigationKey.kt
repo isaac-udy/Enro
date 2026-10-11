@@ -219,12 +219,26 @@ public interface NavigationKey {
      * object IsDialog : NavigationKey.MetadataKey<Boolean>(default = false)
      * val isDialog = metadata.get(IsDialog) // isDialog will be false if not set
      * ```
+     *
+     * [name] is what the key's values are stored and persisted under. It defaults to the key's
+     * [stableClassName]; pass a name to choose it explicitly. On Kotlin/JS, class names are simple
+     * names, so two keys with the same simple class name throw when used, and one of them needs an
+     * explicit name.
      */
     public abstract class MetadataKey<out T>(
         public val default: T,
+        name: String?,
     ) {
+        public constructor(default: T) : this(default, null)
+
+        private val explicitName = name
+
         public val name: String by lazy {
-            stableClassName(this::class)
+            metadataKeyName(
+                namespace = if (this is TransientMetadataKey<*>) TransientMetadataKey::class else MetadataKey::class,
+                keyClass = this::class,
+                explicitName = explicitName,
+            )
         }
     }
 
@@ -236,8 +250,11 @@ public interface NavigationKey {
      */
     @AdvancedEnroApi
     public abstract class TransientMetadataKey<T>(
-        default: T
-    ) : MetadataKey<T>(default)
+        default: T,
+        name: String?,
+    ) : MetadataKey<T>(default, name) {
+        public constructor(default: T) : this(default, null)
+    }
 
     public companion object {
         // This is accessed and set in EnroController

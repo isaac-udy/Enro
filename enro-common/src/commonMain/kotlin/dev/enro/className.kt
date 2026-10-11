@@ -15,3 +15,25 @@ import kotlin.reflect.KClass
  */
 @AdvancedEnroApi
 public expect fun stableClassName(kClass: KClass<*>): String
+
+/**
+ * The name a metadata key's values are stored under: [explicitName], or [stableClassName] of
+ * [keyClass] when the key has no explicit name.
+ *
+ * [namespace] is the key type whose values share one map (for example
+ * [NavigationKey.MetadataKey]). On Kotlin/JS, where [stableClassName] is a simple name, this
+ * throws when a different key class in the same [namespace] already has the same name, because the
+ * two keys would read and overwrite each other's values.
+ */
+@AdvancedEnroApi
+public fun metadataKeyName(
+    namespace: KClass<*>,
+    keyClass: KClass<*>,
+    explicitName: String?,
+): String {
+    val name = explicitName ?: stableClassName(keyClass)
+    checkMetadataKeyNameIsUnique(namespace, name, keyClass)
+    return name
+}
+
+internal expect fun checkMetadataKeyNameIsUnique(namespace: KClass<*>, name: String, keyClass: KClass<*>)

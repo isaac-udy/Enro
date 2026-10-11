@@ -9,3 +9,5 @@ public actual fun stableClassName(kClass: KClass<*>): String {
         ?: kClass.simpleName
         ?: error("$kClass has neither a qualifiedName nor a simpleName")
 }
+
+internal actual fun checkMetadataKeyNameIsUnique(namespace: KClass<*>, name: String, keyClass: KClass<*>) {}
