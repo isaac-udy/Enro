@@ -33,6 +33,18 @@ import dev.enro.processor.extensions.toDisplayString
 
 object NavigationBindingGenerator {
 
+    // Any receiver other than NavigationDestinationContentScope is a Compose UI scope that only
+    // navigationDestination provides.
+    private val DestinationReference.destinationBuilderName: String
+        get() {
+            val receiver = (declaration as? KSFunctionDeclaration)?.extensionReceiver
+                ?: return "navigationDestinationContent"
+            return when (receiver.resolve().declaration.qualifiedName?.asString()) {
+                "dev.enro.ui.NavigationDestinationContentScope" -> "navigationDestinationContent"
+                else -> "navigationDestination"
+            }
+        }
+
     @OptIn(KspExperimental::class)
     fun generate(
         environment: SymbolProcessorEnvironment,
@@ -100,7 +112,7 @@ object NavigationBindingGenerator {
                     .removePrefix(destinationDeclaration.packageName.asString())
             )
             .addImport("dev.enro.controller", "NavigationModule")
-            .addImport("dev.enro.ui", "navigationDestination")
+            .addImport("dev.enro.ui", destination.destinationBuilderName)
             .addImport("dev.enro.path", "NavigationPathBinding")
             .addImport("dev.enro.path", "createPathBinding")
             .addImport("dev.enro.path", "fromBinding")
@@ -173,7 +185,7 @@ object NavigationBindingGenerator {
                 formatting,
             )
             destination.isComposable -> addNamedCode(
-                "destination(navigationDestination<%keyType:T> { $destinationName() }$platformOverride)",
+                "destination(${destination.destinationBuilderName}<%keyType:T> { $destinationName() }$platformOverride)",
                 formatting,
             )
             else -> {

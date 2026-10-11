@@ -42,6 +42,7 @@ import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
 import dev.enro.ui.LocalNavigationAnimatedVisibilityScope
 import dev.enro.ui.LocalNavigationSharedTransitionScope
+import dev.enro.ui.NavigationDestinationScope
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
@@ -142,39 +143,36 @@ fun ComposeSharedElementTransitionsListScreen() {
 @OptIn(ExperimentalSharedTransitionApi::class)
 @NavigationDestination(ComposeSharedElementTransitions.Detail::class)
 @Composable
-fun ComposeSharedElementTransitionsDetailScreen() {
-    val navigation = navigationHandle<ComposeSharedElementTransitions.Detail>()
+fun NavigationDestinationScope<ComposeSharedElementTransitions.Detail>.ComposeSharedElementTransitionsDetailScreen() {
     val selectedIconId = navigation.key.iconId
-    val selectedIcon = sharedElementIcons.find { it.id == selectedIconId } 
+    val selectedIcon = sharedElementIcons.find { it.id == selectedIconId }
         ?: sharedElementIcons.first()
-    
+
     TitledColumn(title = "Icon Details") {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            with(LocalNavigationSharedTransitionScope.current) {
-                Text(
-                    text = selectedIcon.title,
-                    style = MaterialTheme.typography.h4,
-                    modifier = Modifier
-                        .padding(bottom = 32.dp)
-                )
+            Text(
+                text = selectedIcon.title,
+                style = MaterialTheme.typography.h4,
+                modifier = Modifier
+                    .padding(bottom = 32.dp)
+            )
 
-                Image(
-                    imageVector = selectedIcon.icon,
-                    contentDescription = selectedIcon.title,
-                    modifier = Modifier
-                        .sharedElement(
-                            rememberSharedContentState(key = "icon_${selectedIcon.id}"),
-                            animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current,
-                        )
-                        .size(200.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            
+            Image(
+                imageVector = selectedIcon.icon,
+                contentDescription = selectedIcon.title,
+                modifier = Modifier
+                    .sharedElement(
+                        rememberSharedContentState(key = "icon_${selectedIcon.id}"),
+                        animatedVisibilityScope = this@ComposeSharedElementTransitionsDetailScreen,
+                    )
+                    .size(200.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(

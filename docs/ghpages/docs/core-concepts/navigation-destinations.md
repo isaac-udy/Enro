@@ -63,6 +63,12 @@ properties on the scope. You also get `AnimatedVisibilityScope` and
 `SharedTransitionScope` members for free, so you can use
 `Modifier.animateEnterExit(...)`, shared elements, etc., directly.
 
+`navigationDestinationContent { }` declares a destination whose content has a
+`NavigationDestinationContentScope<T>` receiver, which has `navigation` and
+`destinationMetadata` but no animation scopes, so the content does not depend on
+`NavigationDisplay`. Enro binds a `@NavigationDestination` composable function
+that has no receiver this way.
+
 ## Destination metadata and scene strategies
 
 A destination's metadata is a small typed bag attached when the destination

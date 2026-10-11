@@ -52,14 +52,23 @@ public fun rememberSharedElementDecorator(): NavigationDestinationDecorator<Navi
         sharedElementDecorator()
     }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 internal fun sharedElementDecorator(): NavigationDestinationDecorator<NavigationKey> =
     navigationDestinationDecorator { destination ->
+        SharedElementDestinationWrapper.Wrap(destination)
+    }
+
+/**
+ * The [NavigationDestinationWrapper] that [dev.enro.ui.NavigationDisplay] provides; it applies
+ * the same `sharedElement` Box as [rememberSharedElementDecorator].
+ */
+@OptIn(ExperimentalSharedTransitionApi::class)
+internal val SharedElementDestinationWrapper: NavigationDestinationWrapper =
+    NavigationDestinationWrapper { destination ->
         val sharedTransitionScope = LocalNavigationSharedTransitionScopeOrNull.current
         val animatedVisibilityScope = LocalNavigationAnimatedVisibilityScopeOrNull.current
         if (sharedTransitionScope == null || animatedVisibilityScope == null) {
             destination.Content()
-            return@navigationDestinationDecorator
+            return@NavigationDestinationWrapper
         }
         with(sharedTransitionScope) {
             Box(
