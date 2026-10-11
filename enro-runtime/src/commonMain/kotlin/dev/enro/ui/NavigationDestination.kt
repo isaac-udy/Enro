@@ -1,8 +1,5 @@
 package dev.enro.ui
 
-import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
@@ -13,9 +10,19 @@ import dev.enro.navigationHandle
 import dev.enro.metadataKeyName
 import dev.enro.stableClassName
 
+/**
+ * The receiver of a destination's content, independent of how the destination is rendered.
+ * [NavigationDestinationScope] extends it with the Compose animation scopes that
+ * [NavigationDisplay] provides.
+ */
+public interface NavigationDestinationContentScope<T : NavigationKey> {
+    public val destinationMetadata: Map<String, Any>
+    public val navigation: NavigationHandle<T>
+}
+
 public open class NavigationDestinationProvider<T : NavigationKey>(
     private val metadata:  NavigationDestination.MetadataBuilder<T>.() -> Unit = {},
-    private val content: @Composable NavigationDestinationScope<T>.() -> Unit,
+    private val content: @Composable NavigationDestinationContentScope<T>.() -> Unit,
 ) {
     public fun peekMetadata(instance: NavigationKey.Instance<T>): Map<String, Any> {
         return NavigationDestination.MetadataBuilder(instance).apply(metadata).build()
@@ -147,11 +154,10 @@ public data class NavigationDestination<out T : NavigationKey> private construct
     }
 
     public companion object {
-        @OptIn(ExperimentalSharedTransitionApi::class)
         internal fun <T: NavigationKey> create(
             instance: NavigationKey.Instance<T>,
             metadata: Map<String, Any> = emptyMap(),
-            content: @Composable NavigationDestinationScope<T>.() -> Unit,
+            content: @Composable NavigationDestinationContentScope<T>.() -> Unit,
         ): NavigationDestination<T> {
             return NavigationDestination(
                 instance = instance,
@@ -159,15 +165,11 @@ public data class NavigationDestination<out T : NavigationKey> private construct
                 content = {
                     @Suppress("UNCHECKED_CAST")
                     val navigation = navigationHandle<NavigationKey>() as NavigationHandle<T>
-                    val animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current
-                    val sharedTransitionScope = LocalNavigationSharedTransitionScope.current
-                    val scope = remember(animatedVisibilityScope, sharedTransitionScope) {
-                        NavigationDestinationScope(
-                            destinationMetadata = metadata,
-                            navigation = navigation,
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            sharedTransitionScope = sharedTransitionScope
-                        )
+                    val scope = remember(navigation) {
+                        object : NavigationDestinationContentScope<T> {
+                            override val destinationMetadata: Map<String, Any> = metadata
+                            override val navigation: NavigationHandle<T> = navigation
+                        }
                     }
                     content.invoke(scope)
                 },
@@ -193,19 +195,13 @@ public data class NavigationDestination<out T : NavigationKey> private construct
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
-public class NavigationDestinationScope<T : NavigationKey>(
-    public val destinationMetadata: Map<String, Any>,
-    public val navigation: NavigationHandle<T>,
-    private val animatedVisibilityScope: AnimatedVisibilityScope,
-    private val sharedTransitionScope: SharedTransitionScope,
-) : SharedTransitionScope by sharedTransitionScope, AnimatedVisibilityScope by animatedVisibilityScope
-
-// We probably want to get rid of push/present and let scenes handle those
-
-public fun <T: NavigationKey> navigationDestination(
+/**
+ * Declares a destination whose content works with any renderer. Use [navigationDestination]
+ * when the content needs the animation or shared-element scopes of [NavigationDisplay].
+ */
+public fun <T: NavigationKey> navigationDestinationContent(
     metadata: NavigationDestination.MetadataBuilder<T>.() -> Unit = { },
-    content: @Composable NavigationDestinationScope<T>.() -> Unit,
+    content: @Composable NavigationDestinationContentScope<T>.() -> Unit,
 ): NavigationDestinationProvider<T> {
     return NavigationDestinationProvider(metadata, content)
 }

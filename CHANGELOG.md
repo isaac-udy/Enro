@@ -16,6 +16,20 @@
   `name`; without one, the name is the key's `stableClassName`, as before. On Kotlin/JS, two key
   classes of the same kind with the same simple name now throw when used, instead of silently
   sharing storage.
+* Added `NavigationDestinationContentScope<T>`, a renderer-independent destination receiver
+  with `navigation` and `destinationMetadata`, and `navigationDestinationContent { }`, which
+  declares a destination with that receiver. `NavigationDestinationScope<T>` implements it, and
+  `navigationDestination { }` is unchanged. `NavigationDestinationProvider`'s `content` now
+  takes a `NavigationDestinationContentScope<T>` receiver. `emptyDestination()`,
+  `syntheticDestination { }` and `@NavigationDestination` composable functions with no receiver
+  now use `navigationDestinationContent`.
+* Added `NavigationDestinationWrapper` and `LocalNavigationDestinationWrapper`: the wrapper a
+  renderer applies outside each destination's movable content. `NavigationDisplay` provides the
+  shared-element wrapper that `rememberSharedElementDecorator()` applies.
+* `DirectOverlaySceneStrategy.OverlayTransitionsKey` is now the top-level
+  `dev.enro.ui.scenes.OverlayTransitionsKey`. `directOverlayWithFade(durationMillis)` stores the
+  duration in the new `DirectOverlaySceneStrategy.OverlayFadeKey`, which `NavigationDisplay`
+  renders as the same fade; `OverlayTransitionsKey` takes precedence when both are set.
 
 ## 3.0.0-beta05 (2026-09-17)
 

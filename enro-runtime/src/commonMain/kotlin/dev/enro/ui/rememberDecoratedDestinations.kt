@@ -11,12 +11,12 @@ import dev.enro.NavigationKey
 import dev.enro.ui.decorators.NavigationDestinationDecorator
 import dev.enro.ui.decorators.NavigationSavedStateHolder
 import dev.enro.ui.decorators.decorateNavigationDestination
+import dev.enro.ui.decorators.destinationWrapperDecorator
 import dev.enro.ui.decorators.rememberCompositionTrackingDecorator
 import dev.enro.ui.decorators.rememberLifecycleDecorator
 import dev.enro.ui.decorators.rememberMovableContentDecorator
 import dev.enro.ui.decorators.rememberNavigationContextDecorator
 import dev.enro.ui.decorators.rememberSavedStateDecorator
-import dev.enro.ui.decorators.rememberSharedElementDecorator
 import dev.enro.ui.decorators.rememberViewModelStoreDecorator
 
 
@@ -46,15 +46,15 @@ internal fun rememberDecoratedDestinations(
         controller.decorators.getDecorators()
     }
     val decorators = listOf(
-        // sharedElementDecorator must be the OUTERMOST decorator (first
+        // The renderer's wrapper must be the OUTERMOST decorator (first
         // in this list — foldRight makes the first entry the outermost
-        // wrapper). It always emits a Box(Modifier.sharedElement(...))
-        // for every destination in every scene that lists it, even when
-        // the movableContentDecorator below skips rendering the actual
-        // content. That empty Box is what lets Compose's
-        // SharedTransitionScope bridge an entry's bounds from one
+        // wrapper). NavigationDisplay's wrapper always emits a
+        // Box(Modifier.sharedElement(...)) for every destination in every
+        // scene that lists it, even when the movableContentDecorator below
+        // skips rendering the actual content. That empty Box is what lets
+        // Compose's SharedTransitionScope bridge an entry's bounds from one
         // scene's layout slot to another during a transition.
-        rememberSharedElementDecorator(),
+        remember { destinationWrapperDecorator() },
         rememberMovableContentDecorator(),  // Preserves content across recompositions
         rememberSavedStateDecorator(savedStateHolder),      // Manages saved instance state
         rememberViewModelStoreDecorator(),  // Provides ViewModelStore for each destination

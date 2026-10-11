@@ -10,7 +10,7 @@ import dev.enro.context.ContainerContext
 import dev.enro.interceptor.NavigationInterceptor
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationDestinationProvider
-import dev.enro.ui.navigationDestination
+import dev.enro.ui.navigationDestinationContent
 
 internal class SyntheticDestination<K : NavigationKey>(
     internal val block: SyntheticDestinationScope<K>.() -> Unit,
@@ -100,7 +100,7 @@ public fun <K : NavigationKey> syntheticDestination(
     metadata: NavigationDestination.MetadataBuilder<K>.() -> Unit = {},
     block: SyntheticDestinationScope<K>.() -> Unit,
 ): NavigationDestinationProvider<K> {
-    return navigationDestination(
+    return navigationDestinationContent(
         metadata = {
             metadata.invoke(this)
             add(SyntheticDestination.SyntheticDestinationKey to SyntheticDestination(block))

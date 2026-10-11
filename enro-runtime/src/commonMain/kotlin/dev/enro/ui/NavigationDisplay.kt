@@ -16,9 +16,12 @@ import dev.enro.NavigationKey
 import dev.enro.platform.EnroLog
 import dev.enro.requestClose
 import dev.enro.ui.animation.NonDecreasingFrameTime
+import dev.enro.ui.decorators.LocalNavigationDestinationWrapper
+import dev.enro.ui.decorators.SharedElementDestinationWrapper
 import dev.enro.ui.scenes.DialogSceneStrategy
 import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.ui.scenes.OverlayTransitions
+import dev.enro.ui.scenes.OverlayTransitionsKey
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import dev.enro.viewmodel.getNavigationHandle
 import kotlinx.coroutines.flow.filter
@@ -415,6 +418,7 @@ public fun NavigationDisplay(
     CompositionLocalProvider(
         LocalNavigationContainer provides state,
         LocalNavigationContext provides state.context,
+        LocalNavigationDestinationWrapper provides SharedElementDestinationWrapper,
     ) {
         WithSharedTransitionScope(sharedTransitionScope) sharedScope@{
             transition.AnimatedContent(
@@ -806,7 +810,12 @@ private fun OverlaySceneRenderer(
  */
 private fun NavigationScene.Overlay.overlayTransitions(): OverlayTransitions? {
     val entry = entries.lastOrNull() ?: return null
-    return entry.metadata[DirectOverlaySceneStrategy.OverlayTransitionsKey]
+    entry.metadata[OverlayTransitionsKey]?.let { return it }
+    val fadeMillis = entry.metadata[DirectOverlaySceneStrategy.OverlayFadeKey] ?: return null
+    return OverlayTransitions(
+        enter = fadeIn(animationSpec = tween(fadeMillis)),
+        exit = fadeOut(animationSpec = tween(fadeMillis)),
+    )
 }
 
 /**

@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.NavigationKey
 import dev.enro.asInstance
 import dev.enro.ui.NavigationDestination
-import dev.enro.ui.navigationDestination
+import dev.enro.ui.navigationDestinationContent
 
 private const val TEST_OWNERS = "dev.enro.test.fixtures.NavigationDestinationFixtures.TEST_OWNERS"
 
@@ -15,7 +15,7 @@ object NavigationDestinationFixtures {
         key: T,
         metadata: NavigationDestination.MetadataBuilder<T>.() -> Unit = { },
     ): NavigationDestination<T> {
-        return navigationDestination<T>(
+        return navigationDestinationContent<T>(
             metadata = {
                 apply(metadata)
                 add(TEST_OWNERS to TestLifecycleAndViewModelStoreOwner())
