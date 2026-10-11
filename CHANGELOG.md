@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Updated androidx.lifecycle to 2.11.0 and navigationevent to 1.1.0
+
 ## 3.0.0-beta05 (2026-09-17)
 
 ### enro-test
