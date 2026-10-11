@@ -163,10 +163,10 @@ fun FindContextRightDestination() {
     )
     Column {
         Box(modifier = Modifier.weight(1f)) {
-            top.Render()
+            NavigationDisplay(top)
         }
         Box(modifier = Modifier.weight(1f)) {
-            bottom.Render()
+            NavigationDisplay(bottom)
         }
     }
 }

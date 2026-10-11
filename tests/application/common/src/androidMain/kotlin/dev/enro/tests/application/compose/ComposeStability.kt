@@ -36,6 +36,7 @@ import dev.enro.core.container.setBackstack
 import dev.enro.tests.application.activity.applyInsetsForContentView
 import dev.enro.tests.application.compose.common.Stability
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
 import kotlinx.parcelize.Parcelize
 import kotlin.uuid.Uuid
 
@@ -129,7 +130,7 @@ class ComposeStabilityActivity : AppCompatActivity() {
                 Text("Active: ${containerGroup.activeContainer.key.name}")
                 Spacer(modifier = Modifier.height(8.dp))
                 Box {
-                    containerGroup.activeContainer.Render()
+                    NavigationDisplay(containerGroup.activeContainer)
                 }
             }
         }
@@ -167,6 +168,6 @@ fun ComposeStabilityContentScreen() {
                 testTag = typedNavigationHandle.key.testTag
             }
         )
-        childContainer.Render()
+        NavigationDisplay(childContainer)
     }
 }

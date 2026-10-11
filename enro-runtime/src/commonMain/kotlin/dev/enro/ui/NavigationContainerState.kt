@@ -1,6 +1,5 @@
 package dev.enro.ui
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -75,19 +74,6 @@ public class NavigationContainerState(
         }
         savedStateHolder.restoreState(savedState)
         container.setBackstackDirect(restoredBackstack.asBackstack())
-    }
-
-    @Deprecated(
-        message = "Use NavigationDisplay(state) instead. This method only exists for migration ergonomics and will be removed before 3.0 stable.",
-        replaceWith = ReplaceWith(
-            expression = "NavigationDisplay(this)",
-            imports = ["dev.enro.ui.NavigationDisplay"],
-        ),
-        level = DeprecationLevel.WARNING,
-    )
-    @Composable
-    public fun Render() {
-        NavigationDisplay(this)
     }
 }
 

@@ -23,6 +23,7 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.core.push
 import dev.enro.core.requestClose
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.parcelize.Parcelize
 
@@ -47,7 +48,7 @@ class PictureInPictureActivity : AppCompatActivity() {
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
-                container.Render()
+                NavigationDisplay(container)
             }
         }
         applyInsetsForContentView()

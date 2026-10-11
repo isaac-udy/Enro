@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Removed the deprecated `NavigationContainerState.Render()`; use `NavigationDisplay(state)`.
+  The `enro-compat` extension of the same name remains for migrating from Enro 2: a call site
+  that reports "Unresolved reference: Render" needs
+  `import dev.enro.core.compose.container.Render`.
 * Updated androidx.lifecycle to 2.11.0 and navigationevent to 1.1.0
 * Added `stableClassName(KClass)` (`@AdvancedEnroApi`), the class name Enro persists for metadata
   keys: `qualifiedName` on every target except Kotlin/JS, which uses `simpleName`.

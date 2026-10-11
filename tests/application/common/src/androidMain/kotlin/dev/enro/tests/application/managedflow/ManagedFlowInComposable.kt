@@ -14,6 +14,7 @@ import dev.enro.core.compose.navigationHandle
 import dev.enro.interceptor.builder.navigationInterceptor
 import dev.enro.open
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.parcelize.Parcelize
 
@@ -40,7 +41,7 @@ fun ManagedFlowInComposableScreen() {
         }
     )
     Box(modifier = Modifier.fillMaxSize()) {
-        container.Render()
+        NavigationDisplay(container)
     }
 }
 

@@ -20,6 +20,7 @@ import dev.enro.core.container.EmptyBehavior
 import dev.enro.core.container.emptyBackstack
 import dev.enro.core.container.setBackstack
 import dev.enro.tests.application.compose.common.TitledColumn
+import dev.enro.ui.NavigationDisplay
 import kotlinx.parcelize.Parcelize
 import kotlin.random.Random
 
@@ -83,7 +84,7 @@ fun ComposeSavePrimitivesScreen() {
                 Text("Restore State")
             }
         }
-        container.Render()
+        NavigationDisplay(container)
     }
 }
 
