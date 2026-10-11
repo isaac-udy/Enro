@@ -196,6 +196,21 @@ of a key in a backstack has its own id and metadata).
 `NavigationDisplay` is the new top-level Composable for rendering a container.
 It replaces the v2 `Container { }` Composable.
 
+With `enro-compat` on Android, v2 code that calls `container.Render()` keeps
+compiling once the file imports the compat extension:
+
+```kotlin
+import dev.enro.core.compose.container.Render
+
+container.Render() // deprecated: renders NavigationDisplay(container)
+```
+
+In v2, `Render()` was a member of the container, so existing call sites have
+no import for it. The compiler reports "Unresolved reference: Render" until
+the import is added. The extension is deprecated in favour of
+`NavigationDisplay(state = container)` and is removed with the rest of
+`enro-compat`.
+
 ### Results
 
 Enro 2:
