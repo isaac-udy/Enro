@@ -2,6 +2,7 @@ package dev.enro.controller.repository
 
 import dev.enro.NavigationBinding
 import dev.enro.NavigationKey
+import dev.enro.displayName
 import dev.enro.ui.NavigationDestination
 import kotlin.reflect.KClass
 
@@ -32,12 +33,12 @@ internal class BindingRepository(
 
             when {
                 multiplePlatformOverrides -> error(
-                    "Found multiple platform override bindings for ${it.keyType.qualifiedName}." +
+                    "Found multiple platform override bindings for ${it.keyType.displayName}." +
                             " Please ensure that only one binding is provided for each key type."
                 )
 
                 multipleRegularBindings -> error(
-                    "Found multiple bindings for ${it.keyType.qualifiedName}." +
+                    "Found multiple bindings for ${it.keyType.displayName}." +
                             " Please ensure that only one binding is provided for each key type, or use @PlatformOverride to override an existing binding for a specific platform."
                 )
 
@@ -58,7 +59,7 @@ internal class BindingRepository(
                 }
 
                 else -> {
-                    error("An unknown error occurred while adding the binding for ${it.keyType.qualifiedName}.")
+                    error("An unknown error occurred while adding the binding for ${it.keyType.displayName}.")
                 }
             }
         }
@@ -76,7 +77,7 @@ internal class BindingRepository(
         }
         @Suppress("UNCHECKED_CAST")
         return requireNotNull(binding) {
-            "No binding found for ${instance.key::class.qualifiedName}"
+            "No binding found for ${instance.key::class.displayName}"
         } as NavigationBinding<K>
     }
 

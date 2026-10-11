@@ -53,12 +53,12 @@ public fun <T: NavigationKey> navigationHandle(
     val holder = viewModel<NavigationHandleHolder<T>>(
         viewModelStoreOwner = LocalNavigationContext.current,
     ) {
-        error("No NavigationHandle found for ${keyType.qualifiedName}")
+        error("No NavigationHandle found for ${keyType.displayName}")
     }
     val navigationHandle = holder.navigationHandle
     @Suppress("USELESS_IS_CHECK")
     require(navigationHandle.instance.key is T) {
-        "Expected key of type ${keyType.qualifiedName}, but found ${navigationHandle.instance.key::class}"
+        "Expected key of type ${keyType.displayName}, but found ${navigationHandle.instance.key::class}"
     }
     return navigationHandle
 }

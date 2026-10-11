@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.enro.NavigationKey
 import dev.enro.getNavigationHandle
+import dev.enro.platform.callSiteClassName
+import dev.enro.stableClassName
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -26,7 +28,7 @@ public fun <R : Any> ViewModel.registerForNavigationResult(
     onCompleted: NavigationResultScope<NavigationKey.WithResult<R>>.(R) -> Unit,
 ):  PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationResultChannel<R>>> {
     return PropertyDelegateProvider { thisRef, property ->
-        val resultId = "${thisRef::class.qualifiedName}.${property.name}"
+        val resultId = "${callSiteClassName(thisRef::class) ?: stableClassName(thisRef::class)}.${property.name}"
         val navigation = getNavigationHandle()
         val scope = viewModelScope
         @Suppress("UNCHECKED_CAST")
@@ -59,7 +61,7 @@ public fun ViewModel.registerForNavigationResult(
     onCompleted: NavigationResultScope<out NavigationKey>.() -> Unit,
 ): PropertyDelegateProvider<ViewModel, ReadOnlyProperty<ViewModel, NavigationResultChannel<Unit>>> {
     return PropertyDelegateProvider { thisRef, property ->
-        val resultId = "${thisRef::class.qualifiedName}.${property.name}"
+        val resultId = "${callSiteClassName(thisRef::class) ?: stableClassName(thisRef::class)}.${property.name}"
 
         val navigation = getNavigationHandle()
         val scope = viewModelScope

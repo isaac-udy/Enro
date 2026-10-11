@@ -9,6 +9,7 @@ import androidx.savedstate.serialization.encodeToSavedState
 import dev.enro.EnroController
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
+import dev.enro.displayName
 import dev.enro.platform.EnroLog
 import dev.enro.result.flow.FlowResultManager.FlowStepResult
 import dev.enro.serialization.unwrapForSerialization
@@ -152,7 +153,7 @@ private fun encodeFlowResults(
                 val serializer =
                     EnroController.savedStateConfiguration.serializersModule.getPolymorphic(Any::class, it.result)
                 if (serializer == null) {
-                    EnroLog.error("Could not find serializer for ${it.result::class.qualifiedName}, result will not be saved/restored in navigation flow")
+                    EnroLog.error("Could not find serializer for ${it.result::class.displayName}, result will not be saved/restored in navigation flow")
                 }
                 return@filter serializer != null
             }

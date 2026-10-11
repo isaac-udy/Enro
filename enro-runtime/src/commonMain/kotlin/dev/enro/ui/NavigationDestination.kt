@@ -10,6 +10,8 @@ import androidx.compose.runtime.remember
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.navigationHandle
+import dev.enro.metadataKeyName
+import dev.enro.stableClassName
 
 public open class NavigationDestinationProvider<T : NavigationKey>(
     private val metadata:  NavigationDestination.MetadataBuilder<T>.() -> Unit = {},
@@ -123,12 +125,24 @@ public data class NavigationDestination<out T : NavigationKey> private construct
      * object IsBottomSheet : NavigationDestination.MetadataKey<Boolean>(default = false)
      * val isBottomSheet = destination.metadata[IsBottomSheet]
      * ```
+     *
+     * [name] defaults to the key's [stableClassName]; see [NavigationKey.MetadataKey] for when to
+     * pass one explicitly.
      */
     public abstract class MetadataKey<T>(
         public val default: T,
+        name: String?,
     ) {
+        public constructor(default: T) : this(default, null)
+
+        private val explicitName = name
+
         public val name: String by lazy {
-            this::class.qualifiedName ?: error("MetadataKeys must have a valid qualifiedName")
+            metadataKeyName(
+                namespace = MetadataKey::class,
+                keyClass = this::class,
+                explicitName = explicitName,
+            )
         }
     }
 

@@ -3,6 +3,15 @@
 ## Unreleased
 
 * Updated androidx.lifecycle to 2.11.0 and navigationevent to 1.1.0
+* Added `stableClassName(KClass)` (`@AdvancedEnroApi`), the class name Enro persists for metadata
+  keys: `qualifiedName` on every target except Kotlin/JS, which uses `simpleName`.
+  `enro-runtime`'s common code no longer reads `KClass.qualifiedName` directly. Metadata key
+  names, result ids and flow step ids are unchanged on every existing target.
+* `NavigationKey.MetadataKey`, `NavigationKey.TransientMetadataKey`,
+  `NavigationDestination.MetadataKey` and `NavigationScene.MetadataKey` take an optional explicit
+  `name`; without one, the name is the key's `stableClassName`, as before. On Kotlin/JS, two key
+  classes of the same kind with the same simple name now throw when used, instead of silently
+  sharing storage.
 
 ## 3.0.0-beta05 (2026-09-17)
 

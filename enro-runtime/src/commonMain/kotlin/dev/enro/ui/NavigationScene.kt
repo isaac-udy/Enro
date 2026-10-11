@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import dev.enro.NavigationKey
+import dev.enro.metadataKeyName
+import dev.enro.stableClassName
 
 @Immutable
 @Stable
@@ -35,12 +37,24 @@ public interface NavigationScene {
      * object MyKey : NavigationScene.MetadataKey<String?>(default = null)
      * scene.metadata[MyKey]  // typed access
      * ```
+     *
+     * [name] defaults to the key's [stableClassName]; see [NavigationKey.MetadataKey] for when to
+     * pass one explicitly.
      */
     public abstract class MetadataKey<T>(
         public val default: T,
+        name: String?,
     ) {
+        public constructor(default: T) : this(default, null)
+
+        private val explicitName = name
+
         public val name: String by lazy {
-            this::class.qualifiedName ?: error("MetadataKeys must have a valid qualifiedName")
+            metadataKeyName(
+                namespace = MetadataKey::class,
+                keyClass = this::class,
+                explicitName = explicitName,
+            )
         }
     }
 

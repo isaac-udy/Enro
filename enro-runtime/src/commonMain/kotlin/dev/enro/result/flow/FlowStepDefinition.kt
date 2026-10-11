@@ -1,6 +1,8 @@
 package dev.enro.result.flow
 
 import dev.enro.NavigationKey
+import dev.enro.platform.callSiteClassName
+import dev.enro.stableClassName
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
 
@@ -22,7 +24,7 @@ public abstract class FlowStepDefinition<T : NavigationKey, R : Any> @PublishedA
         val steps = navigationFlowScope.steps
         val id = when(val providedId = providedId)  {
             null -> {
-                val baseId = this::class.qualifiedName ?: this::class.toString()
+                val baseId = callSiteClassName(this::class) ?: stableClassName(keyWithMetadata.key::class)
                 val count = steps.count { it.id.value.startsWith(baseId) }
                 FlowStep.Id("$baseId@$count")
             }

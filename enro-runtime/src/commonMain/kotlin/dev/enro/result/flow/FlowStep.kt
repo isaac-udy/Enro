@@ -1,6 +1,8 @@
 package dev.enro.result.flow
 
 import dev.enro.NavigationKey
+import dev.enro.platform.callSiteClassName
+import dev.enro.stableClassName
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
@@ -86,7 +88,10 @@ public val <T : NavigationKey> NavigationKey.Instance<T>.flowStepId: FlowStep.Id
 
 public inline fun <reified T : NavigationKey> flowStepId(): FlowStep.Id<T> {
     val provider = object : FlowStepIdProvider<T>(T::class) {
-        override val id: String get() = this::class.toString().removePrefix("class ")
+        override val id: String get() = when (callSiteClassName(this::class)) {
+            null -> stableClassName(type)
+            else -> this::class.toString().removePrefix("class ")
+        }
     }
     return FlowStep.Id(provider.id)
 }
