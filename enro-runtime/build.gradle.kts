@@ -7,6 +7,21 @@ plugins {
 }
 
 kotlin {
+    // composeUiTest holds the tests that render through enro-ui. The Compose plugin only provides
+    // the skiko runtime to a wasm test bundle whose main compilation depends on Compose UI, which
+    // enro-runtime's does not, so these tests are not compiled for web targets.
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("composeUi") {
+                withCompilations {
+                    it.platformType != org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.wasm &&
+                        it.platformType != org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.js
+                }
+            }
+        }
+    }
+
     // Enable the Android host (unit) test component so commonTest also runs on the
     // Android JVM target.
     androidLibrary {
@@ -69,13 +84,15 @@ kotlin {
             implementation(libs.thauvin.urlencoder)
         }
         commonTest.dependencies {
-            // The scene and destination integration tests render through enro-ui's
-            // NavigationDisplay while reading enro-runtime internals.
-            implementation(project(":enro-ui"))
             implementation(project(":enro-test"))
-            implementation(compose.material3)
-            implementation(libs.compose.uiTest)
             implementation(libs.kotlinx.coroutines.test)
+        }
+        val composeUiTest by getting {
+            dependencies {
+                implementation(project(":enro-ui"))
+                implementation(compose.material3)
+                implementation(libs.compose.uiTest)
+            }
         }
         val androidHostTest by getting {
             dependencies {

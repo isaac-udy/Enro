@@ -68,6 +68,7 @@
     iOS and desktop platform hosts (activities, fragments, UIViewControllers and windows) stay
     in `enro-runtime`.
   * Projects that depend on `enro-runtime` directly and use the moved APIs must add `enro-ui`.
+  * `enro-test` no longer depends on Compose UI.
   * `fragmentDestination`'s `arguments` lambda now has a `NavigationDestinationContentScope<T>`
     receiver; the activity, fragment, UIViewController and root window destinations use
     `navigationDestinationContent`.
