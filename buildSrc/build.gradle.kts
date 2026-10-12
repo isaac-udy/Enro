@@ -55,5 +55,9 @@ gradlePlugin {
             id = "configure-compose"
             implementationClass = "ConfigureCompose"
         }
+        register("configure-compose-runtime") {
+            id = "configure-compose-runtime"
+            implementationClass = "ConfigureComposeRuntime"
+        }
     }
 }

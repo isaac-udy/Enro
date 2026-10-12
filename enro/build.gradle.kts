@@ -31,6 +31,7 @@ kotlin {
         commonMain.dependencies {
             api("dev.enro:enro-common:${project.enroVersionName}")
             api("dev.enro:enro-runtime:${project.enroVersionName}")
+            api(project(":enro-ui"))
             api("dev.enro:enro-annotations:${project.enroVersionName}")
         }
 

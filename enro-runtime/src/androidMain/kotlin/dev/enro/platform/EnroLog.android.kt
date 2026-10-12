@@ -3,9 +3,10 @@ package dev.enro.platform
 import android.app.Application
 import android.util.Log
 import dev.enro.EnroController
+import dev.enro.annotations.InternalEnroApi
 
-@PublishedApi
-internal actual object EnroLog {
+@InternalEnroApi
+public actual object EnroLog {
     private const val LOG_TAG = "Enro"
 
     internal var forceAndroidLogs = false
@@ -15,7 +16,7 @@ internal actual object EnroLog {
     internal val usePrint
         get() = !forceAndroidLogs && EnroController.instance?.platformReference !is Application
 
-    actual fun debug(message: String) {
+    public actual fun debug(message: String) {
         if (usePrint) {
             // In JVM tests, we don't have a logcat to write to, so we just print to stdout
             println("[Debug] $LOG_TAG: $message")
@@ -24,7 +25,7 @@ internal actual object EnroLog {
         Log.d(LOG_TAG, message)
     }
 
-    actual fun warn(message: String) {
+    public actual fun warn(message: String) {
         if (usePrint) {
             // In JVM tests, we don't have a logcat to write to, so we just print to stdout
             println("[Warn] $LOG_TAG: $message")
@@ -33,7 +34,7 @@ internal actual object EnroLog {
         Log.w(LOG_TAG, message)
     }
 
-    actual fun error(message: String) {
+    public actual fun error(message: String) {
         if (usePrint) {
             // In JVM tests, we don't have a logcat to write to, so we just print to stdout
             println("[Error] $LOG_TAG: $message")
@@ -42,7 +43,7 @@ internal actual object EnroLog {
         Log.e(LOG_TAG, message)
     }
 
-    actual fun error(message: String, throwable: Throwable) {
+    public actual fun error(message: String, throwable: Throwable) {
         if (usePrint) {
             // In JVM tests, we don't have a logcat to write to, so we just print to stdout
             println("[Error] $LOG_TAG: $message\n${throwable.stackTraceToString()}")

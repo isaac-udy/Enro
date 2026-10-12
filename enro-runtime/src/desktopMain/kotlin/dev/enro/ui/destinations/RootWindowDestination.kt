@@ -7,7 +7,7 @@ import dev.enro.platform.desktop.RootWindow
 import dev.enro.platform.desktop.RootWindowScope
 import dev.enro.platform.desktop.openWindow
 import dev.enro.ui.NavigationDestinationProvider
-import dev.enro.ui.navigationDestination
+import dev.enro.ui.navigationDestinationContent
 import kotlin.reflect.KClass
 
 
@@ -54,7 +54,7 @@ public fun <T : NavigationKey> rootWindowDestination(
     windowConfiguration: RootWindow<T>.() -> RootWindow.WindowConfiguration = { RootWindow.WindowConfiguration() },
     content: @Composable RootWindowScope<T>.() -> Unit,
 ): NavigationDestinationProvider<T> {
-    return navigationDestination(
+    return navigationDestinationContent(
         metadata = {
             add(
                 RootWindowDestination.ConfigurationKey to RootWindowDestination.RootWindowDestinationConfiguration(

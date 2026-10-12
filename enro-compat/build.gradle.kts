@@ -14,6 +14,7 @@ kotlin {
         }
         commonMain.dependencies {
             api(project(":enro-runtime"))
+            api(project(":enro-ui"))
             implementation(libs.compose.viewmodel)
             implementation(libs.compose.lifecycle)
             implementation(libs.androidx.savedState)

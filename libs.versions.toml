@@ -14,6 +14,7 @@ kotlinx-serialization = "1.11.0"
 maven-publish = "0.36.0"
 ksp = "2.3.9"
 kotlinx-coroutines = "1.10.2"
+kotlinx-browser = "0.5.0"
 kotlin-js = "2026.5.0" # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
 dokka = "2.0.0"
 
@@ -80,6 +81,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
 
 thauvin-urlencoder = "net.thauvin.erik.urlencoder:urlencoder-lib:1.6.0"
 

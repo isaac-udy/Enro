@@ -11,6 +11,8 @@ import dev.enro.ui.NavigationScene
 import dev.enro.ui.NavigationSceneStrategy
 import dev.enro.ui.SceneStrategyScope
 import dev.enro.ui.get
+import kotlin.experimental.ExperimentalObjCRefinement
+import kotlin.native.HiddenFromObjC
 
 /** An [NavigationScene.Overlay] that renders an [entry] within a [Dialog]. */
 internal data class DialogScene(
@@ -63,6 +65,8 @@ public class DialogSceneStrategy : NavigationSceneStrategy {
      * stored when it opts into being displayed inside a [Dialog].
      * Mirrors Nav3's `DialogSceneStrategy.DialogKey: NavMetadataKey<DialogProperties>`.
      */
+    @OptIn(ExperimentalObjCRefinement::class)
+    @HiddenFromObjC
     public object DialogPropertiesKey :
         NavigationDestination.MetadataKey<DialogProperties?>(default = null)
 

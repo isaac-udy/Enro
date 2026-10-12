@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package dev.enro
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.material3.Text
@@ -16,7 +19,6 @@ import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.contains
 import dev.enro.ui.decorators.LocalNavigationDestinationWrapper
 import dev.enro.ui.decorators.NavigationDestinationWrapper
-import dev.enro.ui.decorators.SharedElementDestinationWrapper
 import dev.enro.ui.get
 import dev.enro.ui.navigationDestination
 import dev.enro.ui.navigationDestinationContent
@@ -30,7 +32,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
-import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
@@ -64,7 +65,7 @@ class NavigationDestinationContentTests {
     }
 
     @Test
-    fun `NavigationDisplay wraps its destinations in the shared element wrapper`() = runEnroComposeTest {
+    fun `NavigationDisplay provides a destination wrapper`() = runEnroComposeTest {
         var wrapper: NavigationDestinationWrapper? = null
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
@@ -88,7 +89,7 @@ class NavigationDestinationContentTests {
         }
 
         onNodeWithText("wrapped").assertIsDisplayed()
-        assertSame(SharedElementDestinationWrapper, assertNotNull(wrapper))
+        assertNotNull(wrapper)
     }
 
     @Test

@@ -4,6 +4,8 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Immutable
 import dev.enro.ui.NavigationDestination
+import kotlin.experimental.ExperimentalObjCRefinement
+import kotlin.native.HiddenFromObjC
 
 /**
  * Enter + exit transition pair carried in a [NavigationDestination]'s
@@ -27,6 +29,8 @@ public data class OverlayTransitions(
  * appearance/disappearance. Default `null`. Takes precedence over
  * [DirectOverlaySceneStrategy.OverlayFadeKey].
  */
+@OptIn(ExperimentalObjCRefinement::class)
+@HiddenFromObjC
 public object OverlayTransitionsKey :
     NavigationDestination.MetadataKey<OverlayTransitions?>(default = null)
 

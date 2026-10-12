@@ -7,7 +7,7 @@ import dev.enro.NavigationKey
 import dev.enro.platform.getNavigationKeyInstance
 import dev.enro.platform.putNavigationKeyInstance
 import dev.enro.ui.NavigationDestinationProvider
-import dev.enro.ui.navigationDestination
+import dev.enro.ui.navigationDestinationContent
 import kotlin.reflect.KClass
 
 public inline fun <reified T : NavigationKey, reified A : Activity> activityDestination(): NavigationDestinationProvider<T> {
@@ -18,7 +18,7 @@ public fun <T : NavigationKey, A : Activity> activityDestination(
     keyType: KClass<T>,
     activityType: KClass<A>,
 ): NavigationDestinationProvider<T> {
-    return navigationDestination(
+    return navigationDestinationContent(
         metadata = {
             add(ActivityTypeKey to activityType)
             rootContextDestination()

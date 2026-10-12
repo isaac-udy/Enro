@@ -8,7 +8,7 @@ import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.platform.EnroLog
-import dev.enro.ui.NavigationDestinationScope
+import dev.enro.ui.NavigationDestinationContentScope
 
 @PublishedApi
 internal class FragmentNavigationHandle<T : NavigationKey>() : NavigationHandle<T>() {
@@ -24,7 +24,7 @@ internal class FragmentNavigationHandle<T : NavigationKey>() : NavigationHandle<
 
     override val lifecycle: Lifecycle get() = delegate.lifecycle
 
-    internal fun bind(scope: NavigationDestinationScope<T>) {
+    internal fun bind(scope: NavigationDestinationContentScope<T>) {
         instance = scope.navigation.instance
         delegate = scope.navigation
     }

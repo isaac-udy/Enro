@@ -2,11 +2,26 @@ plugins {
     id("com.google.devtools.ksp")
     id("configure-library")
     id("configure-publishing")
-    id("configure-compose")
+    id("configure-compose-runtime")
     kotlin("plugin.serialization")
 }
 
 kotlin {
+    // composeUiTest holds the tests that render through enro-ui. The Compose plugin only provides
+    // the skiko runtime to a wasm test bundle whose main compilation depends on Compose UI, which
+    // enro-runtime's does not, so these tests are not compiled for web targets.
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("composeUi") {
+                withCompilations {
+                    it.platformType != org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.wasm &&
+                        it.platformType != org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.js
+                }
+            }
+        }
+    }
+
     // Enable the Android host (unit) test component so commonTest also runs on the
     // Android JVM target.
     androidLibrary {
@@ -43,9 +58,17 @@ tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
 
 kotlin {
     sourceSets {
+        // The platform hosts (activities, fragments, UIViewControllers, windows) render through
+        // Compose UI; common and web code must not depend on it.
         desktopMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(compose.ui)
+            implementation(compose.desktop.currentOs)
+        }
+        iosMain.dependencies {
+            implementation(compose.ui)
+            implementation(compose.foundation)
         }
         commonMain.dependencies {
             api("dev.enro:enro-annotations:${project.enroVersionName}")
@@ -62,8 +85,14 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(project(":enro-test"))
-            implementation(libs.compose.uiTest)
             implementation(libs.kotlinx.coroutines.test)
+        }
+        val composeUiTest by getting {
+            dependencies {
+                implementation(project(":enro-ui"))
+                implementation(compose.material3)
+                implementation(libs.compose.uiTest)
+            }
         }
         val androidHostTest by getting {
             dependencies {
@@ -79,10 +108,14 @@ kotlin {
             implementation(libs.androidx.recyclerview)
             implementation(libs.androidx.lifecycle.process)
             implementation(libs.kotlin.reflect)
+            implementation(compose.ui)
+            implementation(compose.foundation)
+            implementation(libs.compose.activity)
         }
 
         wasmJsMain.dependencies {
             implementation(libs.kotlin.js)
+            implementation(libs.kotlinx.browser)
         }
     }
 }
