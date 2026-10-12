@@ -59,7 +59,10 @@ public data class FlowStep<out Result : Any> private constructor(
     public class Id<out K : NavigationKey> @PublishedApi internal constructor(
         @PublishedApi internal val value: String,
     ) {
-        internal object MetadataKey : NavigationKey.MetadataKey<String?>(null)
+        internal object MetadataKey : NavigationKey.MetadataKey<String?>(
+            default = null,
+            name = "dev.enro.result.flow.FlowStep.Id.MetadataKey",
+        )
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

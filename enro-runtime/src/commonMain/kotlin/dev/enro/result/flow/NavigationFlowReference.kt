@@ -18,7 +18,10 @@ import kotlinx.serialization.Serializable
 public class NavigationFlowReference internal constructor(
     internal val id: String,
 ) {
-    internal object MetadataKey : NavigationKey.TransientMetadataKey<NavigationFlow<*>?>(null)
+    internal object MetadataKey : NavigationKey.TransientMetadataKey<NavigationFlow<*>?>(
+        default = null,
+        name = "dev.enro.result.flow.NavigationFlowReference.MetadataKey",
+    )
 }
 
 /**

@@ -68,7 +68,10 @@ public class DialogSceneStrategy : NavigationSceneStrategy {
     @OptIn(ExperimentalObjCRefinement::class)
     @HiddenFromObjC
     public object DialogPropertiesKey :
-        NavigationDestination.MetadataKey<DialogProperties?>(default = null)
+        NavigationDestination.MetadataKey<DialogProperties?>(
+            default = null,
+            name = "dev.enro.ui.scenes.DialogSceneStrategy.DialogPropertiesKey",
+        )
 
     public companion object
 }

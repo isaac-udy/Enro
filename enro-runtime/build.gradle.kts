@@ -1,6 +1,6 @@
 plugins {
     id("com.google.devtools.ksp")
-    id("configure-library")
+    id("configure-library-with-js")
     id("configure-publishing")
     id("configure-compose-runtime")
     kotlin("plugin.serialization")
@@ -113,9 +113,11 @@ kotlin {
             implementation(libs.compose.activity)
         }
 
+        webMain.dependencies {
+            implementation(libs.kotlinx.browser)
+        }
         wasmJsMain.dependencies {
             implementation(libs.kotlin.js)
-            implementation(libs.kotlinx.browser)
         }
     }
 }

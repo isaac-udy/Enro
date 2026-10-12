@@ -81,6 +81,7 @@ subprojects {
             tasks.findByName("testAndroidHostTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("desktopTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("wasmJsBrowserTest")?.let { continuousIntegration.dependsOn(it) }
+            tasks.findByName("jsTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("testWithEmulatorWtf")?.let { continuousIntegration.dependsOn(it) }
             // Compile-only fallbacks so modules without tests (e.g. recipes)
             // are still build-checked by CI. For modules with tests, these are
@@ -88,6 +89,7 @@ subprojects {
             tasks.findByName("compileKotlinDesktop")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("compileAndroidMain")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("compileKotlinWasmJs")?.let { continuousIntegration.dependsOn(it) }
+            tasks.findByName("compileKotlinJs")?.let { continuousIntegration.dependsOn(it) }
         }
 
         // Separate aggregate task for the macOS CI runner — runs only the

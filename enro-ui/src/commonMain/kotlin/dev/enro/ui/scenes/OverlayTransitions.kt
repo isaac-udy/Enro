@@ -32,7 +32,10 @@ public data class OverlayTransitions(
 @OptIn(ExperimentalObjCRefinement::class)
 @HiddenFromObjC
 public object OverlayTransitionsKey :
-    NavigationDestination.MetadataKey<OverlayTransitions?>(default = null)
+    NavigationDestination.MetadataKey<OverlayTransitions?>(
+        default = null,
+        name = "dev.enro.ui.scenes.OverlayTransitionsKey",
+    )
 
 /**
  * Marks the destination as a direct overlay AND attaches a pair of

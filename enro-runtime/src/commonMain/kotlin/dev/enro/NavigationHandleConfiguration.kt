@@ -80,7 +80,10 @@ public class NavigationHandleConfiguration<T : NavigationKey>(
     }
 
     internal object OnCloseCallbacks :
-        NavigationKey.TransientMetadataKey<List<OnCloseCallback<*>>>(emptyList())
+        NavigationKey.TransientMetadataKey<List<OnCloseCallback<*>>>(
+            default = emptyList(),
+            name = "dev.enro.NavigationHandleConfiguration.OnCloseCallbacks",
+        )
 
     internal companion object {
         internal fun <T : NavigationKey> onCloseRequested(

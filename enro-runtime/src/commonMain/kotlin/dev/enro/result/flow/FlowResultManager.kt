@@ -111,7 +111,10 @@ public class FlowResultManager private constructor(
     )
 
     public companion object {
-        private object FlowResultManagerKey : NavigationKey.TransientMetadataKey<FlowResultManager?>(null)
+        internal object FlowResultManagerKey : NavigationKey.TransientMetadataKey<FlowResultManager?>(
+            default = null,
+            name = "dev.enro.result.flow.FlowResultManager.Companion.FlowResultManagerKey",
+        )
 
         public fun create(
             navigationHandle: NavigationHandle<*>,

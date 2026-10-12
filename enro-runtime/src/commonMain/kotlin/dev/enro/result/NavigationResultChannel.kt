@@ -43,7 +43,10 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
         val resultId: String
     )
 
-    internal object ResultIdKey : NavigationKey.MetadataKey<Id?>(null)
+    internal object ResultIdKey : NavigationKey.MetadataKey<Id?>(
+        default = null,
+        name = "dev.enro.result.NavigationResultChannel.ResultIdKey",
+    )
 
     //    @PublishedApi
     public companion object {

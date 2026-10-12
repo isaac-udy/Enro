@@ -74,6 +74,16 @@
     `navigationDestinationContent`.
 * Added `@InternalEnroApi`, an opt-in marker for APIs that are public only so Enro's own modules
   can use them.
+* Added a Kotlin/JS target (browser and Node.js) to `enro-runtime`, `enro-ui`, `enro` and
+  `enro-test`; `enro-annotations` and `enro-common` add the browser environment to their
+  existing Node.js target and no longer build a Node.js executable. `EnroBrowserContent` is
+  available on Kotlin/JS as well as wasmJs, and `@NavigationComponent` generates the
+  `installNavigationController(document)` entry point for Kotlin/JS. On Kotlin/JS, class names
+  that Enro stores (metadata key names, result ids and flow step ids) use the class's simple name.
+* Enro's own metadata keys now declare explicit names, equal to the qualified names they used
+  before, so stored metadata is unchanged on every existing target and Enro's keys cannot clash
+  with an application's keys on Kotlin/JS.
+* `enro-common` is published for Kotlin/JS again.
 
 ## 3.0.0-beta05 (2026-09-17)
 

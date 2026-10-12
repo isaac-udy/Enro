@@ -13,7 +13,10 @@ public class NavigationBinding<K : NavigationKey> @PublishedApi internal constru
     public val isPlatformOverride: Boolean = false,
 ) {
     public companion object {
-        internal object UseOriginalBindingKey : NavigationKey.MetadataKey<Boolean>(default = false)
+        internal object UseOriginalBindingKey : NavigationKey.MetadataKey<Boolean>(
+            default = false,
+            name = "dev.enro.NavigationBinding.Companion.UseOriginalBindingKey",
+        )
 
         internal fun setUsesOriginalBinding(instance: NavigationKey.Instance<*>) {
             instance.metadata.set(UseOriginalBindingKey, true)

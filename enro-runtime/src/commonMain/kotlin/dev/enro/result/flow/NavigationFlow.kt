@@ -150,8 +150,14 @@ public class NavigationFlow<T> internal constructor(
     internal fun getResultManager(): FlowResultManager = resultManager
 
     public companion object {
-        internal object ResultFlowKey : NavigationKey.TransientMetadataKey<NavigationFlow<*>?>(null)
-        internal object ResultFlowIdKey : NavigationKey.MetadataKey<String?>(null)
+        internal object ResultFlowKey : NavigationKey.TransientMetadataKey<NavigationFlow<*>?>(
+            default = null,
+            name = "dev.enro.result.flow.NavigationFlow.Companion.ResultFlowKey",
+        )
+        internal object ResultFlowIdKey : NavigationKey.MetadataKey<String?>(
+            default = null,
+            name = "dev.enro.result.flow.NavigationFlow.Companion.ResultFlowIdKey",
+        )
     }
 }
 

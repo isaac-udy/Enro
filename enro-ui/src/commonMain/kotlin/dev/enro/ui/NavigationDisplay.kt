@@ -64,14 +64,20 @@ public object NavigationDisplay {
      * Mirrors Nav3's `NavDisplay.TransitionKey`.
      */
     public object TransitionKey :
-        NavigationScene.MetadataKey<TransitionSpec?>(default = null)
+        NavigationScene.MetadataKey<TransitionSpec?>(
+            default = null,
+            name = "dev.enro.ui.NavigationDisplay.TransitionKey",
+        )
 
     /**
      * Scene metadata key for overriding the pop transition. Looked up
      * the same way as [TransitionKey].
      */
     public object PopTransitionKey :
-        NavigationScene.MetadataKey<TransitionSpec?>(default = null)
+        NavigationScene.MetadataKey<TransitionSpec?>(
+            default = null,
+            name = "dev.enro.ui.NavigationDisplay.PopTransitionKey",
+        )
 
     /**
      * Scene metadata key for overriding the predictive-back transition.
@@ -79,7 +85,10 @@ public object NavigationDisplay {
      * so the spec can vary by left/right edge.
      */
     public object PredictivePopTransitionKey :
-        NavigationScene.MetadataKey<PredictivePopTransitionSpec?>(default = null)
+        NavigationScene.MetadataKey<PredictivePopTransitionSpec?>(
+            default = null,
+            name = "dev.enro.ui.NavigationDisplay.PredictivePopTransitionKey",
+        )
 }
 
 /**
