@@ -15,9 +15,19 @@ class ConfigureCompose : Plugin<Project> {
     override fun apply(project: Project) {
         val isMultiplatform = project.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")
         when {
-            isMultiplatform -> project.configureComposeMultiplatform()
+            isMultiplatform -> project.configureComposeMultiplatform(includeUi = true)
             else -> project.configureComposeAndroid()
         }
+    }
+}
+
+/**
+ * Applies the Compose compiler with only the Compose runtime, for multiplatform modules that
+ * must not depend on Compose UI.
+ */
+class ConfigureComposeRuntime : Plugin<Project> {
+    override fun apply(project: Project) {
+        project.configureComposeMultiplatform(includeUi = false)
     }
 }
 
@@ -43,7 +53,7 @@ internal fun Project.configureComposeAndroid() {
     }
 }
 
-internal fun Project.configureComposeMultiplatform() {
+internal fun Project.configureComposeMultiplatform(includeUi: Boolean) {
     plugins.apply("org.jetbrains.compose")
     plugins.apply("org.jetbrains.kotlin.plugin.compose")
 
@@ -52,6 +62,13 @@ internal fun Project.configureComposeMultiplatform() {
 
     kotlinMultiplatformExtension.apply {
         sourceSets {
+            commonMain.dependencies {
+                implementation(compose.runtime)
+                implementation(libs.compose.viewmodel)
+                implementation(libs.compose.bundle)
+            }
+            if (!includeUi) return@sourceSets
+
             val desktopMain by getting
 
             androidMain.dependencies {
@@ -62,10 +79,7 @@ internal fun Project.configureComposeMultiplatform() {
                 implementation(compose.uiTooling)
             }
             commonMain.dependencies {
-                implementation(compose.runtime)
                 implementation(compose.foundation)
-                implementation(libs.compose.viewmodel)
-                implementation(libs.compose.bundle)
                 implementation(compose.material3)
                 implementation(compose.material)
                 implementation(compose.materialIconsExtended)

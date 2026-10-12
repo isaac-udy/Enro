@@ -13,7 +13,7 @@
  *
  * ## Usage
  *
- * Decorators are typically applied automatically by [NavigationDisplay], but can also be
+ * Decorators are typically applied automatically by `NavigationDisplay`, but can also be
  * applied manually when creating custom navigation displays:
  *
  * ```kotlin
@@ -59,5 +59,3 @@
  * ```
  */
 package dev.enro.ui.decorators
-
-import dev.enro.ui.NavigationDisplay

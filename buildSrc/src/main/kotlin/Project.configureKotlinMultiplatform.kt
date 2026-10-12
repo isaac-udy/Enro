@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 private val optIns = arrayOf(
     "dev.enro.annotations.AdvancedEnroApi",
     "dev.enro.annotations.ExperimentalEnroApi",
+    "dev.enro.annotations.InternalEnroApi",
     "kotlin.uuid.ExperimentalUuidApi",
     "kotlin.io.encoding.ExperimentalEncodingApi",
     "kotlin.experimental.ExperimentalObjCName",

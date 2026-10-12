@@ -8,7 +8,7 @@ import dev.enro.EnroController
 import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationDestinationProvider
-import dev.enro.ui.navigationDestination
+import dev.enro.ui.navigationDestinationContent
 import platform.UIKit.UIModalPresentationAutomatic
 import platform.UIKit.UIModalPresentationStyle
 import platform.UIKit.UINavigationController
@@ -108,7 +108,7 @@ public fun <T: NavigationKey> uiViewControllerDestination(
     metadata: NavigationDestination.MetadataBuilder<T>.() -> List<UIViewControllerDestination.Configuration.Flag>,
     viewController: (NavigationKey.Instance<T>) -> UIViewController,
 ) : NavigationDestinationProvider<T> {
-    return navigationDestination(
+    return navigationDestinationContent(
         metadata = {
             val flags = metadata().filter {
                 // If the instance has been set specifically to ignore Compose hosting,

@@ -34,6 +34,7 @@ dependencies {
     "dokka"(project(":enro-processor"))
     "dokka"(project(":enro-runtime"))
     "dokka"(project(":enro-test"))
+    "dokka"(project(":enro-ui"))
 }
 
 allprojects {
@@ -50,6 +51,9 @@ allprojects {
 
             substitute(module("dev.enro:enro-runtime"))
                 .using(project(":enro-runtime"))
+
+            substitute(module("dev.enro:enro-ui"))
+                .using(project(":enro-ui"))
 
             substitute(module("dev.enro:enro-test"))
                 .using(project(":enro-test"))

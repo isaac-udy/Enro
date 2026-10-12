@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationTransition
+import dev.enro.annotations.InternalEnroApi
 import dev.enro.close
 import dev.enro.navigationHandle
 
@@ -26,7 +27,8 @@ public data class EmptyBehavior internal constructor(
         }
     }
 
-    internal fun isBackHandlerEnabled(backstack: NavigationBackstack): Boolean {
+    @InternalEnroApi
+    public fun isBackHandlerEnabled(backstack: NavigationBackstack): Boolean {
         if (backstack.isEmpty()) return false
         return isBackHandlerEnabled()
     }

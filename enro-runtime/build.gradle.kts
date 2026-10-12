@@ -2,7 +2,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("configure-library")
     id("configure-publishing")
-    id("configure-compose")
+    id("configure-compose-runtime")
     kotlin("plugin.serialization")
 }
 
@@ -43,9 +43,17 @@ tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
 
 kotlin {
     sourceSets {
+        // The platform hosts (activities, fragments, UIViewControllers, windows) render through
+        // Compose UI; common and web code must not depend on it.
         desktopMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(compose.ui)
+            implementation(compose.desktop.currentOs)
+        }
+        iosMain.dependencies {
+            implementation(compose.ui)
+            implementation(compose.foundation)
         }
         commonMain.dependencies {
             api("dev.enro:enro-annotations:${project.enroVersionName}")
@@ -61,7 +69,11 @@ kotlin {
             implementation(libs.thauvin.urlencoder)
         }
         commonTest.dependencies {
+            // The scene and destination integration tests render through enro-ui's
+            // NavigationDisplay while reading enro-runtime internals.
+            implementation(project(":enro-ui"))
             implementation(project(":enro-test"))
+            implementation(compose.material3)
             implementation(libs.compose.uiTest)
             implementation(libs.kotlinx.coroutines.test)
         }
@@ -79,10 +91,14 @@ kotlin {
             implementation(libs.androidx.recyclerview)
             implementation(libs.androidx.lifecycle.process)
             implementation(libs.kotlin.reflect)
+            implementation(compose.ui)
+            implementation(compose.foundation)
+            implementation(libs.compose.activity)
         }
 
         wasmJsMain.dependencies {
             implementation(libs.kotlin.js)
+            implementation(libs.kotlinx.browser)
         }
     }
 }

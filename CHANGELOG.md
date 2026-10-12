@@ -58,6 +58,21 @@
 * The warning for an operation from a destination that is no longer in its container's
   backstack now suggests `closeAndReplaceWith(...)` for the Enro 2 `close()` then `open()`
   pattern.
+* Split the Compose UI display into a new `enro-ui` module. The `enro` artifact depends on it, so
+  apps that depend on `enro` need no change. Packages are unchanged.
+  * `enro-ui` contains `NavigationDisplay`, the navigation animations, `navigationDestination { }`
+    and `NavigationDestinationScope`, `EmbeddedDestination`, `managedFlowDestination`, the
+    dialog scene, `OverlayTransitions` and `directOverlay(enter, exit)`, the shared-element
+    decorator, and the wasm `EnroBrowserContent`.
+  * `enro-runtime` no longer depends on Compose UI in its common and web code. The Android,
+    iOS and desktop platform hosts (activities, fragments, UIViewControllers and windows) stay
+    in `enro-runtime`.
+  * Projects that depend on `enro-runtime` directly and use the moved APIs must add `enro-ui`.
+  * `fragmentDestination`'s `arguments` lambda now has a `NavigationDestinationContentScope<T>`
+    receiver; the activity, fragment, UIViewController and root window destinations use
+    `navigationDestinationContent`.
+* Added `@InternalEnroApi`, an opt-in marker for APIs that are public only so Enro's own modules
+  can use them.
 
 ## 3.0.0-beta05 (2026-09-17)
 

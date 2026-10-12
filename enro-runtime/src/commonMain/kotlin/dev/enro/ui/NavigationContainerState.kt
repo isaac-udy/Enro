@@ -14,6 +14,7 @@ import dev.enro.NavigationBackstack
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
+import dev.enro.annotations.InternalEnroApi
 import dev.enro.asBackstack
 import dev.enro.context.ContainerContext
 import dev.enro.ui.decorators.NavigationSavedStateHolder
@@ -30,7 +31,7 @@ public class NavigationContainerState(
 
     /** Whether the navigation state is settled (no animations running) */
     public var isSettled: Boolean by mutableStateOf(true)
-        internal set
+        @InternalEnroApi set
 
     public var destinations: List<NavigationDestination<NavigationKey>> by mutableStateOf(emptyList())
         internal set

@@ -16,18 +16,18 @@ import androidx.fragment.compose.rememberFragmentState
 import dev.enro.NavigationKey
 import dev.enro.platform.putNavigationKeyInstance
 import dev.enro.ui.NavigationDestination
+import dev.enro.ui.NavigationDestinationContentScope
 import dev.enro.ui.NavigationDestinationProvider
-import dev.enro.ui.NavigationDestinationScope
 import dev.enro.ui.destinations.fragment.AndroidDialogFragment
 import dev.enro.ui.destinations.fragment.FragmentNavigationHandle
 import dev.enro.ui.destinations.fragment.fragmentContextHolder
-import dev.enro.ui.navigationDestination
+import dev.enro.ui.navigationDestinationContent
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
 public inline fun <reified T : NavigationKey, reified F : Fragment> fragmentDestination(
     noinline metadata: NavigationDestination.MetadataBuilder<T>.() -> Unit = {},
-    noinline arguments: NavigationDestinationScope<T>.() -> Bundle = { Bundle() },
+    noinline arguments: NavigationDestinationContentScope<T>.() -> Bundle = { Bundle() },
 ): NavigationDestinationProvider<T> {
     return fragmentDestination(
         keyType = T::class,
@@ -41,9 +41,9 @@ public fun <T : NavigationKey, F : Fragment> fragmentDestination(
     keyType: KClass<T>,
     fragmentType: KClass<F>,
     metadata: NavigationDestination.MetadataBuilder<T>.() -> Unit = {},
-    arguments: NavigationDestinationScope<T>.() -> Bundle = { Bundle() },
+    arguments: NavigationDestinationContentScope<T>.() -> Bundle = { Bundle() },
 ): NavigationDestinationProvider<T> {
-    return navigationDestination(metadata) {
+    return navigationDestinationContent(metadata) {
         key(navigation.instance.id) {
             var fragment: F? by remember {
                 mutableStateOf(null)
@@ -78,7 +78,7 @@ public fun <T : NavigationKey, F : Fragment> fragmentDestination(
                 val navigation = fragment.fragmentContextHolder.navigationHandle
                 @Suppress("UNCHECKED_CAST")
                 navigation as FragmentNavigationHandle<T>
-                navigation.bind(this@navigationDestination)
+                navigation.bind(this@navigationDestinationContent)
                 onDispose {
                     navigation.unbind()
                 }

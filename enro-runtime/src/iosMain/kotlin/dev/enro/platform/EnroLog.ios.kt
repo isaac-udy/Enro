@@ -1,20 +1,22 @@
 package dev.enro.platform
 
-@PublishedApi
-internal actual object EnroLog {
-    actual fun debug(message: String) {
+import dev.enro.annotations.InternalEnroApi
+
+@InternalEnroApi
+public actual object EnroLog {
+    public actual fun debug(message: String) {
         println("[Enro] DEBUG: $message")
     }
 
-    actual fun warn(message: String) {
+    public actual fun warn(message: String) {
         println("[Enro] WARNING: $message")
     }
 
-    actual fun error(message: String) {
+    public actual fun error(message: String) {
         println("[Enro] ERROR: $message")
     }
 
-    actual fun error(message: String, throwable: Throwable) {
+    public actual fun error(message: String, throwable: Throwable) {
         println("[Enro] ERROR: $message")
         throwable.printStackTrace()
     }
