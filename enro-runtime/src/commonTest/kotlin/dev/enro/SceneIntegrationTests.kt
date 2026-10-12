@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package dev.enro
 
 import androidx.compose.animation.AnimatedVisibilityScope
