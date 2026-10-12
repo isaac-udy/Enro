@@ -111,6 +111,12 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
             if (isOpened) {
                 destination.Content()
             }
+            // Effects run in composition order, so the content's own containers are registered
+            // before the handle is attached and runs any operations it held.
+            DisposableEffect(context) {
+                navigationHandle.attachContext(context)
+                onDispose {}
+            }
             DisposableEffect(isActiveInRoot) {
                 if (isActiveInRoot) {
                     context.controller.plugins.onActive(navigationHandle)

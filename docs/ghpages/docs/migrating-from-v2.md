@@ -113,6 +113,20 @@ full metadata story.
 The extension functions live in package `dev.enro` and are imported as
 `dev.enro.open`, `dev.enro.close`, `dev.enro.complete`, `dev.enro.requestClose`.
 
+In Enro 3, `close()` removes the destination from its container immediately, and a destination
+that is no longer in its container ignores further operations. The Enro 2 pattern of calling
+`close()` and then `open(key)` from the same destination therefore drops the `open`. Use
+`closeAndReplaceWith(key)`, which performs both in one operation:
+
+```kotlin
+// Enro 2
+navigation.close()
+navigation.push(NextScreen())
+
+// Enro 3
+navigation.closeAndReplaceWith(NextScreen())
+```
+
 ### Installing the controller
 
 Enro 2:

@@ -6,8 +6,10 @@ import dev.enro.test.fixtures.NavigationContextFixtures
 import dev.enro.test.fixtures.NavigationDestinationFixtures
 import dev.enro.test.runEnroTest
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 /**
  * Tests that lock down the routing decision made by
@@ -114,5 +116,49 @@ class MultiContainerRoutingTests {
             actual = routed,
             message = "containerB has fromChildrenOnly = true and the source is not a child of it — should fall through to containerA",
         )
+    }
+
+    @Test
+    fun `findContainerForOperation skips the containers of a destination that has left its backstack`() = runEnroTest {
+        val rootContext = NavigationContextFixtures.createRootContext()
+        val parentContainer = NavigationContextFixtures.createContainerContext(rootContext)
+        rootContext.registerChild(parentContainer)
+
+        val destinationA = NavigationDestinationFixtures.create<NavigationKey>(NavigationKeyFixtures.SimpleKey())
+        val destinationB = NavigationDestinationFixtures.create<NavigationKey>(NavigationKeyFixtures.SimpleKey())
+        val contextA = NavigationContextFixtures.createDestinationContext(parentContainer, destinationA)
+        val contextB = NavigationContextFixtures.createDestinationContext(parentContainer, destinationB)
+        parentContainer.registerChild(contextA)
+        parentContainer.registerChild(contextB)
+        val containerInB = NavigationContextFixtures.createContainerContext(contextB)
+        contextB.registerChild(containerInB)
+
+        parentContainer.container.setFilter(acceptAll())
+        containerInB.container.setFilter(acceptAll())
+        parentContainer.container.setBackstackDirect(backstackOf(destinationA.instance, destinationB.instance))
+
+        val open = NavigationOperation.Open(NavigationKeyFixtures.SimpleKey().asInstance())
+        assertSame(
+            expected = containerInB,
+            actual = findContainerForOperation(fromContext = parentContainer, operation = open),
+            message = "While B is in the backstack, its accepting container receives the Open",
+        )
+
+        parentContainer.container.setBackstackDirect(backstackOf(destinationA.instance))
+        assertSame(
+            expected = parentContainer,
+            actual = findContainerForOperation(fromContext = parentContainer, operation = open),
+            message = "Once B has left the backstack, its container must not receive the Open, even while B is still registered",
+        )
+    }
+
+    @Test
+    fun `fromChildrenOnly keeps the wrapped filter's acceptance`() {
+        val key = NavigationKeyFixtures.SimpleKey()
+        val filter = accept { key(key) }.fromChildrenOnly()
+
+        assertTrue(filter.fromChildrenOnly)
+        assertTrue(filter.accepts(key.asInstance()))
+        assertFalse(filter.accepts(NavigationKeyFixtures.SimpleKey().asInstance()))
     }
 }

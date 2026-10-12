@@ -8,6 +8,7 @@ import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import dev.enro.context.DestinationContext
+import dev.enro.context.root
 import dev.enro.platform.EnroLog
 
 internal class DestinationNavigationHandle<T : NavigationKey>(
@@ -18,6 +19,8 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
     override val lifecycle: Lifecycle = lifecycleRegistry
 
     private var context: DestinationContext<T>? = null
+    private var attachedContext: DestinationContext<T>? = null
+    private val pendingOperations = mutableListOf<NavigationOperation>()
     override var instance: NavigationKey.Instance<T> = instance
         private set
 
@@ -56,8 +59,22 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
         this.context?.lifecycle?.addObserver(lifecycleObserver)
     }
 
+    /**
+     * Marks [context] as registered in the navigation tree, along with any containers its content
+     * declares, and runs the operations that were held while no registered context was available.
+     */
+    internal fun attachContext(context: DestinationContext<T>) {
+        if (this.context !== context) return
+        attachedContext = context
+        val operations = pendingOperations.toList()
+        pendingOperations.clear()
+        operations.forEach { execute(it) }
+    }
+
     internal fun onDestroy() {
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
+        pendingOperations.clear()
+        attachedContext = null
         context?.let { context ->
             this.context = null
             context.lifecycle.removeObserver(lifecycleObserver)
@@ -71,8 +88,13 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
     ) {
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
         val context = context
-        if (context == null) {
-            EnroLog.warn("NavigationHandle with instance $instance has no context, ignoring operation: $operation")
+        // Held until attachContext while the first composition has not registered this context and its
+        // containers, or while the context's host is destroyed (e.g. an Activity being recreated).
+        val isContextUsable = context != null &&
+            context === attachedContext &&
+            context.root().lifecycle.currentState != Lifecycle.State.DESTROYED
+        if (!isContextUsable) {
+            pendingOperations.add(operation)
             return
         }
         val isInBackstack = context.parent.container.backstack.any { it.id == context.destination.instance.id }
@@ -82,7 +104,11 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
             // receive NavigationOperations. An example is a Dialog's scrim being tapped multiple times during the
             // dismiss animation. In these cases, we want to ignore the operations. We print a warning here,
             // so that it's visible to developers, but this should not necessarily raise concerns.
-            EnroLog.warn("NavigationHandle with instance $instance is not in it's parent's backstack, ignoring operation: $operation")
+            EnroLog.warn(
+                "NavigationHandle with instance $instance is not in its parent's backstack, ignoring operation: $operation. " +
+                    "If this follows a close() from the same destination, use closeAndReplaceWith(...) to replace " +
+                    "the destination in one operation."
+            )
             return
         }
         val containerContext = findContainerForOperation(
