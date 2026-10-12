@@ -30,6 +30,34 @@
   `dev.enro.ui.scenes.OverlayTransitionsKey`. `directOverlayWithFade(durationMillis)` stores the
   duration in the new `DirectOverlaySceneStrategy.OverlayFadeKey`, which `NavigationDisplay`
   renders as the same fade; `OverlayTransitionsKey` takes precedence when both are set.
+* Fixed a crash when a destination's host is destroyed before the destination's first frame, for
+  example during two configuration changes in quick succession: the destination lifecycle moved
+  from INITIALIZED to DESTROYED, which `LifecycleRegistry` rejects. The destination's lifecycle
+  cap is now applied without waiting for a dispatched effect.
+* A destination's `NavigationHandle` now holds operations while it cannot route them, and runs
+  them once the destination is attached again:
+  * an operation issued during the destination's first composition, such as an `open` from a
+    ViewModel's `init`, now reaches containers declared inside that destination instead of its
+    parent container;
+  * an operation from a retained handle whose host was destroyed (for example a ViewModel that
+    navigates while its Activity is being recreated) no longer throws "Could not find a valid
+    container for the navigation operation"; it runs when the destination is recomposed.
+* On Android, the `RootContext` of a destroyed Activity is now unregistered when the Activity is
+  destroyed, instead of when its retained `NavigationHandle` is destroyed.
+* Open operations no longer route into containers inside a destination that has left its
+  container's backstack but is still composed while it animates out.
+* Added `NavigationContainerFilter.fromChildrenOnly()`, which limits a filter to operations from
+  destinations inside the container.
+* Saved state no longer fails for serialized classes with a property named `type`: Enro's
+  `savedStateConfiguration` now writes class discriminators only for polymorphic values
+  (`ClassDiscriminatorMode.POLYMORPHIC`). State saved by earlier versions still restores.
+  `EnroController.jsonConfiguration`, used for browser history, still uses `type` as its class
+  discriminator, so a `NavigationKey` with a property named `type` cannot be written to browser
+  history.
+* Registering the same `RootContext` instance twice no longer logs a warning.
+* The warning for an operation from a destination that is no longer in its container's
+  backstack now suggests `closeAndReplaceWith(...)` for the Enro 2 `close()` then `open()`
+  pattern.
 
 ## 3.0.0-beta05 (2026-09-17)
 

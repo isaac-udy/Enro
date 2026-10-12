@@ -8,10 +8,12 @@ import dev.enro.platform.EnroLog
 internal class RootContextRegistry() {
     private val contexts = mutableStateListOf<RootContext>()
 
+    // A platform host and RootNavigationHandle.bindContext can both register the same context.
     fun register(context: RootContext) {
-        val hadExistingContexts = contexts.removeAll { it.id == context.id}
+        if (contexts.any { it === context }) return
+        val hadExistingContexts = contexts.removeAll { it.id == context.id }
         if (hadExistingContexts) {
-            EnroLog.warn("Registered a RootContext that is already registered: ${context.id}")
+            EnroLog.warn("Registered a RootContext with the same id as a registered RootContext: ${context.id}")
         }
         contexts.add(context)
     }

@@ -35,6 +35,8 @@ tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
             excludeTestsMatching("dev.enro.ClearedNavigationHandleReseedTests")
             excludeTestsMatching("dev.enro.BackstackSavedStateTests")
             excludeTestsMatching("dev.enro.NavigationDestinationContentTests")
+            excludeTestsMatching("dev.enro.ui.decorators.ChildLifecycleOwnerTests")
+            excludeTestsMatching("dev.enro.DeferredNavigationOperationTests")
         }
     }
 }

@@ -3,7 +3,7 @@ package dev.enro.ui.decorators
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -87,8 +87,14 @@ private fun rememberNavigationLifecycleOwner(
     parentLifecycleOwner: LifecycleOwner,
 ) : LifecycleOwner {
     val childLifecycleOwner = remember(parentLifecycleOwner) { ChildLifecycleOwner() }
+    // The cap is applied in composition's apply phase rather than a dispatched effect, so a
+    // parent ON_DESTROY can never reach the child while the cap is still INITIALIZED.
+    SideEffect {
+        childLifecycleOwner.maxLifecycle = maxLifecycle
+    }
     // Pass LifecycleEvents from the parent down to the child
     DisposableEffect(childLifecycleOwner, parentLifecycleOwner) {
+        childLifecycleOwner.maxLifecycle = maxLifecycle
         val observer = LifecycleEventObserver { _, event ->
             childLifecycleOwner.handleLifecycleEvent(event)
         }
@@ -97,10 +103,6 @@ private fun rememberNavigationLifecycleOwner(
 
         onDispose { parentLifecycleOwner.lifecycle.removeObserver(observer) }
     }
-    // Ensure that the child lifecycle is capped at the maxLifecycle
-    LaunchedEffect(childLifecycleOwner, maxLifecycle) {
-        childLifecycleOwner.maxLifecycle = maxLifecycle
-    }
     return childLifecycleOwner
 }
 
@@ -108,7 +110,7 @@ private fun rememberNavigationLifecycleOwner(
  * Internal implementation of a child lifecycle owner that follows a parent lifecycle
  * but can be capped at a maximum state.
  */
-private class ChildLifecycleOwner : LifecycleOwner {
+internal class ChildLifecycleOwner : LifecycleOwner {
     private val lifecycleRegistry = LifecycleRegistry(this)
 
     override val lifecycle: Lifecycle
@@ -128,10 +130,14 @@ private class ChildLifecycleOwner : LifecycleOwner {
     }
 
     fun updateState() {
-        if (parentLifecycleState.ordinal < maxLifecycle.ordinal) {
-            lifecycleRegistry.currentState = parentLifecycleState
-        } else {
-            lifecycleRegistry.currentState = maxLifecycle
+        val targetState = when {
+            parentLifecycleState.ordinal < maxLifecycle.ordinal -> parentLifecycleState
+            else -> maxLifecycle
         }
+        // LifecycleRegistry cannot move from INITIALIZED straight to DESTROYED.
+        if (targetState == Lifecycle.State.DESTROYED && lifecycleRegistry.currentState == Lifecycle.State.INITIALIZED) {
+            lifecycleRegistry.currentState = Lifecycle.State.CREATED
+        }
+        lifecycleRegistry.currentState = targetState
     }
 }

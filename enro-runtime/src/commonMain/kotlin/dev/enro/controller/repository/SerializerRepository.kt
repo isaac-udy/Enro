@@ -37,7 +37,9 @@ internal class SerializerRepository {
     var savedStateConfiguration: SavedStateConfiguration =
         SavedStateConfiguration {
             serializersModule = this@SerializerRepository.serializersModule
-            classDiscriminatorMode = ClassDiscriminatorMode.ALL_OBJECTS
+            // savedstate's discriminator key is always "type"; ALL_OBJECTS would write it into
+            // every class and reject any serialized property named "type".
+            classDiscriminatorMode = ClassDiscriminatorMode.POLYMORPHIC
         }
         private set
 

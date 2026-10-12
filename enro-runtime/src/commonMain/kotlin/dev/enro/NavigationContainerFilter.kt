@@ -64,6 +64,16 @@ public class NavigationContainerFilterBuilder internal constructor() {
 }
 
 /**
+ * Returns a [NavigationContainerFilter] that accepts the same [NavigationKey.Instance]s as this
+ * filter, but only when the operation comes from a destination inside the container, so
+ * destinations outside the container never open into it.
+ */
+public fun NavigationContainerFilter.fromChildrenOnly(): NavigationContainerFilter {
+    val filter = this
+    return NavigationContainerFilter(fromChildrenOnly = true) { filter.accepts(it) }
+}
+
+/**
  * A [NavigationContainerFilter] that accepts all [NavigationKey.Instance].
  */
 public fun acceptAll(): NavigationContainerFilter = NavigationContainerFilter { true }

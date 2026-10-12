@@ -59,7 +59,14 @@ private fun NavigationContext<*, *>.getActiveChildContainer(): ContainerContext?
 
 private fun NavigationContext<*, *>.getChildContainers(): List<ContainerContext> {
     return when (this) {
-        is ContainerContext -> children.flatMap { it.children }
+        // A destination that has left the backstack stays registered while it animates out;
+        // its containers must not receive new operations.
+        is ContainerContext -> {
+            val backstackIds = container.backstack.map { it.id }.toSet()
+            children
+                .filter { it.id in backstackIds }
+                .flatMap { it.children }
+        }
         is DestinationContext<*> -> children
         is RootContext -> children
     }
