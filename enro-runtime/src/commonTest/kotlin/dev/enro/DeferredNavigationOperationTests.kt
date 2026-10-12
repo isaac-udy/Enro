@@ -41,7 +41,11 @@ class DeferredNavigationOperationTests {
                             emptyBehavior = EmptyBehavior.allowEmpty(),
                         )
                         innerContainer = inner
-                        remember { navigation.open(DeferredChildKey) }
+                        remember {
+                            DeferredChildKey.asInstance().also {
+                                navigation.execute(NavigationOperation.Open(it))
+                            }
+                        }
                         NavigationDisplay(inner)
                     }
                 )
