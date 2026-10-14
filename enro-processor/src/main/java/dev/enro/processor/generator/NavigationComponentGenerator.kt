@@ -93,6 +93,11 @@ object NavigationComponentGenerator {
                     .build()
             )
             .chainIf(isAndroid) {
+                addAnnotation(
+                    AnnotationSpec.builder(ClassName("kotlin", "OptIn"))
+                        .addMember("%T::class", ClassName("dev.enro.annotations", "InternalEnroApi"))
+                        .build()
+                )
                 addCode(
                     """
                         // If we're installing in an Android context, we know that we

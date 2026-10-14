@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Bug fixes
+
+* Fixed Android builds failing in projects that use `@NavigationComponent`. In 3.0.0-beta06 the
+  generated `installNavigationController(application)` sets `EnroLog.forceAndroidLogs`, which is
+  `@InternalEnroApi`, so compilation failed with "This API is internal to Enro". The generated
+  function now opts in. To build with beta06, add
+  `-opt-in=dev.enro.annotations.InternalEnroApi` to the Android compilation of the module that
+  declares the `@NavigationComponent`.
+
 ### Modules and platforms
 
 * Added `enro-html`, a Kotlin/JS module that renders navigation with Compose HTML (DOM elements
@@ -17,6 +26,7 @@
   * A closed overlay or dialog stays in the DOM until its CSS transitions end.
   * Browser back and forward use `InstallWebHistoryPlugin`, as with `EnroBrowserContent`.
   * `tests/html-application` is a sample app built with `enro-html` and `@NavigationComponent`.
+
 
 ## 3.0.0-beta06 (2026-10-14)
 
