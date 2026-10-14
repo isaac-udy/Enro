@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0-beta06 (2026-10-14)
+
 ### Modules and platforms
 
 * Split the Compose UI display into a new `enro-ui` module. The `enro` artifact depends on it, so
