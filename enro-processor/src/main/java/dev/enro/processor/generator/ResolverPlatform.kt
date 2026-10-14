@@ -17,7 +17,7 @@ sealed class ResolverPlatform {
 
     class JvmDesktop : ResolverPlatform()
 
-    class WasmJs(
+    class Web(
         val webDocumentClassName: ClassName,
     ) : ResolverPlatform()
 
@@ -45,9 +45,10 @@ sealed class ResolverPlatform {
                 return ResolverPlatform.JvmDesktop()
             }
 
-            val isWeb = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformWasmJs") != null
+            val isWeb = resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformWasmJs") != null ||
+                resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformJs") != null
             if (isWeb) {
-                return ResolverPlatform.WasmJs(
+                return ResolverPlatform.Web(
                     webDocumentClassName = resolver.getKotlinClassByName("org.w3c.dom.Document")!!.toClassName()
                 )
             }

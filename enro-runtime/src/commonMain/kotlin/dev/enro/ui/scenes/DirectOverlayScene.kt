@@ -64,14 +64,20 @@ public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
      * as a direct overlay. Default `false`.
      */
     public object IsDirectOverlayKey :
-        NavigationDestination.MetadataKey<Boolean>(default = false)
+        NavigationDestination.MetadataKey<Boolean>(
+            default = false,
+            name = "dev.enro.ui.scenes.DirectOverlaySceneStrategy.IsDirectOverlayKey",
+        )
 
     /**
      * Optional fade duration, in milliseconds, set by [directOverlayWithFade]. Each renderer
      * maps it to its own fade. Default `null`.
      */
     public object OverlayFadeKey :
-        NavigationDestination.MetadataKey<Int?>(default = null)
+        NavigationDestination.MetadataKey<Int?>(
+            default = null,
+            name = "dev.enro.ui.scenes.DirectOverlaySceneStrategy.OverlayFadeKey",
+        )
 
     public companion object
 }

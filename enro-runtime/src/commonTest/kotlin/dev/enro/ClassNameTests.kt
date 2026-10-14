@@ -8,23 +8,32 @@ import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+/** Kotlin/JS has no `KClass.qualifiedName`, so Enro names classes by their simple name there. */
+internal expect val platformHasQualifiedClassNames: Boolean
+
 class ClassNameTests {
+
+    private fun expectedName(simpleName: String): String = when {
+        platformHasQualifiedClassNames -> "dev.enro.ClassNameTests.$simpleName"
+        else -> simpleName
+    }
 
     @Test
     fun stableClassName_isTheQualifiedName() {
-        assertEquals("dev.enro.ClassNameTests.Named", stableClassName(Named::class))
+        assertEquals(expectedName("Named"), stableClassName(Named::class))
     }
 
     @Test
     fun callSiteClassName_isTheQualifiedNameForNamedClasses() {
-        assertEquals("dev.enro.ClassNameTests.Named", callSiteClassName(Named::class))
+        val expected = if (platformHasQualifiedClassNames) expectedName("Named") else null
+        assertEquals(expected, callSiteClassName(Named::class))
     }
 
     @Test
     fun metadataKeyNames_areTheQualifiedName() {
-        assertEquals("dev.enro.ClassNameTests.KeyMetadata", KeyMetadata.name)
-        assertEquals("dev.enro.ClassNameTests.DestinationMetadata", DestinationMetadata.name)
-        assertEquals("dev.enro.ClassNameTests.SceneMetadata", SceneMetadata.name)
+        assertEquals(expectedName("KeyMetadata"), KeyMetadata.name)
+        assertEquals(expectedName("DestinationMetadata"), DestinationMetadata.name)
+        assertEquals(expectedName("SceneMetadata"), SceneMetadata.name)
     }
 
     @Test

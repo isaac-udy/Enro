@@ -225,7 +225,7 @@ object NavigationComponentGenerator {
                 }
             }
 
-            resolverPlatform is ResolverPlatform.WasmJs -> {
+            resolverPlatform is ResolverPlatform.Web -> {
                 return "document" to {
                     addParameter(
                         ParameterSpec.builder(

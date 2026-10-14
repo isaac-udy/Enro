@@ -1,5 +1,5 @@
 plugins {
-    id("configure-library")
+    id("configure-library-with-js")
     id("configure-publishing")
     id("configure-compose")
     kotlin("plugin.serialization")

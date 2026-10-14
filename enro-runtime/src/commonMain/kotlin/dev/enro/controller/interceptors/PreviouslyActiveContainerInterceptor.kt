@@ -68,5 +68,8 @@ internal object PreviouslyActiveContainerInterceptor : NavigationInterceptor() {
         }
     }
 
-    private object PreviouslyActiveContainer : NavigationKey.MetadataKey<String?>(null)
+    internal object PreviouslyActiveContainer : NavigationKey.MetadataKey<String?>(
+        default = null,
+        name = "dev.enro.controller.interceptors.PreviouslyActiveContainerInterceptor.PreviouslyActiveContainer",
+    )
 }

@@ -13,7 +13,7 @@ import androidx.compose.ui.input.key.type
 /**
  * A composable that provides the root navigation context for a browser-based Enro application.
  *
- * This is the main entry point for using Enro in a wasmJs/browser environment. It sets up the
+ * This is the main entry point for using Enro with Compose UI in a browser. It sets up the
  * required navigation context, view model store, and navigation handle that are needed for
  * Enro navigation to work.
  *

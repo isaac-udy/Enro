@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.google.devtools.ksp")
-    id("configure-library")
+    id("configure-library-with-js")
     id("configure-publishing")
     id("configure-compose")
     kotlin("plugin.serialization")

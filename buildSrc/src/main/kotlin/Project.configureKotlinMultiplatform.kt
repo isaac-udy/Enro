@@ -51,15 +51,19 @@ internal fun Project.configureKotlinMultiplatform(
         }
 
         if (wasmJs) {
+            // Locals rather than Project reads inside the webpack block: the block is stored in
+            // the configuration cache, and reading the Project there captures it.
+            val webpackOutputFileName = "${project.projectName.camelCase}.js"
+            val projectDirPath = project.projectDir.path
             wasmJs {
                 outputModuleName.set(project.projectName.camelCase)
                 browser {
                     commonWebpackConfig {
-                        outputFileName = "${project.projectName.camelCase}.js"
+                        outputFileName = webpackOutputFileName
                         devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
                             static = (static ?: mutableListOf()).apply {
                                 // Serve sources to debug inside browser
-                                add(project.projectDir.path)
+                                add(projectDirPath)
                             }
                         }
                     }
@@ -79,20 +83,14 @@ internal fun Project.configureKotlinMultiplatform(
 
         if (js) {
             js {
+                browser()
                 nodejs()
-                binaries.executable()
-                compilations["main"].packageJson {
-                    main = "$projectName-backend.js"
-                    version = "1.0.0"
-                    customField("engines", mapOf("node" to "22"))
-                    private = true
-                }
                 compilerOptions {
                     sourceMap.set(true)
                     sourceMapEmbedSources.set(JsSourceMapEmbedMode.SOURCE_MAP_SOURCE_CONTENT_ALWAYS)
+                    freeCompilerArgs.addAll("-Xexpect-actual-classes")
+                    optIn.addAll(*optIns)
                 }
-                compilerOptions.sourceMap.set(true)
-                compilerOptions.sourceMapEmbedSources.set(JsSourceMapEmbedMode.SOURCE_MAP_SOURCE_CONTENT_ALWAYS)
             }
         }
 
