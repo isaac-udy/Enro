@@ -6,10 +6,11 @@ nav_order: 4
 
 # Web
 
-Enro runs in the browser through Compose for Web's WasmJS target. The
+Enro runs in the browser on the wasmJs and Kotlin/JS targets. The
 install pattern mirrors the other platforms: call
 `installNavigationController` once at start-up, then host a container
-inside an `EnroBrowserContent`.
+inside an `EnroBrowserContent` (Compose UI) or an `EnroHtmlContent`
+(Compose HTML, see below).
 
 ## Minimal install
 
@@ -50,6 +51,60 @@ The pieces:
   your root container into the browser history API. The URL bar
   reflects the deepest active destination, and the browser's
   back/forward buttons navigate whichever container the entry changed.
+
+## Rendering with Compose HTML
+
+`enro-html` (Kotlin/JS only) renders destinations as DOM elements with
+[Compose HTML][compose-html] instead of drawing them on a canvas. It
+depends on `enro-runtime`, not on Compose UI, so the bundle contains no
+skiko.
+
+```kotlin
+fun main() {
+    MyComponent.installNavigationController(document)
+
+    renderComposable(rootElementId = "root") {
+        EnroHtmlContent {
+            val container = rememberNavigationContainer(
+                backstack = rememberInitialBackstackFromUrl {
+                    backstackOf(Home.asInstance())
+                },
+            )
+            InstallWebHistoryPlugin(container)
+            HtmlNavigationDisplay(container)
+        }
+    }
+}
+```
+
+- `EnroHtmlContent { }` replaces `EnroBrowserContent`. `renderComposable`
+  provides no lifecycle, ViewModelStore or SavedStateRegistry owner, so
+  `EnroHtmlContent` provides one for the page.
+- `HtmlNavigationDisplay(container)` replaces `NavigationDisplay`. Scenes
+  change without an animation.
+- Destinations are `navigationDestinationContent { }` providers or
+  `@Composable` functions that emit Compose HTML elements.
+  `navigationDestination { }` and a function with a
+  `NavigationDestinationScope` receiver are Compose UI and need
+  `NavigationDisplay`.
+- `htmlDialog()` metadata renders a destination in a modal `<dialog>`.
+  Escape and a backdrop click call `requestClose()`. Style it with
+  `dialog` and `dialog::backdrop`.
+- `directOverlay()` destinations render over the current scene;
+  `directOverlayWithFade()` fades them in and out.
+- A closed dialog or overlay stays in the DOM until its CSS transitions
+  end, so a `dialog:not([open])` transition runs on close.
+
+```kotlin
+@NavigationDestination(ConfirmDelete::class)
+val confirmDeleteDestination: NavigationDestinationProvider<ConfirmDelete> =
+    navigationDestinationContent(metadata = { htmlDialog() }) {
+        H2 { Text("Delete ${navigation.key.item}?") }
+        Button({ onClick { navigation.complete(true) } }) { Text("Delete") }
+    }
+```
+
+[`tests/html-application`][html-sample] is a complete example.
 
 ## URL routing model
 
@@ -173,3 +228,5 @@ other platforms.
 
 [cmp-web]: https://github.com/JetBrains/compose-multiplatform/blob/master/web/README.md
 [web-main]: https://github.com/isaac-udy/Enro/blob/main/recipes/app/web/src/wasmJsMain/kotlin/main.kt
+[compose-html]: https://github.com/JetBrains/compose-multiplatform/tree/master/html
+[html-sample]: https://github.com/isaac-udy/Enro/tree/main/tests/html-application
