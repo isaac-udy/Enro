@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0-beta07 (2026-10-14)
+
 ### Bug fixes
 
 * Fixed Android builds failing in projects that use `@NavigationComponent`. In 3.0.0-beta06 the
