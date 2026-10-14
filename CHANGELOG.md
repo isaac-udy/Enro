@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Bug fixes
+
+* Fixed Android builds failing in projects that use `@NavigationComponent`. In 3.0.0-beta06 the
+  generated `installNavigationController(application)` sets `EnroLog.forceAndroidLogs`, which is
+  `@InternalEnroApi`, so compilation failed with "This API is internal to Enro". The generated
+  function now opts in. To build with beta06, add
+  `-opt-in=dev.enro.annotations.InternalEnroApi` to the Android compilation of the module that
+  declares the `@NavigationComponent`.
+
 ## 3.0.0-beta06 (2026-10-14)
 
 ### Modules and platforms

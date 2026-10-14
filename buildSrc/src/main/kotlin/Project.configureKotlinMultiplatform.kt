@@ -10,10 +10,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
-private val optIns = arrayOf(
+private val consumerOptIns = arrayOf(
     "dev.enro.annotations.AdvancedEnroApi",
     "dev.enro.annotations.ExperimentalEnroApi",
-    "dev.enro.annotations.InternalEnroApi",
     "kotlin.uuid.ExperimentalUuidApi",
     "kotlin.io.encoding.ExperimentalEncodingApi",
     "kotlin.experimental.ExperimentalObjCName",
@@ -34,6 +33,14 @@ internal fun Project.configureKotlinMultiplatform(
     }
 
     val libs = project.the<LibrariesForLibs>()
+
+    // The Enro libraries are the root-level modules. The test and recipe apps nested under them
+    // compile without InternalEnroApi, as consumers do, so KSP output that needs it fails here.
+    val isEnroLibrary = project.parent == project.rootProject
+    val optIns = when {
+        isEnroLibrary -> consumerOptIns + "dev.enro.annotations.InternalEnroApi"
+        else -> consumerOptIns
+    }
 
     val kotlinMultiplatformExtension =
         project.extensions.getByType(KotlinMultiplatformExtension::class.java)
