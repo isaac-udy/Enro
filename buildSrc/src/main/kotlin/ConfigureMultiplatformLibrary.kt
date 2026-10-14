@@ -13,6 +13,20 @@ class ConfigureMultiplatformLibraryWithJs : Plugin<Project> {
     }
 }
 
+/** A JS library that needs a browser DOM, so it has no other targets and no Node.js tests. */
+class ConfigureBrowserLibrary : Plugin<Project> {
+    override fun apply(project: Project) {
+        project.configureKotlinMultiplatform(
+            android = false,
+            ios = false,
+            wasmJs = false,
+            desktop = false,
+            js = true,
+            jsNodejs = false,
+        )
+    }
+}
+
 internal fun Project.configureMultiplatformLibrary(
     js: Boolean,
 ) {
