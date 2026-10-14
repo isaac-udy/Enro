@@ -2,11 +2,36 @@
 
 ## Unreleased
 
+### Modules and platforms
+
+* Split the Compose UI display into a new `enro-ui` module. The `enro` artifact depends on it, so
+  apps that depend on `enro` need no change. Packages are unchanged.
+  * `enro-ui` contains `NavigationDisplay`, the navigation animations, `navigationDestination { }`
+    and `NavigationDestinationScope`, `EmbeddedDestination`, `managedFlowDestination`, the
+    dialog scene, `OverlayTransitions` and `directOverlay(enter, exit)`, the shared-element
+    decorator, and `EnroBrowserContent`.
+  * `enro-runtime` no longer depends on Compose UI in its common and web code. The Android,
+    iOS and desktop platform hosts (activities, fragments, UIViewControllers and windows) stay
+    in `enro-runtime`.
+  * Projects that depend on `enro-runtime` directly and use the moved APIs must add `enro-ui`.
+  * `enro-test` no longer depends on Compose UI.
+  * `fragmentDestination`'s `arguments` lambda now has a `NavigationDestinationContentScope<T>`
+    receiver; the activity, fragment, UIViewController and root window destinations use
+    `navigationDestinationContent`.
+* Added a Kotlin/JS target (browser and Node.js) to `enro-runtime`, `enro-ui`, `enro` and
+  `enro-test`. `enro-annotations` and `enro-common` add the browser environment to their
+  existing Node.js target, and `enro-common`'s Kotlin/JS artifact is published again.
+  `EnroBrowserContent` is available on Kotlin/JS as well as wasmJs, and `@NavigationComponent`
+  generates the `installNavigationController(document)` entry point for Kotlin/JS. On Kotlin/JS,
+  class names that Enro stores (metadata key names, result ids and flow step ids) use the class's
+  simple name.
+
+### API changes
+
 * Removed the deprecated `NavigationContainerState.Render()`; use `NavigationDisplay(state)`.
-  The `enro-compat` extension of the same name remains for migrating from Enro 2: a call site
+  The `enro-compat` extension of the same name remains for migrating from Enro 2.x: a call site
   that reports "Unresolved reference: Render" needs
   `import dev.enro.core.compose.container.Render`.
-* Updated androidx.lifecycle to 2.11.0 and navigationevent to 1.1.0
 * Added `stableClassName(KClass)` (`@AdvancedEnroApi`), the class name Enro persists for metadata
   keys: `qualifiedName` on every target except Kotlin/JS, which uses `simpleName`.
   `enro-runtime`'s common code no longer reads `KClass.qualifiedName` directly. Metadata key
@@ -15,7 +40,9 @@
   `NavigationDestination.MetadataKey` and `NavigationScene.MetadataKey` take an optional explicit
   `name`; without one, the name is the key's `stableClassName`, as before. On Kotlin/JS, two key
   classes of the same kind with the same simple name now throw when used, instead of silently
-  sharing storage.
+  sharing storage. Enro's own metadata keys declare explicit names, equal to the qualified names
+  they used before, so stored metadata is unchanged on every existing target and Enro's keys
+  cannot clash with an application's keys on Kotlin/JS.
 * Added `NavigationDestinationContentScope<T>`, a renderer-independent destination receiver
   with `navigation` and `destinationMetadata`, and `navigationDestinationContent { }`, which
   declares a destination with that receiver. `NavigationDestinationScope<T>` implements it, and
@@ -30,6 +57,17 @@
   `dev.enro.ui.scenes.OverlayTransitionsKey`. `directOverlayWithFade(durationMillis)` stores the
   duration in the new `DirectOverlaySceneStrategy.OverlayFadeKey`, which `NavigationDisplay`
   renders as the same fade; `OverlayTransitionsKey` takes precedence when both are set.
+* Added `NavigationContainerFilter.fromChildrenOnly()`, which limits a filter to operations from
+  destinations inside the container.
+* Added `@InternalEnroApi`, an opt-in marker for APIs that are public only so Enro's own modules
+  can use them.
+
+### Fixes
+
+* Fixed an `IllegalArgumentException: Cannot round NaN value` crash in `NavigationDisplay` when a
+  predictive-back gesture settles on a device that reports a frame time earlier than the previous
+  frame's (seen on some Huawei and Honor devices). `NavigationDisplay` now keeps the frame times
+  it animates with from going backwards.
 * Fixed a crash when a destination's host is destroyed before the destination's first frame, for
   example during two configuration changes in quick succession: the destination lifecycle moved
   from INITIALIZED to DESTROYED, which `LifecycleRegistry` rejects. The destination's lifecycle
@@ -46,8 +84,6 @@
   destroyed, instead of when its retained `NavigationHandle` is destroyed.
 * Open operations no longer route into containers inside a destination that has left its
   container's backstack but is still composed while it animates out.
-* Added `NavigationContainerFilter.fromChildrenOnly()`, which limits a filter to operations from
-  destinations inside the container.
 * Saved state no longer fails for serialized classes with a property named `type`: Enro's
   `savedStateConfiguration` now writes class discriminators only for polymorphic values
   (`ClassDiscriminatorMode.POLYMORPHIC`). State saved by earlier versions still restores.
@@ -58,32 +94,10 @@
 * The warning for an operation from a destination that is no longer in its container's
   backstack now suggests `closeAndReplaceWith(...)` for the Enro 2 `close()` then `open()`
   pattern.
-* Split the Compose UI display into a new `enro-ui` module. The `enro` artifact depends on it, so
-  apps that depend on `enro` need no change. Packages are unchanged.
-  * `enro-ui` contains `NavigationDisplay`, the navigation animations, `navigationDestination { }`
-    and `NavigationDestinationScope`, `EmbeddedDestination`, `managedFlowDestination`, the
-    dialog scene, `OverlayTransitions` and `directOverlay(enter, exit)`, the shared-element
-    decorator, and the wasm `EnroBrowserContent`.
-  * `enro-runtime` no longer depends on Compose UI in its common and web code. The Android,
-    iOS and desktop platform hosts (activities, fragments, UIViewControllers and windows) stay
-    in `enro-runtime`.
-  * Projects that depend on `enro-runtime` directly and use the moved APIs must add `enro-ui`.
-  * `enro-test` no longer depends on Compose UI.
-  * `fragmentDestination`'s `arguments` lambda now has a `NavigationDestinationContentScope<T>`
-    receiver; the activity, fragment, UIViewController and root window destinations use
-    `navigationDestinationContent`.
-* Added `@InternalEnroApi`, an opt-in marker for APIs that are public only so Enro's own modules
-  can use them.
-* Added a Kotlin/JS target (browser and Node.js) to `enro-runtime`, `enro-ui`, `enro` and
-  `enro-test`; `enro-annotations` and `enro-common` add the browser environment to their
-  existing Node.js target and no longer build a Node.js executable. `EnroBrowserContent` is
-  available on Kotlin/JS as well as wasmJs, and `@NavigationComponent` generates the
-  `installNavigationController(document)` entry point for Kotlin/JS. On Kotlin/JS, class names
-  that Enro stores (metadata key names, result ids and flow step ids) use the class's simple name.
-* Enro's own metadata keys now declare explicit names, equal to the qualified names they used
-  before, so stored metadata is unchanged on every existing target and Enro's keys cannot clash
-  with an application's keys on Kotlin/JS.
-* `enro-common` is published for Kotlin/JS again.
+
+### Dependencies
+
+* Updated androidx.lifecycle to 2.11.0 and navigationevent to 1.1.0.
 
 ## 3.0.0-beta05 (2026-09-17)
 
