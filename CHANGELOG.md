@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Modules and platforms
+
+* Added `enro-html`, a Kotlin/JS module that renders navigation with Compose HTML (DOM elements
+  rather than a canvas). It depends on `enro-runtime` and Compose HTML core, not on Compose UI.
+  * `EnroHtmlContent { }` is the root of an app rendered with `renderComposable`. It provides the
+    page's lifecycle, ViewModelStore and SavedStateRegistry owners. The page lifecycle is RESUMED
+    while the document is visible and CREATED while it is hidden.
+  * `HtmlNavigationDisplay(state)` renders a container. Scenes change without an animation.
+    `directOverlay()` destinations render over the current scene, and `directOverlayWithFade()`
+    fades them in and out.
+  * `htmlDialog()` renders a destination in a modal `<dialog>`. Escape and a click on the
+    backdrop call `requestClose()`; `HtmlDialogProperties` turns either off.
+  * A closed overlay or dialog stays in the DOM until its CSS transitions end.
+  * Browser back and forward use `InstallWebHistoryPlugin`, as with `EnroBrowserContent`.
+  * `tests/html-application` is a sample app built with `enro-html` and `@NavigationComponent`.
+
 ## 3.0.0-beta06 (2026-10-14)
 
 ### Modules and platforms

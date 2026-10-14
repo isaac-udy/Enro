@@ -47,6 +47,10 @@ gradlePlugin {
             id = "configure-library-with-js"
             implementationClass = "ConfigureMultiplatformLibraryWithJs"
         }
+        register("configure-browser-library") {
+            id = "configure-browser-library"
+            implementationClass = "ConfigureBrowserLibrary"
+        }
         register("configure-publishing") {
             id = "configure-publishing"
             implementationClass = "ConfigurePublishing"

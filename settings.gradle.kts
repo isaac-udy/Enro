@@ -6,6 +6,7 @@ include(":enro")
 include(":enro-common")
 include(":enro-runtime")
 include(":enro-ui")
+include(":enro-html")
 include(":enro-compat")
 include(":recipes:common")
 include(":recipes:app:android")
@@ -19,6 +20,7 @@ include(":tests:application:app:android")
 include(":tests:application:app:desktop")
 include(":tests:application:app:ios")
 include(":tests:application:app:web")
+include(":tests:html-application")
 
 dependencyResolutionManagement {
     versionCatalogs {

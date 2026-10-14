@@ -25,6 +25,7 @@ internal fun Project.configureKotlinMultiplatform(
     ios: Boolean = true,
     wasmJs: Boolean = true,
     js: Boolean = true,
+    jsNodejs: Boolean = true,
     desktop: Boolean = true,
 ) {
 
@@ -84,7 +85,7 @@ internal fun Project.configureKotlinMultiplatform(
         if (js) {
             js {
                 browser()
-                nodejs()
+                if (jsNodejs) nodejs()
                 compilerOptions {
                     sourceMap.set(true)
                     sourceMapEmbedSources.set(JsSourceMapEmbedMode.SOURCE_MAP_SOURCE_CONTENT_ALWAYS)
