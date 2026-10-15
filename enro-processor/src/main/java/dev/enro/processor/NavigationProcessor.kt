@@ -143,7 +143,7 @@ class NavigationProcessor(
                 environment = environment,
                 platform = requireNotNull(platform),
                 component = it,
-                bindings = generatedBindings.values.toList(),
+                allBindings = generatedBindings.values.toList(),
             )
         }
     }

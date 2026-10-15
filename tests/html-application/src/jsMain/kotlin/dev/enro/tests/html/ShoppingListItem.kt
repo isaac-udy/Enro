@@ -15,7 +15,7 @@ import org.jetbrains.compose.web.dom.Text
 @NavigationPath("/items/{item}")
 data class ShoppingListItem(val item: String) : NavigationKey
 
-@NavigationDestination(ShoppingListItem::class)
+@NavigationDestination.PlatformOverride(ShoppingListItem::class)
 val shoppingListItemDestination: NavigationDestinationProvider<ShoppingListItem> = navigationDestinationContent {
     H1 { Text(navigation.key.item) }
     Button({ onClick { navigation.close() } }) { Text("Back to the list") }

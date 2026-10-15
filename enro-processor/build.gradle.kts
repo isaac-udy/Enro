@@ -22,6 +22,8 @@ dependencies {
     implementation(libs.processing.javaPoet)
     implementation(libs.processing.kotlinPoet)
     implementation(libs.processing.kotlinPoet.ksp)
+
+    testImplementation(kotlin("test-junit"))
 }
 
 java {

@@ -27,8 +27,20 @@ object NavigationComponentGenerator {
         environment: SymbolProcessorEnvironment,
         platform: ResolverPlatform,
         component: ComponentReference,
-        bindings: List<GeneratedBindingReference>,
+        allBindings: List<GeneratedBindingReference>,
     ) {
+        val bindings = when {
+            platform is ResolverPlatform.Web && platform.isHtmlRenderer -> {
+                val resolution = HtmlBindingResolution(allBindings)
+                resolution.unverifiedWarning(component.simpleName)?.let { environment.logger.warn(it) }
+                resolution.composeUiError(component.simpleName)?.let {
+                    environment.logger.error(it)
+                    return
+                }
+                resolution.bindings
+            }
+            else -> allBindings
+        }
         val isIos = platform is ResolverPlatform.Ios
         val isDesktop = platform is ResolverPlatform.JvmDesktop
         val isAndroid = platform is ResolverPlatform.Android
