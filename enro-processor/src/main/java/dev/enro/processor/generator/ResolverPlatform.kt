@@ -19,6 +19,7 @@ sealed class ResolverPlatform {
 
     class Web(
         val webDocumentClassName: ClassName,
+        val isHtmlRenderer: Boolean,
     ) : ResolverPlatform()
 
     data object Other : ResolverPlatform()
@@ -49,7 +50,8 @@ sealed class ResolverPlatform {
                 resolver.getKotlinClassByName("dev.enro.platform.EnroPlatformJs") != null
             if (isWeb) {
                 return ResolverPlatform.Web(
-                    webDocumentClassName = resolver.getKotlinClassByName("org.w3c.dom.Document")!!.toClassName()
+                    webDocumentClassName = resolver.getKotlinClassByName("org.w3c.dom.Document")!!.toClassName(),
+                    isHtmlRenderer = resolver.getKotlinClassByName("dev.enro.html.EnroHtmlRenderer") != null,
                 )
             }
 

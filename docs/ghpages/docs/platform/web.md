@@ -83,7 +83,8 @@ fun main() {
 - `HtmlNavigationDisplay(container)` replaces `NavigationDisplay`. Scenes
   change without an animation.
 - Destinations are `navigationDestinationContent { }` providers or
-  `@Composable` functions that emit Compose HTML elements.
+  `@Composable` functions that emit Compose HTML elements, annotated
+  with `@NavigationDestination.PlatformOverride` (see below).
   `navigationDestination { }` and a function with a
   `NavigationDestinationScope` receiver are Compose UI and need
   `NavigationDisplay`.
@@ -96,7 +97,7 @@ fun main() {
   end, so a `dialog:not([open])` transition runs on close.
 
 ```kotlin
-@NavigationDestination(ConfirmDelete::class)
+@NavigationDestination.PlatformOverride(ConfirmDelete::class)
 val confirmDeleteDestination: NavigationDestinationProvider<ConfirmDelete> =
     navigationDestinationContent(metadata = { htmlDialog() }) {
         H2 { Text("Delete ${navigation.key.item}?") }
@@ -105,6 +106,37 @@ val confirmDeleteDestination: NavigationDestinationProvider<ConfirmDelete> =
 ```
 
 [`tests/html-application`][html-sample] is a complete example.
+
+### Compose UI screens in common code
+
+A module can keep its Compose UI screens in `commonMain` and add Compose
+HTML screens for the same keys in `jsMain`. Annotate each Compose HTML
+screen with `@NavigationDestination.PlatformOverride`:
+
+```kotlin
+// commonMain
+@Composable
+@NavigationDestination(Home::class)
+fun HomeScreen() { /* Compose UI */ }
+
+// jsMain
+@Composable
+@NavigationDestination.PlatformOverride(Home::class)
+fun HomeHtmlScreen() { /* Compose HTML */ }
+```
+
+When `enro-html` is on the Kotlin/JS classpath of the module that
+declares the `@NavigationComponent`, the processor:
+
+- registers only the override for each overridden key, so dead-code
+  elimination removes the Compose UI screen from the bundle;
+- fails the build with a list of `@Composable` function destinations
+  that have no override;
+- warns about property destinations that have no override, because the
+  processor can't see whether they use Compose UI.
+
+The overrides can also live in a separate module, as long as the
+`@NavigationComponent` module depends on it.
 
 ## URL routing model
 

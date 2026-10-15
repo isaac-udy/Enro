@@ -84,6 +84,8 @@ object NavigationBindingGenerator {
                         "navigationKey = %L",
                         CodeBlock.of("\"${requireNotNull(destination.keyType.qualifiedName).asString()}\"")
                     )
+                    .addMember("isPlatformOverride = %L", destination.isPlatformOverride)
+                    .addMember("isComposableFunction = %L", destination.isComposable)
                     .build()
             )
             .addFunction(

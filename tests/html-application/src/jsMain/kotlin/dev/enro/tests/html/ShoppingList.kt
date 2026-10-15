@@ -47,7 +47,7 @@ class ShoppingListViewModel : ViewModel() {
     }
 }
 
-@NavigationDestination(ShoppingList::class)
+@NavigationDestination.PlatformOverride(ShoppingList::class)
 val shoppingListDestination: NavigationDestinationProvider<ShoppingList> = navigationDestinationContent {
     val viewModel = viewModel { createEnroViewModel { ShoppingListViewModel() } }
     H1 { Text("Shopping list") }

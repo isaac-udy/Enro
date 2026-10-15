@@ -4,5 +4,7 @@ package dev.enro.annotations
 @Target(AnnotationTarget.CLASS)
 public annotation class GeneratedNavigationBinding(
     val destination: String,
-    val navigationKey: String
+    val navigationKey: String,
+    val isPlatformOverride: Boolean = false,
+    val isComposableFunction: Boolean = false,
 )

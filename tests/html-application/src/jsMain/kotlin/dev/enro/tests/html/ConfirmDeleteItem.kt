@@ -16,7 +16,7 @@ import org.jetbrains.compose.web.dom.Text
 @Serializable
 data class ConfirmDeleteItem(val item: String) : NavigationKey.WithResult<Boolean>
 
-@NavigationDestination(ConfirmDeleteItem::class)
+@NavigationDestination.PlatformOverride(ConfirmDeleteItem::class)
 val confirmDeleteItemDestination: NavigationDestinationProvider<ConfirmDeleteItem> =
     navigationDestinationContent(metadata = { htmlDialog() }) {
         H2 { Text("Delete ${navigation.key.item}?") }
