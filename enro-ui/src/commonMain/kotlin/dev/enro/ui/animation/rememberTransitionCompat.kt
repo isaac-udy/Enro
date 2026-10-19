@@ -1,14 +1,24 @@
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:OptIn(ExperimentalDeferredTransitionApi::class)
 
 package dev.enro.ui.animation
 
+import androidx.compose.animation.core.DeferredTransition
+import androidx.compose.animation.core.DeferredTransitionState
+import androidx.compose.animation.core.ExperimentalDeferredTransitionApi
 import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.TransitionInstance
 import androidx.compose.animation.core.TransitionState
+import androidx.compose.animation.core.getCurrentThread
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.snapshots.SnapshotStateObserver
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.resume
 
@@ -19,7 +29,7 @@ import kotlin.coroutines.resume
  * and is copied from the implementation of rememberTransition in the Compose libraries, but uses
  * the hashCode of the TransitionState as the key, rather than the TransitionState itself.
  *
- * Copied from androidx.compose.animation.core.rememberTransition
+ * Copied from androidx.compose.animation.core.rememberTransition (Compose Multiplatform 1.12.2)
  */
 @Composable
 internal fun <T> rememberTransitionCompat(
@@ -28,9 +38,28 @@ internal fun <T> rememberTransitionCompat(
 ): Transition<T> {
     // ! USING transitionState.hashCode() AS KEY TO AVOID BUG IN COMPOSE FOR WEB !
     val transition = remember(transitionState.hashCode()) {
-        Transition(transitionState = transitionState, label)
+        Snapshot.withoutReadObservation {
+            if (transitionState is DeferredTransitionState) {
+                DeferredTransition(transitionState, label)
+            } else {
+                TransitionInstance(transitionState, label)
+            }
+        }
     }
     if (transitionState is SeekableTransitionState) {
+        val coroutineScope = rememberCoroutineScope()
+        DisposableEffect(coroutineScope) {
+            val thread = getCurrentThread()
+            val snapshotStateObserver = SnapshotStateObserver {
+                if (thread === getCurrentThread()) {
+                    it()
+                } else {
+                    coroutineScope.launch { it() }
+                }
+            }
+            transitionState.snapshotStateObserver = snapshotStateObserver
+            onDispose { transitionState.snapshotStateObserver = null }
+        }
         LaunchedEffect(transitionState.currentState, transitionState.targetState) {
             transitionState.observeTotalDuration()
             transitionState.compositionContinuationMutex.withLock {
@@ -41,6 +70,9 @@ internal fun <T> rememberTransitionCompat(
         }
     } else {
         transition.animateTo(transitionState.targetState)
+        if (transitionState is DeferredTransitionState) {
+            transition.updatePendingTarget(transitionState.pendingTargetState)
+        }
     }
     DisposableEffect(transition) {
         onDispose {

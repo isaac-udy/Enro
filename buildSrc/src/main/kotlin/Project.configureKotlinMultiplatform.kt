@@ -93,6 +93,7 @@ internal fun Project.configureKotlinMultiplatform(
             js {
                 browser()
                 if (jsNodejs) nodejs()
+                binaries.executable()
                 compilerOptions {
                     sourceMap.set(true)
                     sourceMapEmbedSources.set(JsSourceMapEmbedMode.SOURCE_MAP_SOURCE_CONTENT_ALWAYS)
