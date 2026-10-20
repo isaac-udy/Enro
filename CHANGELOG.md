@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Bug fixes
+
+* `EnroBrowserContent(suppressEscapeAsBack = true)` no longer hides Escape from the app. It
+  consumes Escape only when nothing in the composition handles it, so a focused dialog or popup
+  can close on Escape. Unhandled Escape still never becomes a back event.
+
 ### Code generation
 
 * A `@NavigationComponent` compiled for Kotlin/JS with `enro-html` on the classpath now resolves
