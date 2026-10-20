@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 
 /**
@@ -30,10 +30,12 @@ import androidx.compose.ui.input.key.type
  * }
  * ```
  *
- * @param suppressEscapeAsBack When `true` (the default), pressing the
- *   Escape key inside the Compose composition is consumed before
+ * @param suppressEscapeAsBack When `true` (the default), an Escape key
+ *   press that nothing in the composition handles is consumed before
  *   Compose Multiplatform's built-in `BackNavigationEventInput` can
- *   translate it into a back-navigation event. Browser back/forward via
+ *   translate it into a back-navigation event. Content that handles
+ *   Escape itself (a dialog or popup closing) still receives it first.
+ *   Browser back/forward via
  *   the history API is unaffected (it routes through `popstate`, not the
  *   navigation event dispatcher). Set to `false` if your app deliberately
  *   wants Escape→back behaviour.
@@ -46,15 +48,12 @@ public fun EnroBrowserContent(
 ) {
     EnroBrowserRoot {
         if (suppressEscapeAsBack) {
-            // Consumes Escape KeyDown via Compose's preview key chain
-            // (outer → inner) before Compose Multiplatform's
-            // BackNavigationEventInput can translate it into a back event.
-            // Inner Popups/Dialogs run in their own focus tree and still
-            // see Escape — only the main composition's Escape is swallowed.
+            // Bubble phase: focused content handles Escape first; the web window
+            // only turns Escape into back when the composition leaves it unconsumed.
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .onPreviewKeyEvent { event ->
+                    .onKeyEvent { event ->
                         event.type == KeyEventType.KeyDown && event.key == Key.Escape
                     },
             ) {
