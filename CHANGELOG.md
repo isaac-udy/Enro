@@ -7,6 +7,13 @@
 * `EnroBrowserContent(suppressEscapeAsBack = true)` no longer hides Escape from the app. It
   consumes Escape only when nothing in the composition handles it, so a focused dialog or popup
   can close on Escape. Unhandled Escape still never becomes a back event.
+* In `NavigationDisplay`, an overlay's content now stays composed until its
+  `NavigationScene.Overlay.onRemove()` returns. Before, the content left composition when the exit
+  transition settled, and `onRemove()` ran afterwards, so it could not animate the overlay out.
+  * `onRemove()` now runs as soon as the overlay is popped. The exit transition from
+    `directOverlay(enter, exit)` or `directOverlayWithFade` starts after `onRemove()` returns.
+  * `onRemove()` is cancelled if an overlay with the same `key` becomes active again, or if the
+    display leaves composition. A re-activated overlay keeps its state.
 
 ### Code generation
 

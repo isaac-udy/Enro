@@ -55,7 +55,7 @@ Code that knowingly diverges from Nav3 carries an inline comment of the form:
 | `NavMetadataKey<T>` (for scene metadata) | `NavigationScene.MetadataKey<T>` | Parallel to `NavigationDestination.MetadataKey<T>`; same shape, scoped to scene-level metadata. |
 | `NavDisplay.TransitionKey` etc. | `NavigationDisplay.TransitionKey` / `PopTransitionKey` / `PredictivePopTransitionKey` | Per-scene transition overrides. Looked up before falling back to `NavigationAnimations` defaults. |
 | `SceneInfo<T>` | `NavigationSceneInfo` | Wraps the current scene as a `NavigationEventInfo` for predictive back handlers. |
-| `OverlayScene.onRemove()` (suspend) | `NavigationScene.Overlay.onRemove()` | Runs after the overlay pops from the backstack, before it leaves composition. The display awaits it. |
+| `OverlayScene.onRemove()` (suspend) | `NavigationScene.Overlay.onRemove()` | Runs after the overlay pops from the backstack, before it leaves composition. The display awaits it, then runs the overlay's exit transition. |
 | `predictivePopTransitionSpec(swipeEdge)` | `predictivePopTransitionSpec` in `NavigationAnimations` (and the `PredictivePopTransitionKey` value) now take a `swipeEdge: Int`. | Mirrors Nav3's swipe-edge plumbing. |
 | `LocalNavAnimatedContentScope` | `LocalNavigationAnimatedVisibilityScope` | Same `AnimatedVisibilityScope` provided. |
 | `SharedEntryInSceneNavEntryDecorator` | `sharedElementDecorator()` | Auto-wraps entries in `Modifier.sharedElement` keyed by instance id. |

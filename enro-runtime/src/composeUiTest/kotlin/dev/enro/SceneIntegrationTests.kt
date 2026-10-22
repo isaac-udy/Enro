@@ -10,9 +10,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
@@ -34,6 +41,7 @@ import dev.enro.ui.navigationDestination
 import dev.enro.ui.rememberNavigationContainer
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import dev.enro.ui.scenes.directOverlay
+import dev.enro.ui.scenes.directOverlayWithFade
 import dev.enro.ui.scenes.isDirectOverlay
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.serialization.Serializable
@@ -293,7 +301,7 @@ class SceneIntegrationTests {
     @Test
     fun `Overlay onRemove suspends until completed before the scene fully leaves composition`() = runEnroComposeTest {
         // NavigationDisplay invokes scene.onRemove() in a LaunchedEffect once
-        // the exit transition settles, and only calls onFullyHidden() (which
+        // the overlay is popped, and only calls onFullyHidden() (which
         // drops the scene from its tracking map) AFTER onRemove returns. So
         // an onRemove that suspends should keep the scene "alive" — present
         // in the rendered set — until it resolves.
@@ -362,6 +370,81 @@ class SceneIntegrationTests {
             actual = events.toList(),
             message = "Completing the signal should resume the suspended onRemove through to its end",
         )
+    }
+
+    @Test
+    fun `Overlay content stays composed while onRemove is suspended`() = runEnroComposeTest {
+        val onRemoveSignal = CompletableDeferred<Unit>()
+        val events = mutableListOf<String>()
+        val container = setSuspendingOverlayContent(onRemoveSignal, events) { directOverlay() }
+
+        onNodeWithTag(OverlayContentTag).assertIsDisplayed()
+
+        container.updateBackstack { it.dropLast(1).asBackstack() }
+        waitForIdle()
+
+        assertEquals(listOf("onRemove-start"), events.toList())
+        onNodeWithTag(OverlayContentTag).assertIsDisplayed()
+
+        onRemoveSignal.complete(Unit)
+        waitForIdle()
+
+        assertEquals(listOf("onRemove-start", "onRemove-end"), events.toList())
+        onNodeWithTag(OverlayContentTag).assertDoesNotExist()
+    }
+
+    @Test
+    fun `A faded overlay runs onRemove before its exit transition`() = runEnroComposeTest {
+        val onRemoveSignal = CompletableDeferred<Unit>()
+        val events = mutableListOf<String>()
+        val container = setSuspendingOverlayContent(onRemoveSignal, events) {
+            directOverlayWithFade(durationMillis = 400)
+        }
+
+        onNodeWithTag(OverlayContentTag).assertIsDisplayed()
+
+        container.updateBackstack { it.dropLast(1).asBackstack() }
+        waitForIdle()
+
+        assertEquals(listOf("onRemove-start"), events.toList())
+        onNodeWithTag(OverlayContentTag).assertIsDisplayed()
+
+        mainClock.autoAdvance = false
+        onRemoveSignal.complete(Unit)
+        mainClock.advanceTimeBy(200)
+
+        assertEquals(listOf("onRemove-start", "onRemove-end"), events.toList())
+        onNodeWithTag(OverlayContentTag).assertExists()
+
+        mainClock.advanceTimeBy(400)
+        onNodeWithTag(OverlayContentTag).assertDoesNotExist()
+    }
+
+    @Test
+    fun `Re-adding an overlay while onRemove is suspended cancels the removal and keeps its state`() = runEnroComposeTest {
+        val onRemoveSignal = CompletableDeferred<Unit>()
+        val events = mutableListOf<String>()
+        val container = setSuspendingOverlayContent(onRemoveSignal, events) { directOverlay() }
+        val backstack = container.backstack
+
+        onNodeWithTag(OverlayContentTag).performClick()
+        onNodeWithText("clicked 1").assertIsDisplayed()
+
+        container.updateBackstack { it.dropLast(1).asBackstack() }
+        waitForIdle()
+        assertEquals(listOf("onRemove-start"), events.toList())
+
+        container.updateBackstack { backstack }
+        waitForIdle()
+        onRemoveSignal.complete(Unit)
+        waitForIdle()
+
+        assertEquals(
+            expected = listOf("onRemove-start"),
+            actual = events.toList(),
+            message = "Re-adding the overlay should cancel the suspended onRemove",
+        )
+        onNodeWithText("clicked 1").assertIsDisplayed()
     }
 
     @Test
@@ -539,6 +622,55 @@ class SceneIntegrationTests {
             message = "Decorators must not be applied to NavigationScene.Overlay; decorated: $decoratedScenes",
         )
     }
+}
+
+private const val OverlayContentTag = "overlay-content"
+
+/**
+ * Renders [TestSceneKey] under an [OverlaySceneKey] shown by [TestOverlayStrategy]. The overlay
+ * is a button tagged [OverlayContentTag] that counts its clicks in remembered state.
+ */
+@OptIn(ExperimentalTestApi::class)
+private fun ComposeUiTest.setSuspendingOverlayContent(
+    onRemoveSignal: CompletableDeferred<Unit>,
+    events: MutableList<String>,
+    overlayMetadata: NavigationDestination.MetadataBuilder<OverlaySceneKey>.() -> Unit,
+): NavigationContainerState {
+    EnroTest.getCurrentNavigationController().addModule(
+        createNavigationModule {
+            destination<TestSceneKey>(
+                navigationDestination<TestSceneKey> { Text("underlying") }
+            )
+            destination<OverlaySceneKey>(
+                navigationDestination<OverlaySceneKey>(metadata = overlayMetadata) {
+                    var clicks by remember { mutableIntStateOf(0) }
+                    Button(
+                        onClick = { clicks++ },
+                        modifier = Modifier.testTag(OverlayContentTag),
+                    ) {
+                        Text("clicked $clicks")
+                    }
+                }
+            )
+        }
+    )
+    val rootContext = NavigationContextFixtures.createRootContext()
+    var container: NavigationContainerState? = null
+    setContent {
+        CompositionLocalProvider(LocalNavigationContext provides rootContext) {
+            container = rememberNavigationContainer(
+                backstack = backstackOf(TestSceneKey.asInstance(), OverlaySceneKey.asInstance()),
+            )
+            NavigationDisplay(
+                state = container!!,
+                sceneStrategy = NavigationSceneStrategy.from(
+                    TestOverlayStrategy(onRemoveSignal, events),
+                    SinglePaneSceneStrategy(),
+                ),
+            )
+        }
+    }
+    return container!!
 }
 
 @Serializable

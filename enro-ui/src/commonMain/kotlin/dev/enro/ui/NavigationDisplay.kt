@@ -25,6 +25,7 @@ import dev.enro.ui.scenes.OverlayTransitionsKey
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import dev.enro.viewmodel.getNavigationHandle
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
@@ -718,10 +719,8 @@ private class SceneTransitionFrame(
 private fun RenderOverlayScenes(overlayScenes: List<NavigationScene.Overlay>) {
     // Track overlay scenes across recompositions. A scene that has just
     // left `overlayScenes` (e.g. its destination was popped from the
-    // backstack) still appears in `rendered` until its exit transition
-    // settles — so the renderer can keep calling its `content()` and the
-    // destination's lifecycle decorator can run the proper teardown
-    // sequence after the animation, not in the middle of it.
+    // backstack) still appears in `rendered` until its onRemove() returns
+    // and its exit transition settles.
     val rendered = remember { mutableStateMapOf<Any, NavigationScene.Overlay>() }
     // Stacking order is insertion order: later-added scenes render on
     // top. We retain entries here even after they've left the active
@@ -765,28 +764,16 @@ private fun OverlaySceneRenderer(
     val transitions = scene.overlayTransitions()
     val transition = updateTransition(targetState = visibleState.value, label = "OverlayVisibility")
 
+    // Removal runs onRemove() before the exit transition, because AnimatedVisibility
+    // disposes the content once that transition settles. Re-adding the scene cancels it.
     LaunchedEffect(visible) {
-        visibleState.value = visible
-    }
-    // The exit transition has settled once `transition.currentState` is
-    // false AND the transition is no longer running. Before dropping the
-    // scene from tracking, invoke its suspending onRemove() — mirrors
-    // Nav3's OverlayScene.onRemove contract (runs after the scene is
-    // popped from the backstack, before it leaves composition).
-    //
-    // `visible` (the incoming parameter) acts as the pre-entry guard:
-    // `visibleState` starts at false and is only promoted to true by the
-    // LaunchedEffect above, so initial composition lands at
-    // (currentState=false, isRunning=false) before the visibility setter
-    // has had a chance to run. Without the `visible` check, that
-    // transient triggers the onRemove path spuriously on every entry.
-    // When the overlay is genuinely being popped, the caller passes
-    // visible=false, the keys change again, and the block proceeds.
-    LaunchedEffect(transition.currentState, transition.isRunning) {
-        if (transition.currentState) return@LaunchedEffect
-        if (transition.isRunning) return@LaunchedEffect
-        if (visible) return@LaunchedEffect
+        if (visible) {
+            visibleState.value = true
+            return@LaunchedEffect
+        }
         scene.onRemove()
+        visibleState.value = false
+        snapshotFlow { transition.currentState || transition.isRunning }.first { !it }
         onFullyHidden()
     }
 
