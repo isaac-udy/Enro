@@ -25,6 +25,7 @@ import dev.enro.ui.scenes.OverlayTransitionsKey
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import dev.enro.viewmodel.getNavigationHandle
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
@@ -765,28 +766,16 @@ private fun OverlaySceneRenderer(
     val transitions = scene.overlayTransitions()
     val transition = updateTransition(targetState = visibleState.value, label = "OverlayVisibility")
 
+    // Removal runs onRemove() before the exit transition, because AnimatedVisibility
+    // disposes the content once that transition settles. Re-adding the scene cancels it.
     LaunchedEffect(visible) {
-        visibleState.value = visible
-    }
-    // The exit transition has settled once `transition.currentState` is
-    // false AND the transition is no longer running. Before dropping the
-    // scene from tracking, invoke its suspending onRemove() — mirrors
-    // Nav3's OverlayScene.onRemove contract (runs after the scene is
-    // popped from the backstack, before it leaves composition).
-    //
-    // `visible` (the incoming parameter) acts as the pre-entry guard:
-    // `visibleState` starts at false and is only promoted to true by the
-    // LaunchedEffect above, so initial composition lands at
-    // (currentState=false, isRunning=false) before the visibility setter
-    // has had a chance to run. Without the `visible` check, that
-    // transient triggers the onRemove path spuriously on every entry.
-    // When the overlay is genuinely being popped, the caller passes
-    // visible=false, the keys change again, and the block proceeds.
-    LaunchedEffect(transition.currentState, transition.isRunning) {
-        if (transition.currentState) return@LaunchedEffect
-        if (transition.isRunning) return@LaunchedEffect
-        if (visible) return@LaunchedEffect
+        if (visible) {
+            visibleState.value = true
+            return@LaunchedEffect
+        }
         scene.onRemove()
+        visibleState.value = false
+        snapshotFlow { transition.currentState || transition.isRunning }.first { !it }
         onFullyHidden()
     }
 

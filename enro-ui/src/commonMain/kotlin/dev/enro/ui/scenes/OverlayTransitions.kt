@@ -43,7 +43,8 @@ public object OverlayTransitionsKey :
  * disappears. The exit transition runs even when the destination is
  * removed externally (back press, sibling navigation, programmatic
  * close) — the renderer keeps the scene composed for the duration of
- * the transition.
+ * the transition. The exit transition starts after the scene's
+ * [dev.enro.ui.NavigationScene.Overlay.onRemove] returns.
  */
 public fun NavigationDestination.MetadataBuilder<*>.directOverlay(
     enter: EnterTransition,

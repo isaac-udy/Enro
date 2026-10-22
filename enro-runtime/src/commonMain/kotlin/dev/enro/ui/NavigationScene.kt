@@ -85,6 +85,11 @@ public interface NavigationScene {
          * animation (or any other suspending teardown work) without being
          * yanked out of composition mid-animation.
          *
+         * The overlay's content stays composed until this returns. In `NavigationDisplay`,
+         * an exit transition set with `directOverlay(enter, exit)` or `directOverlayWithFade`
+         * starts after this returns. If the overlay's entry returns to the backstack first,
+         * this is cancelled.
+         *
          * Mirrors Nav3's `OverlayScene.onRemove`. Default is a no-op.
          */
         public suspend fun onRemove() {}
