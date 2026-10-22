@@ -9,6 +9,7 @@ import dev.enro.test.NavigationKeyFixtures
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
 
 /**
  * Locks down the push-versus-replace line the web history plugin draws between two recorded
@@ -143,6 +144,35 @@ class HistoryTransitionTests {
             activeChild = homeTab,
         )
         assertEquals(HistoryTransition.Replace, classifyTransition(previous, emptied))
+    }
+
+    @Test
+    fun `back to a root backstack one shorter closes its top`() {
+        assertEquals(standings.id, closedInstanceId(node(root, home, standings), node(root, home)))
+        assertEquals(standings.id, closedInstanceId(node(root, shell, standings), shellNode()))
+    }
+
+    @Test
+    fun `back to a nested backstack one shorter closes its top`() {
+        val current = shellNode(predictBackstack = listOf(predict, round), activeChild = predictTab)
+        assertEquals(round.id, closedInstanceId(current, shellNode(activeChild = predictTab)))
+
+        val emptied = node(root, shell, children = listOf(node(homeTab, home)), activeChild = homeTab)
+        assertEquals(predict.id, closedInstanceId(shellNode(), emptied))
+    }
+
+    @Test
+    fun `any other move closes nothing`() {
+        assertNull(closedInstanceId(node(root, home), node(root, home, standings)))
+        assertNull(closedInstanceId(node(root, home, standings, round), node(root, home)))
+        assertNull(closedInstanceId(node(root, home), node(root, shell)))
+        assertNull(closedInstanceId(shellNode(activeChild = predictTab), shellNode(activeChild = homeTab)))
+        assertNull(
+            closedInstanceId(
+                shellNode(homeBackstack = listOf(home, standings), predictBackstack = listOf(predict, round)),
+                shellNode(),
+            )
+        )
     }
 
     @Test
