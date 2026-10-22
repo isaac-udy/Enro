@@ -1,5 +1,7 @@
 package dev.enro.ui.history
 
+import dev.enro.emptyBackstack
+
 internal enum class HistoryTransition {
     /** [current] adds to [previous]: a browser entry is pushed. */
     Push,
@@ -58,4 +60,29 @@ private fun extends(
         previous.activeChild != null &&
         previous.populatedChildren.any { it.containerKey == current.activeChild }
     return pushed || activeChanged
+}
+
+/**
+ * The id of the instance that going from [current] to [target] closes, when that is all the move
+ * does: the top entry of one container removed, which is what a browser back after a push asks
+ * for. Null for any other change.
+ */
+internal fun closedInstanceId(
+    current: ContainerNode,
+    target: ContainerNode,
+): String? {
+    if (current.containerKey != target.containerKey) return null
+    val currentIds = current.backstack.map { it.id }
+    val targetIds = target.backstack.map { it.id }
+    if (currentIds.dropLast(1) == targetIds && currentIds.size == targetIds.size + 1) return currentIds.last()
+    if (currentIds != targetIds || current.activeChild != target.activeChild) return null
+
+    val currentChildren = current.populatedChildren.associateBy { it.containerKey }
+    val targetChildren = target.populatedChildren.associateBy { it.containerKey }
+    if (!currentChildren.keys.containsAll(targetChildren.keys)) return null
+    val changed = currentChildren.values.singleOrNull { it != targetChildren[it.containerKey] } ?: return null
+    return closedInstanceId(
+        current = changed,
+        target = targetChildren[changed.containerKey] ?: ContainerNode(changed.containerKey, emptyBackstack()),
+    )
 }

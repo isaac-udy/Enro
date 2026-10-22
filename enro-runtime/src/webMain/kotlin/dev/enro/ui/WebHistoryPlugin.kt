@@ -3,19 +3,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import dev.enro.EnroController
 import dev.enro.NavigationHandle
+import dev.enro.NavigationHandleConfiguration
 import dev.enro.NavigationKey
 import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.context.ContainerContext
+import dev.enro.context.DestinationContext
+import dev.enro.context.findContext
+import dev.enro.context.getNavigationHandle
 import dev.enro.controller.createNavigationModule
 import dev.enro.path.getBackstackFromPath
 import dev.enro.path.getPathFromNavigationKey
 import dev.enro.platform.EnroLog
 import dev.enro.plugin.NavigationPlugin
+import dev.enro.requestClose
 import dev.enro.ui.history.ContainerNode
 import dev.enro.ui.history.HistoryTransition
 import dev.enro.ui.history.applyNodeFor
 import dev.enro.ui.history.awaitNodeFor
 import dev.enro.ui.history.classifyTransition
+import dev.enro.ui.history.closedInstanceId
 import dev.enro.ui.history.createNodeFor
 import dev.enro.ui.history.topDestination
 import kotlinx.coroutines.CancellationException
@@ -209,6 +215,7 @@ internal class WebHistoryPlugin(
         val rawState = event.state ?: return
         var poppedState = decodeState(rawState)
             ?: return restoreFromUrl()
+        if (requestCloseInstead(poppedState)) return
 
         var attempts = 0
         while (attempts < MAX_TRAVERSAL_ATTEMPTS) {
@@ -236,6 +243,24 @@ internal class WebHistoryPlugin(
             historyStates.add(poppedState)
             historyIndex = historyStates.lastIndex
         }
+    }
+
+    /**
+     * A browser back that only closes a destination with an `onCloseRequested` callback is undone
+     * and handed to that callback, as a system back would be; what the callback then does reaches
+     * history through the backstack. Without a callback the entry is applied, keeping the
+     * browser's forward entry.
+     */
+    private suspend fun requestCloseInstead(target: ContainerNode): Boolean {
+        val closedId = closedInstanceId(createNodeFor(rootContainer, nestedContainers), target) ?: return false
+        val destination = rootContainer.findContext {
+            it is DestinationContext<*> && it.instance.id == closedId
+        } as? DestinationContext<*> ?: return false
+        val callbacks = destination.instance.metadata.get(NavigationHandleConfiguration.OnCloseCallbacks)
+        if (callbacks.isEmpty()) return false
+        traverse(1)
+        destination.getNavigationHandle().requestClose()
+        return true
     }
 
     /**
