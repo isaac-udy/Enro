@@ -12,8 +12,8 @@
   transition settled, and `onRemove()` ran afterwards, so it could not animate the overlay out.
   * `onRemove()` now runs as soon as the overlay is popped. The exit transition from
     `directOverlay(enter, exit)` or `directOverlayWithFade` starts after `onRemove()` returns.
-  * If the overlay's entry returns to the backstack while `onRemove()` is suspended, `onRemove()`
-    is cancelled and the overlay keeps its state.
+  * `onRemove()` is cancelled if an overlay with the same `key` becomes active again, or if the
+    display leaves composition. A re-activated overlay keeps its state.
 
 ### Code generation
 

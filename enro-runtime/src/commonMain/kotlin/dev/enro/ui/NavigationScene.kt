@@ -87,8 +87,8 @@ public interface NavigationScene {
          *
          * The overlay's content stays composed until this returns. In `NavigationDisplay`,
          * an exit transition set with `directOverlay(enter, exit)` or `directOverlayWithFade`
-         * starts after this returns. If the overlay's entry returns to the backstack first,
-         * this is cancelled.
+         * starts after this returns. Cancelled if an overlay with the same `key` becomes
+         * active again, or if the display leaves composition.
          *
          * Mirrors Nav3's `OverlayScene.onRemove`. Default is a no-op.
          */

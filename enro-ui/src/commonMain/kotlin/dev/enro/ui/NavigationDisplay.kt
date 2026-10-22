@@ -719,10 +719,8 @@ private class SceneTransitionFrame(
 private fun RenderOverlayScenes(overlayScenes: List<NavigationScene.Overlay>) {
     // Track overlay scenes across recompositions. A scene that has just
     // left `overlayScenes` (e.g. its destination was popped from the
-    // backstack) still appears in `rendered` until its exit transition
-    // settles — so the renderer can keep calling its `content()` and the
-    // destination's lifecycle decorator can run the proper teardown
-    // sequence after the animation, not in the middle of it.
+    // backstack) still appears in `rendered` until its onRemove() returns
+    // and its exit transition settles.
     val rendered = remember { mutableStateMapOf<Any, NavigationScene.Overlay>() }
     // Stacking order is insertion order: later-added scenes render on
     // top. We retain entries here even after they've left the active
