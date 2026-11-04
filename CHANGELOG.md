@@ -32,6 +32,7 @@
 
 * Updated Compose Multiplatform to 1.12.2 and androidx Compose to 1.12.1. Consumers need
   Compose Multiplatform 1.12, AGP 9.1.0+ and compileSdk 37.
+* Updated Kotlin to 2.4.21.
 
 ## 3.0.0-beta07 (2026-10-14)
 

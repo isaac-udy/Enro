@@ -1,6 +1,5 @@
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
-import org.jetbrains.kotlin.konan.properties.hasProperty
 import wtf.emulator.DeviceModel
 import wtf.emulator.EwExtension
 import java.io.FileInputStream
@@ -15,7 +14,7 @@ fun Project.configureEmulatorWtf(numShards: Int = 2) {
 
     val apiToken: String? = when {
         project.hasProperty("ewApiToken") -> project.properties["ewApiToken"].toString()
-        localProperties.hasProperty("ewApiToken") -> localProperties["ewApiToken"].toString()
+        localProperties.containsKey("ewApiToken") -> localProperties["ewApiToken"].toString()
         else -> java.lang.System.getenv()["EW_API_TOKEN"]
     }
 
