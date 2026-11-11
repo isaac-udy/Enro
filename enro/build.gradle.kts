@@ -4,14 +4,13 @@ plugins {
     id("com.google.devtools.ksp")
     id("configure-library-with-js")
     id("configure-publishing")
-    id("configure-compose")
+    id("configure-compose-ui")
     kotlin("plugin.serialization")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_11)
-        freeCompilerArgs.add("-Xfriend-paths=../enro-core/src/main")
     }
 }
 

@@ -1,0 +1,178 @@
+public final class dev/enro/ui/LocalNavigationAnimatedVisibilityScopeKt {
+	public static final fun getLocalNavigationAnimatedVisibilityScope ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+	public static final fun getLocalNavigationAnimatedVisibilityScopeOrNull ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class dev/enro/ui/LocalNavigationSharedTransitionScopeKt {
+	public static final fun getLocalNavigationSharedTransitionScope ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+	public static final fun getLocalNavigationSharedTransitionScopeOrNull ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class dev/enro/ui/NavigationAnimations {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/ui/NavigationAnimations$Companion;
+	public fun <init> ()V
+	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Z)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function1;
+	public final fun component2 ()Lkotlin/jvm/functions/Function1;
+	public final fun component3 ()Lkotlin/jvm/functions/Function2;
+	public final fun component4 ()Lkotlin/jvm/functions/Function1;
+	public final fun component5 ()Z
+	public final fun copy (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;Z)Ldev/enro/ui/NavigationAnimations;
+	public static synthetic fun copy$default (Ldev/enro/ui/NavigationAnimations;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ZILjava/lang/Object;)Ldev/enro/ui/NavigationAnimations;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContainerTransitionSpec ()Lkotlin/jvm/functions/Function1;
+	public final fun getEmptyUsesContainerTransition ()Z
+	public final fun getPopTransitionSpec ()Lkotlin/jvm/functions/Function1;
+	public final fun getPredictivePopTransitionSpec ()Lkotlin/jvm/functions/Function2;
+	public final fun getTransitionSpec ()Lkotlin/jvm/functions/Function1;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/ui/NavigationAnimations$Companion {
+	public final fun getDefault ()Ldev/enro/ui/NavigationAnimations;
+}
+
+public final class dev/enro/ui/NavigationDestinationScope : androidx/compose/animation/AnimatedVisibilityScope, androidx/compose/animation/SharedTransitionScope, dev/enro/ui/NavigationDestinationContentScope {
+	public static final field $stable I
+	public fun <init> (Ljava/util/Map;Ldev/enro/NavigationHandle;Landroidx/compose/animation/AnimatedVisibilityScope;Landroidx/compose/animation/SharedTransitionScope;)V
+	public fun OverlayClip (Landroidx/compose/ui/graphics/Shape;)Landroidx/compose/animation/SharedTransitionScope$OverlayClip;
+	public fun SharedContentConfig ()Landroidx/compose/animation/SharedTransitionScope$SharedContentConfig;
+	public fun SharedContentConfig (Z)Landroidx/compose/animation/SharedTransitionScope$SharedContentConfig;
+	public fun animateEnterExit (Landroidx/compose/ui/Modifier;Landroidx/compose/animation/EnterTransition;Landroidx/compose/animation/ExitTransition;Ljava/lang/String;)Landroidx/compose/ui/Modifier;
+	public fun getDestinationMetadata ()Ljava/util/Map;
+	public fun getLookaheadScopeCoordinates (Landroidx/compose/ui/layout/Placeable$PlacementScope;)Landroidx/compose/ui/layout/LayoutCoordinates;
+	public fun getNavigation ()Ldev/enro/NavigationHandle;
+	public fun getTransition ()Landroidx/compose/animation/core/Transition;
+	public fun isTransitionActive ()Z
+	public fun localLookaheadPositionOf-au-aQtc (Landroidx/compose/ui/layout/LayoutCoordinates;Landroidx/compose/ui/layout/LayoutCoordinates;JZ)J
+	public fun rememberSharedContentState (Ljava/lang/Object;Landroidx/compose/animation/SharedTransitionScope$SharedContentConfig;Landroidx/compose/runtime/Composer;I)Landroidx/compose/animation/SharedTransitionScope$SharedContentState;
+	public fun rememberSharedContentState (Ljava/lang/Object;Landroidx/compose/runtime/Composer;I)Landroidx/compose/animation/SharedTransitionScope$SharedContentState;
+	public fun renderInSharedTransitionScopeOverlay (Landroidx/compose/ui/Modifier;FLkotlin/jvm/functions/Function0;)Landroidx/compose/ui/Modifier;
+	public fun sharedBounds (Landroidx/compose/ui/Modifier;Landroidx/compose/animation/SharedTransitionScope$SharedContentState;Landroidx/compose/animation/AnimatedVisibilityScope;Landroidx/compose/animation/EnterTransition;Landroidx/compose/animation/ExitTransition;Landroidx/compose/animation/BoundsTransform;Landroidx/compose/animation/SharedTransitionScope$ResizeMode;Landroidx/compose/animation/SharedTransitionScope$PlaceholderSize;ZFLandroidx/compose/animation/SharedTransitionScope$OverlayClip;)Landroidx/compose/ui/Modifier;
+	public fun sharedElement (Landroidx/compose/ui/Modifier;Landroidx/compose/animation/SharedTransitionScope$SharedContentState;Landroidx/compose/animation/AnimatedVisibilityScope;Landroidx/compose/animation/BoundsTransform;Landroidx/compose/animation/SharedTransitionScope$PlaceholderSize;ZFLandroidx/compose/animation/SharedTransitionScope$OverlayClip;)Landroidx/compose/ui/Modifier;
+	public fun sharedElementWithCallerManagedVisibility (Landroidx/compose/ui/Modifier;Landroidx/compose/animation/SharedTransitionScope$SharedContentState;ZLandroidx/compose/animation/BoundsTransform;Landroidx/compose/animation/SharedTransitionScope$PlaceholderSize;ZFLandroidx/compose/animation/SharedTransitionScope$OverlayClip;)Landroidx/compose/ui/Modifier;
+	public fun skipToLookaheadPosition (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function0;)Landroidx/compose/ui/Modifier;
+	public fun skipToLookaheadSize (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function0;)Landroidx/compose/ui/Modifier;
+	public fun toLookaheadCoordinates (Landroidx/compose/ui/layout/LayoutCoordinates;)Landroidx/compose/ui/layout/LayoutCoordinates;
+}
+
+public final class dev/enro/ui/NavigationDestinationScopeKt {
+	public static final fun navigationDestination (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;)Ldev/enro/ui/NavigationDestinationProvider;
+	public static synthetic fun navigationDestination$default (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Ldev/enro/ui/NavigationDestinationProvider;
+}
+
+public final class dev/enro/ui/NavigationDisplay {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/ui/NavigationDisplay;
+}
+
+public final class dev/enro/ui/NavigationDisplay$PopTransitionKey : dev/enro/ui/NavigationScene$MetadataKey {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/ui/NavigationDisplay$PopTransitionKey;
+}
+
+public final class dev/enro/ui/NavigationDisplay$PredictivePopTransitionKey : dev/enro/ui/NavigationScene$MetadataKey {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/ui/NavigationDisplay$PredictivePopTransitionKey;
+}
+
+public final class dev/enro/ui/NavigationDisplay$TransitionKey : dev/enro/ui/NavigationScene$MetadataKey {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/ui/NavigationDisplay$TransitionKey;
+}
+
+public final class dev/enro/ui/NavigationDisplayKt {
+	public static final fun NavigationDisplay (Ldev/enro/ui/NavigationContainerState;Landroidx/compose/ui/Modifier;Ldev/enro/ui/NavigationSceneStrategy;Ljava/util/List;Landroidx/compose/animation/SharedTransitionScope;Landroidx/compose/ui/Alignment;Landroidx/compose/animation/SizeTransform;Ldev/enro/ui/NavigationAnimations;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class dev/enro/ui/NavigationSceneInfo : androidx/navigationevent/NavigationEventInfo {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/ui/NavigationScene;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getScene ()Ldev/enro/ui/NavigationScene;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class dev/enro/ui/SceneTransitionData {
+	public abstract fun getContainerKey ()Ldev/enro/NavigationContainer$Key;
+	public abstract fun getPreviouslyVisible ()Ljava/util/List;
+	public abstract fun getVisible ()Ljava/util/List;
+}
+
+public final class dev/enro/ui/animation/Modifier_animateNavigationEnterExitKt {
+	public static final fun animateNavigationEnterExit (Landroidx/compose/ui/Modifier;Landroidx/compose/animation/EnterTransition;Landroidx/compose/animation/ExitTransition;)Landroidx/compose/ui/Modifier;
+	public static synthetic fun animateNavigationEnterExit$default (Landroidx/compose/ui/Modifier;Landroidx/compose/animation/EnterTransition;Landroidx/compose/animation/ExitTransition;ILjava/lang/Object;)Landroidx/compose/ui/Modifier;
+}
+
+public final class dev/enro/ui/animation/NavigationAnimatedVisibilityKt {
+	public static final fun NavigationAnimatedVisibility (Landroidx/compose/ui/Modifier;Landroidx/compose/animation/EnterTransition;Landroidx/compose/animation/ExitTransition;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class dev/enro/ui/decorators/ComposableSingletons$SharedElementDecoratorKt {
+	public static final field INSTANCE Ldev/enro/ui/decorators/ComposableSingletons$SharedElementDecoratorKt;
+	public fun <init> ()V
+	public final fun getLambda$981877735$dev_enro_enro_ui ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class dev/enro/ui/decorators/SharedElementDecoratorKt {
+	public static final fun rememberSharedElementDecorator (Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/decorators/NavigationDestinationDecorator;
+}
+
+public final class dev/enro/ui/destinations/ManagedFlowDestinationKt {
+	public static final fun managedFlowDestination (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)Ldev/enro/ui/NavigationDestinationProvider;
+	public static final fun managedFlowDestination (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Ldev/enro/ui/NavigationDestinationProvider;
+}
+
+public final class dev/enro/ui/destinations/ManagedFlowDestinationScope {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationHandle;)V
+	public final fun getNavigation ()Ldev/enro/NavigationHandle;
+}
+
+public final class dev/enro/ui/scenes/DialogSceneKt {
+	public static final fun dialog (Ldev/enro/ui/NavigationDestination$MetadataBuilder;Landroidx/compose/ui/window/DialogProperties;)V
+	public static synthetic fun dialog$default (Ldev/enro/ui/NavigationDestination$MetadataBuilder;Landroidx/compose/ui/window/DialogProperties;ILjava/lang/Object;)V
+}
+
+public final class dev/enro/ui/scenes/DialogSceneStrategy : dev/enro/ui/NavigationSceneStrategy {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/ui/scenes/DialogSceneStrategy$Companion;
+	public fun <init> ()V
+	public fun calculateScene (Ldev/enro/ui/SceneStrategyScope;Ljava/util/List;Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/NavigationScene;
+}
+
+public final class dev/enro/ui/scenes/DialogSceneStrategy$Companion {
+}
+
+public final class dev/enro/ui/scenes/DialogSceneStrategy$DialogPropertiesKey : dev/enro/ui/NavigationDestination$MetadataKey {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/ui/scenes/DialogSceneStrategy$DialogPropertiesKey;
+}
+
+public final class dev/enro/ui/scenes/OverlayTransitions {
+	public static final field $stable I
+	public fun <init> (Landroidx/compose/animation/EnterTransition;Landroidx/compose/animation/ExitTransition;)V
+	public final fun component1 ()Landroidx/compose/animation/EnterTransition;
+	public final fun component2 ()Landroidx/compose/animation/ExitTransition;
+	public final fun copy (Landroidx/compose/animation/EnterTransition;Landroidx/compose/animation/ExitTransition;)Ldev/enro/ui/scenes/OverlayTransitions;
+	public static synthetic fun copy$default (Ldev/enro/ui/scenes/OverlayTransitions;Landroidx/compose/animation/EnterTransition;Landroidx/compose/animation/ExitTransition;ILjava/lang/Object;)Ldev/enro/ui/scenes/OverlayTransitions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEnter ()Landroidx/compose/animation/EnterTransition;
+	public final fun getExit ()Landroidx/compose/animation/ExitTransition;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/ui/scenes/OverlayTransitionsKey : dev/enro/ui/NavigationDestination$MetadataKey {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/ui/scenes/OverlayTransitionsKey;
+}
+
+public final class dev/enro/ui/scenes/OverlayTransitionsKt {
+	public static final fun directOverlay (Ldev/enro/ui/NavigationDestination$MetadataBuilder;Landroidx/compose/animation/EnterTransition;Landroidx/compose/animation/ExitTransition;)V
+}
+

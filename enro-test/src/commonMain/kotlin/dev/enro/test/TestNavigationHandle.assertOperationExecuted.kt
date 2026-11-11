@@ -9,7 +9,7 @@ import dev.enro.NavigationOperation
  *
  * @return The last matching operation.
  */
-inline fun <reified T : NavigationOperation.RootOperation> TestNavigationHandle<*>.assertOperationExecuted(
+public inline fun <reified T : NavigationOperation.RootOperation> TestNavigationHandle<*>.assertOperationExecuted(
     predicate: (T) -> Boolean = { true },
 ): T {
     operations
@@ -27,7 +27,7 @@ inline fun <reified T : NavigationOperation.RootOperation> TestNavigationHandle<
  * Asserts that the [TestNavigationHandle]'s operation history does not contain an [Open] operation
  * of type [T] matching the provided [predicate].
  */
-inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOperationNotExecuted(
+public inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOperationNotExecuted(
     predicate: (NavigationKey.Instance<T>) -> Boolean,
 ) {
     operations

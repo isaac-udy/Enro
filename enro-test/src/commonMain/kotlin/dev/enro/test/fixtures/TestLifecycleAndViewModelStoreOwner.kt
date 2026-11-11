@@ -11,7 +11,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.InitializerViewModelFactoryBuilder
 import androidx.lifecycle.viewmodel.viewModelFactory
 
-class TestLifecycleAndViewModelStoreOwner(
+public class TestLifecycleAndViewModelStoreOwner(
     viewModels: InitializerViewModelFactoryBuilder.() -> Unit = {}
 ) : LifecycleOwner,
     ViewModelStoreOwner,
@@ -25,7 +25,7 @@ class TestLifecycleAndViewModelStoreOwner(
     override val defaultViewModelCreationExtras: CreationExtras = CreationExtras.Empty
     override val defaultViewModelProviderFactory: ViewModelProvider.Factory = viewModelFactory(viewModels)
 
-    fun setLifecycleState(state: Lifecycle.State) {
+    public fun setLifecycleState(state: Lifecycle.State) {
         lifecycleRegistry.currentState = state
     }
 }

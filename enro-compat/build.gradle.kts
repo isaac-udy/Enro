@@ -2,12 +2,16 @@ plugins {
     id("com.google.devtools.ksp")
     id("configure-library")
     id("configure-publishing")
-    id("configure-compose")
+    id("configure-compose-ui")
     kotlin("plugin.serialization")
 }
 
 kotlin {
     sourceSets {
+        androidMain.dependencies {
+            // BottomSheetDestination exposes material's ModalBottomSheetState.
+            implementation(compose.material)
+        }
         desktopMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.coroutines.swing)

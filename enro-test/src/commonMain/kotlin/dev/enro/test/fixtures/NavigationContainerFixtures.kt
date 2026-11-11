@@ -24,10 +24,10 @@ import dev.enro.ui.NavigationContainerState
 import dev.enro.ui.decorators.NavigationSavedStateHolder
 import kotlin.uuid.Uuid
 
-object NavigationContainerFixtures {
+public object NavigationContainerFixtures {
     internal object ContainerFixtureKey : NavigationKey.TransientMetadataKey<NavigationContainerState?>(null)
 
-    fun create(
+    public fun create(
         parentContext: NavigationContext = NavigationContextFixtures.createRootContext(),
         key: NavigationContainer.Key = NavigationContainer.Key("TestNavigationContainer@${Uuid.random()}"),
         backstack: NavigationBackstack = backstackOf(),
@@ -74,7 +74,7 @@ object NavigationContainerFixtures {
         return containerState
     }
 
-    fun createForFlow(
+    public fun createForFlow(
         flow: NavigationFlow<*>
     ): NavigationContainerState {
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")

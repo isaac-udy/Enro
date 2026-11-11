@@ -1,0 +1,301 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, js, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <dev.enro:enro-common>
+abstract interface dev.enro/NavigationKey { // dev.enro/NavigationKey|null[0]
+    abstract interface <#A1: dev.enro/NavigationKey> PathBinding { // dev.enro/NavigationKey.PathBinding|null[0]
+        abstract val pattern // dev.enro/NavigationKey.PathBinding.pattern|{}pattern[0]
+            abstract fun <get-pattern>(): kotlin/String // dev.enro/NavigationKey.PathBinding.pattern.<get-pattern>|<get-pattern>(){}[0]
+
+        abstract fun deserialize(dev.enro.path/PathData): #A1 // dev.enro/NavigationKey.PathBinding.deserialize|deserialize(dev.enro.path.PathData){}[0]
+        abstract fun serialize(dev.enro.path/PathData.Builder, #A1) // dev.enro/NavigationKey.PathBinding.serialize|serialize(dev.enro.path.PathData.Builder;1:0){}[0]
+    }
+
+    abstract interface <#A1: kotlin/Any> WithResult : dev.enro/NavigationKey // dev.enro/NavigationKey.WithResult|null[0]
+
+    abstract class <#A1: out kotlin/Any?> MetadataKey { // dev.enro/NavigationKey.MetadataKey|null[0]
+        constructor <init>(#A1) // dev.enro/NavigationKey.MetadataKey.<init>|<init>(1:0){}[0]
+        constructor <init>(#A1, kotlin/String?) // dev.enro/NavigationKey.MetadataKey.<init>|<init>(1:0;kotlin.String?){}[0]
+
+        final val default // dev.enro/NavigationKey.MetadataKey.default|{}default[0]
+            final fun <get-default>(): #A1 // dev.enro/NavigationKey.MetadataKey.default.<get-default>|<get-default>(){}[0]
+        final val name // dev.enro/NavigationKey.MetadataKey.name|{}name[0]
+            final fun <get-name>(): kotlin/String // dev.enro/NavigationKey.MetadataKey.name.<get-name>|<get-name>(){}[0]
+    }
+
+    final class <#A1: out dev.enro/NavigationKey> Instance { // dev.enro/NavigationKey.Instance|null[0]
+        final val id // dev.enro/NavigationKey.Instance.id|{}id[0]
+            final fun <get-id>(): kotlin/String // dev.enro/NavigationKey.Instance.id.<get-id>|<get-id>(){}[0]
+        final val key // dev.enro/NavigationKey.Instance.key|{}key[0]
+            final fun <get-key>(): #A1 // dev.enro/NavigationKey.Instance.key.<get-key>|<get-key>(){}[0]
+        final val metadata // dev.enro/NavigationKey.Instance.metadata|{}metadata[0]
+            final fun <get-metadata>(): dev.enro/NavigationKey.Metadata // dev.enro/NavigationKey.Instance.metadata.<get-metadata>|<get-metadata>(){}[0]
+        final val navigationKey // dev.enro/NavigationKey.Instance.navigationKey|{}navigationKey[0]
+            final fun <get-navigationKey>(): #A1 // dev.enro/NavigationKey.Instance.navigationKey.<get-navigationKey>|<get-navigationKey>(){}[0]
+
+        final fun component1(): #A1 // dev.enro/NavigationKey.Instance.component1|component1(){}[0]
+        final fun component2(): kotlin/String // dev.enro/NavigationKey.Instance.component2|component2(){}[0]
+        final fun component3(): dev.enro/NavigationKey.Metadata // dev.enro/NavigationKey.Instance.component3|component3(){}[0]
+        final fun copy(#A1 = ..., kotlin/String = ..., dev.enro/NavigationKey.Metadata = ...): dev.enro/NavigationKey.Instance<#A1> // dev.enro/NavigationKey.Instance.copy|copy(1:0;kotlin.String;dev.enro.NavigationKey.Metadata){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // dev.enro/NavigationKey.Instance.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // dev.enro/NavigationKey.Instance.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // dev.enro/NavigationKey.Instance.toString|toString(){}[0]
+
+        final class <#A2: dev.enro/NavigationKey> $serializer : kotlinx.serialization.internal/GeneratedSerializer<dev.enro/NavigationKey.Instance<#A2>> { // dev.enro/NavigationKey.Instance.$serializer|null[0]
+            constructor <init>(kotlinx.serialization/KSerializer<#A2>) // dev.enro/NavigationKey.Instance.$serializer.<init>|<init>(kotlinx.serialization.KSerializer<1:0>){}[0]
+
+            final val descriptor // dev.enro/NavigationKey.Instance.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // dev.enro/NavigationKey.Instance.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+            final val typeSerial0 // dev.enro/NavigationKey.Instance.$serializer.typeSerial0|{}typeSerial0[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // dev.enro/NavigationKey.Instance.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): dev.enro/NavigationKey.Instance<#A2> // dev.enro/NavigationKey.Instance.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, dev.enro/NavigationKey.Instance<#A2>) // dev.enro/NavigationKey.Instance.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;dev.enro.NavigationKey.Instance<1:0>){}[0]
+            final fun typeParametersSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // dev.enro/NavigationKey.Instance.$serializer.typeParametersSerializers|typeParametersSerializers(){}[0]
+        }
+
+        final object Companion : kotlinx.serialization.internal/SerializerFactory { // dev.enro/NavigationKey.Instance.Companion|null[0]
+            final val $cachedDescriptor // dev.enro/NavigationKey.Instance.Companion.$cachedDescriptor|{}$cachedDescriptor[0]
+                final fun <get-$cachedDescriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // dev.enro/NavigationKey.Instance.Companion.$cachedDescriptor.<get-$cachedDescriptor>|<get-$cachedDescriptor>(){}[0]
+
+            final fun <#A3: kotlin/Any?> serializer(kotlinx.serialization/KSerializer<#A3>): kotlinx.serialization/KSerializer<dev.enro/NavigationKey.Instance<#A3>> // dev.enro/NavigationKey.Instance.Companion.serializer|serializer(kotlinx.serialization.KSerializer<0:0>){0§<kotlin.Any?>}[0]
+            final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // dev.enro/NavigationKey.Instance.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+        }
+    }
+
+    final class <#A1: out dev.enro/NavigationKey> WithMetadata { // dev.enro/NavigationKey.WithMetadata|null[0]
+        final val key // dev.enro/NavigationKey.WithMetadata.key|{}key[0]
+            final fun <get-key>(): #A1 // dev.enro/NavigationKey.WithMetadata.key.<get-key>|<get-key>(){}[0]
+        final val metadata // dev.enro/NavigationKey.WithMetadata.metadata|{}metadata[0]
+            final fun <get-metadata>(): dev.enro/NavigationKey.Metadata // dev.enro/NavigationKey.WithMetadata.metadata.<get-metadata>|<get-metadata>(){}[0]
+
+        final fun component1(): #A1 // dev.enro/NavigationKey.WithMetadata.component1|component1(){}[0]
+        final fun component2(): dev.enro/NavigationKey.Metadata // dev.enro/NavigationKey.WithMetadata.component2|component2(){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // dev.enro/NavigationKey.WithMetadata.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // dev.enro/NavigationKey.WithMetadata.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // dev.enro/NavigationKey.WithMetadata.toString|toString(){}[0]
+    }
+
+    final class Metadata { // dev.enro/NavigationKey.Metadata|null[0]
+        constructor <init>() // dev.enro/NavigationKey.Metadata.<init>|<init>(){}[0]
+
+        final val map // dev.enro/NavigationKey.Metadata.map|{}map[0]
+            final fun <get-map>(): kotlin.collections/MutableMap<kotlin/String, kotlin/Any> // dev.enro/NavigationKey.Metadata.map.<get-map>|<get-map>(){}[0]
+
+        final fun <#A2: kotlin/Any?> get(dev.enro/NavigationKey.MetadataKey<#A2>): #A2 // dev.enro/NavigationKey.Metadata.get|get(dev.enro.NavigationKey.MetadataKey<0:0>){0§<kotlin.Any?>}[0]
+        final fun <#A2: kotlin/Any?> set(dev.enro/NavigationKey.MetadataKey<#A2>, #A2) // dev.enro/NavigationKey.Metadata.set|set(dev.enro.NavigationKey.MetadataKey<0:0>;0:0){0§<kotlin.Any?>}[0]
+        final fun addFrom(dev.enro/NavigationKey.Metadata) // dev.enro/NavigationKey.Metadata.addFrom|addFrom(dev.enro.NavigationKey.Metadata){}[0]
+        final fun copy(): dev.enro/NavigationKey.Metadata // dev.enro/NavigationKey.Metadata.copy|copy(){}[0]
+        final fun remove(dev.enro/NavigationKey.MetadataKey<*>) // dev.enro/NavigationKey.Metadata.remove|remove(dev.enro.NavigationKey.MetadataKey<*>){}[0]
+        final fun setFrom(dev.enro/NavigationKey.Metadata) // dev.enro/NavigationKey.Metadata.setFrom|setFrom(dev.enro.NavigationKey.Metadata){}[0]
+        final fun toString(): kotlin/String // dev.enro/NavigationKey.Metadata.toString|toString(){}[0]
+
+        final object Companion { // dev.enro/NavigationKey.Metadata.Companion|null[0]
+            final fun serializer(): kotlinx.serialization/KSerializer<dev.enro/NavigationKey.Metadata> // dev.enro/NavigationKey.Metadata.Companion.serializer|serializer(){}[0]
+        }
+
+        final object Serializer : kotlinx.serialization/KSerializer<dev.enro/NavigationKey.Metadata> { // dev.enro/NavigationKey.Metadata.Serializer|null[0]
+            final val descriptor // dev.enro/NavigationKey.Metadata.Serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // dev.enro/NavigationKey.Metadata.Serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): dev.enro/NavigationKey.Metadata // dev.enro/NavigationKey.Metadata.Serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, dev.enro/NavigationKey.Metadata) // dev.enro/NavigationKey.Metadata.Serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;dev.enro.NavigationKey.Metadata){}[0]
+        }
+    }
+
+    final object Companion // dev.enro/NavigationKey.Companion|null[0]
+}
+
+final class <#A: dev.enro/NavigationKey> dev.enro.path/NavigationPathBinding { // dev.enro.path/NavigationPathBinding|null[0]
+    constructor <init>(kotlin.reflect/KClass<#A>, dev.enro.path/PathPattern, kotlin/Function1<dev.enro.path/PathData, #A>, kotlin/Function2<dev.enro.path/PathData.Builder, #A, kotlin/Unit>) // dev.enro.path/NavigationPathBinding.<init>|<init>(kotlin.reflect.KClass<1:0>;dev.enro.path.PathPattern;kotlin.Function1<dev.enro.path.PathData,1:0>;kotlin.Function2<dev.enro.path.PathData.Builder,1:0,kotlin.Unit>){}[0]
+    constructor <init>(kotlin.reflect/KClass<#A>, kotlin/String, kotlin/Function1<dev.enro.path/PathData, #A>, kotlin/Function2<dev.enro.path/PathData.Builder, #A, kotlin/Unit>) // dev.enro.path/NavigationPathBinding.<init>|<init>(kotlin.reflect.KClass<1:0>;kotlin.String;kotlin.Function1<dev.enro.path.PathData,1:0>;kotlin.Function2<dev.enro.path.PathData.Builder,1:0,kotlin.Unit>){}[0]
+
+    final fun fromPath(dev.enro.path/ParsedPath): #A // dev.enro.path/NavigationPathBinding.fromPath|fromPath(dev.enro.path.ParsedPath){}[0]
+    final fun matches(dev.enro.path/ParsedPath): kotlin/Boolean // dev.enro.path/NavigationPathBinding.matches|matches(dev.enro.path.ParsedPath){}[0]
+    final fun matches(dev.enro/NavigationKey): kotlin/Boolean // dev.enro.path/NavigationPathBinding.matches|matches(dev.enro.NavigationKey){}[0]
+    final fun toPath(#A): kotlin/String // dev.enro.path/NavigationPathBinding.toPath|toPath(1:0){}[0]
+
+    final object Companion { // dev.enro.path/NavigationPathBinding.Companion|null[0]
+        final fun resolveForPath(kotlin.collections/List<dev.enro.path/NavigationPathBinding<*>>, dev.enro.path/ParsedPath): dev.enro.path/NavigationPathBinding<*>? // dev.enro.path/NavigationPathBinding.Companion.resolveForPath|resolveForPath(kotlin.collections.List<dev.enro.path.NavigationPathBinding<*>>;dev.enro.path.ParsedPath){}[0]
+    }
+}
+
+final class dev.enro.path/ParsedPath { // dev.enro.path/ParsedPath|null[0]
+    final val pathParts // dev.enro.path/ParsedPath.pathParts|{}pathParts[0]
+        final fun <get-pathParts>(): kotlin.collections/List<kotlin/String> // dev.enro.path/ParsedPath.pathParts.<get-pathParts>|<get-pathParts>(){}[0]
+    final val queryParts // dev.enro.path/ParsedPath.queryParts|{}queryParts[0]
+        final fun <get-queryParts>(): kotlin.collections/Map<kotlin/String, kotlin/String> // dev.enro.path/ParsedPath.queryParts.<get-queryParts>|<get-queryParts>(){}[0]
+
+    final fun component1(): kotlin.collections/List<kotlin/String> // dev.enro.path/ParsedPath.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/Map<kotlin/String, kotlin/String> // dev.enro.path/ParsedPath.component2|component2(){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // dev.enro.path/ParsedPath.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // dev.enro.path/ParsedPath.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // dev.enro.path/ParsedPath.toString|toString(){}[0]
+
+    final object Companion { // dev.enro.path/ParsedPath.Companion|null[0]
+        final fun fromString(kotlin/String): dev.enro.path/ParsedPath // dev.enro.path/ParsedPath.Companion.fromString|fromString(kotlin.String){}[0]
+    }
+}
+
+final class dev.enro.path/PathData { // dev.enro.path/PathData|null[0]
+    final fun optional(kotlin/String): kotlin/String? // dev.enro.path/PathData.optional|optional(kotlin.String){}[0]
+    final fun require(kotlin/String): kotlin/String // dev.enro.path/PathData.require|require(kotlin.String){}[0]
+
+    final class Builder { // dev.enro.path/PathData.Builder|null[0]
+        final fun set(kotlin/String, kotlin/String) // dev.enro.path/PathData.Builder.set|set(kotlin.String;kotlin.String){}[0]
+    }
+}
+
+final class dev.enro.path/PathPattern { // dev.enro.path/PathPattern|null[0]
+    constructor <init>(kotlin.collections/List<dev.enro.path/PathPattern.PathElement>, kotlin.collections/List<dev.enro.path/PathPattern.QueryElement>) // dev.enro.path/PathPattern.<init>|<init>(kotlin.collections.List<dev.enro.path.PathPattern.PathElement>;kotlin.collections.List<dev.enro.path.PathPattern.QueryElement>){}[0]
+
+    final val pathElements // dev.enro.path/PathPattern.pathElements|{}pathElements[0]
+        final fun <get-pathElements>(): kotlin.collections/List<dev.enro.path/PathPattern.PathElement> // dev.enro.path/PathPattern.pathElements.<get-pathElements>|<get-pathElements>(){}[0]
+    final val queryElements // dev.enro.path/PathPattern.queryElements|{}queryElements[0]
+        final fun <get-queryElements>(): kotlin.collections/List<dev.enro.path/PathPattern.QueryElement> // dev.enro.path/PathPattern.queryElements.<get-queryElements>|<get-queryElements>(){}[0]
+
+    final fun component1(): kotlin.collections/List<dev.enro.path/PathPattern.PathElement> // dev.enro.path/PathPattern.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<dev.enro.path/PathPattern.QueryElement> // dev.enro.path/PathPattern.component2|component2(){}[0]
+    final fun copy(kotlin.collections/List<dev.enro.path/PathPattern.PathElement> = ..., kotlin.collections/List<dev.enro.path/PathPattern.QueryElement> = ...): dev.enro.path/PathPattern // dev.enro.path/PathPattern.copy|copy(kotlin.collections.List<dev.enro.path.PathPattern.PathElement>;kotlin.collections.List<dev.enro.path.PathPattern.QueryElement>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // dev.enro.path/PathPattern.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // dev.enro.path/PathPattern.hashCode|hashCode(){}[0]
+    final fun matches(dev.enro.path/ParsedPath): kotlin/Boolean // dev.enro.path/PathPattern.matches|matches(dev.enro.path.ParsedPath){}[0]
+    final fun toPath(dev.enro.path/PathData): kotlin/String // dev.enro.path/PathPattern.toPath|toPath(dev.enro.path.PathData){}[0]
+    final fun toPathData(dev.enro.path/ParsedPath): dev.enro.path/PathData // dev.enro.path/PathPattern.toPathData|toPathData(dev.enro.path.ParsedPath){}[0]
+    final fun toString(): kotlin/String // dev.enro.path/PathPattern.toString|toString(){}[0]
+
+    sealed class PathElement { // dev.enro.path/PathPattern.PathElement|null[0]
+        final class PathParam : dev.enro.path/PathPattern.PathElement { // dev.enro.path/PathPattern.PathElement.PathParam|null[0]
+            constructor <init>(kotlin/String) // dev.enro.path/PathPattern.PathElement.PathParam.<init>|<init>(kotlin.String){}[0]
+
+            final val name // dev.enro.path/PathPattern.PathElement.PathParam.name|{}name[0]
+                final fun <get-name>(): kotlin/String // dev.enro.path/PathPattern.PathElement.PathParam.name.<get-name>|<get-name>(){}[0]
+
+            final fun component1(): kotlin/String // dev.enro.path/PathPattern.PathElement.PathParam.component1|component1(){}[0]
+            final fun copy(kotlin/String = ...): dev.enro.path/PathPattern.PathElement.PathParam // dev.enro.path/PathPattern.PathElement.PathParam.copy|copy(kotlin.String){}[0]
+            final fun equals(kotlin/Any?): kotlin/Boolean // dev.enro.path/PathPattern.PathElement.PathParam.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // dev.enro.path/PathPattern.PathElement.PathParam.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // dev.enro.path/PathPattern.PathElement.PathParam.toString|toString(){}[0]
+        }
+
+        final class Segment : dev.enro.path/PathPattern.PathElement { // dev.enro.path/PathPattern.PathElement.Segment|null[0]
+            constructor <init>(kotlin/String) // dev.enro.path/PathPattern.PathElement.Segment.<init>|<init>(kotlin.String){}[0]
+
+            final val value // dev.enro.path/PathPattern.PathElement.Segment.value|{}value[0]
+                final fun <get-value>(): kotlin/String // dev.enro.path/PathPattern.PathElement.Segment.value.<get-value>|<get-value>(){}[0]
+
+            final fun component1(): kotlin/String // dev.enro.path/PathPattern.PathElement.Segment.component1|component1(){}[0]
+            final fun copy(kotlin/String = ...): dev.enro.path/PathPattern.PathElement.Segment // dev.enro.path/PathPattern.PathElement.Segment.copy|copy(kotlin.String){}[0]
+            final fun equals(kotlin/Any?): kotlin/Boolean // dev.enro.path/PathPattern.PathElement.Segment.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // dev.enro.path/PathPattern.PathElement.Segment.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // dev.enro.path/PathPattern.PathElement.Segment.toString|toString(){}[0]
+        }
+    }
+
+    sealed class QueryElement { // dev.enro.path/PathPattern.QueryElement|null[0]
+        abstract val paramName // dev.enro.path/PathPattern.QueryElement.paramName|{}paramName[0]
+            abstract fun <get-paramName>(): kotlin/String // dev.enro.path/PathPattern.QueryElement.paramName.<get-paramName>|<get-paramName>(){}[0]
+        abstract val queryName // dev.enro.path/PathPattern.QueryElement.queryName|{}queryName[0]
+            abstract fun <get-queryName>(): kotlin/String // dev.enro.path/PathPattern.QueryElement.queryName.<get-queryName>|<get-queryName>(){}[0]
+
+        final class OptionalQueryParam : dev.enro.path/PathPattern.QueryElement { // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam|null[0]
+            constructor <init>(kotlin/String, kotlin/String) // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+            final val paramName // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam.paramName|{}paramName[0]
+                final fun <get-paramName>(): kotlin/String // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam.paramName.<get-paramName>|<get-paramName>(){}[0]
+            final val queryName // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam.queryName|{}queryName[0]
+                final fun <get-queryName>(): kotlin/String // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam.queryName.<get-queryName>|<get-queryName>(){}[0]
+
+            final fun component1(): kotlin/String // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam.component1|component1(){}[0]
+            final fun component2(): kotlin/String // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam.component2|component2(){}[0]
+            final fun copy(kotlin/String = ..., kotlin/String = ...): dev.enro.path/PathPattern.QueryElement.OptionalQueryParam // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam.copy|copy(kotlin.String;kotlin.String){}[0]
+            final fun equals(kotlin/Any?): kotlin/Boolean // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // dev.enro.path/PathPattern.QueryElement.OptionalQueryParam.toString|toString(){}[0]
+        }
+
+        final class QueryParam : dev.enro.path/PathPattern.QueryElement { // dev.enro.path/PathPattern.QueryElement.QueryParam|null[0]
+            constructor <init>(kotlin/String, kotlin/String) // dev.enro.path/PathPattern.QueryElement.QueryParam.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+            final val paramName // dev.enro.path/PathPattern.QueryElement.QueryParam.paramName|{}paramName[0]
+                final fun <get-paramName>(): kotlin/String // dev.enro.path/PathPattern.QueryElement.QueryParam.paramName.<get-paramName>|<get-paramName>(){}[0]
+            final val queryName // dev.enro.path/PathPattern.QueryElement.QueryParam.queryName|{}queryName[0]
+                final fun <get-queryName>(): kotlin/String // dev.enro.path/PathPattern.QueryElement.QueryParam.queryName.<get-queryName>|<get-queryName>(){}[0]
+
+            final fun component1(): kotlin/String // dev.enro.path/PathPattern.QueryElement.QueryParam.component1|component1(){}[0]
+            final fun component2(): kotlin/String // dev.enro.path/PathPattern.QueryElement.QueryParam.component2|component2(){}[0]
+            final fun copy(kotlin/String = ..., kotlin/String = ...): dev.enro.path/PathPattern.QueryElement.QueryParam // dev.enro.path/PathPattern.QueryElement.QueryParam.copy|copy(kotlin.String;kotlin.String){}[0]
+            final fun equals(kotlin/Any?): kotlin/Boolean // dev.enro.path/PathPattern.QueryElement.QueryParam.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // dev.enro.path/PathPattern.QueryElement.QueryParam.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // dev.enro.path/PathPattern.QueryElement.QueryParam.toString|toString(){}[0]
+        }
+    }
+
+    final object Companion { // dev.enro.path/PathPattern.Companion|null[0]
+        final fun fromString(kotlin/String): dev.enro.path/PathPattern // dev.enro.path/PathPattern.Companion.fromString|fromString(kotlin.String){}[0]
+    }
+}
+
+final class dev.enro/NavigationBackstack : kotlin.collections/List<dev.enro/NavigationKey.Instance<dev.enro/NavigationKey>> { // dev.enro/NavigationBackstack|null[0]
+    constructor <init>(kotlin.collections/List<dev.enro/NavigationKey.Instance<dev.enro/NavigationKey>>) // dev.enro/NavigationBackstack.<init>|<init>(kotlin.collections.List<dev.enro.NavigationKey.Instance<dev.enro.NavigationKey>>){}[0]
+
+    final val keys // dev.enro/NavigationBackstack.keys|{}keys[0]
+        final fun <get-keys>(): kotlin.collections/List<dev.enro/NavigationKey> // dev.enro/NavigationBackstack.keys.<get-keys>|<get-keys>(){}[0]
+    final val size // dev.enro/NavigationBackstack.size|{}size[0]
+        final fun <get-size>(): kotlin/Int // dev.enro/NavigationBackstack.size.<get-size>|<get-size>(){}[0]
+
+    final fun contains(dev.enro/NavigationKey.Instance<dev.enro/NavigationKey>): kotlin/Boolean // dev.enro/NavigationBackstack.contains|contains(dev.enro.NavigationKey.Instance<dev.enro.NavigationKey>){}[0]
+    final fun containsAll(kotlin.collections/Collection<dev.enro/NavigationKey.Instance<dev.enro/NavigationKey>>): kotlin/Boolean // dev.enro/NavigationBackstack.containsAll|containsAll(kotlin.collections.Collection<dev.enro.NavigationKey.Instance<dev.enro.NavigationKey>>){}[0]
+    final fun get(kotlin/Int): dev.enro/NavigationKey.Instance<dev.enro/NavigationKey> // dev.enro/NavigationBackstack.get|get(kotlin.Int){}[0]
+    final fun indexOf(dev.enro/NavigationKey.Instance<dev.enro/NavigationKey>): kotlin/Int // dev.enro/NavigationBackstack.indexOf|indexOf(dev.enro.NavigationKey.Instance<dev.enro.NavigationKey>){}[0]
+    final fun isEmpty(): kotlin/Boolean // dev.enro/NavigationBackstack.isEmpty|isEmpty(){}[0]
+    final fun iterator(): kotlin.collections/Iterator<dev.enro/NavigationKey.Instance<dev.enro/NavigationKey>> // dev.enro/NavigationBackstack.iterator|iterator(){}[0]
+    final fun lastIndexOf(dev.enro/NavigationKey.Instance<dev.enro/NavigationKey>): kotlin/Int // dev.enro/NavigationBackstack.lastIndexOf|lastIndexOf(dev.enro.NavigationKey.Instance<dev.enro.NavigationKey>){}[0]
+    final fun listIterator(): kotlin.collections/ListIterator<dev.enro/NavigationKey.Instance<dev.enro/NavigationKey>> // dev.enro/NavigationBackstack.listIterator|listIterator(){}[0]
+    final fun listIterator(kotlin/Int): kotlin.collections/ListIterator<dev.enro/NavigationKey.Instance<dev.enro/NavigationKey>> // dev.enro/NavigationBackstack.listIterator|listIterator(kotlin.Int){}[0]
+    final fun subList(kotlin/Int, kotlin/Int): kotlin.collections/List<dev.enro/NavigationKey.Instance<dev.enro/NavigationKey>> // dev.enro/NavigationBackstack.subList|subList(kotlin.Int;kotlin.Int){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<dev.enro/NavigationBackstack> { // dev.enro/NavigationBackstack.$serializer|null[0]
+        final val descriptor // dev.enro/NavigationBackstack.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // dev.enro/NavigationBackstack.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // dev.enro/NavigationBackstack.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): dev.enro/NavigationBackstack // dev.enro/NavigationBackstack.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, dev.enro/NavigationBackstack) // dev.enro/NavigationBackstack.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;dev.enro.NavigationBackstack){}[0]
+    }
+
+    final object Companion { // dev.enro/NavigationBackstack.Companion|null[0]
+        final val $childSerializers // dev.enro/NavigationBackstack.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<dev.enro/NavigationBackstack> // dev.enro/NavigationBackstack.Companion.serializer|serializer(){}[0]
+    }
+
+    // Targets: [js]
+    final fun asJsReadonlyArrayView(): kotlin.js.collections/JsReadonlyArray<dev.enro/NavigationKey.Instance<dev.enro/NavigationKey>> // dev.enro/NavigationBackstack.asJsReadonlyArrayView|asJsReadonlyArrayView(){}[0]
+}
+
+final fun (kotlin.collections/List<dev.enro/NavigationKey.Instance<*>>).dev.enro/asBackstack(): dev.enro/NavigationBackstack // dev.enro/asBackstack|asBackstack@kotlin.collections.List<dev.enro.NavigationKey.Instance<*>>(){}[0]
+final fun <#A: dev.enro/NavigationKey> (#A).dev.enro/asInstance(): dev.enro/NavigationKey.Instance<#A> // dev.enro/asInstance|asInstance@0:0(){0§<dev.enro.NavigationKey>}[0]
+final fun <#A: dev.enro/NavigationKey> (dev.enro.path/NavigationPathBinding.Companion).dev.enro.path/fromBinding(kotlin.reflect/KClass<#A>, dev.enro/NavigationKey.PathBinding<#A>): dev.enro.path/NavigationPathBinding<#A> // dev.enro.path/fromBinding|fromBinding@dev.enro.path.NavigationPathBinding.Companion(kotlin.reflect.KClass<0:0>;dev.enro.NavigationKey.PathBinding<0:0>){0§<dev.enro.NavigationKey>}[0]
+final fun <#A: dev.enro/NavigationKey> (dev.enro/NavigationKey.WithMetadata<#A>).dev.enro/asInstance(): dev.enro/NavigationKey.Instance<#A> // dev.enro/asInstance|asInstance@dev.enro.NavigationKey.WithMetadata<0:0>(){0§<dev.enro.NavigationKey>}[0]
+final fun <#A: kotlin/Any?, #B: dev.enro/NavigationKey> (#B).dev.enro/withMetadata(dev.enro/NavigationKey.MetadataKey<#A>, #A): dev.enro/NavigationKey.WithMetadata<#B> // dev.enro/withMetadata|withMetadata@0:1(dev.enro.NavigationKey.MetadataKey<0:0>;0:0){0§<kotlin.Any?>;1§<dev.enro.NavigationKey>}[0]
+final fun <#A: kotlin/Any?, #B: dev.enro/NavigationKey> (dev.enro/NavigationKey.WithMetadata<#B>).dev.enro/withMetadata(dev.enro/NavigationKey.MetadataKey<#A>, #A): dev.enro/NavigationKey.WithMetadata<#B> // dev.enro/withMetadata|withMetadata@dev.enro.NavigationKey.WithMetadata<0:1>(dev.enro.NavigationKey.MetadataKey<0:0>;0:0){0§<kotlin.Any?>;1§<dev.enro.NavigationKey>}[0]
+final fun dev.enro/backstackOf(kotlin/Array<out dev.enro/NavigationKey.Instance<*>>...): dev.enro/NavigationBackstack // dev.enro/backstackOf|backstackOf(kotlin.Array<out|dev.enro.NavigationKey.Instance<*>>...){}[0]
+final fun dev.enro/emptyBackstack(): dev.enro/NavigationBackstack // dev.enro/emptyBackstack|emptyBackstack(){}[0]
+final inline fun <#A: reified dev.enro/NavigationKey> (dev.enro.path/NavigationPathBinding.Companion).dev.enro.path/createPathBinding(kotlin/String, crossinline kotlin/Function0<#A>): dev.enro.path/NavigationPathBinding<#A> // dev.enro.path/createPathBinding|createPathBinding@dev.enro.path.NavigationPathBinding.Companion(kotlin.String;kotlin.Function0<0:0>){0§<dev.enro.NavigationKey>}[0]
+final inline fun <#A: reified dev.enro/NavigationKey> dev.enro.serialization/defaultSerializerForNavigationKey(): kotlinx.serialization/KSerializer<#A> // dev.enro.serialization/defaultSerializerForNavigationKey|defaultSerializerForNavigationKey(){0§<dev.enro.NavigationKey>}[0]
+final inline fun <#A: reified kotlin/Any?, #B: dev.enro/NavigationKey> (dev.enro.path/PathData.Builder).dev.enro.path/set(#B, kotlin.reflect/KProperty1<#B, #A>) // dev.enro.path/set|set@dev.enro.path.PathData.Builder(0:1;kotlin.reflect.KProperty1<0:1,0:0>){0§<kotlin.Any?>;1§<dev.enro.NavigationKey>}[0]
+final inline fun <#A: reified kotlin/Any?, #B: reified dev.enro/NavigationKey> (dev.enro.path/NavigationPathBinding.Companion).dev.enro.path/createPathBinding(kotlin/String, kotlin.reflect/KProperty1<#B, #A>, crossinline kotlin/Function1<#A, #B>): dev.enro.path/NavigationPathBinding<#B> // dev.enro.path/createPathBinding|createPathBinding@dev.enro.path.NavigationPathBinding.Companion(kotlin.String;kotlin.reflect.KProperty1<0:1,0:0>;kotlin.Function1<0:0,0:1>){0§<kotlin.Any?>;1§<dev.enro.NavigationKey>}[0]
+final inline fun <#A: reified kotlin/Any?, #B: reified kotlin/Any?, #C: reified dev.enro/NavigationKey> (dev.enro.path/NavigationPathBinding.Companion).dev.enro.path/createPathBinding(kotlin/String, kotlin.reflect/KProperty1<#C, #A>, kotlin.reflect/KProperty1<#C, #B>, crossinline kotlin/Function2<#A, #B, #C>): dev.enro.path/NavigationPathBinding<#C> // dev.enro.path/createPathBinding|createPathBinding@dev.enro.path.NavigationPathBinding.Companion(kotlin.String;kotlin.reflect.KProperty1<0:2,0:0>;kotlin.reflect.KProperty1<0:2,0:1>;kotlin.Function2<0:0,0:1,0:2>){0§<kotlin.Any?>;1§<kotlin.Any?>;2§<dev.enro.NavigationKey>}[0]
+final inline fun <#A: reified kotlin/Any?, #B: reified kotlin/Any?, #C: reified kotlin/Any?, #D: reified dev.enro/NavigationKey> (dev.enro.path/NavigationPathBinding.Companion).dev.enro.path/createPathBinding(kotlin/String, kotlin.reflect/KProperty1<#D, #A>, kotlin.reflect/KProperty1<#D, #B>, kotlin.reflect/KProperty1<#D, #C>, crossinline kotlin/Function3<#A, #B, #C, #D>): dev.enro.path/NavigationPathBinding<#D> // dev.enro.path/createPathBinding|createPathBinding@dev.enro.path.NavigationPathBinding.Companion(kotlin.String;kotlin.reflect.KProperty1<0:3,0:0>;kotlin.reflect.KProperty1<0:3,0:1>;kotlin.reflect.KProperty1<0:3,0:2>;kotlin.Function3<0:0,0:1,0:2,0:3>){0§<kotlin.Any?>;1§<kotlin.Any?>;2§<kotlin.Any?>;3§<dev.enro.NavigationKey>}[0]
+final inline fun <#A: reified kotlin/Any?, #B: reified kotlin/Any?, #C: reified kotlin/Any?, #D: reified kotlin/Any?, #E: reified dev.enro/NavigationKey> (dev.enro.path/NavigationPathBinding.Companion).dev.enro.path/createPathBinding(kotlin/String, kotlin.reflect/KProperty1<#E, #A>, kotlin.reflect/KProperty1<#E, #B>, kotlin.reflect/KProperty1<#E, #C>, kotlin.reflect/KProperty1<#E, #D>, crossinline kotlin/Function4<#A, #B, #C, #D, #E>): dev.enro.path/NavigationPathBinding<#E> // dev.enro.path/createPathBinding|createPathBinding@dev.enro.path.NavigationPathBinding.Companion(kotlin.String;kotlin.reflect.KProperty1<0:4,0:0>;kotlin.reflect.KProperty1<0:4,0:1>;kotlin.reflect.KProperty1<0:4,0:2>;kotlin.reflect.KProperty1<0:4,0:3>;kotlin.Function4<0:0,0:1,0:2,0:3,0:4>){0§<kotlin.Any?>;1§<kotlin.Any?>;2§<kotlin.Any?>;3§<kotlin.Any?>;4§<dev.enro.NavigationKey>}[0]
+final inline fun <#A: reified kotlin/Any?, #B: reified kotlin/Any?, #C: reified kotlin/Any?, #D: reified kotlin/Any?, #E: reified kotlin/Any?, #F: reified dev.enro/NavigationKey> (dev.enro.path/NavigationPathBinding.Companion).dev.enro.path/createPathBinding(kotlin/String, kotlin.reflect/KProperty1<#F, #A>, kotlin.reflect/KProperty1<#F, #B>, kotlin.reflect/KProperty1<#F, #C>, kotlin.reflect/KProperty1<#F, #D>, kotlin.reflect/KProperty1<#F, #E>, crossinline kotlin/Function5<#A, #B, #C, #D, #E, #F>): dev.enro.path/NavigationPathBinding<#F> // dev.enro.path/createPathBinding|createPathBinding@dev.enro.path.NavigationPathBinding.Companion(kotlin.String;kotlin.reflect.KProperty1<0:5,0:0>;kotlin.reflect.KProperty1<0:5,0:1>;kotlin.reflect.KProperty1<0:5,0:2>;kotlin.reflect.KProperty1<0:5,0:3>;kotlin.reflect.KProperty1<0:5,0:4>;kotlin.Function5<0:0,0:1,0:2,0:3,0:4,0:5>){0§<kotlin.Any?>;1§<kotlin.Any?>;2§<kotlin.Any?>;3§<kotlin.Any?>;4§<kotlin.Any?>;5§<dev.enro.NavigationKey>}[0]
+final inline fun <#A: reified kotlin/Any?, #B: reified kotlin/Any?, #C: reified kotlin/Any?, #D: reified kotlin/Any?, #E: reified kotlin/Any?, #F: reified kotlin/Any?, #G: reified dev.enro/NavigationKey> (dev.enro.path/NavigationPathBinding.Companion).dev.enro.path/createPathBinding(kotlin/String, kotlin.reflect/KProperty1<#G, #A>, kotlin.reflect/KProperty1<#G, #B>, kotlin.reflect/KProperty1<#G, #C>, kotlin.reflect/KProperty1<#G, #D>, kotlin.reflect/KProperty1<#G, #E>, kotlin.reflect/KProperty1<#G, #F>, crossinline kotlin/Function6<#A, #B, #C, #D, #E, #F, #G>): dev.enro.path/NavigationPathBinding<#G> // dev.enro.path/createPathBinding|createPathBinding@dev.enro.path.NavigationPathBinding.Companion(kotlin.String;kotlin.reflect.KProperty1<0:6,0:0>;kotlin.reflect.KProperty1<0:6,0:1>;kotlin.reflect.KProperty1<0:6,0:2>;kotlin.reflect.KProperty1<0:6,0:3>;kotlin.reflect.KProperty1<0:6,0:4>;kotlin.reflect.KProperty1<0:6,0:5>;kotlin.Function6<0:0,0:1,0:2,0:3,0:4,0:5,0:6>){0§<kotlin.Any?>;1§<kotlin.Any?>;2§<kotlin.Any?>;3§<kotlin.Any?>;4§<kotlin.Any?>;5§<kotlin.Any?>;6§<dev.enro.NavigationKey>}[0]
+final inline fun <#A: reified kotlin/Any?, #B: reified kotlin/Any?, #C: reified kotlin/Any?, #D: reified kotlin/Any?, #E: reified kotlin/Any?, #F: reified kotlin/Any?, #G: reified kotlin/Any?, #H: reified dev.enro/NavigationKey> (dev.enro.path/NavigationPathBinding.Companion).dev.enro.path/createPathBinding(kotlin/String, kotlin.reflect/KProperty1<#H, #A>, kotlin.reflect/KProperty1<#H, #B>, kotlin.reflect/KProperty1<#H, #C>, kotlin.reflect/KProperty1<#H, #D>, kotlin.reflect/KProperty1<#H, #E>, kotlin.reflect/KProperty1<#H, #F>, kotlin.reflect/KProperty1<#H, #G>, crossinline kotlin/Function7<#A, #B, #C, #D, #E, #F, #G, #H>): dev.enro.path/NavigationPathBinding<#H> // dev.enro.path/createPathBinding|createPathBinding@dev.enro.path.NavigationPathBinding.Companion(kotlin.String;kotlin.reflect.KProperty1<0:7,0:0>;kotlin.reflect.KProperty1<0:7,0:1>;kotlin.reflect.KProperty1<0:7,0:2>;kotlin.reflect.KProperty1<0:7,0:3>;kotlin.reflect.KProperty1<0:7,0:4>;kotlin.reflect.KProperty1<0:7,0:5>;kotlin.reflect.KProperty1<0:7,0:6>;kotlin.Function7<0:0,0:1,0:2,0:3,0:4,0:5,0:6,0:7>){0§<kotlin.Any?>;1§<kotlin.Any?>;2§<kotlin.Any?>;3§<kotlin.Any?>;4§<kotlin.Any?>;5§<kotlin.Any?>;6§<kotlin.Any?>;7§<dev.enro.NavigationKey>}[0]
+final inline fun <#A: reified kotlin/Any?, #B: reified kotlin/Any?, #C: reified kotlin/Any?, #D: reified kotlin/Any?, #E: reified kotlin/Any?, #F: reified kotlin/Any?, #G: reified kotlin/Any?, #H: reified kotlin/Any?, #I: reified dev.enro/NavigationKey> (dev.enro.path/NavigationPathBinding.Companion).dev.enro.path/createPathBinding(kotlin/String, kotlin.reflect/KProperty1<#I, #A>, kotlin.reflect/KProperty1<#I, #B>, kotlin.reflect/KProperty1<#I, #C>, kotlin.reflect/KProperty1<#I, #D>, kotlin.reflect/KProperty1<#I, #E>, kotlin.reflect/KProperty1<#I, #F>, kotlin.reflect/KProperty1<#I, #G>, kotlin.reflect/KProperty1<#I, #H>, crossinline kotlin/Function8<#A, #B, #C, #D, #E, #F, #G, #H, #I>): dev.enro.path/NavigationPathBinding<#I> // dev.enro.path/createPathBinding|createPathBinding@dev.enro.path.NavigationPathBinding.Companion(kotlin.String;kotlin.reflect.KProperty1<0:8,0:0>;kotlin.reflect.KProperty1<0:8,0:1>;kotlin.reflect.KProperty1<0:8,0:2>;kotlin.reflect.KProperty1<0:8,0:3>;kotlin.reflect.KProperty1<0:8,0:4>;kotlin.reflect.KProperty1<0:8,0:5>;kotlin.reflect.KProperty1<0:8,0:6>;kotlin.reflect.KProperty1<0:8,0:7>;kotlin.Function8<0:0,0:1,0:2,0:3,0:4,0:5,0:6,0:7,0:8>){0§<kotlin.Any?>;1§<kotlin.Any?>;2§<kotlin.Any?>;3§<kotlin.Any?>;4§<kotlin.Any?>;5§<kotlin.Any?>;6§<kotlin.Any?>;7§<kotlin.Any?>;8§<dev.enro.NavigationKey>}[0]
+final inline fun <#A: reified kotlin/Any?> (dev.enro.path/PathData).dev.enro.path/get(kotlin.reflect/KProperty1<*, #A>): #A // dev.enro.path/get|get@dev.enro.path.PathData(kotlin.reflect.KProperty1<*,0:0>){0§<kotlin.Any?>}[0]
+final inline fun <#A: reified kotlin/Any?> dev.enro.path/checkParameterIsSupported(kotlin.reflect/KProperty1<*, #A>, kotlin.collections/Set<kotlin/String>, kotlin.collections/Set<kotlin/String>) // dev.enro.path/checkParameterIsSupported|checkParameterIsSupported(kotlin.reflect.KProperty1<*,0:0>;kotlin.collections.Set<kotlin.String>;kotlin.collections.Set<kotlin.String>){0§<kotlin.Any?>}[0]

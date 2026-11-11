@@ -3,7 +3,6 @@ package dev.enro.result.flow
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
-import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.asBackstack
 import dev.enro.asInstance
 import dev.enro.platform.EnroLog
@@ -12,7 +11,6 @@ import dev.enro.ui.NavigationContainerState
 import dev.enro.withMetadata
 import kotlinx.coroutines.CoroutineScope
 
-@ExperimentalEnroApi
 public class NavigationFlow<T> internal constructor(
     internal val reference: NavigationFlowReference,
     private val navigationHandle: NavigationHandle<*>,

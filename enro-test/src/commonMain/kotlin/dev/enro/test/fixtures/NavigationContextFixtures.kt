@@ -11,8 +11,8 @@ import dev.enro.test.EnroTest
 import dev.enro.ui.NavigationDestination
 import kotlin.uuid.Uuid
 
-object NavigationContextFixtures {
-    fun createRootContext(): RootContext {
+public object NavigationContextFixtures {
+    public fun createRootContext(): RootContext {
         val owners = TestLifecycleAndViewModelStoreOwner()
         return RootContext(
             id = "TestRootContext",
@@ -25,7 +25,7 @@ object NavigationContextFixtures {
         )
     }
 
-    fun createContainerContext(
+    public fun createContainerContext(
         parent: NavigationContext.WithContainerChildren<*>,
     ): ContainerContext {
         val container = NavigationContainer(
@@ -38,7 +38,7 @@ object NavigationContextFixtures {
         )
     }
 
-    fun <T: NavigationKey> createDestinationContext(
+    public fun <T: NavigationKey> createDestinationContext(
         parent: ContainerContext,
         destination: NavigationDestination<T>,
     ): DestinationContext<T> {

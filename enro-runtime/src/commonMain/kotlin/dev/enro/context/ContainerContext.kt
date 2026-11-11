@@ -8,8 +8,9 @@ import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.EnroController
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
+import dev.enro.annotations.AdvancedEnroApi
 
-public class ContainerContext(
+public class ContainerContext @AdvancedEnroApi constructor(
     override val parent: NavigationContext<*, ContainerContext>,
     public val container: NavigationContainer,
 ) : NavigationContext<NavigationContext<*, ContainerContext>, DestinationContext<NavigationKey>>(),

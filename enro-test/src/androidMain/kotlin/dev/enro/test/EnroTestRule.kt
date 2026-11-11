@@ -21,7 +21,7 @@ import org.junit.runners.model.Statement
  * to order this TestRule as the first in the sequence, as the rule will need to be executed before
  * an Activity or Fragment under test has been instantiated.
  */
-class EnroTestRule : TestRule {
+public class EnroTestRule : TestRule {
     override fun apply(base: Statement, description: Description): Statement {
         return object : Statement() {
             override fun evaluate() {

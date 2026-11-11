@@ -10,8 +10,8 @@ import dev.enro.ui.navigationDestinationContent
 
 private const val TEST_OWNERS = "dev.enro.test.fixtures.NavigationDestinationFixtures.TEST_OWNERS"
 
-object NavigationDestinationFixtures {
-    fun <T : NavigationKey> create(
+public object NavigationDestinationFixtures {
+    public fun <T : NavigationKey> create(
         key: T,
         metadata: NavigationDestination.MetadataBuilder<T>.() -> Unit = { },
     ): NavigationDestination<T> {
@@ -27,14 +27,14 @@ object NavigationDestinationFixtures {
     }
 }
 
-val NavigationDestination<*>.lifecycleOwner: LifecycleOwner get() {
+public val NavigationDestination<*>.lifecycleOwner: LifecycleOwner get() {
     return metadata[TEST_OWNERS] as LifecycleOwner
 }
 
-val NavigationDestination<*>.viewModelStoreOwner: ViewModelStoreOwner get() {
+public val NavigationDestination<*>.viewModelStoreOwner: ViewModelStoreOwner get() {
     return metadata[TEST_OWNERS] as ViewModelStoreOwner
 }
 
-val NavigationDestination<*>.defaultViewModelProviderFactory: HasDefaultViewModelProviderFactory get() {
+public val NavigationDestination<*>.defaultViewModelProviderFactory: HasDefaultViewModelProviderFactory get() {
     return metadata[TEST_OWNERS] as HasDefaultViewModelProviderFactory
 }

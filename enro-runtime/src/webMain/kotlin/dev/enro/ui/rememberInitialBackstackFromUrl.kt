@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import dev.enro.EnroController
 import dev.enro.NavigationBackstack
-import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.path.getBackstackFromPath
 
 /**
@@ -27,7 +26,6 @@ import dev.enro.path.getBackstackFromPath
  * }
  * ```
  */
-@ExperimentalEnroApi
 @Composable
 public fun rememberInitialBackstackFromUrl(
     default: () -> NavigationBackstack,

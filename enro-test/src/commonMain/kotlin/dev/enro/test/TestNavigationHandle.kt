@@ -21,18 +21,18 @@ import dev.enro.asInstance
  * Once a [Close] or [Complete] targeting this handle's own [instance] has been recorded,
  * the handle rejects further operations until [clearOperationHistory] is called.
  */
-class TestNavigationHandle<out T : NavigationKey>(
+public class TestNavigationHandle<out T : NavigationKey>(
     override val instance: NavigationKey.Instance<T>,
     override val savedStateHandle: SavedStateHandle = SavedStateHandle(),
 ) : NavigationHandle<T>() {
     @PublishedApi
-    internal val operations = mutableListOf<NavigationOperation.RootOperation>()
+    internal val operations: MutableList<NavigationOperation.RootOperation> = mutableListOf()
 
     override val lifecycle: LifecycleRegistry = LifecycleRegistry.createUnsafe(this).apply {
         currentState = Lifecycle.State.RESUMED
     }
 
-    fun clearOperationHistory() {
+    public fun clearOperationHistory() {
         operations.clear()
     }
 
@@ -66,7 +66,7 @@ class TestNavigationHandle<out T : NavigationKey>(
 /**
  * Create a TestNavigationHandle to be used in tests.
  */
-fun <T : NavigationKey> createTestNavigationHandle(
+public fun <T : NavigationKey> createTestNavigationHandle(
     key: T,
 ): TestNavigationHandle<T> {
     return createTestNavigationHandle(key.asInstance())
@@ -75,7 +75,7 @@ fun <T : NavigationKey> createTestNavigationHandle(
 /**
  * Create a TestNavigationHandle to be used in tests with a NavigationKey.WithMetadata.
  */
-fun <T : NavigationKey> createTestNavigationHandle(
+public fun <T : NavigationKey> createTestNavigationHandle(
     key: NavigationKey.WithMetadata<T>,
 ): TestNavigationHandle<T> {
     return createTestNavigationHandle(key.asInstance())
@@ -84,7 +84,7 @@ fun <T : NavigationKey> createTestNavigationHandle(
 /**
  * Create a TestNavigationHandle to be used in tests with a NavigationKey.Instance.
  */
-fun <T : NavigationKey> createTestNavigationHandle(
+public fun <T : NavigationKey> createTestNavigationHandle(
     instance: NavigationKey.Instance<T>,
 ): TestNavigationHandle<T> {
     return TestNavigationHandle(instance)

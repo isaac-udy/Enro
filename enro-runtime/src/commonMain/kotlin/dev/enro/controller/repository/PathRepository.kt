@@ -5,7 +5,7 @@ import dev.enro.path.NavigationPathBinding
 import dev.enro.path.ParsedPath
 
 
-public class PathRepository {
+internal class PathRepository {
     private val bindings = mutableListOf<NavigationPathBinding<*>>()
 
     public fun addPaths(paths: List<NavigationPathBinding<*>>) {

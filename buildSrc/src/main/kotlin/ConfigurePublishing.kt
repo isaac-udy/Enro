@@ -68,11 +68,11 @@ class ConfigurePublishing : Plugin<Project> {
 
                 pom {
                     name.set(moduleName)
-                    description.set("A component of Enro, a small navigation library for Android")
+                    description.set("A component of Enro, a navigation library for Kotlin Multiplatform")
                     url.set("https://github.com/isaac-udy/Enro")
                     licenses {
                         license {
-                            name.set("Enro License")
+                            name.set("The Apache License, Version 2.0")
                             url.set("https://github.com/isaac-udy/Enro/blob/main/LICENSE")
                         }
                     }

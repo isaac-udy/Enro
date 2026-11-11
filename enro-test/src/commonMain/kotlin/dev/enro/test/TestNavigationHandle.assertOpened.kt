@@ -3,17 +3,17 @@ package dev.enro.test
 import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 
-inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(): NavigationKey.Instance<T> {
+public inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(): NavigationKey.Instance<T> {
     return assertOperationExecuted<NavigationOperation.Open<T>>().instance
 }
 
-inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(
+public inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(
     instance: NavigationKey.Instance<T>,
 ): NavigationKey.Instance<T> {
     return assertOpened<T> { it == instance }
 }
 
-inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(
+public inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(
     predicate: (NavigationKey.Instance<T>) -> Boolean = { true },
 ): NavigationKey.Instance<T> {
     return assertOperationExecuted<NavigationOperation.Open<T>> {
@@ -21,13 +21,13 @@ inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(
     }.instance
 }
 
-inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(
+public inline fun <reified T : NavigationKey> TestNavigationHandle<*>.assertOpened(
     key: T,
 ): NavigationKey.Instance<T> {
     return assertOpened<T> { it.key == key }
 }
 
-fun TestNavigationHandle<*>.assertNoneOpened() {
+public fun TestNavigationHandle<*>.assertNoneOpened() {
     val openInstructions = operations.filterIsInstance<NavigationOperation.Open<*>>()
     if (openInstructions.isNotEmpty()) {
         enroAssertionError("NavigationHandle should not have executed any NavigationInstruction.Open, but NavigationInstruction.Open instructions were found")

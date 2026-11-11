@@ -4,13 +4,13 @@ package dev.enro.test
 
 import dev.enro.EnroController
 
-object EnroTest {
+public object EnroTest {
 
     private var navigationController: EnroController? = null
     private var wasInstalled = false
 
     // TODO: Would be nice to add functionality to temporarily install a NavigationModule for a particular test
-    fun installNavigationController() {
+    public fun installNavigationController() {
         if (navigationController != null) {
             uninstallNavigationController()
         }
@@ -35,7 +35,7 @@ object EnroTest {
         wasInstalled = false
     }
 
-    fun uninstallNavigationController() {
+    public fun uninstallNavigationController() {
         // Only uninstall if we created it
         if (!wasInstalled) {
             navigationController?.uninstall()
@@ -46,7 +46,7 @@ object EnroTest {
         dev.enro.viewmodel.NavigationHandleProvider.clearAllForTest()
     }
 
-    fun getCurrentNavigationController(): EnroController {
+    public fun getCurrentNavigationController(): EnroController {
         return navigationController ?: throw IllegalStateException("NavigationController is not installed")
     }
 
@@ -54,13 +54,13 @@ object EnroTest {
         message = "This function is a no-op in the current API and will be removed in a future release.",
         level = DeprecationLevel.WARNING,
     )
-    fun disableAnimations(controller: EnroController) {
+    public fun disableAnimations(controller: EnroController) {
     }
 
     @Deprecated(
         message = "This function is a no-op in the current API and will be removed in a future release.",
         level = DeprecationLevel.WARNING,
     )
-    fun enableAnimations(controller: EnroController) {
+    public fun enableAnimations(controller: EnroController) {
     }
 }

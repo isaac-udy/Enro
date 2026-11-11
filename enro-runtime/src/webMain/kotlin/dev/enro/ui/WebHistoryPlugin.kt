@@ -5,7 +5,6 @@ import dev.enro.EnroController
 import dev.enro.NavigationHandle
 import dev.enro.NavigationHandleConfiguration
 import dev.enro.NavigationKey
-import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.context.ContainerContext
 import dev.enro.context.DestinationContext
 import dev.enro.context.findContext
@@ -51,7 +50,6 @@ import kotlinx.coroutines.withTimeout
 // session history. History traversals the plugin itself initiates (`history.go`)
 // are awaited via their popstate echo, which is consumed before it can be mistaken
 // for a user-initiated back/forward.
-@ExperimentalEnroApi
 internal class WebHistoryPlugin(
     private val rootContainer: ContainerContext,
     private val nestedContainers: Boolean,
@@ -153,7 +151,6 @@ internal class WebHistoryPlugin(
      * but the visible URL doesn't change. That keeps bookmarkable URLs honest:
      * only destinations that opt in to a path produce a path.
      */
-    @OptIn(ExperimentalEnroApi::class)
     private fun computeUrl(): String {
         val keys = mutableListOf<NavigationKey>()
         var container: ContainerContext? = rootContainer
@@ -420,7 +417,6 @@ internal class WebHistoryPlugin(
  *  the root container alone, the model of releases before nested containers were recorded, for
  *  an app that wants to adopt the tree on its own schedule.
  */
-@ExperimentalEnroApi
 @Composable
 public fun InstallWebHistoryPlugin(
     container: NavigationContainerState,

@@ -5,8 +5,9 @@ import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.EnroController
+import dev.enro.annotations.AdvancedEnroApi
 
-public class RootContext(
+public class RootContext @AdvancedEnroApi constructor(
     override val id: String,
     override val parent: Any,
     override val controller: EnroController,

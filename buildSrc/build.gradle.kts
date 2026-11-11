@@ -59,6 +59,10 @@ gradlePlugin {
             id = "configure-compose"
             implementationClass = "ConfigureCompose"
         }
+        register("configure-compose-ui") {
+            id = "configure-compose-ui"
+            implementationClass = "ConfigureComposeUi"
+        }
         register("configure-compose-runtime") {
             id = "configure-compose-runtime"
             implementationClass = "ConfigureComposeRuntime"

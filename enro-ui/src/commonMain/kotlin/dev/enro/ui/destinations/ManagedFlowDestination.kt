@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
-import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.complete
 import dev.enro.navigationHandle
 import dev.enro.result.flow.NavigationFlowScope
@@ -25,7 +24,6 @@ import kotlin.reflect.KClass
  * @param flow The flow definition that describes the steps and logic
  * @param metadata Additional metadata for the destination
  */
-@ExperimentalEnroApi
 public inline fun <reified T : NavigationKey, R : Any> managedFlowDestination(
     noinline flow: NavigationFlowScope.() -> R,
     noinline onCompleted: ManagedFlowDestinationScope<T>.(R) -> Unit,
@@ -37,7 +35,6 @@ public inline fun <reified T : NavigationKey, R : Any> managedFlowDestination(
     )
 }
 
-@ExperimentalEnroApi
 public inline fun <reified T : NavigationKey.WithResult<R>, R : Any> managedFlowDestination(
     noinline flow: NavigationFlowScope.() -> R,
 ): NavigationDestinationProvider<T> {
@@ -59,7 +56,6 @@ public inline fun <reified T : NavigationKey.WithResult<R>, R : Any> managedFlow
  * @param flow The flow definition that describes the steps and logic
  * @param metadata Additional metadata for the destination
  */
-@ExperimentalEnroApi
 public fun <T : NavigationKey, R : Any> managedFlowDestination(
     keyType: KClass<T>,
     flow: NavigationFlowScope.() -> R,
@@ -74,7 +70,6 @@ public fun <T : NavigationKey, R : Any> managedFlowDestination(
     }
 }
 
-@ExperimentalEnroApi
 public fun <T : NavigationKey.WithResult<R>, R : Any> managedFlowDestination(
     keyType: KClass<out NavigationKey.WithResult<R>>,
     flow: NavigationFlowScope.() -> R,
@@ -88,7 +83,6 @@ public fun <T : NavigationKey.WithResult<R>, R : Any> managedFlowDestination(
     }
 }
 
-@ExperimentalEnroApi
 @Composable
 private fun <T : NavigationKey, R : Any> ManagedFlowDestinationContent(
     keyType: KClass<T>,
@@ -110,7 +104,6 @@ private fun <T : NavigationKey, R : Any> ManagedFlowDestinationContent(
     )
 }
 
-@ExperimentalEnroApi
 internal class ManagedFlowViewModel<T : NavigationKey, R : Any>(
     keyType: KClass<T>,
     private val flowDefinition: NavigationFlowScope.() -> R,

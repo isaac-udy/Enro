@@ -1,0 +1,37 @@
+// Klib ABI Dump
+// Targets: [js]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <dev.enro:enro-html>
+final class dev.enro.html/HtmlDialogProperties { // dev.enro.html/HtmlDialogProperties|null[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin/Boolean = ...) // dev.enro.html/HtmlDialogProperties.<init>|<init>(kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val dismissOnBackdropClick // dev.enro.html/HtmlDialogProperties.dismissOnBackdropClick|{}dismissOnBackdropClick[0]
+        final fun <get-dismissOnBackdropClick>(): kotlin/Boolean // dev.enro.html/HtmlDialogProperties.dismissOnBackdropClick.<get-dismissOnBackdropClick>|<get-dismissOnBackdropClick>(){}[0]
+    final val dismissOnEscape // dev.enro.html/HtmlDialogProperties.dismissOnEscape|{}dismissOnEscape[0]
+        final fun <get-dismissOnEscape>(): kotlin/Boolean // dev.enro.html/HtmlDialogProperties.dismissOnEscape.<get-dismissOnEscape>|<get-dismissOnEscape>(){}[0]
+}
+
+final class dev.enro.html/HtmlDialogSceneStrategy : dev.enro.ui/NavigationSceneStrategy { // dev.enro.html/HtmlDialogSceneStrategy|null[0]
+    constructor <init>() // dev.enro.html/HtmlDialogSceneStrategy.<init>|<init>(){}[0]
+
+    final fun (dev.enro.ui/SceneStrategyScope).calculateScene(kotlin.collections/List<dev.enro.ui/NavigationDestination<dev.enro/NavigationKey>>, androidx.compose.runtime/Composer?, kotlin/Int): dev.enro.ui/NavigationScene? // dev.enro.html/HtmlDialogSceneStrategy.calculateScene|calculateScene@dev.enro.ui.SceneStrategyScope(kotlin.collections.List<dev.enro.ui.NavigationDestination<dev.enro.NavigationKey>>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+
+    final object Companion // dev.enro.html/HtmlDialogSceneStrategy.Companion|null[0]
+
+    final object HtmlDialogPropertiesKey : dev.enro.ui/NavigationDestination.MetadataKey<dev.enro.html/HtmlDialogProperties?> // dev.enro.html/HtmlDialogSceneStrategy.HtmlDialogPropertiesKey|null[0]
+}
+
+final val dev.enro.html/dev_enro_html_HtmlDialogProperties$stableprop // dev.enro.html/dev_enro_html_HtmlDialogProperties$stableprop|#static{}dev_enro_html_HtmlDialogProperties$stableprop[0]
+final val dev.enro.html/dev_enro_html_HtmlDialogSceneStrategy$stableprop // dev.enro.html/dev_enro_html_HtmlDialogSceneStrategy$stableprop|#static{}dev_enro_html_HtmlDialogSceneStrategy$stableprop[0]
+final val dev.enro.html/dev_enro_html_HtmlDialogSceneStrategy_HtmlDialogPropertiesKey$stableprop // dev.enro.html/dev_enro_html_HtmlDialogSceneStrategy_HtmlDialogPropertiesKey$stableprop|#static{}dev_enro_html_HtmlDialogSceneStrategy_HtmlDialogPropertiesKey$stableprop[0]
+
+final fun (dev.enro.ui/NavigationDestination.MetadataBuilder<*>).dev.enro.html/htmlDialog(dev.enro.html/HtmlDialogProperties = ...) // dev.enro.html/htmlDialog|htmlDialog@dev.enro.ui.NavigationDestination.MetadataBuilder<*>(dev.enro.html.HtmlDialogProperties){}[0]
+final fun dev.enro.html/EnroHtmlContent(kotlin/Function3<dev.enro.ui/EnroBrowserScope, androidx.compose.runtime/Composer, kotlin/Int, kotlin/Unit>, androidx.compose.runtime/Composer?, kotlin/Int) // dev.enro.html/EnroHtmlContent|EnroHtmlContent(kotlin.Function3<dev.enro.ui.EnroBrowserScope,androidx.compose.runtime.Composer,kotlin.Int,kotlin.Unit>;androidx.compose.runtime.Composer?;kotlin.Int){}[0]
+final fun dev.enro.html/HtmlNavigationDisplay(dev.enro.ui/NavigationContainerState, dev.enro.ui/NavigationSceneStrategy?, kotlin.collections/List<dev.enro.ui/SceneDecoratorStrategy>?, androidx.compose.runtime/Composer?, kotlin/Int, kotlin/Int) // dev.enro.html/HtmlNavigationDisplay|HtmlNavigationDisplay(dev.enro.ui.NavigationContainerState;dev.enro.ui.NavigationSceneStrategy?;kotlin.collections.List<dev.enro.ui.SceneDecoratorStrategy>?;androidx.compose.runtime.Composer?;kotlin.Int;kotlin.Int){}[0]
+final fun dev.enro.html/dev_enro_html_HtmlDialogProperties$stableprop_getter(): kotlin/Int // dev.enro.html/dev_enro_html_HtmlDialogProperties$stableprop_getter|dev_enro_html_HtmlDialogProperties$stableprop_getter(){}[0]
+final fun dev.enro.html/dev_enro_html_HtmlDialogSceneStrategy$stableprop_getter(): kotlin/Int // dev.enro.html/dev_enro_html_HtmlDialogSceneStrategy$stableprop_getter|dev_enro_html_HtmlDialogSceneStrategy$stableprop_getter(){}[0]
+final fun dev.enro.html/dev_enro_html_HtmlDialogSceneStrategy_HtmlDialogPropertiesKey$stableprop_getter(): kotlin/Int // dev.enro.html/dev_enro_html_HtmlDialogSceneStrategy_HtmlDialogPropertiesKey$stableprop_getter|dev_enro_html_HtmlDialogSceneStrategy_HtmlDialogPropertiesKey$stableprop_getter(){}[0]

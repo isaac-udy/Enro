@@ -5,7 +5,6 @@ import kotlin.reflect.KClass
 
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.CONSTRUCTOR)
-@ExperimentalEnroApi
 public annotation class NavigationPath(
     val pattern: String,
 ) {
@@ -22,7 +21,6 @@ public annotation class NavigationPath(
      */
     @Retention(AnnotationRetention.BINARY)
     @Target(AnnotationTarget.CLASS)
-    @ExperimentalEnroApi
     public annotation class FromBinding(
         val binding: KClass<out Any>,
     )

@@ -7,14 +7,14 @@ import dev.enro.test.putNavigationHandleForViewModel as realPutNavigationHandleF
 import kotlin.reflect.KClass
 
 @Deprecated("Use dev.enro.test.putNavigationHandleForViewModel")
-inline fun <reified T: ViewModel, K: NavigationKey> putNavigationHandleForViewModel(
+public inline fun <reified T: ViewModel, K: NavigationKey> putNavigationHandleForViewModel(
     key: K,
 ) : TestNavigationHandle<K> {
     return realPutNavigationHandleForViewModel(T::class, key)
 }
 
 @Deprecated("Use dev.enro.test.putNavigationHandleForViewModel")
-fun <T: ViewModel, K: NavigationKey> putNavigationHandleForViewModel(
+public fun <T: ViewModel, K: NavigationKey> putNavigationHandleForViewModel(
     viewModel: KClass<T>,
     key: K,
 ) : TestNavigationHandle<K> {

@@ -2,7 +2,6 @@ package dev.enro.path
 
 import dev.enro.EnroController
 import dev.enro.NavigationBackstack
-import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.asInstance
 import dev.enro.backstackOf
 
@@ -23,7 +22,6 @@ import dev.enro.backstackOf
  * )
  * ```
  */
-@ExperimentalEnroApi
 public fun EnroController.getBackstackFromPath(path: String): NavigationBackstack? {
     val key = runCatching { getNavigationKeyFromPath(path) }.getOrNull() ?: return null
     return backstackOf(key.asInstance())

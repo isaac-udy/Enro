@@ -24,13 +24,8 @@ import kotlinx.serialization.Serializable
 /**
  * A NavigationContainer is an identifiable backstack (using navigation container key), which
  * provides the rendering context for a backstack.
- *
- * It's probably the NavigationContainer that needs to be able to host NavigationScenes/NavigationRenderers\
- *
- * Instead of having a CloseParent/AllowEmpty, we should provide a special "Empty" instruction here (maybe even with a
- * placeholder) so that the close behaviour is always consistent (easier for predictive back stuff).
  */
-public class NavigationContainer(
+public class NavigationContainer @AdvancedEnroApi constructor(
     public val key: Key,
     public val controller: EnroController,
     backstack: NavigationBackstack = emptyBackstack(),

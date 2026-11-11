@@ -12,7 +12,7 @@ import dev.enro.test.fixtures.NavigationContainerFixtures.ContainerFixtureKey
         "dev.enro.test.sendResultForTest"
     )
 )
-fun <T : Any> NavigationKey.Instance<NavigationKey.WithResult<T>>.sendResultForTest(
+public fun <T : Any> NavigationKey.Instance<NavigationKey.WithResult<T>>.sendResultForTest(
     result: T
 ) {
     val containerFixture = metadata.get(ContainerFixtureKey)

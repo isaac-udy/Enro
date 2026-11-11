@@ -5,13 +5,13 @@ import dev.enro.NavigationOperation
 import kotlin.reflect.KClass
 
 @Deprecated("Use assertClosed instead")
-fun TestNavigationHandle<*>.expectCloseInstruction() {
+public fun TestNavigationHandle<*>.expectCloseInstruction() {
     @Suppress("UNCHECKED_CAST")
     this as TestNavigationHandle<NavigationKey>
     assertClosed()
 }
 @Deprecated("Use assertOpened instead")
-fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
+public fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
     type: Class<T>,
     filter: (T) -> Boolean = { true }
 ) {
@@ -23,7 +23,7 @@ fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
  * which matches the provided filter, and then returns that NavigationInstruction.
  */
 @Deprecated("Use assertOpened instead")
-fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
+public fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
     type: KClass<T>,
     filter: (T) -> Boolean = { true }
 ): NavigationKey.Instance<T> {
@@ -56,7 +56,7 @@ fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
  * NavigationKey [key], and then returns that NavigationInstruction.
  */
 @Deprecated("Use assertOpened instead")
-fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
+public fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
     key: T,
     disambiguation: Unit = Unit // to differentiate from the other expectOpenInstruction method
 ): NavigationKey.Instance<T> {
@@ -68,7 +68,7 @@ fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
  * which matches the provided filter, and then returns that NavigationInstruction.
  */
 @Deprecated("Use assertOpened instead")
-inline fun <reified T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
+public inline fun <reified T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
     noinline filter: (T) -> Boolean = { true }
 ): NavigationKey.Instance<T> {
     return expectOpenInstruction(T::class, filter)

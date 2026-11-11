@@ -8,7 +8,7 @@ import dev.enro.ui.NavigationContainerState
 private object TestFlowContainer :
     NavigationKey.TransientMetadataKey<NavigationContainerState?>(null)
 
-fun TestNavigationHandle<*>.createContainerForNavigationFlow(): NavigationContainerState {
+public fun TestNavigationHandle<*>.createContainerForNavigationFlow(): NavigationContainerState {
     val flow = navigationFlow ?: error(
         "No NavigationFlow associated with this TestNavigationHandle"
     )
@@ -21,7 +21,7 @@ fun TestNavigationHandle<*>.createContainerForNavigationFlow(): NavigationContai
     return container
 }
 
-val TestNavigationHandle<*>.containerForNavigationFlow: NavigationContainerState
+public val TestNavigationHandle<*>.containerForNavigationFlow: NavigationContainerState
     get() {
         return instance.metadata.get(TestFlowContainer)
             ?: error("No NavigationContainer is associated with this TestNavigationHandle")

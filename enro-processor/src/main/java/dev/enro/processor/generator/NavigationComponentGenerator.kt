@@ -104,12 +104,12 @@ object NavigationComponentGenerator {
                     .defaultValue("{}")
                     .build()
             )
+            .addAnnotation(
+                AnnotationSpec.builder(ClassName("kotlin", "OptIn"))
+                    .addMember("%T::class", ClassName("dev.enro.annotations", "InternalEnroApi"))
+                    .build()
+            )
             .chainIf(isAndroid) {
-                addAnnotation(
-                    AnnotationSpec.builder(ClassName("kotlin", "OptIn"))
-                        .addMember("%T::class", ClassName("dev.enro.annotations", "InternalEnroApi"))
-                        .build()
-                )
                 addCode(
                     """
                         // If we're installing in an Android context, we know that we
@@ -185,11 +185,6 @@ object NavigationComponentGenerator {
             .builder(
                 component.className.packageName,
                 requireNotNull(generatedComponent.name)
-            )
-            .addAnnotation(
-                AnnotationSpec.builder(Suppress::class)
-                    .addMember("\"INVISIBLE_REFERENCE\", \"INVISIBLE_MEMBER\"")
-                    .build()
             )
             .addImport("dev.enro.controller", "NavigationModule")
             .addImport(

@@ -1,0 +1,71 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, js, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <dev.enro:enro-annotations>
+open annotation class dev.enro.annotations/AdvancedEnroApi : kotlin/Annotation { // dev.enro.annotations/AdvancedEnroApi|null[0]
+    constructor <init>() // dev.enro.annotations/AdvancedEnroApi.<init>|<init>(){}[0]
+}
+
+open annotation class dev.enro.annotations/ExperimentalEnroApi : kotlin/Annotation { // dev.enro.annotations/ExperimentalEnroApi|null[0]
+    constructor <init>() // dev.enro.annotations/ExperimentalEnroApi.<init>|<init>(){}[0]
+}
+
+open annotation class dev.enro.annotations/GeneratedNavigationBinding : kotlin/Annotation { // dev.enro.annotations/GeneratedNavigationBinding|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Boolean = ..., kotlin/Boolean = ...) // dev.enro.annotations/GeneratedNavigationBinding.<init>|<init>(kotlin.String;kotlin.String;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val destination // dev.enro.annotations/GeneratedNavigationBinding.destination|{}destination[0]
+        final fun <get-destination>(): kotlin/String // dev.enro.annotations/GeneratedNavigationBinding.destination.<get-destination>|<get-destination>(){}[0]
+    final val isComposableFunction // dev.enro.annotations/GeneratedNavigationBinding.isComposableFunction|{}isComposableFunction[0]
+        final fun <get-isComposableFunction>(): kotlin/Boolean // dev.enro.annotations/GeneratedNavigationBinding.isComposableFunction.<get-isComposableFunction>|<get-isComposableFunction>(){}[0]
+    final val isPlatformOverride // dev.enro.annotations/GeneratedNavigationBinding.isPlatformOverride|{}isPlatformOverride[0]
+        final fun <get-isPlatformOverride>(): kotlin/Boolean // dev.enro.annotations/GeneratedNavigationBinding.isPlatformOverride.<get-isPlatformOverride>|<get-isPlatformOverride>(){}[0]
+    final val navigationKey // dev.enro.annotations/GeneratedNavigationBinding.navigationKey|{}navigationKey[0]
+        final fun <get-navigationKey>(): kotlin/String // dev.enro.annotations/GeneratedNavigationBinding.navigationKey.<get-navigationKey>|<get-navigationKey>(){}[0]
+}
+
+open annotation class dev.enro.annotations/GeneratedNavigationComponent : kotlin/Annotation { // dev.enro.annotations/GeneratedNavigationComponent|null[0]
+    constructor <init>(kotlin/Array<kotlin.reflect/KClass<out kotlin/Any>>) // dev.enro.annotations/GeneratedNavigationComponent.<init>|<init>(kotlin.Array<kotlin.reflect.KClass<out|kotlin.Any>>){}[0]
+
+    final val bindings // dev.enro.annotations/GeneratedNavigationComponent.bindings|{}bindings[0]
+        final fun <get-bindings>(): kotlin/Array<kotlin.reflect/KClass<out kotlin/Any>> // dev.enro.annotations/GeneratedNavigationComponent.bindings.<get-bindings>|<get-bindings>(){}[0]
+}
+
+open annotation class dev.enro.annotations/InternalEnroApi : kotlin/Annotation { // dev.enro.annotations/InternalEnroApi|null[0]
+    constructor <init>() // dev.enro.annotations/InternalEnroApi.<init>|<init>(){}[0]
+}
+
+open annotation class dev.enro.annotations/NavigationComponent : kotlin/Annotation { // dev.enro.annotations/NavigationComponent|null[0]
+    constructor <init>() // dev.enro.annotations/NavigationComponent.<init>|<init>(){}[0]
+}
+
+open annotation class dev.enro.annotations/NavigationDestination : kotlin/Annotation { // dev.enro.annotations/NavigationDestination|null[0]
+    constructor <init>(kotlin.reflect/KClass<out kotlin/Any>) // dev.enro.annotations/NavigationDestination.<init>|<init>(kotlin.reflect.KClass<out|kotlin.Any>){}[0]
+
+    final val key // dev.enro.annotations/NavigationDestination.key|{}key[0]
+        final fun <get-key>(): kotlin.reflect/KClass<out kotlin/Any> // dev.enro.annotations/NavigationDestination.key.<get-key>|<get-key>(){}[0]
+
+    open annotation class PlatformOverride : kotlin/Annotation { // dev.enro.annotations/NavigationDestination.PlatformOverride|null[0]
+        constructor <init>(kotlin.reflect/KClass<out kotlin/Any>) // dev.enro.annotations/NavigationDestination.PlatformOverride.<init>|<init>(kotlin.reflect.KClass<out|kotlin.Any>){}[0]
+
+        final val key // dev.enro.annotations/NavigationDestination.PlatformOverride.key|{}key[0]
+            final fun <get-key>(): kotlin.reflect/KClass<out kotlin/Any> // dev.enro.annotations/NavigationDestination.PlatformOverride.key.<get-key>|<get-key>(){}[0]
+    }
+}
+
+open annotation class dev.enro.annotations/NavigationPath : kotlin/Annotation { // dev.enro.annotations/NavigationPath|null[0]
+    constructor <init>(kotlin/String) // dev.enro.annotations/NavigationPath.<init>|<init>(kotlin.String){}[0]
+
+    final val pattern // dev.enro.annotations/NavigationPath.pattern|{}pattern[0]
+        final fun <get-pattern>(): kotlin/String // dev.enro.annotations/NavigationPath.pattern.<get-pattern>|<get-pattern>(){}[0]
+
+    open annotation class FromBinding : kotlin/Annotation { // dev.enro.annotations/NavigationPath.FromBinding|null[0]
+        constructor <init>(kotlin.reflect/KClass<out kotlin/Any>) // dev.enro.annotations/NavigationPath.FromBinding.<init>|<init>(kotlin.reflect.KClass<out|kotlin.Any>){}[0]
+
+        final val binding // dev.enro.annotations/NavigationPath.FromBinding.binding|{}binding[0]
+            final fun <get-binding>(): kotlin.reflect/KClass<out kotlin/Any> // dev.enro.annotations/NavigationPath.FromBinding.binding.<get-binding>|<get-binding>(){}[0]
+    }
+}
