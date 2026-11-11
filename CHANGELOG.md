@@ -2,7 +2,40 @@
 
 ## Unreleased
 
+First stable release of Enro 3. Enro is a Kotlin Multiplatform navigation library for Android,
+iOS, JVM Desktop and Web, built on Compose Multiplatform. The
+[3.0.0-beta01 notes](#300-beta01) describe the model, and the
+[migration guide](https://enro.dev/docs/migrating-from-v2.html) covers moving from Enro 2.x.
+
+### Stable API
+
+* From 3.0.0, the public API follows semantic versioning. APIs marked `@AdvancedEnroApi` or
+  `@ExperimentalEnroApi` are outside that contract and can change in any 3.x release.
+* Web history, path bindings and navigation flows are stable and no longer need
+  `@OptIn(ExperimentalEnroApi::class)`:
+  * `InstallWebHistoryPlugin` and `rememberInitialBackstackFromUrl`
+  * `@NavigationPath`, `NavigationKey.PathBinding`, `getNavigationKeyFromPath`,
+    `getPathFromNavigationKey` and `getBackstackFromPath`
+  * `NavigationFlow`, `registerForFlowResult` and `managedFlowDestination`
+* `EmbeddedDestination` is still `@ExperimentalEnroApi`.
+* Constructing `EnroController`, `NavigationContainer`, `RootContext`, `ContainerContext`,
+  `DestinationContext`, `NavigationContainerState` or `NavigationSavedStateHolder` directly now
+  needs `@OptIn(AdvancedEnroApi::class)`.
+* Removed the deprecated `rememberNavigationContainer` overload that took a
+  `List<NavigationKey.Instance<*>>`. Pass a `NavigationBackstack`, for example `backstackOf(...)`.
+* `PathRepository` is no longer public.
+
+### Compatibility with Enro 2.x
+
+* `EnroPreview` in `enro-compat` renders its content. Before, it rendered nothing.
+* `onContainer`, `onParentContainer` and `onActiveContainer` in `enro-compat` are deprecated.
+  They have never run their block in Enro 3.
+
 ### Bug fixes
+
+* Browser back now respects `onCloseRequested`. When browser back would close one destination
+  that has an `onCloseRequested` callback, Enro calls `requestClose` on that destination, as
+  system back does.
 
 * `EnroBrowserContent(suppressEscapeAsBack = true)` no longer hides Escape from the app. It
   consumes Escape only when nothing in the composition handles it, so a focused dialog or popup
@@ -33,6 +66,9 @@
 * Updated Compose Multiplatform to 1.12.2 and androidx Compose to 1.12.1. Consumers need
   Compose Multiplatform 1.12, AGP 9.1.0+ and compileSdk 37.
 * Updated Kotlin to 2.4.21.
+* `enro`, `enro-ui` and `enro-compat` no longer bring in Compose Material 3, Material Icons
+  Extended, Compose resources or UI tooling. `enro` and `enro-ui` no longer bring in Compose
+  Material. An app that used one of these without declaring it must add its own dependency.
 
 ## 3.0.0-beta07 (2026-10-14)
 

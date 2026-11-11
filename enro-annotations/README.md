@@ -23,7 +23,8 @@ for:
 - `@NavigationPath(pattern)` — declares a URL pattern for a
   `NavigationKey`, enabling deep-link / web-routing resolution.
 - `@AdvancedEnroApi`, `@ExperimentalEnroApi` — opt-in markers for
-  surfaces that aren't part of the stable API contract.
+  APIs outside the stable contract. An API with either marker can
+  change or be removed in any 3.x release.
 - `@GeneratedNavigationBinding`, `@GeneratedNavigationComponent` —
   emitted by the processor; not for hand-use.
 
@@ -36,6 +37,6 @@ want the annotation types without the rest of the runtime (e.g. in a
 
 ```kotlin
 dependencies {
-    implementation("dev.enro:enro-annotations:3.0.0-beta01")
+    implementation("dev.enro:enro-annotations:3.0.0")
 }
 ```

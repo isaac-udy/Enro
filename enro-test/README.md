@@ -8,8 +8,8 @@ helpers around handles, backstacks, paths, operations, and synthetic
 destinations.
 
 Targets the same set as `enro-runtime` (Android, iOS, JVM Desktop,
-WASM JS), so multiplatform code can be tested on any host the runtime
-supports.
+WASM JS, Kotlin/JS), so multiplatform code can be tested on any host the
+runtime supports. `EnroTestRule` is Android only.
 
 ## What's in here
 
@@ -37,7 +37,7 @@ supports.
 
 ```kotlin
 dependencies {
-    testImplementation("dev.enro:enro-test:3.0.0-beta01")
+    testImplementation("dev.enro:enro-test:3.0.0")
 }
 ```
 

@@ -5,10 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build Commands
 - Build the project: `./gradlew build`
 - Test the project: `./gradlew test`
-- Run instrumented tests: `./gradlew connectedAndroidTest` 
-- Run a specific test: `./gradlew :module:test --tests "full.class.name.TestName"`
-- Run a specific instrumented test: `./gradlew :module:connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=full.class.name.TestName`
-- Check code style: `./gradlew lintKotlin`
+- Run a specific test: `./gradlew :module:desktopTest --tests "full.class.name.TestName"`
+- Run everything CI runs: `./gradlew continuousIntegration` (device tests need an emulator.wtf token)
+- Check the public API against the committed dumps: `./gradlew checkKotlinAbi`
+- Record an intended public API change: `./gradlew updateKotlinAbi`
 
 ## Code Style
 - Follow Kotlin official code style with explicit API mode
