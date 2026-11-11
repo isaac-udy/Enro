@@ -9,7 +9,8 @@ on:
 jobs:
   release:
     name: Release
-    runs-on: macos-latest
+    # Same runner as CI / macOS: Compose Multiplatform 1.11+ needs the iOS 26 SDK to link.
+    runs-on: macos-26
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,6 +27,13 @@ jobs:
 
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
+
+      # Nothing is stamped, published or pushed unless the full CI suite passes on
+      # the commit being released.
+      - name: Run continuous integration
+        env:
+          EW_API_TOKEN: ${{ secrets.EW_API_TOKEN }}
+        run: ./gradlew continuousIntegration continuousIntegrationMacOs
 
       - name: Install gpg secret key
         run: cat <(echo -e "${{ secrets.PUBLISH_SIGNING_KEY_LITERAL }}") | gpg --batch --import

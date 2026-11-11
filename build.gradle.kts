@@ -106,6 +106,9 @@ subprojects {
             // Compile-only fallback for modules without iOS tests, so a
             // K/Native compile failure still shows up.
             tasks.findByName("compileKotlinIosSimulatorArm64")?.let { ci.dependsOn(it) }
+            // The device target is published but has no tests, so compile it here
+            // rather than for the first time inside the release job.
+            tasks.findByName("compileKotlinIosArm64")?.let { ci.dependsOn(it) }
         }
     }
 }
