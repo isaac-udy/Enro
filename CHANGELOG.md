@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0 (2026-11-11)
+
 First stable release of Enro 3. Enro is a Kotlin Multiplatform navigation library for Android,
 iOS, JVM Desktop and Web, built on Compose Multiplatform. The
 [3.0.0-beta01 notes](#300-beta01) describe the model, and the
