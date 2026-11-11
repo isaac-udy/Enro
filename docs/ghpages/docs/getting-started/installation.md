@@ -19,16 +19,19 @@ plugins {
 
 dependencies {
     // Core library
-    implementation("dev.enro:enro:3.0.0-beta01")
+    implementation("dev.enro:enro:3.0.0")
 
     // KSP processor — generates the install function for your NavigationComponent
     // and discovers @NavigationDestination annotations
-    ksp("dev.enro:enro-processor:3.0.0-beta01")
+    ksp("dev.enro:enro-processor:3.0.0")
 
     // Optional: test utilities
-    testImplementation("dev.enro:enro-test:3.0.0-beta01")
+    testImplementation("dev.enro:enro-test:3.0.0")
 }
 ```
+
+Enro 3.0.0 requires Kotlin 2.4, Compose Multiplatform 1.12, and on Android,
+AGP 9.1.0 or later with compileSdk 37.
 
 In a Kotlin Multiplatform project, add `enro` to your `commonMain` source set,
 and add the `enro-processor` KSP dependency for each target you build.
@@ -38,7 +41,7 @@ to adopt Enro incrementally, also add the compatibility module:
 
 ```kotlin
 dependencies {
-    implementation("dev.enro:enro-compat:3.0.0-beta01")
+    implementation("dev.enro:enro-compat:3.0.0")
 }
 ```
 
@@ -143,7 +146,7 @@ See the [Desktop platform guide](../platform/desktop.md) for the full window
 configuration story and the [recipes desktop main]
 [recipes-desktop] for a complete working example.
 
-### Web (WasmJS)
+### Web (WasmJS and Kotlin/JS)
 
 Call `installNavigationController(document)` from your `main`, then render the
 backstack inside an `EnroBrowserContent`:

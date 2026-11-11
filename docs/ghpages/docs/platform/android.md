@@ -63,9 +63,9 @@ Composable destinations; you can migrate screens one at a time.
 
 ```kotlin
 dependencies {
-    implementation("dev.enro:enro:3.0.0-beta01")
-    implementation("dev.enro:enro-compat:3.0.0-beta01")
-    ksp("dev.enro:enro-processor:3.0.0-beta01")
+    implementation("dev.enro:enro:3.0.0")
+    implementation("dev.enro:enro-compat:3.0.0")
+    ksp("dev.enro:enro-processor:3.0.0")
 }
 ```
 

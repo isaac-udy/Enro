@@ -23,11 +23,6 @@ platform's own mechanism — `intent.data`, `application(_:openURL:)`,
 custom URI handlers — but once you have the string, `getNavigationKeyFromPath`
 turns it into a key you can `open()`.)
 
-`@NavigationPath` and its companions are currently marked
-`@ExperimentalEnroApi` while the API surface stabilises through the
-3.x cycle. The shape is unlikely to shift meaningfully, but expect
-small refinements before the API graduates.
-
 ## Simple usage
 
 Annotate the key with `@NavigationPath("/pattern/with/{placeholders}")`:
@@ -167,11 +162,9 @@ Two functions, mirror images of each other:
 
 ```kotlin
 // String → Key
-@ExperimentalEnroApi
 fun EnroController.getNavigationKeyFromPath(path: String): NavigationKey?
 
 // Key → String
-@ExperimentalEnroApi
 fun EnroController.getPathFromNavigationKey(key: NavigationKey): String?
 ```
 

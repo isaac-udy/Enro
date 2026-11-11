@@ -60,7 +60,9 @@ Fragment/Activity story working alongside new Compose destinations. See
 | `composeEnvironment { content -> ... }` in module | Deprecated. Use `decorator { navigationDestinationDecorator { ... } }`. |
 | `syntheticDestination { sendResult(value) }` | `syntheticDestination { complete(value) }` — see [Synthetic Destinations](advanced/synthetic-destinations.md). The v2 `sendResult` and `forwardResult` extensions still exist in `enro-compat` as `@Deprecated` shims pointing at the new methods. |
 | `syntheticDestination { forwardResult(otherKey) }` | `syntheticDestination { completeFrom(otherKey) }` |
-| `EnroTestRule` (JUnit) | Still available on JVM; the KMP form is `runEnroTest { ... }`. |
+| `EnroTestRule` (JUnit) | Still available on Android; the KMP form is `runEnroTest { ... }`. |
+| `EnroPreview(key) { ... }` | Still available in `enro-compat`. It renders the content without a navigation handle. |
+| `navigationHandle.onContainer { }`, `onParentContainer { }`, `onActiveContainer { }` | Deprecated in `enro-compat`: the block is never run. Get the `NavigationContainer` from the navigation context and update its backstack directly. |
 | `expectInstruction { ... }` test helpers | `TestNavigationHandle<T>` with `assertOpened`, `assertClosed`, `assertCompleted`, `assertOperationExecuted`. The old helpers remain in `enro-test`'s compat layer. |
 
 ## Detailed changes
@@ -306,7 +308,7 @@ unchanged.
 
 ### Testing
 
-Enro 2's JVM-only `EnroTestRule` still works for JUnit-based tests:
+Enro 2's `EnroTestRule` still works for JUnit-based tests on Android:
 
 ```kotlin
 class ProfileTest {

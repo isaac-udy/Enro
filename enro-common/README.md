@@ -1,5 +1,5 @@
 # `enro-common`
-The `enro-common` module exists as a place to put common Enro classes/interfaces/functions that do not depend on platform specific UI functionality. `enro-runtime` targets Android, iOS, JVM Desktop, and WASM JS, but `enro-common` also targets "normal" JS (non-WASM). At the surface level, it might seem a little odd to also target "normal" JS from this module, when `enro-runtime` does not support this target, but it's not uncommon to use NodeJS as a backend for Kotlin Multiplatform applications. By providing some of the non-UI related Enro definitions (such as `NavigationKey`) in `enro-common`, we allow KMP applications where a NodeJS backend is able to provide API responses that contain these objects.
+The `enro-common` module exists as a place to put common Enro classes/interfaces/functions that do not depend on platform specific UI functionality. `enro-common` targets Android, iOS, JVM Desktop, WASM JS and Kotlin/JS, including NodeJS. It's not uncommon to use NodeJS as a backend for Kotlin Multiplatform applications. By providing some of the non-UI related Enro definitions (such as `NavigationKey`) in `enro-common`, we allow KMP applications where a NodeJS backend is able to provide API responses that contain these objects.
 
 ## Example
 Imagine that you are working on a KMP project with the following modules: 
