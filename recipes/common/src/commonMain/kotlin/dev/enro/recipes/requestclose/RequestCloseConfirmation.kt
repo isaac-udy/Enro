@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -170,23 +171,27 @@ val confirmDiscardDialogDestination: NavigationDestinationProvider<ConfirmDiscar
             )
         },
     ) {
-        Column(
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(16.dp),
         ) {
-            Text("Discard changes?")
-            Text("Your unsaved edits will be lost.")
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                TextButton(onClick = { navigation.complete(false) }) {
-                    Text("Keep editing")
-                }
-                Button(onClick = { navigation.complete(true) }) {
-                    Text("Discard")
+                Text("Discard changes?")
+                Text("Your unsaved edits will be lost.")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    TextButton(onClick = { navigation.complete(false) }) {
+                        Text("Keep editing")
+                    }
+                    Button(onClick = { navigation.complete(true) }) {
+                        Text("Discard")
+                    }
                 }
             }
         }
