@@ -16,7 +16,7 @@ import dev.enro.serialization.wrapForSerialization
 import kotlinx.serialization.json.Json
 
 @Stable
-public class EnroController {
+public class EnroController @AdvancedEnroApi constructor() {
     // Set during construction by internalCreateEnroController, plumbed through
     // from the isDebug parameter on the generated installNavigationController.
     internal var isDebug: Boolean = false

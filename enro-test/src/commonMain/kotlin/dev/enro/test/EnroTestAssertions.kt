@@ -4,7 +4,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.jvm.JvmName
 
-class EnroTestAssertionException(message: String) : AssertionError(message)
+public class EnroTestAssertionException(message: String) : AssertionError(message)
 
 @PublishedApi
 internal fun enroAssertionError(message: String): Nothing {
@@ -22,7 +22,7 @@ internal fun enroAssert(condition: Boolean, lazyMessage: () -> String) {
     }
 }
 
-data class EnroAssertionContext(
+public data class EnroAssertionContext(
     val expected: Any?,
     val actual: Any?,
 )

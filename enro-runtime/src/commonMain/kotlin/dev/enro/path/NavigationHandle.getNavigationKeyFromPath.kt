@@ -3,7 +3,6 @@ package dev.enro.path
 import dev.enro.EnroController
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
-import dev.enro.annotations.ExperimentalEnroApi
 
 /**
  * Resolves [path] against the controller's registered `@NavigationPath`
@@ -19,7 +18,6 @@ import dev.enro.annotations.ExperimentalEnroApi
  * [EnroController]; if you're outside a destination, use the controller
  * extensions directly.
  */
-@ExperimentalEnroApi
 public fun NavigationHandle<*>.getNavigationKeyFromPath(
     path: String,
 ): NavigationKey? {

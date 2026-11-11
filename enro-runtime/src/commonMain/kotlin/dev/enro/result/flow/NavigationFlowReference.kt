@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import dev.enro.NavigationHandle
 import dev.enro.NavigationKey
-import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.navigationHandle
 import kotlinx.serialization.Serializable
 
@@ -14,7 +13,6 @@ import kotlinx.serialization.Serializable
  * with the navigation flow and perform actions such as returning to previous steps within the flow to edit items.
  */
 @Serializable
-@ExperimentalEnroApi
 public class NavigationFlowReference internal constructor(
     internal val id: String,
 ) {
@@ -34,7 +32,6 @@ public class NavigationFlowReference internal constructor(
  * Throws if the destination wasn't opened as part of a flow, or if the
  * reference's id doesn't match the attached flow.
  */
-@ExperimentalEnroApi
 public fun NavigationHandle<*>.getNavigationFlow(reference: NavigationFlowReference): NavigationFlow<*> {
     val flow = instance.metadata.get(NavigationFlowReference.MetadataKey)
     requireNotNull(flow) {
@@ -47,7 +44,6 @@ public fun NavigationHandle<*>.getNavigationFlow(reference: NavigationFlowRefere
 }
 
 @Composable
-@ExperimentalEnroApi
 public fun rememberNavigationFlowReference(
     reference: NavigationFlowReference,
 ): NavigationFlow<*> {

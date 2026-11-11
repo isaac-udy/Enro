@@ -4,7 +4,7 @@ import dev.enro.NavigationKey
 import dev.enro.ui.NavigationContainerState
 import kotlin.reflect.KClass
 
-fun <T : NavigationKey> NavigationContainerState.assertActive(
+public fun <T : NavigationKey> NavigationContainerState.assertActive(
     keyType: KClass<T>,
     predicate: (T) -> Boolean = { true }
 ) : NavigationKey.Instance<T> {
@@ -27,13 +27,13 @@ fun <T : NavigationKey> NavigationContainerState.assertActive(
     return activeInstance as NavigationKey.Instance<T>
 }
 
-fun <T : NavigationKey> NavigationContainerState.assertActive(
+public fun <T : NavigationKey> NavigationContainerState.assertActive(
     key: T,
 ) : NavigationKey.Instance<T> {
     return assertActive(key::class) { it == key }
 }
 
-inline fun <reified T : NavigationKey> NavigationContainerState.assertActive(
+public inline fun <reified T : NavigationKey> NavigationContainerState.assertActive(
     noinline predicate: (T) -> Boolean = { true }
 ) : NavigationKey.Instance<T> {
     return assertActive(T::class, predicate)

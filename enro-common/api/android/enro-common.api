@@ -1,0 +1,293 @@
+public final class dev/enro/NavigationBackstack : java/util/List, kotlin/jvm/internal/markers/KMappedMarker {
+	public static final field Companion Ldev/enro/NavigationBackstack$Companion;
+	public fun <init> (Ljava/util/List;)V
+	public fun add (ILdev/enro/NavigationKey$Instance;)V
+	public synthetic fun add (ILjava/lang/Object;)V
+	public fun add (Ldev/enro/NavigationKey$Instance;)Z
+	public synthetic fun add (Ljava/lang/Object;)Z
+	public fun addAll (ILjava/util/Collection;)Z
+	public fun addAll (Ljava/util/Collection;)Z
+	public fun addFirst (Ldev/enro/NavigationKey$Instance;)V
+	public synthetic fun addFirst (Ljava/lang/Object;)V
+	public fun addLast (Ldev/enro/NavigationKey$Instance;)V
+	public synthetic fun addLast (Ljava/lang/Object;)V
+	public fun clear ()V
+	public fun contains (Ldev/enro/NavigationKey$Instance;)Z
+	public final fun contains (Ljava/lang/Object;)Z
+	public fun containsAll (Ljava/util/Collection;)Z
+	public fun get (I)Ldev/enro/NavigationKey$Instance;
+	public synthetic fun get (I)Ljava/lang/Object;
+	public final fun getKeys ()Ljava/util/List;
+	public fun getSize ()I
+	public fun indexOf (Ldev/enro/NavigationKey$Instance;)I
+	public final fun indexOf (Ljava/lang/Object;)I
+	public fun isEmpty ()Z
+	public fun iterator ()Ljava/util/Iterator;
+	public fun lastIndexOf (Ldev/enro/NavigationKey$Instance;)I
+	public final fun lastIndexOf (Ljava/lang/Object;)I
+	public fun listIterator ()Ljava/util/ListIterator;
+	public fun listIterator (I)Ljava/util/ListIterator;
+	public fun remove (I)Ldev/enro/NavigationKey$Instance;
+	public synthetic fun remove (I)Ljava/lang/Object;
+	public fun remove (Ljava/lang/Object;)Z
+	public fun removeAll (Ljava/util/Collection;)Z
+	public fun removeFirst ()Ldev/enro/NavigationKey$Instance;
+	public synthetic fun removeFirst ()Ljava/lang/Object;
+	public fun removeLast ()Ldev/enro/NavigationKey$Instance;
+	public synthetic fun removeLast ()Ljava/lang/Object;
+	public fun replaceAll (Ljava/util/function/UnaryOperator;)V
+	public fun retainAll (Ljava/util/Collection;)Z
+	public fun set (ILdev/enro/NavigationKey$Instance;)Ldev/enro/NavigationKey$Instance;
+	public synthetic fun set (ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun size ()I
+	public fun sort (Ljava/util/Comparator;)V
+	public fun subList (II)Ljava/util/List;
+	public fun toArray ()[Ljava/lang/Object;
+	public fun toArray ([Ljava/lang/Object;)[Ljava/lang/Object;
+}
+
+public final synthetic class dev/enro/NavigationBackstack$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ldev/enro/NavigationBackstack$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/enro/NavigationBackstack;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/enro/NavigationBackstack;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/NavigationBackstack$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/NavigationBackstackKt {
+	public static final fun asBackstack (Ljava/util/List;)Ldev/enro/NavigationBackstack;
+	public static final fun backstackOf ([Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationBackstack;
+	public static final fun emptyBackstack ()Ldev/enro/NavigationBackstack;
+}
+
+public abstract interface class dev/enro/NavigationKey {
+	public static final field Companion Ldev/enro/NavigationKey$Companion;
+}
+
+public final class dev/enro/NavigationKey$Companion {
+}
+
+public final class dev/enro/NavigationKey$Instance {
+	public static final field Companion Ldev/enro/NavigationKey$Instance$Companion;
+	public final fun component1 ()Ldev/enro/NavigationKey;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ldev/enro/NavigationKey$Metadata;
+	public final fun copy (Ldev/enro/NavigationKey;Ljava/lang/String;Ldev/enro/NavigationKey$Metadata;)Ldev/enro/NavigationKey$Instance;
+	public static synthetic fun copy$default (Ldev/enro/NavigationKey$Instance;Ldev/enro/NavigationKey;Ljava/lang/String;Ldev/enro/NavigationKey$Metadata;ILjava/lang/Object;)Ldev/enro/NavigationKey$Instance;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public final fun getMetadata ()Ldev/enro/NavigationKey$Metadata;
+	public final fun getNavigationKey ()Ldev/enro/NavigationKey;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class dev/enro/NavigationKey$Instance$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public fun <init> (Lkotlinx/serialization/KSerializer;)V
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/enro/NavigationKey$Instance;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/enro/NavigationKey$Instance;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public final fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/NavigationKey$Instance$Companion {
+	public final fun serializer (Lkotlinx/serialization/KSerializer;)Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/NavigationKey$Metadata {
+	public static final field Companion Ldev/enro/NavigationKey$Metadata$Companion;
+	public final fun addFrom (Ldev/enro/NavigationKey$Metadata;)V
+	public final fun copy ()Ldev/enro/NavigationKey$Metadata;
+	public final fun get (Ldev/enro/NavigationKey$MetadataKey;)Ljava/lang/Object;
+	public final fun getMap ()Ljava/util/Map;
+	public final fun remove (Ldev/enro/NavigationKey$MetadataKey;)V
+	public final fun set (Ldev/enro/NavigationKey$MetadataKey;Ljava/lang/Object;)V
+	public final fun setFrom (Ldev/enro/NavigationKey$Metadata;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/NavigationKey$Metadata$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/NavigationKey$Metadata$Serializer : kotlinx/serialization/KSerializer {
+	public static final field INSTANCE Ldev/enro/NavigationKey$Metadata$Serializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/enro/NavigationKey$Metadata;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/enro/NavigationKey$Metadata;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public abstract class dev/enro/NavigationKey$MetadataKey {
+	public fun <init> (Ljava/lang/Object;)V
+	public fun <init> (Ljava/lang/Object;Ljava/lang/String;)V
+	public final fun getDefault ()Ljava/lang/Object;
+	public final fun getName ()Ljava/lang/String;
+}
+
+public abstract interface class dev/enro/NavigationKey$PathBinding {
+	public abstract fun deserialize (Ldev/enro/path/PathData;)Ldev/enro/NavigationKey;
+	public abstract fun getPattern ()Ljava/lang/String;
+	public abstract fun serialize (Ldev/enro/path/PathData$Builder;Ldev/enro/NavigationKey;)V
+}
+
+public final class dev/enro/NavigationKey$WithMetadata {
+	public final fun component1 ()Ldev/enro/NavigationKey;
+	public final fun component2 ()Ldev/enro/NavigationKey$Metadata;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public final fun getMetadata ()Ldev/enro/NavigationKey$Metadata;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class dev/enro/NavigationKey$WithResult : dev/enro/NavigationKey {
+}
+
+public final class dev/enro/NavigationKeyKt {
+	public static final fun asInstance (Ldev/enro/NavigationKey$WithMetadata;)Ldev/enro/NavigationKey$Instance;
+	public static final fun asInstance (Ldev/enro/NavigationKey;)Ldev/enro/NavigationKey$Instance;
+	public static final fun withMetadata (Ldev/enro/NavigationKey$WithMetadata;Ldev/enro/NavigationKey$MetadataKey;Ljava/lang/Object;)Ldev/enro/NavigationKey$WithMetadata;
+	public static final fun withMetadata (Ldev/enro/NavigationKey;Ldev/enro/NavigationKey$MetadataKey;Ljava/lang/Object;)Ldev/enro/NavigationKey$WithMetadata;
+}
+
+public final class dev/enro/path/NavigationPathBinding {
+	public static final field Companion Ldev/enro/path/NavigationPathBinding$Companion;
+	public fun <init> (Lkotlin/reflect/KClass;Ldev/enro/path/PathPattern;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
+	public fun <init> (Lkotlin/reflect/KClass;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
+	public final fun fromPath (Ldev/enro/path/ParsedPath;)Ldev/enro/NavigationKey;
+	public final fun matches (Ldev/enro/NavigationKey;)Z
+	public final fun matches (Ldev/enro/path/ParsedPath;)Z
+	public final fun toPath (Ldev/enro/NavigationKey;)Ljava/lang/String;
+}
+
+public final class dev/enro/path/NavigationPathBinding$Companion {
+	public final fun resolveForPath (Ljava/util/List;Ldev/enro/path/ParsedPath;)Ldev/enro/path/NavigationPathBinding;
+}
+
+public final class dev/enro/path/NavigationPathBinding_fromNavigationKeyKt {
+	public static final fun fromBinding (Ldev/enro/path/NavigationPathBinding$Companion;Lkotlin/reflect/KClass;Ldev/enro/NavigationKey$PathBinding;)Ldev/enro/path/NavigationPathBinding;
+}
+
+public final class dev/enro/path/ParsedPath {
+	public static final field Companion Ldev/enro/path/ParsedPath$Companion;
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()Ljava/util/Map;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPathParts ()Ljava/util/List;
+	public final fun getQueryParts ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/path/ParsedPath$Companion {
+	public final fun fromString (Ljava/lang/String;)Ldev/enro/path/ParsedPath;
+}
+
+public final class dev/enro/path/PathData {
+	public final fun optional (Ljava/lang/String;)Ljava/lang/String;
+	public final fun require (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class dev/enro/path/PathData$Builder {
+	public final fun set (Ljava/lang/String;Ljava/lang/String;)V
+}
+
+public final class dev/enro/path/PathPattern {
+	public static final field Companion Ldev/enro/path/PathPattern$Companion;
+	public fun <init> (Ljava/util/List;Ljava/util/List;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;Ljava/util/List;)Ldev/enro/path/PathPattern;
+	public static synthetic fun copy$default (Ldev/enro/path/PathPattern;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Ldev/enro/path/PathPattern;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPathElements ()Ljava/util/List;
+	public final fun getQueryElements ()Ljava/util/List;
+	public fun hashCode ()I
+	public final fun matches (Ldev/enro/path/ParsedPath;)Z
+	public final fun toPath (Ldev/enro/path/PathData;)Ljava/lang/String;
+	public final fun toPathData (Ldev/enro/path/ParsedPath;)Ldev/enro/path/PathData;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/path/PathPattern$Companion {
+	public final fun fromString (Ljava/lang/String;)Ldev/enro/path/PathPattern;
+}
+
+public abstract class dev/enro/path/PathPattern$PathElement {
+}
+
+public final class dev/enro/path/PathPattern$PathElement$PathParam : dev/enro/path/PathPattern$PathElement {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ldev/enro/path/PathPattern$PathElement$PathParam;
+	public static synthetic fun copy$default (Ldev/enro/path/PathPattern$PathElement$PathParam;Ljava/lang/String;ILjava/lang/Object;)Ldev/enro/path/PathPattern$PathElement$PathParam;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/path/PathPattern$PathElement$Segment : dev/enro/path/PathPattern$PathElement {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ldev/enro/path/PathPattern$PathElement$Segment;
+	public static synthetic fun copy$default (Ldev/enro/path/PathPattern$PathElement$Segment;Ljava/lang/String;ILjava/lang/Object;)Ldev/enro/path/PathPattern$PathElement$Segment;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class dev/enro/path/PathPattern$QueryElement {
+	public abstract fun getParamName ()Ljava/lang/String;
+	public abstract fun getQueryName ()Ljava/lang/String;
+}
+
+public final class dev/enro/path/PathPattern$QueryElement$OptionalQueryParam : dev/enro/path/PathPattern$QueryElement {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Ldev/enro/path/PathPattern$QueryElement$OptionalQueryParam;
+	public static synthetic fun copy$default (Ldev/enro/path/PathPattern$QueryElement$OptionalQueryParam;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/enro/path/PathPattern$QueryElement$OptionalQueryParam;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getParamName ()Ljava/lang/String;
+	public fun getQueryName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/path/PathPattern$QueryElement$QueryParam : dev/enro/path/PathPattern$QueryElement {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Ldev/enro/path/PathPattern$QueryElement$QueryParam;
+	public static synthetic fun copy$default (Ldev/enro/path/PathPattern$QueryElement$QueryParam;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/enro/path/PathPattern$QueryElement$QueryParam;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getParamName ()Ljava/lang/String;
+	public fun getQueryName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/serialization/SerializerForParcelableNavigationKey : kotlinx/serialization/KSerializer {
+	public fun <init> (Lkotlin/reflect/KClass;)V
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/enro/NavigationKey;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/enro/NavigationKey;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+

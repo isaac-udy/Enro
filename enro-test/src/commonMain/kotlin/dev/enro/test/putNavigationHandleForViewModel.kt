@@ -13,13 +13,13 @@ import kotlin.reflect.KClass
  * Must be called **before** constructing the ViewModel, because the `navigationHandle`
  * delegate resolves eagerly at ViewModel init time via [NavigationHandleProvider].
  */
-inline fun <reified T: ViewModel, K: NavigationKey> putNavigationHandleForViewModel(
+public inline fun <reified T: ViewModel, K: NavigationKey> putNavigationHandleForViewModel(
     key: K,
 ) : TestNavigationHandle<K> {
     return putNavigationHandleForViewModel(T::class, key)
 }
 
-fun <T: ViewModel, K: NavigationKey> putNavigationHandleForViewModel(
+public fun <T: ViewModel, K: NavigationKey> putNavigationHandleForViewModel(
     viewModel: KClass<T>,
     key: K,
 ) : TestNavigationHandle<K> {

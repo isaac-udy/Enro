@@ -31,6 +31,16 @@ class ConfigureComposeRuntime : Plugin<Project> {
     }
 }
 
+/**
+ * Applies Compose with foundation and UI only, for published modules. Material, tooling and
+ * resources are left out so they do not appear in the published dependencies.
+ */
+class ConfigureComposeUi : Plugin<Project> {
+    override fun apply(project: Project) {
+        project.configureComposeMultiplatform(includeUi = true, includeSampleLibraries = false)
+    }
+}
+
 internal fun Project.configureComposeAndroid() {
     plugins.apply("org.jetbrains.compose")
     plugins.apply("org.jetbrains.kotlin.plugin.compose")
@@ -53,7 +63,10 @@ internal fun Project.configureComposeAndroid() {
     }
 }
 
-internal fun Project.configureComposeMultiplatform(includeUi: Boolean) {
+internal fun Project.configureComposeMultiplatform(
+    includeUi: Boolean,
+    includeSampleLibraries: Boolean = includeUi,
+) {
     plugins.apply("org.jetbrains.compose")
     plugins.apply("org.jetbrains.kotlin.plugin.compose")
 
@@ -70,20 +83,37 @@ internal fun Project.configureComposeMultiplatform(includeUi: Boolean) {
             if (!includeUi) return@sourceSets
 
             val desktopMain by getting
+            val desktopTest by getting
+
+            androidMain.dependencies {
+                implementation(libs.compose.activity)
+            }
+            commonMain.dependencies {
+                implementation(compose.foundation)
+                implementation(compose.ui)
+            }
+            if (!includeSampleLibraries) {
+                // Published libraries must not pin consumers to the build machine's OS, so
+                // the OS-specific desktop artifact is only on the test classpath.
+                desktopMain.dependencies {
+                    implementation(compose.desktop.common)
+                }
+                desktopTest.dependencies {
+                    implementation(compose.desktop.currentOs)
+                }
+                return@sourceSets
+            }
 
             androidMain.dependencies {
                 implementation(compose.preview)
-                implementation(libs.compose.activity)
                 // The KMP library plugin has no build variants, so ui-tooling is added to
                 // androidMain rather than a debug-only configuration.
                 implementation(compose.uiTooling)
             }
             commonMain.dependencies {
-                implementation(compose.foundation)
                 implementation(compose.material3)
                 implementation(compose.material)
                 implementation(compose.materialIconsExtended)
-                implementation(compose.ui)
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
             }

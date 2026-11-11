@@ -1,0 +1,39 @@
+public abstract interface annotation class dev/enro/annotations/AdvancedEnroApi : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class dev/enro/annotations/ExperimentalEnroApi : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class dev/enro/annotations/GeneratedNavigationBinding : java/lang/annotation/Annotation {
+	public abstract fun destination ()Ljava/lang/String;
+	public abstract fun isComposableFunction ()Z
+	public abstract fun isPlatformOverride ()Z
+	public abstract fun navigationKey ()Ljava/lang/String;
+}
+
+public abstract interface annotation class dev/enro/annotations/GeneratedNavigationComponent : java/lang/annotation/Annotation {
+	public abstract fun bindings ()[Ljava/lang/Class;
+}
+
+public abstract interface annotation class dev/enro/annotations/InternalEnroApi : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class dev/enro/annotations/NavigationComponent : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class dev/enro/annotations/NavigationDestination : java/lang/annotation/Annotation {
+	public abstract fun key ()Ljava/lang/Class;
+}
+
+public abstract interface annotation class dev/enro/annotations/NavigationDestination$PlatformOverride : java/lang/annotation/Annotation {
+	public abstract fun key ()Ljava/lang/Class;
+}
+
+public abstract interface annotation class dev/enro/annotations/NavigationPath : java/lang/annotation/Annotation {
+	public abstract fun pattern ()Ljava/lang/String;
+}
+
+public abstract interface annotation class dev/enro/annotations/NavigationPath$FromBinding : java/lang/annotation/Annotation {
+	public abstract fun binding ()Ljava/lang/Class;
+}
+

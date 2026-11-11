@@ -2,7 +2,6 @@ package dev.enro.result.flow
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.getNavigationHandle
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
@@ -13,7 +12,6 @@ import kotlin.properties.ReadOnlyProperty
  * generally not cause external side effects. The [onCompleted] lambda will be invoked when the flow completes and returns a
  * result.
  */
-@ExperimentalEnroApi
 public fun <T> ViewModel.registerForFlowResult(
     flow: NavigationFlowScope.() -> T,
     onCompleted: (T) -> Unit,

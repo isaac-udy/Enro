@@ -48,6 +48,21 @@ internal fun Project.configureKotlinMultiplatform(
     kotlinMultiplatformExtension.apply {
         explicitApi = ExplicitApiMode.Strict
 
+        if (isEnroLibrary) {
+            // The committed dumps under each module's `api/` directory are the semver contract.
+            // Advanced, Experimental and Internal APIs are outside it, so they are left out.
+            @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
+            abiValidation {
+                filters {
+                    exclude {
+                        annotatedWith.add("dev.enro.annotations.AdvancedEnroApi")
+                        annotatedWith.add("dev.enro.annotations.ExperimentalEnroApi")
+                        annotatedWith.add("dev.enro.annotations.InternalEnroApi")
+                    }
+                }
+            }
+        }
+
         if (desktop) {
             jvm("desktop") {
                 compilerOptions {

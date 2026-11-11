@@ -10,7 +10,7 @@ package dev.enro.test
  *
  * See the documentation for [dev.enro.test.EnroTestRule] for more information.
  */
-fun runEnroTest(block: () -> Unit) {
+public fun runEnroTest(block: () -> Unit) {
     EnroTest.installNavigationController()
     try {
         block()

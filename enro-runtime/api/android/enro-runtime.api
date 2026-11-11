@@ -1,0 +1,1573 @@
+public final class dev/enro/EnroController {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/EnroController$Companion;
+	public final fun install (Ljava/lang/Object;)V
+}
+
+public final class dev/enro/EnroController$Companion {
+	public final fun getJsonConfiguration ()Lkotlinx/serialization/json/Json;
+	public final fun getSavedStateConfiguration ()Landroidx/savedstate/serialization/SavedStateConfiguration;
+}
+
+public final class dev/enro/NavigationBinding {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/NavigationBinding$Companion;
+	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Ldev/enro/ui/NavigationDestinationProvider;Z)V
+	public synthetic fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Ldev/enro/ui/NavigationDestinationProvider;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getKeyType ()Lkotlin/reflect/KClass;
+	public final fun getProvider ()Ldev/enro/ui/NavigationDestinationProvider;
+	public final fun getSerializerModule ()Lkotlin/jvm/functions/Function1;
+	public final fun isPlatformOverride ()Z
+}
+
+public final class dev/enro/NavigationBinding$Companion {
+}
+
+public final class dev/enro/NavigationBindingKt {
+	public static final fun asCommonDestination (Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationKey$Instance;
+}
+
+public final class dev/enro/NavigationContainer {
+	public static final field $stable I
+	public final fun accepts (Ldev/enro/context/NavigationContext;Ldev/enro/NavigationOperation;)Z
+	public final fun getBackstack ()Ldev/enro/NavigationBackstack;
+	public final fun getBackstackFlow ()Lkotlinx/coroutines/flow/Flow;
+	public final fun getController ()Ldev/enro/EnroController;
+	public final fun getKey ()Ldev/enro/NavigationContainer$Key;
+	public final fun updateBackstack (Ldev/enro/context/ContainerContext;Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract class dev/enro/NavigationContainer$EmptyInterceptor {
+	public static final field $stable I
+	public fun <init> ()V
+	public final fun allowEmpty ()Ldev/enro/NavigationContainer$EmptyInterceptor$Result;
+	public final fun denyEmpty ()Ldev/enro/NavigationContainer$EmptyInterceptor$Result;
+	public final fun denyEmptyAnd (Lkotlin/jvm/functions/Function0;)Ldev/enro/NavigationContainer$EmptyInterceptor$Result;
+	public abstract fun onEmpty (Ldev/enro/NavigationTransition;)Ldev/enro/NavigationContainer$EmptyInterceptor$Result;
+}
+
+public abstract interface class dev/enro/NavigationContainer$EmptyInterceptor$Result {
+}
+
+public final class dev/enro/NavigationContainer$EmptyInterceptor$Result$AllowEmpty : dev/enro/NavigationContainer$EmptyInterceptor$Result {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/NavigationContainer$EmptyInterceptor$Result$AllowEmpty;
+}
+
+public final class dev/enro/NavigationContainer$EmptyInterceptor$Result$DenyEmpty : dev/enro/NavigationContainer$EmptyInterceptor$Result {
+	public static final field $stable I
+	public fun <init> (Lkotlin/jvm/functions/Function0;)V
+}
+
+public final class dev/enro/NavigationContainer$Key {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/NavigationContainer$Key$Companion;
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ldev/enro/NavigationContainer$Key;
+	public static synthetic fun copy$default (Ldev/enro/NavigationContainer$Key;Ljava/lang/String;ILjava/lang/Object;)Ldev/enro/NavigationContainer$Key;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class dev/enro/NavigationContainer$Key$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/NavigationContainer$Key$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/enro/NavigationContainer$Key;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/enro/NavigationContainer$Key;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/NavigationContainer$Key$Companion {
+	public final fun FromName (Ljava/lang/String;)Ldev/enro/NavigationContainer$Key;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/NavigationContainer$Key$Saver : androidx/compose/runtime/saveable/Saver {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/NavigationContainer$Key$Saver;
+	public synthetic fun restore (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun restore (Ljava/lang/String;)Ldev/enro/NavigationContainer$Key;
+	public fun save (Landroidx/compose/runtime/saveable/SaverScope;Ldev/enro/NavigationContainer$Key;)Ljava/lang/String;
+	public synthetic fun save (Landroidx/compose/runtime/saveable/SaverScope;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class dev/enro/NavigationContainerFilter {
+	public static final field $stable I
+	public final fun accepts (Ldev/enro/NavigationKey$Instance;)Z
+}
+
+public final class dev/enro/NavigationContainerFilterBuilder {
+	public static final field $stable I
+	public final fun instance (Lkotlin/jvm/functions/Function1;)V
+	public final fun key (Ldev/enro/NavigationKey;)V
+	public final fun key (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class dev/enro/NavigationContainerFilterKt {
+	public static final fun accept (Lkotlin/jvm/functions/Function1;)Ldev/enro/NavigationContainerFilter;
+	public static final fun acceptAll ()Ldev/enro/NavigationContainerFilter;
+	public static final fun acceptNone ()Ldev/enro/NavigationContainerFilter;
+	public static final fun doNotAccept (Lkotlin/jvm/functions/Function1;)Ldev/enro/NavigationContainerFilter;
+	public static final fun fromChildrenOnly (Ldev/enro/NavigationContainerFilter;)Ldev/enro/NavigationContainerFilter;
+}
+
+public abstract class dev/enro/NavigationHandle : androidx/lifecycle/LifecycleOwner {
+	public static final field $stable I
+	public abstract fun execute (Ldev/enro/NavigationOperation;)V
+	public abstract fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getInstruction ()Ldev/enro/NavigationKey$Instance;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public abstract fun getSavedStateHandle ()Landroidx/lifecycle/SavedStateHandle;
+}
+
+public final class dev/enro/NavigationHandleConfiguration {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationHandle;)V
+	public final fun close ()V
+	public final fun onCloseRequested (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class dev/enro/NavigationHandleKt {
+	public static final fun close (Ldev/enro/NavigationHandle;)V
+	public static final fun closeAndCompleteFrom (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey$WithMetadata;)V
+	public static final fun closeAndCompleteFrom (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey$WithResult;)V
+	public static final fun closeAndCompleteFrom (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey;)V
+	public static final fun closeAndCompleteFromGeneric (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey;)V
+	public static final fun closeAndReplaceWith (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey$WithMetadata;)V
+	public static final fun closeAndReplaceWith (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey;)V
+	public static final fun complete (Ldev/enro/NavigationHandle;)V
+	public static final fun complete (Ldev/enro/NavigationHandle;Ljava/lang/Object;)V
+	public static final fun completeFrom (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey$WithMetadata;)V
+	public static final fun completeFrom (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey$WithResult;)V
+	public static final fun completeFrom (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey;)V
+	public static final fun completeFromGeneric (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey;)V
+	public static final fun completeWithoutResult (Ldev/enro/NavigationHandle;)V
+	public static final fun open (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey$WithMetadata;)V
+	public static final fun open (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey;)V
+	public static final fun requestClose (Ldev/enro/NavigationHandle;)V
+}
+
+public final class dev/enro/NavigationHandle_androidKt {
+	public static final fun navigationHandle (Landroidx/activity/ComponentActivity;Lkotlin/reflect/KClass;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun navigationHandle (Landroidx/fragment/app/Fragment;Lkotlin/reflect/KClass;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public final class dev/enro/NavigationHandle_uiKt {
+	public static final fun navigationHandle (Lkotlin/reflect/KClass;Landroidx/compose/runtime/Composer;I)Ldev/enro/NavigationHandle;
+	public static final fun untypedNavigationHandle (Landroidx/compose/runtime/Composer;I)Ldev/enro/NavigationHandle;
+}
+
+public final class dev/enro/NavigationHandle_viewmodelKt {
+	public static final fun getNavigationHandle (Landroidx/lifecycle/ViewModel;)Ldev/enro/NavigationHandle;
+	public static final fun navigationHandle (Landroidx/lifecycle/ViewModel;Lkotlin/reflect/KClass;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun navigationHandle (Landroidx/lifecycle/ViewModel;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun navigationHandle$default (Landroidx/lifecycle/ViewModel;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+}
+
+public final class dev/enro/NavigationKey_Instance_asOperationKt {
+	public static final fun asCloseOperation (Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Close;
+	public static final fun asOpenOperation (Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Open;
+	public static final fun complete (Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Complete;
+	public static final fun complete (Ldev/enro/NavigationKey$Instance;Ljava/lang/Object;)Ldev/enro/NavigationOperation$Complete;
+	public static final fun completeFrom (Ldev/enro/NavigationKey$Instance;Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Open;
+	public static final fun completeFromWithoutResult (Ldev/enro/NavigationKey$Instance;Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Open;
+	public static final fun completeFromWithoutResultDeprecated (Ldev/enro/NavigationKey$Instance;Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation;
+	public static final fun completeWithoutResult (Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Complete;
+}
+
+public abstract class dev/enro/NavigationOperation {
+	public static final field $stable I
+	public static final field CompleteFrom Ldev/enro/NavigationOperation$CompleteFrom;
+	public static final fun completeFrom (Ldev/enro/NavigationKey$Instance;Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Open;
+	public static final fun completeFromWithoutResult (Ldev/enro/NavigationKey$Instance;Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Open;
+	public static final fun completeFromWithoutResultDeprecated (Ldev/enro/NavigationKey$Instance;Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation;
+}
+
+public final class dev/enro/NavigationOperation$AggregateOperation : dev/enro/NavigationOperation {
+	public static final field $stable I
+	public fun <init> (Ljava/util/List;)V
+	public fun <init> ([Ldev/enro/NavigationOperation$RootOperation;)V
+}
+
+public final class dev/enro/NavigationOperation$Close : dev/enro/NavigationOperation$RootOperation {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationKey$Instance;Z)V
+	public synthetic fun <init> (Ldev/enro/NavigationKey$Instance;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ldev/enro/NavigationKey$Instance;
+	public final fun component2 ()Z
+	public final fun copy (Ldev/enro/NavigationKey$Instance;Z)Ldev/enro/NavigationOperation$Close;
+	public static synthetic fun copy$default (Ldev/enro/NavigationOperation$Close;Ldev/enro/NavigationKey$Instance;ZILjava/lang/Object;)Ldev/enro/NavigationOperation$Close;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getSilent ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/NavigationOperation$Complete : dev/enro/NavigationOperation$RootOperation {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/NavigationOperation$Complete$Companion;
+	public static final fun complete (Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Complete;
+	public static final fun complete (Ldev/enro/NavigationKey$Instance;Ljava/lang/Object;)Ldev/enro/NavigationOperation$Complete;
+	public static final fun completeWithoutResult (Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Complete;
+	public final fun component1 ()Ldev/enro/NavigationKey$Instance;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getResult ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/NavigationOperation$Complete$Companion {
+	public final fun complete (Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Complete;
+	public final fun complete (Ldev/enro/NavigationKey$Instance;Ljava/lang/Object;)Ldev/enro/NavigationOperation$Complete;
+	public final fun completeWithoutResult (Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Complete;
+}
+
+public final class dev/enro/NavigationOperation$CompleteFrom {
+	public final fun completeFrom (Ldev/enro/NavigationKey$Instance;Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Open;
+	public final fun completeFromWithoutResult (Ldev/enro/NavigationKey$Instance;Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Open;
+	public final fun completeFromWithoutResultDeprecated (Ldev/enro/NavigationKey$Instance;Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation;
+}
+
+public final class dev/enro/NavigationOperation$Open : dev/enro/NavigationOperation$RootOperation {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationKey$Instance;)V
+	public final fun component1 ()Ldev/enro/NavigationKey$Instance;
+	public final fun copy (Ldev/enro/NavigationKey$Instance;)Ldev/enro/NavigationOperation$Open;
+	public static synthetic fun copy$default (Ldev/enro/NavigationOperation$Open;Ldev/enro/NavigationKey$Instance;ILjava/lang/Object;)Ldev/enro/NavigationOperation$Open;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class dev/enro/NavigationOperation$RootOperation : dev/enro/NavigationOperation {
+	public static final field $stable I
+}
+
+public final class dev/enro/NavigationOperation$SetBackstack {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/NavigationOperation$SetBackstack;
+	public final fun invoke (Ldev/enro/NavigationBackstack;Ldev/enro/NavigationBackstack;)Ldev/enro/NavigationOperation$AggregateOperation;
+}
+
+public final class dev/enro/NavigationOperation$SideEffect : dev/enro/NavigationOperation$RootOperation {
+	public static final field $stable I
+	public fun <init> (Lkotlin/jvm/functions/Function0;)V
+	public final fun performSideEffect ()V
+}
+
+public final class dev/enro/NavigationTransition {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationBackstack;Ldev/enro/NavigationBackstack;)V
+	public final fun component1 ()Ldev/enro/NavigationBackstack;
+	public final fun component2 ()Ldev/enro/NavigationBackstack;
+	public final fun copy (Ldev/enro/NavigationBackstack;Ldev/enro/NavigationBackstack;)Ldev/enro/NavigationTransition;
+	public static synthetic fun copy$default (Ldev/enro/NavigationTransition;Ldev/enro/NavigationBackstack;Ldev/enro/NavigationBackstack;ILjava/lang/Object;)Ldev/enro/NavigationTransition;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getClosed ()Ljava/util/List;
+	public final fun getCurrentBackstack ()Ldev/enro/NavigationBackstack;
+	public final fun getOpened ()Ljava/util/List;
+	public final fun getRetained ()Ljava/util/Set;
+	public final fun getTargetBackstack ()Ldev/enro/NavigationBackstack;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/context/ContainerContext : dev/enro/context/NavigationContext, androidx/lifecycle/HasDefaultViewModelProviderFactory, androidx/lifecycle/LifecycleOwner, androidx/lifecycle/ViewModelStoreOwner {
+	public static final field $stable I
+	public fun getActiveChild ()Ldev/enro/context/DestinationContext;
+	public synthetic fun getActiveChild ()Ldev/enro/context/NavigationContextBase;
+	public final fun getContainer ()Ldev/enro/NavigationContainer;
+	public fun getController ()Ldev/enro/EnroController;
+	public fun getDefaultViewModelCreationExtras ()Landroidx/lifecycle/viewmodel/CreationExtras;
+	public fun getDefaultViewModelProviderFactory ()Landroidx/lifecycle/ViewModelProvider$Factory;
+	public fun getId ()Ljava/lang/String;
+	public fun getLifecycle ()Landroidx/lifecycle/Lifecycle;
+	public fun getParent ()Ldev/enro/context/NavigationContext;
+	public synthetic fun getParent ()Ljava/lang/Object;
+	public fun getViewModelStore ()Landroidx/lifecycle/ViewModelStore;
+	public fun registerChild (Ldev/enro/context/DestinationContext;)V
+	public synthetic fun registerChild (Ldev/enro/context/NavigationContextBase;)V
+	public fun registerVisibility (Ldev/enro/context/DestinationContext;Z)V
+	public synthetic fun registerVisibility (Ldev/enro/context/NavigationContextBase;Z)V
+	public fun unregisterChild (Ldev/enro/context/DestinationContext;)V
+	public synthetic fun unregisterChild (Ldev/enro/context/NavigationContextBase;)V
+}
+
+public final class dev/enro/context/DestinationContext : dev/enro/context/NavigationContext$WithContainerChildren, androidx/lifecycle/HasDefaultViewModelProviderFactory, androidx/lifecycle/LifecycleOwner, androidx/lifecycle/ViewModelStoreOwner {
+	public static final field $stable I
+	public fun getController ()Ldev/enro/EnroController;
+	public fun getDefaultViewModelCreationExtras ()Landroidx/lifecycle/viewmodel/CreationExtras;
+	public fun getDefaultViewModelProviderFactory ()Landroidx/lifecycle/ViewModelProvider$Factory;
+	public final fun getDestination ()Ldev/enro/ui/NavigationDestination;
+	public fun getId ()Ljava/lang/String;
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public fun getLifecycle ()Landroidx/lifecycle/Lifecycle;
+	public fun getParent ()Ldev/enro/context/ContainerContext;
+	public synthetic fun getParent ()Ljava/lang/Object;
+	public fun getViewModelStore ()Landroidx/lifecycle/ViewModelStore;
+}
+
+public abstract class dev/enro/context/NavigationContext : androidx/lifecycle/HasDefaultViewModelProviderFactory, androidx/lifecycle/LifecycleOwner, androidx/lifecycle/ViewModelStoreOwner, dev/enro/context/NavigationContextBase {
+	public static final field $stable I
+	public abstract fun getActiveChild ()Ldev/enro/context/NavigationContextBase;
+	public final fun getChildren ()Ljava/util/List;
+	public abstract fun getController ()Ldev/enro/EnroController;
+	public fun getDefaultViewModelCreationExtras ()Landroidx/lifecycle/viewmodel/CreationExtras;
+	public fun getDefaultViewModelProviderFactory ()Landroidx/lifecycle/ViewModelProvider$Factory;
+	public abstract fun getId ()Ljava/lang/String;
+	public abstract fun getParent ()Ljava/lang/Object;
+	public final fun isActive ()Z
+	public final fun isActiveInRoot ()Z
+	public abstract fun registerChild (Ldev/enro/context/NavigationContextBase;)V
+	public abstract fun registerVisibility (Ldev/enro/context/NavigationContextBase;Z)V
+	public final fun requestActive ()V
+	public final fun requestActiveInRoot ()V
+	public abstract fun unregisterChild (Ldev/enro/context/NavigationContextBase;)V
+}
+
+protected final class dev/enro/context/NavigationContext$ChildState {
+	public fun <init> (Ljava/lang/Object;ZJ)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Z
+	public final fun component3 ()J
+	public final fun copy (Ljava/lang/Object;ZJ)Ldev/enro/context/NavigationContext$ChildState;
+	public static synthetic fun copy$default (Ldev/enro/context/NavigationContext$ChildState;Ljava/lang/Object;ZJILjava/lang/Object;)Ldev/enro/context/NavigationContext$ChildState;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getChild ()Ljava/lang/Object;
+	public final fun getRegistrationOrder ()J
+	public fun hashCode ()I
+	public final fun isVisible ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class dev/enro/context/NavigationContext$WithContainerChildren : dev/enro/context/NavigationContext {
+	public static final field $stable I
+	public synthetic fun <init> (Landroidx/compose/runtime/MutableState;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getActiveChild ()Ldev/enro/context/ContainerContext;
+	public synthetic fun getActiveChild ()Ldev/enro/context/NavigationContextBase;
+	public fun registerChild (Ldev/enro/context/ContainerContext;)V
+	public synthetic fun registerChild (Ldev/enro/context/NavigationContextBase;)V
+	public fun registerVisibility (Ldev/enro/context/ContainerContext;Z)V
+	public synthetic fun registerVisibility (Ldev/enro/context/NavigationContextBase;Z)V
+	public final fun setActiveContainer (Ljava/lang/String;)V
+	public fun unregisterChild (Ldev/enro/context/ContainerContext;)V
+	public synthetic fun unregisterChild (Ldev/enro/context/NavigationContextBase;)V
+}
+
+public abstract interface class dev/enro/context/NavigationContextBase {
+}
+
+public final class dev/enro/context/NavigationContext_activeLeafKt {
+	public static final fun activeLeaf (Ldev/enro/context/NavigationContext;)Ldev/enro/context/NavigationContext;
+	public static final fun activeLeafDestination (Ldev/enro/context/NavigationContext;)Ldev/enro/context/DestinationContext;
+}
+
+public final class dev/enro/context/NavigationContext_findAllContainersKt {
+	public static final fun findAllContainers (Ldev/enro/context/NavigationContext;)Ljava/util/List;
+}
+
+public final class dev/enro/context/NavigationContext_findContextKt {
+	public static final fun findActiveContainerContext (Ldev/enro/context/NavigationContext;Ldev/enro/NavigationContainer$Key;)Ldev/enro/context/ContainerContext;
+	public static final fun findActiveContext (Ldev/enro/context/NavigationContext;Lkotlin/jvm/functions/Function1;)Ldev/enro/context/NavigationContext;
+	public static final fun findContainerContext (Ldev/enro/context/NavigationContext;Ldev/enro/NavigationContainer$Key;)Ldev/enro/context/ContainerContext;
+	public static final fun findContext (Ldev/enro/context/NavigationContext;Lkotlin/jvm/functions/Function1;)Ldev/enro/context/NavigationContext;
+}
+
+public final class dev/enro/context/NavigationContext_getDebugStringKt {
+	public static final fun getDebugString (Ldev/enro/context/NavigationContext;)Ljava/lang/String;
+}
+
+public final class dev/enro/context/NavigationContext_getNavigationHandleKt {
+	public static final fun getNavigationHandleDefault (Ldev/enro/context/NavigationContext;)Ldev/enro/NavigationHandle;
+}
+
+public final class dev/enro/context/NavigationContext_getViewModelKt {
+	public static final fun getViewModel (Ldev/enro/context/NavigationContext;Lkotlin/reflect/KClass;Ljava/lang/String;)Landroidx/lifecycle/ViewModel;
+	public static synthetic fun getViewModel$default (Ldev/enro/context/NavigationContext;Lkotlin/reflect/KClass;Ljava/lang/String;ILjava/lang/Object;)Landroidx/lifecycle/ViewModel;
+	public static final fun requireViewModel (Ldev/enro/context/NavigationContext;Lkotlin/reflect/KClass;Ljava/lang/String;)Landroidx/lifecycle/ViewModel;
+	public static synthetic fun requireViewModel$default (Ldev/enro/context/NavigationContext;Lkotlin/reflect/KClass;Ljava/lang/String;ILjava/lang/Object;)Landroidx/lifecycle/ViewModel;
+}
+
+public final class dev/enro/context/NavigationContext_requireContextKt {
+	public static final fun requireActiveContext (Ldev/enro/context/NavigationContext;Ldev/enro/NavigationContainer$Key;)Ldev/enro/context/NavigationContext;
+	public static final fun requireActiveContext (Ldev/enro/context/NavigationContext;Lkotlin/jvm/functions/Function1;)Ldev/enro/context/NavigationContext;
+	public static final fun requireContext (Ldev/enro/context/NavigationContext;Ldev/enro/NavigationContainer$Key;)Ldev/enro/context/NavigationContext;
+	public static final fun requireContext (Ldev/enro/context/NavigationContext;Lkotlin/jvm/functions/Function1;)Ldev/enro/context/NavigationContext;
+}
+
+public final class dev/enro/context/NavigationContext_rootKt {
+	public static final fun root (Ldev/enro/context/NavigationContext;)Ldev/enro/context/RootContext;
+}
+
+public final class dev/enro/context/NavigationContext_setActiveContainerKt {
+	public static final fun setActiveContainer (Ldev/enro/context/NavigationContext;Ldev/enro/NavigationContainer;)V
+	public static final fun setActiveContainer (Ldev/enro/context/NavigationContext;Ldev/enro/context/ContainerContext;)V
+	public static final fun setActiveContainer (Ldev/enro/context/NavigationContext;Ldev/enro/ui/NavigationContainerState;)V
+}
+
+public final class dev/enro/context/RootContext : dev/enro/context/NavigationContext$WithContainerChildren, androidx/lifecycle/HasDefaultViewModelProviderFactory, androidx/lifecycle/LifecycleOwner, androidx/lifecycle/ViewModelStoreOwner {
+	public static final field $stable I
+	public fun getController ()Ldev/enro/EnroController;
+	public fun getDefaultViewModelCreationExtras ()Landroidx/lifecycle/viewmodel/CreationExtras;
+	public fun getDefaultViewModelProviderFactory ()Landroidx/lifecycle/ViewModelProvider$Factory;
+	public fun getId ()Ljava/lang/String;
+	public fun getLifecycle ()Landroidx/lifecycle/Lifecycle;
+	public fun getParent ()Ljava/lang/Object;
+	public fun getViewModelStore ()Landroidx/lifecycle/ViewModelStore;
+}
+
+public abstract class dev/enro/controller/NavigationComponentConfiguration {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Ldev/enro/controller/NavigationModule;)V
+	public synthetic fun <init> (Ldev/enro/controller/NavigationModule;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getModule ()Ldev/enro/controller/NavigationModule;
+}
+
+public final class dev/enro/controller/NavigationModule {
+	public static final field $stable I
+	public fun <init> ()V
+}
+
+public final class dev/enro/controller/NavigationModule$BuilderScope {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/controller/NavigationModule;)V
+	public final fun binding (Ldev/enro/NavigationBinding;)V
+	public final fun composeEnvironment (Lkotlin/jvm/functions/Function3;)V
+	public final fun decorator (Lkotlin/jvm/functions/Function0;)V
+	public final fun interceptor (Ldev/enro/interceptor/NavigationInterceptor;)V
+	public final fun interceptor (Lkotlin/jvm/functions/Function1;)V
+	public final fun module (Ldev/enro/controller/NavigationModule;)V
+	public final fun path (Ldev/enro/path/NavigationPathBinding;)V
+	public final fun plugin (Ldev/enro/plugin/NavigationPlugin;)V
+	public final fun serializersModule (Lkotlinx/serialization/modules/SerializersModule;)V
+}
+
+public abstract interface class dev/enro/controller/NavigationModuleAction {
+	public abstract fun invoke (Ldev/enro/controller/NavigationModule$BuilderScope;)V
+}
+
+public final class dev/enro/controller/NavigationModuleKt {
+	public static final fun createNavigationModule (Lkotlin/jvm/functions/Function1;)Ldev/enro/controller/NavigationModule;
+}
+
+public final class dev/enro/handle/NavigationHandleHolder : androidx/lifecycle/ViewModel {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationHandle;)V
+	public final fun getNavigationHandle ()Ldev/enro/NavigationHandle;
+}
+
+public final class dev/enro/handle/NavigationHandleHolderKt {
+	public static final fun getNavigationHandleHolder (Landroidx/lifecycle/ViewModelStoreOwner;)Ldev/enro/handle/NavigationHandleHolder;
+	public static final fun getOrCreateNavigationHandleHolder (Landroidx/lifecycle/ViewModelStoreOwner;Lkotlin/jvm/functions/Function1;)Ldev/enro/handle/NavigationHandleHolder;
+}
+
+public final class dev/enro/handle/RootNavigationHandle_androidKt {
+	public static final fun isResultFromEnro (Landroid/content/Intent;)Z
+}
+
+public abstract class dev/enro/interceptor/NavigationInterceptor {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/interceptor/NavigationInterceptor$Companion;
+	public fun <init> ()V
+	public fun beforeIntercept (Ldev/enro/context/NavigationContext;Ldev/enro/context/ContainerContext;Ljava/util/List;)Ljava/util/List;
+	public fun intercept (Ldev/enro/context/NavigationContext;Ldev/enro/context/ContainerContext;Ldev/enro/NavigationOperation$Close;)Ldev/enro/NavigationOperation;
+	public fun intercept (Ldev/enro/context/NavigationContext;Ldev/enro/context/ContainerContext;Ldev/enro/NavigationOperation$Complete;)Ldev/enro/NavigationOperation;
+	public fun intercept (Ldev/enro/context/NavigationContext;Ldev/enro/context/ContainerContext;Ldev/enro/NavigationOperation$Open;)Ldev/enro/NavigationOperation;
+}
+
+public final class dev/enro/interceptor/NavigationInterceptor$Companion {
+	public final fun processOperations (Ldev/enro/context/NavigationContext;Ldev/enro/context/ContainerContext;Ljava/util/List;Ldev/enro/interceptor/NavigationInterceptor;)Ljava/util/List;
+}
+
+public final class dev/enro/interceptor/NoOpNavigationInterceptor : dev/enro/interceptor/NavigationInterceptor {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/interceptor/NoOpNavigationInterceptor;
+}
+
+public abstract class dev/enro/interceptor/builder/InterceptorBuilderResult : java/lang/RuntimeException {
+	public static final field $stable I
+}
+
+public final class dev/enro/interceptor/builder/InterceptorBuilderResult$Cancel : dev/enro/interceptor/builder/InterceptorBuilderResult {
+	public static final field $stable I
+	public fun <init> ()V
+}
+
+public final class dev/enro/interceptor/builder/InterceptorBuilderResult$CancelAnd : dev/enro/interceptor/builder/InterceptorBuilderResult {
+	public static final field $stable I
+	public fun <init> (Lkotlin/jvm/functions/Function0;)V
+	public final fun getBlock ()Lkotlin/jvm/functions/Function0;
+}
+
+public final class dev/enro/interceptor/builder/InterceptorBuilderResult$Continue : dev/enro/interceptor/builder/InterceptorBuilderResult {
+	public static final field $stable I
+	public fun <init> ()V
+}
+
+public final class dev/enro/interceptor/builder/InterceptorBuilderResult$ReplaceWith : dev/enro/interceptor/builder/InterceptorBuilderResult {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationOperation;)V
+	public final fun getOperation ()Ldev/enro/NavigationOperation;
+}
+
+public final class dev/enro/interceptor/builder/NavigationInterceptorBuilder {
+	public static final field $stable I
+	public final fun getInterceptors ()Ljava/util/List;
+	public final fun onClosed (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
+	public final fun onCompleted (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
+	public final fun onOpened (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class dev/enro/interceptor/builder/NavigationInterceptorBuilderKt {
+	public static final fun navigationInterceptor (Lkotlin/jvm/functions/Function1;)Ldev/enro/interceptor/NavigationInterceptor;
+}
+
+public final class dev/enro/interceptor/builder/OnNavigationKeyClosedScope {
+	public static final field $stable I
+	public fun <init> (ZLdev/enro/NavigationKey$Instance;Ldev/enro/context/NavigationContext;Ldev/enro/context/ContainerContext;)V
+	public final fun cancel ()Ljava/lang/Void;
+	public final fun cancelAnd (Lkotlin/jvm/functions/Function0;)Ljava/lang/Void;
+	public final fun continueWithClose ()Ljava/lang/Void;
+	public final fun getBackstack ()Ldev/enro/NavigationBackstack;
+	public final fun getContainerContext ()Ldev/enro/context/ContainerContext;
+	public final fun getFromContext ()Ldev/enro/context/NavigationContext;
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public final fun isSilent ()Z
+	public final fun replaceWith (Ldev/enro/NavigationOperation;)Ljava/lang/Void;
+}
+
+public final class dev/enro/interceptor/builder/OnNavigationKeyCompletedScope {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationKey$Instance;Ljava/lang/Object;Ldev/enro/context/NavigationContext;Ldev/enro/context/ContainerContext;)V
+	public final fun cancel ()Ljava/lang/Void;
+	public final fun cancelAnd (Lkotlin/jvm/functions/Function0;)Ljava/lang/Void;
+	public final fun continueWithComplete ()Ljava/lang/Void;
+	public final fun deliverResultOnly ()Ljava/lang/Void;
+	public final fun getBackstack ()Ldev/enro/NavigationBackstack;
+	public final fun getContainerContext ()Ldev/enro/context/ContainerContext;
+	public final fun getFromContext ()Ldev/enro/context/NavigationContext;
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getResult (Ldev/enro/interceptor/builder/OnNavigationKeyCompletedScope;)Ljava/lang/Object;
+	public final fun replaceWith (Ldev/enro/NavigationOperation;)Ljava/lang/Void;
+}
+
+public final class dev/enro/interceptor/builder/OnNavigationKeyOpenedScope {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationKey$Instance;Ldev/enro/context/NavigationContext;Ldev/enro/context/ContainerContext;)V
+	public final fun cancel ()Ljava/lang/Void;
+	public final fun cancelAnd (Lkotlin/jvm/functions/Function0;)Ljava/lang/Void;
+	public final fun continueWithOpen ()Ljava/lang/Void;
+	public final fun getBackstack ()Ldev/enro/NavigationBackstack;
+	public final fun getContainerContext ()Ldev/enro/context/ContainerContext;
+	public final fun getFromContext ()Ldev/enro/context/NavigationContext;
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public final fun replaceWith (Ldev/enro/NavigationKey$Instance;)Ljava/lang/Void;
+	public final fun replaceWith (Ldev/enro/NavigationKey$WithMetadata;)Ljava/lang/Void;
+	public final fun replaceWith (Ldev/enro/NavigationKey;)Ljava/lang/Void;
+	public final fun replaceWith (Ldev/enro/NavigationOperation;)Ljava/lang/Void;
+}
+
+public final class dev/enro/path/EnroController_getBackstackFromPathKt {
+	public static final fun getBackstackFromPath (Ldev/enro/EnroController;Ljava/lang/String;)Ldev/enro/NavigationBackstack;
+}
+
+public final class dev/enro/path/EnroController_getNavigationKeyFromPathKt {
+	public static final fun getNavigationKeyFromPath (Ldev/enro/EnroController;Ljava/lang/String;)Ldev/enro/NavigationKey;
+}
+
+public final class dev/enro/path/EnroController_getPathFromNavigationKeyKt {
+	public static final fun getPathFromNavigationKey (Ldev/enro/EnroController;Ldev/enro/NavigationKey;)Ljava/lang/String;
+}
+
+public final class dev/enro/path/NavigationContext_getNavigationKeyFromPathKt {
+	public static final fun getNavigationKeyFromPath (Ldev/enro/context/NavigationContext;Ljava/lang/String;)Ldev/enro/NavigationKey;
+}
+
+public final class dev/enro/path/NavigationContext_getPathFromNavigationKeyKt {
+	public static final fun getPathFromNavigationKey (Ldev/enro/context/NavigationContext;Ldev/enro/NavigationKey;)Ljava/lang/String;
+}
+
+public final class dev/enro/path/NavigationHandle_getNavigationKeyFromPathKt {
+	public static final fun getNavigationKeyFromPath (Ldev/enro/NavigationHandle;Ljava/lang/String;)Ldev/enro/NavigationKey;
+}
+
+public final class dev/enro/path/NavigationHandle_getPathFromNavigationKeyKt {
+	public static final fun getPathFromNavigationKey (Ldev/enro/NavigationHandle;Ldev/enro/NavigationKey;)Ljava/lang/String;
+}
+
+public final class dev/enro/platform/ActivityPlugin : dev/enro/plugin/NavigationPlugin {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/platform/ActivityPlugin;
+	public fun onAttached (Ldev/enro/EnroController;)V
+	public fun onDetached (Ldev/enro/EnroController;)V
+}
+
+public final class dev/enro/platform/Activity_navigationContextKt {
+	public static final fun getNavigationContext (Landroid/app/Activity;)Ldev/enro/context/RootContext;
+}
+
+public final class dev/enro/platform/Application_enroControllerKt {
+	public static final fun getEnroController (Landroid/app/Application;)Ldev/enro/EnroController;
+}
+
+public final class dev/enro/platform/CallSiteClassName_androidKt {
+	public static final fun callSiteClassName (Lkotlin/reflect/KClass;)Ljava/lang/String;
+}
+
+public final class dev/enro/platform/RootContext_activityKt {
+	public static final fun getActivity (Ldev/enro/context/RootContext;)Landroidx/activity/ComponentActivity;
+}
+
+public abstract class dev/enro/plugin/NavigationPlugin {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun onActive (Ldev/enro/NavigationHandle;)V
+	public fun onAttached (Ldev/enro/EnroController;)V
+	public fun onClosed (Ldev/enro/NavigationHandle;)V
+	public fun onDetached (Ldev/enro/EnroController;)V
+	public fun onOpened (Ldev/enro/NavigationHandle;)V
+}
+
+public abstract class dev/enro/result/NavigationResult {
+	public static final field $stable I
+}
+
+public final class dev/enro/result/NavigationResult$Closed : dev/enro/result/NavigationResult {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationKey$Instance;)V
+}
+
+public final class dev/enro/result/NavigationResult$Completed : dev/enro/result/NavigationResult {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/result/NavigationResult$Completed$Companion;
+	public fun <init> (Ldev/enro/NavigationKey$Instance;Ljava/lang/Object;)V
+	public final fun getData ()Ljava/lang/Object;
+	public fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public synthetic fun getInstance$dev_enro_enro_runtime ()Ldev/enro/NavigationKey$Instance;
+}
+
+public final class dev/enro/result/NavigationResult$Completed$Companion {
+	public final fun getResult (Ldev/enro/result/NavigationResult$Completed;)Ljava/lang/Object;
+}
+
+public final class dev/enro/result/NavigationResult$Delegated : dev/enro/result/NavigationResult {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationKey$Instance;)V
+}
+
+public final class dev/enro/result/NavigationResultChannel {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/result/NavigationResultChannel$Companion;
+	public fun <init> (Ldev/enro/result/NavigationResultChannel$Id;Ldev/enro/NavigationHandle;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
+	public final fun getId ()Ldev/enro/result/NavigationResultChannel$Id;
+	public final fun getNavigationHandle ()Ldev/enro/NavigationHandle;
+	public final fun getOnClosed ()Lkotlin/jvm/functions/Function1;
+	public final fun getOnCompleted ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class dev/enro/result/NavigationResultChannel$Companion {
+	public final fun getActiveChannels ()Ljava/util/Set;
+	public final fun getPendingResults ()Lkotlinx/coroutines/flow/MutableStateFlow;
+	public final fun observe (Lkotlin/reflect/KClass;Lkotlinx/coroutines/CoroutineScope;Ldev/enro/result/NavigationResultChannel;)Lkotlinx/coroutines/Job;
+}
+
+public final class dev/enro/result/NavigationResultChannel$Id {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/result/NavigationResultChannel$Id$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Ldev/enro/result/NavigationResultChannel$Id;
+	public static synthetic fun copy$default (Ldev/enro/result/NavigationResultChannel$Id;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ldev/enro/result/NavigationResultChannel$Id;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOwnerId ()Ljava/lang/String;
+	public final fun getResultId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class dev/enro/result/NavigationResultChannel$Id$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/result/NavigationResultChannel$Id$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/enro/result/NavigationResultChannel$Id;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/enro/result/NavigationResultChannel$Id;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/result/NavigationResultChannel$Id$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/result/NavigationResultChannelKt {
+	public static final fun open (Ldev/enro/result/NavigationResultChannel;Ldev/enro/NavigationKey$WithMetadata;)V
+	public static final fun open (Ldev/enro/result/NavigationResultChannel;Ldev/enro/NavigationKey$WithResult;)V
+	public static final fun openAny (Ldev/enro/result/NavigationResultChannel;Ldev/enro/NavigationKey$WithMetadata;)V
+	public static final fun openAny (Ldev/enro/result/NavigationResultChannel;Ldev/enro/NavigationKey;)V
+}
+
+public final class dev/enro/result/NavigationResultScope {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationKey$Instance;)V
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+}
+
+public final class dev/enro/result/RegisterForNavigationResult_composableKt {
+	public static final fun registerForNavigationResult (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)Ldev/enro/result/NavigationResultChannel;
+}
+
+public final class dev/enro/result/RegisterForNavigationResult_fragmentKt {
+	public static final fun registerForNavigationResult (Landroidx/fragment/app/Fragment;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Lkotlin/properties/PropertyDelegateProvider;
+	public static synthetic fun registerForNavigationResult$default (Landroidx/fragment/app/Fragment;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/properties/PropertyDelegateProvider;
+}
+
+public final class dev/enro/result/RegisterForNavigationResult_viewmodelKt {
+	public static final fun registerForNavigationResult (Landroidx/lifecycle/ViewModel;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lkotlin/properties/PropertyDelegateProvider;
+	public static final fun registerForNavigationResult (Landroidx/lifecycle/ViewModel;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)Lkotlin/properties/PropertyDelegateProvider;
+	public static synthetic fun registerForNavigationResult$default (Landroidx/lifecycle/ViewModel;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/properties/PropertyDelegateProvider;
+	public static synthetic fun registerForNavigationResult$default (Landroidx/lifecycle/ViewModel;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/properties/PropertyDelegateProvider;
+}
+
+public final class dev/enro/result/flow/FlowResultManager {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/result/flow/FlowResultManager$Companion;
+	public final fun clear (Ldev/enro/result/flow/FlowStep$Id;)V
+	public final fun get (Ldev/enro/result/flow/FlowStep;)Ljava/lang/Object;
+	public final fun getResultInstanceId (Ldev/enro/result/flow/FlowStep$Id;)Ljava/lang/String;
+	public final fun getSuspendingResults ()Landroidx/compose/runtime/snapshots/SnapshotStateMap;
+	public final fun set (Ldev/enro/result/flow/FlowStep;Ljava/lang/Object;)V
+	public final fun setDefault (Ldev/enro/result/flow/FlowStep;Ljava/lang/Object;)V
+}
+
+public final class dev/enro/result/flow/FlowResultManager$Companion {
+	public final fun create (Ldev/enro/NavigationHandle;)Ldev/enro/result/flow/FlowResultManager;
+	public final fun get (Ldev/enro/NavigationHandle;)Ldev/enro/result/flow/FlowResultManager;
+}
+
+public final class dev/enro/result/flow/FlowResultManager$FlowStepResult {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/result/flow/FlowResultManager$FlowStepResult$Companion;
+	public fun <init> (Ldev/enro/result/flow/FlowStep$Id;Ljava/lang/Object;JLjava/lang/String;)V
+	public final fun getDependsOn ()J
+	public final fun getId ()Ldev/enro/result/flow/FlowStep$Id;
+	public final fun getInstanceId ()Ljava/lang/String;
+	public final fun getResult ()Ljava/lang/Object;
+}
+
+public final synthetic class dev/enro/result/flow/FlowResultManager$FlowStepResult$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field $stable I
+	public fun <init> (Lkotlinx/serialization/KSerializer;)V
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/enro/result/flow/FlowResultManager$FlowStepResult;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/enro/result/flow/FlowResultManager$FlowStepResult;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public final fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/result/flow/FlowResultManager$FlowStepResult$Companion {
+	public final fun serializer (Lkotlinx/serialization/KSerializer;)Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/result/flow/FlowResultManager$SuspendingStepResult {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/result/flow/FlowStep$Id;Lkotlinx/coroutines/Deferred;Lkotlinx/coroutines/Job;J)V
+	public final fun getDependsOn ()J
+	public final fun getId ()Ldev/enro/result/flow/FlowStep$Id;
+	public final fun getJob ()Lkotlinx/coroutines/Job;
+	public final fun getResult ()Lkotlinx/coroutines/Deferred;
+}
+
+public final class dev/enro/result/flow/FlowStep {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/result/flow/FlowStep$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDependsOn ()J
+	public final fun getId ()Ldev/enro/result/flow/FlowStep$Id;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public final fun getMetadata ()Ldev/enro/NavigationKey$Metadata;
+	public final fun getOptions ()Ljava/util/Set;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class dev/enro/result/flow/FlowStep$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field $stable I
+	public fun <init> (Lkotlinx/serialization/KSerializer;)V
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/enro/result/flow/FlowStep;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/enro/result/flow/FlowStep;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public final fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/result/flow/FlowStep$Companion {
+	public final fun serializer (Lkotlinx/serialization/KSerializer;)Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/result/flow/FlowStep$Id {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/result/flow/FlowStep$Id$Companion;
+	public fun <init> (Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class dev/enro/result/flow/FlowStep$Id$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field $stable I
+	public fun <init> (Lkotlinx/serialization/KSerializer;)V
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/enro/result/flow/FlowStep$Id;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/enro/result/flow/FlowStep$Id;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public final fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/result/flow/FlowStep$Id$Companion {
+	public final fun serializer (Lkotlinx/serialization/KSerializer;)Lkotlinx/serialization/KSerializer;
+}
+
+public abstract class dev/enro/result/flow/FlowStepDefinition {
+	public static final field $stable I
+	public fun <init> ()V
+	public final fun buildStep (Ldev/enro/result/flow/NavigationFlowScope;)Ldev/enro/result/flow/FlowStep;
+	public final fun getDefaultResult ()Ljava/lang/Object;
+	public abstract fun getKeyWithMetadata ()Ldev/enro/NavigationKey$WithMetadata;
+	public final fun getProvidedId ()Ldev/enro/result/flow/FlowStep$Id;
+	public abstract fun getResult ()Lkotlin/reflect/KClass;
+	public final fun setDefaultResult (Ljava/lang/Object;)V
+	public final fun setProvidedId (Ldev/enro/result/flow/FlowStep$Id;)V
+}
+
+public final class dev/enro/result/flow/FlowStepDefinition$ConfigurationScope {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/result/flow/FlowStepDefinition;)V
+	public final fun alwaysAfterPreviousStep ()V
+	public final fun dependsOn (Ljava/lang/Object;)V
+	public final fun getDefinition ()Ldev/enro/result/flow/FlowStepDefinition;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public final fun id (Ldev/enro/result/flow/FlowStep$Id;)V
+	public final fun transient ()V
+}
+
+public final class dev/enro/result/flow/FlowStepDefinitionKt {
+	public static final fun default (Ldev/enro/result/flow/FlowStepDefinition$ConfigurationScope;)V
+	public static final fun default (Ldev/enro/result/flow/FlowStepDefinition$ConfigurationScope;Ljava/lang/Object;)V
+	public static final fun defaultWithoutResult (Ldev/enro/result/flow/FlowStepDefinition$ConfigurationScope;)V
+}
+
+public abstract class dev/enro/result/flow/FlowStepIdProvider {
+	public static final field $stable I
+	public fun <init> (Lkotlin/reflect/KClass;)V
+	public abstract fun getId ()Ljava/lang/String;
+	public final fun getType ()Lkotlin/reflect/KClass;
+}
+
+public final class dev/enro/result/flow/FlowStepKt {
+	public static final fun getFlowStepId (Ldev/enro/NavigationKey$Instance;)Ldev/enro/result/flow/FlowStep$Id;
+}
+
+public abstract interface class dev/enro/result/flow/FlowStepOptions {
+	public static final field Companion Ldev/enro/result/flow/FlowStepOptions$Companion;
+}
+
+public final class dev/enro/result/flow/FlowStepOptions$AlwaysAfterPrevious : dev/enro/result/flow/FlowStepOptions {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/result/flow/FlowStepOptions$AlwaysAfterPrevious;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/result/flow/FlowStepOptions$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/result/flow/FlowStepOptions$Transient : dev/enro/result/flow/FlowStepOptions {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/result/flow/FlowStepOptions$Transient;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/result/flow/FlowStepReference$Companion {
+	public final fun getResult (Ldev/enro/result/flow/FlowStepReference;)Ljava/lang/Object;
+	public final fun setCompleted (Ldev/enro/result/flow/FlowStepReference;)V
+	public final fun setCompleted (Ldev/enro/result/flow/FlowStepReference;Ljava/lang/Object;)V
+	public final fun setCompletedWithoutResult (Ldev/enro/result/flow/FlowStepReference;)V
+}
+
+public final class dev/enro/result/flow/List_hashForDependsOnKt {
+	public static final fun hashForDependsOn (Ljava/util/List;)J
+}
+
+public final class dev/enro/result/flow/NavigationFlow {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/result/flow/NavigationFlow$Companion;
+	public final fun getResultManager ()Ldev/enro/result/flow/FlowResultManager;
+	public final fun getSteps ()Ljava/util/List;
+	public final fun update ()V
+}
+
+public final class dev/enro/result/flow/NavigationFlow$Companion {
+}
+
+public final class dev/enro/result/flow/NavigationFlowReference {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/result/flow/NavigationFlowReference$Companion;
+}
+
+public final synthetic class dev/enro/result/flow/NavigationFlowReference$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/result/flow/NavigationFlowReference$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ldev/enro/result/flow/NavigationFlowReference;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ldev/enro/result/flow/NavigationFlowReference;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/result/flow/NavigationFlowReference$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class dev/enro/result/flow/NavigationFlowReferenceKt {
+	public static final fun getNavigationFlow (Ldev/enro/NavigationHandle;Ldev/enro/result/flow/NavigationFlowReference;)Ldev/enro/result/flow/NavigationFlow;
+	public static final fun rememberNavigationFlowReference (Ldev/enro/result/flow/NavigationFlowReference;Landroidx/compose/runtime/Composer;I)Ldev/enro/result/flow/NavigationFlow;
+}
+
+public class dev/enro/result/flow/NavigationFlowScope {
+	public static final field $stable I
+	public final fun async ([Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public final fun escape ()Ljava/lang/Void;
+	public final fun getCoroutineScope ()Lkotlinx/coroutines/CoroutineScope;
+	public final fun getFlow ()Ldev/enro/result/flow/NavigationFlow;
+	public final fun getNavigationFlowReference ()Ldev/enro/result/flow/NavigationFlowReference;
+	public final fun getResultManager ()Ldev/enro/result/flow/FlowResultManager;
+	public final fun getSteps ()Ljava/util/List;
+	public final fun getSuspendingSteps ()Ljava/util/List;
+}
+
+public final class dev/enro/result/flow/NavigationFlowScope$Escape : java/lang/RuntimeException {
+	public static final field $stable I
+	public fun <init> ()V
+}
+
+public final class dev/enro/result/flow/NavigationFlowScope$NoResult : java/lang/RuntimeException {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/result/flow/FlowStep;)V
+	public final fun getStep ()Ldev/enro/result/flow/FlowStep;
+}
+
+public final class dev/enro/result/flow/RegisterForFlowResultKt {
+	public static final fun registerForFlowResult (Landroidx/lifecycle/ViewModel;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Lkotlin/properties/PropertyDelegateProvider;
+}
+
+public final class dev/enro/result/flow/RememberNavigationContainerForFlowKt {
+	public static final fun rememberNavigationContainerForFlow (Landroidx/lifecycle/ViewModel;Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/NavigationContainerState;
+	public static final fun rememberNavigationContainerForFlow (Ldev/enro/result/flow/NavigationFlow;Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/NavigationContainerState;
+}
+
+public final class dev/enro/serialization/Any_unwrapForSerializationKt {
+	public static final fun unwrapForSerialization (Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class dev/enro/serialization/Any_wrapForSerializationKt {
+	public static final fun wrapForSerialization (Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class dev/enro/serialization/EnroSaverType {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/serialization/EnroSaverType$Companion;
+	public static final field TYPE_KEY Ljava/lang/String;
+	public fun <init> (Ljava/lang/String;Lkotlinx/serialization/KSerializer;)V
+	public final fun getSerializer ()Lkotlinx/serialization/KSerializer;
+	public final fun getTypeName ()Ljava/lang/String;
+}
+
+public final class dev/enro/serialization/EnroSaverType$Companion {
+	public final fun forSavedState (Landroid/os/Bundle;)Ldev/enro/serialization/EnroSaverType;
+	public final fun fromValue (Ljava/lang/Object;)Ldev/enro/serialization/EnroSaverType;
+}
+
+public final class dev/enro/serialization/NavigationKeyParceler : kotlinx/android/parcel/Parceler {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/serialization/NavigationKeyParceler;
+	public fun create (Landroid/os/Parcel;)Ldev/enro/NavigationKey;
+	public synthetic fun create (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Ldev/enro/NavigationKey;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+	public fun write (Ldev/enro/NavigationKey;Landroid/os/Parcel;I)V
+	public synthetic fun write (Ljava/lang/Object;Landroid/os/Parcel;I)V
+}
+
+public final class dev/enro/serialization/NavigationKeyParceler$Nullable : kotlinx/android/parcel/Parceler {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/serialization/NavigationKeyParceler$Nullable;
+	public fun create (Landroid/os/Parcel;)Ldev/enro/NavigationKey;
+	public synthetic fun create (Landroid/os/Parcel;)Ljava/lang/Object;
+	public fun newArray (I)[Ldev/enro/NavigationKey;
+	public synthetic fun newArray (I)[Ljava/lang/Object;
+	public fun write (Ldev/enro/NavigationKey;Landroid/os/Parcel;I)V
+	public synthetic fun write (Ljava/lang/Object;Landroid/os/Parcel;I)V
+}
+
+public final class dev/enro/ui/EmptyBehavior {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/ui/EmptyBehavior$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/ui/EmptyBehavior$Companion {
+	public final fun allowEmpty (Lkotlin/jvm/functions/Function0;)Ldev/enro/ui/EmptyBehavior;
+	public static synthetic fun allowEmpty$default (Ldev/enro/ui/EmptyBehavior$Companion;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Ldev/enro/ui/EmptyBehavior;
+	public final fun closeParent (Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/EmptyBehavior;
+	public final fun default ()Ldev/enro/ui/EmptyBehavior;
+	public final fun preventEmpty ()Ldev/enro/ui/EmptyBehavior;
+}
+
+public final class dev/enro/ui/EmptyBehavior$Scope {
+	public static final field $stable I
+	public final fun allowEmpty ()Ldev/enro/NavigationContainer$EmptyInterceptor$Result;
+	public final fun denyEmpty ()Ldev/enro/NavigationContainer$EmptyInterceptor$Result;
+	public final fun denyEmptyAnd (Lkotlin/jvm/functions/Function0;)Ldev/enro/NavigationContainer$EmptyInterceptor$Result;
+	public final fun getTransition ()Ldev/enro/NavigationTransition;
+}
+
+public final class dev/enro/ui/LocalEntriesToExcludeFromCurrentSceneKt {
+	public static final fun getLocalEntriesToExcludeFromCurrentScene ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class dev/enro/ui/LocalNavigationContainer {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/ui/LocalNavigationContainer;
+	public final fun getCurrent (Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/NavigationContainerState;
+	public final fun getCurrentOrNull (Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/NavigationContainerState;
+	public final fun provides (Ldev/enro/ui/NavigationContainerState;)Landroidx/compose/runtime/ProvidedValue;
+}
+
+public final class dev/enro/ui/LocalNavigationContext {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/ui/LocalNavigationContext;
+	public final fun getCurrent (Landroidx/compose/runtime/Composer;I)Ldev/enro/context/NavigationContext;
+	public final fun getCurrentOrNull (Landroidx/compose/runtime/Composer;I)Ldev/enro/context/NavigationContext;
+	public final fun provides (Ldev/enro/context/NavigationContext;)Landroidx/compose/runtime/ProvidedValue;
+}
+
+public final class dev/enro/ui/LocalNavigationHandleKt {
+	public static final fun getLocalNavigationHandle ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class dev/enro/ui/NavigationContainerState {
+	public static final field $stable I
+	public final fun execute (Ldev/enro/NavigationOperation;)V
+	public final fun getBackstack ()Ldev/enro/NavigationBackstack;
+	public final fun getContainer ()Ldev/enro/NavigationContainer;
+	public final fun getContext ()Ldev/enro/context/ContainerContext;
+	public final fun getDestinations ()Ljava/util/List;
+	public final fun getEmptyBehavior ()Ldev/enro/ui/EmptyBehavior;
+	public final fun getKey ()Ldev/enro/NavigationContainer$Key;
+	public final fun getSavedStateHolder ()Ldev/enro/ui/decorators/NavigationSavedStateHolder;
+	public final fun isSettled ()Z
+	public final fun restoreState (Landroid/os/Bundle;)V
+	public final fun saveState ()Landroid/os/Bundle;
+	public final fun updateBackstack (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class dev/enro/ui/NavigationDestination {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/ui/NavigationDestination$Companion;
+	public final fun Content (Landroidx/compose/runtime/Composer;I)V
+	public final fun component1 ()Ldev/enro/NavigationKey$Instance;
+	public final fun component2 ()Ljava/util/Map;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public final fun getMetadata ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/ui/NavigationDestination$Companion {
+}
+
+public final class dev/enro/ui/NavigationDestination$MetadataBuilder {
+	public static final field $stable I
+	public final fun add (Ldev/enro/ui/NavigationDestination$MetadataKey;Ljava/lang/Object;)V
+	public final fun add (Ljava/lang/String;Ljava/lang/Object;)V
+	public final fun add (Lkotlin/Pair;)V
+	public final fun addAll (Ljava/util/Map;)V
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+}
+
+public abstract class dev/enro/ui/NavigationDestination$MetadataKey {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/Object;)V
+	public fun <init> (Ljava/lang/Object;Ljava/lang/String;)V
+	public final fun getDefault ()Ljava/lang/Object;
+	public final fun getName ()Ljava/lang/String;
+}
+
+public abstract interface class dev/enro/ui/NavigationDestinationContentScope {
+	public abstract fun getDestinationMetadata ()Ljava/util/Map;
+	public abstract fun getNavigation ()Ldev/enro/NavigationHandle;
+}
+
+public final class dev/enro/ui/NavigationDestinationKt {
+	public static final fun contains (Ljava/util/Map;Ldev/enro/ui/NavigationDestination$MetadataKey;)Z
+	public static final fun get (Ljava/util/Map;Ldev/enro/ui/NavigationDestination$MetadataKey;)Ljava/lang/Object;
+	public static final fun navigationDestinationContent (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;)Ldev/enro/ui/NavigationDestinationProvider;
+	public static synthetic fun navigationDestinationContent$default (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Ldev/enro/ui/NavigationDestinationProvider;
+}
+
+public class dev/enro/ui/NavigationDestinationProvider {
+	public static final field $stable I
+	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun create (Ldev/enro/NavigationKey$Instance;)Ldev/enro/ui/NavigationDestination;
+	public final fun peekMetadata (Ldev/enro/NavigationKey$Instance;)Ljava/util/Map;
+}
+
+public abstract interface class dev/enro/ui/NavigationScene {
+	public abstract fun getContent ()Lkotlin/jvm/functions/Function2;
+	public abstract fun getEntries ()Ljava/util/List;
+	public abstract fun getKey ()Ljava/lang/Object;
+	public fun getMetadata ()Ljava/util/Map;
+	public abstract fun getPreviousEntries ()Ljava/util/List;
+}
+
+public final class dev/enro/ui/NavigationScene$DefaultImpls {
+	public static fun getMetadata (Ldev/enro/ui/NavigationScene;)Ljava/util/Map;
+}
+
+public abstract class dev/enro/ui/NavigationScene$MetadataKey {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/Object;)V
+	public fun <init> (Ljava/lang/Object;Ljava/lang/String;)V
+	public final fun getDefault ()Ljava/lang/Object;
+	public final fun getName ()Ljava/lang/String;
+}
+
+public abstract interface class dev/enro/ui/NavigationScene$Overlay : dev/enro/ui/NavigationScene {
+	public abstract fun getOverlaidEntries ()Ljava/util/List;
+	public fun onRemove (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class dev/enro/ui/NavigationScene$Overlay$DefaultImpls {
+	public static fun getMetadata (Ldev/enro/ui/NavigationScene$Overlay;)Ljava/util/Map;
+	public static fun onRemove (Ldev/enro/ui/NavigationScene$Overlay;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class dev/enro/ui/NavigationSceneKt {
+	public static final fun contains (Ljava/util/Map;Ldev/enro/ui/NavigationScene$MetadataKey;)Z
+	public static final fun get (Ljava/util/Map;Ldev/enro/ui/NavigationScene$MetadataKey;)Ljava/lang/Object;
+}
+
+public final class dev/enro/ui/NavigationSceneState {
+	public static final field $stable I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCurrentScene ()Ldev/enro/ui/NavigationScene;
+	public final fun getEntries ()Ljava/util/List;
+	public final fun getOverlayScenes ()Ljava/util/List;
+	public final fun getPreviousScenes ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/ui/NavigationSceneStateKt {
+	public static final fun rememberNavigationSceneState (Ldev/enro/ui/NavigationContainerState;Ldev/enro/ui/NavigationSceneStrategy;Lkotlin/jvm/functions/Function0;Ljava/util/List;Landroidx/compose/runtime/Composer;II)Ldev/enro/ui/NavigationSceneState;
+}
+
+public abstract interface class dev/enro/ui/NavigationSceneStrategy {
+	public static final field Companion Ldev/enro/ui/NavigationSceneStrategy$Companion;
+	public abstract fun calculateScene (Ldev/enro/ui/SceneStrategyScope;Ljava/util/List;Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/NavigationScene;
+}
+
+public final class dev/enro/ui/NavigationSceneStrategy$Companion {
+	public final fun from (Ljava/util/List;)Ldev/enro/ui/NavigationSceneStrategy;
+	public final fun from ([Ldev/enro/ui/NavigationSceneStrategy;)Ldev/enro/ui/NavigationSceneStrategy;
+}
+
+public final class dev/enro/ui/RememberNavigationContainerKt {
+	public static final fun rememberNavigationContainer (Ldev/enro/NavigationContainer$Key;Ldev/enro/NavigationBackstack;Ldev/enro/ui/EmptyBehavior;Ldev/enro/interceptor/NavigationInterceptor;Ldev/enro/NavigationContainerFilter;Landroidx/compose/runtime/Composer;II)Ldev/enro/ui/NavigationContainerState;
+}
+
+public abstract interface class dev/enro/ui/SceneDecoratorStrategy {
+	public abstract fun decorateScene (Ldev/enro/ui/SceneDecoratorStrategyScope;Ldev/enro/ui/NavigationScene;Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/NavigationScene;
+}
+
+public final class dev/enro/ui/SceneDecoratorStrategyScope : dev/enro/ui/SceneStrategyScope {
+	public static final field $stable I
+}
+
+public class dev/enro/ui/SceneStrategyScope {
+	public static final field $stable I
+	public final fun getOnBack ()Lkotlin/jvm/functions/Function0;
+}
+
+public final class dev/enro/ui/decorators/ComposableSingletons$DestinationWrapperDecoratorKt {
+	public static final field INSTANCE Ldev/enro/ui/decorators/ComposableSingletons$DestinationWrapperDecoratorKt;
+	public fun <init> ()V
+	public final fun getLambda$702728769$dev_enro_enro_runtime ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class dev/enro/ui/decorators/ComposableSingletons$MovableContentDecoratorKt {
+	public static final field INSTANCE Ldev/enro/ui/decorators/ComposableSingletons$MovableContentDecoratorKt;
+	public fun <init> ()V
+	public final fun getLambda$1397162132$dev_enro_enro_runtime ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class dev/enro/ui/decorators/ComposableSingletons$NavigationContextDecoratorKt {
+	public static final field INSTANCE Ldev/enro/ui/decorators/ComposableSingletons$NavigationContextDecoratorKt;
+	public fun <init> ()V
+	public final fun getLambda$-1257035289$dev_enro_enro_runtime ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class dev/enro/ui/decorators/DestinationWrapperDecoratorKt {
+	public static final fun getLocalNavigationDestinationWrapper ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class dev/enro/ui/decorators/MovableContentDecoratorKt {
+	public static final fun rememberMovableContentDecorator (Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/decorators/NavigationDestinationDecorator;
+}
+
+public final class dev/enro/ui/decorators/NavigationContextDecoratorKt {
+	public static final fun rememberNavigationContextDecorator (Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/decorators/NavigationDestinationDecorator;
+}
+
+public class dev/enro/ui/decorators/NavigationDestinationDecorator {
+	public static final field $stable I
+	public fun <init> (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;)V
+}
+
+public final class dev/enro/ui/decorators/NavigationDestinationDecoratorKt {
+	public static final fun decorateNavigationDestination (Ldev/enro/ui/NavigationDestination;Ljava/util/List;)Ldev/enro/ui/NavigationDestination;
+	public static final fun navigationDestinationDecorator (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;)Ldev/enro/ui/decorators/NavigationDestinationDecorator;
+	public static synthetic fun navigationDestinationDecorator$default (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Ldev/enro/ui/decorators/NavigationDestinationDecorator;
+}
+
+public abstract interface class dev/enro/ui/decorators/NavigationDestinationWrapper {
+	public abstract fun Wrap (Ldev/enro/ui/NavigationDestination;Landroidx/compose/runtime/Composer;I)V
+}
+
+public final class dev/enro/ui/decorators/NavigationLifecycleDecoratorKt {
+	public static final fun rememberLifecycleDecorator (Ldev/enro/NavigationBackstack;ZLandroidx/compose/runtime/Composer;I)Ldev/enro/ui/decorators/NavigationDestinationDecorator;
+}
+
+public final class dev/enro/ui/decorators/NavigationSavedStateDecoratorKt {
+	public static final fun rememberSavedStateDecorator (Ldev/enro/ui/decorators/NavigationSavedStateHolder;Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/decorators/NavigationDestinationDecorator;
+}
+
+public final class dev/enro/ui/decorators/NavigationSavedStateHolder {
+	public static final field $stable I
+	public final fun clear ()V
+	public final fun removeState (Ljava/lang/String;)V
+}
+
+public final class dev/enro/ui/decorators/NavigationViewModelStoreDecoratorKt {
+	public static final fun rememberViewModelStoreDecorator (Landroidx/lifecycle/ViewModelStoreOwner;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)Ldev/enro/ui/decorators/NavigationDestinationDecorator;
+}
+
+public final class dev/enro/ui/destinations/ActivityDestinationKt {
+	public static final fun activityDestination (Lkotlin/reflect/KClass;Lkotlin/reflect/KClass;)Ldev/enro/ui/NavigationDestinationProvider;
+	public static final fun getNavigationKeyInstance (Landroid/content/Intent;)Ldev/enro/NavigationKey$Instance;
+	public static final fun putNavigationKeyInstance (Landroid/content/Intent;Ldev/enro/NavigationKey$Instance;)Landroid/content/Intent;
+}
+
+public final class dev/enro/ui/destinations/ComposableSingletons$ActivityDestinationKt {
+	public static final field INSTANCE Ldev/enro/ui/destinations/ComposableSingletons$ActivityDestinationKt;
+	public fun <init> ()V
+	public final fun getLambda$646442767$dev_enro_enro_runtime ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class dev/enro/ui/destinations/ComposableSingletons$EmptyDestinationKt {
+	public static final field INSTANCE Ldev/enro/ui/destinations/ComposableSingletons$EmptyDestinationKt;
+	public fun <init> ()V
+	public final fun getLambda$456597923$dev_enro_enro_runtime ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class dev/enro/ui/destinations/ComposableSingletons$SyntheticDestinationKt {
+	public static final field INSTANCE Ldev/enro/ui/destinations/ComposableSingletons$SyntheticDestinationKt;
+	public fun <init> ()V
+	public final fun getLambda$-1103724113$dev_enro_enro_runtime ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class dev/enro/ui/destinations/EmptyDestinationKt {
+	public static final fun emptyDestination ()Ldev/enro/ui/NavigationDestinationProvider;
+}
+
+public final class dev/enro/ui/destinations/EmptyNavigationKey : dev/enro/NavigationKey {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/ui/destinations/EmptyNavigationKey;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/ui/destinations/FragmentDestinationKt {
+	public static final fun fragmentDestination (Lkotlin/reflect/KClass;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Ldev/enro/ui/NavigationDestinationProvider;
+	public static synthetic fun fragmentDestination$default (Lkotlin/reflect/KClass;Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ldev/enro/ui/NavigationDestinationProvider;
+}
+
+public final class dev/enro/ui/destinations/SyntheticDestinationKt {
+	public static final fun isSyntheticDestination (Ldev/enro/NavigationKey$Instance;)Z
+	public static final fun syntheticDestination (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Ldev/enro/ui/NavigationDestinationProvider;
+	public static synthetic fun syntheticDestination$default (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ldev/enro/ui/NavigationDestinationProvider;
+}
+
+public final class dev/enro/ui/destinations/SyntheticDestinationScope {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/context/NavigationContext;Ldev/enro/NavigationKey$Instance;)V
+	public final fun close ()Ljava/lang/Void;
+	public final fun closeSilently ()Ljava/lang/Void;
+	public final fun complete ()Ljava/lang/Void;
+	public final fun completeFrom (Ldev/enro/NavigationKey;)Ljava/lang/Void;
+	public final fun getContext ()Ldev/enro/context/NavigationContext;
+	public final fun getDestinationContext ()Ldev/enro/context/DestinationContext;
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getInstruction ()Ldev/enro/NavigationKey$Instance;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public final fun getNavigationContext ()Ldev/enro/context/NavigationContext;
+	public final fun open (Ldev/enro/NavigationKey$WithMetadata;)Ljava/lang/Void;
+	public final fun open (Ldev/enro/NavigationKey;)Ljava/lang/Void;
+	public final fun sideEffect (Lkotlin/jvm/functions/Function1;)Ljava/lang/Void;
+}
+
+public final class dev/enro/ui/destinations/SyntheticDestinationScope_completeKt {
+	public static final fun complete (Ldev/enro/ui/destinations/SyntheticDestinationScope;Ljava/lang/Object;)Ljava/lang/Void;
+	public static final fun completeFrom (Ldev/enro/ui/destinations/SyntheticDestinationScope;Ldev/enro/NavigationKey$WithMetadata;)Ljava/lang/Void;
+	public static final fun completeFrom (Ldev/enro/ui/destinations/SyntheticDestinationScope;Ldev/enro/NavigationKey$WithResult;)Ljava/lang/Void;
+	public static final fun completeFromNonResultDeprecated (Ldev/enro/ui/destinations/SyntheticDestinationScope;Ldev/enro/NavigationKey;)Ljava/lang/Void;
+	public static final fun completeWithoutResult (Ldev/enro/ui/destinations/SyntheticDestinationScope;)Ljava/lang/Void;
+}
+
+public abstract class dev/enro/ui/destinations/SyntheticOutcome {
+	public static final field $stable I
+}
+
+public final class dev/enro/ui/destinations/SyntheticOutcome$Close : dev/enro/ui/destinations/SyntheticOutcome {
+	public static final field $stable I
+	public fun <init> (Z)V
+	public final fun component1 ()Z
+	public final fun copy (Z)Ldev/enro/ui/destinations/SyntheticOutcome$Close;
+	public static synthetic fun copy$default (Ldev/enro/ui/destinations/SyntheticOutcome$Close;ZILjava/lang/Object;)Ldev/enro/ui/destinations/SyntheticOutcome$Close;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getSilent ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/ui/destinations/SyntheticOutcome$Complete : dev/enro/ui/destinations/SyntheticOutcome {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/Object;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun copy (Ljava/lang/Object;)Ldev/enro/ui/destinations/SyntheticOutcome$Complete;
+	public static synthetic fun copy$default (Ldev/enro/ui/destinations/SyntheticOutcome$Complete;Ljava/lang/Object;ILjava/lang/Object;)Ldev/enro/ui/destinations/SyntheticOutcome$Complete;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getResult ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/ui/destinations/SyntheticOutcome$CompleteFrom : dev/enro/ui/destinations/SyntheticOutcome {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationKey$Instance;)V
+	public final fun component1 ()Ldev/enro/NavigationKey$Instance;
+	public final fun copy (Ldev/enro/NavigationKey$Instance;)Ldev/enro/ui/destinations/SyntheticOutcome$CompleteFrom;
+	public static synthetic fun copy$default (Ldev/enro/ui/destinations/SyntheticOutcome$CompleteFrom;Ldev/enro/NavigationKey$Instance;ILjava/lang/Object;)Ldev/enro/ui/destinations/SyntheticOutcome$CompleteFrom;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/ui/destinations/SyntheticOutcome$Open : dev/enro/ui/destinations/SyntheticOutcome {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationKey$Instance;)V
+	public final fun component1 ()Ldev/enro/NavigationKey$Instance;
+	public final fun copy (Ldev/enro/NavigationKey$Instance;)Ldev/enro/ui/destinations/SyntheticOutcome$Open;
+	public static synthetic fun copy$default (Ldev/enro/ui/destinations/SyntheticOutcome$Open;Ldev/enro/NavigationKey$Instance;ILjava/lang/Object;)Ldev/enro/ui/destinations/SyntheticOutcome$Open;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/ui/destinations/SyntheticOutcome$SideEffect : dev/enro/ui/destinations/SyntheticOutcome {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationKey$Instance;Lkotlin/jvm/functions/Function1;)V
+	public final fun getBlock ()Lkotlin/jvm/functions/Function1;
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun runWith (Ldev/enro/context/NavigationContext;Ldev/enro/NavigationContainer;)V
+}
+
+public final class dev/enro/ui/destinations/SyntheticSideEffectScope {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/context/NavigationContext;Ldev/enro/NavigationContainer;Ldev/enro/NavigationKey$Instance;)V
+	public final fun getContainer ()Ldev/enro/NavigationContainer;
+	public final fun getContext ()Ldev/enro/context/NavigationContext;
+	public final fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public final fun getKey ()Ldev/enro/NavigationKey;
+}
+
+public final class dev/enro/ui/destinations/fragment/FragmentContextHolder : androidx/lifecycle/ViewModel {
+	public static final field $stable I
+	public fun <init> ()V
+	public final fun getNavigationHandle ()Ldev/enro/ui/destinations/fragment/FragmentNavigationHandle;
+}
+
+public final class dev/enro/ui/destinations/fragment/FragmentContextHolderKt {
+	public static final fun getFragmentContextHolder (Landroidx/fragment/app/Fragment;)Ldev/enro/ui/destinations/fragment/FragmentContextHolder;
+}
+
+public final class dev/enro/ui/destinations/fragment/FragmentNavigationHandle : dev/enro/NavigationHandle {
+	public static final field $stable I
+	public field instance Ldev/enro/NavigationKey$Instance;
+	public fun <init> ()V
+	public fun getInstance ()Ldev/enro/NavigationKey$Instance;
+	public fun getLifecycle ()Landroidx/lifecycle/Lifecycle;
+	public fun getSavedStateHandle ()Landroidx/lifecycle/SavedStateHandle;
+	public fun setInstance (Ldev/enro/NavigationKey$Instance;)V
+}
+
+public final class dev/enro/ui/scenes/ComposableSingletons$EmptyNavigationSceneKt {
+	public static final field INSTANCE Ldev/enro/ui/scenes/ComposableSingletons$EmptyNavigationSceneKt;
+	public fun <init> ()V
+	public final fun getLambda$1330430439$dev_enro_enro_runtime ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class dev/enro/ui/scenes/DirectOverlayScene : dev/enro/ui/NavigationScene$Overlay {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Ldev/enro/ui/NavigationDestination;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/util/List;
+	public final fun component4 ()Ldev/enro/ui/NavigationDestination;
+	public final fun copy (Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Ldev/enro/ui/NavigationDestination;)Ldev/enro/ui/scenes/DirectOverlayScene;
+	public static synthetic fun copy$default (Ldev/enro/ui/scenes/DirectOverlayScene;Ljava/lang/Object;Ljava/util/List;Ljava/util/List;Ldev/enro/ui/NavigationDestination;ILjava/lang/Object;)Ldev/enro/ui/scenes/DirectOverlayScene;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getContent ()Lkotlin/jvm/functions/Function2;
+	public fun getEntries ()Ljava/util/List;
+	public final fun getEntry ()Ldev/enro/ui/NavigationDestination;
+	public fun getKey ()Ljava/lang/Object;
+	public fun getMetadata ()Ljava/util/Map;
+	public fun getOverlaidEntries ()Ljava/util/List;
+	public fun getPreviousEntries ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun onRemove (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/enro/ui/scenes/DirectOverlaySceneKt {
+	public static final fun directOverlay (Ldev/enro/ui/NavigationDestination$MetadataBuilder;)V
+	public static final fun directOverlayWithFade (Ldev/enro/ui/NavigationDestination$MetadataBuilder;I)V
+	public static synthetic fun directOverlayWithFade$default (Ldev/enro/ui/NavigationDestination$MetadataBuilder;IILjava/lang/Object;)V
+	public static final fun isDirectOverlay (Ldev/enro/ui/NavigationDestination;)Z
+}
+
+public final class dev/enro/ui/scenes/DirectOverlaySceneStrategy : dev/enro/ui/NavigationSceneStrategy {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/ui/scenes/DirectOverlaySceneStrategy$Companion;
+	public fun <init> ()V
+	public fun calculateScene (Ldev/enro/ui/SceneStrategyScope;Ljava/util/List;Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/NavigationScene;
+}
+
+public final class dev/enro/ui/scenes/DirectOverlaySceneStrategy$Companion {
+}
+
+public final class dev/enro/ui/scenes/DirectOverlaySceneStrategy$IsDirectOverlayKey : dev/enro/ui/NavigationDestination$MetadataKey {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/ui/scenes/DirectOverlaySceneStrategy$IsDirectOverlayKey;
+}
+
+public final class dev/enro/ui/scenes/DirectOverlaySceneStrategy$OverlayFadeKey : dev/enro/ui/NavigationDestination$MetadataKey {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/ui/scenes/DirectOverlaySceneStrategy$OverlayFadeKey;
+}
+
+public final class dev/enro/ui/scenes/SinglePaneSceneStrategy : dev/enro/ui/NavigationSceneStrategy {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun calculateScene (Ldev/enro/ui/SceneStrategyScope;Ljava/util/List;Landroidx/compose/runtime/Composer;I)Ldev/enro/ui/NavigationScene;
+}
+
+public final class dev/enro/viewmodel/ClosableNavigationHandleReference : java/lang/AutoCloseable {
+	public static final field $stable I
+	public static final field Companion Ldev/enro/viewmodel/ClosableNavigationHandleReference$Companion;
+	public static final field NAVIGATION_HANDLE_KEY Ljava/lang/String;
+	public fun <init> ()V
+	public fun close ()V
+	public final fun getNavigationHandle ()Ldev/enro/NavigationHandle;
+	public final fun setNavigationHandle (Ldev/enro/NavigationHandle;)V
+}
+
+public final class dev/enro/viewmodel/ClosableNavigationHandleReference$Companion {
+}
+
+public final class dev/enro/viewmodel/EnroViewModelFactory : androidx/lifecycle/ViewModelProvider$Factory {
+	public static final field $stable I
+	public fun <init> (Ldev/enro/NavigationHandle;Landroidx/lifecycle/ViewModelProvider$Factory;)V
+	public fun create (Ljava/lang/Class;)Landroidx/lifecycle/ViewModel;
+	public fun create (Ljava/lang/Class;Landroidx/lifecycle/viewmodel/CreationExtras;)Landroidx/lifecycle/ViewModel;
+	public fun create (Lkotlin/reflect/KClass;Landroidx/lifecycle/viewmodel/CreationExtras;)Landroidx/lifecycle/ViewModel;
+}
+
+public final class dev/enro/viewmodel/NavigationHandleProvider {
+	public static final field $stable I
+	public static final field INSTANCE Ldev/enro/viewmodel/NavigationHandleProvider;
+	public final fun clear (Lkotlin/reflect/KClass;)V
+	public final fun clearAllForTest ()V
+	public final fun get (Lkotlin/reflect/KClass;)Ldev/enro/NavigationHandle;
+	public final fun put (Lkotlin/reflect/KClass;Ldev/enro/NavigationHandle;)V
+}
+
+public final class dev/enro/viewmodel/ViewModelProvider_Factory_withNavigationHandleKt {
+	public static final fun withNavigationHandle (Landroidx/lifecycle/ViewModelProvider$Factory;Landroidx/compose/runtime/Composer;I)Landroidx/lifecycle/ViewModelProvider$Factory;
+	public static final fun withNavigationHandle (Landroidx/lifecycle/ViewModelProvider$Factory;Ldev/enro/NavigationHandle;)Landroidx/lifecycle/ViewModelProvider$Factory;
+}
+
+public final class dev/enro/viewmodel/ViewModelStoreOwner_getNavigationHandleKt {
+	public static final fun getNavigationHandle (Landroidx/lifecycle/ViewModelStoreOwner;Lkotlin/reflect/KClass;)Ldev/enro/NavigationHandle;
+}
+
+public final class dev/enro/viewmodel/ViewModel_navigationHandleKt {
+	public static final fun getNavigationHandleReference (Landroidx/lifecycle/ViewModel;)Ldev/enro/viewmodel/ClosableNavigationHandleReference;
+}
+

@@ -21,7 +21,7 @@ import androidx.savedstate.write
  * This allows external control over saving and restoring state for all destinations.
  */
 @Stable
-public class NavigationSavedStateHolder(
+public class NavigationSavedStateHolder @dev.enro.annotations.AdvancedEnroApi constructor(
     savedState: SavedState
 ) {
     private val savedStateRegistryMap = mutableMapOf<String, DestinationSavedStateRegistry>()

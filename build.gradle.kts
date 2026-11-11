@@ -88,6 +88,9 @@ subprojects {
             tasks.findByName("jsTest")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("test")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("testWithEmulatorWtf")?.let { continuousIntegration.dependsOn(it) }
+            // Fails when the public API differs from the dump committed under `api/`.
+            // Run `./gradlew updateKotlinAbi` to record an intended change.
+            tasks.findByName("checkKotlinAbi")?.let { continuousIntegration.dependsOn(it) }
             // Compile-only fallbacks so modules without tests (e.g. recipes)
             // are still build-checked by CI. For modules with tests, these are
             // no-ops — the test tasks above already depend on compilation.

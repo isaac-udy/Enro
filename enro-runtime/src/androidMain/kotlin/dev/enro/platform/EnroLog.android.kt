@@ -9,7 +9,8 @@ import dev.enro.annotations.InternalEnroApi
 public actual object EnroLog {
     private const val LOG_TAG = "Enro"
 
-    internal var forceAndroidLogs = false
+    // Set by generated installNavigationController functions; the name must stay stable.
+    public var forceAndroidLogs: Boolean = false
 
     // Enabled/disabled by EnroTest
     @Suppress("MemberVisibilityCanBePrivate")

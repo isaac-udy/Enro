@@ -3,7 +3,6 @@ package dev.enro
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import dev.enro.annotations.AdvancedEnroApi
-import dev.enro.annotations.ExperimentalEnroApi
 import dev.enro.path.PathData
 import dev.enro.serialization.internalUnwrapForSerialization
 import dev.enro.serialization.internalWrapForSerialization
@@ -65,7 +64,6 @@ public interface NavigationKey {
      * The [pattern] follows the standard Enro path-pattern grammar
      * (e.g. `"/users/{id}?source={source?}"`).
      */
-    @ExperimentalEnroApi
     public interface PathBinding<T : NavigationKey> {
         public val pattern: String
         public fun deserialize(data: PathData): T

@@ -2,6 +2,7 @@ package dev.enro.path
 
 import net.thauvin.erik.urlencoder.UrlEncoderUtil
 
+@ConsistentCopyVisibility
 public data class ParsedPath internal constructor(
     val pathParts: List<String>,
     val queryParts: Map<String, String>,

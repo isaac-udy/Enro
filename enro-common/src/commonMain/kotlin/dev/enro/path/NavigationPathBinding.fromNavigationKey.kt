@@ -1,7 +1,6 @@
 package dev.enro.path
 
 import dev.enro.NavigationKey
-import dev.enro.annotations.ExperimentalEnroApi
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.typeOf
@@ -13,7 +12,6 @@ import kotlin.reflect.typeOf
  * Used by code generated for `@NavigationPath.FromBinding(MyBinding::class)`, but also
  * usable directly from hand-written modules.
  */
-@OptIn(ExperimentalEnroApi::class)
 public fun <T : NavigationKey> NavigationPathBinding.Companion.fromBinding(
     keyType: KClass<T>,
     binding: NavigationKey.PathBinding<T>,

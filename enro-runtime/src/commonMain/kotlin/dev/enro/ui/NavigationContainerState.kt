@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.savedstate.SavedState
+import dev.enro.annotations.AdvancedEnroApi
 import androidx.savedstate.read
 import androidx.savedstate.serialization.decodeFromSavedState
 import androidx.savedstate.serialization.encodeToSavedState
@@ -20,7 +21,7 @@ import dev.enro.context.ContainerContext
 import dev.enro.ui.decorators.NavigationSavedStateHolder
 import kotlinx.serialization.PolymorphicSerializer
 
-public class NavigationContainerState(
+public class NavigationContainerState @AdvancedEnroApi constructor(
     public val container: NavigationContainer,
     public val emptyBehavior: EmptyBehavior,
     public val context: ContainerContext,

@@ -8,5 +8,5 @@ public fun EnroPreview(
     navigationKey: NavigationKey,
     content: @Composable () -> Unit,
 ) {
-    // TODO
+    content()
 }

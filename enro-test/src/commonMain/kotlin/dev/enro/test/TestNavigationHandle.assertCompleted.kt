@@ -6,7 +6,7 @@ import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 import kotlin.reflect.KClass
 
-fun TestNavigationHandle<out NavigationKey>.assertCompleted() {
+public fun TestNavigationHandle<out NavigationKey>.assertCompleted() {
     val operation = operations.lastOrNull()
     enroAssert(operation != null) {
         "Expected the last operation to be a complete operation, but there were no operations."
@@ -19,20 +19,20 @@ fun TestNavigationHandle<out NavigationKey>.assertCompleted() {
     }
 }
 
-fun <R : Any> TestNavigationHandle<NavigationKey>.assertCompleted(
+public fun <R : Any> TestNavigationHandle<NavigationKey>.assertCompleted(
     type: KClass<R>,
     expected: R,
 ): R = assertCompleted(type) { it == expected }
 
-inline fun <reified R : Any> TestNavigationHandle<NavigationKey>.assertCompleted(
+public inline fun <reified R : Any> TestNavigationHandle<NavigationKey>.assertCompleted(
     expected: R
 ): R = assertCompleted(R::class) { it == expected }
 
-inline fun <reified T : Any> TestNavigationHandle<NavigationKey>.assertCompleted(
+public inline fun <reified T : Any> TestNavigationHandle<NavigationKey>.assertCompleted(
     noinline predicate: (T) -> Boolean = { true },
 ): T = assertCompleted(T::class, predicate)
 
-fun <T : Any> TestNavigationHandle<NavigationKey>.assertCompleted(
+public fun <T : Any> TestNavigationHandle<NavigationKey>.assertCompleted(
     type: KClass<T>,
     predicate: (T) -> Boolean = { true },
 ): T {
@@ -64,7 +64,7 @@ fun <T : Any> TestNavigationHandle<NavigationKey>.assertCompleted(
     return result
 }
 
-fun TestNavigationHandle<*>.assertNotCompleted() {
+public fun TestNavigationHandle<*>.assertNotCompleted() {
     val last = operations.lastOrNull()
     if (last !is NavigationOperation.Complete<*>) return
     enroAssert(last.instance.id != instance.id) {

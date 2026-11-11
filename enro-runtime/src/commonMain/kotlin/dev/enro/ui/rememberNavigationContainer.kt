@@ -137,24 +137,3 @@ public fun rememberNavigationContainer(
     containerState.destinations = destinations
     return containerState
 }
-
-@Deprecated("Use the version of rememberNavigationContainer that takes a NavigationBackstack as the backstack parameter")
-@Composable
-@JvmName("rememberNavigationContainerListBackstack")
-public fun rememberNavigationContainer(
-    key: NavigationContainer.Key = rememberSaveable(saver = NavigationContainer.Key.Saver) {
-        NavigationContainer.Key("NavigationContainer@${Uuid.random()}")
-    },
-    backstack: List<NavigationKey.Instance<*>>,
-    emptyBehavior: EmptyBehavior = EmptyBehavior.preventEmpty(),
-    interceptor: NavigationInterceptor = NoOpNavigationInterceptor,
-    filter: NavigationContainerFilter = acceptAll(),
-): NavigationContainerState {
-    return rememberNavigationContainer(
-        key = key,
-        backstack = backstack.asBackstack(),
-        emptyBehavior = emptyBehavior,
-        interceptor = interceptor,
-        filter = filter,
-    )
-}

@@ -6,9 +6,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelStoreOwner
 import dev.enro.EnroController
 import dev.enro.NavigationKey
+import dev.enro.annotations.AdvancedEnroApi
 import dev.enro.ui.NavigationDestination
 
-public class DestinationContext<out T : NavigationKey>(
+public class DestinationContext<out T : NavigationKey> @AdvancedEnroApi constructor(
     lifecycleOwner: LifecycleOwner,
     viewModelStoreOwner: ViewModelStoreOwner,
     defaultViewModelProviderFactory: HasDefaultViewModelProviderFactory,
