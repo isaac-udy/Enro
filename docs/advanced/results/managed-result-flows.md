@@ -19,7 +19,6 @@ flow](embedded-result-flows.md) would have too many nested callbacks or too
 much manual intermediate state.
 
 ```kotlin
-@OptIn(ExperimentalEnroApi::class)
 @NavigationDestination(BookingFlow::class)
 val bookingFlowDestination: NavigationDestinationProvider<BookingFlow> =
     managedFlowDestination<BookingFlow, BookingDetails>(

@@ -60,7 +60,9 @@ Fragment/Activity story working alongside new Compose destinations. See
 | `composeEnvironment { content -> ... }` in module | Deprecated. Use `decorator { navigationDestinationDecorator { ... } }`. |
 | `syntheticDestination { sendResult(value) }` | `syntheticDestination { complete(value) }` — see [Synthetic Destinations](advanced/synthetic-destinations.md). The v2 `sendResult` and `forwardResult` extensions still exist in `enro-compat` as `@Deprecated` shims pointing at the new methods. |
 | `syntheticDestination { forwardResult(otherKey) }` | `syntheticDestination { completeFrom(otherKey) }` |
-| `EnroTestRule` (JUnit) | Still available on JVM; the KMP form is `runEnroTest { ... }`. |
+| `EnroTestRule` (JUnit) | Still available on Android; the KMP form is `runEnroTest { ... }`. |
+| `EnroPreview(key) { ... }` | Still available in `enro-compat`. It renders the content without a navigation handle. |
+| `navigationHandle.onContainer { }`, `onParentContainer { }`, `onActiveContainer { }` | Deprecated in `enro-compat`: the block is never run. Get the `NavigationContainer` from the navigation context and update its backstack directly. |
 | `expectInstruction { ... }` test helpers | `TestNavigationHandle<T>` with `assertOpened`, `assertClosed`, `assertCompleted`, `assertOperationExecuted`. The old helpers remain in `enro-test`'s compat layer. |
 
 ## Detailed changes
@@ -112,6 +114,20 @@ full metadata story.
 
 The extension functions live in package `dev.enro` and are imported as
 `dev.enro.open`, `dev.enro.close`, `dev.enro.complete`, `dev.enro.requestClose`.
+
+In Enro 3, `close()` removes the destination from its container immediately, and a destination
+that is no longer in its container ignores further operations. The Enro 2 pattern of calling
+`close()` and then `open(key)` from the same destination therefore drops the `open`. Use
+`closeAndReplaceWith(key)`, which performs both in one operation:
+
+```kotlin
+// Enro 2
+navigation.close()
+navigation.push(NextScreen())
+
+// Enro 3
+navigation.closeAndReplaceWith(NextScreen())
+```
 
 ### Installing the controller
 
@@ -196,6 +212,21 @@ of a key in a backstack has its own id and metadata).
 `NavigationDisplay` is the new top-level Composable for rendering a container.
 It replaces the v2 `Container { }` Composable.
 
+With `enro-compat` on Android, v2 code that calls `container.Render()` keeps
+compiling once the file imports the compat extension:
+
+```kotlin
+import dev.enro.core.compose.container.Render
+
+container.Render() // deprecated: renders NavigationDisplay(container)
+```
+
+In v2, `Render()` was a member of the container, so existing call sites have
+no import for it. The compiler reports "Unresolved reference: Render" until
+the import is added. The extension is deprecated in favour of
+`NavigationDisplay(state = container)` and is removed with the rest of
+`enro-compat`.
+
 ### Results
 
 Enro 2:
@@ -277,7 +308,7 @@ unchanged.
 
 ### Testing
 
-Enro 2's JVM-only `EnroTestRule` still works for JUnit-based tests:
+Enro 2's `EnroTestRule` still works for JUnit-based tests on Android:
 
 ```kotlin
 class ProfileTest {

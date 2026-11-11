@@ -6,10 +6,11 @@ nav_order: 4
 
 # Web
 
-Enro runs in the browser through Compose for Web's WasmJS target. The
+Enro runs in the browser on the wasmJs and Kotlin/JS targets. The
 install pattern mirrors the other platforms: call
 `installNavigationController` once at start-up, then host a container
-inside an `EnroBrowserContent`.
+inside an `EnroBrowserContent` (Compose UI) or an `EnroHtmlContent`
+(Compose HTML, see below).
 
 ## Minimal install
 
@@ -46,31 +47,131 @@ The pieces:
   controller's registered path bindings. If the URL matches a
   `@NavigationPath`, the app boots straight into that destination; if it
   doesn't, the lambda's default is used.
-- `InstallWebHistoryPlugin(container)` wires your container's backstack
-  into the browser history API. The URL bar reflects the current
-  root-container destination, and the browser's back/forward buttons
-  navigate that root backstack.
+- `InstallWebHistoryPlugin(container)` wires the container tree under
+  your root container into the browser history API. The URL bar
+  reflects the deepest active destination, and the browser's
+  back/forward buttons navigate whichever container the entry changed.
+
+## Rendering with Compose HTML
+
+`enro-html` (Kotlin/JS only) renders destinations as DOM elements with
+[Compose HTML][compose-html] instead of drawing them on a canvas. It
+depends on `enro-runtime`, not on Compose UI, so the bundle contains no
+skiko.
+
+```kotlin
+fun main() {
+    MyComponent.installNavigationController(document)
+
+    renderComposable(rootElementId = "root") {
+        EnroHtmlContent {
+            val container = rememberNavigationContainer(
+                backstack = rememberInitialBackstackFromUrl {
+                    backstackOf(Home.asInstance())
+                },
+            )
+            InstallWebHistoryPlugin(container)
+            HtmlNavigationDisplay(container)
+        }
+    }
+}
+```
+
+- `EnroHtmlContent { }` replaces `EnroBrowserContent`. `renderComposable`
+  provides no lifecycle, ViewModelStore or SavedStateRegistry owner, so
+  `EnroHtmlContent` provides one for the page.
+- `HtmlNavigationDisplay(container)` replaces `NavigationDisplay`. Scenes
+  change without an animation.
+- Destinations are `navigationDestinationContent { }` providers or
+  `@Composable` functions that emit Compose HTML elements, annotated
+  with `@NavigationDestination.PlatformOverride` (see below).
+  `navigationDestination { }` and a function with a
+  `NavigationDestinationScope` receiver are Compose UI and need
+  `NavigationDisplay`.
+- `htmlDialog()` metadata renders a destination in a modal `<dialog>`.
+  Escape and a backdrop click call `requestClose()`. Style it with
+  `dialog` and `dialog::backdrop`.
+- `directOverlay()` destinations render over the current scene;
+  `directOverlayWithFade()` fades them in and out.
+- A closed dialog or overlay stays in the DOM until its CSS transitions
+  end, so a `dialog:not([open])` transition runs on close.
+
+```kotlin
+@NavigationDestination.PlatformOverride(ConfirmDelete::class)
+val confirmDeleteDestination: NavigationDestinationProvider<ConfirmDelete> =
+    navigationDestinationContent(metadata = { htmlDialog() }) {
+        H2 { Text("Delete ${navigation.key.item}?") }
+        Button({ onClick { navigation.complete(true) } }) { Text("Delete") }
+    }
+```
+
+[`tests/html-application`][html-sample] is a complete example.
+
+### Compose UI screens in common code
+
+A module can keep its Compose UI screens in `commonMain` and add Compose
+HTML screens for the same keys in `jsMain`. Annotate each Compose HTML
+screen with `@NavigationDestination.PlatformOverride`:
+
+```kotlin
+// commonMain
+@Composable
+@NavigationDestination(Home::class)
+fun HomeScreen() { /* Compose UI */ }
+
+// jsMain
+@Composable
+@NavigationDestination.PlatformOverride(Home::class)
+fun HomeHtmlScreen() { /* Compose HTML */ }
+```
+
+When `enro-html` is on the Kotlin/JS classpath of the module that
+declares the `@NavigationComponent`, the processor:
+
+- registers only the override for each overridden key, so dead-code
+  elimination removes the Compose UI screen from the bundle;
+- fails the build with a list of `@Composable` function destinations
+  that have no override;
+- warns about property destinations that have no override, because the
+  processor can't see whether they use Compose UI.
+
+The overrides can also live in a separate module, as long as the
+`@NavigationComponent` module depends on it.
 
 ## URL routing model
 
-Enro's web URL routing is **root-container-only** in beta:
+Browser history mirrors the **whole container tree** beneath the root
+container — the one you create with `rememberNavigationContainer`
+directly inside `EnroBrowserContent`:
 
-- The URL bar always reflects the active destination of the **root
-  navigation container** — the one you create with
-  `rememberNavigationContainer` directly inside `EnroBrowserContent`.
-- Browser back/forward navigates that root container's backstack.
-- Inner-container navigation (modals, tabs, list/detail panes, anything
-  hosted inside another destination) is **session-local** — it doesn't
-  change the URL and doesn't create history entries.
+- A push on the root container is a history entry, and so is a push
+  inside a nested container hosted by the destination on top of the
+  root (a screen opened within a tab, a detail pane), recursively.
+- Switching which nested container a destination has active — a tab
+  switch — is a history entry too.
+- Browser back/forward restores the recorded tree: every container's
+  backstack and each destination's active container.
+- Closing screens inside the app walks the browser history back the
+  same way it does for the root, so back never resurrects a screen the
+  app has already closed.
 
-This is the model most modern web apps use — going to a different page
-on Twitter writes a URL, switching tabs within a profile doesn't.
-Browser back goes between pages, not between page-internal tabs.
+To keep nested navigation session-local instead — the root-only model
+of earlier releases — pass `InstallWebHistoryPlugin(container,
+nestedContainerHistory = false)`: only the root container's backstack
+is recorded, and the URL is the root destination's path.
+
+Two things are deliberately *not* navigation. A nested container
+appearing for the first time — a destination composing its tabs, a
+deep link seeding a tab several screens deep — fills in the entry it
+belongs to rather than pushing one on top of it. And a change that
+removes or swaps entries (a root reset such as loading → home) replaces
+the current entry, since the state it overwrites is no longer reachable
+in the app.
 
 ### What gets a URL
 
 A `NavigationKey` annotated with `@NavigationPath` participates in URL
-routing **when it is the active destination of the root container**:
+routing:
 
 ```kotlin
 @Serializable
@@ -81,18 +182,18 @@ data class ProductDetail(
 ) : NavigationKey
 ```
 
-If `ProductDetail` is at the top of the root container, the URL bar
-will show `/products/abc?source=email`. If it's the top of a *nested*
-container hosted inside some other destination, the URL bar continues
-to show the outer (root) destination's path.
+The URL bar shows the path of the **deepest active destination that has
+one**, walking from the root container's top destination through each
+destination's active container. If `ProductDetail` is on top of the
+root, or on top of the active tab inside a shell on the root, the URL
+bar shows `/products/abc?source=email`.
 
-When a destination has no `@NavigationPath`, or the active destination
-lives inside a nested container, the URL bar **doesn't change** — it
-keeps whatever path was last set by an annotated destination (or the
-URL the user originally landed on, if no annotated destination has been
-active yet). `pushState` still fires, so browser back/forward continues
-to work through `history.state`; the URL just doesn't pretend to
-identify state that isn't bookmarkable.
+When no destination on that walk has a `@NavigationPath`, the URL bar
+**doesn't change** — it keeps whatever path was last set by an annotated
+destination (or the URL the user originally landed on, if no annotated
+destination has been active yet). `pushState` still fires, so browser
+back/forward continues to work through `history.state`; the URL just
+doesn't pretend to identify state that isn't bookmarkable.
 
 ### Cold loading from a URL
 
@@ -114,19 +215,22 @@ manually.
 
 The plugin uses two slots in `window.history`:
 
-- **URL** (`location.pathname + location.search`) — derived from the
-  root container's active destination's `@NavigationPath`. This is the
-  part users see and share.
-- **`history.state`** — the root container's backstack as JSON, used
-  for accurate back/forward restoration mid-session.
+- **URL** (`location.pathname + location.search`) — the `@NavigationPath`
+  of the deepest active destination that has one. This is the part
+  users see and share.
+- **`history.state`** — the container tree under the root as JSON:
+  each container's backstack and each destination's active container.
+  Used for accurate back/forward restoration mid-session.
 
-Inner-container state is **not** serialised into either slot. If you
-need it to survive page reloads, handle it via your own
-`saveable`/`rememberSaveable` storage as you would on other platforms.
+A full-page reload starts from the URL alone, so only what the URL
+encodes survives it. If nested state needs to survive a reload, handle
+it via your own `saveable`/`rememberSaveable` storage as you would on
+other platforms.
 
 ## What Enro provides on Web
 
-- A real backstack for the root container that mirrors browser history.
+- A container tree under the root that mirrors browser history —
+  nested pushes and tab switches included.
 - The full common API: `NavigationKey`, `NavigationKey.WithResult<T>`,
   `navigationHandle<T>()`, `registerForNavigationResult`,
   `NavigationDisplay`, scene strategies, plugins, decorators.
@@ -139,11 +243,11 @@ need it to survive page reloads, handle it via your own
 
 ## Known limitations
 
-- **Nested URL routing**: there's no built-in way today to encode the
-  state of inner containers in the URL. A URL like `/recipe/page-2`
-  that maps to `[Recipe, Page2-in-inner-container]` is something we'll
-  add in a future release. For now, leaf URLs inside nested containers
-  are session-local.
+- **Cold loading nested state**: `rememberInitialBackstackFromUrl`
+  resolves a URL to a single root entry. A URL whose destination lives
+  inside a nested container needs the synthetic-backstack approach
+  above to seed its parents; the plugin then records that seeded tree
+  as the first entry.
 - **Manual address-bar edits**: if the user edits the URL by hand
   without a full-page reload, the plugin no-ops on the resulting
   `popstate`. Reloading the page applies the new URL via the cold-load
@@ -156,3 +260,5 @@ need it to survive page reloads, handle it via your own
 
 [cmp-web]: https://github.com/JetBrains/compose-multiplatform/blob/master/web/README.md
 [web-main]: https://github.com/isaac-udy/Enro/blob/main/recipes/app/web/src/wasmJsMain/kotlin/main.kt
+[compose-html]: https://github.com/JetBrains/compose-multiplatform/tree/master/html
+[html-sample]: https://github.com/isaac-udy/Enro/tree/main/tests/html-application
