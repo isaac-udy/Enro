@@ -14,20 +14,14 @@ import androidx.compose.ui.Modifier
 import dev.enro.ui.LocalNavigationAnimatedVisibilityScopeOrNull
 
 /**
- * Wraps [content] in an `AnimatedVisibility` whose visibility is tied
- * to the surrounding navigation destination's
- * [AnimatedVisibilityScope][LocalNavigationAnimatedVisibilityScopeOrNull].
+ * Wraps [content] in an `AnimatedVisibility` that is visible while the enclosing navigation
+ * destination is visible, so [content] animates in and out with the destination's
+ * transition. The destination's scope is read from
+ * [LocalNavigationAnimatedVisibilityScopeOrNull], which `NavigationDisplay` provides.
  *
- * When the scope is provided (the normal in-app case under
- * `NavigationDisplay`), the AnimatedVisibility's `visible` flag is
- * driven by the destination's transition — content animates in/out
- * alongside the surrounding scene.
- *
- * When the scope isn't provided (e.g. Paparazzi snapshot tests
- * rendering a piece standalone), [content] is rendered directly in a
- * [Box] applying [modifier] — there's nothing to animate against, so
- * we just show it. Without this fallback design-system snapshots for
- * any composable that uses this wrapper would crash.
+ * When no scope is provided (for example, a composable rendered outside a
+ * `NavigationDisplay` in a snapshot test), [content] is rendered in an `AnimatedVisibility`
+ * that is always visible.
  */
 @Composable
 public fun NavigationAnimatedVisibility(
@@ -38,9 +32,6 @@ public fun NavigationAnimatedVisibility(
 ) {
     val scope = LocalNavigationAnimatedVisibilityScopeOrNull.current
     if (scope == null) {
-        // Snapshot / standalone path — render the content directly,
-        // anchoring to the same `AnimatedVisibilityScope` contract by
-        // delegating to a self-contained `AnimatedVisibility(true)`.
         AnimatedVisibility(
             visible = true,
             modifier = modifier,

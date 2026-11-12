@@ -23,9 +23,8 @@ fun HomeScreen() {
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
     module = createNavigationModule {
-        // Optional configuration:
-        // plugins, interceptors, decorators, custom serializers,
-        // additional modules from other libraries, etc.
+        // Optional: plugins, interceptors, decorators, serializers,
+        // and modules from other libraries.
     }
 )
 // endregion

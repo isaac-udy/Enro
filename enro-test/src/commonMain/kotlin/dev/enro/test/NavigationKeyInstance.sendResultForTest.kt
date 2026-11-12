@@ -9,8 +9,8 @@ import dev.enro.asCompleteOperation
 import dev.enro.test.fixtures.NavigationContainerFixtures.ContainerFixtureKey
 
 /**
- * Sends [result] back through the [NavigationKey.Instance]'s result channel,
- * as though the destination completed with that value.
+ * Sends [result] to the result channel of the [NavigationKey.Instance], as if the
+ * destination completed with [result].
  *
  * Typically called on an instance returned by [assertOpened]:
  * ```
@@ -18,9 +18,9 @@ import dev.enro.test.fixtures.NavigationContainerFixtures.ContainerFixtureKey
  * child.sendResultForTest("confirmed")
  * ```
  *
- * When the instance was opened through a container fixture, the complete
- * operation is routed through the fixture's interceptor pipeline. Otherwise,
- * the result is registered directly on the pending-result channel.
+ * When the instance was opened through a container fixture, the container fixture
+ * executes the complete operation, which runs the interceptors of the container fixture.
+ * Otherwise, the result is registered directly on the result channel.
  */
 public fun <T : Any> NavigationKey.Instance<NavigationKey.WithResult<T>>.sendResultForTest(result: T) {
     val containerFixture = metadata.get(ContainerFixtureKey)
@@ -32,9 +32,9 @@ public fun <T : Any> NavigationKey.Instance<NavigationKey.WithResult<T>>.sendRes
 }
 
 /**
- * Sends a completion without a result payload through the
- * [NavigationKey.Instance]'s result channel, firing any `onCompleted`
- * callback registered via `registerForNavigationResult(onCompleted = { ... })`.
+ * Sends a completion without a result to the result channel of the
+ * [NavigationKey.Instance]. The result channel calls an `onCompleted` callback registered
+ * with `registerForNavigationResult(onCompleted = { ... })`.
  *
  * Typically called on an instance returned by [assertOpened]:
  * ```
@@ -42,8 +42,8 @@ public fun <T : Any> NavigationKey.Instance<NavigationKey.WithResult<T>>.sendRes
  * child.sendCompletedForTest()
  * ```
  *
- * When the instance was opened through a container fixture, the complete
- * operation is routed through the fixture's interceptor pipeline.
+ * When the instance was opened through a container fixture, the container fixture
+ * executes the complete operation, which runs the interceptors of the container fixture.
  */
 public fun NavigationKey.Instance<*>.sendCompletedForTest() {
     val containerFixture = metadata.get(ContainerFixtureKey)
@@ -55,8 +55,8 @@ public fun NavigationKey.Instance<*>.sendCompletedForTest() {
 }
 
 /**
- * Sends a close through the [NavigationKey.Instance]'s result channel,
- * firing any `onClosed` callback registered via `registerForNavigationResult`.
+ * Sends a close to the result channel of the [NavigationKey.Instance]. The result channel
+ * calls an `onClosed` callback registered with `registerForNavigationResult`.
  *
  * Typically called on an instance returned by [assertOpened]:
  * ```
@@ -64,8 +64,8 @@ public fun NavigationKey.Instance<*>.sendCompletedForTest() {
  * child.sendClosedForTest()
  * ```
  *
- * When the instance was opened through a container fixture, the close
- * operation is routed through the fixture's interceptor pipeline.
+ * When the instance was opened through a container fixture, the container fixture
+ * executes the close operation, which runs the interceptors of the container fixture.
  */
 public fun NavigationKey.Instance<*>.sendClosedForTest() {
     val containerFixture = metadata.get(ContainerFixtureKey)

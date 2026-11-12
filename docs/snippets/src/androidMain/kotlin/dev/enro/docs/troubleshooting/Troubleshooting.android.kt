@@ -8,7 +8,7 @@ import android.app.Application
 class MyApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        MyComponent.installNavigationController(this)   // <- this must run first
+        MyComponent.installNavigationController(this)   // must run before any other Enro call
     }
 }
 // endregion

@@ -6,10 +6,10 @@ nav_order: 10
 
 # Saved state
 
-A destination can keep state in four places. They differ in what they
-survive.
+A destination can store state in four places. The table shows whether each
+place keeps the state after each event.
 
-| Stored in | Covered by another screen | Configuration change | Process death |
+| Stored in | Destination covered by another destination | Configuration change | Process death |
 |---|---|---|---|
 | `remember` | lost | lost | lost |
 | `rememberSaveable` | kept | kept | kept |
@@ -18,39 +18,43 @@ survive.
 
 ## Covered destinations
 
-With the default scenes, a destination leaves the composition when another
-destination is opened on top of it. While it is on the backstack, Enro keeps
-its `rememberSaveable` state and its ViewModel, and restores both when the
-destination is shown again. State held in plain `remember` is lost.
+With the default scenes, a destination is removed from the composition when
+another destination is opened on top of the destination. While a covered
+destination is on the backstack, Enro keeps the destination's
+`rememberSaveable` state and ViewModel. Enro restores both when the
+destination is displayed again. State stored with `remember` is lost.
 
-Use `rememberSaveable` for UI state that should still be there when the user
-comes back: text in a field, a scroll position, a selected tab.
+Use `rememberSaveable` for UI state that must be restored when the user
+returns to the destination: text in a field, a scroll position, a selected
+tab.
 
 ## The backstack
 
-A container's backstack is saved the same way as `rememberSaveable` state.
-After a configuration change or process death, `rememberNavigationContainer`
-restores the backstack it had, and ignores the `backstack` argument.
+`rememberNavigationContainer` saves the container's backstack with
+`rememberSaveable`. After a configuration change or process death,
+`rememberNavigationContainer` restores the saved backstack and ignores the
+`backstack` argument.
 
-This is why a `NavigationKey` must be `@Serializable`: the keys on the
-backstack are written to saved state.
+Each `NavigationKey` on the backstack is written to saved state, so a
+`NavigationKey` must be `@Serializable`.
 
 ## In a ViewModel
 
-A ViewModel lives as long as its destination is on the backstack, across
-configuration changes. It does not survive process death. For state that
-must, give the ViewModel a `SavedStateHandle`:
+A ViewModel is retained while the ViewModel's destination is on the
+backstack, including across configuration changes. A ViewModel is not
+restored after process death. For state that must be restored after process
+death, pass a `SavedStateHandle` to the ViewModel:
 
 <!-- snippet: saved-state/view-model -->
 ```kotlin
 class CountersViewModel(
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    // Lives as long as the ViewModel: lost on process death.
+    // A ViewModel property is lost on process death.
     private val _inMemory = MutableStateFlow(0)
     val inMemory: StateFlow<Int> = _inMemory.asStateFlow()
 
-    // Written to saved state: restored after process death.
+    // A SavedStateHandle value is restored after process death.
     val saved: StateFlow<Int> = savedStateHandle.getStateFlow("saved", 0)
 
     fun increment() {
@@ -60,13 +64,14 @@ class CountersViewModel(
 }
 ```
 
-`createSavedStateHandle()` creates a handle scoped to the destination:
+`createSavedStateHandle()` creates a `SavedStateHandle` scoped to the
+destination:
 
 <!-- snippet: saved-state/destination -->
 ```kotlin
 var remembered by remember { mutableIntStateOf(0) }
 var saveable by rememberSaveable { mutableIntStateOf(0) }
-// createSavedStateHandle() gives the ViewModel a handle scoped to this destination.
+// createSavedStateHandle() creates a SavedStateHandle scoped to this destination.
 val viewModel = viewModel<CountersViewModel> {
     createEnroViewModel { CountersViewModel(createSavedStateHandle()) }
 }
@@ -74,15 +79,16 @@ val viewModel = viewModel<CountersViewModel> {
 
 ## Per platform
 
-- **Android** saves state through the Activity, so all three columns apply.
-  To test process death, turn on "Don't keep activities" in Developer
-  Options, send the app to the background and bring it back.
-- **Web** keeps state while the page is loaded. A full page reload starts
-  from the URL alone; see [Web](../platform/web.md).
+- **Android**: the Activity saves the state, so all three columns of the
+  table apply. To test process death, turn on "Don't keep activities" in
+  Developer Options, send the app to the background and return to the app.
+- **Web**: state is kept while the page is loaded. After a full page
+  reload, the app has only the URL; see [Web](../platform/web.md).
 
 ## See also
 
-- [Saved State recipe][saved-state-recipe] — the four counters above.
+- [Saved State recipe][saved-state-recipe] — one counter for each row of the
+  table.
 - [Saveable Back Stack recipe][saveable-recipe].
 - [Navigation Handles → Saved state](../core-concepts/navigation-handles.md).
 

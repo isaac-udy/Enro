@@ -8,10 +8,8 @@ import dev.enro.ui.NavigationSceneStrategy
 import dev.enro.ui.SceneStrategyScope
 
 /**
- * The 1-entry [NavigationScene] returned by [SinglePaneSceneStrategy]. Mirrors
- * Nav3's `SinglePaneScene` — a top-level data class with explicit equality so
- * two scenes wrapping the same entry compare structurally and AnimatedContent
- * can collapse them into the same slot.
+ * Must stay a data class: `NavigationDisplay` compares scenes by equality, and two scenes for
+ * the same entry must be equal to render in the same `AnimatedContent` slot.
  */
 internal data class SinglePaneScene(
     override val key: Any,
@@ -23,8 +21,7 @@ internal data class SinglePaneScene(
 }
 
 /**
- * A [NavigationSceneStrategy] that always returns a 1-entry [SinglePaneScene]
- * displaying the topmost entry.
+ * Always returns a scene that renders the last entry. Throws when `entries` is empty.
  */
 public class SinglePaneSceneStrategy : NavigationSceneStrategy {
     @Composable

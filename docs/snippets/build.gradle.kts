@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
-// Holds the code samples shown on the docs site (docs/ghpages) as real Kotlin, so they are
-// compiled on every target. `checkDocsSnippets` compares the Markdown with the regions in
+// Contains the code samples shown on the docs site (docs/ghpages) as Kotlin source, so every
+// target compiles the samples. `checkDocsSnippets` compares the Markdown with the regions in
 // this module; see ConfigureDocsSnippets in buildSrc.
 plugins {
     id("configure-library")
@@ -18,7 +18,7 @@ kotlin {
         commonMain.dependencies {
             implementation("dev.enro:enro:${project.enroVersionName}")
             implementation("dev.enro:enro-compat:${project.enroVersionName}")
-            // Test samples live in main source sets: they are compiled, never run.
+            // Test samples are in main source sets: the test samples are compiled, never run.
             implementation("dev.enro:enro-test:${project.enroVersionName}")
             implementation(libs.kotlinx.coroutines.test)
             implementation(kotlin("test"))
@@ -27,7 +27,7 @@ kotlin {
             implementation(libs.compose.lifecycle)
         }
 
-        // kotlin("test") only picks a test framework for test source sets.
+        // kotlin("test") selects a test framework for test source sets only.
         desktopMain.dependencies {
             implementation(kotlin("test-junit"))
         }

@@ -8,14 +8,13 @@ import dev.enro.context.ContainerContext
 import dev.enro.result.NavigationResultChannel
 
 /**
- * A NavigationInterceptor is a class that can intercept a navigation transition and
- * return a modified navigation backstack that will be used as the "to" property
- * of the final transition.
+ * Intercepts the operations of a navigation before a container applies the operations.
+ * Each `intercept` function returns the operation unchanged, a replacement operation, or
+ * null to cancel the operation.
  */
 @Stable
 public abstract class NavigationInterceptor {
-    // Allows the entire list of operations to be intercepted before
-    // any individual operation is intercepted.
+    // Called with the full list of operations before `intercept` is called for each operation.
     public open fun beforeIntercept(
         fromContext: NavigationContext,
         containerContext: ContainerContext,
@@ -24,21 +23,18 @@ public abstract class NavigationInterceptor {
         return operations
     }
 
-    // Intercept an individual open operation
     public open fun intercept(
         fromContext: NavigationContext,
         containerContext: ContainerContext,
         operation: NavigationOperation.Open<NavigationKey>,
     ): NavigationOperation? { return operation }
 
-    // Intercept an individual close operation
     public open fun intercept(
         fromContext: NavigationContext,
         containerContext: ContainerContext,
         operation: NavigationOperation.Close<NavigationKey>,
     ): NavigationOperation? { return operation }
 
-    // Intercept an individual complete operation
     public open fun intercept(
         fromContext: NavigationContext,
         containerContext: ContainerContext,
@@ -60,11 +56,8 @@ public abstract class NavigationInterceptor {
             ).toMutableList()
 
             val backstackById = containerContext.container.backstack.associateBy { it.id }
-            // Guards against infinite interceptor loops -- chiefly synthetic
-            // destinations whose outcomes (directly or transitively) re-open
-            // the same synthetic. Real navigation passes rarely exceed a few
-            // dozen iterations; 256 leaves room for deep aggregates without
-            // letting a runaway loop hang the whole controller.
+            // Stops an interceptor loop, such as a synthetic destination whose outcome opens the
+            // same synthetic destination again.
             val maxIterations = 256
             var iterations = 0
             while (toProcess.isNotEmpty()) {
@@ -78,9 +71,8 @@ public abstract class NavigationInterceptor {
                 }
                 val operation = toProcess.removeAt(0)
                 val intercepted = when (operation) {
-                    // If we're getting an Open operation and the backstack already contains
-                    // an instance with that id, we skip running the interceptor because this
-                    // indicates that the goal of the operation is to re-order the backstack
+                    // An Open for an instance that is already in the backstack re-orders the
+                    // backstack. The interceptor is not called for a re-order.
                     is NavigationOperation.Open<*> -> when {
                         backstackById.containsKey(operation.instance.id) -> operation
                         else -> interceptor.intercept(
@@ -103,32 +95,23 @@ public abstract class NavigationInterceptor {
                 }
                 when {
                     intercepted == null -> {
-                        // Operation was consumed by interceptor, skip it
+                        // The interceptor cancelled the operation.
                     }
                     intercepted === operation -> {
-                        // Same operation returned, add to result
                         result.add(operation)
                     }
-                    // The AggregateOperation branch must come BEFORE the
-                    // RootOperation branch -- on K/Native, `is RootOperation`
-                    // currently (incorrectly) returns true for
-                    // AggregateOperation instances even though
-                    // AggregateOperation extends NavigationOperation directly,
-                    // not RootOperation. Checking AggregateOperation first
-                    // ensures the correct branch runs everywhere.
+                    // The AggregateOperation branch must precede the RootOperation branch: on
+                    // Kotlin/Native, `is RootOperation` returns true for an AggregateOperation.
                     intercepted is NavigationOperation.AggregateOperation -> {
-                        // if we get an aggregate operation that contains the SAME operation we started with,
-                        // that means we still want to count that operation as being added to the result,
-                        // and we don't want to process it again
+                        // An aggregate that contains the original operation adds the original
+                        // operation to the result. The original operation is not processed again.
                         val filtered = intercepted.operations.filter { it != operation }
                         if (filtered.size != intercepted.operations.size) {
                             result.add(operation)
                         }
-                        // Different operation returned, add to processing queue
                         toProcess.addAll(0, filtered)
                     }
                     intercepted is NavigationOperation.RootOperation -> {
-                        // Different operation returned, add to processing queue
                         toProcess.add(0, intercepted)
                     }
                 }
@@ -141,17 +124,15 @@ public abstract class NavigationInterceptor {
                 when (it) {
                     is NavigationOperation.Close<NavigationKey> -> {
                         closedIds.add(it.instance.id)
-                        // We don't filter Close operations whose instance isn't on
-                        // the backstack — synthetic destinations legitimately
-                        // dispatch a Close for an instance that never landed in
-                        // any backstack so their result channel still fires.
+                        // A Close for an instance outside the backstack is kept: a synthetic
+                        // destination is never added to a backstack, and the Close notifies
+                        // the result channel of the synthetic destination.
                     }
                     is NavigationOperation.Complete<NavigationKey> -> {
                         closedIds.add(it.instance.id)
                         completedResultIds.add(it.instance.metadata.get(NavigationResultChannel.ResultIdKey))
-                        // Same reasoning as Close above — synthetics complete
-                        // off-backstack instances; the result-channel side
-                        // effect is the important bit and must still fire.
+                        // A Complete for an instance outside the backstack is kept, for the
+                        // same reason as a Close.
                     }
                     is NavigationOperation.Open<NavigationKey> -> {
                         openedIds.add(it.instance.id)
@@ -163,7 +144,8 @@ public abstract class NavigationInterceptor {
                 return@mapNotNull it
             }
 
-            // Add all non-opened operations as Open operations at the start of the list
+            // Each backstack instance that is not opened, closed or completed by the result is
+            // prepended as an Open operation.
             val updatedBackstack = containerContext.container.backstack
                 .mapNotNull {
                     val resultId = it.metadata.get(NavigationResultChannel.ResultIdKey)

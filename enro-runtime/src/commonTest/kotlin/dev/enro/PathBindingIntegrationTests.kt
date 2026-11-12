@@ -21,11 +21,9 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * Integration tests for the path-binding lookup that happens through the
- * controller's [PathRepository]. The existing [path.NavigationPathBindingTests]
- * covers path-pattern matching and key↔path conversion in isolation; these
- * tests assert that bindings registered via [createNavigationModule] are
- * routable via [getNavigationKeyFromPath] from any navigation context.
+ * Tests that a path binding registered through [createNavigationModule] resolves through
+ * [getNavigationKeyFromPath] from each navigation context. [path.NavigationPathBindingTests]
+ * tests path-pattern matching and the conversion between a key and a path.
  */
 class PathBindingIntegrationTests {
 

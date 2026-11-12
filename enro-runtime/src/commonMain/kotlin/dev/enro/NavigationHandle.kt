@@ -5,65 +5,47 @@ import androidx.lifecycle.SavedStateHandle
 import kotlin.jvm.JvmName
 
 /**
- * The active destination's view of the navigation framework.
+ * The API a destination uses to open, close and complete destinations.
  *
- * A [NavigationHandle] represents a single live entry on the backstack —
- * one instance, one lifecycle, one [SavedStateHandle]. From inside a
- * destination you use it to talk back to the navigation system: open
- * another destination, close yourself, complete with a result, etc.
+ * A [NavigationHandle] belongs to one entry on the backstack, with one
+ * [NavigationKey.Instance], one lifecycle and one [SavedStateHandle].
  *
- * Get one via:
+ * Get a [NavigationHandle] with:
  * - `navigationHandle()` inside a `@Composable` destination
  * - `by navigationHandle()` as a delegated property in a `ViewModel`
- * - `viewModelStoreOwner.getNavigationHandle<MyKey>()` from a Fragment / Activity
+ * - `viewModelStoreOwner.getNavigationHandle<MyKey>()` from a Fragment or Activity
  *
- * The handle is always typed to the [NavigationKey] subtype that started
- * the destination, so completion APIs that depend on the key's result type
- * (see [NavigationKey.WithResult]) stay statically checked.
+ * The lifecycle of the [NavigationHandle] follows the lifecycle of the
+ * destination and is destroyed when the destination is removed from the
+ * backstack.
  *
- * Implements [LifecycleOwner]: the handle's lifecycle tracks the
- * destination's lifecycle (created → started → resumed → … → destroyed),
- * so anything scoped to it (coroutines, observers) cleans up automatically
- * when the destination leaves the backstack.
- *
- * @param T the [NavigationKey] subtype this handle was created for.
+ * @param T the [NavigationKey] type of the destination.
  */
 public abstract class NavigationHandle<out T : NavigationKey> internal constructor() : LifecycleOwner {
     /**
-     * State that survives configuration changes and process death for this
-     * destination. Wraps the platform's `SavedStateHandle` and is scoped to
-     * this entry — different backstack entries for the same key each get
-     * their own.
+     * Saved state scoped to this backstack entry. Two backstack entries for
+     * the same key have separate [SavedStateHandle] instances.
      */
     public abstract val savedStateHandle: SavedStateHandle
 
     /**
-     * The backstack entry this handle was attached to: the [NavigationKey]
-     * plus a stable id and any metadata layered onto it. Prefer [instance]
-     * over [key] when you need the id (e.g. to compare against other
-     * backstack entries) or metadata; use [key] when you only need the
-     * key's data.
+     * The backstack entry of this handle: the [NavigationKey], the id of
+     * the entry and the metadata of the entry.
      */
     public abstract val instance: NavigationKey.Instance<T>
 
-    /**
-     * Shorthand for `instance.key`. Same value object that the caller
-     * passed to `open(…)` / put in the initial backstack — its properties
-     * are the key's serialised fields.
-     */
     public val key: T get() = instance.key
 
     @Deprecated("Use instance")
     public val instruction: NavigationKey.Instance<T> get() = instance
 
     /**
-     * Low-level entry point that dispatches a [NavigationOperation] through
-     * the controller. The strongly-typed helpers ([open], [close],
-     * [complete], [completeFrom], [closeAndReplaceWith],
-     * [closeAndCompleteFrom]) cover every common case; call [execute]
-     * directly only when you need to compose an operation those helpers
-     * don't already build — e.g. a custom [NavigationOperation.SetBackstack]
-     * or a hand-rolled [NavigationOperation.AggregateOperation].
+     * Executes [operation]. [open], [close], [complete], [completeFrom],
+     * [closeAndReplaceWith] and [closeAndCompleteFrom] build an operation
+     * and call [execute]. Call [execute] directly for an operation that
+     * those functions do not build, such as a
+     * [NavigationOperation.SetBackstack] or a custom
+     * [NavigationOperation.AggregateOperation].
      */
     public abstract fun execute(
         operation: NavigationOperation,
@@ -71,42 +53,33 @@ public abstract class NavigationHandle<out T : NavigationKey> internal construct
 }
 
 /**
- * Asks the destination to close itself, routing through any
- * `onCloseRequested` callback registered via [NavigationHandleConfiguration].
+ * Runs the `onCloseRequested` callback registered through
+ * [NavigationHandleConfiguration] in place of closing the destination. The
+ * callback decides whether to call [close]. With no callback registered,
+ * [requestClose] is equivalent to [close]. With more than one callback
+ * registered, [requestClose] throws [IllegalStateException].
  *
- * If a callback is registered it runs in place of the default close — that's
- * how a destination opts in to "prompt before dismissing" behaviour by
- * showing a confirmation dialog and only invoking [close] when the user
- * confirms. With no callback registered this is equivalent to [close].
- *
- * This is the function predictive-back and system-back gestures invoke, so
- * if you want gesture-triggered close to route through your confirmation
- * UI, register the callback (and DO NOT call [close] directly elsewhere).
+ * Predictive-back and system-back gestures call [requestClose].
  */
 public fun NavigationHandle<*>.requestClose() {
     NavigationHandleConfiguration.onCloseRequested(this)
 }
 
 /**
- * Closes this destination unconditionally — removes it from the backstack
- * and tears down its lifecycle.
- *
- * Bypasses any registered `onCloseRequested` callback; use [requestClose]
- * if you want the registered callback to have a chance to intervene
- * (typical for system-back / "X" button affordances).
+ * Removes this destination from the backstack without running the
+ * `onCloseRequested` callback. [requestClose] runs the callback.
  */
 public fun NavigationHandle<*>.close() {
     execute(NavigationOperation.Close(instance))
 }
 
 /**
- * Completes a non-result destination — closes this entry and notifies
- * the opener that the work finished successfully.
+ * Closes this destination and delivers a completed result to the caller
+ * that opened this destination.
  *
- * Use this for navigation keys with no result payload. For
- * [NavigationKey.WithResult] keys, call the result-carrying overload
- * `complete(result)` instead — completing a result key without a result
- * is a programming error and produces a deprecation-level error.
+ * A destination for a [NavigationKey.WithResult] must call
+ * `complete(result)`: calling [complete] without a result on a
+ * [NavigationKey.WithResult] handle is a compile error.
  */
 public fun NavigationHandle<*>.complete() {
     execute(NavigationOperation.Complete(instance))
@@ -122,11 +95,8 @@ public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.complete() {
 }
 
 /**
- * Completes this result-bearing destination with [result], closes it, and
- * delivers the value back to whoever opened it.
- *
- * The opener receives the result through the `registerForNavigationResult`
- * channel they set up before opening this key.
+ * Closes this destination and delivers [result] to the
+ * `registerForNavigationResult` channel that opened this destination.
  */
 public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.complete(result: R) {
     execute(NavigationOperation.Complete(instance, result))
@@ -135,11 +105,9 @@ public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.complete(resu
 /**
  * Forwards completion of this destination to another navigation [key].
  *
- * Used by *intermediary* destinations that delegate to a downstream
- * destination: this entry closes, [key] is opened in its place, and when
- * [key] eventually completes its result is delivered to whoever originally
- * opened *this* entry. Lets you wedge a chooser / disambiguator in front
- * of a result-producing destination without the opener knowing.
+ * Opens [key] and leaves this destination on the backstack. When the [key]
+ * destination completes, the result is delivered to the caller that opened
+ * this destination. [closeAndCompleteFrom] also closes this destination.
  *
  * For result-typed destinations, prefer the [NavigationKey.WithResult]
  * overload, which enforces matching result types at compile time.
@@ -158,54 +126,39 @@ public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.completeFrom(
 }
 
 /**
- * Type-safe [completeFrom] for result destinations: forwards completion
- * to [key], which must produce a result of the same type [R] this handle
- * is expecting. The compiler rejects mismatched result types.
+ * [completeFrom] for a [NavigationKey.WithResult] destination. [key] must
+ * have the same result type [R] as this destination.
  */
 public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey.WithResult<R>) {
     execute(NavigationOperation.CompleteFrom(instance, key.asInstance()))
 }
 
 /**
- * [completeFrom] variant that accepts a [NavigationKey.WithMetadata]
- * wrapper around the forwarded key — use this when the destination you
- * want to forward to was built with extra metadata (e.g. result-channel
- * routing data attached via `withMetadata { … }`).
+ * [completeFrom] for a [key] that has metadata attached.
  */
 public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.completeFrom(key: NavigationKey.WithMetadata<NavigationKey.WithResult<R>>) {
     execute(NavigationOperation.CompleteFrom(instance, key.asInstance()))
 }
 
 /**
- * Pushes a new destination for [key] on top of the current backstack.
- *
- * Doesn't close the calling destination — both stay on the stack. Use
- * [closeAndReplaceWith] when you want the new destination to take this
- * one's place.
+ * Opens a destination for [key] and leaves this destination on the
+ * backstack. [closeAndReplaceWith] also closes this destination.
  */
 public fun NavigationHandle<*>.open(key: NavigationKey) {
     execute(NavigationOperation.Open(key.asInstance()))
 }
 
 /**
- * [open] variant that accepts a [NavigationKey.WithMetadata] wrapper —
- * use this when the destination needs metadata attached (e.g. a result
- * channel id from `registerForNavigationResult`, or transition overrides).
+ * [open] for a [key] that has metadata attached.
  */
 public fun NavigationHandle<*>.open(key: NavigationKey.WithMetadata<*>) {
     execute(NavigationOperation.Open(key.asInstance()))
 }
 
 /**
- * Closes this destination and opens [key] in one atomic operation — the
- * backstack transitions directly from `[…, this]` to `[…, key]` with no
- * intermediate state.
- *
- * Equivalent to a `close()` followed by an `open(key)` from the previous
- * destination's perspective, but bundled so that interceptors,
- * animations, and saved-state cleanup all see it as a single operation.
- * Prefer this over manual `close(); open(key)` when you want a clean
- * "replace this screen with that one" effect.
+ * Closes this destination and opens [key] as one
+ * [NavigationOperation.AggregateOperation]. The backstack changes from
+ * `[…, this]` to `[…, key]` in one update.
  */
 public fun NavigationHandle<*>.closeAndReplaceWith(key: NavigationKey) {
     execute(
@@ -217,8 +170,7 @@ public fun NavigationHandle<*>.closeAndReplaceWith(key: NavigationKey) {
 }
 
 /**
- * [closeAndReplaceWith] variant accepting a [NavigationKey.WithMetadata]
- * wrapper for the replacement key.
+ * [closeAndReplaceWith] for a [key] that has metadata attached.
  */
 public fun NavigationHandle<*>.closeAndReplaceWith(key: NavigationKey.WithMetadata<*>) {
     execute(
@@ -230,13 +182,10 @@ public fun NavigationHandle<*>.closeAndReplaceWith(key: NavigationKey.WithMetada
 }
 
 /**
- * Closes this destination AND forwards completion to [key] atomically.
- *
- * Compared to [completeFrom], this one also removes the current
- * destination from the backstack immediately — useful when you don't want
- * the intermediary to stay visible underneath while the forwarded
- * destination is open. Common shape: a "choose flavour" screen
- * closes-and-completes-from the variant-specific result destination.
+ * Closes this destination and opens [key] as one
+ * [NavigationOperation.AggregateOperation]. When the [key] destination
+ * completes, the result is delivered to the caller that opened this
+ * destination. [completeFrom] leaves this destination on the backstack.
  */
 public fun NavigationHandle<NavigationKey>.closeAndCompleteFrom(key: NavigationKey) {
     execute(
@@ -257,8 +206,8 @@ public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.closeAndCompl
 }
 
 /**
- * Type-safe [closeAndCompleteFrom] for result destinations: [key] must
- * produce a result of the same type [R] this handle is expecting.
+ * [closeAndCompleteFrom] for a [NavigationKey.WithResult] destination.
+ * [key] must have the same result type [R] as this destination.
  */
 public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.closeAndCompleteFrom(
     key: NavigationKey.WithResult<R>,
@@ -272,8 +221,7 @@ public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.closeAndCompl
 }
 
 /**
- * [closeAndCompleteFrom] variant that accepts a [NavigationKey.WithMetadata]
- * wrapper around the forwarded key.
+ * [closeAndCompleteFrom] for a [key] that has metadata attached.
  */
 public fun <R : Any> NavigationHandle<NavigationKey.WithResult<R>>.closeAndCompleteFrom(
     key: NavigationKey.WithMetadata<NavigationKey.WithResult<R>>,

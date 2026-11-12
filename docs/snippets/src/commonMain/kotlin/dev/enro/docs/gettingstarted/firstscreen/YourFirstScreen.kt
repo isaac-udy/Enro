@@ -41,7 +41,7 @@ fun HomeScreen() {
     val navigation = navigationHandle<Home>()
 
     val askForName = registerForNavigationResult<String>(
-        onCompleted = { name -> /* we'll use it in a moment */ },
+        onCompleted = { name -> /* use name */ },
     )
 
     Column {

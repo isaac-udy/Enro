@@ -27,7 +27,7 @@ class FindContextRobot (
                 .single() as ComponentActivity
         }
         composeRule.waitUntil {
-            // Need to wait a moment for all of the child contexts to be created in their containers
+            // The four containers create the child contexts after the FindContext destination is active.
             componentActivity.navigationContext.findDestinationContext<FindContext.Left.Top>() != null
                 && componentActivity.navigationContext.findDestinationContext<FindContext.Left.Bottom>() != null
                 && componentActivity.navigationContext.findDestinationContext<FindContext.Right.Top>() != null

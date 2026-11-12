@@ -1,16 +1,16 @@
 /**
  * Enro Recipe: Back Stack Operations
  *
- * Demonstrates the common ways to change a backstack beyond open and close:
+ * Shows four backstack changes other than open and close:
  *  - back to the root of the container
- *  - back to a specific screen that is already on the stack ("pop up to")
- *  - clear the stack and start again with a different screen
- *  - replace the current screen with another one
+ *  - back to a screen that is already on the backstack ("pop up to")
+ *  - clear the backstack and start again with a different screen
+ *  - replace the current screen with another screen
  *
- * The first three edit the container's backstack with
+ * The first three changes call
  * `LocalNavigationContainer.current.updateBackstack { ... }`. The block receives
- * the current backstack and returns the new one. Replacing the current screen
- * uses `navigation.closeAndReplaceWith(key)`.
+ * the current backstack and returns the new backstack. The fourth change calls
+ * `navigation.closeAndReplaceWith(key)`.
  */
 package dev.enro.recipes.backstack
 
@@ -69,7 +69,7 @@ fun BackStackOperationsRecipeScreen() {
 @NavigationDestination(StackStep::class)
 fun StackStepDestination() {
     val navigation = navigationHandle<StackStep>()
-    // The container this destination is displayed in.
+    // LocalNavigationContainer is the container that displays this destination.
     val container = LocalNavigationContainer.current
     val step = navigation.key.number
 
@@ -92,13 +92,13 @@ fun StackStepDestination() {
             Text("Open step ${step + 1}")
         }
 
-        // Back to root: keep only the first entry.
+        // Back to root: the new backstack contains only the first entry.
         Button(onClick = { container.updateBackstack { it.take(1).asBackstack() } }) {
             Text("Back to root")
         }
 
-        // Pop up to: drop entries from the top until Step 2 is on top. If Step 2
-        // is not on the stack, leave the stack unchanged.
+        // Pop up to: the new backstack ends at Step 2. The block returns the
+        // backstack unchanged when Step 2 is not on the backstack.
         Button(onClick = {
             container.updateBackstack { backstack ->
                 val index = backstack.indexOfLast { (it.key as? StackStep)?.number == 2 }
@@ -108,13 +108,14 @@ fun StackStepDestination() {
             Text("Back to step 2")
         }
 
-        // Replace only this screen. The screens underneath stay on the stack.
+        // closeAndReplaceWith closes this screen and opens the new screen in one
+        // operation. The entries below this screen stay on the backstack.
         Button(onClick = { navigation.closeAndReplaceWith(StackStep(step + 100)) }) {
             Text("Replace this step with step ${step + 100}")
         }
 
-        // Clear and replace: the new backstack has no entries from the old one,
-        // so Back from the new screen leaves the container.
+        // Clear and replace: the new backstack contains no entry from the old
+        // backstack, so Back on the new screen does not return to a step.
         Button(onClick = { container.updateBackstack { backstackOf(StackFinished.asInstance()) } }) {
             Text("Finish: clear the stack")
         }

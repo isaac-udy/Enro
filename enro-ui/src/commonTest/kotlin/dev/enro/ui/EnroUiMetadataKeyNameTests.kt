@@ -18,8 +18,8 @@ class EnroUiMetadataKeyNameTests {
         OverlayTransitionsKey::class to OverlayTransitionsKey.name,
     )
 
-    // stableClassName is the qualified name where the platform has one, and the simple name on
-    // Kotlin/JS; either way the explicit name must not change what earlier versions stored.
+    // stableClassName returns the qualified name where the platform provides one, and the
+    // simple name on Kotlin/JS. Earlier versions stored stableClassName as the key name.
     @Test
     fun enroUiMetadataKeyNames_matchTheNamesUsedByEarlierVersions() {
         enroUiKeys.forEach { (keyClass, name) ->

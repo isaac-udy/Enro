@@ -42,11 +42,9 @@ import kotlinx.serialization.Serializable
 import java.util.*
 
 /**
- * This module implements the presentation tests for Fragments. It tests several scenarios:
- * - Present from Fragment to Composable
- * - Present from Fragment to another Fragment
- * - Present from Fragment to Activity
- * - Testing result delivery for all these cases
+ * Destinations for the Fragment presentation tests. A Fragment presents a
+ * Composable, a Fragment, an Activity, a dialog Composable and a DialogFragment,
+ * each with and without a result.
  */
 @Serializable
 @Parcelize
@@ -101,7 +99,6 @@ class FragmentPresentationRoot : Fragment() {
     
     val navigation by navigationHandle<FragmentPresentation.Root>()
     val resultChannel by registerForNavigationResult<FragmentPresentation.TestResult> { result ->
-        // Update the result text when we resume
         view?.findViewById<TextView>(R.id.fragment_presentation_result_text)?.apply {
             text = "Last result: ${result.id}"
         }
@@ -121,7 +118,6 @@ class FragmentPresentationRoot : Fragment() {
             setBackgroundResource(R.color.white)
         }
         
-        // Add a title
         val title = TextView(requireContext()).apply {
             text = "Fragment Presentation Tests"
             textSize = 24f
@@ -129,7 +125,6 @@ class FragmentPresentationRoot : Fragment() {
         }
         layout.addView(title)
         
-        // Add test buttons
         layout.addView(createButton("Present Composable") {
             navigation.present(FragmentPresentation.PresentableComposable)
         })
@@ -154,7 +149,6 @@ class FragmentPresentationRoot : Fragment() {
             resultChannel.present(FragmentPresentation.PresentableActivity)
         })
         
-        // Add dialog test buttons
         layout.addView(createButton("Present Dialog Composable") {
             navigation.present(FragmentPresentation.PresentableDialogComposable)
         })
@@ -171,7 +165,6 @@ class FragmentPresentationRoot : Fragment() {
             resultChannel.present(FragmentPresentation.PresentableDialogFragment)
         })
         
-        // Display the last received result
         val resultText = TextView(requireContext()).apply {
             id = R.id.fragment_presentation_result_text
             text = savedInstanceState?.getString("result") ?: "No result received yet"
@@ -254,7 +247,6 @@ class FragmentPresentationPresentable : Fragment() {
             setBackgroundResource(R.color.white)
         }
         
-        // Add a title
         val title = TextView(requireContext()).apply {
             text = "Presentable Fragment"
             textSize = 24f
@@ -262,7 +254,6 @@ class FragmentPresentationPresentable : Fragment() {
         }
         layout.addView(title)
         
-        // Add action buttons
         layout.addView(Button(requireContext()).apply {
             text = "Close"
             setOnClickListener { navigation.close() }
@@ -309,7 +300,6 @@ class FragmentPresentationActivityPresentableActivity : androidx.appcompat.app.A
             setBackgroundResource(R.color.white)
         }
 
-        // Add a title
         val title = TextView(this).apply {
             text = "Presentable Activity"
             textSize = 24f
@@ -317,7 +307,6 @@ class FragmentPresentationActivityPresentableActivity : androidx.appcompat.app.A
         }
         layout.addView(title)
 
-        // Add action buttons
         layout.addView(Button(this).apply {
             text = "Close"
             setOnClickListener { navigation.close() }
@@ -405,7 +394,6 @@ class FragmentPresentationDialogFragment : androidx.fragment.app.DialogFragment(
             setBackgroundResource(R.color.white)
         }
         
-        // Add a title
         val title = TextView(requireContext()).apply {
             text = "Dialog Fragment"
             textSize = 24f
@@ -413,7 +401,6 @@ class FragmentPresentationDialogFragment : androidx.fragment.app.DialogFragment(
         }
         layout.addView(title)
         
-        // Add action buttons
         layout.addView(Button(requireContext()).apply {
             text = "Close"
             setOnClickListener { navigation.close() }

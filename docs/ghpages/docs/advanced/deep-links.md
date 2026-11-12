@@ -6,20 +6,21 @@ nav_order: 9
 
 # Deep links
 
-A deep link is a URL that opens a specific screen. Handling one takes two
-steps:
+A deep link is a URL that opens a specific screen. Handling a deep link
+takes two steps:
 
-1. Turn the URL's path into a `NavigationKey`.
-2. Put that key on a container's backstack.
+1. Resolve the URL's path to a `NavigationKey`.
+2. Add the `NavigationKey` to a container's backstack.
 
-[Path bindings](path-bindings.md) do the first step. This page covers the
-second, and where the URL comes from on each platform.
+[Path bindings](path-bindings.md) perform the first step. This page covers
+the second step, and how each platform delivers the URL to the app.
 
 ## Open a key from a path
 
 `getNavigationKeyFromPath` resolves a path against the path bindings
-registered on your `NavigationComponent`. It returns `null` when no binding
-matches. This function resolves a path and opens the result on a container:
+registered on the `NavigationComponent`. `getNavigationKeyFromPath` returns
+`null` when no path binding matches. The `openDeepLink` function below
+resolves a path and adds the resolved key to a container's backstack:
 
 <!-- snippet: deep-links/open-deep-link -->
 ```kotlin
@@ -39,9 +40,10 @@ with `LocalNavigationContext.current`.
 
 ## Android
 
-Declare an intent filter for your links on the Activity, then read the link
-from the launch intent and from `onNewIntent`. This Activity keeps the path
-in state and opens it once the root container exists:
+Declare an intent filter for the links on the Activity. Read the link from
+the launch intent and from `onNewIntent`. The Activity below stores the
+path in Compose state and opens the path after the root container is
+created:
 
 <!-- snippet: deep-links/android-activity -->
 ```kotlin
@@ -51,8 +53,8 @@ class RecipesActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // After a configuration change the launch intent is delivered again;
-        // the link it carries has already been handled.
+        // After a configuration change the Activity receives the launch intent
+        // again; the link in the launch intent has already been handled.
         if (savedInstanceState == null) {
             pendingDeepLink = intent.deepLinkPath()
         }
@@ -73,7 +75,7 @@ class RecipesActivity : AppCompatActivity() {
         }
     }
 
-    // A link that arrives while the Activity is already running.
+    // Called for a link that is opened while the Activity is already running.
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         pendingDeepLink = intent.deepLinkPath()
@@ -88,7 +90,7 @@ private fun Intent.deepLinkPath(): String? {
 }
 ```
 
-Test it with:
+Send a test link with `adb`:
 
 ```
 adb shell am start -a android.intent.action.VIEW -d "enrorecipes://app/users/alice"
@@ -96,14 +98,15 @@ adb shell am start -a android.intent.action.VIEW -d "enrorecipes://app/users/ali
 
 ## Web
 
-`rememberInitialBackstackFromUrl` reads the address bar when the app loads
-and resolves it the same way. See [Web](../platform/web.md#cold-loading-from-a-url).
+`rememberInitialBackstackFromUrl` reads the browser's URL when the app
+loads and resolves the URL's path against the path bindings. See
+[Web](../platform/web.md#cold-loading-from-a-url).
 
 ## A backstack for the link
 
-Opening only the linked screen leaves Back with nowhere sensible to go. To
-give the link a history, set the whole backstack: the linked screen, with
-the screens the user would have passed through underneath it.
+A backstack that contains only the linked screen has no screen for Back to
+show. To provide one, set the whole backstack: the linked screen last,
+after the screens a user would open on the way to the linked screen.
 
 <!-- snippet: deep-links/synthetic-backstack -->
 ```kotlin
@@ -116,14 +119,16 @@ container.updateBackstack {
 }
 ```
 
-Back from the article now goes to its category, then home.
+Back from the article shows the article's category. Back from the category
+shows the home screen.
 
 ## See also
 
-- [Path Bindings](path-bindings.md) — declaring which paths map to which keys.
+- [Path Bindings](path-bindings.md) — binding paths to keys.
 - [Handling a Deep Link recipe][handle-recipe] — `openDeepLink`, with buttons
-  that simulate a link arriving.
-- [Advanced Deep Link recipe][advanced-recipe] — the synthetic backstack.
+  that simulate a deep link.
+- [Advanced Deep Link recipe][advanced-recipe] — setting a backstack for a
+  deep link.
 
 [handle-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/deeplink/HandleDeepLink.kt
 [advanced-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/deeplink/AdvancedDeepLink.kt

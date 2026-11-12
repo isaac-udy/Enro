@@ -1,30 +1,19 @@
 /**
  * Enro Recipe: List-Detail with Containers
  *
- * Demonstrates building a list-detail (master-detail) layout using two
- * independent NavigationContainers: one for the list pane (which only
- * accepts the list key) and one for the detail pane (which only accepts
- * detail keys via a container filter).
+ * Shows a list-detail layout with two NavigationContainers. The list
+ * container has the filter `acceptNone()` and contains only the list. The
+ * detail container has a filter that accepts `WithContainersItemDetail` keys.
  *
- * ────────────────────────────────────────────────────────────────────
- *  Prefer the scene-strategy version for most apps.
+ * The List-Detail (Scene) recipe (`ListDetailNavigation.kt`) builds the same
+ * layout with one backstack and a `NavigationSceneStrategy`, and is the
+ * recommended approach. Use two containers when each pane requires a
+ * separate backstack and filter, for example when the two panes host
+ * different feature flows.
  *
- *  A `NavigationSceneStrategy` lets you express the adaptive layout
- *  declaratively against a single backstack, with metadata on each
- *  destination indicating its pane role. See the
- *  [ListDetailNavigation recipe](./ListDetailNavigation.kt) for the
- *  recommended approach.
- *
- *  This with-containers recipe exists to show what's possible when you
- *  need full control over each pane's backstack and container filter
- *  independently — for example, when the two panes need to host
- *  different feature flows that can't share a backstack.
- * ────────────────────────────────────────────────────────────────────
- *
- * Note: This recipe uses a simple BoxWithConstraints-based width
- * threshold to choose between single-pane and dual-pane. In a real app
- * you'd typically use Material3's windowSizeClass APIs
- * (compose-material3-adaptive) for a proper Window Size Class.
+ * The recipe selects one or two panes with a `BoxWithConstraints` width
+ * threshold. Material 3 Adaptive provides `WindowSizeClass` for the same
+ * decision.
  */
 package dev.enro.recipes.listdetail
 
@@ -82,12 +71,15 @@ fun ListDetailWithContainersRecipeScreen() {
 private fun DualPaneLayout(
     modifier: Modifier = Modifier,
 ) {
+    // acceptNone(): `open` adds no key to the list container.
     val listContainer = rememberNavigationContainer(
         key = NavigationContainer.Key("list-pane"),
         backstack = backstackOf(WithContainersItemList.asInstance()),
         filter = acceptNone(),
     )
 
+    // The filter sends each WithContainersItemDetail to the detail container.
+    // allowEmpty() lets Back close the last detail and leave the container empty.
     val detailContainer = rememberNavigationContainer(
         key = NavigationContainer.Key("detail-pane"),
         backstack = backstackOf(),
@@ -95,7 +87,8 @@ private fun DualPaneLayout(
         emptyBehavior = EmptyBehavior.allowEmpty(),
     )
 
-    // Only keep the single top-most WithContainersItemDetail in the detail container
+    // Each open adds a WithContainersItemDetail to the detail container. This
+    // effect removes every entry below the last WithContainersItemDetail.
     LaunchedEffect(detailContainer.backstack) {
         val detailCount = detailContainer.backstack.count { it.key is WithContainersItemDetail }
         if (detailCount <= 1) {

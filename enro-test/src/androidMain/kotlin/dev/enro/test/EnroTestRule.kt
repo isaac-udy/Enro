@@ -5,21 +5,18 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
 /**
- * The EnroTestRule can be used in both pure JVM based unit tests and instrumented tests that run on devices.
+ * A JUnit rule that runs each test in [runEnroTest]. EnroTestRule works in JVM unit tests
+ * and in instrumented tests on a device.
  *
- * In both cases, this rule is designed to install a NavigationController that is accessible by
- * Enro's test extensions, and allow [TestNavigationHandles] to be created, which will record
- * navigation instructions that are made against the navigation handle. The recorded navigation
- * instructions can then be asserted on, in particular by using extensions such as
- * [expectOpenInstruction], [assertActive], [assertClosed], [assertOpen] and others.
+ * During a test, a NavigationController is installed for the Enro test extensions, and a
+ * [TestNavigationHandle] records the operations executed on the handle. Extensions such as
+ * [assertOpened], [assertClosed] and [assertActive] assert on the recorded operations.
  *
- * When EnroTestRule is used in an instrumented test, it will *prevent* regular navigation from
- * occurring, and is designed for testing individual screens in isolation from one another. If you
- * want to perform "real" navigation in instrumented tests, you do not need any Enro test extensions.
+ * In an instrumented test, EnroTestRule prevents real navigation, so that a test covers one
+ * screen in isolation. A test that performs real navigation does not use EnroTestRule.
  *
- * If you have other TestRules, particularly those that launch Activities or Fragments, you may need
- * to order this TestRule as the first in the sequence, as the rule will need to be executed before
- * an Activity or Fragment under test has been instantiated.
+ * EnroTestRule must run before the Activity or Fragment under test is created. Order
+ * EnroTestRule before a rule that launches an Activity or Fragment.
  */
 public class EnroTestRule : TestRule {
     override fun apply(base: Statement, description: Description): Statement {

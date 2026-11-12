@@ -8,7 +8,8 @@ import dev.enro.asInstance
 import dev.enro.context.ContainerContext
 
 /**
- * Scope for handling when a navigation key is opened.
+ * Receiver of an `onOpened` block. A block that returns without calling [cancel], [cancelAnd]
+ * or [replaceWith] continues the Open operation.
  */
 public class OnNavigationKeyOpenedScope<T : NavigationKey> @PublishedApi internal constructor(
     public val instance: NavigationKey.Instance<T>,
@@ -18,25 +19,24 @@ public class OnNavigationKeyOpenedScope<T : NavigationKey> @PublishedApi interna
     public val key: T get() = instance.key
 
     /**
-     * The current backstack of the container the operation is being applied to.
-     * Read this to make decisions based on what's already on the stack — e.g.
-     * to find an anchor entry and rewrite the operation into a `SetBackstack`
-     * or an `AggregateOperation`.
+     * The backstack of the container that receives the operation, before the operation
+     * is applied.
      */
     public val backstack: NavigationBackstack get() = containerContext.container.backstack
 
     /**
-     * Continue with the navigation as normal.
+     * Ends the block and continues the Open operation unchanged.
      */
     public fun continueWithOpen(): Nothing = throw InterceptorBuilderResult.Continue()
 
     /**
-     * Cancel the navigation entirely.
+     * Ends the block and cancels the Open operation.
      */
     public fun cancel(): Nothing = throw InterceptorBuilderResult.Cancel()
 
     /**
-     * Cancel the navigation and execute the provided block after the navigation is canceled.
+     * Ends the block, cancels the Open operation and runs [block] as a
+     * [NavigationOperation.SideEffect] in place of the Open operation.
      */
     public fun cancelAnd(block: () -> Unit): Nothing = throw InterceptorBuilderResult.CancelAnd(block)
 
@@ -50,9 +50,8 @@ public class OnNavigationKeyOpenedScope<T : NavigationKey> @PublishedApi interna
         throw InterceptorBuilderResult.ReplaceWith(NavigationOperation.Open(instance))
 
     /**
-     * Replace this Open with an arbitrary [NavigationOperation] — for example
-     * an [NavigationOperation.AggregateOperation] that closes some existing
-     * entries before opening the new one, or a `SetBackstack` transition.
+     * Ends the block and replaces the Open operation with [operation], for example a
+     * [NavigationOperation.AggregateOperation] or a [NavigationOperation.SetBackstack].
      */
     public fun replaceWith(operation: NavigationOperation): Nothing =
         throw InterceptorBuilderResult.ReplaceWith(operation)

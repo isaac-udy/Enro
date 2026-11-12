@@ -23,14 +23,12 @@ public sealed class NavigationOperation {
 
     public data class Close<out T : NavigationKey>(
         public val instance: NavigationKey.Instance<T>,
-        // A silent close indicates that after this operation is completed,
-        // any NavigationResult channels should not be notified of the close operation,
+        // A silent close does not notify NavigationResult channels.
         public val silent: Boolean = false,
     ) : RootOperation() {
 
-        // Registers the close operation with the NavigationResultChannel associated with this instance,
-        // which will allow any registerForNavigationResult callbacks to be executed
-        // Note, if "silent" is true, no result will be delivered
+        // Delivers NavigationResult.Closed to the NavigationResultChannel of this instance,
+        // so that the registerForNavigationResult callback can run. A silent close delivers no result.
         @AdvancedEnroApi
         public fun registerResult() {
             if (silent) return
@@ -48,8 +46,8 @@ public sealed class NavigationOperation {
         @PublishedApi
         internal val result: Any?,
     ) : RootOperation() {
-        // Registers the complete operation with the NavigationResultChannel associated with this instance,
-        // which will allow any registerForNavigationResult callbacks to be executed
+        // Delivers NavigationResult.Completed to the NavigationResultChannel of this instance,
+        // so that the registerForNavigationResult callback can run.
         @AdvancedEnroApi
         public fun registerResult() {
             NavigationResultChannel.registerResult(
@@ -149,12 +147,8 @@ public sealed class NavigationOperation {
             targetBackstack: NavigationBackstack,
         ): AggregateOperation {
             val transition = NavigationTransition(currentBackstack, targetBackstack)
-            // Explicit RootOperation typing on the intermediate lists keeps
-            // K/Native's runtime element type as RootOperation rather than
-            // widening to NavigationOperation via inference -- the latter
-            // surfaces as a downstream cast failure in
-            // NavigationInterceptor.processOperations when the resulting
-            // AggregateOperation is rewritten through an interceptor.
+            // The explicit List<RootOperation> types are required on Kotlin/Native: inferred types
+            // widen to NavigationOperation, and NavigationInterceptor.processOperations fails a cast.
             val opens: List<RootOperation> = transition.targetBackstack.map { Open(it) }
             val closes: List<RootOperation> = transition.closed.map { Close(it) }
             return AggregateOperation(opens + closes)

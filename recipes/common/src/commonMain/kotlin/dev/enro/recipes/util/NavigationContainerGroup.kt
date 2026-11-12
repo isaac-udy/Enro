@@ -14,10 +14,12 @@ import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.NavigationContainerState
 
 /**
- * A small multiplatform copy of `dev.enro.core.compose.container.NavigationContainerGroup`
- * from `enro-compat`. The original lives in the Android-only compat module, so for the
- * recipes module we mirror the behaviour in common code so the tabs / multiple back stacks
- * recipes can run on every Compose target.
+ * A multiplatform copy of `dev.enro.core.compose.container.NavigationContainerGroup`
+ * from `enro-compat`, which is Android-only. The Tab Navigation and Multiple Back Stacks
+ * recipes use this copy on every Compose target.
+ *
+ * [activeContainer] is the container that the group last passed to [setActive], or the
+ * first container.
  */
 class NavigationContainerGroup internal constructor(
     private val activeContainerState: MutableState<NavigationContainerState>,

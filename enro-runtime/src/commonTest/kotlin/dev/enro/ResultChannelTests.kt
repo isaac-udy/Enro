@@ -15,20 +15,13 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
- * Tests for [NavigationResultChannel] and its interaction with the
- * container's [NavigationInterceptor.Companion.processOperations] pipeline.
+ * Each Complete operation uses [NavigationKeyFixtures.StringResultKey]: the public
+ * `NavigationOperation.Complete(instance, result)` overload requires a
+ * `NavigationKey.WithResult` instance. A `@file:Suppress` call to the private constructor
+ * compiles on JVM and fails the Kotlin/Native linker.
  *
- * Uses [NavigationKeyFixtures.StringResultKey] (a `NavigationKey.WithResult<String>`)
- * for any Complete operations so we go through the public 2-arg
- * `NavigationOperation.Complete(WithResult, result)` overload rather than
- * trying to reach the private primary constructor with an
- * `@file:Suppress` hack — which compiles on JVM but fails the K/Native
- * linker.
- *
- * The companion-object state ([NavigationResultChannel.pendingResults]) is
- * cleared after each test to avoid cross-test contamination — tests run on
- * the same process, and a stale entry in `pendingResults` would otherwise
- * surface as a flaky failure later.
+ * [NavigationResultChannel.pendingResults] is global state, so each test clears
+ * [NavigationResultChannel.pendingResults] after the test runs.
  */
 class ResultChannelTests {
 
@@ -93,7 +86,6 @@ class ResultChannelTests {
         val instance = NavigationKeyFixtures.StringResultKey().asInstance()
         val completeOp = NavigationOperation.Complete(instance, "result")
 
-        // No ResultIdKey on the instance — should silently no-op.
         completeOp.registerResult()
 
         assertTrue(
@@ -104,11 +96,6 @@ class ResultChannelTests {
 
     @Test
     fun `Complete via the container strips other backstack entries sharing the same ResultIdKey`() = runEnroTest {
-        // processOperations' "result deduplication" path: when a Complete
-        // fires with a ResultIdKey, any other backstack instances sharing
-        // the same result id are stripped from the resulting backstack.
-        // This is how multi-step result flows (registerForFlowResult) collapse
-        // the intermediate steps when the flow completes.
         val rootContext = NavigationContextFixtures.createRootContext()
         val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val container = containerContext.container

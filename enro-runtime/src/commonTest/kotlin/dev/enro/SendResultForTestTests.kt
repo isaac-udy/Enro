@@ -31,14 +31,11 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * Tests for the `sendResultForTest`, `sendCompletedForTest`, and `sendClosedForTest`
- * extensions on [NavigationKey.Instance].
+ * Tests the `sendResultForTest`, `sendCompletedForTest` and `sendClosedForTest` extensions
+ * on [NavigationKey.Instance].
  *
- * Each test constructs a ViewModel with a result channel, opens a child via that
- * channel, then uses the send*ForTest helper on the child instance and asserts the
- * ViewModel's callbacks. The Main dispatcher is replaced with [UnconfinedTestDispatcher]
- * so that `viewModelScope` coroutines (used by [NavigationResultChannel.observe]) execute
- * eagerly.
+ * The Main dispatcher is replaced with [UnconfinedTestDispatcher], so that the
+ * `viewModelScope` coroutines of [NavigationResultChannel.observe] run eagerly.
  */
 class SendResultForTestTests {
 
@@ -57,9 +54,9 @@ class SendResultForTestTests {
 
     @AfterTest
     fun tearDown() {
-        // Cancel the channels' observe collectors before resetting Main: a collector left
-        // subscribed to pendingResults would be woken by a later test's registerResult and
-        // dispatch to a Main dispatcher that no longer exists on targets without one.
+        // The observe collectors must be cancelled before Main is reset. A collector that stays
+        // subscribed to pendingResults is resumed by registerResult in a later test, and
+        // dispatches to Main on a target that has no Main dispatcher after the reset.
         createdViewModels.forEach { it.viewModelScope.cancel() }
         createdViewModels.clear()
         NavigationResultChannel.pendingResults.value = emptyMap()

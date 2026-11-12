@@ -37,7 +37,7 @@ internal class RootNavigationHandle<T : NavigationKey>(
                 context = null
             }
             Lifecycle.Event.ON_CREATE -> {
-                // No op: ON_CREATE is handled through the bindContext function
+                // bindContext handles ON_CREATE.
             }
             Lifecycle.Event.ON_ANY -> {
                 // No op
@@ -103,13 +103,10 @@ internal class RootNavigationHandle<T : NavigationKey>(
 }
 
 /**
- * Handles navigation operations using platform-specific implementations for RootContexts.
- * 
- * This function allows RootContexts to handle certain navigation operations with platform-specific
- * logic. For example, on Android where the RootContext type is Activity, this function handles
- * operations like close or complete by calling Activity.finish() or Activity.setResult() respectively.
- * 
- * @return true if the operation was handled by platform-specific logic, false otherwise
+ * Platform handling of an operation executed by a RootNavigationHandle. On Android, where the
+ * RootContext is an Activity, a Close or Complete calls Activity.finish() or Activity.setResult().
+ *
+ * @return true if the platform handled the operation
  */
 internal expect fun <T: NavigationKey> RootNavigationHandle<T>.handleNavigationOperationForPlatform(
     operation: NavigationOperation,

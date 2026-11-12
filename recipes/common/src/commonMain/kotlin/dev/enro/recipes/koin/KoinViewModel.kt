@@ -1,23 +1,23 @@
 /**
  * Enro Recipe: Koin ViewModel
  *
- * Demonstrates a ViewModel whose dependencies come from Koin and whose
- * arguments come from its NavigationKey.
+ * Shows a ViewModel that takes dependencies from Koin and arguments from the
+ * NavigationKey of the destination.
  *
- * A ViewModel reads its key with `by navigationHandle<Key>()`. For that to
- * work, the ViewModel has to be constructed inside `createEnroViewModel { }`,
- * which makes the destination's NavigationHandle available while the
- * constructor runs. Koin's own `koinViewModel()` does not do this, so a
- * ViewModel created with it throws when it reads its NavigationHandle.
+ * A ViewModel reads the key with `by navigationHandle<Key>()`. The ViewModel
+ * constructor must run inside `createEnroViewModel { }`, which provides the
+ * destination's NavigationHandle while the constructor runs. Koin's
+ * `koinViewModel()` does not call `createEnroViewModel`, so
+ * `by navigationHandle<Key>()` throws in a ViewModel created with
+ * `koinViewModel()`.
  *
- * [koinEnroViewModel] is the small bridge: it asks Koin for the instance
- * inside `createEnroViewModel { }`. The ViewModel is declared in the Koin
- * module with `factory { }`, because the AndroidX `viewModel()` call owns
- * its lifetime, not Koin.
+ * [koinEnroViewModel] gets the ViewModel from Koin inside
+ * `createEnroViewModel { }`. The Koin module declares the ViewModel with
+ * `factory { }`, because the AndroidX `viewModel()` call stores the ViewModel.
  *
- * The recipe starts its own isolated Koin application so it does not depend
- * on the recipes app starting Koin. A real app would call `startKoin` once
- * at startup and would not need `KoinIsolatedContext`.
+ * The recipe creates an isolated Koin application, so the recipe does not
+ * require the recipes app to start Koin. An app that calls `startKoin` at
+ * startup does not require `KoinIsolatedContext`.
  *
  * Nav3 equivalent: the Koin injected ViewModel recipe.
  */
@@ -61,7 +61,6 @@ data object KoinUserList : NavigationKey
 @Serializable
 data class KoinUserDetail(val userId: String) : NavigationKey
 
-// A dependency provided by Koin.
 class UserRepository {
     private val names = mapOf("ada" to "Ada Lovelace", "alan" to "Alan Turing")
     fun userIds(): List<String> = names.keys.toList()
@@ -72,7 +71,8 @@ class UserRepository {
 class KoinUserDetailViewModel(
     repository: UserRepository,
 ) : ViewModel() {
-    // The key this destination was opened with: the ViewModel's arguments.
+    // navigation.key is the key that opened the destination. The key
+    // contains the arguments of the ViewModel.
     private val navigation by navigationHandle<KoinUserDetail>()
 
     val title: String = repository.nameFor(navigation.key.userId)
@@ -82,7 +82,7 @@ class KoinUserDetailViewModel(
 
 val koinRecipeModule = module {
     single { UserRepository() }
-    // factory, not viewModel: the AndroidX viewModel() call stores the instance.
+    // `factory`, not Koin's `viewModel`: the AndroidX viewModel() call stores the ViewModel.
     factory { KoinUserDetailViewModel(repository = get()) }
 }
 // endregion
@@ -90,8 +90,8 @@ val koinRecipeModule = module {
 private val recipeKoin = koinApplication { modules(koinRecipeModule) }
 
 /**
- * Creates [T] with Koin, inside `createEnroViewModel` so that
- * `by navigationHandle()` works in the ViewModel.
+ * Gets [T] from Koin inside `createEnroViewModel`, which provides the
+ * NavigationHandle that `by navigationHandle()` reads in the ViewModel.
  */
 // region docs:di/koin-helper
 @Composable

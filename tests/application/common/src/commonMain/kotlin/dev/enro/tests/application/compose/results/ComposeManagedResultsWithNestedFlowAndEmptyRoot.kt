@@ -28,17 +28,10 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 /**
- * A bug in Enro was identified, where a managed flow that has no root would not correctly work when navigating to a nested flow
- * that uses deliverResultForPush/Present.
- *
- * The issue is described as follows:
- * 1. Create a managed flow with a "CloseParent" empty behaviour
- * 2. Before the first navigation event, perform an async action to get some information
- * 3. The first step should navigate to an embedded flow
- * 4. When the final screen of the embedded flow returns a result, the parent flow will close (but it shouldn't)
- *
- * This bug was fixed by ensuring that the ForwardingResultInterceptor does not automatically close the original destination
- * that called deliverResultForPush/Present if that destination was launched in a managed flow.
+ * Regression sample for a managed flow whose container starts empty. The flow
+ * runs an async action before the first step, then opens [NestedFlow], whose
+ * screens forward the result with `completeFrom`. The managed flow must stay
+ * open when the last nested screen completes.
  */
 @Serializable
 object ComposeManagedResultsWithNestedFlowAndEmptyRoot : NavigationKey.WithResult<String> {

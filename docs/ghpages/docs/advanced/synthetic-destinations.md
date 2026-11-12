@@ -6,53 +6,45 @@ nav_order: 6
 
 # Synthetic Destinations
 
-A synthetic destination is a `NavigationKey` whose "destination" is a block
-of code rather than a piece of UI. When the key is opened, the block runs;
-the synthetic instance itself never lands on any backstack. Synthetics are
-the bridge between Enro's navigation API and behaviours that don't fit a
-"render a screen" model — things like launching an external browser,
-deciding which of several implementations should fulfil a contract, or
-composing a multi-step action behind a single call site.
+A synthetic destination binds a `NavigationKey` to a block of code instead
+of a screen. Opening the key runs the block. Enro never adds the synthetic
+instance to a backstack. A synthetic destination can open an external
+browser, choose between several destinations, or run several actions for
+one `open` call.
 
-A synthetic looks like any other destination from the caller's side:
+A caller opens a synthetic destination the same way as any other
+destination:
 
 <!-- snippet: synthetic-destinations/callers -->
 ```kotlin
 navigation.open(Logout)        // synthetic
-navigation.open(EditProfile)   // synthetic — could be either of two screens
+navigation.open(EditProfile)   // synthetic: opens one of two screens
 navigation.open(SettingsScreen) // ordinary destination
 ```
 
-The caller doesn't need to know — or care — that some keys resolve to a
-block of code instead of a Composable.
+## When to use a synthetic destination
 
-## When to reach for a synthetic
+The [recipes][synthetic-recipes] contain one example of each use:
 
-There are three patterns the recipes (see [recipes][synthetic-recipes])
-cover end-to-end, and they're a fair guide for when a synthetic is the
-right tool:
+- **Side effect** — run a non-Enro action from a navigation call. For
+  example, `OpenExternalUrl(url)` launches Chrome Custom Tabs on Android,
+  calls `Desktop.browse(...)` on JVM, and calls `window.open(...)` on web.
+- **Conditional redirect** — check a runtime condition before opening a
+  destination. `RequireLogin` reads the auth state and opens either the
+  requested screen or a login screen.
+- **Result decider** — a synthetic destination with a result type chooses
+  one of several destinations (legacy or V2, feature flag on or off,
+  narrow or wide screen). `completeFrom` delivers the result of the chosen
+  destination to the original caller.
 
-- **Side-effect bridge** — wrap a non-Enro action behind a navigation
-  call. E.g. `OpenExternalUrl(url)` that launches Chrome Custom Tabs on
-  Android, `Desktop.browse(...)` on JVM, `window.open(...)` on web.
-- **Conditional redirect** — gate a destination behind a runtime check.
-  `RequireLogin` checks the auth state and forwards to either the
-  requested screen or a login screen, so callers don't have to know
-  about the gate.
-- **Result decider** — a result-bearing synthetic picks between several
-  concrete implementations (legacy / V2, feature flag A / feature flag
-  B, mobile-only / wide-screen-only) and forwards the chosen one's
-  result back to the original caller via `completeFrom`.
-
-If the behaviour really is "render this screen with some twist," prefer a
-normal destination with the twist expressed in metadata. Reach for a
-synthetic when there's no screen to render, or when the choice of which
-screen depends on runtime state.
+Use a synthetic destination when no screen is rendered, or when runtime
+state decides which screen is rendered. Use an ordinary destination with
+metadata to change how one screen is rendered.
 
 ## Declaring a synthetic
 
-`syntheticDestination<K>` builds a `NavigationDestinationProvider<K>` that
-the KSP processor binds the same way as any other destination:
+`syntheticDestination<K>` returns a `NavigationDestinationProvider<K>`.
+The KSP processor binds the provider the same way as any other destination:
 
 <!-- snippet: navigation-destinations/synthetic -->
 ```kotlin
@@ -66,89 +58,73 @@ val logout = syntheticDestination<Logout> {
 }
 ```
 
-Inside the block, you have a `SyntheticDestinationScope<K>` receiver with
-the key and instance available, plus the outcome methods covered below.
+The block has a `SyntheticDestinationScope<K>` receiver. The scope
+contains `key`, `instance`, `context` and the outcome methods.
 
-## The outcome methods
+## Outcome methods
 
-Each method ends the synthetic by deciding what should happen next. They
-all return `Nothing` — calling one short-circuits the block. They split
-into two kinds: **pure outcomes** that are rewritten in place as the
-synthetic's surrounding `processOperations` pass runs, and a
-**side-effect outcome** that runs deferred after the pass settles.
+An outcome method sets the operation that replaces the synthetic
+destination's `Open` operation. Each outcome method returns `Nothing`, so
+code after the call does not run. The **pure outcomes** replace the `Open`
+operation during the container's `processOperations` pass. The
+**side-effect outcome** runs after the pass finishes.
 
-### Pure outcomes — rewritten in place
+### Pure outcomes
 
-| Method | What it does |
+| Method | Effect |
 |---|---|
-| `open(key)` | Opens `key` on the same container the synthetic was opened on. The dispatcher rewrites the original `Open(synthetic)` into `Open(key)` inside `processOperations`, so the new operation flows through the interceptor chain in the same pass. Ordering is preserved when synthetics appear in an initial backstack alongside normal destinations. |
-| `close()` | Ends the synthetic and registers a `Closed` result against whoever opened the synthetic. The caller's `onClosed` callback fires. |
-| `closeSilently()` | Same as `close()` but the result-channel callback does **not** fire. Use when the caller doesn't need to be notified. |
-| `complete()` | Ends the synthetic and registers a `Completed` result with no payload. Only available for non-result keys. |
-| `complete(result)` | Same as `complete()` but with a typed payload. Only available when the synthetic's key implements `NavigationKey.WithResult<R>`. |
-| `completeFrom(key)` | Opens `key` and routes *its* eventual completion back to whoever opened the synthetic. The synthetic doesn't produce the result; the forwarded key does. |
+| `open(key)` | Replaces `Open(synthetic)` with `Open(key)` on the same container. The container's interceptors receive `Open(key)` in the same pass. |
+| `close()` | Registers a `Closed` result for the caller that opened the synthetic destination. The caller's `onClosed` callback runs. |
+| `closeSilently()` | Closes the synthetic destination. The caller's `onClosed` callback does **not** run. |
+| `complete()` | Registers a `Completed` result with no value. Available when the key does not implement `NavigationKey.WithResult<R>`. |
+| `complete(result)` | Registers a `Completed` result with a value. Available when the key implements `NavigationKey.WithResult<R>`. |
+| `completeFrom(key)` | Opens `key`. When the `key` destination completes, the caller that opened the synthetic destination receives the result. |
 
-### Side-effect outcome — runs deferred
+### Side-effect outcome
 
-| Method | What it does |
+| Method | Effect |
 |---|---|
-| `sideEffect { ... }` | The block runs in `afterExecution`, with a [`SyntheticSideEffectScope`](#side-effect-scope) receiver carrying `context`, `container`, `instance`, and `key`. The synthetic is treated as silently closed once the side effect dispatches. Use this when you need platform handles, the container reference, or any imperative work that doesn't fit a single navigation operation. |
+| `sideEffect { ... }` | Runs the block after the container applies the operations. The block has a [`SyntheticSideEffectScope`](#side-effect-scope) receiver. The synthetic destination is closed silently. Use `sideEffect` for platform APIs, the container reference, or work that is not one navigation operation. |
 
-The methods throw a sentinel exception that the synthetic dispatcher
-catches and converts into a `NavigationOperation`. Don't catch
-`Throwable` inside a synthetic block — you'll swallow the outcome.
+Each outcome method throws an exception that Enro catches and converts into
+a `NavigationOperation`. A `catch (e: Throwable)` inside a synthetic block
+catches the exception, and the outcome is lost.
 
-## Pure outcomes vs side effects
+## When each outcome runs
 
-The split matters because the two kinds run at different points in the
-operation lifecycle.
+A **pure outcome** replaces the synthetic destination's `Open` operation
+at the same position in the list of operations. For example, when an
+initial backstack is `[ASynthetic, B]` and `ASynthetic` opens `Target`, the
+backstack is `[Target, B]`.
 
-A **pure outcome** is a deterministic rewrite of the synthetic's `Open`.
-The dispatcher catches the outcome and returns the equivalent operation
-from inside its interceptor — so the rewrite is part of the same
-`processOperations` pass that handled the original `Open(synthetic)`.
-For example, if an initial backstack is `[ASynthetic, B]` and the
-synthetic opens `Target`, the resulting backstack is `[Target, B]` —
-the synthetic's outcome takes the synthetic's slot in the queue, not the
-end of the queue.
+A **side-effect outcome** runs after the container has applied every
+operation in the pass and has finished executing. A `sideEffect` block
+can:
 
-A **side-effect outcome** runs deferred, in `afterExecution`. By the time
-the block runs, every other operation in the same pass has already
-settled. That's the point at which you can safely:
+- Call platform APIs, such as finding an `Activity`.
+- Read or replace the container's backstack with
+  `container.execute(context, NavigationOperation.SetBackstack(...))`.
+- Make any other call that is not one `NavigationOperation`.
 
-- Touch platform handles (find an `Activity`, get a Compose
-  `WindowInfo`, etc.).
-- Read or rewrite the container's backstack
-  (`container.execute(context, NavigationOperation.SetBackstack(...))`).
-- Make any other imperative call that doesn't fit a single
-  `NavigationOperation`.
+In the [recipes][synthetic-recipes], the auth gate and the profile decider
+use pure outcomes. The external URL launcher uses `sideEffect { ... }` to
+call a non-Enro API.
 
-The two recipes that ship in `recipes/synthetic` illustrate the split:
-the auth gate and profile decider both use pure outcomes; the external
-URL launcher uses `sideEffect { ... }` because it bridges to a non-Enro
-API.
+## A block that calls no outcome method
 
-## Falling through
+A synthetic block that returns without calling an outcome method is closed
+silently. No result callback runs.
 
-A synthetic block that returns without calling any outcome method is
-treated as a **silent close**. No result-channel callback fires; no
-navigation operation is dispatched against the synthetic's instance. The
-block ran, did its thing, and Enro doesn't need to do anything further.
-
-This is the default for synthetics that only do pure side effects — but
-note that in the current model you should prefer `sideEffect { ... }`
-for that work, so you get explicit access to `container` and `context`
-deferred to the right point. Pure synthetics that genuinely do *no*
-imperative work and only return a fixed outcome (like a decider that
-always picks one of two destinations) tend to be one-line bodies that
-short-circuit through `open()` or `completeFrom(...)`.
+Put work that uses the container or a platform API in `sideEffect { ... }`
+instead of in the body of the block. The body of the block runs while the
+container is executing an operation.
 
 ## Forwarding results with `completeFrom`
 
-The result-decider pattern is the most distinctive synthetic use case.
-Your public-facing key has a `WithResult<R>` contract; the synthetic
-picks one of several concrete implementations at runtime and lets *that*
-implementation produce the result:
+A result decider is a synthetic destination whose key implements
+`NavigationKey.WithResult<R>`. The block chooses one of several
+destinations with the same result type, and `completeFrom` delivers the
+chosen destination's result to the caller:
 
 <!-- snippet: synthetic-destinations/decider -->
 ```kotlin
@@ -163,37 +139,33 @@ object EditProfileV2 : NavigationKey.WithResult<ProfileUpdate>
 
 @NavigationDestination(EditProfile::class)
 val editProfile = syntheticDestination<EditProfile> {
-    // Read a feature flag, A/B bucket, remote config, etc.
     if (featureFlags.useNewProfileUi) completeFrom(EditProfileV2)
     else completeFrom(EditProfileLegacy)
 }
 ```
 
-The caller subscribes to `EditProfile` and never needs to know which
-underlying screen actually ran:
+The caller opens `EditProfile` and receives one result, from either
+screen:
 
 <!-- snippet: synthetic-destinations/decider-caller -->
 ```kotlin
 val editProfile = registerForNavigationResult<ProfileUpdate>(
-    onCompleted = { update -> /* one branch, regardless of which UI produced it */ },
+    onCompleted = { update -> /* runs for a result from either screen */ },
 )
 Button(onClick = { editProfile.open(EditProfile) }) { Text("Edit") }
 ```
 
-Under the hood, `completeFrom` copies the synthetic's result-channel
-metadata onto the forwarded instance, so when the forwarded key calls
-`navigation.complete(value)`, the value routes back through to the
-original caller's channel.
+`completeFrom` copies the synthetic instance's result id into the metadata
+of the forwarded instance. When the forwarded destination calls
+`navigation.complete(value)`, the original caller's result channel
+receives `value`.
 
 ## The "already finished" error
 
-Synthetic blocks should be **synchronous**. The dispatcher catches the
-outcome thrown from the block and acts on it; any code that runs *after*
-the block returns (e.g. a coroutine the block launched on
-`lifecycleScope`) operates against a scope that has already concluded.
-
-If async code calls an outcome method on the scope after the block has
-returned, the scope throws:
+A synthetic block must be **synchronous**. Enro reads the outcome when the
+block returns. When code calls an outcome method after the block has
+returned, for example from a coroutine that the block launched, the
+`SyntheticDestinationScope` throws:
 
 ```
 SyntheticDestination for X has already finished with Close.
@@ -203,45 +175,40 @@ dispatcher had already moved on. Do any async work before opening the
 synthetic, or forward to a destination that owns the work itself.
 ```
 
-The fix is one of:
+To fix the error, use one of these options:
 
-- **Do the async work *before* the synthetic** and pass the result in as
-  a parameter of the synthetic's key.
-- **Forward to a real destination** that owns the async work as part of
-  its lifecycle (`completeFrom(WorkInProgressScreen)`).
-- **Restructure as a regular destination with a loading state** if the
-  synthetic was really trying to be a "do some work then close" UI.
+- **Do the async work before opening the synthetic destination.** Pass the
+  result of the work as a property of the synthetic destination's key.
+- **Forward to an ordinary destination that does the async work**, for
+  example `completeFrom(WorkInProgressScreen)`.
+- **Replace the synthetic destination with an ordinary destination** that
+  shows a loading state, does the work, and closes.
 
-There is a deliberate design choice here: synthetics are intentionally
-small, synchronous decision points. Letting them survive across coroutine
-boundaries would require giving them their own lifecycle, view model
-store, and serialised state — i.e. making them ordinary destinations.
-That direction is being considered as a future "lifecycle-bearing
-synthetic" mode but isn't on the current roadmap.
+A synthetic destination has no lifecycle, no ViewModel store and no saved
+state.
 
 ## Accessing the originating context
 
-### From the pure scope — reads only
+### `SyntheticDestinationScope`
 
-`SyntheticDestinationScope<K>` exposes `context: NavigationContext` and
-the derived `destinationContext`. These are intended for **reads**:
-inspecting `controller`, walking parent contexts, checking which
-destination opened the synthetic. They're available so a pure outcome
-can be informed by the surrounding navigation state.
+`SyntheticDestinationScope<K>` has two context properties. `context` is the
+`NavigationContext` that opened the synthetic destination.
+`destinationContext` is the active destination nearest to `context`, or
+`null`. Read `context.controller`, the parent contexts, or the opening
+destination to choose an outcome.
 
-You can technically reach `context.controller` and other writable handles
-from inside a pure block, but doing so runs while the container's
-execute mutex is held — direct `controller.execute(...)` or
-`container.execute(...)` calls deadlock. That's the framework signalling
-that you should be using `sideEffect { ... }` instead.
+Do not execute navigation operations from the body of a synthetic block.
+The body runs while the container is executing an operation, and a
+`container.execute(...)` call at that point throws an
+`IllegalStateException`. Use `sideEffect { ... }` instead.
 
-### From the side-effect scope — full access
+### `SyntheticSideEffectScope`
 {: #side-effect-scope }
 
-`SyntheticSideEffectScope<K>` (the receiver of the `sideEffect` block)
-exposes `context`, `container`, `instance`, and `key`. By the time the
-side-effect block runs, the mutex is released and the backstack has
-settled, so imperative work is safe:
+`SyntheticSideEffectScope<K>` is the receiver of the `sideEffect` block.
+The scope contains `context`, `container`, `instance` and `key`. The
+`sideEffect` block runs after the container has finished executing, so the
+block can call `container.execute(...)`:
 
 <!-- snippet: synthetic-destinations/side-effect-android -->
 ```kotlin
@@ -275,19 +242,18 @@ val deepLinkResolver = syntheticDestination<DeepLinkResolver> {
 
 ## Testing synthetic destinations
 
-enro-test provides `testSyntheticDestination(...)` for unit-testing
-synthetic logic without going through a real container or interceptor
-pipeline. It runs the synthetic's block in a sandbox scope and returns
-a [`SyntheticOutcome`][synthetic-outcome] describing what the block
-decided.
+`testSyntheticDestination(...)` in `enro-test` runs a synthetic block
+without a container or interceptors, and returns the
+[`SyntheticOutcome`][synthetic-outcome] that the block chose.
+`testSyntheticDestination` has two overloads.
 
-Two entry points cover the two common test shapes:
+### Testing a registered synthetic destination
 
-### Registered path — via the installed controller
-
-Use this when the synthetic should be looked up by key, as it is in
-production. `runEnroTest` installs an empty controller, so register the
-synthetic with `installNavigationModule` first:
+`testSyntheticDestination(key)` finds the synthetic destination bound to
+`key` on the installed controller. `runEnroTest` installs an empty
+controller, so register the synthetic destination with
+`installNavigationModule` first. `testSyntheticDestination(key)` throws an
+`IllegalStateException` when `key` is not bound to a synthetic destination:
 
 <!-- snippet: synthetic-destinations/test-registered -->
 ```kotlin
@@ -306,10 +272,11 @@ fun `auth gate forwards to protected screen when logged in`() = runEnroTest {
 }
 ```
 
-### Direct path — provider passed in
+### Testing a provider directly
 
-Use this for pure unit tests that don't need a controller installed. Pass
-the `NavigationDestinationProvider` value directly:
+`testSyntheticDestination(key, provider)` runs the block of the
+`NavigationDestinationProvider` argument. The overload does not read the
+installed controller's bindings:
 
 <!-- snippet: synthetic-destinations/test-direct -->
 ```kotlin
@@ -332,16 +299,16 @@ fun `auth gate redirects to login when logged out`() {
 
 | Helper | Asserts |
 |---|---|
-| `assertOpens<T>(predicate?)` | Outcome is `Open` of a key of type `T`, optionally matching `predicate`. Returns the typed key. |
-| `assertCompletesFrom<T>(predicate?)` | Outcome is `CompleteFrom` of a key of type `T`. Returns the typed key. |
-| `assertCloses(silent?)` | Outcome is `Close`, optionally matching the `silent` flag. |
-| `assertCompletes(expectedResult)` | Outcome is `Complete` with the given payload. Pass `null` for non-result synthetics. |
-| `assertSideEffect()` | Outcome is `SideEffect`. Returns the side-effect so you can run it (see below). |
+| `assertOpens<T>(predicate?)` | The outcome is `Open` with a key of type `T` that matches `predicate`, when `predicate` is passed. Returns the key as `T`. |
+| `assertCompletesFrom<T>(predicate?)` | The outcome is `CompleteFrom` with a key of type `T` that matches `predicate`, when `predicate` is passed. Returns the key as `T`. |
+| `assertCloses(silent?)` | The outcome is `Close`. When `silent` is passed, the `silent` flag of the outcome equals `silent`. |
+| `assertCompletes(expectedResult)` | The outcome is `Complete` with a result equal to `expectedResult`. Pass `null` for a `complete()` call with no result. |
+| `assertSideEffect()` | The outcome is `SideEffect`. Returns the `SyntheticOutcome.SideEffect`. |
 
 ### Executing side-effect outcomes
 
-A `SideEffect` outcome carries the block but doesn't auto-invoke it —
-the test gets to decide whether to run it, and with what scope:
+`testSyntheticDestination` does not run the `sideEffect` block. Call
+`runWith` on the `SyntheticOutcome.SideEffect` to run the block:
 
 <!-- snippet: synthetic-destinations/test-side-effect -->
 ```kotlin
@@ -353,30 +320,28 @@ fun `external URL synthetic runs the launch side effect`() {
 }
 ```
 
-`runWith()` with no arguments uses default fixture context and container
-— enough for most tests. Pass explicit `context: NavigationContext` and
-`container: NavigationContainer` arguments when the side effect's
-behaviour depends on either.
+`runWith()` with no arguments creates a fixture `NavigationContext` and a
+fixture `NavigationContainer`. Pass `context` and `container` arguments
+when the `sideEffect` block reads either value.
 
-### What you DON'T get from the test helper
+### Limits of `testSyntheticDestination`
 
-`testSyntheticDestination` runs the block in isolation — it doesn't
-dispatch operations against any container's backstack. So if your
-synthetic calls `open(Other)`, the test sees a `SyntheticOutcome.Open(Other)`
-but `Other` doesn't actually land in any backstack. For end-to-end
-backstack assertions, fall back to the container fixtures and execute
-the operation through `container.execute(...)` as the
-`SyntheticDestinationTests` in enro-runtime do.
+`testSyntheticDestination` does not execute an operation on a container.
+When a synthetic block calls `open(Other)`, the test receives
+`SyntheticOutcome.Open(Other)` and no backstack contains `Other`. To assert
+on a backstack, create a container with the container fixtures and call
+`container.execute(...)`, as `SyntheticDestinationTests` in `enro-runtime`
+does.
 
 [synthetic-outcome]: https://github.com/isaac-udy/Enro/blob/main/enro-runtime/src/commonMain/kotlin/dev/enro/ui/destinations/SyntheticOutcome.kt
 
 ## See also
 
-- [Returning results](results.md) — the result contract that `complete`
-  and `completeFrom` plug into.
-- [Recipes][synthetic-recipes] — three worked examples corresponding to
-  the three patterns above.
-- [Migrating from v2](../migrating-from-v2.md) — `sendResult` /
-  `forwardResult` from Enro 2 are now `complete` / `completeFrom`.
+- [Returning results](results.md) — the result API that `complete` and
+  `completeFrom` use.
+- [Recipes][synthetic-recipes] — a side effect, a conditional redirect and
+  a result decider.
+- [Migrating from v2](../migrating-from-v2.md) — the Enro 2 `sendResult`
+  and `forwardResult` map to `complete` and `completeFrom`.
 
 [synthetic-recipes]: https://github.com/isaac-udy/Enro/tree/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/synthetic

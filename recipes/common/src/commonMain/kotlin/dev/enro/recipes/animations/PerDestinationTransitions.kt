@@ -1,24 +1,23 @@
 /**
  * Enro Recipe: Per-Destination Transitions and Predictive Back
  *
- * Demonstrates overriding the transition for one destination, and customising
- * the predictive back gesture.
+ * Shows how to override the transitions of one destination, and how to set
+ * the predictive back transition of a container.
  *
- * Transitions normally come from the `NavigationAnimations` passed to
- * `NavigationDisplay`. A destination can override them with metadata:
- *  - `NavigationDisplay.TransitionKey` is used when the destination is opened
- *  - `NavigationDisplay.PopTransitionKey` is used when it is closed
- *  - `NavigationDisplay.PredictivePopTransitionKey` is used while the user
- *    drags a predictive back gesture away from it
+ * `NavigationDisplay` takes transitions from its `NavigationAnimations`
+ * parameter. A destination overrides a transition with metadata:
+ *  - `NavigationDisplay.TransitionKey`: the destination is opened
+ *  - `NavigationDisplay.PopTransitionKey`: the destination is closed
+ *  - `NavigationDisplay.PredictivePopTransitionKey`: a predictive back gesture
+ *    is in progress on the destination
  *
- * The keys are scene metadata. A scene's metadata defaults to the metadata of
- * its top destination, so setting them on a destination works with the
- * built-in single-pane scene.
+ * `NavigationDisplay` reads the three keys from scene metadata. The metadata
+ * of a scene defaults to the metadata of the scene's last destination, which
+ * is the only destination in the built-in single-pane scene.
  *
- * The container-level `predictivePopTransitionSpec` receives the edge the
- * swipe started from, so the gesture can animate differently for left and
- * right swipes. The gesture only exists on platforms that have one (Android,
- * iOS); elsewhere Back uses the pop transition.
+ * `NavigationAnimations.predictivePopTransitionSpec` receives the edge where
+ * the swipe started. On a platform without a predictive back gesture, Back
+ * uses the pop transition.
  *
  * Nav3 equivalent: the Animations recipe.
  */
@@ -70,7 +69,6 @@ data object DefaultTransitionScreen : NavigationKey
 @Serializable
 data object SlideUpScreen : NavigationKey
 
-// Opens by sliding up from the bottom.
 private val slideUp: TransitionSpec = {
     ContentTransform(
         targetContentEnter = slideInVertically(tween(300)) { it },
@@ -78,7 +76,6 @@ private val slideUp: TransitionSpec = {
     )
 }
 
-// Closes by sliding back down.
 private val slideDown: TransitionSpec = {
     ContentTransform(
         targetContentEnter = fadeIn(tween(300)),
@@ -86,7 +83,7 @@ private val slideDown: TransitionSpec = {
     )
 }
 
-// During a predictive back gesture, this screen also slides down.
+// A PredictivePopTransitionSpec receives the swipe edge; this spec ignores the edge.
 private val slideDownWithGesture: PredictivePopTransitionSpec = { _ ->
     ContentTransform(
         targetContentEnter = fadeIn(),
@@ -108,11 +105,12 @@ fun PerDestinationTransitionsRecipeScreen() {
         NavigationDisplay(
             state = container,
             modifier = modifier,
-            // Applies to every destination that does not override it.
+            // These animations apply to each destination that does not set the
+            // matching transition key in metadata.
             animations = NavigationAnimations.Default.copy(
                 predictivePopTransitionSpec = { swipeEdge ->
-                    // swipeEdge is a NavigationEvent.SwipeEdge value. A real app
-                    // could slide towards the edge the swipe started from.
+                    // swipeEdge is a NavigationEvent.SwipeEdge value: the edge
+                    // where the back swipe started.
                     ContentTransform(
                         targetContentEnter = fadeIn(),
                         initialContentExit = scaleOut(targetScale = 0.9f) + fadeOut(),

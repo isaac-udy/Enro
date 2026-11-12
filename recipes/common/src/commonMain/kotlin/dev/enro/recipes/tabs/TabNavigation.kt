@@ -1,13 +1,13 @@
 /**
  * Enro Recipe: Tab Navigation
  *
- * Demonstrates tab-based navigation with multiple sibling NavigationContainers,
- * one active at a time.
+ * Shows tab navigation with one NavigationContainer per tab. One container
+ * is active at a time, and `NavigationDisplay` renders the active container.
  *
- * Uses a small multiplatform copy of NavigationContainerGroup
- * (see `dev.enro.recipes.util.rememberNavigationContainerGroup`). The original lives in
- * the Android-only `enro-compat` module; the recipe mirrors that helper so the demo runs
- * on every Compose target.
+ * The recipe tracks the active container with a multiplatform copy of
+ * NavigationContainerGroup (see
+ * `dev.enro.recipes.util.rememberNavigationContainerGroup`). The original
+ * NavigationContainerGroup is in `enro-compat`, which is Android-only.
  */
 package dev.enro.recipes.tabs
 
@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
+import dev.enro.accept
 import dev.enro.acceptNone
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
@@ -78,20 +79,23 @@ fun TabsRecipeScreen() {
         title = "Tab Navigation",
         navigation = navigation,
     ) { modifier ->
+        // The filter names the keys a tab container accepts, so a key opened
+        // from a tab is added to that tab's backstack.
         val homeContainer = rememberNavigationContainer(
             key = NavigationContainer.Key("home-tab"),
             backstack = backstackOf(HomeTab.asInstance()),
-            filter = acceptNone(),
+            filter = accept { key<HomeDetail>() },
             emptyBehavior = EmptyBehavior.preventEmpty(),
         )
 
         val searchContainer = rememberNavigationContainer(
             key = NavigationContainer.Key("search-tab"),
             backstack = backstackOf(SearchTab.asInstance()),
-            filter = acceptNone(),
+            filter = accept { key<SearchResult>() },
             emptyBehavior = EmptyBehavior.preventEmpty(),
         )
 
+        // The profile tab opens no keys.
         val profileContainer = rememberNavigationContainer(
             key = NavigationContainer.Key("profile-tab"),
             backstack = backstackOf(ProfileTab.asInstance()),

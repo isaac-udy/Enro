@@ -83,16 +83,14 @@ fun testNavigationHandle() {
 
 fun assertOpened(handle: TestNavigationHandle<ShowProfile>) {
     // region docs:testing/assert-opened
-    // Any open of type T
+    // Returns the opened NavigationKey.Instance.
     val instance = handle.assertOpened<EditProfile>()
 
-    // A specific key value
     handle.assertOpened(EditProfile("user-123"))
 
-    // A predicate over the instance
+    // The predicate receives the NavigationKey.Instance.
     handle.assertOpened<EditProfile> { it.key.initial == "user-123" }
 
-    // "Nothing was opened"
     handle.assertNoneOpened()
     // endregion
 }
@@ -133,15 +131,15 @@ fun saving_changes_completes_the_destination() = runEnroTest {
 
 fun childResults(handle: TestNavigationHandle<ShowProfile>) {
     // region docs:testing/child-results
-    // sendResultForTest — typed result
+    // Calls onCompleted with "confirmed".
     val child = handle.assertOpened<ConfirmDestination>()
     child.sendResultForTest("confirmed")
 
-    // sendCompletedForTest — Unit/no-payload completion
+    // Calls an onCompleted that takes no result.
     val dialog = handle.assertOpened<AcknowledgeDialog>()
     dialog.sendCompletedForTest()
 
-    // sendClosedForTest — the child was dismissed without a result
+    // Calls onClosed.
     val picker = handle.assertOpened<DatePicker>()
     picker.sendClosedForTest()
     // endregion

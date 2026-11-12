@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId = "dev.enro.recipes"
         // 24, not the library's minSdk: the Material 3 Adaptive library used by
-        // two recipes needs it.
+        // two recipes requires API 24.
         minSdk = 24
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

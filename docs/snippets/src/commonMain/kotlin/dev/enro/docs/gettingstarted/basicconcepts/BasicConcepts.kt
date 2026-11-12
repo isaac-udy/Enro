@@ -67,9 +67,9 @@ fun SelectDateScreen() {
     // region docs:basic-concepts/handle
     val navigation = navigationHandle<SelectDate>()
 
-    navigation.open(ShowProfile("user-123")) // open another screen
-    navigation.close()                       // close this screen
-    navigation.complete(today)               // close with a result
+    navigation.open(ShowProfile("user-123"))
+    navigation.close()
+    navigation.complete(today) // closes SelectDate and returns `today` to the caller
     // endregion
 }
 

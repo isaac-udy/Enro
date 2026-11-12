@@ -33,7 +33,7 @@ class ConfigureComposeRuntime : Plugin<Project> {
 
 /**
  * Applies Compose with foundation and UI only, for published modules. Material, tooling and
- * resources are left out so they do not appear in the published dependencies.
+ * resources are excluded, so the published dependencies do not include those libraries.
  */
 class ConfigureComposeUi : Plugin<Project> {
     override fun apply(project: Project) {
@@ -93,8 +93,8 @@ internal fun Project.configureComposeMultiplatform(
                 implementation(compose.ui)
             }
             if (!includeSampleLibraries) {
-                // Published libraries must not pin consumers to the build machine's OS, so
-                // the OS-specific desktop artifact is only on the test classpath.
+                // compose.desktop.currentOs is the artifact for the OS of the build machine. A
+                // published library must not depend on currentOs; only the tests depend on currentOs.
                 desktopMain.dependencies {
                     implementation(compose.desktop.common)
                 }
@@ -122,7 +122,7 @@ internal fun Project.configureComposeMultiplatform(
             }
         }
     }
-    // No `buildFeatures { compose = true }` needed here — the Compose compiler is applied
-    // across all KMP targets (incl. Android) by the `org.jetbrains.kotlin.plugin.compose`
-    // plugin above.
+    // `buildFeatures { compose = true }` is not required: the
+    // `org.jetbrains.kotlin.plugin.compose` plugin applies the Compose compiler to every KMP
+    // target, including Android.
 }

@@ -12,7 +12,7 @@ public typealias NavigationFlow<T> = dev.enro.result.flow.NavigationFlow<T>
 
 @Deprecated(
     message = "registerForFlowResult has moved to dev.enro.result.flow.registerForFlowResult. Navigation flows have changed and need to be updated following the migration guide.",
-    // isManuallyStarted is not a valid parameter anymore
+    // ERROR level: isManuallyStarted has no effect.
     level = DeprecationLevel.ERROR
 )
 public fun <T> ViewModel.registerForFlowResult(
@@ -50,7 +50,7 @@ public fun <T> ViewModel.registerForFlowResult(
 
 @Deprecated(
     message = "registerForFlowResult has moved to dev.enro.result.flow.registerForFlowResult. Navigation flows have changed and need to be updated following the migration guide.",
-    // isManuallyStarted is not a valid parameter anymore
+    // ERROR level: isManuallyStarted has no effect.
     level = DeprecationLevel.ERROR
 )
 public fun <T> ViewModel.registerForFlowResult(

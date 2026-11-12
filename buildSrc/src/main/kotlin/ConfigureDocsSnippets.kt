@@ -11,9 +11,9 @@ import org.gradle.api.tasks.UntrackedTask
 import java.io.File
 
 /**
- * Keeps the Kotlin samples in the docs site (`docs/ghpages`) in step with compiled source.
+ * Checks that the Kotlin samples in the docs site (`docs/ghpages`) match compiled source.
  *
- * A sample lives in a snippets module as real Kotlin, between region markers:
+ * A sample is compiled Kotlin in a snippets module, between region markers:
  *
  * ```
  * // region docs:animations/decorator
@@ -29,8 +29,8 @@ import java.io.File
  * ```
  *
  * Registers two tasks:
- * - `checkDocsSnippets` fails when a bound block differs from its region.
- * - `updateDocsSnippets` rewrites every bound block from its region.
+ * - `checkDocsSnippets` fails when a bound block differs from the bound region.
+ * - `updateDocsSnippets` rewrites every bound block from the bound region.
  *
  * A source line that ends with `// docs:hide` is compiled but left out of the docs. A block
  * that cannot be compiled is marked `<!-- snippet: skip (reason) -->`. A Kotlin block with
@@ -44,8 +44,8 @@ class ConfigureDocsSnippets : Plugin<Project> {
             snippetSources.from(
                 root.fileTree("docs/snippets/src") { include("**/*.kt") },
                 root.fileTree("docs/snippets-html/src") { include("**/*.kt") },
-                // Docs pages can also show regions of the recipes, which are
-                // compiled and run by the recipes' own tests.
+                // A docs page can also bind a region of a recipe. The recipe tests compile and
+                // run the recipes.
                 root.fileTree("recipes") {
                     include("**/src/**/*.kt")
                     exclude("**/build/**")

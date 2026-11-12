@@ -8,14 +8,15 @@
  *  - `modular.orders` and `modular.account` are features. Neither refers to
  *    the other.
  *
- * Each feature declares an interface with the accessors it needs and
- * contributes it to `AppScope` with `@ContributesTo`. The app's graph is
- * declared with `@DependencyGraph(AppScope::class)`, so Metro makes it
- * implement every contributed interface. A feature gets the graph from
- * [LocalMetroGraph] and casts it to its own interface.
+ * Each feature declares an interface with the accessors the feature requires
+ * and contributes the interface to `AppScope` with `@ContributesTo`. The
+ * app's graph is declared with `@DependencyGraph(AppScope::class)`, so the
+ * generated graph implements every contributed interface. A feature reads
+ * the graph from [LocalMetroGraph] and casts the graph to the feature's
+ * interface.
  *
- * [MetroSession] is scoped to the graph, so both features get one instance:
- * a name saved on the account screen is shown on the orders screen.
+ * [MetroSession] is scoped to the graph, so both features receive the same
+ * instance: a name saved on the account screen is shown on the orders screen.
  *
  * In a real app the keys would be in a navigation module, as in the Modular
  * Navigation recipe, and each feature would be a Gradle module that applies
@@ -55,7 +56,7 @@ data object MetroOrders : NavigationKey
 @Serializable
 data object MetroAccount : NavigationKey
 
-// One instance for the whole graph.
+// `@SingleIn(AppScope::class)`: the graph creates one MetroSession.
 @Inject
 @SingleIn(AppScope::class)
 class MetroSession {
@@ -84,7 +85,6 @@ inline fun <reified G : Any, reified T : ViewModel> metroEnroViewModel(
 }
 // endregion
 
-/** The content of the Metro Modular recipe. */
 @Composable
 fun MetroModularRecipeContent(modifier: Modifier = Modifier) {
     // A real app creates its graph once at startup.

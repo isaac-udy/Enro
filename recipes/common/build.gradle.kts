@@ -10,23 +10,24 @@ plugins {
 kotlin {
     explicitApi = ExplicitApiMode.Disabled
 
-    // The Material 3 Adaptive library used by two recipes needs API 24. Enro
-    // itself supports the minSdk in libs.versions.toml.
+    // The Material 3 Adaptive library used by two recipes requires API 24.
+    // Enro supports the minSdk in libs.versions.toml.
     androidLibrary {
         minSdk = 24
     }
 
     sourceSets {
         commonMain.dependencies {
-            // `api` so the per-platform app modules (:recipes:app:*) get the Enro APIs
-            // (incl. platform entry points like EnroUIViewController / GenericRootWindow /
-            // EnroBrowserContent) transitively from :recipes:common.
+            // `api` exposes the Enro APIs, including the platform entry points
+            // (EnroUIViewController, GenericRootWindow, EnroBrowserContent), to the
+            // per-platform app modules (:recipes:app:*).
             api("dev.enro:enro:${project.enroVersionName}")
             api("dev.enro:enro-compat:${project.enroVersionName}")
             implementation(libs.kotlinx.serialization)
             implementation(libs.compose.lifecycle)
             // The Modular Navigation recipe's modules. The feature modules are
-            // only here to put their generated bindings on the classpath.
+            // dependencies only so that the feature modules' generated bindings
+            // are on the classpath.
             implementation(project(":recipes:modular:navigation"))
             implementation(project(":recipes:modular:feature-home"))
             implementation(project(":recipes:modular:feature-profile"))
@@ -54,7 +55,7 @@ kotlin {
         }
 
         // Tests run on desktop only, so CI does not link Compose test binaries
-        // for wasm and iOS. The test code itself uses only common APIs.
+        // for wasm and iOS. The test code uses only common APIs.
         desktopTest.dependencies {
             implementation("dev.enro:enro-test:${project.enroVersionName}")
             implementation(libs.compose.uiTest)

@@ -21,7 +21,6 @@ public object NavigationDestinationFixtures {
                 add(TEST_OWNERS to TestLifecycleAndViewModelStoreOwner())
             },
             content = {
-                // Test NavigationDestination doesn't have any content
             }
         ).create(key.asInstance())
     }

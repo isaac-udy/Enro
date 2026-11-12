@@ -25,8 +25,8 @@ class SyntheticViewModelAccessTests {
             .assertViewModelAccessed(2)
     }
 
-    // apparently this test doesn't work because the Compose rule throws an exception on
-    // the wrong thread, so the expected exception is not caught and the test fails (even though we get the expected result)
+    // Ignored: the Compose rule throws the IllegalStateException on a thread other than
+    // the test thread, so JUnit does not catch the expected exception and the test fails.
     @Ignore
     @Test(expected = IllegalStateException::class)
     fun testInvalidViewModelAccess() {

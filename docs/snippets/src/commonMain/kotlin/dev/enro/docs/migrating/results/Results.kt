@@ -26,7 +26,7 @@ data class SelectDate(val min: LocalDate? = null) : NavigationKey.WithResult<Loc
 @NavigationDestination(Home::class)
 fun HomeScreen() {
     val getDate = registerForNavigationResult<LocalDate>(
-        onCompleted = { date -> /* use it */ },
+        onCompleted = { date -> /* use the date */ },
         onClosed = { /* dismissed without a result */ },
     )
 

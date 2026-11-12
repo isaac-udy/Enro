@@ -7,14 +7,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
 import kotlin.test.Test
 
-/**
- * Smoke test for the Compose multiplatform test harness.
- *
- * Establishes that `runComposeUiTest` works from `:enro-runtime`'s
- * commonTest on the desktop target. Once this is green, scene-strategy /
- * scene-decorator / overlay tests can layer on top, replacing what would
- * otherwise need to live as instrumented robot tests.
- */
+// Checks that `runComposeUiTest` runs in the `:enro-runtime` test source sets.
 @OptIn(ExperimentalTestApi::class)
 class SceneHarnessSmokeTest {
 

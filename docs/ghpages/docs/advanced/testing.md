@@ -6,16 +6,15 @@ nav_order: 4
 
 # Testing
 
-Enro's test utilities live in the `enro-test` module and let you write
-tests that:
+The `enro-test` module provides:
 
-- Install a controller for the duration of a test (so destinations and
-  handles can be created without a full app instance).
-- Construct a `TestNavigationHandle` that records every navigation
-  operation a handle executes, instead of dispatching to a real container.
-- Assert against those recorded operations with typed helpers.
-- Inject a navigation handle into a `ViewModel` so the ViewModel can be
-  unit-tested in isolation.
+- `runEnroTest` and `EnroTestRule`, which install a navigation controller
+  for the duration of a test.
+- `TestNavigationHandle`, which records each navigation operation and does
+  not execute the operation on a container.
+- Typed assertions on the recorded operations.
+- `putNavigationHandleForViewModel`, which provides a `TestNavigationHandle`
+  to a ViewModel under test.
 
 Add the dependency:
 
@@ -26,12 +25,13 @@ dependencies {
 }
 ```
 
-## Two ways to install a test controller
+## Installing a test controller
 
-### `runEnroTest { }` (KMP-friendly)
+### `runEnroTest`
 
-`runEnroTest` is a plain function that installs a navigation controller
-for the duration of the block. Use this in any Kotlin test:
+`runEnroTest` installs a navigation controller, runs the block, then
+uninstalls the controller. `runEnroTest` is declared in common code and can
+be called from common, JVM and instrumented tests:
 
 <!-- snippet: testing/run-enro-test -->
 ```kotlin
@@ -45,13 +45,10 @@ fun open_profile_navigates_to_edit_screen() = runEnroTest {
 }
 ```
 
-This is the recommended form. It works in common test source sets,
-instrumented tests, and JVM unit tests alike.
+### `EnroTestRule`
 
-### `EnroTestRule` (JUnit)
-
-If your test class uses JUnit-style `@Rule`s, `EnroTestRule` does the same
-thing as `runEnroTest` but as a `TestRule`:
+`EnroTestRule` is a JUnit `TestRule` that runs each test inside
+`runEnroTest`. `EnroTestRule` is available on Android only:
 
 <!-- snippet: testing/enro-test-rule -->
 ```kotlin
@@ -62,15 +59,17 @@ val enroRule = EnroTestRule()
 val composeRule = createComposeRule()
 ```
 
-If you have other `@Rule`s that launch activities or fragments, put the
-`EnroTestRule` first by ordering — the controller has to be installed
-before any destination is created.
+Give `EnroTestRule` a lower `order` than any rule that launches an Activity
+or Fragment. The controller must be installed before a destination is
+created.
 
 ## TestNavigationHandle
 
-Build a `TestNavigationHandle<T>` for a key (or instance) and call the
-ordinary `open` / `close` / `complete` / `requestClose` extensions on it.
-The handle records every operation rather than dispatching to a container:
+`createTestNavigationHandle` takes a key or a `NavigationKey.Instance` and
+returns a `TestNavigationHandle<T>`. Call the `open`, `close`, `complete`
+and `requestClose` extensions on the `TestNavigationHandle` as on any
+`NavigationHandle`. The `TestNavigationHandle` records each operation and
+does not execute the operation on a container:
 
 <!-- snippet: testing/test-navigation-handle -->
 ```kotlin
@@ -82,33 +81,31 @@ handle.complete()
 // both operations are recorded on the handle
 ```
 
-The recorded operations are `NavigationOperation.RootOperation`s — `Open`,
-`Close`, `Complete`, `CompleteFrom`, `SetBackstack`. Aggregated
-operations (`AggregateOperation`) are flattened to their constituent root
-operations when recorded.
+A `TestNavigationHandle` records `Open`, `Close` and `Complete` operations.
+Each operation inside an `AggregateOperation` is recorded separately.
+`SideEffect` operations are not recorded.
 
-Once a handle has been closed or completed, it rejects further operations.
-Call `handle.clearOperationHistory()` to re-use the same handle for
-multiple sequential scenarios.
+A `TestNavigationHandle` throws on any operation executed after the
+handle's own instance is closed or completed. Call
+`handle.clearOperationHistory()` to use the same handle for another
+scenario.
 
 ## Assertions
 
-The handle exposes typed assertions for each common shape.
+The assertions read the operations recorded by a `TestNavigationHandle`.
 
 ### `assertOpened<T>()`
 
 <!-- snippet: testing/assert-opened -->
 ```kotlin
-// Any open of type T
+// Returns the opened NavigationKey.Instance.
 val instance = handle.assertOpened<EditProfile>()
 
-// A specific key value
 handle.assertOpened(EditProfile("user-123"))
 
-// A predicate over the instance
+// The predicate receives the NavigationKey.Instance.
 handle.assertOpened<EditProfile> { it.key.initial == "user-123" }
 
-// "Nothing was opened"
 handle.assertNoneOpened()
 ```
 
@@ -125,14 +122,14 @@ handle.assertCompleted<LocalDate> { it.year > 2020 }
 handle.assertNotCompleted()
 ```
 
-`assertCompleted<R>(predicate)` is the one to reach for when you want to
-verify the *kind* of result without pinning down the exact value.
+`assertCompleted<R> { }` checks the result with a predicate instead of an
+exact value.
 
 ### Container assertions
 
-For tests that build a real `NavigationContainerState` (using the test
-fixtures), there's a matching set of container-level assertions. `state` is
-the `NavigationContainerState`, and a predicate receives the key:
+`assertActive` checks the last entry of a `NavigationContainerState`'s
+backstack and returns that entry's `NavigationKey.Instance`. The predicate
+receives the key:
 
 <!-- snippet: testing/container-assertions -->
 ```kotlin
@@ -141,10 +138,10 @@ state.assertActive(ShowProfile("user-123"))
 state.assertActive<ShowProfile> { it.userId == "user-123" }
 ```
 
-`NavigationContainerFixtures.create(...)` makes a container without Compose.
-It takes the same backstack, filter, interceptor and empty behaviour as
-`rememberNavigationContainer`. The backstack assertions check what the
-container holds after an operation:
+`NavigationContainerFixtures.create(...)` creates a container without
+Compose. `create` takes the same backstack, filter, interceptor and empty
+behaviour as `rememberNavigationContainer`. The backstack assertions check
+the container's backstack after an operation:
 
 <!-- snippet: testing/container-fixture -->
 ```kotlin
@@ -166,19 +163,21 @@ fun opening_a_profile_adds_it_to_the_backstack() = runEnroTest {
 
 | Assertion | Checks |
 |---|---|
-| `assertBackstackSize(n)` | The number of entries. |
-| `assertBackstackKeys(a, b)` | The keys, in order. |
-| `assertBackstackContains<T> { }` | An entry of type `T`; the predicate receives the key. Returns the instance. |
-| `assertBackstackDoesNotContain<T>()` | No entry of type `T`. |
-| `assertBackstackEmpty()` | No entries. |
-| `assertActive<T>()` | The top entry. |
+| `assertBackstackSize(n)` | The backstack has `n` entries. |
+| `assertBackstackKeys(a, b)` | The backstack's keys equal `a, b`, in order. |
+| `assertBackstackContains<T> { }` | The backstack has an entry of type `T`. The predicate receives the key. Returns the first matching instance. |
+| `assertBackstackDoesNotContain<T>()` | The backstack has no entry of type `T`. |
+| `assertBackstackEmpty()` | The backstack has no entries. |
+| `assertActive<T>()` | The last entry of the backstack is of type `T`. |
 
-`NavigationContextFixtures` makes root, container and destination contexts
-for tests that need a specific tree.
+`NavigationContextFixtures` creates root, container and destination contexts
+for tests that need a specific context tree.
 
 ### Path assertions
 
-Install the bindings under test, then check both directions:
+Install the path bindings under test. `assertPathResolvesTo` checks that a
+path resolves to a key, and `assertPathFor` checks that a key produces a
+path:
 
 <!-- snippet: testing/path-assertions -->
 ```kotlin
@@ -193,15 +192,13 @@ fun product_paths_resolve() = runEnroTest {
 }
 ```
 
-`assertActive` checks the currently-rendered destination at the top of the
-backstack.
-
 ## Testing ViewModels
 
-To unit-test a ViewModel that uses `by navigationHandle<MyKey>()` or
-`by registerForNavigationResult { }`, use
-`putNavigationHandleForViewModel<MyVm, MyKey>(key)` to inject a recording
-handle:
+`putNavigationHandleForViewModel<MyVm, MyKey>(key)` creates a
+`TestNavigationHandle` for `key` and returns the handle.
+`by navigationHandle<MyKey>()` and `by registerForNavigationResult { }` in
+the next `MyVm` constructed use that handle. Call
+`putNavigationHandleForViewModel` before constructing the ViewModel:
 
 <!-- snippet: testing/view-model -->
 ```kotlin
@@ -218,33 +215,36 @@ fun saving_changes_completes_the_destination() = runEnroTest {
 }
 ```
 
-The injected handle survives until you put a new one for the same ViewModel
-type. Pair it with `runEnroTest` (or `EnroTestRule`) so the underlying
-controller is set up.
+The handle stays registered for the ViewModel type until another handle is
+put for the same type, or until the test controller is uninstalled. Call
+`putNavigationHandleForViewModel` inside `runEnroTest`, or in a test class
+that has an `EnroTestRule`.
 
 ### Simulating child results
 
-When a ViewModel opens a child destination through a `NavigationResultChannel`,
-use the `send*ForTest` extensions on the child's `NavigationKey.Instance`
-(returned by `assertOpened`) to simulate the child completing or closing:
+When a ViewModel opens a child destination through a
+`NavigationResultChannel`, `assertOpened` returns the child's
+`NavigationKey.Instance`. The `send*ForTest` extensions on that instance
+simulate the child completing or closing:
 
 <!-- snippet: testing/child-results -->
 ```kotlin
-// sendResultForTest — typed result
+// Calls onCompleted with "confirmed".
 val child = handle.assertOpened<ConfirmDestination>()
 child.sendResultForTest("confirmed")
 
-// sendCompletedForTest — Unit/no-payload completion
+// Calls an onCompleted that takes no result.
 val dialog = handle.assertOpened<AcknowledgeDialog>()
 dialog.sendCompletedForTest()
 
-// sendClosedForTest — the child was dismissed without a result
+// Calls onClosed.
 val picker = handle.assertOpened<DatePicker>()
 picker.sendClosedForTest()
 ```
 
-Result channels observe in `viewModelScope`, which dispatches on `Dispatchers.Main`.
-In tests, replace Main with an unconfined dispatcher so callbacks fire eagerly:
+A ViewModel's result channel collects results in `viewModelScope`, which
+dispatches on `Dispatchers.Main`. Replace `Dispatchers.Main` with an
+unconfined dispatcher so that the result callbacks run immediately:
 
 <!-- snippet: testing/main-dispatcher -->
 ```kotlin
@@ -261,17 +261,19 @@ fun tearDown() {
 
 ## The test controller
 
-`runEnroTest { }` and `EnroTestRule` install a new, empty `EnroController`
-for the test and remove it afterwards. No destinations or path bindings
-are registered on it. Add the ones a test needs with
-`installNavigationModule(module)` or `installPathBindings(...)`.
+`runEnroTest` and `EnroTestRule` install a new `EnroController` for the
+test and uninstall the controller afterwards. The new controller has no
+destinations and no path bindings. Add the destinations and path bindings a
+test needs with `installNavigationModule(module)` or
+`installPathBindings(...)`.
 
-On Android instrumented tests, where the `Application` has already installed
-Enro, `runEnroTest` and `EnroTestRule` use that controller and leave it
-installed afterwards.
+When an `EnroController` is already installed, `runEnroTest` and
+`EnroTestRule` use the installed controller and leave the controller
+installed afterwards. An Android instrumented test whose `Application`
+installs Enro is one such case.
 
 ## See also
 
-- [Navigation Handles](../core-concepts/navigation-handles.md) for the
-  operations the assertions match against.
-- [Results](results.md) for the channel/operation interaction.
+- [Navigation Handles](../core-concepts/navigation-handles.md) — the
+  operations that the assertions match.
+- [Results](results.md) — result channels.

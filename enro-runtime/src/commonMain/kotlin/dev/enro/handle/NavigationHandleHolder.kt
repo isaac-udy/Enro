@@ -56,11 +56,11 @@ internal class NavigationHandleHolder<T : NavigationKey>(
 
     internal companion object {
         /**
-         * Creates a holder whose handle is already cleared. Used to reseed a destination's
-         * ViewModelStore after it is cleared on pop, so that ViewModel creation racing
-         * destination teardown (e.g. a Dialog window whose composition initializes on window
-         * attach, after the destination was popped) receives a no-op NavigationHandle instead
-         * of failing the strict lookup in [getNavigationHandleHolder].
+         * Creates a holder with a cleared handle. The ViewModelStore of a destination is
+         * reseeded with this holder after the ViewModelStore is cleared on pop. A ViewModel
+         * created after the pop (for example by a Dialog window whose composition starts on
+         * window attach) receives a no-op NavigationHandle, and [getNavigationHandleHolder]
+         * does not throw.
          */
         fun cleared(
             instance: NavigationKey.Instance<*>,

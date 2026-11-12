@@ -28,24 +28,20 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * Regression tests for the "destination composition outlives its ViewModelStore" race.
+ * The content of a destination can compose in a separate composition (a Dialog window, or a
+ * ModalBottomSheet layer on iOS) that is created and disposed asynchronously. That content
+ * can call `navigationHandle()` or create a ViewModel for a frame after the ViewModelStore
+ * of the destination is cleared. The runtime reseeds a cleared ViewModelStore with a
+ * `NavigationHandleHolder` that has a no-op cleared handle (see
+ * `clearAndReseedNavigationHandle`).
  *
- * On some platforms a destination's content composes in a separate composition
- * (a Dialog window, or a ModalBottomSheet layer on iOS) that initialises and tears
- * down asynchronously from the composition that drives navigation, so content can
- * (re)compose — and call `navigationHandle()` / create ViewModels — for a frame after
- * the destination's ViewModelStore has been cleared. The runtime handles this by
- * reseeding a cleared store with a `NavigationHandleHolder` carrying a no-op cleared
- * handle (see `clearAndReseedNavigationHandle`).
- *
- * The asynchronous window/layer composition itself can't be reproduced in
- * `runComposeUiTest`, so these tests reproduce the two halves of the race
- * deterministically:
- *  - clearing a store while the content is still composed, so the recomposition
- *    scheduled by `NavigationHandleHolder.onCleared` runs against the cleared store
- *    (the `ViewModelStoreStorage.onCleared` path — a parent store being cleared);
- *  - performing a late ViewModel lookup against a destination's store after the
- *    destination was popped (the `clearViewModelStoreForInstance` path).
+ * `runComposeUiTest` cannot reproduce the asynchronous composition, so each test reproduces
+ * one half of the race:
+ *  - clearing a parent ViewModelStore while the content is composed, so that the
+ *    recomposition scheduled by `NavigationHandleHolder.onCleared` reads the cleared
+ *    ViewModelStore (the `ViewModelStoreStorage.onCleared` path)
+ *  - looking up a ViewModel in the ViewModelStore of a destination after the destination
+ *    was popped (the `clearViewModelStoreForInstance` path)
  */
 @OptIn(ExperimentalTestApi::class)
 class ClearedNavigationHandleReseedTests {
@@ -59,9 +55,9 @@ class ClearedNavigationHandleReseedTests {
                 createNavigationModule {
                     destination<ReseedTestKey>(
                         navigationDestination<ReseedTestKey> {
-                            // navigationHandle() reads the holder's mutableStateOf-backed handle, so
-                            // clearing the holder invalidates this scope and forces a recomposition
-                            // that looks the holder up again against the (now cleared) store.
+                            // navigationHandle() reads the handle from a mutableStateOf in the holder.
+                            // Clearing the holder recomposes this content, and the recomposition
+                            // looks up the holder in the cleared ViewModelStore.
                             val handle = navigationHandle()
                             compositionCount++
                             lastHandle = handle
@@ -76,9 +72,9 @@ class ClearedNavigationHandleReseedTests {
             setContent {
                 CompositionLocalProvider(
                     LocalNavigationContext provides rootContext,
-                    // The ViewModelStore decorator keeps per-destination stores inside the
-                    // LocalViewModelStoreOwner's store; provide the root context's so the test
-                    // can clear it directly.
+                    // The ViewModelStore decorator stores each destination's ViewModelStore in
+                    // the ViewModelStore of LocalViewModelStoreOwner. The test provides
+                    // rootContext so that the test can clear that ViewModelStore.
                     LocalViewModelStoreOwner provides rootContext,
                 ) {
                     val container = rememberNavigationContainer(
@@ -91,10 +87,9 @@ class ClearedNavigationHandleReseedTests {
             val compositionsBeforeClear = compositionCount
             assertTrue(compositionsBeforeClear > 0, "destination content should have composed")
 
-            // Clear the parent store while the destination is still composed. This clears
-            // every child destination store through ViewModelStoreStorage.onCleared and
-            // schedules a recomposition of the content above. Without reseeding, that
-            // recomposition throws "No NavigationHandle found for ...".
+            // Clearing the parent ViewModelStore clears each destination ViewModelStore through
+            // ViewModelStoreStorage.onCleared and recomposes the destination content. Without
+            // the reseed, the recomposition throws "No NavigationHandle found for ...".
             runOnUiThread { rootContext.viewModelStore.clear() }
             waitForIdle()
 
@@ -107,7 +102,7 @@ class ClearedNavigationHandleReseedTests {
             assertEquals(ReseedTestKey, handle.instance.key)
             onNodeWithText("state: DESTROYED").assertIsDisplayed()
 
-            // Operations against the cleared handle are logged and ignored, never thrown.
+            // Asserts that an operation on the cleared handle does not throw.
             handle.close()
         }
 
@@ -123,8 +118,8 @@ class ClearedNavigationHandleReseedTests {
                     )
                     destination<ReseedTestChildKey>(
                         navigationDestination<ReseedTestChildKey> {
-                            // navigationHandle() resolves the holder through LocalNavigationContext,
-                            // so this is the owner a late lookup in a racing composition would use.
+                            // navigationHandle() looks up the holder in LocalNavigationContext, so a
+                            // late lookup from a separate composition uses the same owner.
                             poppedDestinationOwner = LocalNavigationContext.current
                             poppedHandle = navigationHandle()
                             Text("popped destination")
@@ -157,9 +152,8 @@ class ClearedNavigationHandleReseedTests {
             onNodeWithText("underlying").assertIsDisplayed()
             assertEquals(Lifecycle.State.DESTROYED, handle.lifecycle.currentState)
 
-            // Simulate a composition that outlived the pop creating its ViewModel late: the
-            // strict lookup must find the reseeded holder rather than throwing
-            // "Expected NavigationHandleHolder to be present in ViewModelStoreOwner ...".
+            // A lookup after the pop must return the reseeded holder. Without the reseed, the
+            // lookup throws "Expected NavigationHandleHolder to be present in ViewModelStoreOwner ...".
             val lateHolder = owner.getNavigationHandleHolder()
             assertEquals(Lifecycle.State.DESTROYED, lateHolder.navigationHandle.lifecycle.currentState)
             assertEquals(ReseedTestChildKey, lateHolder.navigationHandle.instance.key)

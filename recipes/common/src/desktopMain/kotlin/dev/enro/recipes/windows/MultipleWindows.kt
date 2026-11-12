@@ -3,13 +3,12 @@
  *
  * Demonstrates a destination that opens in its own desktop window.
  *
- * `rootWindowDestination` binds a key to a window. Opening the key with
- * `navigation.open(key)` opens the window; closing it, from the window's
- * close button or with `navigation.close()`, closes the window. The window
- * has its own content, which can host a container and navigate on its own.
+ * `rootWindowDestination` binds a key to a window. `navigation.open(key)`
+ * opens the window and `navigation.close()` closes the window. The window
+ * has its own content, which can host a navigation container.
  *
  * A window destination can return a result like any other destination: the
- * note window below completes with the text that was typed in it.
+ * note window below completes with the text typed in the note window.
  *
  * To open an existing common destination in a window on desktop only,
  * annotate a `rootWindowDestination` with
@@ -84,8 +83,8 @@ fun MultipleWindowsRecipeScreen() {
 fun WindowsMenuDestination() {
     val notes = remember { mutableStateListOf<String>() }
     var opened by remember { mutableStateOf(0) }
-    // Opening this key opens a window; its result arrives here when the
-    // window completes.
+    // Opening NoteWindow opens a window. The callback receives the result
+    // when the NoteWindow destination completes.
     val newNote = registerForNavigationResult<String> { note -> notes.add(note) }
 
     Column(

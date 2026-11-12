@@ -12,8 +12,8 @@ import dev.enro.stableClassName
 
 /**
  * The receiver of a destination's content, independent of how the destination is rendered.
- * [NavigationDestinationScope] extends it with the Compose animation scopes that
- * [NavigationDisplay] provides.
+ * [NavigationDestinationScope] adds the Compose animation scopes that [NavigationDisplay]
+ * provides.
  */
 public interface NavigationDestinationContentScope<T : NavigationKey> {
     public val destinationMetadata: Map<String, Any>
@@ -48,27 +48,12 @@ public data class NavigationDestination<out T : NavigationKey> private construct
     public val id: String get() = instance.id
     public val key: T get() = instance.key
 
-    /**
-     * Renders this destination's content. Mirrors Nav3's `NavEntry.Content()`
-     * naming so a Nav3-style scene that calls `entry.Content()` translates
-     * directly to `destination.Content()` in Enro.
-     */
+    /** Navigation 3 equivalent: `NavEntry.Content()`. */
     @Composable
     public fun Content() {
         content()
     }
 
-    /**
-     * Creates a copy of this NavigationDestination with updated metadata.
-     * 
-     * This function preserves the exact same instance and content references from the original
-     * NavigationDestination, only replacing the metadata map. This is useful for plugins or
-     * other components that need to enhance or modify the metadata associated with a destination
-     * without affecting its core behavior or content.
-     *
-     * @param metadata The new metadata map to use in the copied NavigationDestination
-     * @return A new NavigationDestination with the same instance and content, but updated metadata
-     */
     internal fun copy(
         metadata: Map<String, Any>,
     ): NavigationDestination<T> {
@@ -98,15 +83,8 @@ public data class NavigationDestination<out T : NavigationKey> private construct
         }
 
         /**
-         * Typed accessor for setting metadata associated with a
-         * [MetadataKey]. Mirrors Nav3's `metadata { put(key, value) }`
-         * DSL while keeping symmetry with [NavigationKey.MetadataKey].
-         * Use [add] for string-keyed metadata.
-         *
-         * If [value] is `null` the entry is left absent from the
-         * underlying map (`metadata[key]` will then resolve to the
-         * key's default). This means `MetadataKey<X?>(default = null)`
-         * works as a "key not set / value present" toggle.
+         * Stores [value] under [key]. A `null` [value] stores no entry and leaves an earlier
+         * entry for [key] in place, so `metadata[key]` returns that entry or the key's default.
          */
         public fun <V> add(key: MetadataKey<V>, value: V) {
             if (value == null) return
@@ -118,14 +96,11 @@ public data class NavigationDestination<out T : NavigationKey> private construct
     }
 
     /**
-     * A typed key for values stored in a [NavigationDestination]'s
-     * metadata map. Mirrors Nav3's `NavMetadataKey<T>` and is named in
-     * parallel with [NavigationKey.MetadataKey] (which serves the same
-     * role for navigation-key metadata).
+     * A typed key for a value in a [NavigationDestination]'s metadata map. Navigation 3
+     * equivalent: `NavMetadataKey<T>`.
      *
-     * The [default] is returned when the metadata map does not contain
-     * a value for this key — i.e. for "key not set" semantics, declare
-     * `MetadataKey<X?>(default = null)`.
+     * Reading the key from a metadata map that has no value for the key returns [default].
+     * Declare `MetadataKey<X?>(default = null)` to tell an unset key apart from a set value.
      *
      * Example:
      * ```
@@ -176,9 +151,8 @@ public data class NavigationDestination<out T : NavigationKey> private construct
             )
         }
 
-        // createWithoutScope is used to create a NavigationDestination that does not include a NavigationDestinationScope
-        // as part of the content lambda; this is important for creating decorators, as some elements required to create
-        // the NavigationScope need to be provided by some of the internal decorators (e.g. lifecycle, context, etc)
+        // Decorators call createWithoutScope because [create] reads the navigation handle, and
+        // navigationContextDecorator provides the navigation handle inside the decorator chain.
         internal fun <T: NavigationKey> createWithoutScope(
             instance: NavigationKey.Instance<T>,
             metadata: Map<String, Any> = emptyMap(),
@@ -207,20 +181,15 @@ public fun <T: NavigationKey> navigationDestinationContent(
 }
 
 /**
- * Typed accessor for a [NavigationDestination.MetadataKey] stored in a
- * metadata map. Returns [NavigationDestination.MetadataKey.default] if
- * no value is present. Mirrors Nav3's `Map<String, Any>.get(NavMetadataKey<T>)`
- * extension.
+ * Returns the value stored under [key], or [NavigationDestination.MetadataKey.default] when the
+ * map has no value for [key].
  */
 @Suppress("UNCHECKED_CAST")
 public operator fun <T> Map<String, Any>.get(key: NavigationDestination.MetadataKey<T>): T {
     return get(key.name) as T? ?: key.default
 }
 
-/**
- * Returns `true` if this metadata map contains a value for [key].
- * Mirrors Nav3's `Map<String, Any>.contains(NavMetadataKey<T>)` extension.
- */
+/** Returns `true` if this metadata map contains a value for [key]. */
 public operator fun <T> Map<String, Any>.contains(key: NavigationDestination.MetadataKey<T>): Boolean {
     return containsKey(key.name)
 }

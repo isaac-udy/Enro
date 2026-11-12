@@ -40,7 +40,7 @@ private object featureFlags {
 fun callers(navigation: NavigationHandle<*>) {
     // region docs:synthetic-destinations/callers
     navigation.open(Logout)        // synthetic
-    navigation.open(EditProfile)   // synthetic — could be either of two screens
+    navigation.open(EditProfile)   // synthetic: opens one of two screens
     navigation.open(SettingsScreen) // ordinary destination
     // endregion
 }
@@ -57,7 +57,6 @@ object EditProfileV2 : NavigationKey.WithResult<ProfileUpdate>
 
 @NavigationDestination(EditProfile::class)
 val editProfile = syntheticDestination<EditProfile> {
-    // Read a feature flag, A/B bucket, remote config, etc.
     if (featureFlags.useNewProfileUi) completeFrom(EditProfileV2)
     else completeFrom(EditProfileLegacy)
 }
@@ -67,7 +66,7 @@ val editProfile = syntheticDestination<EditProfile> {
 fun DeciderCaller() {
     // region docs:synthetic-destinations/decider-caller
     val editProfile = registerForNavigationResult<ProfileUpdate>(
-        onCompleted = { update -> /* one branch, regardless of which UI produced it */ },
+        onCompleted = { update -> /* runs for a result from either screen */ },
     )
     Button(onClick = { editProfile.open(EditProfile) }) { Text("Edit") }
     // endregion

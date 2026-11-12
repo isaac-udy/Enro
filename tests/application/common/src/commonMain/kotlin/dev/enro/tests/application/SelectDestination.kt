@@ -40,8 +40,8 @@ import dev.enro.tests.application.window.SimpleWindow
 import kotlinx.serialization.Serializable
 
 @Serializable
-// Public so the per-platform app entry points (:tests:application:app:*) can use it as
-// the initial backstack destination.
+// Public: the per-platform app entry points (:tests:application:app:*) open
+// SelectDestination as the initial backstack destination.
 class SelectDestination() : NavigationKey {
     internal companion object {
         internal val selectableDestinations = run {

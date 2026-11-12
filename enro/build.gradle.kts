@@ -40,8 +40,8 @@ kotlin {
     }
 }
 
-// Some android dependencies need to be declared at the top level like this,
-// it's a bit gross but I can't figure out how to get it to work otherwise
+// The lintPublish configuration is declared in the top-level dependencies block. A
+// declaration inside the kotlin source set dependencies has not been made to work.
 dependencies {
     lintPublish(project(":enro-lint"))
 }

@@ -12,12 +12,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
-/**
- * Tests for the [NavigationPlugin] SPI and its [PluginRepository] wiring.
- * Plugins are the framework's extension point for cross-cutting hooks
- * like analytics, lifecycle stamping, or destination-metadata rewriting
- * — none of which had unit coverage before.
- */
 class NavigationPluginTests {
 
     @Test
@@ -52,8 +46,8 @@ class NavigationPluginTests {
         EnroTest.getCurrentNavigationController()
             .addModule(createNavigationModule { plugin(plugin) })
 
-        // Uninstall manually inside the test so we can observe onDetached
-        // running while runEnroTest's finally still does the no-op cleanup.
+        // The test uninstalls the controller to observe onDetached. The uninstall in the
+        // `finally` block of runEnroTest then does nothing.
         EnroTest.uninstallNavigationController()
 
         assertEquals(

@@ -16,13 +16,14 @@ import dev.enro.recipes.material.MaterialSupportingPaneRecipe
 import dev.enro.recipes.metro.MetroModularRecipe
 import dev.enro.recipes.metro.MetroViewModelRecipe
 import dev.enro.recipes.modular.ModularNavigationRecipe
+import dev.enro.recipes.multiplestacks.MultipleBackStacksRecipe
 import dev.enro.recipes.results.ViewModelResultsRecipe
 import dev.enro.recipes.saveable.SavedStateRecipe
 import dev.enro.recipes.viewmodel.SharedViewModelRecipe
 import kotlin.test.Test
 
 /**
- * Runs each recipe through the behaviour its description promises.
+ * Checks the behaviour that each recipe's description states.
  */
 class RecipeSmokeTests {
 
@@ -47,6 +48,25 @@ class RecipeSmokeTests {
 
         click("Finish: clear the stack")
         see("The steps were removed from the stack. This is the only entry.")
+    }
+
+    @Test
+    fun `multiple back stacks keeps each tab's backstack`() = runRecipeTest(MultipleBackStacksRecipe) {
+        click("View Post 1")
+        click("Like")
+        see("Likes: 1")
+
+        click("Messages")
+        see("Thread 1")
+        gone("Post: post-1")
+
+        click("Feed")
+        see("Post: post-1")
+        see("Likes: 1")
+
+        click("Feed")
+        see("View Post 1")
+        gone("Post: post-1")
     }
 
     @Test
@@ -143,13 +163,12 @@ class RecipeSmokeTests {
         click("2")
         see("Add breakfast?")
 
-        // Back to the nights step, then back to the destination step.
         click("Back")
         see("How many nights in Kyoto?")
         click("Back")
         see("Where to?")
 
-        // With a one-night stay the breakfast step is no longer asked.
+        // The flow skips the breakfast step for a one-night stay.
         click("Wellington")
         click("1")
         see("Wellington, 1 night(s), no breakfast")
@@ -191,8 +210,8 @@ class RecipeSmokeTests {
         see("SavedStateHandle: 2")
     }
 
-    // The destinations are in other Gradle modules; this passes only if
-    // RecipesComponent found their generated bindings.
+    // The destinations are in other Gradle modules. The test passes only if
+    // RecipesComponent contains the generated bindings of those modules.
     @Test
     fun `modular navigation crosses module boundaries`() = runRecipeTest(ModularNavigationRecipe) {
         see("In :recipes:modular:feature-home")
@@ -251,7 +270,7 @@ class RecipeSmokeTests {
         see("Message body for Invoice.")
         see("Inbox")
 
-        // Selecting another message replaces the open one.
+        // Selecting another message replaces the open message.
         click("Meeting notes")
         see("Message body for Meeting notes.")
         gone("Message body for Invoice.")

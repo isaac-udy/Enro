@@ -1,13 +1,13 @@
 /**
  * Enro Recipes: Metro ViewModel and Metro Modular
  *
- * The host screens for the two Metro recipes. The recipes are in the
- * `:recipes:metro` module, which applies the Metro compiler plugin:
+ * The host screens for the two Metro recipes. The `:recipes:metro` module
+ * contains the two recipes and applies the Metro compiler plugin:
  *
- *  - `MetroViewModel.kt`: a ViewModel with dependencies from a Metro graph
- *    and arguments from its NavigationKey.
+ *  - `MetroViewModel.kt`: a ViewModel that takes dependencies from a Metro
+ *    graph and arguments from the NavigationKey of the destination.
  *  - `modular/MetroModularApp.kt`: features that contribute to one Metro
- *    graph and open each other's screens by key.
+ *    graph and open the screens of other features by NavigationKey.
  */
 package dev.enro.recipes.metro
 

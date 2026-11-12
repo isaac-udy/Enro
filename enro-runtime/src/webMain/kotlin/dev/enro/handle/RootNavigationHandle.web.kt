@@ -8,9 +8,7 @@ internal actual fun <T : NavigationKey> RootNavigationHandle<T>.handleNavigation
     operation: NavigationOperation,
     context: RootContext,
 ): Boolean {
-    // The browser has no equivalent of opening another root context (a new tab
-    // can't be reliably opened from app code, and closing the root would close
-    // the tab itself), so there's no platform-specific handling to do here —
-    // every operation is processed through normal container flow.
+    // The browser has no platform handling: app code cannot reliably open a new tab, and closing
+    // the root context would close the tab. A container executes each operation.
     return false
 }

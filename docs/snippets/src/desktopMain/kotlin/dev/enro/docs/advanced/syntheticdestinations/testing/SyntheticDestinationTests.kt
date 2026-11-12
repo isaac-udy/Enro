@@ -1,7 +1,7 @@
 // Snippets for docs/ghpages/docs/advanced/synthetic-destinations.md
 //
-// These are in desktopMain because test names with spaces do not compile on
-// every target.
+// The test samples are in desktopMain because test names with spaces do not
+// compile on every target.
 package dev.enro.docs.advanced.syntheticdestinations.testing
 
 import dev.enro.NavigationKey

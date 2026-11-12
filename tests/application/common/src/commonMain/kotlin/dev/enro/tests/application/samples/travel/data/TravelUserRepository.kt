@@ -16,7 +16,6 @@ class TravelUserRepository private constructor() {
     val currentUser: StateFlow<TravelUser?> = _currentUser.asStateFlow()
 
     fun registerUser(firstName: String, lastName: String, username: String, password: String): Boolean {
-        // Check if username already exists
         if (_registeredUsers.value.any { it.username == username }) {
             return false
         }
@@ -28,13 +27,12 @@ class TravelUserRepository private constructor() {
         )
 
         _registeredUsers.value = _registeredUsers.value + newUser
-        // Automatically log in the new user
         _currentUser.value = newUser
         return true
     }
 
     fun login(username: String, password: String): Boolean {
-        // For this sample app, we'll accept any password as long as the username exists
+        // The sample accepts any password for a registered username.
         val user = _registeredUsers.value.find { it.username == username }
         return if (user != null) {
             _currentUser.value = user

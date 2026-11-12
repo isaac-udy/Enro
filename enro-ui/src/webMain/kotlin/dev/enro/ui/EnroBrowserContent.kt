@@ -11,11 +11,8 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 
 /**
- * A composable that provides the root navigation context for a browser-based Enro application.
- *
- * This is the main entry point for using Enro with Compose UI in a browser. It sets up the
- * required navigation context, view model store, and navigation handle that are needed for
- * Enro navigation to work.
+ * Provides the root navigation context for an Enro application rendered with Compose UI in
+ * a browser.
  *
  * Usage:
  * ```kotlin
@@ -23,23 +20,18 @@ import androidx.compose.ui.input.key.type
  *     MyNavigationComponent.installNavigationController(document)
  *     ComposeViewPort {
  *         EnroBrowserContent {
- *             // Your app content here
  *             MyApplicationContent()
  *         }
  *     }
  * }
  * ```
  *
- * @param suppressEscapeAsBack When `true` (the default), an Escape key
- *   press that nothing in the composition handles is consumed before
- *   Compose Multiplatform's built-in `BackNavigationEventInput` can
- *   translate it into a back-navigation event. Content that handles
- *   Escape itself (a dialog or popup closing) still receives it first.
- *   Browser back/forward via
- *   the history API is unaffected (it routes through `popstate`, not the
- *   navigation event dispatcher). Set to `false` if your app deliberately
- *   wants Escape→back behaviour.
- * @param content The composable content of your application
+ * @param suppressEscapeAsBack When `true` (the default), EnroBrowserContent consumes an
+ *   Escape key press that no composable in [content] consumed, so that Compose
+ *   Multiplatform's `BackNavigationEventInput` does not convert the key press into a back
+ *   navigation event. A composable in [content] that handles Escape (a dialog or popup)
+ *   receives the key press first. Browser back and forward are not affected. When `false`,
+ *   an unconsumed Escape key press is a back navigation event.
  */
 @Composable
 public fun EnroBrowserContent(
@@ -48,8 +40,7 @@ public fun EnroBrowserContent(
 ) {
     EnroBrowserRoot {
         if (suppressEscapeAsBack) {
-            // Bubble phase: focused content handles Escape first; the web window
-            // only turns Escape into back when the composition leaves it unconsumed.
+            // onKeyEvent runs in the bubble phase, so focused content receives Escape first.
             Box(
                 modifier = Modifier
                     .fillMaxSize()

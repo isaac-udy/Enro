@@ -1,23 +1,24 @@
 /**
  * Enro Recipe: Koin Modular
  *
- * Demonstrates features that each provide a Koin module and navigate to each
- * other by key. The packages stand in for Gradle modules:
+ * Shows two features that each declare a Koin module and open the other
+ * feature by NavigationKey. Each package represents a Gradle module:
  *
- *  - `koin.modular` (this file) is the app. It declares the keys, the shared
- *    session, and the Koin application that loads every feature's module.
+ *  - `koin.modular` (this file) is the app. The app declares the keys, the
+ *    shared session, and the Koin application that loads the module of each
+ *    feature.
  *  - `koin.modular.orders` and `koin.modular.account` are features. Neither
- *    refers to the other.
+ *    feature imports the other feature.
  *
- * Koin only provides dependencies. The destinations are registered by the
- * `enro-processor`, as in the Modular Navigation recipe, so a feature's Koin
- * module has no navigation entries in it.
+ * Koin provides dependencies only. `enro-processor` registers the
+ * destinations, as in the Modular Navigation recipe, so the Koin module of a
+ * feature declares no destinations.
  *
- * [KoinSession] is a `single`, so both features get one instance: a name
- * saved on the account screen is shown on the orders screen.
+ * [KoinSession] is a `single`, so both features receive the same instance:
+ * the orders screen shows the name that the account screen stores.
  *
- * ViewModels are created with `koinEnroViewModel` from the Koin ViewModel
- * recipe.
+ * Each destination creates a ViewModel with `koinEnroViewModel` from the
+ * Koin ViewModel recipe.
  *
  * Nav3 equivalent: the Koin modular recipe.
  */
@@ -45,7 +46,8 @@ import org.koin.dsl.module
 @Serializable
 object KoinModularRecipe : NavigationKey
 
-// The keys both features use.
+// The app declares the keys, so each feature can open the other feature's
+// key without importing the other feature.
 @Serializable
 data object KoinOrders : NavigationKey
 
@@ -58,11 +60,11 @@ class KoinSession {
 
 // region docs:di/koin-modular-app
 val appModule = module {
-    // One instance for every feature.
+    // `single`: every feature receives the same KoinSession instance.
     single { KoinSession() }
 }
 
-// The app loads its own module and one module per feature.
+// The Koin application loads the app module and the module of each feature.
 private val recipeKoin = koinApplication {
     modules(appModule, ordersModule, accountModule)
 }
@@ -76,7 +78,7 @@ fun KoinModularRecipeScreen() {
         title = "Koin Modular",
         navigation = navigation,
     ) { modifier ->
-        // A real app calls startKoin once at startup instead.
+        // An app that calls startKoin at startup does not require KoinIsolatedContext.
         KoinIsolatedContext(context = recipeKoin) {
             val container = rememberNavigationContainer(
                 backstack = backstackOf(KoinOrders.asInstance()),

@@ -6,18 +6,9 @@ import dev.enro.ui.NavigationDestination
 import dev.enro.ui.NavigationScene
 
 /**
- * The [NavigationScene] returned by [rememberNavigationSceneState] when the
- * container's destinations list is empty (typically because the container was
- * configured with `EmptyBehavior.allowEmpty()` and has been emptied).
- *
- * Rendering an empty container produces no output — this scene has no entries,
- * no previous entries, and a content lambda that composes nothing. It exists
- * so [NavigationDisplay] can still drive its [AnimatedContent] transition
- * through a real [NavigationScene] value rather than nullability everywhere.
- *
- * Having this short-circuit also guarantees that every `NavigationSceneStrategy`
- * implementation receives a non-empty `entries` list when its `calculateScene`
- * runs, which simplifies the strategy contract.
+ * The scene that `rememberNavigationSceneState` returns for a container with no destinations,
+ * for example a container using `EmptyBehavior.allowEmpty()`. `NavigationDisplay` animates to
+ * and from this scene like any other scene.
  */
 internal data object EmptyNavigationScene : NavigationScene {
     override val key: Any = EmptyNavigationScene

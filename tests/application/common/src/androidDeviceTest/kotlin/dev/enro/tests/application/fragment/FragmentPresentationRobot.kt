@@ -151,14 +151,12 @@ class FragmentPresentationComposableRobot(
     private val composeRule: ComposeTestRule
 ) {
     init {
-        // Wait for the composable to be displayed
         composeRule.waitForText("Presentable Composable")
     }
     
     fun close(): FragmentPresentationRobot {
         composeRule.onNodeWithText("Close").performClick()
         
-        // Wait for this to be dismissed and return to the root fragment
         waitForRootFragment()
         return FragmentPresentationRobot(composeRule)
     }
@@ -166,13 +164,11 @@ class FragmentPresentationComposableRobot(
     fun closeWithResult(): FragmentPresentationRobot {
         composeRule.onNodeWithText("Close With Result").performClick()
         
-        // Wait for this to be dismissed and return to the root fragment
         waitForRootFragment()
         return FragmentPresentationRobot(composeRule)
     }
     
     private fun waitForRootFragment() {
-        // Wait for the root fragment to be visible again
         composeRule.waitForViewBasedText("Fragment Presentation Tests")
     }
 }
@@ -181,14 +177,12 @@ class FragmentPresentationFragmentRobot(
     private val composeRule: ComposeTestRule
 ) {
     init {
-        // Wait for the fragment to be displayed
         composeRule.waitForViewBasedText("Presentable Fragment")
     }
     
     fun close(): FragmentPresentationRobot {
         Espresso.onView(ViewMatchers.withText("Close")).perform(ViewActions.click())
         
-        // Wait for this to be dismissed and return to the root fragment
         waitForRootFragment()
         return FragmentPresentationRobot(composeRule)
     }
@@ -196,13 +190,11 @@ class FragmentPresentationFragmentRobot(
     fun closeWithResult(): FragmentPresentationRobot {
         Espresso.onView(ViewMatchers.withText("Close With Result")).perform(ViewActions.click())
         
-        // Wait for this to be dismissed and return to the root fragment
         waitForRootFragment()
         return FragmentPresentationRobot(composeRule)
     }
     
     private fun waitForRootFragment() {
-        // Wait for the root fragment to be visible again
         composeRule.waitForViewBasedText("Fragment Presentation Tests")
     }
 }
@@ -211,14 +203,12 @@ class FragmentPresentationActivityRobot(
     private val composeRule: ComposeTestRule
 ) {
     init {
-        // Wait for the activity to be displayed
         composeRule.waitForViewBasedText("Presentable Activity")
     }
     
     fun close(): FragmentPresentationRobot {
         Espresso.onView(ViewMatchers.withText("Close")).perform(ViewActions.click())
         
-        // Wait for this to be dismissed and return to the root fragment
         waitForRootFragment()
         return FragmentPresentationRobot(composeRule)
     }
@@ -226,13 +216,11 @@ class FragmentPresentationActivityRobot(
     fun closeWithResult(): FragmentPresentationRobot {
         Espresso.onView(ViewMatchers.withText("Close With Result")).perform(ViewActions.click())
         
-        // Wait for this to be dismissed and return to the root fragment
         waitForRootFragment()
         return FragmentPresentationRobot(composeRule)
     }
     
     private fun waitForRootFragment() {
-        // Wait for the root fragment to be visible again
         composeRule.waitForViewBasedText("Fragment Presentation Tests")
     }
 }
@@ -241,14 +229,12 @@ class FragmentPresentationDialogComposableRobot(
     private val composeRule: ComposeTestRule
 ) {
     init {
-        // Wait for the dialog composable to be displayed
         composeRule.waitForText("Dialog Composable")
     }
     
     fun close(): FragmentPresentationRobot {
         composeRule.onNodeWithText("Close").performClick()
         
-        // Wait for this to be dismissed and return to the root fragment
         waitForRootFragment()
         return FragmentPresentationRobot(composeRule)
     }
@@ -256,13 +242,11 @@ class FragmentPresentationDialogComposableRobot(
     fun closeWithResult(): FragmentPresentationRobot {
         composeRule.onNodeWithText("Close With Result").performClick()
         
-        // Wait for this to be dismissed and return to the root fragment
         waitForRootFragment()
         return FragmentPresentationRobot(composeRule)
     }
     
     private fun waitForRootFragment() {
-        // Wait for the root fragment to be visible again
         composeRule.waitForViewBasedText("Fragment Presentation Tests")
     }
 }
@@ -271,14 +255,12 @@ class FragmentPresentationDialogFragmentRobot(
     private val composeRule: ComposeTestRule
 ) {
     init {
-        // Wait for the dialog fragment to be displayed
         composeRule.waitForViewBasedText("Dialog Fragment")
     }
     
     fun close(): FragmentPresentationRobot {
         Espresso.onView(ViewMatchers.withText("Close")).perform(ViewActions.click())
         
-        // Wait for this to be dismissed and return to the root fragment
         waitForRootFragment()
         return FragmentPresentationRobot(composeRule)
     }
@@ -286,13 +268,11 @@ class FragmentPresentationDialogFragmentRobot(
     fun closeWithResult(): FragmentPresentationRobot {
         Espresso.onView(ViewMatchers.withText("Close With Result")).perform(ViewActions.click())
         
-        // Wait for this to be dismissed and return to the root fragment
         waitForRootFragment()
         return FragmentPresentationRobot(composeRule)
     }
     
     private fun waitForRootFragment() {
-        // Wait for the root fragment to be visible again
         composeRule.waitForViewBasedText("Fragment Presentation Tests")
     }
 }

@@ -340,8 +340,9 @@ fun FindContextDialog() {
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
                             val id = selectedId.toIntOrNull()
-                            // Find the "FindContext" root first, because that won't be active if the FindContext
-                            // dialog is currently active, and then find the active child within that context
+                            // The FindContext destination is not active while this dialog is open, so the
+                            // lookup finds the FindContext destination from the root context, then searches
+                            // the active children of the FindContext destination.
                             val foundContext = context.root()
                                 .findDestinationContext<FindContext>()
                                 ?.findActiveDestinationContext<dev.enro.NavigationKey> {

@@ -1,10 +1,13 @@
 /**
  * Enro Recipe: Shared Element Animations
  *
- * Demonstrates Compose's shared-element transitions inside Enro destinations.
- * NavigationDisplay wraps every destination in a SharedTransitionLayout, so
- * elements tagged with a matching key on the list and the detail screens
- * animate smoothly between them as the user navigates.
+ * Shows Compose shared-element transitions between Enro destinations.
+ * `NavigationDisplay` renders the destinations inside one
+ * `SharedTransitionLayout` and provides the scopes through
+ * `LocalNavigationSharedTransitionScope` and
+ * `LocalNavigationAnimatedVisibilityScope`. An element on the list screen and
+ * an element on the detail screen with the same shared content key animate
+ * between the two screens.
  */
 @file:OptIn(ExperimentalSharedTransitionApi::class)
 
@@ -35,8 +38,6 @@ import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
-// -- Sample data --
-
 private data class SharedItem(
     val id: Int,
     val title: String,
@@ -53,8 +54,6 @@ private val items = listOf(
     SharedItem(6, "Star", "Top picks.", Icons.Default.Star),
 )
 
-// -- Navigation keys --
-
 @Serializable
 object SharedElementAnimationsRecipe : NavigationKey
 
@@ -64,16 +63,10 @@ data object SharedElementList : NavigationKey
 @Serializable
 data class SharedElementDetail(val id: Int) : NavigationKey
 
-// -- Stable keys for the shared elements --
-//
-// The key passed to rememberSharedContentState must match between the
-// source and the destination of the transition for Compose to animate
-// the bounds smoothly. Stringly-typed keys are fine; build them however
-// you like, but make sure they're stable across recompositions.
+// The list screen and the detail screen must pass the same key to
+// rememberSharedContentState for one shared element.
 private fun iconKey(id: Int) = "shared-item-icon-$id"
 private fun titleKey(id: Int) = "shared-item-title-$id"
-
-// -- Recipe root --
 
 @Composable
 @NavigationDestination(SharedElementAnimationsRecipe::class)
@@ -93,15 +86,13 @@ fun SharedElementAnimationsRecipeScreen() {
     }
 }
 
-// -- List screen --
-
 @Composable
 @NavigationDestination(SharedElementList::class)
 fun SharedElementListDestination() {
     val navigation = navigationHandle<SharedElementList>()
 
-    // Capture both scopes once at the top of the destination. Every shared
-    // element in this composition uses the same pair.
+    // NavigationDisplay provides both scopes. Each sharedElement call in the
+    // destination takes these two scopes.
     val sharedTransitionScope = LocalNavigationSharedTransitionScope.current
     val animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current
 
@@ -147,8 +138,6 @@ fun SharedElementListDestination() {
         }
     }
 }
-
-// -- Detail screen --
 
 @Composable
 @NavigationDestination(SharedElementDetail::class)

@@ -53,13 +53,11 @@ fun Project.configureEmulatorWtf(numShards: Int = 2) {
         }
     }
 
-    // Without a token the emulator.wtf CLI fails the build with "Http error 403:
-    // Invalid apiToken". That is the normal state for pull_request CI runs from
-    // forks (GitHub withholds repository secrets from them) and for local
-    // checkouts without a token, so skip the device tests — loudly — rather than
-    // failing every other check in the same run. The test APKs still build, so the
-    // instrumented test sources are still compile-checked. Maintainers get a full
-    // device-test run by pushing the branch to this repository.
+    // Without a token, the emulator.wtf CLI fails the build with "Http error 403: Invalid
+    // apiToken". A pull_request CI run from a fork has no token (GitHub withholds repository
+    // secrets from forks), and a local checkout can have no token. The device tests are
+    // skipped with a warning, so that the missing token does not fail the other checks in the
+    // same run. The test APKs are still built, which compiles the instrumented test sources.
     if (apiToken.isNullOrBlank()) {
         tasks.matching { it.name.endsWith("WithEmulatorWtf") }.configureEach {
             onlyIf("no emulator.wtf API token is configured") {

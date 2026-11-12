@@ -64,11 +64,10 @@ fun EnterUsernameScreenDestination() {
     var isChecking by remember { mutableStateOf(false) }
     var isAvailable by remember { mutableStateOf(false) }
 
-    // Simulate username availability check
     LaunchedEffect(username) {
         if (username.length >= 3) {
             isChecking = true
-            delay(500) // Simulate API call
+            delay(500) // Simulates an API call for the username availability check.
             isAvailable = !TravelUserRepository.instance.isUsernameTaken(username)
             isChecking = false
         } else {
@@ -97,7 +96,6 @@ fun EnterUsernameScreenDestination() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Progress indicator
             LinearProgressIndicator(
                 progress = { 0.5f },
                 modifier = Modifier
@@ -105,7 +103,6 @@ fun EnterUsernameScreenDestination() {
                     .padding(bottom = 48.dp, top = 24.dp),
             )
 
-            // Header
             Text(
                 text = "🧳",
                 fontSize = 56.sp,
@@ -126,7 +123,6 @@ fun EnterUsernameScreenDestination() {
                 modifier = Modifier.padding(bottom = 40.dp)
             )
 
-            // Username field
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it.lowercase().replace(" ", "") },
@@ -154,7 +150,6 @@ fun EnterUsernameScreenDestination() {
                 }
             )
 
-            // Availability message
             when {
                 username.length < 3 && username.isNotEmpty() -> {
                     Text(
@@ -197,7 +192,6 @@ fun EnterUsernameScreenDestination() {
                 }
             }
 
-            // Username tips
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -226,7 +220,6 @@ fun EnterUsernameScreenDestination() {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Continue button
             Button(
                 onClick = {
                     navigation.open(

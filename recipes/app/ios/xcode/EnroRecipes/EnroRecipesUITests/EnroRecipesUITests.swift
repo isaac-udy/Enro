@@ -15,19 +15,17 @@ final class EnroRecipesUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Enro Recipes"].waitForExistence(timeout: 30))
         openRecipe("UIViewController", in: app)
 
-        // Embedded in the Enro container.
         tap("Embed in this container", in: app)
         // The embedded UIKit views are not in the accessibility tree, so the
-        // test checks the host's button, which is only shown while embedded.
+        // test taps the host's button, which is shown only while the UIKit
+        // controller is embedded.
         tap("Back to menu", in: app)
 
-        // Presented modally.
         tap("Present modally", in: app)
         XCTAssertTrue(app.staticTexts["Presented modally"].waitForExistence(timeout: 10))
         tap("Close", in: app)
         XCTAssertTrue(app.staticTexts["UIViewController destinations"].waitForExistence(timeout: 10))
 
-        // Pushed onto the UINavigationController.
         tap("Push onto the UINavigationController", in: app)
         XCTAssertTrue(app.staticTexts["Pushed onto the UINavigationController"].waitForExistence(timeout: 10))
         tap("Close", in: app)

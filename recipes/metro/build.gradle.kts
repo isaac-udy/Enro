@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
-// The Metro recipes. They are in their own module so that the Metro compiler
-// plugin is applied to this code only.
+// The Metro recipes are in a separate module so that the Metro compiler
+// plugin is applied to the Metro recipes only.
 plugins {
     id("configure-library")
     id("com.google.devtools.ksp")

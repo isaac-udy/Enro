@@ -35,8 +35,9 @@ internal fun Project.configureKotlinMultiplatform(
 
     val libs = project.the<LibrariesForLibs>()
 
-    // The Enro libraries are the root-level modules. The test and recipe apps nested under them
-    // compile without InternalEnroApi, as consumers do, so KSP output that needs it fails here.
+    // The Enro libraries are the root-level modules. The test and recipe apps nested under the
+    // root-level modules compile without the InternalEnroApi opt-in, as consumer code does, so
+    // KSP output that requires InternalEnroApi fails to compile in those apps.
     val isEnroLibrary = project.parent == project.rootProject
     val optIns = when {
         isEnroLibrary -> consumerOptIns + "dev.enro.annotations.InternalEnroApi"
@@ -50,7 +51,8 @@ internal fun Project.configureKotlinMultiplatform(
 
         if (isEnroLibrary) {
             // The committed dumps under each module's `api/` directory are the semver contract.
-            // Advanced, Experimental and Internal APIs are outside it, so they are left out.
+            // Advanced, Experimental and Internal APIs are outside the contract, so the dumps
+            // exclude those APIs.
             @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
             abiValidation {
                 filters {
@@ -74,8 +76,8 @@ internal fun Project.configureKotlinMultiplatform(
         }
 
         if (wasmJs) {
-            // Locals rather than Project reads inside the webpack block: the block is stored in
-            // the configuration cache, and reading the Project there captures it.
+            // The webpack block is stored in the configuration cache, and a Project read inside
+            // the block stores the Project in the cache. The block reads these locals instead.
             val webpackOutputFileName = "${project.projectName.camelCase}.js"
             val projectDirPath = project.projectDir.path
             wasmJs {
@@ -85,7 +87,7 @@ internal fun Project.configureKotlinMultiplatform(
                         outputFileName = webpackOutputFileName
                         devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
                             static = (static ?: mutableListOf()).apply {
-                                // Serve sources to debug inside browser
+                                // The dev server serves the sources for debugging in the browser.
                                 add(projectDirPath)
                             }
                         }
@@ -157,16 +159,15 @@ internal fun Project.configureKotlinMultiplatform(
     }
 
     if (android) {
-        // Configure the Android library target contributed by the
-        // `com.android.kotlin.multiplatform.library` plugin. In build scripts this is the
-        // `kotlin { androidLibrary { ... } }` accessor; from a binary convention plugin we
-        // reach the same target via the KMP extension's ExtensionAware container.
+        // The `com.android.kotlin.multiplatform.library` plugin adds the Android library target.
+        // A build script uses the `kotlin { androidLibrary { ... } }` accessor; a binary
+        // convention plugin reads the same target from the extensions of the KMP extension.
         val androidNamespace = project.projectName.packageName
         val compileSdkVersion = libs.versions.android.compileSdk.get().toInt()
         val minSdkVersion = libs.versions.android.minSdk.get().toInt()
-        // "androidLibrary" (rather than the "android" alias) so this resolves on AGP 9.0,
-        // whose Android plugin is the latest currently supported by IntelliJ. Both names
-        // refer to the same target on AGP 9.1+.
+        // The name is "androidLibrary", not the "android" alias, so that the lookup resolves on
+        // AGP 9.0, the latest AGP that IntelliJ supports. Both names refer to the same target
+        // on AGP 9.1+.
         val androidLibrary = (kotlinMultiplatformExtension as ExtensionAware).extensions
             .getByName("androidLibrary") as KotlinMultiplatformAndroidLibraryTarget
         androidLibrary.apply {
@@ -174,16 +175,14 @@ internal fun Project.configureKotlinMultiplatform(
             compileSdk = compileSdkVersion
             minSdk = minSdkVersion
 
-            // The KMP library plugin disables Android resource processing (and the
-            // generated R class) by default; enable it so modules with src/androidMain/res
-            // (and code that references R) build. No-op for modules without resources.
+            // The KMP library plugin disables Android resource processing and the generated R
+            // class by default. Modules with src/androidMain/res require both.
             androidResources {
                 enable = true
             }
 
-            // Android test components (`withHostTest`/`withDeviceTest`) can each be
-            // enabled at most once, so they're opted into per-module rather than here
-            // (only enro-runtime currently runs Android host tests for its commonTest).
+            // `withHostTest` and `withDeviceTest` can each be enabled at most once, so each
+            // module enables the Android test components in the module's build script.
 
             compilerOptions {
                 jvmTarget.set(JvmTarget.JVM_11)

@@ -1,16 +1,18 @@
 /**
  * Enro Recipe: Native Interop
  *
- * Demonstrates embedding native (non-Compose) UI inside an Enro navigation destination.
- * The Nav3 equivalent ("Fragment Interop") is Android-specific; this recipe generalises
- * the idea so each platform shows how to integrate its own native UI primitive:
+ * Shows native (non-Compose) UI embedded in an Enro destination. Each platform
+ * embeds a different native UI element:
  *
- * - Android: an `AndroidView` hosting a classic `View`
- * - Desktop: a `SwingPanel` (when available) or a plain Compose placeholder
- * - iOS / WasmJs: a Compose placeholder describing the platform's interop story
+ * - Android: an `AndroidView` that hosts a `View`
+ * - Desktop: a `SwingPanel`
+ * - iOS: a `UIKitView` that hosts a `UILabel`
+ * - WasmJs: Compose text in place of a native element
  *
- * The destination itself is declared in common code; the per-platform UI is supplied via
- * an `expect`/`actual` function so the recipe is reachable on every Compose target.
+ * Common code declares the destination. The `expect` function
+ * [PlatformInteropContent] has an `actual` implementation on each platform.
+ *
+ * Nav3 equivalent: the Fragment Interop recipe, which is Android-only.
  */
 package dev.enro.recipes.interop
 
@@ -110,9 +112,6 @@ fun InteropDetailDestination() {
     }
 }
 
-/**
- * Platform-specific native UI embedded inside the recipe. Each target supplies its own
- * `actual` implementation.
- */
+/** The native UI that [InteropHomeDestination] embeds. */
 @Composable
 expect fun PlatformInteropContent()

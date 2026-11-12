@@ -31,27 +31,24 @@ internal data class ShellSection(
 )
 
 /**
- * The Shell's chrome wrapper. Composition per breakpoint:
+ * Wraps a scene in the shell chrome:
  *
- *   - **Wide / Medium**: top bar (logo + search + cart) above a Row of
- *     left rail + content.
- *   - **Mobile**: top bar (logo + cart) above content; optional bottom
- *     chrome (search + nav row) below.
+ *   - Wide and Medium: a top bar (title, search, cart) above a left rail
+ *     and the scene.
+ *   - Mobile: a top bar (title, cart) above the scene, and the bottom chrome
+ *     (search and navigation row) below the scene.
  *
- * The mobile bottom chrome hides when the top entry has `fullScreen()` /
- * `leftPane()` / `rightPane()` metadata **unless** the destination is the
- * only thing on the backstack (section root) — in that case the user still
- * needs the bottom nav to switch sections, so it stays visible.
+ * On Mobile the decorator hides the bottom chrome when the top entry has
+ * `fullScreen()`, `leftPane()` or `rightPane()` metadata, except when the
+ * scene has no previous entries (a section root).
  *
- * The chrome elements are wrapped in `movableContentOf` and rendered
- * through a `Modifier.sharedElement` slot gated by
- * `transition.targetState == EnterExitState.Visible`. Outer
- * `AnimatedContent` runs the configured transitions for inner content
- * (because the wrapper's `key` derives from the inner scene's identity);
- * the chrome stays visually pinned because movable content is composed
- * only in the incoming composition and shared-element bridges its bounds
- * across the transition. Same Nav3-inspired pattern as the simple recipe's
- * `AdaptiveNavigationSceneDecorator`.
+ * The decorated scene derives `key` from the wrapped scene, so
+ * `NavigationDisplay` runs a transition when the wrapped scene changes. Each
+ * chrome element is `movableContentOf` content inside a
+ * `Modifier.sharedElement` slot, and only the entering scene composes the
+ * content, so the chrome does not animate during the transition.
+ * `AdaptiveNavigationSceneDecorator` in the simple recipe documents the
+ * same technique.
  */
 internal class ShellSceneDecorator(
     private val sections: List<ShellSection>,
@@ -88,11 +85,9 @@ internal class ShellSceneDecorator(
                     with(sharedScope) {
                         if (breakpoint == ShellBreakpoint.Mobile) {
                             Column(modifier = Modifier.fillMaxSize()) {
-                                // Slot has a fixed height so the outgoing composition
-                                // (which doesn't invoke the movable chrome) still
-                                // reserves the same vertical space — otherwise the
-                                // inner scene content would jump up by TopBarHeight
-                                // at the start of the exit animation.
+                                // The slot has a fixed height: the exiting scene does
+                                // not compose the movable chrome, and an empty slot
+                                // without a height would move the scene content up.
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -166,9 +161,8 @@ internal class ShellSceneDecorator(
     }
 }
 
-// Heights must match the rendered chrome composables exactly so that both
-// outgoing and incoming wrapper compositions reserve the same vertical space
-// for chrome slots — see the slot-sizing comment in decorateScene.
+// Each size must equal the size of the matching chrome composable, so the
+// entering scene and the exiting scene give each chrome slot the same size.
 private val DesktopTopBarHeight = 68.dp
 private val MobileTopBarHeight = 64.dp
 private val BottomChromeHeight = 144.dp

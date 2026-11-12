@@ -1,31 +1,24 @@
 # `enro-processor`
 
-The KSP code generator that turns `@NavigationDestination`,
-`@NavigationComponent`, and `@NavigationPath` annotations into the glue
-the runtime consumes. Apply it as a `ksp("…")` dependency on any module
-that declares Enro destinations; it generates:
+`enro-processor` is the KSP processor that reads `@NavigationDestination`,
+`@NavigationComponent` and `@NavigationPath` annotations. Add
+`enro-processor` as a `ksp("…")` dependency to each module that declares
+Enro destinations. `enro-processor` generates:
 
-- A per-component **`*Navigation`** class that registers every annotated
-  destination (and path binding) with the runtime when you call
-  `installNavigationController(…)`. This is what lets you write a
-  destination once and have it discovered automatically — no manual
-  `registerDestination(…)` boilerplate.
-- **Path-binding** glue for `@NavigationPath`, including the
-  serialisers needed to bridge URL segments to typed `NavigationKey`
-  properties.
-- Per-destination metadata (key type, render kind, optional metadata
-  overrides) so the runtime can resolve `open(KeyType)` calls without
-  reflection at runtime.
+- A **binding** class for each `@NavigationDestination`. The binding
+  registers the destination for the destination's key type.
+- **Path bindings** for each `@NavigationPath`, including the code that
+  converts URL segments and query parameters to and from the
+  `NavigationKey` properties.
+- A **`<Component>Navigation`** class and an
+  `installNavigationController(…)` extension for each
+  `@NavigationComponent`. `installNavigationController(…)` registers
+  every generated binding with the controller.
 
-The processor itself is pure JVM — it has no multiplatform target — but
-its output is multiplatform-aware and lands in the right source set per
-target.
+`enro-processor` is a JVM module with no multiplatform targets. KSP runs
+`enro-processor` once for each target that has a `ksp` configuration.
 
-## Typical usage
-
-You don't usually add `enro-processor` to a module directly. The
-`dev.enro:enro` meta-artefact takes care of pulling it in alongside the
-runtime; the KSP wiring you write looks like:
+## Usage
 
 ```kotlin
 plugins {
@@ -38,13 +31,13 @@ dependencies {
 }
 ```
 
-For multi-target KMP modules, attach the processor to every target source
-set that declares destinations (e.g. `kspCommonMainMetadata`,
-`kspAndroid`, `kspIosArm64`, etc.). The output classes are then visible
-on each platform.
+`dev.enro:enro` does not include `enro-processor`. In a KMP module, add
+`enro-processor` to the KSP configuration of each target that declares
+destinations, for example `kspCommonMainMetadata`, `kspAndroid` and
+`kspIosArm64`.
 
-## When to depend on this directly
+## Depending on `enro-processor` as a library
 
-Only when you're building tooling that needs to invoke the processor
-outside the standard `ksp(…)` flow (e.g. a custom build plugin that
-generates extra glue from the same annotations).
+Depend on `enro-processor` outside a `ksp(…)` configuration only to
+build tooling that runs the processor itself, such as a custom build
+plugin that generates extra code from the same annotations.

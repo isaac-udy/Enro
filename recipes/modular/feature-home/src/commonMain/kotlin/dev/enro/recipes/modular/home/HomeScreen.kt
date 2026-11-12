@@ -18,9 +18,9 @@ import dev.enro.recipes.modular.navigation.LoginKey
 import dev.enro.recipes.modular.navigation.ModularSettingsKey
 import dev.enro.recipes.modular.navigation.ProfileKey
 
-// This module cannot see ProfileScreen, SettingsScreen or the login
-// destination: they are in :recipes:modular:feature-profile, which this
-// module does not depend on. It opens them by key.
+// feature-home does not depend on :recipes:modular:feature-profile, which
+// declares ProfileScreen, SettingsScreen and the login destination.
+// HomeScreen opens the three destinations by key.
 @Composable
 @NavigationDestination(HomeKey::class)
 fun HomeScreen() {

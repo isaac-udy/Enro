@@ -11,12 +11,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Tests that lock down the semantics of [NavigationHandle.requestClose] /
- * [NavigationHandle.close] and the [NavigationHandleConfiguration.onCloseRequested]
- * callback registry. These two entry points behave differently — `close()`
- * unconditionally executes a Close; `requestClose()` consults any registered
- * `onCloseRequested` callback first — and that distinction is currently held
- * in place only by code review.
+ * `close()` always executes a Close. `requestClose()` runs the callback registered with
+ * [NavigationHandleConfiguration.onCloseRequested] in place of the Close.
  */
 class NavigationHandleConfigurationTests {
 

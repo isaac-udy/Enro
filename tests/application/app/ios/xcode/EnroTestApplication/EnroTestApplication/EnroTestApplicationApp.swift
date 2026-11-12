@@ -10,7 +10,6 @@ import SwiftUI
 import UIKit
 import EnroTestsApplication
 
-// Commented out since we're using UIKit AppDelegate approach
 @main
 struct EnroTestApplicationApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -22,7 +21,6 @@ struct EnroTestApplicationApp: App {
    }
 }
 
-// @main
  class AppDelegate: UIResponder, UIApplicationDelegate {
 
      func application(
@@ -55,7 +53,7 @@ class CodeBasedViewController: UIViewController {
 
     let titleLabel: UITextView = {
         let label = UITextView()
-        label.translatesAutoresizingMaskIntoConstraints = false // Enable Auto Layout
+        label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "This is a UIViewController hosted as an Enro destination"
         label.font = UIFont.systemFont(ofSize: 15)
         label.textAlignment = .center
@@ -66,12 +64,10 @@ class CodeBasedViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white // Set the background color
+        view.backgroundColor = .white
 
-        // Add the subviews to the main view
         view.addSubview(titleLabel)
 
-        // Set up Auto Layout constraints
         setupConstraints()
     }
 
@@ -79,7 +75,6 @@ class CodeBasedViewController: UIViewController {
 
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            // Title Label Constraints
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
             titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20),

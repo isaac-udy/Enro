@@ -1,15 +1,17 @@
 /**
  * Enro Recipe: Navigating From a Dialog
  *
- * Demonstrates what happens when a dialog destination navigates:
- *  - `navigation.open(key)` from a dialog puts the new destination on top of
- *    the dialog. The dialog is still on the backstack, so Back returns to it.
- *  - `navigation.closeAndReplaceWith(key)` removes the dialog and opens the
- *    new destination in its place. Back returns to the screen under the dialog.
- *  - A dialog can open another dialog; they stack like any other destinations.
+ * Shows navigation from a dialog destination:
+ *  - `navigation.open(key)` from a dialog opens the new destination on top of
+ *    the dialog. The dialog stays on the backstack, so Back returns to the
+ *    dialog.
+ *  - `navigation.closeAndReplaceWith(key)` closes the dialog and opens the
+ *    new destination. Back returns to the screen under the dialog.
+ *  - A dialog can open a second dialog. The second dialog opens on top of
+ *    the first dialog.
  *
- * A dialog is an ordinary destination with `dialog()` metadata, so every
- * NavigationHandle operation works from inside it.
+ * A dialog is a destination with `dialog()` metadata, so each
+ * NavigationHandle operation is available inside a dialog.
  */
 package dev.enro.recipes.dialog
 
@@ -101,19 +103,19 @@ val chooseActionDialogDestination: NavigationDestinationProvider<ChooseActionDia
         ) {
             Text("Choose an action", style = MaterialTheme.typography.titleMedium)
 
-            // The detail screen opens on top of this dialog. Back from the
-            // detail screen returns here.
+            // open leaves this dialog on the backstack. Back from the detail
+            // screen returns to this dialog.
             Button(onClick = { navigation.open(FromDialogDetail(openedBy = "open")) }) {
                 Text("Open a screen on top")
             }
 
-            // This dialog is removed and the detail screen takes its place.
-            // Back from the detail screen returns to Home.
+            // closeAndReplaceWith removes this dialog from the backstack. Back
+            // from the detail screen returns to Home.
             Button(onClick = { navigation.closeAndReplaceWith(FromDialogDetail(openedBy = "closeAndReplaceWith")) }) {
                 Text("Replace this dialog with a screen")
             }
 
-            // A second dialog, stacked on this one.
+            // The second dialog opens on top of this dialog.
             Button(onClick = { navigation.open(AreYouSureDialog) }) {
                 Text("Open another dialog")
             }

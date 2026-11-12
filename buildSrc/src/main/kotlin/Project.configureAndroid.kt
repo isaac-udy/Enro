@@ -79,9 +79,9 @@ private fun Project.commonAndroidConfig(
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
 
-            // We want to disable the automatic inclusion of the `dev.enro.annotations.AdvancedEnroApi` and `dev.enro.annotations.ExperimentalEnroApi`
-            // opt-ins when we're compiling the test application, so that we're not accidentally making changes that might break the public API by
-            // requiring the opt-ins.
+            // The test application compiles without the AdvancedEnroApi and ExperimentalEnroApi
+            // opt-ins, so that a public API change that requires an opt-in fails to compile in
+            // the test application.
             if (path.startsWith(":tests:application")) {
                 return@compilerOptions
             }

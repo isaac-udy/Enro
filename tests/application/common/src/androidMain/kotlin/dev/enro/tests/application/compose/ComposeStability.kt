@@ -40,10 +40,8 @@ import dev.enro.ui.NavigationDisplay
 import kotlinx.parcelize.Parcelize
 import kotlin.uuid.Uuid
 
-// TODO - this could have additional tests added to match those in ComposableDestinationContainerGroups.kt and/or ComposableContainerStabilityTests.kt
-// generally, some tests that flick quickly between the containers and ensure that they are stable and are rendered correctly. Due to those other
-// tests in the core enro suite, it's not a high priority to add these (as those will catch bugs), but it is easier to debug tests which are
-// written against the test application (as compared to the core suite).
+// TODO: add tests that switch quickly between the three containers and check that each
+//  container renders the correct content.
 @Parcelize
 object ComposeStability : Parcelable, NavigationKey.SupportsPush {
 

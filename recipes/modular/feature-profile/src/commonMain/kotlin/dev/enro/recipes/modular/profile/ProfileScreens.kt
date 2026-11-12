@@ -51,8 +51,8 @@ fun SettingsScreen() {
     }
 }
 
-// A destination declared as a value. It is registered the same way as the
-// functions above: the annotation is all the processor needs.
+// A destination declared as a value. `@NavigationDestination` registers the
+// value the same way as the functions above.
 @NavigationDestination(LoginKey::class)
 val loginDestination: NavigationDestinationProvider<LoginKey> = navigationDestination {
     Column(
@@ -61,7 +61,7 @@ val loginDestination: NavigationDestinationProvider<LoginKey> = navigationDestin
     ) {
         Text("Login Screen", style = MaterialTheme.typography.titleLarge)
         Text("In :recipes:modular:feature-profile", style = MaterialTheme.typography.bodySmall)
-        // This module opens the home feature's screen by key, too.
+        // feature-profile does not depend on feature-home and opens the home screen by key.
         Button(onClick = { navigation.closeAndReplaceWith(HomeKey) }) {
             Text("Log in and go home")
         }

@@ -1,19 +1,19 @@
 /**
  * Enro Recipe: Results in a ViewModel
  *
- * Demonstrates requesting and receiving a navigation result from a ViewModel
- * instead of from a Composable.
+ * Shows a ViewModel that opens a screen for a result and receives the result.
  *
- * `registerForNavigationResult` is available on `ViewModel` as a property
- * delegate. The ViewModel opens the result-bearing key through the channel
- * and handles `onCompleted` / `onClosed` itself, so the screen only renders
- * state and forwards clicks.
+ * `registerForNavigationResult` is a property delegate on `ViewModel`. The
+ * ViewModel opens the `NavigationKey.WithResult` key through the result
+ * channel, and the `onCompleted` and `onClosed` callbacks run in the
+ * ViewModel. The screen renders ViewModel state and forwards clicks.
  *
- * The ViewModel must be created with `createEnroViewModel { }` so that
- * `by navigationHandle()` and the result channel can find the destination's
- * NavigationHandle.
+ * The ViewModel constructor must run inside `createEnroViewModel { }`, which
+ * provides the destination's NavigationHandle to `by navigationHandle()` and
+ * to the result channel.
  *
- * For the Composable form, see the Returning Results recipe.
+ * The Returning Results recipe shows `registerForNavigationResult` in a
+ * Composable.
  */
 package dev.enro.recipes.results
 
@@ -65,7 +65,8 @@ class ThemeSettingsViewModel : ViewModel() {
     private val _status = MutableStateFlow("No colour picked yet")
     val status: StateFlow<String> = _status.asStateFlow()
 
-    // The result channel. It survives configuration changes with the ViewModel.
+    // The ViewModel owns the result channel, so a configuration change does
+    // not recreate the result channel.
     private val pickAccentColour by registerForNavigationResult<String>(
         onClosed = { _status.value = "Picker closed without a choice" },
         onCompleted = { colour ->

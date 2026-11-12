@@ -4,11 +4,11 @@
  * Demonstrates Fragments and Activities as destinations, in the same
  * navigation as Composable destinations.
  *
- * A Fragment or Activity becomes a destination the same way a Composable
- * does: `@NavigationDestination(Key::class)` on the class. Nothing else
- * registers it, and no extra Enro module is needed. Inside it,
- * `by navigationHandle<Key>()` gives the same NavigationHandle a Composable
- * gets, so `open`, `close` and `complete` all work.
+ * `@NavigationDestination(Key::class)` on a Fragment or Activity class binds
+ * the class to the key, as the annotation does on a Composable. No other
+ * registration and no extra Enro module is required. Inside the Fragment or
+ * Activity, `by navigationHandle<Key>()` returns a NavigationHandle with the
+ * same `open`, `close` and `complete` functions as in a Composable.
  *
  * In this recipe:
  *  - a Composable opens a Fragment, which is shown in the same container
@@ -105,7 +105,7 @@ fun FragmentAndActivityRecipeScreen() {
 fun InteropMenuDestination() {
     val navigation = navigationHandle<InteropMenu>()
     var name by rememberSaveable { mutableStateOf("Compose") }
-    // The Activity is opened like any other result-bearing destination.
+    // A result channel opens an Activity destination the same way as a Composable destination.
     val pickName = registerForNavigationResult<String> { picked -> name = picked }
 
     Column(

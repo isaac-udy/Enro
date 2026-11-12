@@ -18,7 +18,6 @@ class HorizontalPagerTest {
 
     @Test
     fun testPagerNavigation() {
-        // Start at the destination selection screen and navigate to HorizontalPager
         SelectDestinationRobot(composeRule)
             .openHorizontalPager()
             .verifyCurrentId("Root")

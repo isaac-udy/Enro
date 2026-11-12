@@ -19,50 +19,41 @@ import kotlinx.serialization.encoding.Encoder
 import kotlin.uuid.Uuid
 
 /**
- * A NavigationKey represents the contract for a screen. A class that implements
- * the NavigationKey interface uses properties on that class to represent the
- * inputs/arguments/parameters for that contract.
+ * The contract for a screen. The properties of a class that implements NavigationKey are
+ * the arguments of the screen.
  *
  * Example:
  * ```
- * // Contract for the Profile screen, which displays the profile for
- * // the user with the id passed in the "userId" parameter
+ * // Displays the profile of the user with the id `userId`
  * class Profile(val userId: String) : NavigationKey
  * ```
  *
- * NavigationKeys are also able to define outputs, as well as inputs. This is done by
- * implementing the NavigationKey.WithResult<T> interface, where `T` is the type of the
- * result that is returned by that screen.
+ * A screen that returns a result of type `T` implements [NavigationKey.WithResult].
  *
  * Example:
  * ```
- * // Contract for the SelectDate screen, which allows the user to select
- * // a date within an (optional) range
+ * // The user selects a date within an optional range
  * class SelectDate(
  *    val minimumDate: LocalDate?,
  *    val maximumDate: LocalDate?,
  * ) : NavigationKey.WithResult<LocalDate>
  * ```
- *
  */
 public interface NavigationKey {
 
     /**
-     * Marks a [NavigationKey] as producing a result of type [T].
-     * Implementing this interface allows the screen associated with this key
-     * to return a typed value to its caller, enabling type-safe result handling.
+     * A [NavigationKey] for a screen that returns a result of type [T] to the caller.
      */
     public interface WithResult<T: Any> : NavigationKey
 
     /**
-     * Describes how to convert between a URL-style path string and an instance of a
-     * [NavigationKey] of type [T]. Implement this interface (typically as a nested
-     * `object` on the key class) and reference it from
-     * [dev.enro.annotations.NavigationPath.FromBinding] for cases that don't fit the
-     * simple property-based mapping driven by [dev.enro.annotations.NavigationPath].
+     * Converts between a path string and a [NavigationKey] of type [T]. Implement
+     * PathBinding (typically as a nested `object` on the key class) and reference the
+     * implementation from [dev.enro.annotations.NavigationPath.FromBinding] when the
+     * property mapping of [dev.enro.annotations.NavigationPath] cannot express the path.
      *
-     * The [pattern] follows the standard Enro path-pattern grammar
-     * (e.g. `"/users/{id}?source={source?}"`).
+     * [pattern] uses the Enro path pattern grammar, for example
+     * `"/users/{id}?source={source?}"`.
      */
     public interface PathBinding<T : NavigationKey> {
         public val pattern: String
@@ -71,9 +62,8 @@ public interface NavigationKey {
     }
 
     /**
-     * A data class that bundles a [key] of type [T] with its associated [metadata].
-     * This is often used to declaratively define a navigation target along with its initial
-     * metadata, before it's resolved into a [NavigationKey.Instance] by the navigation system.
+     * A [key] with the [metadata] that [asInstance] copies to the [NavigationKey.Instance]
+     * created for the [key].
      */
     @ConsistentCopyVisibility
     public data class WithMetadata<out T : NavigationKey> internal constructor(
@@ -82,9 +72,8 @@ public interface NavigationKey {
     )
 
     /**
-     * Represents a realized, active instance of a [NavigationKey] within a navigation backstack.
-     * Each [NavigationKey.Instance] is uniquely identified by its [id], references the original [key]
-     * it is representing, and carries its own [metadata].
+     * An entry for a [NavigationKey] in a navigation backstack. Two instances are equal
+     * when the [id] of each instance is equal; equality does not compare [key] or [metadata].
      */
     @Stable
     @Immutable
@@ -115,14 +104,15 @@ public interface NavigationKey {
     }
 
     /**
-     * A type-safe, serializable key-value store for attaching arbitrary data to a
-     * navigation instance (either [NavigationKey.Instance] or through [NavigationKey.WithMetadata]).
-     * It allows associating additional, non-contractual information with a specific
-     * navigation event or screen instance, using string keys to access typed values.
+     * A serializable key-value store attached to a [NavigationKey.Instance] or a
+     * [NavigationKey.WithMetadata]. A [MetadataKey] reads and writes a typed value.
      *
-     * Note: When using [set], ensure that serializers for the types being stored are
-     * registered with the [NavigationController] if they are not standard Kotlin types,
-     * especially for polymorphic serialization of [Any]. This is checked in debug builds.
+     * [set] with a `null` value removes the entry. Values of a [TransientMetadataKey] are
+     * not serialized.
+     *
+     * A value type that is not a standard Kotlin type requires a polymorphic serializer for
+     * [Any] registered with the [NavigationController]. In debug mode, [set] verifies the
+     * serializer for each value that is not stored under a [TransientMetadataKey].
      */
     @Serializable(with = Metadata.Serializer::class)
     public class Metadata internal constructor(
@@ -210,18 +200,19 @@ public interface NavigationKey {
     }
 
     /**
-     * A typed key used to access and store values within [NavigationKey.Metadata].
+     * A typed key for a value in [NavigationKey.Metadata]. [NavigationKey.Metadata.get]
+     * returns [default] when the metadata contains no value for the key.
      *
      * Example:
      * ```
      * object IsDialog : NavigationKey.MetadataKey<Boolean>(default = false)
-     * val isDialog = metadata.get(IsDialog) // isDialog will be false if not set
+     * val isDialog = metadata.get(IsDialog) // false when no value is set
      * ```
      *
-     * [name] is what the key's values are stored and persisted under. It defaults to the key's
-     * [stableClassName]; pass a name to choose it explicitly. On Kotlin/JS, class names are simple
-     * names, so two keys with the same simple class name throw when used, and one of them needs an
-     * explicit name.
+     * [NavigationKey.Metadata] stores and serializes the value under [name]. [name] defaults
+     * to the [stableClassName] of the key class. On Kotlin/JS, [stableClassName] is the
+     * simple class name, and reading [name] throws when two key classes have the same
+     * [name]; pass an explicit name to one of the two key classes.
      */
     public abstract class MetadataKey<out T>(
         public val default: T,
@@ -241,10 +232,8 @@ public interface NavigationKey {
     }
 
     /**
-     * A TransientMetadataKey is a [MetadataKey] that is not persisted across saved instance states.
-     *
-     * This is marked as an [AdvancedEnroApi] because it is not recommended to use this unless you
-     * understand the implications of not persisting the metadata across saved instance states.
+     * A [MetadataKey] whose value is not serialized, so the value is absent after the
+     * metadata is restored from saved state.
      */
     @AdvancedEnroApi
     public abstract class TransientMetadataKey<T>(
@@ -255,14 +244,11 @@ public interface NavigationKey {
     }
 
     public companion object {
-        // This is accessed and set in EnroController
+        // EnroController assigns verifyMetadataSerialization.
         internal var verifyMetadataSerialization: (key: MetadataKey<Any?>, value: Any?) -> Unit = { _, _ -> }
     }
 }
 
-/**
- * Creates a [NavigationKey.WithMetadata] instance from this [NavigationKey], with an empty metadata map.
- */
 @AdvancedEnroApi
 public fun <K : NavigationKey> K.withMetadata(): NavigationKey.WithMetadata<K> {
     return NavigationKey.WithMetadata(

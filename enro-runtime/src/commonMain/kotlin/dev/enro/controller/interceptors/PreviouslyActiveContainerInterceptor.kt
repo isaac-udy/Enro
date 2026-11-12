@@ -11,22 +11,12 @@ import dev.enro.context.findContext
 import dev.enro.context.root
 import dev.enro.interceptor.NavigationInterceptor
 /**
- * A core Enro interceptor that tracks the active container when navigation operations are executed
- * and restores that container's active state when the navigation is closed.
- * 
- * This interceptor ensures that when a navigation operation opens a destination from a specific
- * container, and that destination is later closed, the original container becomes active again.
- * This is particularly useful in scenarios with multiple containers, such as the HorizontalPager
- * sample in the test application.
- * 
- * The interceptor works by:
- * 1. Attaching metadata to NavigationKey instances during open operations that records which
- *    container was active at the time
- * 2. Reading this metadata during close/complete operations and creating a side effect to
- *    reactivate the previously active container
- * 
- * This functionality is currently enabled by default in Enro but may become optional in future
- * versions.
+ * Makes the container that was active before a destination opened active again when the
+ * destination is closed or completed.
+ *
+ * An Open that targets a container other than the active container stores the id of the
+ * active container in the metadata of the opened instance. A single Close or Complete of
+ * that instance adds a side effect that calls `requestActive` on the stored container.
  */
 internal object PreviouslyActiveContainerInterceptor : NavigationInterceptor() {
     override fun beforeIntercept(

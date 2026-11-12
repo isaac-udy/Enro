@@ -16,7 +16,7 @@ private object myFramework {
 fun OtherFrameworks() {
     // region docs:di/other-frameworks
     val viewModel = viewModel<MyViewModel> {
-        // Ask your framework for the instance here.
+        // Request the instance from the framework here.
         createEnroViewModel { myFramework.myViewModel() }
     }
     // endregion

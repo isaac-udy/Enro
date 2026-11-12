@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
-// A feature module of the Modular Navigation recipe. It depends on the shared
-// keys, not on :recipes:modular:feature-home.
+// A feature module of the Modular Navigation recipe. feature-profile depends
+// on the shared keys, not on :recipes:modular:feature-home.
 plugins {
     id("configure-library")
     id("com.google.devtools.ksp")

@@ -1,10 +1,10 @@
 /**
  * Enro Recipe: Sharing State with Results
  *
- * Demonstrates how to share state between a parent and a child destination
- * without sharing a ViewModel: the parent passes the current value to the
- * child in its NavigationKey, and the child returns the edited value as a
- * result. Only the parent has a ViewModel.
+ * Shows state shared between a parent destination and a child destination
+ * without a shared ViewModel. The parent passes the current value to the
+ * child in the child's NavigationKey. The child returns the edited value
+ * with `navigation.complete(result)`. Only the parent has a ViewModel.
  */
 package dev.enro.recipes.viewmodel
 

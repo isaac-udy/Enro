@@ -29,8 +29,8 @@ class RecipesActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge() // docs:hide
         super.onCreate(savedInstanceState)
-        // After a configuration change the launch intent is delivered again;
-        // the link it carries has already been handled.
+        // After a configuration change the Activity receives the launch intent
+        // again; the link in the launch intent has already been handled.
         if (savedInstanceState == null) {
             pendingDeepLink = intent.deepLinkPath()
         }
@@ -52,7 +52,7 @@ class RecipesActivity : AppCompatActivity() {
         applyInsetsForContentView() // docs:hide
     }
 
-    // A link that arrives while the Activity is already running.
+    // Called for a link that is opened while the Activity is already running.
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         pendingDeepLink = intent.deepLinkPath()

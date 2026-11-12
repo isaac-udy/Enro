@@ -33,9 +33,8 @@ internal data class PathPattern(
     }
 
     /**
-     * A specificity score used to disambiguate between multiple bindings that all
-     * [matches] the same path. Higher is more specific. Literal path segments dominate
-     * (weighted ahead of query params), then required query parameters.
+     * Ranks the patterns that match the same path: the highest score is the most specific
+     * pattern. Literal path segments rank before required query parameters.
      */
     internal val specificityScore: Int
         get() {
@@ -149,7 +148,6 @@ internal data class PathPattern(
                 .removeSuffix("/")
             val queryPattern = parts.getOrNull(1)
 
-            // Parse path pattern
             pathPattern.split("/").forEach { segment ->
                 if (segment.startsWith("{") && segment.endsWith("}")) {
                     pathElements.add(
@@ -165,7 +163,6 @@ internal data class PathPattern(
                 }
             }
 
-            // Parse query pattern
             queryPattern?.split("&")?.forEach { param ->
                 val keyValue = param.split("=")
                 require(keyValue.size == 2) {

@@ -9,7 +9,8 @@ import dev.enro.result.NavigationResult
 import dev.enro.result.NavigationResultChannel
 
 /**
- * Scope for handling when a navigation key is completed (either opened or closed).
+ * Receiver of an `onCompleted` block. A block that returns without calling [cancel],
+ * [cancelAnd], [deliverResultOnly] or [replaceWith] continues the Complete operation.
  */
 public class OnNavigationKeyCompletedScope<out K : NavigationKey> @PublishedApi internal constructor(
     public val instance: NavigationKey.Instance<K>,
@@ -18,7 +19,8 @@ public class OnNavigationKeyCompletedScope<out K : NavigationKey> @PublishedApi 
     public val containerContext: ContainerContext,
 ) {
     /**
-     * The current backstack of the container the operation is being applied to.
+     * The backstack of the container that receives the operation, before the operation
+     * is applied.
      */
     public val backstack: NavigationBackstack get() = containerContext.container.backstack
 
@@ -31,13 +33,14 @@ public class OnNavigationKeyCompletedScope<out K : NavigationKey> @PublishedApi 
     }
 
     /**
-     * Continue with the navigation as normal.
+     * Ends the block and continues the Complete operation unchanged.
      */
     public fun continueWithComplete(): Nothing =
         throw InterceptorBuilderResult.Continue()
 
     /**
-     * Deliver the "complete" result, but don't actually close the screen
+     * Ends the block and delivers the completed result to the result channel without
+     * closing the destination.
      */
     public fun deliverResultOnly(): Nothing {
         cancelAnd {
@@ -51,19 +54,20 @@ public class OnNavigationKeyCompletedScope<out K : NavigationKey> @PublishedApi 
     }
 
     /**
-     * Cancel the navigation entirely.
+     * Ends the block and cancels the Complete operation.
      */
     public fun cancel(): Nothing =
         throw InterceptorBuilderResult.Cancel()
 
     /**
-     * Cancel the navigation and execute the provided block after the navigation is canceled.
+     * Ends the block, cancels the Complete operation and runs [block] as a
+     * [NavigationOperation.SideEffect] in place of the Complete operation.
      */
     public fun cancelAnd(block: () -> Unit): Nothing =
         throw InterceptorBuilderResult.CancelAnd(block)
 
     /**
-     * Replace the current operation with a different operation.
+     * Ends the block and replaces the Complete operation with [operation].
      */
     public fun replaceWith(operation: NavigationOperation): Nothing =
         throw InterceptorBuilderResult.ReplaceWith(operation)

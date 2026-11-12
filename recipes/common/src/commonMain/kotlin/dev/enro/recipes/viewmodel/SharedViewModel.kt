@@ -1,20 +1,23 @@
 /**
  * Enro Recipe: Shared ViewModel
  *
- * Demonstrates one ViewModel shared by several destinations.
+ * Shows one ViewModel shared by several destinations.
  *
- * The ViewModel belongs to a parent destination (`CheckoutHost`) that hosts a
- * nested container. The destinations inside that container ask for the same
- * ViewModel from the parent's ViewModelStore, so they all see one instance.
- * The ViewModel is cleared when the parent destination leaves the backstack.
+ * The parent destination (`CheckoutHost`) creates the ViewModel and hosts a
+ * nested container. Each destination inside the nested container gets the
+ * ViewModel from the ViewModelStore of `CheckoutHost`, so every destination
+ * reads the same instance. The ViewModel is cleared when `CheckoutHost`
+ * leaves the backstack.
  *
- * A destination's `NavigationContext` is a `DestinationContext`. Its `parent`
- * is the context of the container it is displayed in, and that container
- * context is a `ViewModelStoreOwner` backed by the destination that hosts the
- * container. Passing it as `viewModelStoreOwner` is all that is needed.
+ * The `NavigationContext` of a destination is a `DestinationContext`. The
+ * `parent` of a `DestinationContext` is the `ContainerContext` of the
+ * container that displays the destination. A `ContainerContext` is a
+ * `ViewModelStoreOwner` that delegates to the destination that hosts the
+ * container. A nested destination passes the `ContainerContext` as
+ * `viewModelStoreOwner`.
  *
- * To share a value without sharing a ViewModel, see the Sharing State with
- * Results recipe.
+ * The Sharing State with Results recipe shares a value without a shared
+ * ViewModel.
  *
  * Nav3 equivalent: the Shared ViewModel recipe.
  */
@@ -65,7 +68,7 @@ data object CheckoutCart : NavigationKey
 @Serializable
 data object CheckoutReview : NavigationKey
 
-/** Shared by every destination inside [CheckoutHost]. */
+/** [CheckoutHost] and each destination inside [CheckoutHost] read one instance. */
 class CheckoutViewModel : ViewModel() {
     private val _itemCount = MutableStateFlow(1)
     val itemCount: StateFlow<Int> = _itemCount.asStateFlow()
@@ -75,8 +78,8 @@ class CheckoutViewModel : ViewModel() {
 }
 
 /**
- * The ViewModelStoreOwner of the destination that hosts the container this
- * destination is displayed in.
+ * Returns the ViewModelStoreOwner of the destination that hosts the
+ * container of the calling destination.
  */
 // region docs:contexts/parent-owner
 @Composable
@@ -107,8 +110,8 @@ fun SharedViewModelRecipeScreen() {
 @Composable
 @NavigationDestination(CheckoutHost::class)
 fun CheckoutHostDestination() {
-    // Created in this destination's ViewModelStore: the default owner here is
-    // this destination's context.
+    // The default ViewModelStoreOwner is the context of this destination, so
+    // the ViewModelStore of CheckoutHost stores the ViewModel.
     val viewModel = viewModel<CheckoutViewModel> { CheckoutViewModel() }
     val itemCount by viewModel.itemCount.collectAsState()
 
@@ -132,7 +135,8 @@ fun CheckoutHostDestination() {
 @NavigationDestination(CheckoutCart::class)
 fun CheckoutCartDestination() {
     val navigation = navigationHandle<CheckoutCart>()
-    // The same instance the host created.
+    // hostViewModelStoreOwner() returns the owner that CheckoutHost used, so
+    // viewModel() returns the instance that CheckoutHost created.
     val viewModel = viewModel<CheckoutViewModel>(
         viewModelStoreOwner = hostViewModelStoreOwner(),
     ) { CheckoutViewModel() }

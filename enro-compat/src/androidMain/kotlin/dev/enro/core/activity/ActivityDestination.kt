@@ -136,5 +136,4 @@ internal fun ActivityResultBridge() {
         resultLauncher.launch(navigation.key.intent)
         launched.value = true
     }
-    // No content
 }

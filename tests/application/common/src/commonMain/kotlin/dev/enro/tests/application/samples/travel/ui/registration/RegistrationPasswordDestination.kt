@@ -108,7 +108,6 @@ fun EnterPasswordScreenDestination() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Progress indicator
             LinearProgressIndicator(
                 progress = { 0.75f },
                 modifier = Modifier
@@ -116,7 +115,6 @@ fun EnterPasswordScreenDestination() {
                     .padding(bottom = 48.dp, top = 24.dp),
             )
 
-            // Header
             Text(
                 text = "🔐",
                 fontSize = 56.sp,
@@ -137,7 +135,6 @@ fun EnterPasswordScreenDestination() {
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            // Password field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -159,7 +156,6 @@ fun EnterPasswordScreenDestination() {
                 }
             )
 
-            // Confirm password field
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
@@ -182,7 +178,6 @@ fun EnterPasswordScreenDestination() {
                 }
             )
 
-            // Password match indicator
             Box(
                 modifier = Modifier
                     .height(48.dp),
@@ -197,7 +192,6 @@ fun EnterPasswordScreenDestination() {
                 }
             }
 
-            // Password requirements
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -228,7 +222,6 @@ fun EnterPasswordScreenDestination() {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Continue button
             Button(
                 onClick = {
                     navigation.open(

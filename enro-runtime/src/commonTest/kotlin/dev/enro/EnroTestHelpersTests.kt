@@ -29,15 +29,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-/**
- * Tests for the enro-test ergonomic helpers shipped alongside the synthetic
- * destination testing API. Covers backstack assertions, the install* module
- * shortcuts, path-resolution assertions, and TestNavigationHandle operation
- * history helpers.
- */
 class EnroTestHelpersTests {
-
-    // ---- Backstack assertions ----
 
     @Test
     fun `assertBackstackSize matches an empty backstack`() = runEnroTest {
@@ -96,8 +88,6 @@ class EnroTestHelpersTests {
         }
     }
 
-    // ---- installNavigationModule / installPathBindings ----
-
     @Test
     fun `installPathBindings registers bindings on the test controller`() = runEnroTest {
         val binding = NavigationPathBinding.createPathBinding<String, HelpersPathKey>(
@@ -110,8 +100,6 @@ class EnroTestHelpersTests {
         EnroTest.getCurrentNavigationController()
             .assertPathResolvesTo<HelpersPathKey>("/items/abc")
     }
-
-    // ---- Path resolution assertions ----
 
     @Test
     fun `assertPathResolvesTo returns the typed key matching predicate`() = runEnroTest {
@@ -164,8 +152,6 @@ class EnroTestHelpersTests {
         }
         assertTrue(error.message?.contains("resolved to") == true)
     }
-
-    // ---- Operation history fluency ----
 
     @Test
     fun `lastOperation returns the most recent operation`() = runEnroTest {

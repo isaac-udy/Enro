@@ -16,14 +16,13 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import dev.enro.EnroController
 
-// Wraps a ViewModelStoreOwner and a SavedStateRegistryOwner to
-// ensure that Enro-required extras/factory stuff is configured
+// Provides default creation extras and the controller's ViewModel factory for a
+// ViewModelStoreOwner that does not implement HasDefaultViewModelProviderFactory.
 internal class EnroWrappedViewModelStoreOwner(
     private val controller: EnroController,
     private val viewModelStoreOwner: ViewModelStoreOwner,
-    // The savedStateRegistryOwner to use for this ViewModelStoreOwner's saved state handles and other things,
-    // it's OK to provide null here, but doing so will create an UnboundedSavedStateRegistryOwner, which won't
-    // actually save any state (which is fine for some platforms, like web/desktop.
+    // A null savedStateRegistryOwner is replaced by an UnboundedSavedStateRegistryOwner, which
+    // saves no state. Saving no state is acceptable on web and desktop.
     savedStateRegistryOwner: SavedStateRegistryOwner?,
 ) : ViewModelStoreOwner by viewModelStoreOwner,
     HasDefaultViewModelProviderFactory {
@@ -46,9 +45,7 @@ internal class EnroWrappedViewModelStoreOwner(
             return controller.viewModelRepository.getFactory()
         }
 
-    // This is a saved state registry owner for use when there is no other saved state registry provider actually
-    // provided, which is mostly useful on non-Android platforms where saving is not as important. This
-    // registry owner will not actually save or restore any state as it currently stands
+    // Used when no SavedStateRegistryOwner is provided. Does not save or restore state.
     private class UnboundedSavedStateRegistryOwner(
         private val owner: EnroWrappedViewModelStoreOwner,
     ) : SavedStateRegistryOwner,

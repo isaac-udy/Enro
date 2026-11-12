@@ -5,18 +5,16 @@ import dev.enro.asInstance
 import kotlin.jvm.JvmName
 
 /**
- * End the synthetic's outcome decision by registering a `Completed` result
- * with the given [result] against whoever opened the synthetic. Only
- * available when the synthetic's key is a [NavigationKey.WithResult].
+ * Ends the synthetic's block and registers a `Completed` result with [result] for the caller
+ * that opened the synthetic.
  */
 public fun <R : Any> SyntheticDestinationScope<out NavigationKey.WithResult<R>>.complete(
     result: R,
 ): Nothing = setOutcome(SyntheticDestinationOutcome.Complete(result = result))
 
 /**
- * End the synthetic's outcome decision by opening [key] and routing its
- * eventual completion back to whoever opened the synthetic. The result
- * type of [key] must match the synthetic's contract.
+ * Ends the synthetic's block and opens [key]. The result of [key] is delivered to the caller
+ * that opened the synthetic.
  */
 public fun <R : Any> SyntheticDestinationScope<out NavigationKey.WithResult<R>>.completeFrom(
     key: NavigationKey.WithResult<R>,

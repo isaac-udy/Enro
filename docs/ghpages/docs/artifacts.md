@@ -8,12 +8,12 @@ nav_order: 70
 Enro is published to Maven Central under the group `dev.enro`. Every
 artifact has the same version.
 
-Most apps need three: `enro`, `enro-processor` and `enro-test`. See
-[Installation](getting-started/installation.md).
+Most apps require three artifacts: `enro`, `enro-processor` and `enro-test`.
+See [Installation](getting-started/installation.md).
 
-## What to add
+## When to add each artifact
 
-| Artifact | Add it when | Configuration |
+| Artifact | Add the artifact when | Configuration |
 |---|---|---|
 | `enro` | The module has destinations or containers. | `implementation` |
 | `enro-processor` | The module uses `@NavigationDestination`, `@NavigationComponent` or `@NavigationPath`. | `ksp`, once per target |
@@ -22,11 +22,11 @@ Most apps need three: `enro`, `enro-processor` and `enro-test`. See
 | `enro-compat` | The app is moving from Enro 2 and still uses the 2.x API. | `implementation` |
 | `enro-html` | A Kotlin/JS app renders destinations as HTML, without Compose. | `implementation` |
 
-## What each artifact has
+## Contents of each artifact
 
 | Artifact | Contents | Targets |
 |---|---|---|
-| `enro` | Depends on `enro-runtime`, `enro-ui`, `enro-common` and `enro-annotations`, and has nothing else. On Android it also carries the lint checks. | Android, iOS, desktop, wasmJs, JS |
+| `enro` | No code. `enro` depends on `enro-runtime`, `enro-ui`, `enro-common` and `enro-annotations`. The Android variant of `enro` also contains the lint checks. | Android, iOS, desktop, wasmJs, JS |
 | `enro-common` | `NavigationKey`, `NavigationKey.Instance`, `NavigationBackstack`, metadata, and path parsing. No Compose. | Android, iOS, desktop, wasmJs, JS (browser and Node.js) |
 | `enro-annotations` | `@NavigationDestination`, `@NavigationComponent`, `@NavigationPath`, `@AdvancedEnroApi`, `@ExperimentalEnroApi`. No dependencies. | Android, iOS, desktop, wasmJs, JS |
 | `enro-runtime` | Handles, containers, contexts, results, flows, interceptors, plugins, synthetic destinations, and Fragment and Activity destinations. Uses the Compose runtime, not Compose UI. | Android, iOS, desktop, wasmJs, JS |
@@ -38,8 +38,8 @@ Most apps need three: `enro`, `enro-processor` and `enro-test`. See
 
 ## Lint checks
 
-The Android variant of `enro` has two lint checks. They run with the Android
-lint task and in Android Studio.
+The Android variant of `enro` contains two lint checks. Both lint checks run
+in the Android lint task and in Android Studio.
 
 | Check | Reports |
 |---|---|
@@ -48,18 +48,18 @@ lint task and in Android Studio.
 
 ## Opt-in APIs
 
-Two annotations mark parts of the API that need an opt-in.
+Two annotations mark the parts of the API that require an opt-in.
 
 | Annotation | Meaning |
 |---|---|
-| `@AdvancedEnroApi` | The API is for building on top of Enro. It may change without warning. |
-| `@ExperimentalEnroApi` | The API is experimental. It may change without warning or be removed. |
+| `@AdvancedEnroApi` | The API is for code that extends Enro. The API may change without warning. |
+| `@ExperimentalEnroApi` | The API is experimental. The API may change or be removed without warning. |
 
-Opt in at the call site with `@OptIn(AdvancedEnroApi::class)`, or for a
-module with the `-opt-in=dev.enro.annotations.AdvancedEnroApi` compiler
+Opt in at the call site with `@OptIn(AdvancedEnroApi::class)`. Opt in for a
+whole module with the `-opt-in=dev.enro.annotations.AdvancedEnroApi` compiler
 argument.
 
 ## See also
 
 - [Installation](getting-started/installation.md)
-- [Migrating from Enro 2](migrating-from-v2.md) — what `enro-compat` covers.
+- [Migrating from Enro 2](migrating-from-v2.md) — the Enro 2 API that `enro-compat` provides.

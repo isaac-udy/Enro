@@ -14,9 +14,8 @@ import dev.enro.annotations.NavigationDestination
 import kotlinx.serialization.Serializable
 
 /**
- * Home section's root destination. Untagged — fills the main slot on every
- * breakpoint. Just an explainer page pointing users to the chrome's left
- * rail / bottom nav and the cart icon in the top bar.
+ * The root destination of the Home section. The destination sets no pane
+ * metadata and fills the main slot on every breakpoint.
  */
 @Serializable
 data object ShellHome : NavigationKey

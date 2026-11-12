@@ -66,7 +66,6 @@ fun GetLoanAmountScreen() {
         OutlinedTextField(
             value = amount,
             onValueChange = { newValue ->
-                // Only allow numeric input
                 if (newValue.all { it.isDigit() }) {
                     amount = newValue
                 }

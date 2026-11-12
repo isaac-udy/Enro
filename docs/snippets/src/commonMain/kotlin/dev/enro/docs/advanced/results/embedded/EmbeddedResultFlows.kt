@@ -6,7 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
@@ -33,8 +33,8 @@ data object EnterEmail : NavigationKey.WithResult<String>
 @NavigationDestination(CreateAccount::class)
 fun CreateAccountScreen() {
     val navigation = navigationHandle<CreateAccount>()
-    var name by remember { mutableStateOf<String?>(null) }
-    var email by remember { mutableStateOf<String?>(null) }
+    var name by rememberSaveable { mutableStateOf<String?>(null) }
+    var email by rememberSaveable { mutableStateOf<String?>(null) }
 
     val askForEmail = registerForNavigationResult<String>(
         onCompleted = { result ->

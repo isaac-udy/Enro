@@ -14,10 +14,10 @@ import dev.enro.open
 import kotlinx.serialization.Serializable
 
 /**
- * Untagged detail destination. When pushed on top of [ProductList], it
- * fills the main slot; on Wide / Medium the list shows alongside it in the
- * left pane. Pushing [ProductFilters] adds a right pane; pushing
- * [ImmersiveImage] takes over the whole content area.
+ * The destination sets no pane metadata. On top of [ProductList], the
+ * destination fills the main slot, and on Wide and Medium [ProductList] shows
+ * in the left pane. [ProductFilters] opens in a right pane. [ImmersiveImage]
+ * opens with no side panes.
  */
 @Serializable
 data class ProductDetail(val productId: String) : NavigationKey

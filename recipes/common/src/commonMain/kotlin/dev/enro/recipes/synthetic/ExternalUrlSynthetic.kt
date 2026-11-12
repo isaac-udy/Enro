@@ -1,23 +1,21 @@
 /**
  * Enro Recipe: Synthetic Destination — External URL launcher
  *
- * Demonstrates the side-effect-bridge pattern: a `NavigationKey` whose
- * destination doesn't render any UI and doesn't change the Enro navigation
- * state. The synthetic's outcome is `sideEffect { ... }`, which runs the
- * body deferred — after the surrounding navigation pass has settled —
- * with platform context and the container reference available. The
- * synthetic itself is treated as silently closed; no result-channel
- * callback fires for the caller.
+ * Shows a `syntheticDestination` with the `sideEffect { ... }` outcome: a
+ * `NavigationKey` that runs platform code, renders no UI and does not change
+ * a backstack. The `sideEffect` block runs after the container has applied
+ * the operations executed with the open of the synthetic. No result-channel
+ * callback runs for the caller.
  *
- * The side effect calls [launchExternalUrl], an `expect` function with one
- * `actual` per platform:
+ * The `sideEffect` block calls [launchExternalUrl], an `expect` function with
+ * one `actual` per platform:
  *  - Android: `context.root().activity.startActivity(Intent(ACTION_VIEW, …))`
  *  - Desktop: `java.awt.Desktop.getDesktop().browse(URI(url))`
  *  - iOS:     `UIApplication.sharedApplication.openURL(…)`
  *  - Web:     `window.open(url, "_blank")`
  *
- * The side effect also records each URL in an in-memory log that the recipe
- * screen displays.
+ * The `sideEffect` block also adds each URL to a list that the recipe screen
+ * displays.
  */
 package dev.enro.recipes.synthetic
 
@@ -48,24 +46,23 @@ object ExternalUrlSyntheticRecipe : NavigationKey
 @Serializable
 data class OpenExternalUrl(val url: String) : NavigationKey
 
-// A log of opened URLs, so the recipe screen has something to show.
+// The recipe screen displays the URLs that the synthetic adds to this list.
 private val openedUrls = mutableStateListOf<String>()
 
 /**
  * Opens [url] in the platform's browser. [context] is the navigation context
- * the synthetic was opened from; the Android implementation uses it to find
- * the hosting Activity.
+ * that opened the synthetic. The Android implementation reads the Activity
+ * from the root of [context].
  */
 internal expect fun launchExternalUrl(context: NavigationContext, url: String)
 
 @NavigationDestination(OpenExternalUrl::class)
 val openExternalUrl = syntheticDestination<OpenExternalUrl> {
+    // With the sideEffect outcome, the instance of OpenExternalUrl is not
+    // added to a backstack and no result-channel callback runs.
     sideEffect {
         launchExternalUrl(context, key.url)
         openedUrls.add(key.url)
-        // The side effect dispatched, so the synthetic is silently closed
-        // — no result-channel callback fires, the synthetic instance
-        // never lands on any backstack, and the Enro state is unchanged.
     }
 }
 

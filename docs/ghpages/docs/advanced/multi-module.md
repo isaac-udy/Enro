@@ -6,9 +6,10 @@ nav_order: 12
 
 # Multi-module projects
 
-Feature modules can open each other's screens without depending on each
-other. A screen is opened by its `NavigationKey`, so a feature only needs to
-see the key, not the destination behind it.
+A feature module can open a screen from another feature module without a
+dependency on that module. A screen is opened by `NavigationKey`, so the
+calling module depends on the module that declares the key and not on the
+module that declares the destination.
 
 ## Module layout
 
@@ -22,9 +23,10 @@ Feature modules do not depend on each other.
 
 ## Keys
 
-Put the keys that cross module boundaries in a module of their own. Keys
-are plain serializable classes, so this module needs only `enro-common` and
-the serialization plugin. It has no Compose and no annotation processing.
+Declare each key that is used by more than one module in a separate
+navigation module. A key is a serializable class, so the navigation module
+requires only `enro-common` and the serialization plugin. The navigation
+module does not require Compose or the `enro-processor`.
 
 <!-- snippet: multi-module/keys -->
 ```kotlin
@@ -37,11 +39,13 @@ data object HomeKey : NavigationKey
 data class ProfileKey(val userId: String) : NavigationKey
 ```
 
-A key used only inside one feature can stay in that feature.
+A key that is used by one feature only can be declared in that feature's
+module.
 
 ## Destinations
 
-A feature module declares destinations for its keys the usual way:
+A feature module declares a destination with `@NavigationDestination`, as
+in a single-module project:
 
 <!-- snippet: multi-module/destination -->
 ```kotlin
@@ -60,8 +64,9 @@ fun ProfileScreen() {
 }
 ```
 
-Apply the `enro-processor` KSP dependency in every module that has a
-`@NavigationDestination`. The processor generates a binding for each one.
+Add the `enro-processor` KSP dependency to every module that declares a
+`@NavigationDestination`. The `enro-processor` generates a binding for each
+`@NavigationDestination`.
 
 <!-- snippet: skip (gradle) -->
 ```kotlin
@@ -74,22 +79,23 @@ dependencies {
 ```
 
 Another feature opens the screen with `navigation.open(ProfileKey("user-123"))`.
-It does not import `ProfileScreen`.
+The calling feature does not import `ProfileScreen`.
 
 ## The app module
 
-Declare the `@NavigationComponent` in the app module and make that module
-depend on every feature module. The processor finds the features' generated
-bindings on the classpath and registers them with the component. There is
-nothing to list by hand.
+Declare the `@NavigationComponent` in the app module. The app module must
+depend on every feature module. The `enro-processor` finds each feature's
+generated bindings on the classpath and registers the bindings with the
+`@NavigationComponent`. The app module does not list the bindings.
 
-If a destination is missing at runtime, check that its module applies the
-processor and that the app module depends on it.
+If a destination is missing at runtime, check that the destination's module
+has the `enro-processor` KSP dependency and that the app module depends on
+the destination's module.
 
 ## See also
 
-- [Modular Navigation recipe][modular-recipe] — three Gradle modules laid out
-  as above.
+- [Modular Navigation recipe][modular-recipe] — three Gradle modules that
+  follow the module layout on this page.
 - [Navigation Keys](../core-concepts/navigation-keys.md).
 - [Troubleshooting](../troubleshooting.md).
 

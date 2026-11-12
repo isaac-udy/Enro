@@ -9,12 +9,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/**
- * Tests for the smaller NavigationHandle extension functions that don't
- * already have dedicated coverage. Today this file just exercises
- * `closeAndReplaceWith`; new extension-level tests can land here as
- * they're written.
- */
 class NavigationHandleExtensionsTests {
 
     @Test

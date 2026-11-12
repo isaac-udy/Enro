@@ -39,7 +39,7 @@ class OrdersViewModel(
     val orders: List<String> = repository.orders()
     val userName: String get() = session.userName
 
-    // The account screen is in another feature. It is opened by key.
+    // The account screen is in another feature and is opened by key.
     fun onAccountClicked() = navigation.open(MetroAccount)
 }
 

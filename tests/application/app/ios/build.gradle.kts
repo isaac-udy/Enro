@@ -10,8 +10,8 @@ kotlin {
         iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            // Must match the name the Xcode project links / Swift imports
-            // (`import EnroTestsApplication`).
+            // Must match the framework name that the Xcode project links and the
+            // Swift code imports (`import EnroTestsApplication`).
             baseName = "EnroTestsApplication"
             isStatic = true
         }

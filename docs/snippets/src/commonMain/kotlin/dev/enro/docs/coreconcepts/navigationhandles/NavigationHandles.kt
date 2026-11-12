@@ -98,8 +98,8 @@ fun openOperations(navigation: NavigationHandle<*>) {
 
 fun closeOperations(navigation: NavigationHandle<*>) {
     // region docs:navigation-handles/close
-    navigation.close()             // close this destination
-    navigation.requestClose()      // ask this destination to close
+    navigation.close()
+    navigation.requestClose()
     // endregion
 }
 
@@ -117,7 +117,7 @@ fun EditProfileScreen() {
     navigation.configure {
         onCloseRequested {
             if (draft == navigation.key.initial) {
-                close()              // nothing changed — close directly
+                close()
             } else {
                 confirmDiscard.open(ConfirmDiscardDialog)
             }
@@ -138,7 +138,7 @@ class EditProfileViewModel : ViewModel() {
             if (draft.value == originalValue) {
                 close()
             } else {
-                // delegate to a UI-side handler, emit an event, etc.
+                // The destination's UI collects closeRequests.
                 viewModelScope.launch { closeRequests.emit(Unit) }
             }
         }

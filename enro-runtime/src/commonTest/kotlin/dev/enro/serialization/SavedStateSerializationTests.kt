@@ -17,13 +17,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * The savedstate analogue of [HistoryStateSerializationTests]: container
- * backstacks (rememberNavigationContainer), flow results, and enroSaver all
- * round-trip through androidx.savedstate serialization with
- * `ClassDiscriminatorMode.POLYMORPHIC`. This pins that an Instance whose key
- * carries a value-class field survives that round-trip — i.e. that the
- * androidx SavedState encoder does NOT share the kotlinx streaming-JSON
- * encoder's deferred-discriminator leak (see HistoryStateSerializationTests).
+ * The androidx.savedstate counterpart of [HistoryStateSerializationTests]. Container
+ * backstacks (rememberNavigationContainer), flow results and enroSaver are serialized by
+ * androidx.savedstate with `ClassDiscriminatorMode.POLYMORPHIC`. The tests assert that an
+ * Instance whose key has a value-class field round-trips: the androidx SavedState encoder
+ * does not have the deferred-discriminator failure of the kotlinx streaming JSON encoder.
  */
 class SavedStateSerializationTests : RobolectricHostTest() {
 

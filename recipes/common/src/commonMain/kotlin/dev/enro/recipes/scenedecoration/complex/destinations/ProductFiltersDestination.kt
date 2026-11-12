@@ -17,9 +17,9 @@ import dev.enro.ui.navigationDestination
 import kotlinx.serialization.Serializable
 
 /**
- * Tagged `rightPane()`. When this is on top of the backstack the strategy
- * places it in the right slot on Wide, replaces the left pane with it on
- * Medium (right takes precedence), or shows it alone on Mobile.
+ * The destination sets `rightPane()`. While the destination is the top
+ * entry, `ShellPaneSceneStrategy` renders the destination in the right slot
+ * on Wide, in the right slot with no left pane on Medium, and alone on Mobile.
  */
 @Serializable
 data object ProductFilters : NavigationKey

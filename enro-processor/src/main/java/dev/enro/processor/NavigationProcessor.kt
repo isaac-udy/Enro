@@ -38,10 +38,6 @@ class NavigationProcessor(
     @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
         if (platform == null) {
-            // If platform is null, that means this is the first time we've run the processor,
-            // so we're going to load the platform information, and then we're also going to load all of the
-            // GeneratedNavigationBindings from the EnroLocation.GENERATED_PACKAGE package,
-            // and put them into the "bindings" map so they can be referenced in the "finish" function
             platform = ResolverPlatform.getPlatform(resolver)
         }
 
@@ -55,8 +51,8 @@ class NavigationProcessor(
                 }
             }
 
-        // Whenever we see a new class annotated with GeneratedNavigationBinding, we're also going to add this
-        // to the bindings map, so that it can be referenced in the "finish" function
+        // A GeneratedNavigationBinding generated in an earlier round of this module is added
+        // to generatedBindings, which "finish" reads.
         resolver
             .getSymbolsWithAnnotation(ClassNames.Kotlin.generatedNavigationBinding.canonicalName)
             .toList()
@@ -67,9 +63,6 @@ class NavigationProcessor(
                 }
             }
 
-        // Whenever we see a class annotated with NavigationComponent, we're going to add that to the
-        // processedComponents. The processedComponents list is used to generate the GeneratedNavigationComponent
-        // classes in the "finish" function.
         resolver
             .getSymbolsWithAnnotation(ClassNames.Kotlin.navigationComponent.canonicalName)
             .toList()
@@ -83,14 +76,11 @@ class NavigationProcessor(
                 }
                 componentsToProcess[name] = ComponentReference.fromDeclaration(environment, it)
 
-                // It appears that on some platforms, the "getDeclarationsFromPackage" call above won't
-                // work unless there's either something *in* that package that's owned by the module
-                // under compilation, so we write a "Sentinel" here for each NavigationComponent,
-                // which means that if we're in a module that only defines a NavigationComponent but
-                // no NavigationDestinations, we're still going to be able to hit a second round of
-                // processing and get all of the getDeclarationsFromPackage when the "process" function
-                // gets called for a second time. It appears this is only an issue on iOS/wasm targets,
-                // so if removing this in the future, make sure to test on those targets!
+                // Workaround: on iOS and wasm targets, the "getDeclarationsFromPackage" call above
+                // appears to return no declarations unless the module under compilation declares
+                // a class in the package. The Sentinel class is that declaration, and causes a
+                // second round of "process" in a module that declares a NavigationComponent and
+                // no NavigationDestination. Test iOS and wasm targets before removing the Sentinel.
                 val typeSpec = TypeSpec.classBuilder("_${name.replace(".", "_")}Sentinel")
                     .addModifiers(KModifier.PRIVATE)
                     .build()
@@ -108,10 +98,6 @@ class NavigationProcessor(
                     )
             }
 
-        // Whenever we see a class, function or property annotated with NavigationDestination, we're going to grab tha
-        // declaration and check if a GeneratedNavigationBinding has been created for that NavigationDestination yet
-        // (if it's qualified name is in processedNavigationDestinations, it's been processed already), and if it has not
-        // been generated yet, we'll use NavigationBindingGenerator to create a GeneratedNavigationBinding for the declaration
         resolver
             .getSymbolsWithAnnotation(ClassNames.Kotlin.navigationDestination.canonicalName)
             .toList()
@@ -135,9 +121,8 @@ class NavigationProcessor(
     }
 
     override fun finish() {
-        // After we've finished all rounds of processing for this module, we're going to process the NavigationComponent
-        // objects that we found and stored in componentsToProcess. We always need to do this as the final step in
-        // "finish" because the GeneratedNavigationComponent needs to reference all of the GeneratedNavigationBindings
+        // Components are generated in "finish", after every round of "process", because a
+        // GeneratedNavigationComponent references every GeneratedNavigationBinding.
         componentsToProcess.values.forEach {
             NavigationComponentGenerator.generate(
                 environment = environment,

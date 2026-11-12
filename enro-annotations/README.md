@@ -1,39 +1,41 @@
 # `enro-annotations`
 
-The annotations consumed by [`enro-processor`](../enro-processor/) to
-generate destination registrations and path bindings, plus the opt-in
-marker annotations (`@AdvancedEnroApi`, `@ExperimentalEnroApi`) used
-throughout the Enro public API.
+`enro-annotations` contains the annotations that
+[`enro-processor`](../enro-processor/) reads to generate destination
+bindings and path bindings, and the opt-in marker annotations
+(`@AdvancedEnroApi`, `@ExperimentalEnroApi`) used in the Enro public API.
 
-This module exists as a thin, dependency-free artefact so consumers can
-reference Enro annotations without pulling in the full runtime — useful
-for:
+`enro-annotations` does not depend on the Enro runtime. A module can
+depend on `enro-annotations` alone in these cases:
 
-- KMP modules with non-UI targets that share `NavigationKey` definitions
-  but never render UI (paired with [`enro-common`](../enro-common/)).
-- Build-time tooling that needs to read Enro annotations without taking
-  a Compose / Android runtime dependency.
+- A KMP module with non-UI targets that declares `NavigationKey` types
+  and renders no UI. Such a module also depends on
+  [`enro-common`](../enro-common/).
+- Build tooling that reads Enro annotations and must not depend on
+  Compose or the Android runtime.
 
-## What's in here
+## Contents
 
-- `@NavigationDestination(keyType)` — marks a Composable / Fragment /
-  Activity as the destination for a given `NavigationKey` type.
-- `@NavigationComponent` — marks the class whose generated companion
-  becomes your component's `installNavigationController(…)` entry point.
+- `@NavigationDestination(keyType)` — binds a Composable, Fragment or
+  Activity to a `NavigationKey` type as the destination for that type.
+- `@NavigationComponent` — marks the object for which the processor
+  generates `installNavigationController(…)`.
 - `@NavigationPath(pattern)` — declares a URL pattern for a
-  `NavigationKey`, enabling deep-link / web-routing resolution.
-- `@AdvancedEnroApi`, `@ExperimentalEnroApi` — opt-in markers for
-  APIs outside the stable contract. An API with either marker can
-  change or be removed in any 3.x release.
+  `NavigationKey`. Deep links and web routing resolve URLs with the
+  pattern.
+- `@AdvancedEnroApi`, `@ExperimentalEnroApi` — opt-in markers for APIs
+  outside the stable contract. An API with either marker can change or
+  be removed in any 3.x release.
 - `@GeneratedNavigationBinding`, `@GeneratedNavigationComponent` —
-  emitted by the processor; not for hand-use.
+  written by the processor on generated classes. Do not use these
+  annotations in app code.
 
-## Typical usage
+## Usage
 
-Pulled in transitively when you depend on `dev.enro:enro` or
-`enro-runtime`. Depend on `enro-annotations` directly only when you
-want the annotation types without the rest of the runtime (e.g. in a
-`:common` KMP module shared with non-Compose targets).
+`dev.enro:enro` and `enro-runtime` include `enro-annotations` as a
+transitive dependency. Depend on `enro-annotations` directly only in a
+module that requires the annotation types without the runtime, such as a
+`:common` KMP module shared with non-Compose targets.
 
 ```kotlin
 dependencies {

@@ -1,4 +1,4 @@
-// comment the line below to test linting errors
+// Comment out the @file:SuppressLint line to see the lint errors.
 @file:SuppressLint("IncorrectlyTypedNavigationHandle", "MissingNavigationDestinationAnnotation")
 package dev.enro.tests.application.linting
 
@@ -41,7 +41,7 @@ internal class ComposableCorrectNavigationKey : Parcelable, NavigationKey.Suppor
 @Composable
 @NavigationDestination(ComposableCorrectNavigationKey::class)
 fun ComposableWithIncorrectlyTypedNavigationHandle() {
-    // The line below should have a linting error:
+    // Lint reports IncorrectlyTypedNavigationHandle on the line below.
     val navigationHandle = navigationHandle<IncorrectlyTypedNavigationKey>()
 }
 
@@ -62,6 +62,6 @@ internal class FragmentWithMissingNavigationDestination : Fragment() {
 
 @Composable
 fun ComposableWithMissingNavigationDestination() {
-    // The line below should have a linting error:
+    // Lint reports MissingNavigationDestinationAnnotation on the line below.
     val navigationHandle = navigationHandle<MissingNavigationKey>()
 }

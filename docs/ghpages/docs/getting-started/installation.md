@@ -6,9 +6,8 @@ nav_order: 1
 
 # Installation
 
-Enro is published to [Maven Central](https://search.maven.org/). Make sure your
-project includes the `mavenCentral()` repository, then add the dependencies for
-your platform below.
+Enro is published to [Maven Central](https://search.maven.org/). The project
+must include the `mavenCentral()` repository.
 
 ## Dependencies
 
@@ -19,23 +18,22 @@ plugins {
 }
 
 dependencies {
-    // Core library
     implementation("dev.enro:enro:3.0.0")
 
-    // KSP processor — generates the install function for your NavigationComponent
-    // and discovers @NavigationDestination annotations
+    // Generates installNavigationController and a binding for each
+    // @NavigationDestination.
     ksp("dev.enro:enro-processor:3.0.0")
 
-    // Optional: test utilities
+    // Optional.
     testImplementation("dev.enro:enro-test:3.0.0")
 }
 ```
 
-Enro 3.0.0 requires Kotlin 2.4, Compose Multiplatform 1.12, and on Android,
-AGP 9.1.0 or later with compileSdk 37.
+Enro 3.0.0 requires Kotlin 2.4 and Compose Multiplatform 1.12. On Android,
+Enro 3.0.0 also requires AGP 9.1.0 or later and compileSdk 37.
 
-In a Kotlin Multiplatform project, add `enro` to your `commonMain` source set,
-and add the `enro-processor` KSP dependency for each target you build:
+In a Kotlin Multiplatform project, add `enro` to the `commonMain` source set
+and add the `enro-processor` KSP dependency for each target:
 
 <!-- snippet: skip (gradle) -->
 ```kotlin
@@ -58,11 +56,10 @@ dependencies {
 }
 ```
 
-The configuration name is `ksp` followed by the target name. Leave out the
-targets you don't build.
+The configuration name is `ksp` followed by the target name. Omit each target
+that the project does not build.
 
-If you have an existing Android app that uses Fragments or Activities and want
-to adopt Enro incrementally, also add the compatibility module:
+An app that still calls the Enro 2 API also requires the `enro-compat` module:
 
 <!-- snippet: skip (gradle) -->
 ```kotlin
@@ -73,36 +70,34 @@ dependencies {
 
 ## Declare a NavigationComponent
 
-A `NavigationComponent` is the entry point for Enro into your application.
-Declare one as an `object` extending `NavigationComponentConfiguration`,
-annotated with `@NavigationComponent`. KSP will generate an
-`installNavigationController` extension on that object for each platform you
-target.
+A `NavigationComponent` configures Enro for an application. Declare the
+`NavigationComponent` as an `object` that extends
+`NavigationComponentConfiguration` and is annotated with
+`@NavigationComponent`. KSP generates an `installNavigationController`
+extension on the `object` for each target.
 
 <!-- snippet: installation/component -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
     module = createNavigationModule {
-        // Optional configuration:
-        // plugins, interceptors, decorators, custom serializers,
-        // additional modules from other libraries, etc.
+        // Optional: plugins, interceptors, decorators, serializers,
+        // and modules from other libraries.
     }
 )
 ```
 
-The `module` block is where you compose extra configuration. You rarely need
-anything in it to start — destinations are discovered automatically through
-the `@NavigationDestination` annotations on your screens.
+The `module` block can be empty. The KSP processor registers each destination
+that is annotated with `@NavigationDestination`.
 
-In a multi-platform project, you can declare one `NavigationComponent` in the
-common source set and use it from every target.
+In a multiplatform project, one `NavigationComponent` declared in the common
+source set is available to every target.
 
 ## Install Enro on each platform
 
 ### Android
 
-Call `installNavigationController` from your `Application.onCreate`:
+Call `installNavigationController` from `Application.onCreate`:
 
 <!-- snippet: your-first-screen/application -->
 ```kotlin
@@ -114,9 +109,8 @@ class MyApp : Application() {
 }
 ```
 
-Then host a backstack from any `Activity` or Composable. The typical pattern is
-to call `rememberNavigationContainer` and `NavigationDisplay` from your root
-Composable:
+Call `rememberNavigationContainer` and `NavigationDisplay` from the root
+Composable of an `Activity`:
 
 <!-- snippet: your-first-screen/activity -->
 ```kotlin
@@ -133,14 +127,13 @@ class MainActivity : ComponentActivity() {
 }
 ```
 
-If you're migrating from Fragments or Activities, see the [Android platform
-guide](../platform/android.md) and add `enro-compat` to keep your existing
-screens working.
+The [Android platform guide](../platform/android.md) covers Fragment and
+Activity destinations and the `enro-compat` module.
 
 ### iOS
 
-On iOS, install the controller during app startup and expose a Composable view
-controller for Swift to display.
+Declare a function that returns an `EnroUIViewController`. The Swift app
+displays the `EnroUIViewController`.
 
 <!-- snippet: installation/ios -->
 ```kotlin
@@ -152,14 +145,15 @@ fun MainViewController(): UIViewController = EnroUIViewController {
 }
 ```
 
-The `installNavigationController` call for iOS is typically made once at app
-startup; see the [iOS platform guide](../platform/ios.md) for the Swift
-boilerplate to bridge the generated view controller into your app.
+Call `installNavigationController` once when the iOS app starts. The
+[iOS platform guide](../platform/ios.md) shows the install call and the Swift
+code that displays the view controller.
 
 ### Desktop
 
-Call `installNavigationController(Unit)` to get an `EnroController`, then drive
-your windows through it:
+`installNavigationController(Unit)` returns an `EnroController`. Open a window
+with `EnroController.openWindow` and render the open windows with
+`EnroApplicationContent`:
 
 <!-- snippet: installation/desktop -->
 ```kotlin
@@ -187,14 +181,14 @@ fun main() {
 }
 ```
 
-See the [Desktop platform guide](../platform/desktop.md) for the full window
-configuration story and the [recipes desktop main][recipes-desktop] for a
-complete working example.
+The [Desktop platform guide](../platform/desktop.md) covers window
+configuration. The [recipes desktop main][recipes-desktop] is a complete
+example.
 
 ### Web (WasmJS and Kotlin/JS)
 
-Call `installNavigationController(document)` from your `main`, then render the
-backstack inside an `EnroBrowserContent`:
+Call `installNavigationController(document)` from `main`, then render the
+container inside `EnroBrowserContent`:
 
 <!-- snippet: installation/web -->
 ```kotlin
@@ -213,14 +207,13 @@ fun main() {
 }
 ```
 
-`InstallWebHistoryPlugin` ties your container to browser history so the back
-button and URL bar behave as users expect. See the
-[Web platform guide](../platform/web.md) for more.
+`InstallWebHistoryPlugin` connects the container's backstack to the browser
+history and URL. See the [Web platform guide](../platform/web.md).
 
 ## Next steps
 
-- Read [Basic Concepts](basic-concepts.md) for the short vocabulary tour.
-- Walk through [Your First Screen](your-first-screen.md) for an end-to-end example.
-- If you're upgrading an existing app, read the [migration guide](../migrating-from-v2.md).
+- [Basic Concepts](basic-concepts.md) defines each Enro term.
+- [Your First Screen](your-first-screen.md) builds an example with three screens.
+- The [migration guide](../migrating-from-v2.md) covers upgrading an Enro 2 app.
 
 [recipes-desktop]: https://github.com/isaac-udy/Enro/blob/main/recipes/app/desktop/src/desktopMain/kotlin/main.kt

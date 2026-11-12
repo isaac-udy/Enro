@@ -28,7 +28,7 @@ data class MyKey(
 ) : NavigationKey {
 
     object Default : NavigationKey.PathBinding<MyKey> {
-        // Fallback shape — used when the URL is just /items with a title.
+        // Matches /items and /items?title=…, which the @NavigationPath pattern does not match.
         override val pattern: String = "/items?title={title?}"
 
         override fun deserialize(data: PathData): MyKey {

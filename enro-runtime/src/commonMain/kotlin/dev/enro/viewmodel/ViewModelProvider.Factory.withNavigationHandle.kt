@@ -8,8 +8,8 @@ import dev.enro.navigationHandle
 
 
 /**
- * Given a ViewModelProvider.Factory, wraps that factory as an EnroViewModelFactory with the current NavigationHandle provided
- * to ViewModels that are created with that factory, allowing the use of `by navigationHandle` in those ViewModels.
+ * Returns a factory that creates each ViewModel with this factory and provides
+ * [navigationHandle] to the ViewModel, so that the ViewModel can declare `by navigationHandle`.
  */
 public fun ViewModelProvider.Factory.withNavigationHandle(
     navigationHandle: NavigationHandle<*>,
@@ -19,10 +19,8 @@ public fun ViewModelProvider.Factory.withNavigationHandle(
 )
 
 /**
- * A Composable helper for [withNavigationHandle] that automatically retrieves the current NavigationHandle from the Composition,
- * and remembers the result of applying withNavigationHandle.
- *
- * @see [withNavigationHandle]
+ * [withNavigationHandle] with the [NavigationHandle] of the destination that contains this
+ * Composable. The returned factory is remembered.
  */
 @Composable
 public fun ViewModelProvider.Factory.withNavigationHandle(): ViewModelProvider.Factory {

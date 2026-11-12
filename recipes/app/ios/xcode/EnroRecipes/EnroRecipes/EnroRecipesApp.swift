@@ -2,8 +2,8 @@ import SwiftUI
 import UIKit
 import RecipesApp
 
-// The iOS host for the Enro recipes. The recipes themselves are Kotlin, in
-// :recipes:common; this app installs Enro and shows the root view controller.
+// The iOS host for the Enro recipes. The recipes are Kotlin code in
+// :recipes:common; the iOS app installs Enro and shows the root view controller.
 @main
 struct EnroRecipesApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // Install Enro once, before any view controller is created.
+        // Enro must be installed before any view controller is created.
         MainViewControllerKt.installRecipes(application: application)
         return true
     }

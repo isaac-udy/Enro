@@ -1,24 +1,25 @@
 /**
  * Enro Recipe: Handling a Deep Link
  *
- * Demonstrates opening a destination from a URL that arrives from outside
- * the app, such as an Android intent.
+ * Shows how to open a destination from a URL that the app receives from
+ * outside, such as an Android intent.
  *
- * [openDeepLink] is the whole technique:
- *  1. resolve the URL's path to a NavigationKey with `getNavigationKeyFromPath`,
- *     which uses the path bindings registered on the NavigationComponent
- *  2. add the key to a container's backstack
+ * [openDeepLink] has two steps:
+ *  1. `getNavigationKeyFromPath` resolves the path of the URL to a
+ *     NavigationKey, using the path bindings registered on the
+ *     NavigationComponent
+ *  2. `updateBackstack` adds the key to the backstack of a container
  *
- * The recipes Android app calls [openDeepLink] from `RecipesActivity` for
- * `enrorecipes://app/...` links, on its root container. Try it with:
+ * The recipes Android app calls [openDeepLink] on the root container from
+ * `RecipesActivity` for `enrorecipes://app/...` links. To send a link:
  *
  *   adb shell am start -a android.intent.action.VIEW -d "enrorecipes://app/users/alice"
  *
- * The buttons on this screen call the same function, so the recipe also
- * works on platforms where nothing sends the app a URL.
+ * The buttons on the recipe screen also call [openDeepLink], so the recipe
+ * runs on platforms that do not send the app a URL.
  *
- * The paths come from the bindings in the Basic Deep Link recipe. To give a
- * deep link a backstack of parent screens, see the Advanced Deep Link recipe.
+ * The Basic Deep Link recipe declares the path bindings. The Advanced Deep
+ * Link recipe gives a deep link a backstack of parent screens.
  *
  * Nav3 equivalents: the Static Uri and Uri with Arguments recipes.
  */
@@ -55,8 +56,9 @@ import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 /**
- * Opens the destination bound to [path] on top of this container's backstack.
- * Returns false, and changes nothing, when no path binding matches.
+ * Adds the key bound to [path] to the top of this container's backstack.
+ * Returns false and leaves the backstack unchanged when no path binding
+ * matches [path].
  *
  * [path] is the path and query of the URL, for example `/users/alice` or
  * `/products/shoe-1?source=email`.

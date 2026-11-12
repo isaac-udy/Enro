@@ -5,35 +5,35 @@ nav_order: 60
 
 # Recipes
 
-The recipes app is a set of small, runnable examples. Each recipe shows one
-concept. The source is in the [`recipes`][recipes-root] directory of the
-repository.
+The recipes app contains runnable examples. Each recipe shows one concept. The
+recipe source is in the [`recipes`][recipes-root] directory of the repository.
 
-Where a recipe matches one in Google's [Navigation 3 recipes][nav3-recipes],
-the table names it.
+Where a recipe matches a recipe in Google's
+[Navigation 3 recipes][nav3-recipes], the "Navigation 3 recipe" column names
+the Navigation 3 recipe.
 
 ## Run the recipes app
 
-Clone the repository, then run one of these from its root:
+Clone the repository, then run one of these commands from the repository root:
 
 | Platform | Command |
 |---|---|
 | Desktop | `./gradlew :recipes:app:desktop:run` |
 | Android | `./gradlew :recipes:app:android:installDebug`, then open "Enro Recipes" on the device |
 | Web | `./gradlew :recipes:app:web:wasmJsBrowserDevelopmentRun` |
-| iOS | Open [`EnroRecipes.xcodeproj`][ios-project] in Xcode and run it |
+| iOS | Open [`EnroRecipes.xcodeproj`][ios-project] in Xcode and run the project |
 
 ## Basic
 
 | Recipe | Shows | Navigation 3 recipe |
 |---|---|---|
 | [Basic Navigation][basic] | `open`, `close`, and keys with arguments | Basic |
-| [Saveable Back Stack][saveable] | A backstack and `rememberSaveable` state that survive configuration changes | Saveable back stack |
-| [Saved State][saved-state] | What `remember`, `rememberSaveable`, a ViewModel and `SavedStateHandle` each survive | Saveable back stack |
+| [Saveable Back Stack][saveable] | A backstack and `rememberSaveable` state that are restored after a configuration change | Saveable back stack |
+| [Saved State][saved-state] | How long state is kept by `remember`, `rememberSaveable`, a ViewModel and `SavedStateHandle` | Saveable back stack |
 | [Destination Registration][registration] | Function and provider destinations; `dialog()` and `directOverlay()` metadata | Entry provider DSL |
 | [Back Stack Operations][backstack] | Back to root, back to a specific screen, replace the current screen, clear the stack | — |
 | [Basic Deep Link][basic-deep-link] | `@NavigationPath`, hand-written path bindings, and resolving a URL to a key | Uri with Arguments |
-| [Handling a Deep Link][handle-deep-link] | Opening a destination from a URL that arrives from outside the app | Static Uri |
+| [Handling a Deep Link][handle-deep-link] | Opening a destination from a URL that the app receives from outside the app | Static Uri |
 | [Advanced Deep Link][advanced-deep-link] | A synthetic backstack for a deep link | Synthetic BackStack |
 
 ## Scenes and overlays
@@ -48,11 +48,11 @@ Clone the repository, then run one of these from its root:
 | [List-Detail (Containers)][listdetail-containers] | List-detail built from two containers | — |
 | [Material List-Detail][material] | Material 3 Adaptive `ListDetailPaneScaffold` as a scene strategy | Material List-Detail |
 | [Material Supporting Pane][material] | Material 3 Adaptive `SupportingPaneScaffold` as a scene strategy | Material Supporting Pane |
-| [Nested Containers][nested] | Which container `open` sends a key to; `accept { }` filters | — |
+| [Nested Containers][nested] | Which container opens a key passed to `open`; `accept { }` filters | — |
 | [Tab Navigation][tabs] | One container per tab | Common navigation UI |
-| [Multiple Back Stacks][multiplestacks] | A backstack per tab that keeps its state | Multiple back stacks |
+| [Multiple Back Stacks][multiplestacks] | One backstack per tab; each backstack is kept when the user changes tab | Multiple back stacks |
 | [Scene Decoration][scene-decoration] | A `SceneDecoratorStrategy` that adds a sidebar or bottom bar | Responsive Navigation Scene Decorator |
-| [Shell Scene][shell-scene] | A multi-pane app shell driven by metadata | — |
+| [Shell Scene][shell-scene] | A multi-pane app shell configured by destination metadata | — |
 
 ## Animations
 
@@ -68,16 +68,16 @@ Clone the repository, then run one of these from its root:
 | Recipe | Shows | Navigation 3 recipe |
 |---|---|---|
 | [Basic ViewModel][viewmodel] | A NavigationHandle inside a ViewModel | Basic ViewModel |
-| [Koin ViewModel][koin] | A ViewModel with dependencies from Koin and arguments from its key | Koin injected ViewModel |
+| [Koin ViewModel][koin] | A ViewModel with dependencies from Koin and arguments from the destination's key | Koin injected ViewModel |
 | [Koin Modular][koin-modular] | Features that each provide a Koin module and open each other's screens by key | Koin modular |
-| [Metro ViewModel][metro] | A ViewModel with dependencies from a Metro graph and arguments from its key | Metro injected ViewModel |
+| [Metro ViewModel][metro] | A ViewModel with dependencies from a Metro graph and arguments from the destination's key | Metro injected ViewModel |
 | [Metro Modular][metro-modular] | Features that contribute to one Metro graph and open each other's screens by key | Metro modular |
 | [Shared ViewModel][shared-viewmodel] | One ViewModel used by several destinations | Shared ViewModel |
-| [Sharing State with Results][shared-state] | Passing a value to a child and getting the edited value back | — |
+| [Sharing State with Results][shared-state] | Passing a value to a child screen and receiving the edited value as a result | — |
 | [Returning Results][results] | `NavigationKey.WithResult` and `registerForNavigationResult` | Results as Events |
 | [Results in a ViewModel][viewmodel-results] | Requesting and receiving a result from a ViewModel | — |
 | [Managed Flow][managed-flow] | A multi-step flow as a destination | — |
-| [Flow in a ViewModel][viewmodel-flow] | A multi-step flow owned by a ViewModel | — |
+| [Flow in a ViewModel][viewmodel-flow] | A multi-step flow declared in a ViewModel | — |
 | [Request-Close Confirmation][request-close] | Confirming before a screen closes | — |
 
 ## Advanced
@@ -105,21 +105,22 @@ Clone the repository, then run one of these from its root:
 
 ## Platform recipes
 
-Each of these is listed only in the app for its platform, under "This
-Platform".
+Each platform recipe is listed only in the recipes app for that platform,
+under "This Platform".
 
 | Recipe | Platform | Shows | Navigation 3 recipe |
 |---|---|---|---|
 | [Fragment and Activity][fragment-activity] | Android | A Fragment and an Activity as destinations; the Activity returns a result | Fragment and View Interop |
 | [UIViewController][uiviewcontroller] | iOS | A `UIViewController` as a destination: embedded, presented modally, and pushed | — |
-| [Multiple Windows][windows] | Desktop | A destination that opens in its own window and returns a result | — |
+| [Multiple Windows][windows] | Desktop | A destination that opens in a separate window and returns a result | — |
 
 ## Tests
 
 [`RecipeSmokeTests`][smoke-tests] runs the recipes on desktop with Compose UI
-tests. It is also an example of testing navigation through the real UI:
-it installs the app's `NavigationComponent`, shows a container, and clicks
-through each recipe. Run it with `./gradlew :recipes:common:desktopTest`.
+tests. `RecipeSmokeTests` is also an example of a navigation test that uses
+the real UI: each test installs the app's `NavigationComponent`, shows a
+container, and clicks through a recipe. Run `RecipeSmokeTests` with
+`./gradlew :recipes:common:desktopTest`.
 
 [recipes-root]: https://github.com/isaac-udy/Enro/tree/main/recipes
 [nav3-recipes]: https://github.com/android/nav3-recipes

@@ -27,7 +27,7 @@ class AccountViewModel(
 
     val userName: String get() = session.userName
 
-    // Writes to the session the orders feature reads, then goes back.
+    // The orders feature reads the same KoinSession instance.
     fun onSignInClicked(name: String) {
         session.userName = name
         navigation.close()

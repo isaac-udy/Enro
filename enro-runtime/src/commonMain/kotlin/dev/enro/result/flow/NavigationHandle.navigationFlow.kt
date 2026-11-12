@@ -4,14 +4,10 @@ import dev.enro.NavigationHandle
 import dev.enro.annotations.AdvancedEnroApi
 
 /**
- * The [NavigationFlow] that owns this destination's entry, if the
- * destination was opened as part of one — or `null` if the destination
- * is running outside of any flow.
+ * The [NavigationFlow] that this destination created with `registerForFlowResult`, or `null`
+ * if this destination has not created a [NavigationFlow].
  *
- * Advanced surface: most flow consumers should reach for the typed
- * accessors on `NavigationFlowScope` instead. Use this only when you
- * need to introspect the flow metadata from outside the flow's own
- * scope (e.g. a custom interceptor / plugin).
+ * A destination opened as a step of a flow resolves the flow with [getNavigationFlow].
  */
 @AdvancedEnroApi
 public val NavigationHandle<*>.navigationFlow: NavigationFlow<*>?

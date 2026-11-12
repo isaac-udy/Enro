@@ -1,14 +1,17 @@
 # `enro-common`
-The `enro-common` module exists as a place to put common Enro classes/interfaces/functions that do not depend on platform specific UI functionality. `enro-common` targets Android, iOS, JVM Desktop, WASM JS and Kotlin/JS, including NodeJS. It's not uncommon to use NodeJS as a backend for Kotlin Multiplatform applications. By providing some of the non-UI related Enro definitions (such as `NavigationKey`) in `enro-common`, we allow KMP applications where a NodeJS backend is able to provide API responses that contain these objects.
+`enro-common` contains the Enro classes, interfaces and functions that do not depend on a UI framework, such as `NavigationKey`. `enro-common` targets Android, iOS, JVM Desktop, WASM JS and Kotlin/JS, including NodeJS.
+
+A Kotlin Multiplatform module with a non-UI target, such as a NodeJS backend, can depend on `enro-common` to declare `NavigationKey` types and to include `NavigationKey` objects in API responses.
 
 ## Example
-Imagine that you are working on a KMP project with the following modules: 
-`:common` (Android, iOS, JVM, WASM, JS)
-`:frontend` (Android, iOS, JVM, WASM)
-`:backend` (JS only, using NodeJS)
+A KMP project has these modules:
 
-The `:common` module is able to define API interfaces and their request/response classes (which are serialized using kotlinx serialization). The `:backend` module is able to implement these APIs, and the `:frontend` module is able to request a client for these APIs. This is a good developer experience, because you're dealing with the exact same kotlin classes on the frontend and backend, and can share almost anything related to the APIs/requests/responses. 
+- `:common` (Android, iOS, JVM, WASM, JS)
+- `:frontend` (Android, iOS, JVM, WASM)
+- `:backend` (JS only, using NodeJS)
 
-By providing the `enro-common` module, we allow the `:common` module to define `NavigationKey`s, which means that the `:backend` could include a `NavigationKey` in a response object. Even though the NodeJS `:backend` module could never render UI that uses Enro for navigation, this would allow the `:backend` module to control navigation on the clients.
+`:common` declares the API interfaces and the request and response classes, which are serialized with kotlinx.serialization. `:backend` implements the API interfaces. `:frontend` calls the API interfaces through a client. `:frontend` and `:backend` use the same Kotlin request and response classes.
 
-Allowing the backend to control the navigation of frontend clients in some situations can be very useful. For example, when A/B testing an onboarding flow, the backend may want to tell the frontend which screen to show next within that onboarding flow.
+`:common` depends on `enro-common` and declares `NavigationKey` types. `:backend` includes a `NavigationKey` in a response object, and `:frontend` opens the `NavigationKey`. `:backend` renders no UI, but `:backend` selects the screen that `:frontend` opens.
+
+For example, in an A/B test of an onboarding flow, `:backend` returns the `NavigationKey` of the next onboarding screen.

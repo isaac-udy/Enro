@@ -7,17 +7,15 @@ has_children: true
 
 # Results
 
-Enro's result system is what turns a screen into a function with a return
-value. A screen whose key implements `NavigationKey.WithResult<R>` returns a
-typed `R` to its caller. The caller registers interest in the result with
-`registerForNavigationResult`, opens the destination through the resulting
-channel, and is notified asynchronously when the destination completes (or
-when the user backs out).
+A destination whose key implements `NavigationKey.WithResult<R>` returns a
+value of type `R` to the caller. The caller creates a
+`NavigationResultChannel<R>` with `registerForNavigationResult` and opens
+the destination through the channel. The channel calls a callback when the
+destination completes or closes.
 
-## The shape of a result
+## Returning and receiving a result
 
-A key signals "this screen returns a value" by implementing
-`NavigationKey.WithResult<R>`:
+A key declares a result type by implementing `NavigationKey.WithResult<R>`:
 
 <!-- snippet: navigation-keys/select-date -->
 ```kotlin
@@ -28,7 +26,7 @@ data class SelectDate(
 ) : NavigationKey.WithResult<LocalDate>
 ```
 
-The destination returns its value with `navigation.complete(value)`:
+The destination returns the result with `navigation.complete(value)`:
 
 <!-- snippet: results/complete -->
 ```kotlin
@@ -41,23 +39,21 @@ fun SelectDateScreen() {
 }
 ```
 
-A caller receives the value through a `NavigationResultChannel<R>`:
+A caller receives the result through a `NavigationResultChannel<R>`:
 
 <!-- snippet: results/channel -->
 ```kotlin
 val getDate = registerForNavigationResult<LocalDate>(
-    onCompleted = { date -> /* use it */ },
+    onCompleted = { date -> /* use the date */ },
 )
 
 Button(onClick = { getDate.open(SelectDate()) }) { Text("Pick a date") }
 ```
 
-That's the whole pattern. The rest of this page covers the variations.
-
 ## In a Composable
 
-`registerForNavigationResult<R>` is a Composable function. It returns a
-`NavigationResultChannel<R>` you call `.open(key)` on:
+`registerForNavigationResult<R>` is a Composable function that returns a
+`NavigationResultChannel<R>`. Call `open(key)` on the channel:
 
 <!-- snippet: results/composable -->
 ```kotlin
@@ -67,10 +63,10 @@ fun HomeScreen() {
     val navigation = navigationHandle<Home>()
 
     val pickDate = registerForNavigationResult<LocalDate>(
-        onClosed = { /* dismissed without producing a value */ },
+        onClosed = { /* SelectDate closed without a result */ },
         onCompleted = { date ->
-            // do something with the date — note: this is a callback,
-            // not a suspension. You can update Compose state from here.
+            // onCompleted is a callback, not a suspending function.
+            // Compose state can be updated here.
         },
     )
 
@@ -80,26 +76,25 @@ fun HomeScreen() {
 }
 ```
 
-The channel is `remember`-ed by composition key, so it survives recomposition
-and process death.
+The channel's id is the destination's instance id plus the composite key
+hash of the `registerForNavigationResult` call. A channel created by the
+same call after recomposition or process death has the same id and receives
+the result.
 
-### Closed vs completed
+### `onCompleted` and `onClosed`
 
-Two callbacks, two cases:
-
-- `onCompleted(value)` fires when the destination calls
+- `onCompleted(value)` is called when the opened destination calls
   `navigation.complete(value)`.
-- `onClosed()` fires when the destination calls `navigation.close()` (or is
-  closed by any other means — back press, container collapse, etc.).
+- `onClosed()` is called when the opened destination closes without
+  completing, for example through `navigation.close()` or a back press.
 
-You can register only `onCompleted` if you don't care about cancellation —
-it's the required argument; `onClosed` defaults to a no-op.
+`onCompleted` is required. `onClosed` defaults to a no-op.
 
 ### Without a result type
 
-For destinations whose key does **not** implement `WithResult<R>`, there's a
-`Unit`-typed overload that lets you still distinguish "completed" from
-"closed":
+For a key that does not implement `WithResult<R>`,
+`registerForNavigationResult` has an overload with no type argument. The
+`onCompleted` callback of the overload takes no value:
 
 <!-- snippet: results/no-result-key -->
 ```kotlin
@@ -119,14 +114,14 @@ Button(onClick = { confirmDelete.open(ConfirmDelete("Tax return.pdf")) }) {
 }
 ```
 
-Even though `ConfirmDelete` has no result type, the destination can still
-call `complete()` to signal "user confirmed" vs `close()` for "user
-cancelled". See [close vs complete](../core-concepts/navigation-handles.md#closing-vs-completing).
+The `ConfirmDelete` destination calls `complete()` when the user confirms
+and `close()` when the user cancels. See
+[closing vs completing](../core-concepts/navigation-handles.md#closing-vs-completing).
 
 ## In a ViewModel
 
-`registerForNavigationResult` is also available as an extension on
-`ViewModel`. The form is a property delegate:
+`registerForNavigationResult` is also an extension on `ViewModel`. The
+`ViewModel` extension is used as a property delegate:
 
 <!-- snippet: results/view-model -->
 ```kotlin
@@ -135,7 +130,7 @@ class HomeViewModel : ViewModel() {
 
     val pickDate by registerForNavigationResult<LocalDate>(
         onCompleted = { date ->
-            // update your StateFlow / call a use case / etc.
+            // Update a StateFlow or call a use case here.
         },
     )
 
@@ -145,41 +140,41 @@ class HomeViewModel : ViewModel() {
 }
 ```
 
-Inside the ViewModel, the channel survives configuration change and process
-death along with the ViewModel. The `viewModelScope` is used to observe
-incoming results, so callbacks stop when the ViewModel is cleared.
+The channel's id is the destination's instance id plus the ViewModel's
+class name and the property name. A ViewModel that is recreated after
+process death creates a channel with the same id. The channel collects
+results in `viewModelScope`, so the callbacks stop when the ViewModel is
+cleared.
 
-## Sub-pages
+## Result flows
 
-There are two patterns worth their own pages:
-
-- **[Embedded result flows](results/embedded-result-flows.md)** — chaining a
-  small number of results together inside one screen, using `onCompleted` to
-  open the next result-producing key.
-- **[Managed result flows](results/managed-result-flows.md)** — defining a
-  multi-step flow as sequential, imperative code with
-  `managedFlowDestination`.
+- **[Embedded result flows](results/embedded-result-flows.md)** — one
+  screen opens a short sequence of result destinations, each from the
+  `onCompleted` callback of the previous channel.
+- **[Managed result flows](results/managed-result-flows.md)** — a
+  multi-step flow written as sequential code with `managedFlowDestination`.
+- **[Flows in a ViewModel](results/navigation-flows.md)** — a multi-step
+  flow written as sequential code with `registerForFlowResult`, displayed
+  inside a screen's own UI.
 
 ## How results are routed
 
-Under the hood, calling `channel.open(key)` attaches a metadata tag to the
-opened instance identifying *which channel* this instance is feeding. When
-the instance completes or closes, the runtime looks up the channel by tag
-and dispatches the result. You can ignore this mechanism unless you're
-building deep tooling — the point is that a single screen can have multiple
-distinct result channels open without them being confused for each other.
+`channel.open(key)` stores the channel's id in the metadata of the opened
+instance. When the opened instance completes or closes, Enro delivers the
+result to the channel with that id. A destination can register several
+channels. Each channel receives only the results of the instances that the
+channel opened.
 
-A consequence worth noting: a `NavigationResultChannel` is bound to *one*
-result type. If you want a screen that picks "either a contact or a phone
-number," model that as a sealed class for the result type, not as two
-channels racing each other.
+A `NavigationResultChannel` has one result type. For a result that is one
+of several types, such as a contact or a phone number, declare a sealed
+class as the result type.
 
-## Forwarding from a "decider" destination
+## Forwarding a result from a synthetic destination
 
-When several concrete screens implement the same result contract — a
-legacy and a redesigned edit-profile flow, an A/B test variant, a
-platform-specific picker — a synthetic destination can sit in front of
-them and pick at runtime, while callers see only the stable contract:
+Several keys can declare the same result type, for example a legacy screen
+and a redesigned screen. A synthetic destination can choose one of the keys
+at runtime with `completeFrom`. Callers open only the synthetic
+destination's key:
 
 <!-- snippet: results/decider -->
 ```kotlin
@@ -194,19 +189,16 @@ val editProfile = syntheticDestination<EditProfile> {
 }
 ```
 
-`completeFrom` opens the chosen key with the synthetic's result-channel
-metadata copied across, so the chosen screen's `complete(value)` routes
-back to whoever opened `EditProfile`. See
-[synthetic destinations](synthetic-destinations.md) for the full pattern.
+`completeFrom` opens the chosen key and copies the result channel id from
+the synthetic destination's instance to the opened instance. The result of
+the chosen screen's `complete(value)` is delivered to the channel that
+opened `EditProfile`. See [Synthetic Destinations](synthetic-destinations.md).
 
 ## See also
 
-- [Synthetic Destinations](synthetic-destinations.md) — `completeFrom`
-  and the result-decider pattern.
+- [Synthetic Destinations](synthetic-destinations.md) — `completeFrom`.
 - [Navigation Handles — closing vs completing](../core-concepts/navigation-handles.md#closing-vs-completing).
-- [Returning Results recipe][results-recipe] — small worked example with
-  both Composable and ViewModel forms.
-- [Embedded result flows](results/embedded-result-flows.md) and
-  [managed result flows](results/managed-result-flows.md).
+- [Returning Results recipe][results-recipe] — `registerForNavigationResult`
+  in a Composable and in a ViewModel.
 
 [results-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/results/ReturningResults.kt

@@ -81,9 +81,6 @@ public class NavigationFlowScope(
         }
     }
 
-    /**
-     * See documentation on the other [async] function for more information on how this function works.
-     */
     @Suppress("NOTHING_TO_INLINE") // required for using block's name as an identifier
     public inline fun <T> async(
         vararg dependsOn: Any?,

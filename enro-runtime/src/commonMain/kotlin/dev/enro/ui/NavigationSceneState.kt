@@ -11,27 +11,17 @@ import dev.enro.ui.scenes.EmptyNavigationScene
 import dev.enro.ui.scenes.calculateSceneWithSinglePaneFallback
 
 /**
- * A snapshot of the scene hierarchy for a [NavigationContainerState].
+ * The scenes calculated for a [NavigationContainerState] by [rememberNavigationSceneState].
+ * [NavigationDisplay] renders a [NavigationSceneState]. Navigation 3 equivalent: `SceneState<T>`.
  *
- * Computed by [rememberNavigationSceneState], consumed by
- * [NavigationDisplay]. Mirrors Nav3's `SceneState<T>` — same fields,
- * same semantics, same eager `previousScenes` walk for predictive back.
- *
- * Hoist it from your composable if you want to inspect what
- * [NavigationDisplay] would render before it actually renders (e.g.
- * for tests, conditional UI, or to share scene calculation across
- * multiple displays). Otherwise [NavigationDisplay] computes its own
- * internally.
- *
- * @property entries the decorated destinations that fed into the scene
- *   calculation
- * @property overlayScenes any overlay scenes layered on top of
- *   [currentScene] (e.g. dialogs, bottom sheets)
- * @property currentScene the bottom-most non-overlay scene to render
- * @property previousScenes the chain of scenes produced by repeatedly
- *   walking `previousEntries` from [currentScene]. Used by predictive
- *   back to know what to reveal underneath the popping scene. Ordered
- *   from "one step back" first to "deepest" last.
+ * @property entries the decorated destinations the scenes were calculated from
+ * @property overlayScenes the overlay scenes above [currentScene], top-most first
+ * @property currentScene the scene below every overlay scene. [currentScene] is an overlay
+ *   scene only when that overlay scene's `overlaidEntries` is empty.
+ * @property previousScenes the scenes calculated by following `previousEntries` from
+ *   [currentScene] until `previousEntries` is empty, nearest scene first. During a
+ *   predictive back gesture, [NavigationDisplay] renders the first non-overlay scene in
+ *   [previousScenes].
  */
 @Immutable
 public class NavigationSceneState internal constructor(
@@ -64,15 +54,13 @@ public class NavigationSceneState internal constructor(
 }
 
 /**
- * Computes the [NavigationSceneState] for a [NavigationContainerState] by
- * resolving the overlay chain (top-down until a non-overlay scene is found)
- * and eagerly walking `previousEntries` for predictive back. Mirrors Nav3's
+ * Calculates the [NavigationSceneState] for [containerState]. Navigation 3 equivalent:
  * `rememberSceneState`.
  *
- * [onBack] is what the [SceneStrategyScope.onBack] handed to each strategy
- * invokes. Typically connected to the surrounding [NavigationDisplay]'s
- * navigation event system so scene-internal back affordances (drag-to-dismiss
- * sheets, custom close gestures) feed back into the regular backstack.
+ * A container with no destinations returns a state with no entries and a scene that renders no
+ * content, without calling [sceneStrategy]. [SceneStrategyScope.onBack] in each strategy calls
+ * [onBack]. [sceneDecoratorStrategies] are applied to [NavigationSceneState.currentScene] and
+ * to each of the [NavigationSceneState.previousScenes], and never to an overlay scene.
  */
 @Composable
 public fun rememberNavigationSceneState(
@@ -86,11 +74,8 @@ public fun rememberNavigationSceneState(
     val decoratorScope = remember { SceneDecoratorStrategyScope(onBack = { currentOnBack() }) }
     val destinations = containerState.destinations
 
-    // Containers configured with `EmptyBehavior.allowEmpty()` legitimately
-    // hit a state with no destinations. Short-circuit to a no-op scene
-    // here so every `NavigationSceneStrategy.calculateScene` implementation
-    // is guaranteed a non-empty entries list — same invariant Nav3 enforces
-    // at the `NavDisplay(backStack)` boundary, just pushed one frame in.
+    // Invariant: `NavigationSceneStrategy.calculateScene` never receives an empty entries list.
+    // A container using `EmptyBehavior.allowEmpty()` can have no destinations.
     if (destinations.isEmpty()) {
         return NavigationSceneState(
             entries = emptyList(),
@@ -113,18 +98,12 @@ public fun rememberNavigationSceneState(
 }
 
 /**
- * Folds the chain of [SceneDecoratorStrategy] over [scene] in order
- * (first decorator becomes the outermost wrapper). Overlay scenes are
- * skipped — mirroring Nav3, which only applies scene decorators to
- * non-overlay scenes.
+ * Applies [sceneDecoratorStrategies] to [scene] in list order: the first strategy produces the
+ * innermost wrapper. An overlay scene is returned unchanged.
  *
- * Each `decorateScene` invocation runs inside a `CompositionLocalProvider`
- * for [LocalNavigationContainer] / [LocalNavigationContext] so a decorator
- * can read either local directly — e.g. to branch on the live backstack
- * before deciding what scene to return. Without this, the decorator
- * composes outside the provider [NavigationDisplay] sets up later for
- * scene-content rendering, so `LocalNavigationContainer.current` would
- * throw.
+ * `decorateScene` runs before [NavigationDisplay] provides [LocalNavigationContainer] and
+ * [LocalNavigationContext] for scene content, so each `decorateScene` call is wrapped in a
+ * provider for both locals.
  */
 @Composable
 private fun applyDecorators(
@@ -149,9 +128,8 @@ private fun applyDecorators(
 }
 
 /**
- * Resolves the overlay chain starting from `destinations`, returning a list
- * ordered [top-most ... bottom-most]. The last element is always a
- * non-overlay scene.
+ * Returns the scenes for [destinations], top-most first. Each scene before the last scene is an
+ * overlay. The last scene is an overlay only when that overlay's `overlaidEntries` is empty.
  */
 @Composable
 private fun resolveSceneChain(
@@ -169,10 +147,6 @@ private fun resolveSceneChain(
     return allScenes
 }
 
-/**
- * Walks `previousEntries` until empty, producing the list of scenes that
- * would be revealed by successive pops.
- */
 @Composable
 private fun computePreviousScenes(
     scope: SceneStrategyScope,

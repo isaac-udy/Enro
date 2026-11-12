@@ -1,7 +1,8 @@
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
-// A feature module of the Modular Navigation recipe. It depends on the shared
-// keys, not on :recipes:modular:feature-profile, whose screens it opens.
+// A feature module of the Modular Navigation recipe. feature-home depends on
+// the shared keys and opens the screens of :recipes:modular:feature-profile
+// without depending on :recipes:modular:feature-profile.
 plugins {
     id("configure-library")
     id("com.google.devtools.ksp")
@@ -20,7 +21,7 @@ kotlin {
 }
 
 // The processor runs in every module that declares destinations. It generates
-// a binding per destination; the app's NavigationComponent collects them.
+// a binding per destination; the app's NavigationComponent collects the bindings.
 dependencies {
     val enroProcessor = "dev.enro:enro-processor:${project.enroVersionName}"
     add("kspCommonMainMetadata", enroProcessor)

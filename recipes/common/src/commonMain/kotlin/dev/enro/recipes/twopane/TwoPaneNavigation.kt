@@ -1,24 +1,20 @@
 /**
  * Enro Recipe: Two-Pane Scene
  *
- * Demonstrates a custom `NavigationSceneStrategy` that renders two
- * adjacent backstack entries side-by-side, gated by per-destination
- * metadata. Each destination that's willing to participate opts in
- * with `twoPane()` in its metadata; if both of the top two entries
- * opt in (and the window is wide enough), the strategy renders them
- * together.
+ * Shows a custom `NavigationSceneStrategy` that renders the top two
+ * backstack entries side by side. A destination sets `twoPane()` in metadata.
+ * When the top two entries both have `twoPane()` and the window is at least
+ * 600dp wide, the strategy renders both entries, with the lower entry on the
+ * left. In every other case `SinglePaneSceneStrategy` renders the top entry.
  *
- * Modelled on the Nav3 two-pane recipe:
+ * `TwoPaneScene.kt` declares `TwoPaneSceneStrategy` and the `twoPane()`
+ * metadata function.
+ *
+ * Unlike the list-detail recipes, the two panes have no fixed roles: the
+ * strategy applies to any two adjacent `twoPane()` destinations.
+ *
+ * Nav3 equivalent: the two-pane scene recipe,
  * https://developer.android.com/guide/navigation/navigation-3/recipes/scenes-twopane
- *
- * The strategy itself lives in [TwoPaneScene.kt] alongside the
- * `twoPane()` metadata helper.
- *
- * Difference from a list-detail layout: there's no fixed left/right
- * role. Any two adjacent destinations that both declare `twoPane()`
- * are rendered side-by-side, with the earlier (deeper-in-the-backstack)
- * entry on the left. Destinations that don't opt in render full-screen
- * via the regular single-pane strategy.
  */
 package dev.enro.recipes.twopane
 
@@ -41,12 +37,8 @@ import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import kotlinx.serialization.Serializable
 
-// -- Recipe root --
-
 @Serializable
 object TwoPaneRecipe : NavigationKey
-
-// -- Demo destination keys --
 
 @Serializable
 data object TwoPaneHome : NavigationKey
@@ -56,10 +48,6 @@ data class TwoPaneProduct(val id: Int) : NavigationKey
 
 @Serializable
 data object TwoPaneProfile : NavigationKey
-
-// ─────────────────────────────────────────────────────────────────────
-// Recipe root
-// ─────────────────────────────────────────────────────────────────────
 
 @Composable
 @NavigationDestination(TwoPaneRecipe::class)
@@ -86,10 +74,6 @@ fun TwoPaneRecipeScreen() {
         // endregion
     }
 }
-
-// ─────────────────────────────────────────────────────────────────────
-// Destinations
-// ─────────────────────────────────────────────────────────────────────
 
 @NavigationDestination(TwoPaneHome::class)
 val twoPaneHomeDestination: NavigationDestinationProvider<TwoPaneHome> =
@@ -124,8 +108,9 @@ val twoPaneProductDestination: NavigationDestinationProvider<TwoPaneProduct> =
         ) {
             Text("Product ${navigation.key.id}", style = MaterialTheme.typography.headlineSmall)
             Text(
-                "Opening another product replaces the right pane on wide " +
-                    "screens, or pushes a new screen on narrow screens.",
+                "On a wide screen, opening another product shows the new " +
+                    "product in the right pane and this product in the left " +
+                    "pane. On a narrow screen, the new product covers this product.",
                 style = MaterialTheme.typography.bodyMedium,
             )
             Button(onClick = { navigation.open(TwoPaneProduct(navigation.key.id + 1)) }) {
@@ -143,9 +128,9 @@ val twoPaneProductDestination: NavigationDestinationProvider<TwoPaneProduct> =
 @Composable
 @NavigationDestination(TwoPaneProfile::class)
 fun TwoPaneProfileDestination() {
-    // No twoPane() metadata — when this destination is on top, the
-    // scene strategy returns null and the single-pane strategy renders
-    // it full-screen, even on wide windows.
+    // This destination has no twoPane() metadata. While this destination is
+    // on top, TwoPaneSceneStrategy returns null and SinglePaneSceneStrategy
+    // renders this destination full-screen at every window width.
     val navigation = navigationHandle<TwoPaneProfile>()
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),

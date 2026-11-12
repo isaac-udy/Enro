@@ -19,8 +19,8 @@ public fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
 }
 
 /**
- * Asserts that the NavigationHandle has received a NavigationInstruction with a NavigationKey that is assignable to type [T] and
- * which matches the provided filter, and then returns that NavigationInstruction.
+ * Asserts that the handle executed an Open for a NavigationKey of [type] that matches
+ * [filter]. Returns the instance of the last matching Open.
  */
 @Deprecated("Use assertOpened instead")
 public fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
@@ -52,21 +52,17 @@ public fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
 
 
 /**
- * Asserts that the NavigationHandle has received a NavigationInstruction with a NavigationKey that is equal to the provided
- * NavigationKey [key], and then returns that NavigationInstruction.
+ * Asserts that the handle executed an Open for a NavigationKey equal to [key]. Returns the
+ * instance of the last matching Open.
  */
 @Deprecated("Use assertOpened instead")
 public fun <T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
     key: T,
-    disambiguation: Unit = Unit // to differentiate from the other expectOpenInstruction method
+    disambiguation: Unit = Unit // distinguishes this overload from expectOpenInstruction(filter)
 ): NavigationKey.Instance<T> {
     return expectOpenInstruction(key::class) { it == key }
 }
 
-/**
- * Asserts that the NavigationHandle has received a NavigationInstruction with a NavigationKey that is assignable to type [T] and
- * which matches the provided filter, and then returns that NavigationInstruction.
- */
 @Deprecated("Use assertOpened instead")
 public inline fun <reified T : NavigationKey> TestNavigationHandle<*>.expectOpenInstruction(
     noinline filter: (T) -> Boolean = { true }

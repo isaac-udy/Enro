@@ -1,18 +1,18 @@
 /**
  * Enro Recipe: Basic Deep Link
  *
- * Demonstrates two ways of mapping URLs to NavigationKeys, and how to turn a
- * URL back into a key:
- *  - `@NavigationPath` on the recipe entry key. The processor generates the
- *    binding and registers it.
- *  - The manual `NavigationPathBinding.createPathBinding(...)` API, for cases
- *    where you want full control over deserialize/serialize. The bindings are
- *    collected in [deepLinkModule], which `RecipesComponent` installs.
+ * Shows two ways to bind a URL path to a NavigationKey, and how to resolve a
+ * URL to a key:
+ *  - `@NavigationPath` on the recipe entry key. The processor generates and
+ *    registers the binding.
+ *  - `NavigationPathBinding.createPathBinding(...)` and the
+ *    `NavigationPathBinding` constructor, which take the pattern and the
+ *    conversion between path and key. [deepLinkModule] registers these
+ *    bindings, and `RecipesComponent` installs [deepLinkModule].
  *  - `navigation.getNavigationKeyFromPath(url)` resolves a URL to a key. The
- *    home screen resolves a few URLs this way and opens the result.
+ *    home screen resolves four URLs and opens each resolved key.
  *
- * On the web, the registered bindings also set the URL bar while these
- * destinations are active.
+ * On the web, the URL bar shows the bound path of the active destination.
  */
 @file:OptIn(ExperimentalEnroApi::class)
 
@@ -64,8 +64,8 @@ data class ProductDetail(val productId: String, val source: String? = null) : Na
 @Serializable
 data object DeepLinkHome : NavigationKey
 
-// Hand-written path bindings using the createPathBinding API. They are
-// registered through deepLinkModule, below.
+// createPathBinding matches each `{name}` in the pattern to the key property
+// with the same name. deepLinkModule, below, registers these bindings.
 
 val userProfilePathBinding: NavigationPathBinding<UserProfile> = NavigationPathBinding.createPathBinding(
     pattern = "/users/{userId}",
@@ -137,7 +137,7 @@ fun DeepLinkHomeDestination() {
         )
         urls.forEach { url ->
             Button(onClick = {
-                // Returns null when no registered binding matches the URL.
+                // getNavigationKeyFromPath returns null when no registered binding matches the URL.
                 val key = navigation.getNavigationKeyFromPath(url)
                 unresolved = if (key == null) url else null
                 if (key != null) navigation.open(key)

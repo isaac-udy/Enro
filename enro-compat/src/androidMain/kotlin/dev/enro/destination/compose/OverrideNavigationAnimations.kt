@@ -24,9 +24,9 @@ public fun OverrideNavigationAnimations(
 }
 
 /**
- * Override the navigation animations for a particular destination, and also provide a content block that will be animated
- * using AnimatedVisibility, providing a AnimatedVisibilityScope which can be used to animate different parts of the screen
- * at different times, or to use in shared element transitions (when that is released in Compose).
+ * Renders [content] in an AnimatedVisibility that applies [enter] and [exit] with the transition of the current
+ * destination. [content] receives the AnimatedVisibilityScope, which can animate parts of the screen separately and
+ * can be passed to shared element modifiers. In inspection mode, OverrideNavigationAnimations does not render [content].
  */
 @Composable
 @AdvancedEnroApi
@@ -35,8 +35,7 @@ public fun OverrideNavigationAnimations(
     exit: ExitTransition,
     content: @Composable AnimatedVisibilityScope.() -> Unit
 ) {
-    // If we are in inspection mode, we need to ignore this call, as it relies on items like navigationContext
-    // which are only available in actual running applications
+    // navigationTransition requires a navigation context, which inspection mode does not provide.
     val isInspection = LocalInspectionMode.current
     if (isInspection) return
 

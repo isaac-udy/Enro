@@ -1,20 +1,22 @@
 /**
  * Enro Recipe: Flow in a ViewModel
  *
- * Demonstrates a multi-step flow owned by a ViewModel.
+ * Shows a multi-step flow declared in a ViewModel with `registerForFlowResult`.
  *
- * `registerForFlowResult` describes the steps as sequential code: each
- * `open(key)` opens a result-bearing screen and returns its result. The flow
- * block is re-run as results arrive, so it can branch on earlier answers.
- * When the block returns, `onCompleted` receives the value it returned.
+ * The `flow` block declares the steps as sequential code. Each `open(key)`
+ * opens a `NavigationKey.WithResult` screen and returns the result of the
+ * screen. The flow runs the `flow` block again after each result, so the
+ * block can branch on earlier results. When the `flow` block returns,
+ * `onCompleted` receives the returned value.
  *
- * The host screen displays the flow's steps in a container created with
+ * The host screen displays the steps in a container created with
  * `rememberNavigationContainerForFlow(viewModel.flow)`. Closing a step
- * returns to the previous one, and its answer can be changed.
+ * returns to the previous step, where the user can choose a different result.
  *
- * Use this instead of `managedFlowDestination` (see the Managed Flow recipe)
- * when the host needs its own UI around the steps, such as a progress
- * indicator, or its own ViewModel state.
+ * `managedFlowDestination` (see the Managed Flow recipe) declares a flow
+ * without a host screen. Use `registerForFlowResult` when the host screen
+ * shows UI around the steps, such as a progress indicator, or has other
+ * ViewModel state.
  */
 package dev.enro.recipes.flow
 
@@ -66,7 +68,7 @@ data class Booking(
     val breakfast: Boolean,
 )
 
-/** The flow's host. Completes with the finished [Booking]. */
+/** The key of the screen that hosts the flow. The screen completes with the [Booking]. */
 @Serializable
 data object CreateBooking : NavigationKey.WithResult<Booking>
 
@@ -87,7 +89,7 @@ class CreateBookingViewModel : ViewModel() {
         flow = {
             val destination = open(ChooseDestination)
             val nights = open(ChooseNights(destination))
-            // A branch: breakfast is only offered for stays of two nights or more.
+            // A branch: the flow opens ChooseBreakfast only for two nights or more.
             val breakfast = if (nights >= 2) open(ChooseBreakfast) else false
             Booking(destination, nights, breakfast)
         },
@@ -147,8 +149,8 @@ fun CreateBookingDestination() {
     val viewModel = viewModel<CreateBookingViewModel> {
         createEnroViewModel { CreateBookingViewModel() }
     }
-    // Displays the flow's steps. Its backstack holds one entry per answered
-    // step, plus the step being asked now.
+    // flowContainer displays the steps of the flow. The backstack of flowContainer
+    // contains one entry for each step that has a result, plus the current step.
     val flowContainer = rememberNavigationContainerForFlow(viewModel.flow)
 
     Column(modifier = Modifier.fillMaxSize()) {

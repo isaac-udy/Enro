@@ -6,8 +6,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-// On Kotlin/JS, Int, Short, Byte and Float are all JS numbers and wrap as WrappedDouble, so these
-// pin that each value still reads back equal and with its original type.
+// On Kotlin/JS, Int, Short, Byte and Float are JS numbers and are wrapped as WrappedDouble.
+// Each test checks that a value is read back equal and with the original type.
 class WrapForSerializationTests {
 
     private val json = Json { serializersModule = serializerModuleForWrapped }

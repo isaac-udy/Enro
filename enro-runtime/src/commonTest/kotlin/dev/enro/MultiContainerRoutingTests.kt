@@ -12,12 +12,9 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
- * Tests that lock down the routing decision made by
- * [findContainerForOperation] when more than one container is reachable
- * from the originating navigation context. Until now, only
- * [NavigationContainer.accepts] has been tested in isolation — the actual
- * "given this context and this operation, which container handles it"
- * resolution was untested.
+ * Tests which container [findContainerForOperation] selects when more than one container is
+ * reachable from the originating navigation context. NavigationContainerTests tests
+ * [NavigationContainer.accepts].
  */
 class MultiContainerRoutingTests {
 
@@ -88,10 +85,8 @@ class MultiContainerRoutingTests {
 
     @Test
     fun `findContainerForOperation does not route to a sibling whose filter is fromChildrenOnly`() = runEnroTest {
-        // Both containers accept the same predicate, but containerB additionally
-        // gates on fromChildrenOnly. The source destination is under containerA,
-        // so containerB's filter should reject the routing attempt and the
-        // resolver should fall through to containerA.
+        // Both filters accept the key. The filter of containerB is also fromChildrenOnly, and
+        // the source destination is under containerA, so containerB rejects the operation.
         val rootContext = NavigationContextFixtures.createRootContext()
         val containerA = NavigationContextFixtures.createContainerContext(rootContext)
         val containerB = NavigationContextFixtures.createContainerContext(rootContext)

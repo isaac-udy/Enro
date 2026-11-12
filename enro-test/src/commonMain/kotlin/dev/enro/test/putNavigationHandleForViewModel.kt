@@ -6,12 +6,12 @@ import kotlin.reflect.KClass
 
 
 /**
- * Registers a [TestNavigationHandle] for [key] so that when a [T] ViewModel is constructed,
- * its `by navigationHandle<K>()` delegate (and any `registerForNavigationResult` channels)
- * resolve against this handle.
+ * Creates a [TestNavigationHandle] for [key] and registers the handle for the ViewModel
+ * class [T]. The `by navigationHandle<K>()` delegate and each `registerForNavigationResult`
+ * channel of a [T] ViewModel use the registered handle.
  *
- * Must be called **before** constructing the ViewModel, because the `navigationHandle`
- * delegate resolves eagerly at ViewModel init time via [NavigationHandleProvider].
+ * Call putNavigationHandleForViewModel before constructing the ViewModel: the
+ * `navigationHandle` delegate reads the registered handle when the ViewModel is constructed.
  */
 public inline fun <reified T: ViewModel, K: NavigationKey> putNavigationHandleForViewModel(
     key: K,

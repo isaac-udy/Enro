@@ -51,13 +51,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-/**
- * Compose-driven integration tests exercising the scene layer. Each test
- * installs an [EnroController], registers bindings for the test keys it
- * uses, and renders a [NavigationDisplay] inside [runComposeUiTest] —
- * which gives us fast, multiplatform-friendly tests against the real
- * runtime without needing the instrumented robot harness.
- */
 @OptIn(ExperimentalTestApi::class)
 class SceneIntegrationTests {
 
@@ -134,10 +127,6 @@ class SceneIntegrationTests {
 
     @Test
     fun `Nested overlay scenes render content from every layer`() = runEnroComposeTest {
-        // Backstack: [A, OverlayB, OverlayC]. The runtime should resolve this
-        // into three composed scenes — SinglePane(A) underneath, OverlayB above
-        // it, OverlayC on top — with content from each layer visible at once
-        // because overlays don't replace the underlying scene chain.
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
                 destination<TestSceneKey>(
@@ -177,12 +166,8 @@ class SceneIntegrationTests {
 
     @Test
     fun `Overlay scenes resolve their underlying scene chain via previousEntries`() = runEnroComposeTest {
-        // When an overlay is on top of the backstack, NavigationDisplay must
-        // still resolve and render the scene corresponding to
-        // overlay.previousEntries underneath. The decorator (which skips
-        // overlays) is a convenient window into what scene was resolved for
-        // that underlying chain — we can assert its entries contain exactly
-        // the underlying destination.
+        // Scene decorators are not applied to overlays, so the scenes recorded by the decorator
+        // are the scenes that NavigationDisplay resolved under the overlay.
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
                 destination<TestSceneKey>(
@@ -240,13 +225,9 @@ class SceneIntegrationTests {
     @OptIn(ExperimentalSharedTransitionApi::class)
     @Test
     fun `AnimatedVisibility and SharedTransition scopes propagate into decorated scene content`() = runEnroComposeTest {
-        // SceneDecoratorStrategy.decorateScene itself runs before the
-        // AnimatedContent / SharedTransitionLayout that NavigationDisplay
-        // sets up — but the SCENE'S CONTENT lambda returned from a decorator
-        // runs inside both, so reading LocalNavigationAnimatedVisibilityScope
-        // / LocalNavigationSharedTransitionScope from there should yield the
-        // real scopes (with their transition state etc.). This test locks
-        // that contract down.
+        // decorateScene runs outside the AnimatedContent and SharedTransitionLayout of
+        // NavigationDisplay. The content lambda of the decorated scene runs inside both, so the
+        // decorator reads the scopes in the content lambda.
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
                 destination<TestSceneKey>(
@@ -300,15 +281,8 @@ class SceneIntegrationTests {
 
     @Test
     fun `Overlay onRemove suspends until completed before the scene fully leaves composition`() = runEnroComposeTest {
-        // NavigationDisplay invokes scene.onRemove() in a LaunchedEffect once
-        // the overlay is popped, and only calls onFullyHidden() (which
-        // drops the scene from its tracking map) AFTER onRemove returns. So
-        // an onRemove that suspends should keep the scene "alive" — present
-        // in the rendered set — until it resolves.
-        //
-        // We can't observe NavigationDisplay's internal rendered map directly,
-        // but we capture onRemove start / end events through the suspending
-        // hook itself and assert the suspension contract that way.
+        // The test cannot read the scenes that NavigationDisplay renders, so
+        // TestOverlayScene.onRemove records the start and the end of onRemove in `events`.
         val onRemoveSignal = CompletableDeferred<Unit>()
         val events = mutableListOf<String>()
 
@@ -449,15 +423,6 @@ class SceneIntegrationTests {
 
     @Test
     fun `requestClose routes through onCloseRequested callback when one is registered in an overlay destination`() = runEnroComposeTest {
-        // Integration counterpart to NavigationHandleConfigurationTests:
-        // verifies that the requestClose() path running through a real
-        // DestinationNavigationHandle (created by NavigationDisplay for the
-        // rendered overlay) consults a callback registered via
-        // navigation.configure { onCloseRequested { ... } } AND that a
-        // callback which doesn't itself call close() actually prevents the
-        // overlay from being dismissed. This is the key user-visible
-        // behaviour of onCloseRequested -- it lets a destination veto its
-        // own close so it can prompt for confirmation, etc.
         var callbackInvocations = 0
 
         EnroTest.getCurrentNavigationController().addModule(
@@ -472,8 +437,7 @@ class SceneIntegrationTests {
                         navigation.configure {
                             onCloseRequested {
                                 callbackInvocations++
-                                // Intentionally do NOT call close() — registering this
-                                // callback should suppress the default close behaviour.
+                                // The callback does not call close(), so the overlay must stay open.
                             }
                         }
                         Button(onClick = { navigation.requestClose() }) {
@@ -513,11 +477,6 @@ class SceneIntegrationTests {
 
     @Test
     fun `LocalNavigationContainer and LocalNavigationContext are readable inside decorateScene`() = runEnroComposeTest {
-        // A scene decorator may need to consult the live container (e.g. read
-        // the backstack to decide what wrapper to produce) without deferring
-        // that work into the returned scene's content lambda. The locals must
-        // therefore be in scope during decorateScene composition, not only
-        // during scene.content().
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
                 destination<TestSceneKey>(
@@ -530,9 +489,6 @@ class SceneIntegrationTests {
         var capturedContainer: NavigationContainerState? = null
         var capturedContext: dev.enro.NavigationContext? = null
         val capturingDecorator = SceneDecoratorStrategy { scene ->
-            // Reading LocalNavigationContainer.current here throws on the
-            // pre-fix runtime — the local was only provided around scene
-            // rendering, not around decorateScene composition.
             capturedContainer = LocalNavigationContainer.current
             capturedContext = LocalNavigationContext.current
             scene
@@ -683,9 +639,8 @@ data object OverlaySceneKey : NavigationKey
 data object SecondOverlaySceneKey : NavigationKey
 
 /**
- * A scene strategy that wraps any `directOverlay()` destination in a
- * [TestOverlayScene] with a controllable [onRemove] — used by the
- * overlay-onRemove-suspension test.
+ * Wraps a `directOverlay()` destination in a [TestOverlayScene]. `TestOverlayScene.onRemove`
+ * suspends until `onRemoveSignal` completes and records the start and the end in `events`.
  */
 private class TestOverlayStrategy(
     private val onRemoveSignal: CompletableDeferred<Unit>,
@@ -725,10 +680,8 @@ private class TestOverlayScene(
 }
 
 /**
- * Wrap [runComposeUiTest] with the same install/uninstall lifecycle that
- * [dev.enro.test.runEnroTest] provides for non-Compose tests, so callers
- * can use the `ComposeUiTest` scope (setContent, onNode*, etc.) directly
- * with an installed [EnroController] available.
+ * Runs [block] in [runComposeUiTest] with an [EnroController] installed, as
+ * [dev.enro.test.runEnroTest] does for a test without Compose.
  */
 @OptIn(ExperimentalTestApi::class)
 internal fun runEnroComposeTest(block: ComposeUiTest.() -> Unit) = runComposeUiTest {

@@ -33,23 +33,13 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
-// Browser history mirrors the whole container tree under the root: the root container's
-// backstack, and beneath the destination on top of it the containers that destination hosts,
-// recursively (see ContainerNode). A push inside a nested container — a screen opened within
-// a tab, a detail pane — is a history entry like a push on the root, and so is a change of
-// which nested container is active, which is a tab switch. The URL is the path of the deepest
-// active destination that has one.
+// Browser history records the container tree under the root container (see ContainerNode).
+// A push in a nested container and a change of the active nested container are history
+// entries. The URL is the path of the deepest active destination that has a path.
+// With `nestedContainers` false, browser history records the root container's backstack only.
 //
-// With `nestedContainers` false only the root container's backstack is mirrored, and the URL
-// is the root destination's path — the model of releases before nested containers were
-// recorded, kept so an app can adopt the tree on its own schedule.
-//
-// Synchronisation model: every input (destination lifecycle callback or browser
-// popstate) is enqueued onto a single serial processor, so updates are never dropped
-// and the in-memory mirror of browser history can't silently diverge from the real
-// session history. History traversals the plugin itself initiates (`history.go`)
-// are awaited via their popstate echo, which is consumed before it can be mistaken
-// for a user-initiated back/forward.
+// Each destination lifecycle callback and each browser popstate is queued on one serial
+// processor, so that `historyStates` matches the session history of the browser.
 internal class WebHistoryPlugin(
     private val rootContainer: ContainerContext,
     private val nestedContainers: Boolean,
@@ -60,19 +50,15 @@ internal class WebHistoryPlugin(
     private class PopState(val state: String?)
 
     /**
-     * Serial work queue. `null` means "the backstack changed, re-sync browser
-     * history"; a [PopState] means "the browser navigated, re-sync the
-     * backstack". Processing strictly in order is what keeps [historyStates]
-     * truthful — the previous implementation dropped events that arrived while
-     * a sync was in flight, which desynced the mirror and made a single
-     * browser back traverse multiple app screens.
+     * Serial work queue. `null` requests a sync of browser history from the backstack. A
+     * [PopState] requests a sync of the backstack from browser history. Each event must be
+     * processed, in order: a dropped event makes [historyStates] differ from browser history.
      */
     private val events = Channel<PopState?>(capacity = Channel.UNLIMITED)
 
     /**
-     * Set while the plugin is awaiting the popstate echo of its own
-     * `history.go()` call — see [traverse]. The next popstate completes it and
-     * is consumed instead of being enqueued as user navigation.
+     * Non-null while [traverse] awaits the popstate caused by the plugin's own `history.go()`
+     * call. The next popstate completes the deferred and is not queued as user navigation.
      */
     private var pendingTraversal: CompletableDeferred<Unit>? = null
 
@@ -88,7 +74,7 @@ internal class WebHistoryPlugin(
 
     private val removeEventListener: () -> Unit
 
-    // In-memory representation of the browser history for this session
+    // In-memory copy of the browser history entries of this session.
     private val historyStates = mutableListOf<ContainerNode>()
     private var historyIndex = -1 // Index of the current state in historyStates
 
@@ -106,11 +92,8 @@ internal class WebHistoryPlugin(
                 } catch (c: CancellationException) {
                     throw c
                 } catch (t: Throwable) {
-                    // One failed sync must not kill history handling for the
-                    // rest of the session — without this, a single throwing
-                    // serializer/interceptor/path computation would end the
-                    // processor loop and browser back would go silent while
-                    // the URL keeps changing natively.
+                    // A failed sync is logged and not rethrown: a rethrow ends the processor
+                    // loop, and no later history event is handled.
                     EnroLog.error("WebHistoryPlugin: history sync failed", t)
                 }
             }
@@ -118,8 +101,8 @@ internal class WebHistoryPlugin(
     }
 
     /**
-     * The destinations already on screen opened before the plugin was installed, so their
-     * callbacks never reached it; this records them as the first entry.
+     * The plugin received no callback for a destination opened before the plugin was
+     * installed. This event records the current container tree as the first history entry.
      */
     override fun onAttached(controller: EnroController) {
         events.trySend(null)
@@ -143,13 +126,9 @@ internal class WebHistoryPlugin(
     }
 
     /**
-     * Computes the URL to write to `window.history`: the `@NavigationPath` of the
-     * deepest active destination that has one, walking from the root container
-     * through each destination's active container. When no destination on that
-     * walk has a path binding, the existing address-bar URL is preserved —
-     * `pushState` still fires (so back/forward works through `history.state`),
-     * but the visible URL doesn't change. That keeps bookmarkable URLs honest:
-     * only destinations that opt in to a path produce a path.
+     * Returns the `@NavigationPath` of the deepest active destination that has a path
+     * binding. When no active destination has a path binding, returns the current URL: the
+     * history entry is still written, and the address bar does not change.
      */
     private fun computeUrl(): String {
         val keys = mutableListOf<NavigationKey>()
@@ -166,13 +145,9 @@ internal class WebHistoryPlugin(
     private fun currentUrl(): String = BrowserHistory.path
 
     /**
-     * Calls `history.go(delta)` and suspends until the browser delivers the
-     * resulting popstate, consuming that echo. `history.go` is asynchronous —
-     * the previous implementation `delay(1)`-ed and hoped, which raced the
-     * traversal (corrupting the history position) and let the echo arrive
-     * after suppression was lifted, where it was processed as a second
-     * user back. The timeout is a safety valve for browsers that elide the
-     * event (e.g. a no-op traversal at a history boundary).
+     * Calls `history.go(delta)` and suspends until the browser delivers the resulting
+     * popstate, because `history.go` is asynchronous. The timeout covers a browser that
+     * delivers no popstate, for example for a traversal at a history boundary.
      */
     private suspend fun traverse(delta: Int) {
         if (delta == 0) return
@@ -196,19 +171,16 @@ internal class WebHistoryPlugin(
     }
 
     /**
-     * The browser navigated (user back/forward): drive the container tree to
-     * match the entry's recorded state. Applying takes a frame or two to show
-     * in the tree — a restored destination registers its context and its
-     * containers on the next composition — so the tree is awaited before it is
-     * judged. When a recorded state can't be applied (an interceptor or
-     * EmptyBehavior refuses the close, or the app rewrote the backstack
-     * concurrently), step past it — bounded, rather than blind-firing
-     * `history.back()` and re-entering through the listener.
+     * Applies the recorded state of the popped history entry to the container tree, then
+     * waits for the container tree to match: a restored destination registers its context
+     * and containers on a later composition. When the recorded state cannot be applied (an
+     * interceptor or EmptyBehavior refuses a close, or the app changed the backstack), the
+     * plugin traverses back one entry and applies that entry, up to
+     * [MAX_TRAVERSAL_ATTEMPTS] times.
      */
     private suspend fun syncFromPopState(event: PopState) {
-        // popstate without a state payload (manual address-bar edit, cross-origin
-        // nav). We can't safely restore a sensible app state from URL alone —
-        // no-op and let the user reload if they want the URL to take effect.
+        // A popstate without state (address-bar edit, cross-origin navigation) is ignored:
+        // the URL alone does not identify an app state.
         val rawState = event.state ?: return
         var poppedState = decodeState(rawState)
             ?: return restoreFromUrl()
@@ -221,8 +193,6 @@ internal class WebHistoryPlugin(
             if (currentState == poppedState) break
             applyNodeFor(rootContainer, poppedState)
             if (awaitNodeFor(rootContainer, poppedState, nestedContainers)) break
-            // The recorded state didn't take — step one entry further back and
-            // try that one instead.
             EnroLog.debug(
                 "WebHistoryPlugin: popped state did not apply (attempt $attempts), stepping back.\n" +
                     "expected: $poppedState\nactual: ${createNodeFor(rootContainer, nestedContainers)}"
@@ -243,10 +213,10 @@ internal class WebHistoryPlugin(
     }
 
     /**
-     * A browser back that only closes a destination with an `onCloseRequested` callback is undone
-     * and handed to that callback, as a system back would be; what the callback then does reaches
-     * history through the backstack. Without a callback the entry is applied, keeping the
-     * browser's forward entry.
+     * Handles a browser back that only closes a destination with an `onCloseRequested`
+     * callback: the plugin undoes the back with `history.go(1)`, calls `requestClose` on the
+     * destination and returns true. Returns false when the destination has no callback, and
+     * the caller applies the popped entry.
      */
     private suspend fun requestCloseInstead(target: ContainerNode): Boolean {
         val closedId = closedInstanceId(createNodeFor(rootContainer, nestedContainers), target) ?: return false
@@ -261,14 +231,10 @@ internal class WebHistoryPlugin(
     }
 
     /**
-     * Fallback for a history entry whose recorded state can't be decoded —
-     * typically an entry written by an older build of the app whose
-     * serialization no longer matches (stale tab history survives deploys),
-     * or a metadata value that doesn't round-trip. Resolves the entry's URL
-     * through the controller's path bindings instead — degraded (single
-     * entry, same semantics as a cold-load deep link) but functional — and
-     * self-heals the entry by overwriting its unreadable state with the
-     * freshly serialized equivalent so the next visit decodes normally.
+     * Fallback for a history entry whose recorded state cannot be decoded, for example an
+     * entry written by an older build of the app. Resolves the URL of the entry through the
+     * path bindings of the controller, applies the resulting backstack, and replaces the
+     * state of the entry with the serialized container tree.
      */
     private suspend fun restoreFromUrl() {
         val fallback = rootContainer.controller.getBackstackFromPath(currentUrl())
@@ -295,19 +261,12 @@ internal class WebHistoryPlugin(
     }
 
     /**
-     * Serializes [state] for storage in `history.state`, verifying the result
-     * actually decodes. Encode-and-decode-back is cheap insurance against
-     * serialization shapes kotlinx mishandles (see the discriminator-mode
-     * note on SerializerRepository.jsonConfiguration for the class of bug
-     * this guards against).
+     * Serializes [state] for `history.state` and checks that the result decodes (see
+     * SerializerRepository.jsonConfiguration for a known kotlinx.serialization failure).
      *
-     * Verification failure is a hard error — writing a state that can't
-     * restore would silently break browser back for the entry, and degrading
-     * (e.g. stripping metadata) would silently lose data such as
-     * result-channel wiring, which is worse than failing loudly. The error
-     * includes the live in-memory metadata: the serialized form mangles the
-     * offending entry, but the in-memory map still has the real keys and
-     * value types.
+     * A result that does not decode throws: a history entry with that state could not be
+     * restored on browser back. The error lists the in-memory metadata of each instance,
+     * because the serialized form does not show the metadata value types.
      */
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     private fun serializeForHistory(state: ContainerNode): String {
@@ -332,7 +291,7 @@ internal class WebHistoryPlugin(
     }
 
     /**
-     * The backstack changed (open/active/close): mirror it into browser history.
+     * Writes the current container tree to browser history.
      */
     private suspend fun syncFromBackstack() {
         val currentState = createNodeFor(rootContainer, nestedContainers)
@@ -360,8 +319,8 @@ internal class WebHistoryPlugin(
             }
 
             closeIndex >= 0 -> {
-                // The current state exists earlier in the history: this is a close,
-                // pop back to that entry.
+                // The current state is an existing history entry, so a destination was
+                // closed. The plugin traverses to the existing entry.
                 val previousIndex = historyIndex
                 historyIndex = closeIndex
                 historyStates[historyIndex] = currentState
@@ -369,24 +328,20 @@ internal class WebHistoryPlugin(
                     traverse(closeIndex - previousIndex)
                     BrowserHistory.replaceState(serializedCurrentState, computeUrl())
                 } else {
-                    // Land one short of the target and push it fresh: pruning the
-                    // browser's forward entries so forward can't resurrect screens
-                    // the app has closed. (Not possible at index 0 — there's no
-                    // entry before it to land on.)
+                    // Traverses to the entry before the target, then pushes the target. The push
+                    // removes the browser's forward entries, so browser forward cannot reopen
+                    // a closed destination. Index 0 has no earlier entry to traverse to.
                     traverse(closeIndex - previousIndex - 1)
                     BrowserHistory.pushState(serializedCurrentState, computeUrl())
-                    // The push destroyed the browser's forward entries — drop them
-                    // from the mirror too.
+                    // historyStates must drop the forward entries that the push removed.
                     historyStates.subList(historyIndex + 1, historyStates.size).clear()
                 }
             }
 
             else -> {
-                // A state we haven't seen: forward navigation pushes an entry,
-                // anything else — a root reset such as loading → home, a
-                // truncate-and-open section switch, or a destination's containers
-                // still filling in — replaces the current one. See
-                // classifyTransition for the line between them.
+                // The current state is not in historyStates. classifyTransition decides whether
+                // the state is pushed (forward navigation) or replaces the current entry (for
+                // example a root reset, or the containers of a destination registering).
                 val previous = historyStates.getOrNull(historyIndex)
                 val transition = previous?.let { classifyTransition(it, currentState) }
                 historyStates.subList(historyIndex + 1, historyStates.size).clear()
@@ -409,13 +364,13 @@ internal class WebHistoryPlugin(
 }
 
 /**
- * Experimental browser-based back handling.
+ * Experimental. Synchronises [container] with browser history, so that browser back and
+ * forward change the backstack of [container].
  *
- * @param nestedContainerHistory whether the containers nested under [container]'s destinations
- *  take part in browser history: a push inside one, or a change of which one a destination has
- *  active, becomes an entry, and the URL is the deepest active destination's path. `false` mirrors
- *  the root container alone, the model of releases before nested containers were recorded, for
- *  an app that wants to adopt the tree on its own schedule.
+ * @param nestedContainerHistory when true, a push in a container nested under a destination
+ *  of [container], and a change of the active nested container, each add a browser history
+ *  entry, and the URL is the path of the deepest active destination. When false, browser
+ *  history records the backstack of [container] only.
  */
 @Composable
 public fun InstallWebHistoryPlugin(

@@ -5,22 +5,18 @@ nav_order: 80
 
 # Troubleshooting
 
-Most issues with Enro at runtime fall into one of a few categories — the
-controller isn't installed, a destination isn't bound to its key, a handle
-is accessed from the wrong scope, or a value can't be serialized. This
-page walks through the common symptoms.
+This page lists Enro error messages, the cause of each error, and the fix.
 
-If you don't find your issue here, please open an issue at
-[github.com/isaac-udy/Enro/issues](https://github.com/isaac-udy/Enro/issues)
-with a stack trace and a brief description of the call site.
+For an error that this page does not list, see
+[Reporting an issue](#reporting-an-issue).
 
 ## Setup errors
 
 ### `EnroController has not been installed`
 
-The controller wasn't installed before something tried to use it. Make
-sure you call `installNavigationController(...)` on your `NavigationComponent`
-before any composable that reads a navigation handle is composed.
+The app called an Enro API before the app installed the `EnroController`.
+Call `installNavigationController(...)` on the `NavigationComponent` before
+any other Enro call.
 
 <!-- snippet: troubleshooting/install -->
 ```kotlin
@@ -28,133 +24,142 @@ before any composable that reads a navigation handle is composed.
 class MyApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        MyComponent.installNavigationController(this)   // <- this must run first
+        MyComponent.installNavigationController(this)   // must run before any other Enro call
     }
 }
 ```
 
-See [Installation](getting-started/installation.md) for the equivalent on
+[Installation](getting-started/installation.md) shows the install call for
 each platform.
 
 ### `No NavigationHandle found for [KeyClass]`
 
-You called `navigationHandle<MyKey>()` from a composable that isn't a
-navigation destination, or whose key is a different type.
+A Composable called `navigationHandle<KeyClass>()` outside a destination.
 
-A handle is only available inside a destination — that is, a composable
-function annotated with `@NavigationDestination(...)` (or the body of a
-`navigationDestination<K> { }` provider), or any composable composed
-**inside** one. The typed parameter must match the destination's actual
-key type.
+`navigationHandle` returns a `NavigationHandle` only in one of these places:
+
+- a Composable function annotated with `@NavigationDestination(...)`
+- the body of a `navigationDestination<K> { }` provider
+- a Composable that one of those two composes
 
 <!-- snippet: troubleshooting/handle-scope -->
 ```kotlin
 @Composable
 @NavigationDestination(ShowProfile::class)
 fun ProfileScreen() {
-    val navigation = navigationHandle<ShowProfile>()  // ✅ matches the annotation
+    val navigation = navigationHandle<ShowProfile>()  // ShowProfile is the key in @NavigationDestination
     // ...
 }
 
 @Composable
 fun SomeRandomComposable() {
-    val navigation = navigationHandle<NavigationKey>() // ❌ not inside a destination
+    val navigation = navigationHandle<NavigationKey>() // SomeRandomComposable is not composed inside a destination
 }
 ```
 
-If your composable is genuinely shared between destinations and doesn't
-need to know its key type, use the untyped form
-`navigationHandle<NavigationKey>()` and accept that `navigation.key` will
-be the base interface.
+### `Expected key of type [KeyClass], but found [OtherKeyClass]`
+
+A Composable called `navigationHandle<KeyClass>()` inside a destination whose
+key is not a `KeyClass`. The type parameter of `navigationHandle` must be the
+destination's key type or a supertype of the destination's key type.
+
+A Composable that several destinations share can call
+`navigationHandle<NavigationKey>()`. `navigation.key` then has type
+`NavigationKey`.
 
 ### `No LocalNavigationHandle`
 
-Same family as the previous error — composable reading the navigation
-handle from outside any destination. Wrap it inside a destination, or
-hoist the navigation calls up to a destination-level composable and pass
-the operations down as lambdas.
+A Composable called `registerForNavigationResult` outside a destination.
+Move the `registerForNavigationResult` call into a destination, or into a
+Composable that a destination composes.
 
-### Missing navigation binding for `[KeyClass]`
+### `No binding found for [KeyClass]`
 
-Your key is being opened but no destination is registered for it. Three
-common causes:
+The app opened a `KeyClass` key and no destination is bound to `KeyClass`.
+Three common causes:
 
-1. **Forgot `@NavigationDestination(KeyClass::class)` on the destination.**
-   The annotation is what drives KSP code generation.
-2. **The module that declares the destination doesn't apply the
-   `enro-processor` KSP plugin.** Every module that contains
-   `@NavigationDestination` annotations needs its own KSP dependency on
-   `dev.enro:enro-processor`.
-3. **The app module doesn't depend on the destination module.** KSP-generated
-   bindings only travel through direct dependencies — make sure your app
-   module's classpath includes every feature module that contains
-   destinations.
+1. **The destination has no `@NavigationDestination(KeyClass::class)`
+   annotation.** The KSP processor generates a binding only for an annotated
+   destination.
+2. **The module that declares the destination has no `enro-processor` KSP
+   dependency.** Every module that contains a `@NavigationDestination`
+   annotation requires a KSP dependency on `dev.enro:enro-processor`.
+3. **The app module does not depend on the module that declares the
+   destination.** The app module's classpath must include every module that
+   declares a destination.
 
-If all three look correct, try a clean build (`./gradlew clean
-:app:assembleDebug`) — KSP incrementality can occasionally cache an old
-result. See the [modular navigation
-recipe][modular-recipe] for the canonical multi-module setup.
+If none of the three causes applies, run a clean build
+(`./gradlew clean :app:assembleDebug`). The
+[modular navigation recipe][modular-recipe] shows a multi-module setup.
 
 ## Navigation-handle errors
 
 ### `${key} is a NavigationKey.WithResult and cannot be completed without a result`
 
-You called `navigation.complete()` (no arguments) on a destination whose
-key implements `NavigationKey.WithResult<R>`. A result-producing key
-must produce a result.
+The code called `complete()` with no argument for a key that implements
+`NavigationKey.WithResult<R>`. A `NavigationKey.WithResult<R>` key must be
+completed with a result. On a `NavigationHandle` typed to a
+`NavigationKey.WithResult<R>` key, the compiler rejects `complete()` with no
+argument.
 
 <!-- snippet: skip (shows code that does not compile) -->
 ```kotlin
-// ❌ won't compile if the key implements WithResult<LocalDate>
+// Compile error when the key implements WithResult<LocalDate>.
 navigation.complete()
 
-// ✅ pass the result
 navigation.complete(LocalDate.now())
 ```
 
-If the destination genuinely has no result to deliver and you want it
-gone, use `navigation.close()` — the caller's `onClosed` callback will
-fire.
+To close the destination without a result, call `navigation.close()`. Enro
+then calls the caller's `onClosed` callback.
 
 ### `Cannot completeFrom a NavigationKey.WithResult from a NavigationKey that does not also implement NavigationKey.WithResult`
 
-`completeFrom(otherKey)` says "delegate this destination's completion to
-`otherKey`". For that to make sense, both keys must agree on the result
-type: a `WithResult<R>` destination can only `completeFrom` another
-`WithResult<R>` with the matching `R`.
+`completeFrom(otherKey)` opens `otherKey` and delivers the result of
+`otherKey` to the caller of the current destination. This error means the
+current destination's key has no result and `otherKey` implements
+`NavigationKey.WithResult`. The compiler rejects the call unless the code
+suppresses the compile error.
 
-If the redirect target genuinely doesn't have a result, you probably
-want `closeAndReplaceWith(otherKey)` instead.
+A destination with a `NavigationKey.WithResult<R>` key can call
+`completeFrom` only with another `NavigationKey.WithResult<R>` key that has
+the same `R`.
 
-### Multiple `onCloseRequested` callbacks registered for the same NavigationHandle
+To replace the current destination with a key and forward no result, call
+`closeAndReplaceWith(otherKey)`.
 
-You registered the close-requested callback in more than one place for
-the same destination — typically one in the ViewModel and one in the
-Composable, or two `configure { }` blocks in the same composable. Only
-one callback may be active at a time.
+### `Multiple onCloseRequested callbacks have been registered for NavigationHandle with key [Key]`
 
-Pick one home for the callback (the ViewModel if you have one, otherwise
-the top-level Composable). See
+Two or more `onCloseRequested` callbacks are registered for the same
+destination, for example one callback in the ViewModel and one callback in
+the Composable, or two `configure { }` blocks in the same Composable.
+`requestClose()` throws this error when a `NavigationHandle` has more than
+one active `onCloseRequested` callback.
+
+Register the `onCloseRequested` callback in one place: the destination's
+ViewModel, or the destination's top-level Composable when the destination
+has no ViewModel. See
 [Navigation Handles → Overriding the close-requested callback](core-concepts/navigation-handles.md#overriding-the-close-requested-callback).
 
 ### `Cannot execute NavigationOperation on TestNavigationHandle that is closed`
 
-The handle you're using in a test was closed (or completed) and then you
-tried to drive more navigation through it. Either the test is exercising
-a flow that goes past the close, or the assertion is at the wrong point.
+A test executed a navigation operation on a `TestNavigationHandle` after the
+`TestNavigationHandle` was closed. A completed `TestNavigationHandle` throws
+the same error with "that is completed".
 
-If you intentionally want to continue using the handle after a close,
-call `handle.clearOperationHistory()` between scenarios.
+To use the `TestNavigationHandle` again after a close or a completion, call
+`handle.clearOperationHistory()` first.
 
 ### `SyntheticDestination for [Key] has already finished with [Outcome]`
 
-An outcome method (`open`, `close`, `closeSilently`, `complete`,
-`completeFrom`) was called on a synthetic's scope after the synthetic
-had already concluded. The dispatcher catches the first outcome the
-block emits and converts it to a navigation operation; subsequent calls
-have nothing to do.
+The code called an outcome method (`open`, `close`, `closeSilently`,
+`complete`, `completeFrom`) on a synthetic destination's scope after the
+synthetic destination had an outcome. Enro converts the first outcome of
+the synthetic block into a navigation operation. A synthetic block that
+returns without an outcome closes silently. Each later outcome call throws
+this error.
 
-The usual cause is launching a coroutine inside a synthetic block:
+The usual cause is a coroutine launched inside a synthetic block:
 
 <!-- snippet: troubleshooting/async-synthetic -->
 ```kotlin
@@ -162,49 +167,47 @@ The usual cause is launching a coroutine inside a synthetic block:
 val badSynthetic = syntheticDestination<BadSynthetic> {
     context.lifecycleScope.launch {
         someAsyncWork()
-        complete()      // ← block has long since returned; throws "already finished"
+        complete()      // throws "already finished": the synthetic block returned before this call
     }
 }
 ```
 
-Synthetics are intentionally synchronous decision points — they don't
-have their own lifecycle, view-model store, or persisted state. The fix
-is one of:
+A synthetic block runs synchronously. A synthetic destination has no
+lifecycle, no ViewModel store and no saved state. Use one of these fixes:
 
-- **Do the async work before opening the synthetic** and pass the
-  result into the synthetic's key as a parameter.
-- **Forward to a real destination** that owns the work as part of its
-  own lifecycle: `syntheticDestination<...> { completeFrom(LoadingScreen) }`.
-- **Restructure as a regular destination with a loading state** if the
-  synthetic was really trying to be a "do some work then close" UI.
+- **Do the async work before opening the synthetic destination.** Pass the
+  result of the async work in the synthetic destination's key.
+- **Forward to a destination that does the async work:**
+  `syntheticDestination<...> { completeFrom(LoadingScreen) }`.
+- **Replace the synthetic destination with a regular destination** that
+  shows a loading state, does the async work, and then closes.
 
-See [Synthetic Destinations](advanced/synthetic-destinations.md) for the
-full design rationale.
+See [Synthetic Destinations](advanced/synthetic-destinations.md).
 
 ## Result errors
 
 ### `Received result for id ${id}, but no active steps had that id`
 
-Specific to managed flows. The flow received a step result, but the
-flow scope no longer contains a step matching that id — usually because
-the flow's body changed shape between the time the step was opened and
-the time the result came back (an upstream value caused a branch to no
-longer include this step, for example).
+A navigation flow logs this message when the flow receives a result for a
+step and the flow no longer contains a step with that id. The usual cause is
+a flow block that produced different steps when the flow block ran again:
+for example, an earlier result changed a branch, and the branch no longer
+opens the step.
 
-Make sure each `open(key)` inside the flow is reached deterministically
-from the upstream results. Don't write conditions that produce a
-**different ordering** of `open` calls on re-evaluation; conditions are
-fine, but the same upstream results should always lead to the same flow
-shape.
+The same earlier results must always produce the same `open` calls in the
+same order. A condition inside the flow block is allowed when the condition
+depends only on earlier results.
 
 ## Serialization errors
 
 ### `Object of type X could not be added to NavigationKey.Metadata`
 
-You're storing a value in `instance.metadata` whose serializer isn't
-registered. Built-in Kotlin types are fine; custom types either need to
-be `@Serializable` or have a serializer registered on the
-`NavigationComponent`:
+The code stored a value in `instance.metadata` and the `EnroController` has
+no serializer for the value's type. Enro makes this check only when the
+`EnroController` is installed in debug mode, and skips the check for a
+`NavigationKey.TransientMetadataKey`. Primitive types, `String`, and lists,
+sets and maps of those types need no registration. Register a serializer
+for any other type on the `NavigationComponent`:
 
 <!-- snippet: troubleshooting/serializers-module -->
 ```kotlin
@@ -212,7 +215,9 @@ be `@Serializable` or have a serializer registered on the
 object MyComponent : NavigationComponentConfiguration(
     module = createNavigationModule {
         serializersModule(SerializersModule {
-            contextual(MyCustomType.serializer())
+            polymorphic(Any::class) {
+                subclass(MyCustomType.serializer())
+            }
         })
     }
 )
@@ -220,19 +225,21 @@ object MyComponent : NavigationComponentConfiguration(
 
 ### Backstack restoration fails after process death
 
-Usually means one of your `NavigationKey`s has a non-serializable
-property. Mark the key as `@Serializable` and make sure every property
-on it is also serializable (either built-in, `@Serializable` itself, or
-registered in your `SerializersModule`). Run a simple "kill from
-Recents" test in development to flush these out early.
+The usual cause is a `NavigationKey` with a property that is not
+serializable. Annotate the `NavigationKey` with `@Serializable`. Each
+property of the `NavigationKey` must be a built-in serializable type, a
+`@Serializable` type, or a type registered in the `SerializersModule` of the
+`NavigationComponent`.
 
 ## Testing errors
 
-### `No NavigationHandle found ...` in a test
+### `Could not get a NavigationHandle for ViewModel of type [ViewModel]`
 
-You're constructing a destination or ViewModel without setting up a
-test controller. Wrap the test in `runEnroTest { }`, or add an
-`EnroTestRule` to the test class.
+A test constructed a ViewModel that declares `by navigationHandle<MyKey>()`,
+and the test registered no `NavigationHandle` for the ViewModel class.
+
+Run the test inside `runEnroTest { }`, or add an `EnroTestRule` to the test
+class.
 
 <!-- snippet: troubleshooting/test-controller -->
 ```kotlin
@@ -243,43 +250,49 @@ fun example() = runEnroTest {
 }
 ```
 
-For ViewModels with `by navigationHandle<MyKey>()`, also call
-`putNavigationHandleForViewModel<MyVm, MyKey>(key)` so the ViewModel can
-resolve its handle.
+Before the test constructs the ViewModel, call
+`putNavigationHandleForViewModel<MyVm, MyKey>(key)`.
+`putNavigationHandleForViewModel` returns the `TestNavigationHandle` that
+`by navigationHandle<MyKey>()` resolves to.
 
 See [Testing](advanced/testing.md).
 
 ### `Multiple onCloseRequested callbacks ...` in a test
 
-Same root cause as in app code, but easier to hit accidentally if a
-fixture installs the callback and the test's `before` block does too.
-Make sure each scenario only sets up the callback once.
+The cause is the same as in app code: two `onCloseRequested` callbacks are
+registered for one `NavigationHandle`. In a test, a common cause is a
+fixture and a `before` block that each register an `onCloseRequested`
+callback. Register the `onCloseRequested` callback once per test.
 
 ## Migration errors (Enro 2 → 3)
 
-If you're getting compile errors after upgrading from Enro 2, see the
-[migration guide](migrating-from-v2.md). The most common ones:
+The [migration guide](migrating-from-v2.md) covers compile errors after an
+upgrade from Enro 2. The most common compile errors:
 
-- **`Unresolved reference: SupportsPush` / `SupportsPresent`** — the v2
-  markers are gone. Use bare `NavigationKey` or
+- **`Unresolved reference: SupportsPush` / `SupportsPresent`** — Enro 3 has
+  no `SupportsPush` or `SupportsPresent`. Use `NavigationKey` or
   `NavigationKey.WithResult<R>`.
-- **`Unresolved reference: closeWithResult`** — renamed to `complete(value)`.
-- **`Unresolved reference: push` / `present`** — both replaced by `open`.
-  Dialog/overlay behaviour moves into destination metadata.
-- **`Unresolved reference: NavigationApplication`** — gone. Install the
-  controller directly from `Application.onCreate`.
-- **`@Parcelize` flagged but not migrated** — keys are now `@Serializable`
+- **`Unresolved reference: closeWithResult`** — call `complete(value)`.
+- **`Unresolved reference: push` / `present`** — call `open`. Destination
+  metadata declares dialog and overlay behaviour.
+- **`Unresolved reference: NavigationApplication`** — Enro 3 has no
+  `NavigationApplication`. Call `installNavigationController` from
+  `Application.onCreate`.
+- **`@Parcelize` on a key** — annotate the key with `@Serializable`
   (kotlinx.serialization).
-- **`enroViewModels` no longer resolves** — use `viewModel { createEnroViewModel { ... } }`.
+- **`Unresolved reference: enroViewModels`** — use
+  `viewModel { createEnroViewModel { ... } }`.
 
 ## Reporting an issue
 
-If your problem isn't covered here, the most helpful issue report
-includes:
+Open an issue at
+[github.com/isaac-udy/Enro/issues](https://github.com/isaac-udy/Enro/issues).
+Include:
 
 - The full stack trace.
-- A minimal code snippet showing the call site.
-- The Enro version you're on (e.g. `3.0.0`).
-- The platform (Android API level, iOS version, JDK version, browser).
+- A minimal code sample that shows the call site.
+- The Enro version (for example `3.0.0`).
+- The platform and version (Android API level, iOS version, JDK version,
+  or browser).
 
 [modular-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/modular/ModularNavigation.kt

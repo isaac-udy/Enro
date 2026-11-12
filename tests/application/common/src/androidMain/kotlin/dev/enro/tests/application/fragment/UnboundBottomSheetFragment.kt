@@ -23,7 +23,7 @@ object UnboundBottomSheet : Parcelable, NavigationKey.SupportsPresent
 
 @NavigationDestination(UnboundBottomSheet::class)
 val unboundBottomSheet = syntheticDestination<UnboundBottomSheet> {
-    // TODO STOP HACK HERE, NEED TO HAVE PLATFORM EXTENSION TO GET ACTIVITY
+    // TODO: replace the cast with a platform extension that returns the Activity.
     val activity = context.root().parent as FragmentActivity
     UnboundBottomSheetFragment()
         .show(activity.supportFragmentManager, UnboundBottomSheetFragment.tag)

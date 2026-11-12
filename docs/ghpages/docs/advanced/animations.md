@@ -6,30 +6,26 @@ nav_order: 3
 
 # Animations
 
-Enro animates navigation transitions through `NavigationDisplay`, using a
-`NavigationAnimations` data class to describe the enter/exit transitions
-between scenes. Inside a destination, per-element animation primitives
-(`Modifier.animateNavigationEnterExit`, `NavigationAnimatedVisibility`) let
-you animate parts of a screen on their own timing, alongside the
-destination-level transition.
+`NavigationDisplay` animates the transition between scenes. A
+`NavigationAnimations` value declares the enter and exit transitions.
+Inside a destination, `Modifier.animateNavigationEnterExit` and
+`NavigationAnimatedVisibility` animate one element with separate timing
+from the destination transition.
 
 ## Backgrounds and transitions
 
-> A destination that participates in animations should have an **opaque
-> background**. Compose destinations are transparent by default — whatever
-> is composed behind them shows through.
+> Give each animated destination an **opaque background**. A Compose
+> destination is transparent unless the destination draws a background.
 
-During a transition, two destinations are composed at once (the outgoing
-one fading or sliding out, the incoming one fading or sliding in), and
-any shared elements move over the top. If either destination is
-transparent, the two overlap visibly and the result looks unpolished —
-text on one screen reading "through" content on the other.
+During a transition, `NavigationDisplay` composes the outgoing destination
+and the incoming destination at the same time. When either destination is
+transparent, the content of one destination is visible through the other
+destination.
 
-The fix is to wrap each non-overlay destination in a `Surface` (or any
-opaque container) coloured with your theme's background. Two ways to do
-it:
+Wrap each destination that is not an overlay in a `Surface`, or another
+opaque container, with the theme's background colour.
 
-**Per destination** — apply the background at the destination's root:
+**Per destination** — add the `Surface` at the root of the destination:
 
 <!-- snippet: animations/background-per-destination -->
 ```kotlin
@@ -45,9 +41,9 @@ fun MyScreenDestination() {
 }
 ```
 
-**Globally** — add a `decorator` on your `NavigationComponent` so every
-destination is wrapped automatically. This is what the recipes app does
-(see [`RecipesComponent`][recipes-component]):
+**For every destination** — add a `decorator` to the `NavigationComponent`
+module. The recipes app uses a decorator in
+[`RecipesComponent`][recipes-component]:
 
 <!-- snippet: animations/background-decorator -->
 ```kotlin
@@ -74,13 +70,14 @@ object MyComponent : NavigationComponentConfiguration(
 )
 ```
 
-Skip dialogs and direct overlays — they're intentionally drawn over the
-top of another destination and need to stay transparent.
+The decorator leaves dialogs and direct overlays transparent, because a
+dialog or direct overlay is drawn over another destination.
 
 ## NavigationAnimations
 
-A `NavigationAnimations` holds the transition specs for a `NavigationDisplay`.
-The two you set most often are forward navigation and pop:
+`NavigationAnimations` contains the transition specs for a
+`NavigationDisplay`. `transitionSpec` applies to forward navigation and
+`popTransitionSpec` applies to a pop:
 
 <!-- snippet: animations/navigation-animations -->
 ```kotlin
@@ -103,25 +100,26 @@ NavigationDisplay(
 )
 ```
 
-The transition specs run in an `AnimatedContentTransitionScope`, so you have
-access to everything Compose's `AnimatedContent` API offers.
+Each transition spec has an `AnimatedContentTransitionScope` receiver, the
+same receiver as the `transitionSpec` of Compose's `AnimatedContent`.
 
-`NavigationAnimations.Default` is the default, and is what you'll get if
-you don't pass an `animations` argument. The [animated navigation
-recipe][animations-recipe] has a toggle that switches between several
-common styles (horizontal slide, vertical slide, scale + fade, none).
+The `animations` parameter of `NavigationDisplay` defaults to
+`NavigationAnimations.Default`. The [animated navigation
+recipe][animations-recipe] switches between horizontal slide, vertical
+slide, scale with fade, and no animation.
 
 ## Per-element animations inside a destination
 
-The destination-level transition animates the whole destination as a single
-unit. To animate parts of a destination on their own timing — for example,
-to fade a dialog scrim while sliding the card on a different curve — use
-the two helpers in `dev.enro.ui.animation`.
+The `NavigationDisplay` transition animates a whole destination. The two
+functions in `dev.enro.ui.animation` animate one element of a destination
+with separate timing. For example, a dialog scrim can fade while the dialog
+card slides.
 
 ### `Modifier.animateNavigationEnterExit`
 
-The simplest hook. Attach it to any element that should have its own enter
-and exit transitions, tied to the destination's enter/exit.
+`Modifier.animateNavigationEnterExit` adds an enter transition and an exit
+transition to one element. The enter transition runs when the destination
+enters and the exit transition runs when the destination exits.
 
 <!-- snippet: animations/enter-exit-modifier -->
 ```kotlin
@@ -136,14 +134,14 @@ Box(
 )
 ```
 
-The element fades in when the destination enters and out when the
-destination leaves, on whatever curve you specify.
+Outside a `NavigationDisplay`, such as in a snapshot test,
+`Modifier.animateNavigationEnterExit` does nothing.
 
 ### `NavigationAnimatedVisibility`
 
-When you want a child block to actually appear or disappear in step with
-the destination's enter/exit — with its own delay, its own curve, or both —
-use `NavigationAnimatedVisibility`:
+`NavigationAnimatedVisibility` wraps content in an `AnimatedVisibility`
+that is visible while the destination is visible. The `enter` and `exit`
+arguments set the delay and the curve of the content:
 
 <!-- snippet: animations/animated-visibility -->
 ```kotlin
@@ -155,29 +153,34 @@ NavigationAnimatedVisibility(
 }
 ```
 
-This is the right tool when you want a staggered reveal of inner content
-that respects the destination's overall lifecycle.
+Outside a `NavigationDisplay`, `NavigationAnimatedVisibility` shows the
+content without an animation.
 
-## When to use which
+## Choosing an animation API
 
-- **Whole-screen transition** → `NavigationDisplay(animations = ...)`.
-- **One element on its own timing, no delay tricks** → `Modifier.animateNavigationEnterExit`.
-- **Delayed or staggered reveal of inner content** → `NavigationAnimatedVisibility`.
+- **Transition for the whole destination** → `NavigationDisplay(animations = ...)`.
+- **Enter and exit transition for one element** → `Modifier.animateNavigationEnterExit`.
+- **Content that appears after a delay** → `NavigationAnimatedVisibility`.
 
-A worked example combining all three (animated container transition for the
-screen, then per-element animations for the dialog scrim, card, and
-buttons) lives in the [staggered animations recipe][staggered-recipe].
+The [staggered animations recipe][staggered-recipe] uses all three APIs: a
+`NavigationDisplay` transition for the screen, and per-element animations
+for the dialog scrim, the card and the buttons.
 
 ## Predictive back
 
-`NavigationDisplay` handles the predictive back gesture without any setup.
-While the user drags, the display runs
-`NavigationAnimations.predictivePopTransitionSpec`, driven by the gesture
-progress. That spec calls `popTransitionSpec` unless you set it, so a custom
-pop transition also applies to the gesture.
+`NavigationDisplay` handles the predictive back gesture. During the
+gesture, `NavigationDisplay` runs
+`NavigationAnimations.predictivePopTransitionSpec` and sets the transition
+progress from the gesture progress.
 
-`predictivePopTransitionSpec` receives the edge the swipe started from (a
-`NavigationEvent.SwipeEdge` value), so the transition can differ for left and
+The `predictivePopTransitionSpec` constructor parameter defaults to a call
+to `popTransitionSpec`. `NavigationAnimations.Default` declares a separate
+`predictivePopTransitionSpec`, so
+`NavigationAnimations.Default.copy(popTransitionSpec = ...)` does not change
+the gesture transition.
+
+`predictivePopTransitionSpec` receives the edge where the swipe started, as
+a `NavigationEvent.SwipeEdge` value. The transition can differ for left and
 right swipes:
 
 <!-- snippet: animations/predictive-back -->
@@ -195,32 +198,30 @@ NavigationDisplay(
 )
 ```
 
-A scene can override the spec for itself with the
-`NavigationDisplay.PredictivePopTransitionKey` scene metadata key.
-`NavigationDisplay.TransitionKey` and `NavigationDisplay.PopTransitionKey` do
-the same for the forward and pop transitions.
+A scene overrides the predictive back spec with the
+`NavigationDisplay.PredictivePopTransitionKey` scene metadata key. A scene
+overrides the forward spec with `NavigationDisplay.TransitionKey` and the
+pop spec with `NavigationDisplay.PopTransitionKey`.
 
 ## Shared element animations
 
-Compose's shared-element transitions animate the bounds and contents of a
-matched pair of elements as the user navigates between destinations — the
-list-item thumbnail "grows" into the detail screen's hero image, for
-example. Enro wires the necessary scopes for you: `NavigationDisplay`
-wraps its rendered destinations in a `SharedTransitionLayout` and exposes
-the two CompositionLocals every shared element needs.
+A Compose shared element transition animates the bounds and content of two
+matching elements when the user navigates between destinations. For
+example, a list thumbnail animates into the image on the detail screen.
+`NavigationDisplay` wraps the destinations in a `SharedTransitionLayout`,
+unless the `sharedTransitionScope` argument is set, and provides two
+CompositionLocals in `dev.enro.ui`:
 
-The two CompositionLocals live in `dev.enro.ui`:
-
-| Local | What it is | What it's for |
+| CompositionLocal | Type | Use |
 |---|---|---|
-| `LocalNavigationSharedTransitionScope` | A `SharedTransitionScope` | Hosts `Modifier.sharedElement`, `Modifier.sharedBounds`, `rememberSharedContentState`, etc. Read it once per destination. |
-| `LocalNavigationAnimatedVisibilityScope` | The `AnimatedVisibilityScope` for the destination's enter/exit | Passed to `sharedElement` so it knows when this side of the transition is appearing or disappearing. |
+| `LocalNavigationSharedTransitionScope` | `SharedTransitionScope` | The receiver for `Modifier.sharedElement`, `Modifier.sharedBounds` and `rememberSharedContentState`. |
+| `LocalNavigationAnimatedVisibilityScope` | The `AnimatedVisibilityScope` of the destination's enter and exit transition | The `animatedVisibilityScope` argument of `sharedElement`. |
 
-The pattern is always the same:
+To share an element between two destinations:
 
-1. Pick a stable key for each element you want to share.
-2. On the **source** destination, tag the element with that key.
-3. On the **target** destination, tag the matching element with the same key.
+1. Choose a stable key for the element.
+2. In the **source** destination, add `sharedElement` with the key to the element.
+3. In the **target** destination, add `sharedElement` with the same key to the matching element.
 
 <!-- snippet: animations/shared-elements -->
 ```kotlin
@@ -268,17 +269,17 @@ fun ItemDetailDestination() {
 }
 ```
 
-When `ItemDetail` opens, Compose finds the element on `ItemList` tagged
-`"thumb-${item.id}"` and animates the bounds and contents into the matched
-element on the detail screen. When the user navigates back, the same
-animation plays in reverse.
+When `ItemDetail` opens, Compose animates the bounds and content of the
+`ItemList` element with the key `"thumb-${item.id}"` into the `ItemDetail`
+element with the same key. When the user navigates back, Compose runs the
+animation in reverse.
 
-### Picking keys
+### Shared element keys
 
-Keys must match between the source and the target. They can be anything
-serializable to a stable string — the item's id is the usual choice.
-Mixing in a content type avoids accidental collisions when several
-sharable elements per item participate (a thumbnail and a title, say):
+The key in the source destination must equal the key in the target
+destination. Build the key from a stable value such as the item's id. When
+one item has several shared elements, such as a thumbnail and a title,
+include the element type in the key:
 
 <!-- snippet: animations/shared-element-keys -->
 ```kotlin
@@ -286,18 +287,17 @@ private fun thumbKey(id: Int) = "thumb-$id"
 private fun titleKey(id: Int) = "title-$id"
 ```
 
-Stable keys also means stable across recompositions — don't compute them
-from a `remember`-ed value that could change.
+A key must have the same value on every recomposition. Do not build a key
+from a remembered value that can change.
 
-### Inside the `navigationDestination { }` provider form
+### Shared elements in `navigationDestination { }`
 
-If you're using the provider-val style (`val foo =
-navigationDestination<Key> { ... }`), the content lambda's receiver
-`NavigationDestinationScope<T>` already implements both
-`SharedTransitionScope` and `AnimatedVisibilityScope`. You can call
-`sharedElement`, `sharedBounds`, and `rememberSharedContentState` directly
-on the receiver and pass `this` (or `this@navigationDestination`) as the
-`animatedVisibilityScope`. The key is `navigation.key`:
+The content lambda of `navigationDestination<Key> { ... }` has a
+`NavigationDestinationScope<T>` receiver, which implements
+`SharedTransitionScope` and `AnimatedVisibilityScope`. Call `sharedElement`,
+`sharedBounds` and `rememberSharedContentState` on the receiver, and pass
+`this@navigationDestination` as the `animatedVisibilityScope`. The
+`NavigationKey` is `navigation.key`:
 
 <!-- snippet: animations/shared-elements-provider -->
 ```kotlin
@@ -312,46 +312,41 @@ val itemDetailDestination = navigationDestination<ItemDetail> {
 }
 ```
 
-Useful when the destination is short and you want to avoid the two
-`Local*` reads at the top.
+The provider form does not read the two CompositionLocals in the
+destination.
 
-### Beyond `sharedElement`
+### Other `SharedTransitionScope` APIs
 
-Anything Compose's `SharedTransitionScope` supports works inside an Enro
-destination — `Modifier.sharedBounds` (for elements whose contents differ
-but whose bounds should animate), the `SharedContentState` overload that
-takes a `BoundsTransform`, manual `OverlayClip` configuration, etc. You
-won't need any Enro-specific plumbing past reading the two CompositionLocals.
+The other `SharedTransitionScope` APIs take the same two scopes:
+`Modifier.sharedBounds` for elements with different content, a
+`BoundsTransform` argument, and `OverlayClip` configuration.
 
-### When shared elements don't fire
+### Shared elements that do not animate
 
-A few common gotchas, in order of likelihood:
+- **The keys differ.** Check that the source key and the target key are
+  equal. A key built from `id.hashCode()` does not equal a key built from
+  `id`.
+- **The two destinations were not composed together.** A shared element
+  transition requires the source destination and the target destination in
+  the same transition. Opening the target on top of the source meets the
+  requirement.
+- **One destination is rendered outside `NavigationDisplay`.**
+  `NavigationDisplay` provides the `SharedTransitionLayout`. Content
+  rendered outside the `NavigationDisplay` is not inside the
+  `SharedTransitionLayout`.
 
-- **Key mismatch.** Double-check the key strings produce the same value on
-  both sides — a stray space or a type mismatch (`"$id"` vs
-  `"${id.toString()}"` is fine; `id.hashCode()` vs `id` is not).
-- **Both destinations didn't render together.** Shared transitions need
-  the source destination to still be on the backstack while the target
-  is composing. If you replace the source instead of pushing on top of it,
-  there's nothing to animate from.
-- **One side is rendered outside `NavigationDisplay`.** Only destinations
-  rendered by `NavigationDisplay` get the surrounding
-  `SharedTransitionLayout`. Embedded subscreens or popups that bypass it
-  won't participate.
-
-A full runnable example lives in the [shared-elements
-recipe][sharedelements-recipe], with a list-to-detail flow over a few
-sample items.
+The [shared elements recipe][sharedelements-recipe] is a runnable list and
+detail example.
 
 ## See also
 
-- [Animated navigation recipe][animations-recipe] — switching between
+- [Animated navigation recipe][animations-recipe] — switches between
   several transition styles.
 - [Staggered animations recipe][staggered-recipe] —
-  `Modifier.animateNavigationEnterExit` + `NavigationAnimatedVisibility`
-  combined inside both an overlay and a regular pushed destination.
-- [Shared elements recipe][sharedelements-recipe] — list-to-detail with
-  shared icon and title.
+  `Modifier.animateNavigationEnterExit` and `NavigationAnimatedVisibility`
+  in an overlay and in a full-screen destination.
+- [Shared elements recipe][sharedelements-recipe] — list and detail screens
+  with a shared icon and title.
 - [Navigation Destinations → Custom enter/exit on overlays](../core-concepts/navigation-destinations.md#custom-enterexit-on-overlays).
 
 [animations-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/animations/AnimatedNavigation.kt

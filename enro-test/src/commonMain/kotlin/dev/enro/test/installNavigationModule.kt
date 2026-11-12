@@ -7,21 +7,16 @@ import dev.enro.controller.createNavigationModule
 import dev.enro.path.NavigationPathBinding
 
 /**
- * Installs [module] onto the test controller managed by [runEnroTest].
- *
- * Replaces the verbose `EnroTest.getCurrentNavigationController().addModule(module)`
- * pattern that nearly every path-binding or interceptor test repeats. Must be
- * called from inside a `runEnroTest { }` block; throws if no controller is
- * installed.
+ * Adds [module] to the controller installed by [runEnroTest]. Throws when no controller is
+ * installed: call installNavigationModule inside a `runEnroTest { }` block.
  */
 public fun installNavigationModule(module: NavigationModule) {
     EnroTest.getCurrentNavigationController().addModule(module)
 }
 
 /**
- * Convenience for the common case of installing a small set of
- * [NavigationPathBinding]s for a path-routing test, without manually wrapping
- * them in a `createNavigationModule { path(...) }` block.
+ * Adds [bindings] to the controller installed by [runEnroTest], in a new
+ * `NavigationModule`. Throws when no controller is installed.
  */
 public fun installPathBindings(vararg bindings: NavigationPathBinding<*>) {
     installNavigationModule(

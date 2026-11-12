@@ -20,28 +20,20 @@ import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.LocalNavigationHandle
 
 /**
- * Returns a [NavigationDestinationDecorator] that provides navigation context to destinations.
+ * Returns a decorator that creates the [NavigationContext] and the navigation handle for each
+ * destination, registers the [NavigationContext] as a child of the container's context, and
+ * provides the [NavigationContext] through [LocalNavigationContext].
  *
- * This decorator establishes the navigation context for each destination, including:
- * - Navigation handle binding
- * - Container hierarchy
- * - Access to lifecycle and ViewModelStore owners from parent decorators
- *
- * **Note:** This decorator requires the following decorators to be applied before it:
- * - [navigationLifecycleDecorator] or [rememberLifecycleDecorator] for lifecycle management
- * - [viewModelStoreDecorator] or [rememberViewModelStoreDecorator] for ViewModel support
+ * Apply [rememberLifecycleDecorator] and [rememberViewModelStoreDecorator] before this
+ * decorator. The decorator throws when [LocalNavigationContext] is not a container's context,
+ * or when [LocalViewModelStoreOwner] provides no owner that implements
+ * [HasDefaultViewModelProviderFactory].
  */
 @Composable
 public fun rememberNavigationContextDecorator(): NavigationDestinationDecorator<NavigationKey> = remember {
     navigationContextDecorator()
 }
 
-/**
- * Creates a [NavigationDestinationDecorator] that provides navigation context.
- *
- * This decorator creates and binds the [NavigationContext] for each destination,
- * providing access to navigation functionality through composition locals.
- */
 internal fun navigationContextDecorator(): NavigationDestinationDecorator<NavigationKey> {
     return navigationDestinationDecorator { destination ->
         val parentContext = LocalNavigationContext.current
@@ -59,7 +51,6 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
         }
 
         val activeContainerId = rememberSaveable { mutableStateOf<String?>(null) }
-        // Create the navigation context for this destination
         val context = remember(parentContext, destination) {
             DestinationContext(
                 lifecycleOwner = lifecycleOwner,
@@ -70,7 +61,6 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
                 parent = parentContext,
             )
         }
-        // Get or create the NavigationHandleHolder for this destination
         val navigationHandle = remember(context) {
             val holder = context.getOrCreateNavigationHandleHolder {
                 DestinationNavigationHandle(
@@ -96,7 +86,6 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
         val isActiveInRoot = context.isActiveInRoot
         val isFirstOpen = rememberSaveable { mutableStateOf(true) }
 
-        // Provide navigation-specific composition locals
         CompositionLocalProvider(
             LocalNavigationContext provides context,
             LocalNavigationHandle provides navigationHandle,
@@ -111,8 +100,9 @@ internal fun navigationContextDecorator(): NavigationDestinationDecorator<Naviga
             if (isOpened) {
                 destination.Content()
             }
-            // Effects run in composition order, so the content's own containers are registered
-            // before the handle is attached and runs any operations it held.
+            // This effect must stay after destination.Content(): effects run in composition
+            // order, so the content's containers are registered before attachContext runs the
+            // operations queued on the navigation handle.
             DisposableEffect(context) {
                 navigationHandle.attachContext(context)
                 onDispose {}

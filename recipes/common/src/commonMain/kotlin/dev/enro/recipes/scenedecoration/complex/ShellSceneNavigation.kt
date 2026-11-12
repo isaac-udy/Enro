@@ -1,26 +1,27 @@
 /**
  * Enro Recipe: Shell Scene (complex)
  *
- * A metadata-driven, multi-pane app shell that adapts to window size. Sits
- * next to the simpler `scenedecoration/simple` recipe (single sidebar /
- * bottom-bar chrome) and demonstrates how to compose Enro's scene-strategy,
- * scene-decorator, and overlay primitives into a coherent app-shell pattern.
+ * Shows a multi-pane app shell that adapts to window size, built from two
+ * `NavigationSceneStrategy` classes, a `SceneDecoratorStrategy` and
+ * destination metadata. The `scenedecoration/simple` recipe shows a
+ * `SceneDecoratorStrategy` alone.
  *
- * See `README.md` in this package for the full architecture, metadata
- * vocabulary, slot-resolution algorithm, and worked examples.
+ * `README.md` in this package documents the metadata, the slot resolution
+ * and worked examples.
  *
- * The recipe assembles three things:
+ * The recipe passes three classes to `NavigationDisplay`:
  *
- *   1. [ShellOverlaySceneStrategy] — handles `directOverlay()` destinations
- *      with breakpoint-aware drawer / sheet presentation.
- *   2. [ShellPaneSceneStrategy] — resolves the visible backstack into a
- *      `{ left?, main, right? }` triple based on `leftPane()` / `rightPane()` /
- *      `fullScreen()` metadata and the current breakpoint.
- *   3. [ShellSceneDecorator] — wraps the result in the app shell chrome
- *      (desktop top bar + left rail, or mobile top bar + bottom search/nav).
+ *   1. [ShellOverlaySceneStrategy] renders a `directOverlay()` destination
+ *      as a drawer or a bottom sheet, by breakpoint.
+ *   2. [ShellPaneSceneStrategy] assigns the top backstack entries to the
+ *      slots `{ left?, main, right? }` from the `leftPane()`, `rightPane()`
+ *      and `fullScreen()` metadata and the breakpoint.
+ *   3. [ShellSceneDecorator] wraps the scene in the shell chrome: a top bar
+ *      and left rail, or on Mobile a top bar and a bottom search and
+ *      navigation row.
  *
- * Section roots: [ShellHome] (Home) and [ProductList] (Shop). The cart icon
- * in the top bar opens [CartOverlay].
+ * The section roots are [ShellHome] (Home) and [ProductList] (Shop). The cart
+ * icon in the top bar opens `CartOverlay`.
  */
 package dev.enro.recipes.scenedecoration.complex
 
@@ -57,6 +58,9 @@ fun ShellSceneRecipeScreen() {
     ) { modifier ->
         val container = rememberNavigationContainer(
             backstack = backstackOf(ShellHome.asInstance()),
+            // The interceptor replaces the open of a ProductDetail with an
+            // AggregateOperation that also closes each ProductDetail on top
+            // of the backstack, so the backstack ends with one ProductDetail.
             interceptor = navigationInterceptor {
                 onOpened<ProductDetail> {
                     val existingProductDetails = backstack.takeLastWhile { it.key is ProductDetail }

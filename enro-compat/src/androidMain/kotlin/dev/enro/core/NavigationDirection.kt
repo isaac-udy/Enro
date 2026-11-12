@@ -5,15 +5,11 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 /**
- * NavigationDirection was used to control how a destination is displayed when navigated to.
+ * The Enro 2 control for how a destination is displayed.
  *
- * @deprecated Navigation directions are no longer the recommended way to control how destinations
- * are displayed. Instead, destinations should define their own display behavior using metadata.
- *
- * For destinations that should be presented as overlays (equivalent to the old [Present] direction),
- * use the `directOverlay` metadata on the destination's definition.
- *
- * Example of the new approach:
+ * @deprecated In Enro 3, the metadata of a destination declares how the destination is
+ * displayed. The equivalent of the [Present] direction is `directOverlay` in the destination's
+ * metadata:
  * ```
  * @NavigationDestination(MyOverlayKey::class)
  * val myOverlayDestination = navigationDestination(
@@ -22,9 +18,6 @@ import kotlinx.serialization.Serializable
  *     // Destination content
  * }
  * ```
- *
- * This approach gives destinations control over their own display behavior rather than
- * requiring the caller to specify it at navigation time.
  */
 @Deprecated(
     message = "NavigationDirection is deprecated. Destinations should define their own display behavior using metadata. Use directOverlay metadata for overlay/present behavior.",
@@ -34,11 +27,6 @@ import kotlinx.serialization.Serializable
 @Parcelize
 public sealed class NavigationDirection: Parcelable {
 
-    /**
-     * Push direction for standard navigation transitions.
-     *
-     * @deprecated Use default navigation without specifying a direction. This is the default behavior.
-     */
     @Deprecated(
         message = "Push direction is no longer needed. This is the default navigation behavior.",
         level = DeprecationLevel.WARNING
@@ -47,9 +35,7 @@ public sealed class NavigationDirection: Parcelable {
     public data object Push : NavigationDirection()
 
     /**
-     * Present direction for overlay/modal presentations.
-     *
-     * @deprecated Use [dev.enro.ui.scenes.directOverlay] metadata on the destination's NavigationKey instead.
+     * @deprecated Use [dev.enro.ui.scenes.directOverlay] in the destination's metadata.
      */
     @Deprecated(
         message = "Present direction is deprecated. Use directOverlay metadata on the destination instead.",

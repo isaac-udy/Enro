@@ -10,12 +10,9 @@ public val LocalNavigationSharedTransitionScope: ProvidableCompositionLocal<Shar
     compositionLocalOf { error("SharedTransitionScope not provided")}
 
 /**
- * Nullable mirror of [LocalNavigationSharedTransitionScope] for
- * callers that want to gracefully degrade when no scope is available
- * (e.g. design-system snapshot tests rendering a destination
- * standalone, outside any `NavigationDisplay`). Provided alongside
- * the strict local everywhere the strict local is provided — reading
- * this returns `null` when nothing's been set, rather than throwing.
+ * The scope of [LocalNavigationSharedTransitionScope], or `null` when no scope is
+ * provided: for example, a destination rendered outside a `NavigationDisplay` in a snapshot
+ * test. `NavigationDisplay` provides both locals together.
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 public val LocalNavigationSharedTransitionScopeOrNull: ProvidableCompositionLocal<SharedTransitionScope?> =

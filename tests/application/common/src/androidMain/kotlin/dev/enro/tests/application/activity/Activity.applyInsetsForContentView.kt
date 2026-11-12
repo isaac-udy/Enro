@@ -9,10 +9,6 @@ import androidx.core.view.updateLayoutParams
 fun Activity.applyInsetsForContentView() {
     ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, windowInsets ->
         val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-        // Apply the insets as a margin to the view. This solution sets
-        // only the bottom, left, and right dimensions, but you can apply whichever
-        // insets are appropriate to your layout. You can also update the view padding
-        // if that's more appropriate.
         v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             topMargin = insets.top
             leftMargin = insets.left
@@ -20,8 +16,7 @@ fun Activity.applyInsetsForContentView() {
             rightMargin = insets.right
         }
 
-        // Return CONSUMED if you don't want the window insets to keep passing
-        // down to descendant views.
+        // CONSUMED stops the dispatch of the window insets to descendant views.
         WindowInsetsCompat.CONSUMED
     }
 }

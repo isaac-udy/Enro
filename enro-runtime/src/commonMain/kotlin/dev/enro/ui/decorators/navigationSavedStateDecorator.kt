@@ -15,17 +15,12 @@ import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import dev.enro.NavigationKey
 
 /**
- * Returns a [NavigationDestinationDecorator] that provides saved state functionality to navigation destinations.
- * This decorator wraps each destination with proper state management to ensure that calls to [rememberSaveable]
- * within the destination content work properly and that state can be saved.
+ * Returns a decorator that provides each destination with a [SavedStateRegistryOwner] through
+ * [LocalSavedStateRegistryOwner] and a [SaveableStateRegistry] through
+ * [LocalSaveableStateRegistry]. [rememberSaveable] in a destination stores state in
+ * [navigationSavedStateHolder].
  *
- * It also provides the destination content with a [SavedStateRegistryOwner] which can be accessed
- * via [LocalSavedStateRegistryOwner].
- *
- * This decorator is **required** for proper state preservation across configuration changes
- * and process death.
- *
- * @param navigationSavedStateHolder The [NavigationSavedStateHolder] that manages the saved state for destinations
+ * The decorator's `onPop` removes the destination's state from [navigationSavedStateHolder].
  */
 @Composable
 public fun rememberSavedStateDecorator(
@@ -36,11 +31,6 @@ public fun rememberSavedStateDecorator(
     )
 }
 
-/**
- * Creates a [NavigationDestinationDecorator] that provides saved state functionality.
- *
- * @param navigationSavedStateHolder The [NavigationSavedStateHolder] that manages the saved state for destinations
- */
 internal fun savedStateDecorator(
     navigationSavedStateHolder: NavigationSavedStateHolder,
 ): NavigationDestinationDecorator<NavigationKey> {
@@ -66,10 +56,6 @@ internal fun savedStateDecorator(
     )
 }
 
-/**
- * Internal implementation of [SavedStateRegistryOwner] for navigation destinations.
- * Manages the lifecycle and saved state registry for a single destination.
- */
 internal class DestinationSavedStateRegistry(
     savedState: SavedState?,
 ) : SavedStateRegistryOwner {
@@ -82,14 +68,10 @@ internal class DestinationSavedStateRegistry(
         savedStateRegistryController.savedStateRegistry
 
     /**
-     * Tracks whether `enableSavedStateHandles()` has already been called for
-     * this registry. The first [DestinationViewModelStoreOwner] constructed
-     * around the registry flips this to `true` so a second owner — possible
-     * when Compose freshly inserts movable content at a new slot, causing
-     * `remember(savedStateRegistryOwner) { … }` inside the decorator chain to
-     * re-evaluate — can skip the call. `enableSavedStateHandles()` adds a
-     * non-idempotent `SavedStateHandleAttacher` observer; calling it twice
-     * would double-register.
+     * `true` once `enableSavedStateHandles()` has run for this registry.
+     * `enableSavedStateHandles()` registers an observer on every call, and Compose can create a
+     * second `DestinationViewModelStoreOwner` for the same registry when movable content is
+     * inserted at a new slot, so the second owner must skip the call.
      */
     var savedStateHandlesEnabled: Boolean = false
 
@@ -98,10 +80,6 @@ internal class DestinationSavedStateRegistry(
     }
 }
 
-/**
- * Internal implementation of [SaveableStateRegistry] wrapper for navigation destinations.
- * Manages the saveable state registry for a single destination.
- */
 internal class DestinationSaveableStateRegistry(
     private var restoredValues: Map<String, List<Any?>>?,
 ) {
@@ -110,9 +88,8 @@ internal class DestinationSaveableStateRegistry(
         SaveableStateRegistry(
             restoredValues = restoredValues
         ) {
-            // TODO we currently save all things, because we need to do this for savedState and @Serializable,
-            //  but it would be really good if we could tell if something was @Serializable, and possibly
-            //  delegate the "can save" to a parent
+            // TODO Every value is accepted, because SavedState and @Serializable values must be
+            //  saved. Detect @Serializable values, or delegate canBeSaved to a parent registry.
             true
         }
     }

@@ -11,15 +11,17 @@ internal enum class HistoryTransition {
 }
 
 /**
- * How [current] follows [previous], the state recorded in the browser's current entry.
+ * Classifies the change from [previous], the state recorded in the browser's current entry, to
+ * [current].
  *
- * Forward is more on top of what was there: a longer backstack in some container, or a different
- * one of a destination's existing containers made active. Removing or swapping entries is a
- * rewrite, since the state it overwrites is no longer reachable in the app and must not survive
- * as a back target. So is a container appearing for the first time: that is a destination still
- * composing, not the user going anywhere, so the entry it belongs to fills in rather than gaining
- * a successor. A container's first backstack can therefore be several entries deep — a seeded
- * deep link — without becoming history of its own.
+ * [HistoryTransition.Push]: a container's backstack gained entries on top of the same entries,
+ * or a destination made a different one of the destination's populated containers active.
+ *
+ * [HistoryTransition.Replace]: every other change. Removed or swapped entries are not available
+ * in the app any more, so the browser's back button must not return to the previous state. A
+ * container that [previous] did not record belongs to a destination that was still composing,
+ * so the new container's backstack is added to the current browser entry, however many entries
+ * the backstack has.
  */
 internal fun classifyTransition(
     previous: ContainerNode,
@@ -32,8 +34,9 @@ internal fun classifyTransition(
 }
 
 /**
- * True when [current] adds to [previous]; false when it differs only by containers [previous]
- * had not seen; null when [previous] is not a prefix of it.
+ * True when [current] adds to [previous]. False when [current] equals [previous] or differs
+ * only by containers that [previous] did not record. Null when [current] removes or swaps
+ * anything that [previous] recorded.
  */
 private fun extends(
     previous: ContainerNode,
@@ -63,9 +66,9 @@ private fun extends(
 }
 
 /**
- * The id of the instance that going from [current] to [target] closes, when that is all the move
- * does: the top entry of one container removed, which is what a browser back after a push asks
- * for. Null for any other change.
+ * The id of the closed instance, when the only difference between [current] and [target] is
+ * that [target] lacks the top entry of one container. A browser back after a push produces that
+ * difference. Null for any other difference.
  */
 internal fun closedInstanceId(
     current: ContainerNode,

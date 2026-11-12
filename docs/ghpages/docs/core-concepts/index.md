@@ -6,19 +6,19 @@ has_children: true
 
 # Core Concepts
 
-The four building blocks of Enro. Read the [basic concepts
-tour](../getting-started/basic-concepts.md) first if you haven't — these
-pages assume the vocabulary.
+These pages describe the five core types of Enro. The pages use the terms
+defined in [Basic concepts](../getting-started/basic-concepts.md).
 
-- [Navigation Keys](navigation-keys.md) — the contract for a screen: its
-  inputs and (optionally) its typed result.
-- [Navigation Destinations](navigation-destinations.md) — the
-  implementation: a Composable function or provider, bound to a key, with
-  optional metadata (dialog, overlay, scene strategy).
-- [Navigation Containers](navigation-containers.md) — where a backstack
-  lives, including nesting, empty behaviour, filters, and interceptors.
-- [Navigation Handles](navigation-handles.md) — the control surface
-  inside a screen for `open`, `close`, `complete`, `requestClose`, and
-  the result API.
-- [Navigation Contexts](navigation-contexts.md) — the tree of containers
-  and destinations on screen, and how to search it.
+- [Navigation Keys](navigation-keys.md): a `NavigationKey` declares the
+  inputs of a screen and, optionally, the type of the screen's result.
+- [Navigation Destinations](navigation-destinations.md): a destination is
+  a Composable function or a provider that is bound to a key. A provider
+  can declare metadata, such as `dialog()` or `directOverlay()`.
+- [Navigation Containers](navigation-containers.md): a container stores a
+  backstack. The page covers nested containers, empty behaviour, filters
+  and interceptors.
+- [Navigation Handles](navigation-handles.md): a screen calls `open`,
+  `close`, `complete` and `requestClose` on the screen's
+  `NavigationHandle`.
+- [Navigation Contexts](navigation-contexts.md): the tree of containers
+  and destinations on screen, and the functions that search the tree.

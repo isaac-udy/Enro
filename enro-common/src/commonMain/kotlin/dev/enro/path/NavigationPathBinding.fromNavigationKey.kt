@@ -6,11 +6,9 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.typeOf
 
 /**
- * Wraps a user-implemented [NavigationKey.PathBinding] into a runtime
- * [NavigationPathBinding] that can be registered on a [dev.enro.controller.NavigationModule].
- *
- * Used by code generated for `@NavigationPath.FromBinding(MyBinding::class)`, but also
- * usable directly from hand-written modules.
+ * Creates a [NavigationPathBinding] from a [NavigationKey.PathBinding], to register on a
+ * [dev.enro.controller.NavigationModule]. The code generated for
+ * `@NavigationPath.FromBinding(MyBinding::class)` calls fromBinding.
  */
 public fun <T : NavigationKey> NavigationPathBinding.Companion.fromBinding(
     keyType: KClass<T>,

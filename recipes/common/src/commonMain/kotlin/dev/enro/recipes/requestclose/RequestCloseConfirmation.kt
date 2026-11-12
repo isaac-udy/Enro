@@ -1,12 +1,12 @@
 /**
  * Enro Recipe: Request-Close Confirmation
  *
- * Demonstrates overriding a NavigationHandle's onCloseRequested callback to
- * prompt the user for confirmation when there are unsaved changes. The
- * "close vs requestClose" distinction matters here — pressing the back
- * button or tapping the back arrow calls requestClose, which routes through
- * the onCloseRequested callback we set up below. Programmatic dismissals
- * from inside that callback use close() directly, to avoid recursion.
+ * Shows an `onCloseRequested` callback on a NavigationHandle that opens a
+ * confirmation dialog when the screen has unsaved changes.
+ *
+ * System back and predictive back call `requestClose()`, which runs the
+ * `onCloseRequested` callback in place of the close. `close()` does not run
+ * the callback, so the callback calls `close()` to close the screen.
  */
 package dev.enro.recipes.requestclose
 
@@ -48,12 +48,8 @@ import dev.enro.ui.rememberNavigationContainer
 import dev.enro.ui.scenes.dialog
 import kotlinx.serialization.Serializable
 
-// -- Root recipe key --
-
 @Serializable
 object RequestCloseConfirmationRecipe : NavigationKey
-
-// -- Internal navigation keys --
 
 @Serializable
 data object EditDocumentHome : NavigationKey
@@ -63,8 +59,6 @@ data class EditDocument(val initial: String) : NavigationKey
 
 @Serializable
 data object ConfirmDiscardChangesDialog : NavigationKey.WithResult<Boolean>
-
-// -- Recipe root --
 
 @Composable
 @NavigationDestination(RequestCloseConfirmationRecipe::class)
@@ -83,8 +77,6 @@ fun RequestCloseConfirmationRecipeScreen() {
         )
     }
 }
-
-// -- Home screen --
 
 @Composable
 @NavigationDestination(EditDocumentHome::class)
@@ -105,32 +97,29 @@ fun EditDocumentHomeDestination() {
     }
 }
 
-// -- The edit screen — overrides onCloseRequested --
-
 @Composable
 @NavigationDestination(EditDocument::class)
 fun EditDocumentDestination() {
     val navigation = navigationHandle<EditDocument>()
 
-    // Local draft state. Survives configuration change via rememberSaveable.
     var draft by rememberSaveable { mutableStateOf(navigation.key.initial) }
     val isDirty = draft != navigation.key.initial
 
-    // The confirmation dialog returns Boolean: true = discard, false = keep editing.
+    // ConfirmDiscardChangesDialog completes with true to discard the changes
+    // and false to continue editing.
     val confirmDiscard = registerForNavigationResult<Boolean>(
         onCompleted = { discard ->
-            if (discard) navigation.close()   // user chose to discard — close directly.
-            // If false, the user chose to keep editing — do nothing, stay on screen.
+            // close() does not run onCloseRequested, so the dialog does not open again.
+            if (discard) navigation.close()
         },
     )
 
-    // Override onCloseRequested. The Android back button, the top-bar arrow,
-    // and any UI element that calls navigation.requestClose() will all route
-    // through this callback.
+    // System back and each call to navigation.requestClose() run this
+    // callback in place of the close.
     navigation.configure {
         onCloseRequested {
             if (!isDirty) {
-                close()                       // nothing to discard — close directly.
+                close()
             } else {
                 confirmDiscard.open(ConfirmDiscardChangesDialog)
             }
@@ -149,15 +138,12 @@ fun EditDocumentDestination() {
             label = { Text("Document content") },
         )
         Text(text = if (isDirty) "Unsaved changes." else "No changes.")
+        // complete() closes the screen without running onCloseRequested.
         Button(onClick = { navigation.complete() }) {
-            // "Save" — semantically signals the task was completed.
-            // We could surface a result type if a caller needed the new value.
             Text("Save and close")
         }
     }
 }
-
-// -- The confirmation dialog --
 
 @NavigationDestination(ConfirmDiscardChangesDialog::class)
 val confirmDiscardDialogDestination: NavigationDestinationProvider<ConfirmDiscardChangesDialog> =

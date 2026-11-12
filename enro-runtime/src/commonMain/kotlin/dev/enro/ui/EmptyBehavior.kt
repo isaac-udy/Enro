@@ -33,7 +33,8 @@ public data class EmptyBehavior internal constructor(
         return isBackHandlerEnabled()
     }
 
-    // returns true if the progress is "consumed" and should not be used in animations
+    // Returns true when the EmptyBehavior consumes the progress; the caller must then not
+    // animate with the progress.
     internal fun onPredictiveBackProgress(
         backstack: NavigationBackstack,
         progress: Float
@@ -61,9 +62,8 @@ public data class EmptyBehavior internal constructor(
     }
 
     public companion object {
-        // Allows the container to become empty, including predictive back animations,
-        // allows an OnNavigationTransitionScope to be invoked when the container would
-        // otherwise become empty
+        // The container can become empty, and a back event can close the last destination.
+        // onEmpty runs each time an operation would empty the container.
         public fun allowEmpty(
             onEmpty: () -> Unit = {},
         ): EmptyBehavior {
@@ -77,8 +77,9 @@ public data class EmptyBehavior internal constructor(
             )
         }
 
-        // Stops the container becoming empty, passing events through to the parent container,
-        // will still deliver "complete" events from the last destination
+        // The container keeps the last destination, and the container's back handler is disabled
+        // while the scene has no previous entries. A close or complete of the last destination
+        // still registers the result.
         public fun preventEmpty(): EmptyBehavior {
             return EmptyBehavior(
                 isBackHandlerEnabled = { false },

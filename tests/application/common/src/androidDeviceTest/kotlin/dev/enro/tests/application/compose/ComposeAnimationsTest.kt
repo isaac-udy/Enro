@@ -16,12 +16,10 @@ class ComposeAnimationsTest {
 
     @Test
     fun testPushWithSlideAnimation() {
-        // Start at the destination selection screen and navigate to ComposeAnimations
         val robot = SelectDestinationRobot(composeRule)
             .openComposeAnimations()
             .verifyComposeAnimationsVisible()
         
-        // Navigate to the PushWithSlide screen and verify
         robot.navigateToPushWithSlide()
             .verifyPushWithSlideVisible()
             .closeScreen()
@@ -30,12 +28,10 @@ class ComposeAnimationsTest {
     
     @Test
     fun testPushWithAnimatedSquare() {
-        // Start at the destination selection screen and navigate to ComposeAnimations
         val robot = SelectDestinationRobot(composeRule)
             .openComposeAnimations()
             .verifyComposeAnimationsVisible()
         
-        // Navigate to the PushWithAnimatedSquare screen and verify
         robot.navigateToPushWithAnimatedSquare()
             .verifyPushWithAnimatedSquareVisible()
             .closeScreen()
@@ -44,12 +40,10 @@ class ComposeAnimationsTest {
     
     @Test
     fun testDialog() {
-        // Start at the destination selection screen and navigate to ComposeAnimations
         val robot = SelectDestinationRobot(composeRule)
             .openComposeAnimations()
             .verifyComposeAnimationsVisible()
         
-        // Open the dialog and verify
         robot.openDialog()
             .verifyDialogVisible()
             .closeDialog()

@@ -1,8 +1,8 @@
 /**
  * Enro Recipe: Saved State
  *
- * Demonstrates where a destination can keep state, and what each place
- * survives. The screen has four counters:
+ * Shows four places where a destination can store state, and when each place
+ * keeps the state. The screen has four counters:
  *
  * | Stored in                         | Covered by another screen | Rotation | Process death |
  * |-----------------------------------|---------------------------|----------|---------------|
@@ -11,18 +11,17 @@
  * | a ViewModel property              | kept                      | kept     | lost          |
  * | the ViewModel's `SavedStateHandle`| kept                      | kept     | kept          |
  *
- * "Covered by another screen" matters because a destination leaves the
- * composition when another one is opened on top of it. Enro saves its
- * `rememberSaveable` state and keeps its ViewModel while it is on the
- * backstack, then restores both when it is shown again. Plain `remember`
- * state is gone.
+ * A destination leaves the composition when another destination opens on
+ * top. While the covered destination is on the backstack, Enro saves the
+ * `rememberSaveable` state of the destination and keeps the ViewModel. Enro
+ * restores both when the destination is shown again. `remember` state is
+ * lost.
  *
- * The container's backstack is saved the same way as `rememberSaveable`
- * state, so after process death the app reopens on the same screens.
+ * `rememberNavigationContainer` saves the backstack with `rememberSaveable`,
+ * so after process death the app shows the same screens.
  *
- * To see the process death column on Android, turn on "Don't keep
- * activities" in Developer Options, send the app to the background and
- * bring it back.
+ * To test process death on Android, turn on "Don't keep activities" in
+ * Developer Options, send the app to the background and open the app again.
  *
  * Nav3 equivalent: the Saveable back stack recipe.
  */
@@ -78,11 +77,11 @@ data object CoveringScreen : NavigationKey
 class CountersViewModel(
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    // Lives as long as the ViewModel: lost on process death.
+    // A ViewModel property is lost on process death.
     private val _inMemory = MutableStateFlow(0)
     val inMemory: StateFlow<Int> = _inMemory.asStateFlow()
 
-    // Written to saved state: restored after process death.
+    // A SavedStateHandle value is restored after process death.
     val saved: StateFlow<Int> = savedStateHandle.getStateFlow("saved", 0)
 
     fun increment() {
@@ -117,7 +116,7 @@ fun CountersDestination() {
     // region docs:saved-state/destination
     var remembered by remember { mutableIntStateOf(0) }
     var saveable by rememberSaveable { mutableIntStateOf(0) }
-    // createSavedStateHandle() gives the ViewModel a handle scoped to this destination.
+    // createSavedStateHandle() creates a SavedStateHandle scoped to this destination.
     val viewModel = viewModel<CountersViewModel> {
         createEnroViewModel { CountersViewModel(createSavedStateHandle()) }
     }

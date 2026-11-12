@@ -1,15 +1,17 @@
 /**
  * Enro Recipe: Multiple Back Stacks
  *
- * Demonstrates managing multiple independent backstacks, one per tab, with state
- * preserved across tab switches and configuration changes. Selecting the active
- * tab again returns that tab to its root.
+ * Shows one NavigationContainer per tab, each with a separate backstack. A
+ * container keeps the backstack and saved state while another tab is active
+ * and across configuration changes. Selecting the active tab again resets
+ * the backstack of that tab to the root.
  *
- * The Tab Navigation recipe (`dev.enro.recipes.tabs`) is the minimal version of
- * the same container setup; start there if you only need tabs.
+ * The Tab Navigation recipe (`dev.enro.recipes.tabs`) has the same container
+ * setup without the reset.
  *
- * Uses a small multiplatform copy of NavigationContainerGroup
- * (see `dev.enro.recipes.util.rememberNavigationContainerGroup`).
+ * The recipe tracks the active container with a multiplatform copy of
+ * NavigationContainerGroup (see
+ * `dev.enro.recipes.util.rememberNavigationContainerGroup`).
  */
 package dev.enro.recipes.multiplestacks
 
@@ -34,7 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
-import dev.enro.acceptNone
+import dev.enro.accept
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asBackstack
 import dev.enro.asInstance
@@ -78,24 +80,26 @@ fun MultipleBackStacksRecipeScreen() {
         title = "Multiple Back Stacks",
         navigation = navigation,
     ) { modifier ->
+        // The filter names the keys a tab container accepts, so a key opened
+        // from a tab is added to that tab's backstack.
         val feedContainer = rememberNavigationContainer(
             key = NavigationContainer.Key("feed"),
             backstack = backstackOf(FeedRoot.asInstance()),
-            filter = acceptNone(),
+            filter = accept { key<FeedPost>() },
             emptyBehavior = EmptyBehavior.preventEmpty(),
         )
 
         val messagesContainer = rememberNavigationContainer(
             key = NavigationContainer.Key("messages"),
             backstack = backstackOf(MessagesRoot.asInstance()),
-            filter = acceptNone(),
+            filter = accept { key<MessageThread>() },
             emptyBehavior = EmptyBehavior.preventEmpty(),
         )
 
         val settingsContainer = rememberNavigationContainer(
             key = NavigationContainer.Key("settings"),
             backstack = backstackOf(SettingsRoot.asInstance()),
-            filter = acceptNone(),
+            filter = accept { key<SettingsDetail>() },
             emptyBehavior = EmptyBehavior.preventEmpty(),
         )
 
@@ -125,7 +129,8 @@ fun MultipleBackStacksRecipeScreen() {
                         selected = container == group.activeContainer,
                         onClick = {
                             if (container == group.activeContainer) {
-                                // Selecting the active tab again returns it to its root.
+                                // Selecting the active tab again resets the tab's
+                                // backstack to the first entry.
                                 container.updateBackstack { it.take(1).asBackstack() }
                             } else {
                                 group.setActive(container)

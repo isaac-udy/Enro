@@ -1,23 +1,25 @@
 /**
  * Enro Recipe: Modular Navigation
  *
- * Demonstrates navigation between feature modules that do not depend on each
- * other, without a DI framework. The recipe is three Gradle modules:
+ * Shows navigation between two feature modules that do not depend on each
+ * other, without a DI framework. The recipe has three Gradle modules:
  *
- *  - `:recipes:modular:navigation` holds the NavigationKeys. It depends on
- *    `enro-common` only.
- *  - `:recipes:modular:feature-home` has the home screen. It opens the
- *    profile, settings and login screens by key.
- *  - `:recipes:modular:feature-profile` has those three screens.
+ *  - `:recipes:modular:navigation` declares the NavigationKeys and depends
+ *    on `enro-common` only.
+ *  - `:recipes:modular:feature-home` declares the home screen, which opens
+ *    the profile, settings and login screens by NavigationKey.
+ *  - `:recipes:modular:feature-profile` declares the profile, settings and
+ *    login screens.
  *
- * The two feature modules depend on the navigation module and not on each
- * other. Each applies the `enro-processor` KSP dependency, which generates a
- * binding for every `@NavigationDestination` in the module.
+ * Each feature module depends on the navigation module and not on the other
+ * feature module. Each feature module applies the `enro-processor` KSP
+ * dependency, which generates a binding for each `@NavigationDestination` in
+ * the module.
  *
- * This module (`:recipes:common`) is the app module. It depends on both
- * feature modules, and its `@NavigationComponent` (`RecipesComponent`) picks
- * up their generated bindings from the classpath. Nothing else registers the
- * feature destinations.
+ * `:recipes:common` is the app module and depends on both feature modules.
+ * The `@NavigationComponent` of the app module (`RecipesComponent`) loads the
+ * generated bindings from the classpath. No other code registers the feature
+ * destinations.
  *
  * Nav3 equivalents: the Hilt, Koin and Metro modular recipes.
  */
@@ -46,8 +48,8 @@ fun ModularNavigationRecipeScreen() {
         title = "Modular Navigation",
         navigation = navigation,
     ) { modifier ->
-        // HomeKey comes from the navigation module. Its destination is in
-        // feature-home, which this file never references.
+        // The navigation module declares HomeKey. feature-home declares the
+        // destination for HomeKey, and this file does not import feature-home.
         val container = rememberNavigationContainer(
             backstack = backstackOf(HomeKey.asInstance()),
         )

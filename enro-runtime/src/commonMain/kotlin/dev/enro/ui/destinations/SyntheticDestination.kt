@@ -34,15 +34,8 @@ internal class SyntheticDestination<K : NavigationKey>(
         }
 
         /**
-         * Runs the synthetic's block synchronously and converts the outcome
-         * into a [NavigationOperation] that takes the place of the original
-         * `Open(synthetic)` in the surrounding `processOperations` pass.
-         *
-         * Pure outcomes (open/close/complete/completeFrom) become the
-         * equivalent operation; the side-effect outcome becomes a
-         * [NavigationOperation.SideEffect] whose body constructs the
-         * [SyntheticSideEffectScope] and invokes the user block in
-         * `afterExecution`.
+         * Runs the synthetic's block and returns the [NavigationOperation] that replaces the
+         * original `Open(synthetic)`. A block that selects no outcome returns a silent close.
          */
         private fun resolveSyntheticOutcome(
             fromContext: NavigationContext,
@@ -121,25 +114,12 @@ public fun isSyntheticDestination(
 }
 
 /**
- * Runs the synthetic block bound to this [NavigationDestinationProvider]
- * with a fresh [SyntheticDestinationScope] and returns the [SyntheticOutcome]
- * the block decided on. Returns `null` if this provider isn't a synthetic
- * destination at all.
+ * Runs the synthetic block that the controller's bindings declare for [key] and returns the
+ * [SyntheticOutcome] that the block selected. Returns `null` when the controller has no binding
+ * for [key], or when the binding is not a synthetic destination.
  *
- * Primarily intended for unit-testing synthetic destinations without going
- * through the navigation container's interceptor pipeline. The
- * `testSyntheticDestination` helpers in enro-test wrap this with default
- * context fixtures and assertion helpers.
- */
-/**
- * Looks up the synthetic destination bound to [key] on the controller's
- * registered bindings and runs it via [NavigationDestinationProvider.peekSyntheticOutcome].
- * Returns `null` if no binding exists for [key], or the bound destination
- * isn't a synthetic.
- *
- * Used by enro-test's `testSyntheticDestination` helper to find a synthetic
- * registered on the installed controller without exposing the controller's
- * binding repository as public API.
+ * No navigation operation is executed. `testSyntheticDestination` in enro-test calls this
+ * function.
  */
 @AdvancedEnroApi
 public fun <K : NavigationKey> EnroController.peekSyntheticOutcome(
@@ -153,6 +133,13 @@ public fun <K : NavigationKey> EnroController.peekSyntheticOutcome(
     return provider.peekSyntheticOutcome(context, instance)
 }
 
+/**
+ * Runs the synthetic block of this [NavigationDestinationProvider] with a new
+ * [SyntheticDestinationScope] and returns the [SyntheticOutcome] that the block selected.
+ * Returns `null` when this provider is not a synthetic destination.
+ *
+ * No navigation operation is executed, and a [SyntheticOutcome.SideEffect] block is not run.
+ */
 @AdvancedEnroApi
 public fun <K : NavigationKey> NavigationDestinationProvider<K>.peekSyntheticOutcome(
     context: NavigationContext,

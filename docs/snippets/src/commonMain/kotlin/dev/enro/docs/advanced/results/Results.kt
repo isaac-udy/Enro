@@ -48,7 +48,7 @@ fun SelectDateScreen() {
 fun Caller() {
     // region docs:results/channel
     val getDate = registerForNavigationResult<LocalDate>(
-        onCompleted = { date -> /* use it */ },
+        onCompleted = { date -> /* use the date */ },
     )
 
     Button(onClick = { getDate.open(SelectDate()) }) { Text("Pick a date") }
@@ -62,10 +62,10 @@ fun HomeScreen() {
     val navigation = navigationHandle<Home>()
 
     val pickDate = registerForNavigationResult<LocalDate>(
-        onClosed = { /* dismissed without producing a value */ },
+        onClosed = { /* SelectDate closed without a result */ },
         onCompleted = { date ->
-            // do something with the date — note: this is a callback,
-            // not a suspension. You can update Compose state from here.
+            // onCompleted is a callback, not a suspending function.
+            // Compose state can be updated here.
         },
     )
 
@@ -100,7 +100,7 @@ class HomeViewModel : ViewModel() {
 
     val pickDate by registerForNavigationResult<LocalDate>(
         onCompleted = { date ->
-            // update your StateFlow / call a use case / etc.
+            // Update a StateFlow or call a use case here.
         },
     )
 

@@ -12,14 +12,14 @@ public actual object EnroLog {
     // Set by generated installNavigationController functions; the name must stay stable.
     public var forceAndroidLogs: Boolean = false
 
-    // Enabled/disabled by EnroTest
+    // True when no controller is installed with an Application, as in a JVM test. A JVM test has
+    // no logcat, so EnroLog prints to stdout.
     @Suppress("MemberVisibilityCanBePrivate")
     internal val usePrint
         get() = !forceAndroidLogs && EnroController.instance?.platformReference !is Application
 
     public actual fun debug(message: String) {
         if (usePrint) {
-            // In JVM tests, we don't have a logcat to write to, so we just print to stdout
             println("[Debug] $LOG_TAG: $message")
             return
         }
@@ -28,7 +28,6 @@ public actual object EnroLog {
 
     public actual fun warn(message: String) {
         if (usePrint) {
-            // In JVM tests, we don't have a logcat to write to, so we just print to stdout
             println("[Warn] $LOG_TAG: $message")
             return
         }
@@ -37,7 +36,6 @@ public actual object EnroLog {
 
     public actual fun error(message: String) {
         if (usePrint) {
-            // In JVM tests, we don't have a logcat to write to, so we just print to stdout
             println("[Error] $LOG_TAG: $message")
             return
         }
@@ -46,7 +44,6 @@ public actual object EnroLog {
 
     public actual fun error(message: String, throwable: Throwable) {
         if (usePrint) {
-            // In JVM tests, we don't have a logcat to write to, so we just print to stdout
             println("[Error] $LOG_TAG: $message\n${throwable.stackTraceToString()}")
             return
         }

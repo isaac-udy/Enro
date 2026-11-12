@@ -2,10 +2,10 @@ import SwiftUI
 import UIKit
 import RecipesApp
 
-// Wraps the Kotlin root view controller for SwiftUI. It is placed in a
-// UINavigationController so that UIViewController destinations that support
-// being pushed have something to be pushed onto. The navigation bar is hidden
-// while the Compose root is showing, because the recipes draw their own.
+// Wraps the Kotlin root view controller for SwiftUI. The root view controller
+// is placed in a UINavigationController, which Enro requires in order to push
+// a `SupportsUINavigationView` destination. The navigation bar is hidden while
+// the Compose root is showing, because each recipe draws a top bar.
 struct MainViewControllerView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
         let root = MainViewControllerKt.MainViewController()

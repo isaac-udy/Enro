@@ -33,8 +33,8 @@ import dev.enro.processor.extensions.toDisplayString
 
 object NavigationBindingGenerator {
 
-    // Any receiver other than NavigationDestinationContentScope is a Compose UI scope that only
-    // navigationDestination provides.
+    // A receiver other than NavigationDestinationContentScope is a Compose UI scope, and only
+    // navigationDestination provides a Compose UI scope.
     private val DestinationReference.destinationBuilderName: String
         get() {
             val receiver = (declaration as? KSFunctionDeclaration)?.extensionReceiver
@@ -361,7 +361,6 @@ object NavigationBindingGenerator {
         val optionalParams = pathPatternToOptionalParameterNames(pattern)
         val keyTypeName = destination.keyType.toClassName()
 
-        // Resolve each pattern param to its constructor param + serialization shape.
         val resolved = patternParams.mapNotNull { paramName ->
             val ksParam = constructor.parameters.firstOrNull { it.name?.asString() == paramName }
             if (ksParam == null) {
@@ -388,8 +387,8 @@ object NavigationBindingGenerator {
         }
         if (resolved.size != patternParams.size) return this
 
-        // Build deserialize body: K(p1 = ..., p2 = ...)
-        // Build serialize body: set(...), key.x?.let { ... }
+        // Generated deserialize body: K(p1 = ..., p2 = ...)
+        // Generated serialize body: set(...), key.x?.let { ... }
         val deserializeLines = mutableListOf<String>()
         val serializeLines = mutableListOf<String>()
         val codeArgs = mutableListOf<Any>()
@@ -570,15 +569,10 @@ private fun primitiveParseExpression(
 private fun KSDeclaration.isValueClass(): Boolean {
     if (this !is KSClassDeclaration) return false
     if (Modifier.VALUE in modifiers || Modifier.INLINE in modifiers) return true
-    // A declaration resolved from a compiled dependency module (jar/klib) does
-    // not reliably report the Kotlin `value`/`inline` modifier through KSP — so
-    // a value class defined in another module (e.g. a typed id in
-    // :feature:core:api referenced by a destination processed in
-    // :feature:core:client) would be missed. Fall back to matching the
-    // @JvmInline annotation by simple name: every multiplatform value class
-    // carries it, and on native targets annotation *type resolution* across
-    // modules can fail, so we deliberately avoid resolving the fully-qualified
-    // name and match the short name instead.
+    // KSP does not reliably report the `value`/`inline` modifier for a declaration from a
+    // compiled dependency module (jar/klib), so a value class from another module is detected
+    // by the @JvmInline annotation. The annotation is matched by short name, because
+    // resolving an annotation type from another module can fail on native targets.
     return annotations.any { it.shortName.asString() == "JvmInline" }
 }
 

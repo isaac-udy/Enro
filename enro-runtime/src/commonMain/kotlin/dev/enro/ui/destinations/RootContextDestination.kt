@@ -4,8 +4,6 @@ import dev.enro.EnroController
 import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 
-// this object contains helper functions to decide if a destination is
-// a destination that should open a root context or not
 internal object RootContextDestination {
     internal const val IsRootContextDestinationKey = "dev.enro.ui.NavigationDestination.RootContextDestination.IsRootContextDestinationKey"
 }

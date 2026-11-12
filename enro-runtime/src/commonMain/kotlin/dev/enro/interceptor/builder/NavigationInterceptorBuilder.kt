@@ -10,18 +10,18 @@ import dev.enro.interceptor.NoOpNavigationInterceptor
 import kotlin.reflect.KClass
 
 /**
- * A builder class that provides a DSL for creating NavigationInterceptors.
+ * Receiver of the [navigationInterceptor] block. A registered block decides the outcome of
+ * an operation by calling a function of the block's scope, such as `cancel()` or
+ * `replaceWith(…)`. A block that returns without calling one of those functions continues
+ * the operation unchanged.
  *
- * Example usage:
  * ```
  * val interceptor = navigationInterceptor {
- *     onClosed<MyNavigationKey> { key ->
- *         // Handle when MyNavigationKey is closed
- *         continueWith()
+ *     onClosed<MyNavigationKey> {
+ *         continueWithClose()
  *     }
- *     onOpened<MyNavigationKey> { key ->
- *         // Handle when MyNavigationKey is opened
- *         continueWith()
+ *     onOpened<MyNavigationKey> {
+ *         continueWithOpen()
  *     }
  * }
  * ```
@@ -38,7 +38,7 @@ public class NavigationInterceptorBuilder internal constructor() {
     }
 
     /**
-     * Register an interceptor that will be called when a navigation key of KeyType is opened.
+     * Registers [block] to run for each Open operation whose key is a [KeyType].
      */
     public fun <KeyType : NavigationKey> onOpened(
         keyType: KClass<KeyType>,
@@ -72,7 +72,7 @@ public class NavigationInterceptorBuilder internal constructor() {
     }
 
     /**
-     * Register an interceptor that will be called when a navigation key of KeyType is closed.
+     * Registers [block] to run for each Close operation whose key is a [KeyType].
      */
     public inline fun <reified KeyType : NavigationKey> onClosed(
         noinline block: OnNavigationKeyClosedScope<KeyType>.() -> Nothing,
@@ -114,8 +114,7 @@ public class NavigationInterceptorBuilder internal constructor() {
     }
 
     /**
-     * Register an interceptor that will be called when a navigation key of KeyType is completed
-     * (either opened or closed).
+     * Registers [block] to run for each Complete operation whose key is a [KeyType].
      */
     public inline fun <reified KeyType : NavigationKey> onCompleted(
         noinline block: OnNavigationKeyCompletedScope<KeyType>.() -> Unit,
@@ -164,9 +163,6 @@ public class NavigationInterceptorBuilder internal constructor() {
     }
 }
 
-/**
- * Creates a NavigationInterceptor using the provided DSL block.
- */
 public fun navigationInterceptor(
     block: NavigationInterceptorBuilder.() -> Unit,
 ): NavigationInterceptor {

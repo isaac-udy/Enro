@@ -12,16 +12,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Tests for the [EmptyBehavior] factory builders that consumers use via
- * `rememberNavigationContainer(emptyBehavior = ...)`. The underlying
- * `NavigationContainer.EmptyInterceptor` is already covered by
- * NavigationContainerTests; this file locks down the public wrappers
- * those tests don't exercise.
+ * Tests the [EmptyBehavior] factory functions. NavigationContainerTests tests
+ * `NavigationContainer.EmptyInterceptor`.
  *
- * `EmptyBehavior` is also installed on a container by adding its
- * `interceptor` property as an `EmptyInterceptor`, which is what
- * `rememberNavigationContainer` does for us under the hood -- the tests
- * here replicate that wiring directly.
+ * `rememberNavigationContainer` installs an [EmptyBehavior] by adding
+ * `EmptyBehavior.interceptor` to the container as an `EmptyInterceptor`. Each test adds the
+ * interceptor the same way.
  */
 class EmptyBehaviorTests {
 

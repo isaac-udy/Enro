@@ -127,7 +127,6 @@ public class RootWindow<out T: NavigationKey> internal constructor(
                         }
                         windowViewModelStoreOwner = viewModelStoreOwner
                         windowNavigationEventDispatcher = LocalNavigationEventDispatcherOwner.current!!.navigationEventDispatcher
-                        // Get or create the NavigationHandleHolder for this destination
                         val navigationHandle = remember(viewModelStoreOwner) {
                             val instance = instance
                             val holder = viewModelStoreOwner.getOrCreateNavigationHandleHolder {
@@ -215,7 +214,6 @@ public class RootWindow<out T: NavigationKey> internal constructor(
         val title: String = "Untitled",
         val icon: Painter? = null,
         val undecorated: Boolean = false,
-//        val decoration: WindowDecoration = WindowDecoration.SystemDefault,
         val transparent: Boolean = false,
         val resizable: Boolean = true,
         val enabled: Boolean = true,

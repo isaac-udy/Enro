@@ -1,15 +1,15 @@
 /**
  * Enro Recipe: Staggered Per-Element Animations
  *
- * Demonstrates Modifier.animateNavigationEnterExit and NavigationAnimatedVisibility
- * for animating individual elements within a destination, independently of (and
- * alongside) the destination-level transition.
+ * Shows how to animate one element of a destination with
+ * `Modifier.animateNavigationEnterExit` and `NavigationAnimatedVisibility`.
+ * The element animation runs when the destination enters or exits.
  *
  * Two examples:
- *  1. A custom dialog overlay where the scrim, card, and action buttons each
- *     animate on their own timing.
- *  2. A regular push destination where a banner inside the screen has its own
- *     enter/exit on top of the standard screen transition.
+ *  1. A `directOverlay()` destination whose scrim, card and buttons each
+ *     have separate enter and exit transitions.
+ *  2. A destination with the container's transition, plus a banner with a
+ *     separate enter and exit transition.
  */
 package dev.enro.recipes.animations
 
@@ -106,13 +106,9 @@ fun StaggeredHomeDestination() {
 }
 
 /**
- * Example 1: A directOverlay() destination whose scrim, card, and buttons
- * are animated independently using `animateNavigationEnterExit` and
- * `NavigationAnimatedVisibility`.
- *
- * The destination itself uses [directOverlay] so Enro doesn't apply a
- * default transition — every visible motion below is composed from the
- * inner pieces hooking into the destination's AnimatedVisibilityScope.
+ * Example 1. [directOverlay] without `enter` and `exit` arguments applies no
+ * transition to the destination, so the scrim, card and buttons supply every
+ * animation.
  */
 @NavigationDestination(StaggeredDialog::class)
 val staggeredDialogDestination: NavigationDestinationProvider<StaggeredDialog> = navigationDestination(
@@ -124,7 +120,8 @@ val staggeredDialogDestination: NavigationDestinationProvider<StaggeredDialog> =
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        // Scrim: long, gentle fade. Clicking dismisses.
+        // animateNavigationEnterExit runs `enter` when the destination enters
+        // and `exit` when the destination exits.
         Box(
             modifier = Modifier
                 .matchParentSize()
@@ -136,7 +133,6 @@ val staggeredDialogDestination: NavigationDestinationProvider<StaggeredDialog> =
                 .clickable(interactionSource = null, indication = null) { navigation.requestClose() },
         )
 
-        // Card: slide up + scale + fade, snappier than the scrim.
         Card(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
@@ -156,8 +152,9 @@ val staggeredDialogDestination: NavigationDestinationProvider<StaggeredDialog> =
                 Text(navigation.key.title, style = MaterialTheme.typography.titleLarge)
                 Text(navigation.key.message, style = MaterialTheme.typography.bodyMedium)
 
-                // Buttons: NavigationAnimatedVisibility for a delayed reveal that
-                // still stays tied to the destination's enter/exit.
+                // NavigationAnimatedVisibility shows the buttons while the
+                // destination is visible, so the delayed `enter` starts when
+                // the destination enters.
                 NavigationAnimatedVisibility(
                     enter = fadeIn(tween(durationMillis = 220, delayMillis = 140)),
                     exit = fadeOut(tween(durationMillis = 100)),
@@ -176,12 +173,9 @@ val staggeredDialogDestination: NavigationDestinationProvider<StaggeredDialog> =
 }
 
 /**
- * Example 2: A regular pushed destination (no overlay metadata, so it uses
- * the container's normal transition) that adds a per-element animation to
- * an in-screen banner.
- *
- * The screen slides in/out with the default container animation. The banner
- * inside it has its own slide-from-side + fade, layered on top.
+ * Example 2. The destination has no overlay metadata, so the destination uses
+ * the container's transition. The banner adds an enter and exit transition
+ * that runs at the same time as the container's transition.
  */
 @Composable
 @NavigationDestination(StaggeredScreen::class)
@@ -204,8 +198,6 @@ fun StaggeredScreenDestination() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .animateNavigationEnterExit(
-                        // Slides in from the bottom + fades, while the screen
-                        // itself is doing its standard push transition.
                         enter = slideInVertically(tween(360)) { slideHeight } +
                             fadeIn(tween(durationMillis = 300, delayMillis = 80)),
                         exit = slideOutVertically(tween(220)) { slideHeight } +

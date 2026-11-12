@@ -37,8 +37,8 @@ internal class SerializerRepository {
     var savedStateConfiguration: SavedStateConfiguration =
         SavedStateConfiguration {
             serializersModule = this@SerializerRepository.serializersModule
-            // savedstate's discriminator key is always "type"; ALL_OBJECTS would write it into
-            // every class and reject any serialized property named "type".
+            // The discriminator key of savedstate is always "type". ALL_OBJECTS writes "type" into
+            // every class and rejects a serialized property named "type".
             classDiscriminatorMode = ClassDiscriminatorMode.POLYMORPHIC
         }
         private set
@@ -47,20 +47,12 @@ internal class SerializerRepository {
     var jsonConfiguration: Json =
         Json {
             serializersModule = this@SerializerRepository.serializersModule
-            // Deliberately the default (POLYMORPHIC) discriminator mode.
-            // ALL_JSON_OBJECTS is unusable with kotlinx 1.11 for realistic
-            // NavigationKey shapes: under polymorphic dispatch, the STREAMING
-            // encoder leaks a value-class field's deferred discriminator into
-            // the next-opened object (corrupting Instance.metadata), and emits
-            // INVALID JSON for collection fields (a "type" key:value pair
-            // inside an array); the TREE encoder crashes outright
-            // (NumberFormatException) on collection fields. POLYMORPHIC mode
-            // writes discriminators exactly where polymorphic deserialization
-            // reads them (Instance.key, metadata values) and handles all of
-            // these shapes correctly. See HistoryStateSerializationTests,
-            // which also documents the ALL_JSON_OBJECTS failures so a kotlinx
-            // upgrade that fixes them is detected. Upstream:
+            // The default POLYMORPHIC discriminator mode is deliberate. With kotlinx.serialization
+            // 1.11, ALL_JSON_OBJECTS writes a misplaced discriminator after a value-class field
+            // and fails on a collection field of a polymorphic NavigationKey:
             // https://github.com/Kotlin/kotlinx.serialization/issues/3022
+            // HistoryStateSerializationTests asserts each ALL_JSON_OBJECTS failure, so a
+            // kotlinx.serialization upgrade that fixes the failures fails those tests.
             ignoreUnknownKeys = true
         }
         private set

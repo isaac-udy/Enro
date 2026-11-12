@@ -1,7 +1,9 @@
 /**
  * Enro Recipe: Destination Registration
  *
- * Demonstrates Enro's annotation-based and provider-based destination registration.
+ * Shows the two forms of `@NavigationDestination` registration: on a
+ * `@Composable` function, and on a `navigationDestination(...)` property,
+ * which can also set metadata.
  */
 package dev.enro.recipes.entryprovider
 
@@ -33,8 +35,6 @@ import dev.enro.ui.scenes.dialog
 import dev.enro.ui.scenes.directOverlay
 import kotlinx.serialization.Serializable
 
-// -- Root recipe key --
-
 @Serializable
 object DestinationRegistrationRecipe : NavigationKey
 
@@ -56,11 +56,11 @@ fun DestinationRegistrationRecipeScreen() {
     }
 }
 
-// Style 1: Annotation-based registration (composable function)
-
 @Serializable
 data object DashboardScreen : NavigationKey
 
+// @NavigationDestination on a @Composable function registers the function as
+// the destination for the key.
 @Composable
 @NavigationDestination(DashboardScreen::class)
 fun DashboardScreenDestination() {
@@ -85,11 +85,11 @@ fun DashboardScreenDestination() {
     }
 }
 
-// Style 2: Programmatic registration (val + navigationDestination)
-
 @Serializable
 data object ConfirmDialog : NavigationKey
 
+// @NavigationDestination on a NavigationDestinationProvider property registers
+// the provider. navigationDestination takes metadata and the content lambda.
 @NavigationDestination(ConfirmDialog::class)
 val confirmDialogDestination: NavigationDestinationProvider<ConfirmDialog> = navigationDestination(
     metadata = {
@@ -139,11 +139,11 @@ val infoSheetDestination: NavigationDestinationProvider<InfoSheet> = navigationD
     )
 }
 
-// Style 3: Conditional metadata based on the key
-
 @Serializable
 data class EntryItemDetail(val itemId: String, val showAsDialog: Boolean = false) : NavigationKey
 
+// The metadata block can read `key`, so one destination can set different
+// metadata for different keys.
 @NavigationDestination(EntryItemDetail::class)
 val itemDetailDestination: NavigationDestinationProvider<EntryItemDetail> = navigationDestination(
     metadata = {

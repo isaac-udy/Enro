@@ -77,8 +77,9 @@ internal object ActivityPlugin : NavigationPlugin() {
             outState.putNavigationKeyInstance(navigationHandle.instance)
         }
 
-        // A recreated Activity binds a new RootContext with a different id, so the destroyed
-        // Activity's context must be removed here rather than when its retained handle is destroyed.
+        // A recreated Activity binds a new RootContext with a different id. The RootContext of the
+        // destroyed Activity must be unregistered here: the RootNavigationHandle is retained across
+        // recreation and is destroyed later.
         override fun onActivityDestroyed(activity: Activity) {
             controller.rootContextRegistry.getAllContexts()
                 .filter { it.parent === activity }

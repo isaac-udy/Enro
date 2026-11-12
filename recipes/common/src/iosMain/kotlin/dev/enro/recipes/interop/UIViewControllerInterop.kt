@@ -4,7 +4,7 @@
  * Demonstrates a `UIViewController` as a destination, shown three ways.
  *
  * `uiViewControllerDestination` binds a key to a function that creates a
- * UIViewController. Its `metadata` block returns flags that say how the
+ * UIViewController. The `metadata` block returns flags that state how the
  * controller may be shown, in order of preference:
  *  - `SupportsCompose`: embedded in the Enro container, like a Composable
  *    destination
@@ -12,13 +12,13 @@
  *  - `SupportsUINavigationView`: pushed onto the `UINavigationController`
  *    that hosts the app's root view controller, when there is one
  *
- * Callers open all three the same way, with `navigation.open(key)`.
+ * A caller opens each of the three destinations with `navigation.open(key)`.
  *
  * The view controller can be plain UIKit, as [uiKitLabelDestination] is, or
- * an `EnroUIViewController` with Compose content, which can use
- * `navigationHandle()` to close itself.
+ * an `EnroUIViewController` with Compose content. The Compose content can
+ * call `navigationHandle()` and close the destination.
  */
-// Reading a UIView's bounds from Kotlin uses the C interop API.
+// Reading a UIView's bounds from Kotlin requires the C interop opt-in.
 @file:OptIn(ExperimentalForeignApi::class)
 
 package dev.enro.recipes.interop
@@ -87,8 +87,8 @@ fun UIViewControllerRecipeScreen() {
             backstack = backstackOf(UIViewControllerMenu.asInstance()),
         )
         Column(modifier = modifier) {
-            // The embedded UIKit controller has no button of its own to go
-            // back with, so the host offers one.
+            // The embedded UIKit controller has no back button, so the host
+            // screen shows a back button.
             if (container.backstack.size > 1) {
                 Button(
                     onClick = { container.updateBackstack { it.take(1).asBackstack() } },
@@ -161,7 +161,7 @@ val presentedViewControllerDestination = uiViewControllerDestination<PresentedVi
     },
 )
 
-// Pushed onto the UINavigationController that hosts the app, so it gets the
+// Pushed onto the UINavigationController that hosts the app, which shows the
 // system navigation bar and back button.
 @NavigationDestination(PushedViewController::class)
 val pushedViewControllerDestination = uiViewControllerDestination<PushedViewController>(

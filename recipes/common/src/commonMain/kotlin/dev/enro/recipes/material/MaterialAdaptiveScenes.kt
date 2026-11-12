@@ -22,18 +22,18 @@ import dev.enro.ui.SceneStrategyScope
 import dev.enro.ui.get
 
 /**
- * A scene strategy that shows a list destination and a detail destination
- * side by side in a Material 3 `ListDetailPaneScaffold`.
+ * Shows a list destination and a detail destination side by side in a
+ * Material 3 `ListDetailPaneScaffold`.
  *
- * Destinations opt in with the `listPane { }` and `detailPane()` metadata
- * from the List-Detail (Scene) recipe. The strategy returns a scene when the
- * window has room for two panes; otherwise it returns `null` and the next
- * strategy (single pane) shows the top destination full screen.
+ * A destination sets the `listPane { }` or `detailPane()` metadata from the
+ * List-Detail (Scene) recipe. `calculateScene` returns a scene when the
+ * window fits two panes. Otherwise `calculateScene` returns `null`, and the
+ * next strategy in the list shows the top destination.
  *
- * Material decides how many panes fit: `calculatePaneScaffoldDirective`
- * reads the window size class, so there is no width breakpoint in this code.
- * Enro's backstack decides what is in each pane, so the scaffold's own
- * navigator (`rememberListDetailPaneScaffoldNavigator`) is not used.
+ * `calculatePaneScaffoldDirective` reads the window size class and returns
+ * the number of panes that fit, so the strategy has no width breakpoint. The
+ * Enro backstack selects the destination of each pane, so the strategy does
+ * not use `rememberListDetailPaneScaffoldNavigator`.
  */
 class MaterialListDetailSceneStrategy : NavigationSceneStrategy {
 
@@ -59,7 +59,8 @@ class MaterialListDetailSceneStrategy : NavigationSceneStrategy {
                 override val entries: List<NavigationDestination<NavigationKey>> =
                     listOfNotNull(listEntry, detailEntry)
 
-                // Back from this scene removes the top entry.
+                // previousEntries is the backstack after Back: Back from this
+                // scene removes the top entry.
                 override val previousEntries: List<NavigationDestination<NavigationKey>> =
                     entries.dropLast(1)
 
@@ -69,8 +70,8 @@ class MaterialListDetailSceneStrategy : NavigationSceneStrategy {
                 override val content: @Composable (() -> Unit) = {
                     ListDetailPaneScaffold(
                         directive = directive,
-                        // Both panes are always shown: this scene only exists
-                        // when there is room for two.
+                        // Both panes are Expanded: calculateScene returns this
+                        // scene only when the window fits two panes.
                         value = ThreePaneScaffoldValue(
                             primary = PaneAdaptedValue.Expanded,
                             secondary = PaneAdaptedValue.Expanded,
@@ -95,23 +96,22 @@ class MaterialListDetailSceneStrategy : NavigationSceneStrategy {
     }
 }
 
-/** Metadata flag: the destination belongs in the supporting pane. */
 internal object IsSupportingPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
 
 /**
- * Marks a destination as supporting content for the destination beneath it
- * on the backstack. With [MaterialSupportingPaneSceneStrategy] it is shown
- * beside that destination when the window has room.
+ * Marks a destination as supporting content for the destination below on
+ * the backstack. [MaterialSupportingPaneSceneStrategy] shows the two
+ * destinations side by side when the window fits two panes.
  */
 fun NavigationDestination.MetadataBuilder<*>.supportingPane() {
     add(IsSupportingPaneKey, true)
 }
 
 /**
- * A scene strategy that shows the top destination in the supporting pane of
- * a Material 3 `SupportingPaneScaffold`, beside the destination beneath it,
+ * Shows the top destination in the supporting pane of a Material 3
+ * `SupportingPaneScaffold`, beside the destination below on the backstack,
  * when the top destination has `supportingPane()` metadata and the window
- * has room for two panes.
+ * fits two panes.
  */
 class MaterialSupportingPaneSceneStrategy : NavigationSceneStrategy {
 

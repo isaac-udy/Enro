@@ -6,17 +6,18 @@ nav_order: 13
 
 # Scenes
 
-A scene is the layout for the visible part of a backstack. A
-`NavigationDisplay` asks a `NavigationSceneStrategy` for a scene each time
-the backstack changes, and renders the scene it gets.
+A scene is the layout for the visible part of a backstack.
+`NavigationDisplay` calls a `NavigationSceneStrategy` with the container's
+destinations, and renders the scene that the strategy returns.
 
-Destinations opt in to a scene with metadata. The backstack and the keys do
-not change.
+A destination selects a scene with destination metadata. The scene does not
+change the backstack or the keys.
 
 ## The default strategies
 
-`NavigationDisplay` uses three strategies unless you pass your own. The
-first strategy that returns a scene is used.
+`NavigationDisplay` uses three strategies unless the `sceneStrategy`
+argument is set. `NavigationDisplay` renders the scene from the first
+strategy that returns a scene.
 
 | Strategy | Used when the top destination has | Renders |
 |---|---|---|
@@ -63,28 +64,29 @@ val confirmDeleteDialogDestination: NavigationDestinationProvider<ConfirmDeleteD
 ## Bottom sheets and other overlays
 
 Add `directOverlay()` to the destination's metadata and draw the overlay in
-the destination: a `ModalBottomSheet`, a popup, or your own composable. The
-destination below stays on screen.
+the destination: a `ModalBottomSheet`, a popup, or another composable. The
+destination below the overlay stays on screen.
 
-Pass `directOverlay(enter, exit)` to animate the overlay in and out. The
-exit transition also runs when the destination is closed from somewhere
-else.
+Pass `directOverlay(enter, exit)` to animate the overlay. The exit
+transition also runs when code outside the destination closes the
+destination.
 
 See the [Bottom Sheet recipe][bottomsheet-recipe].
 
 ## Write a scene strategy
 
-A strategy needs a way for destinations to opt in. Define a
-`NavigationDestination.MetadataKey` and a function that adds it:
+A strategy reads destination metadata to find the destinations that use
+the strategy. Define a `NavigationDestination.MetadataKey` and a function
+that adds the key:
 
 <!-- snippet: scenes/metadata -->
 ```kotlin
 internal object IsTwoPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
 
 /**
- * Marks a destination as eligible for two-pane rendering. The
- * [TwoPaneSceneStrategy] only renders two destinations side-by-side
- * when *both* of the top two backstack entries carry this metadata.
+ * Marks a destination for two-pane rendering. [TwoPaneSceneStrategy]
+ * renders two destinations side by side only when both of the top two
+ * backstack entries have this metadata.
  */
 fun NavigationDestination.MetadataBuilder<*>.twoPane() {
     add(IsTwoPaneKey, true)
@@ -94,10 +96,11 @@ internal fun NavigationDestination<*>.isTwoPane(): Boolean =
     metadata[IsTwoPaneKey]
 ```
 
-A destination opts in with `metadata = { twoPane() }`.
+A destination uses the strategy with `metadata = { twoPane() }`.
 
-The strategy receives the container's destinations and returns a
-`NavigationScene`, or `null` to let the next strategy decide:
+`calculateScene` receives the container's destinations and returns a
+`NavigationScene`. When `calculateScene` returns `null`, `NavigationDisplay`
+calls the next strategy:
 
 <!-- snippet: scenes/strategy -->
 ```kotlin
@@ -126,8 +129,8 @@ class TwoPaneSceneStrategy(
                     listOf(first, second)
 
                 override val previousEntries: List<NavigationDestination<NavigationKey>> =
-                    // Only one entry is popped at a time; UX-wise, going
-                    // back from a two-pane scene removes the top entry only.
+                    // previousEntries is the backstack after Back: Back from
+                    // the two-pane scene removes the top entry only.
                     entries.dropLast(1)
 
                 override val key: Any =
@@ -156,7 +159,7 @@ A `NavigationScene` has four members:
 | `key` | The scene's identity. `NavigationDisplay` animates between scenes with different keys. |
 | `entries` | The destinations the scene shows. |
 | `previousEntries` | The destinations left after going back from the scene. |
-| `content` | The layout. Call `Content()` on each destination to draw it. |
+| `content` | The layout. Call `Content()` on a destination to draw the destination. |
 
 Put the strategy before `SinglePaneSceneStrategy` in the chain:
 
@@ -177,23 +180,28 @@ NavigationDisplay(
 ### Back from inside a scene
 
 `calculateScene` has a `SceneStrategyScope` receiver. Call `onBack()` when
-the scene's own UI dismisses it, such as a close button or a swipe.
-`NavigationDisplay` handles that call the same way as a system back press.
+UI in the scene dismisses the scene, such as a close button or a swipe.
+`onBack()` requests a close of each destination that is not in the scene's
+`previousEntries`.
 
 ### Overlay scenes
 
 A scene that draws over other scenes implements `NavigationScene.Overlay`
-and sets `overlaidEntries` to the destinations below it. `NavigationDisplay`
-runs the strategies again for those destinations.
+and sets `overlaidEntries` to the destinations below the overlay.
+`NavigationDisplay` runs the strategies again for the `overlaidEntries`
+destinations. With an empty `overlaidEntries`, `NavigationDisplay` renders
+no scene below the overlay.
 
 Override `onRemove()` to run a dismissal animation. The overlay stays
 composed until `onRemove()` returns.
 
 ## Decorate a scene
 
-A `SceneDecoratorStrategy` wraps the scene the strategies chose. Use one for
-UI that surrounds every screen: a navigation bar, a rail, a drawer.
-Decorators are not applied to overlay scenes.
+A `SceneDecoratorStrategy` wraps the scene that the scene strategy
+returned. Use a `SceneDecoratorStrategy` for UI that surrounds every
+screen: a navigation bar, a rail, a drawer. `NavigationDisplay` does not
+apply decorators to overlay scenes. The first decorator in the list is the
+innermost wrapper.
 
 Pass decorators to `NavigationDisplay`:
 
@@ -215,16 +223,18 @@ NavigationDisplay(
 )
 ```
 
-The [Scene Decoration recipe][scene-decoration-recipe] has the decorator.
-It shows a sidebar on wide windows and a bottom bar on narrow windows.
+`AdaptiveNavigationSceneDecorator` is declared in the [Scene Decoration
+recipe][scene-decoration-recipe]. `AdaptiveNavigationSceneDecorator` shows
+a sidebar on wide windows and a bottom bar on narrow windows.
 
 ## Transitions for a scene
 
-A scene's `metadata` is the metadata of its last destination unless the
-scene overrides it. `NavigationDisplay` reads
-`NavigationDisplay.TransitionKey`, `PopTransitionKey` and
-`PredictivePopTransitionKey` from the scene's metadata before it uses the
-container's animations. See [Animations](animations.md).
+`NavigationScene.metadata` defaults to the metadata of the last destination
+in `entries`. A scene can override `metadata`. `NavigationDisplay` uses the
+`NavigationDisplay.TransitionKey`, `PopTransitionKey` or
+`PredictivePopTransitionKey` value in the scene's metadata, and uses the
+`NavigationAnimations` argument when the scene's metadata has no value. See
+[Animations](animations.md).
 
 ## Adaptive layouts
 

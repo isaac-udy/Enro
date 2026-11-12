@@ -46,12 +46,12 @@ public class NavigationPathBinding<T : NavigationKey> @PublishedApi internal con
 
     public companion object {
         /**
-         * Picks the most specific binding from [bindings] that [matches][NavigationPathBinding.matches]
-         * [path]. When multiple bindings match, more literal path segments wins, then more
-         * required query parameters.
+         * Returns the binding in [bindings] that [matches][NavigationPathBinding.matches]
+         * [path]. When more than one binding matches, the binding with the most literal path
+         * segments is returned, and then the binding with the most required query parameters.
          *
-         * Returns `null` when no binding matches; throws when the top-scoring set is
-         * itself ambiguous (multiple bindings tied at the most-specific score).
+         * Returns `null` when no binding matches. Throws when more than one matching binding
+         * has the highest specificity.
          */
         public fun resolveForPath(
             bindings: List<NavigationPathBinding<*>>,

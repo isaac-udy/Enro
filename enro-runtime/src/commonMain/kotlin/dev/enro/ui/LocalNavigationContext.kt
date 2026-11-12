@@ -18,10 +18,9 @@ public object LocalNavigationContext {
         }
 
     /**
-     * Null-safe sibling of [current] that returns `null` when no navigation
-     * context is available, instead of falling through to
-     * [findRootNavigationContext] (which throws on platforms / surfaces with
-     * no host activity — e.g. Paparazzi snapshot tests).
+     * Returns `null` when no navigation context is provided. [current] looks up the root
+     * navigation context instead, and that lookup throws when the composition has no host with
+     * a root context, for example in a Paparazzi snapshot test.
      */
     public val currentOrNull: NavigationContext?
         @Composable get() = LocalNavigationContext.current

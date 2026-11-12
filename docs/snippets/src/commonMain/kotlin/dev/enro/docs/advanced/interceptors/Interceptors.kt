@@ -44,7 +44,7 @@ object Session {
 val authInterceptor = navigationInterceptor {
     onOpened<Account> {
         if (!Session.isLoggedIn) {
-            // Open Login instead, and tell it where the user was going.
+            // replaceWith does not return, so continueWithOpen() runs only when logged in.
             replaceWith(Login(redirectTo = key))
         }
         continueWithOpen()

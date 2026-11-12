@@ -16,15 +16,10 @@ class CloseLandingPageAndPresentTest {
 
     @Test
     fun testNavigationFlow() {
-        // Start at the destination selection screen
         SelectDestinationRobot(composeRule)
-            // Navigate to our test destination
             .openCloseLandingPageAndPresent()
-            // Continue from landing page to initial screen
             .continueToInitialScreen()
-            // Open the bottom sheet
             .presentBottomSheet()
-            // Close the bottom sheet and return to initial screen
             .closeBottomSheet()
     }
 }

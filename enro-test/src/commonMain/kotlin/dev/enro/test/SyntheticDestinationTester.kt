@@ -13,17 +13,16 @@ import dev.enro.ui.destinations.SyntheticOutcome
 import dev.enro.ui.destinations.peekSyntheticOutcome
 
 /**
- * Executes the synthetic destination bound to [key] on the currently-installed
- * navigation controller and returns the [SyntheticOutcome] the block decided on.
+ * Runs the synthetic destination bound to [key] on the controller installed by
+ * [runEnroTest], and returns the [SyntheticOutcome].
  *
- * Use this when the synthetic is registered through a `NavigationModule` on the
- * controller — typical setup is `runEnroTest { installNavigationModule(myModule); testSyntheticDestination(MyKey) }`.
+ * A `NavigationModule` on the controller must register the synthetic destination:
+ * `runEnroTest { installNavigationModule(myModule); testSyntheticDestination(MyKey) }`.
+ * To test a synthetic destination without a `NavigationModule`, call the
+ * `testSyntheticDestination(key, provider, ...)` overload.
  *
- * For unit-testing a synthetic's logic without installing a component, pass the
- * provider directly: see the `testSyntheticDestination(key, provider, ...)` overload.
- *
- * Throws [IllegalStateException] if [key] isn't bound to a synthetic destination
- * on the current controller.
+ * Throws [IllegalStateException] when [key] is not bound to a synthetic destination on
+ * the controller.
  */
 public fun <K : NavigationKey> testSyntheticDestination(
     key: K,
@@ -39,14 +38,11 @@ public fun <K : NavigationKey> testSyntheticDestination(
 }
 
 /**
- * Executes the synthetic destination bound to [provider] for [key] and returns
- * the [SyntheticOutcome] the block decided on.
+ * Runs the synthetic destination [provider] for [key] and returns the [SyntheticOutcome].
+ * [provider] is the value of a `syntheticDestination<K> { ... }` declaration; no
+ * `NavigationModule` is required.
  *
- * Use this when you have a `val synthetic = syntheticDestination<K> { ... }` you
- * want to unit-test without installing a controller component — pass the provider
- * value directly.
- *
- * Throws [IllegalStateException] if [provider] isn't a synthetic destination.
+ * Throws [IllegalStateException] when [provider] is not a synthetic destination.
  */
 public fun <K : NavigationKey> testSyntheticDestination(
     key: K,
@@ -63,10 +59,7 @@ public fun <K : NavigationKey> testSyntheticDestination(
 }
 
 /**
- * Executes the side-effect block with default fixture context and container.
- * Equivalent to calling [SyntheticOutcome.SideEffect.runWith] with freshly-built
- * test fixtures — convenient when the side effect doesn't care about the
- * specific context/container it's given.
+ * Runs the side effect with a new root context and a new container from the test fixtures.
  */
 public fun SyntheticOutcome.SideEffect.runWith() {
     val context = NavigationContextFixtures.createRootContext()
@@ -75,8 +68,8 @@ public fun SyntheticOutcome.SideEffect.runWith() {
 }
 
 /**
- * Asserts the outcome is [SyntheticOutcome.Open] of [Expected], optionally
- * matching [keyPredicate]. Returns the opened key for further assertions.
+ * Asserts that the outcome is [SyntheticOutcome.Open] with a key of type [Expected] that
+ * matches [keyPredicate]. Returns the opened key.
  */
 public inline fun <reified Expected : NavigationKey> SyntheticOutcome.assertOpens(
     keyPredicate: (Expected) -> Boolean = { true },
@@ -92,8 +85,8 @@ public inline fun <reified Expected : NavigationKey> SyntheticOutcome.assertOpen
 }
 
 /**
- * Asserts the outcome is [SyntheticOutcome.CompleteFrom] of [Expected], optionally
- * matching [keyPredicate]. Returns the forwarded key for further assertions.
+ * Asserts that the outcome is [SyntheticOutcome.CompleteFrom] with a key of type [Expected]
+ * that matches [keyPredicate]. Returns the key.
  */
 public inline fun <reified Expected : NavigationKey> SyntheticOutcome.assertCompletesFrom(
     keyPredicate: (Expected) -> Boolean = { true },
@@ -109,7 +102,8 @@ public inline fun <reified Expected : NavigationKey> SyntheticOutcome.assertComp
 }
 
 /**
- * Asserts the outcome is a close, optionally matching the silent flag.
+ * Asserts that the outcome is [SyntheticOutcome.Close]. When [silent] is not null, also
+ * asserts that the `silent` value of the close equals [silent].
  */
 public fun SyntheticOutcome.assertCloses(silent: Boolean? = null) {
     val close = this as? SyntheticOutcome.Close
@@ -120,8 +114,9 @@ public fun SyntheticOutcome.assertCloses(silent: Boolean? = null) {
 }
 
 /**
- * Asserts the outcome is a complete with the expected payload. Pass `null` for
- * non-result synthetics that call `complete()`.
+ * Asserts that the outcome is [SyntheticOutcome.Complete] with a result equal to
+ * [expectedResult]. Pass `null` for a synthetic destination that calls `complete()`
+ * without a result.
  */
 public fun SyntheticOutcome.assertCompletes(expectedResult: Any?) {
     val complete = this as? SyntheticOutcome.Complete
@@ -132,8 +127,8 @@ public fun SyntheticOutcome.assertCompletes(expectedResult: Any?) {
 }
 
 /**
- * Asserts the outcome is a side effect and returns it for further assertion
- * (e.g. calling [SyntheticOutcome.SideEffect.runWith] to execute it).
+ * Asserts that the outcome is [SyntheticOutcome.SideEffect] and returns the side effect.
+ * [SyntheticOutcome.SideEffect.runWith] executes the side effect.
  */
 public fun SyntheticOutcome.assertSideEffect(): SyntheticOutcome.SideEffect {
     return this as? SyntheticOutcome.SideEffect

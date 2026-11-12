@@ -13,7 +13,7 @@ class ConfigureMultiplatformLibraryWithJs : Plugin<Project> {
     }
 }
 
-/** A JS library that needs a browser DOM, so it has no other targets and no Node.js tests. */
+/** A JS library that requires a browser DOM: the library has no other target and no Node.js tests. */
 class ConfigureBrowserLibrary : Plugin<Project> {
     override fun apply(project: Project) {
         project.configureKotlinMultiplatform(
@@ -30,10 +30,9 @@ class ConfigureBrowserLibrary : Plugin<Project> {
 internal fun Project.configureMultiplatformLibrary(
     js: Boolean,
 ) {
-    // KMP libraries with an Android target use the dedicated Android-KMP library plugin.
-    // The KMP plugin is applied first so the `androidLibrary {}` DSL it contributes is
-    // available; minSdk/compileSdk/namespace are configured there (see
-    // configureKotlinMultiplatform).
+    // The KMP plugin must be applied before the Android-KMP library plugin, which adds the
+    // `androidLibrary {}` DSL to the KMP extension. configureKotlinMultiplatform sets
+    // minSdk, compileSdk and namespace through that DSL.
     project.plugins.apply("org.jetbrains.kotlin.multiplatform")
     project.plugins.apply("com.android.kotlin.multiplatform.library")
     project.configureKotlinMultiplatform(js = js)

@@ -14,18 +14,12 @@ import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.builtins.nullable
 
 /**
- * Creates a [Saver] that uses Enro's savedStateConfiguration to serialize and deserialize objects.
+ * Creates a [Saver] that serializes with [EnroController.savedStateConfiguration]. The type of
+ * the saved value requires a serializer registered in the `serializersModule` of a
+ * NavigationModule.
  *
- * This function provides a Saver implementation backed by the savedStateConfiguration registered
- * with Enro, based on classes that are registered in a NavigationModule's serializersModule.
- * This means the serializers are registered with the global Enro Controller.
- *
- * This is particularly useful when you want to remember saved data that:
- * - Belongs to a NavigationKey
- * - Comes from a NavigationKey in some way
- * - Is a NavigationKey or NavigationKey.Instance that you want to remember explicitly
- *
- * @return A [Saver] that can save and restore objects of type [T] using Enro's serialization configuration
+ * Use [enroSaver] to save a NavigationKey, a NavigationKey.Instance, or a value from a
+ * NavigationKey.
  */
 public inline fun <reified T : Any> enroSaver(): Saver<T, SavedState> {
     return Saver(

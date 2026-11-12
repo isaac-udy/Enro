@@ -17,10 +17,8 @@ class CloseLandingPageAndPresentRobot(
     }
 
     fun continueToInitialScreen(): InitialScreenRobot {
-        // First verify we're on the landing page
         composeRule.onNode(hasText("Landing Page Screen")).assertExists()
         
-        // Click the Continue button
         composeRule.onNode(hasText("Continue")).performClick()
         
         return InitialScreenRobot(composeRule)

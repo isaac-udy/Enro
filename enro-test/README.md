@@ -1,39 +1,38 @@
 # `enro-test`
 
-Test helpers for Enro destinations and the runtime as a whole. Lets you
-exercise navigation behaviour from a unit test — without spinning up an
-Android instrumentation harness — by installing a controllable
-`EnroController` for the duration of the test and exposing assertion
-helpers around handles, backstacks, paths, operations, and synthetic
-destinations.
+`enro-test` contains test helpers for Enro destinations and the Enro
+runtime. A unit test installs a test `EnroController` for the duration of
+the test and asserts on navigation handles, backstacks, paths, operations
+and synthetic destinations. The test does not require Android
+instrumentation.
 
-Targets the same set as `enro-runtime` (Android, iOS, JVM Desktop,
-WASM JS, Kotlin/JS), so multiplatform code can be tested on any host the
-runtime supports. `EnroTestRule` is Android only.
+`enro-test` targets the same platforms as `enro-runtime`: Android, iOS,
+JVM Desktop, WASM JS and Kotlin/JS. `EnroTestRule` is Android only.
 
-## What's in here
+## Contents
 
-- **`runEnroTest { … }`** — installs an isolated controller per test
-  and tears it down afterwards. Use this as the outer wrapper for any
-  test that needs the runtime.
-- **`TestNavigationHandle`** — a handle implementation that records
-  every operation executed against it. Combine with `createTestNavigationHandle(key)`
-  for tests of destination logic that doesn't need the full backstack.
-- **Backstack / path / operation assertions** — `assertBackstackKeys`,
+- **`runEnroTest { … }`** — installs a controller before the block and
+  uninstalls the controller after the block. Wrap the body of each test
+  that requires the runtime in `runEnroTest`.
+- **`TestNavigationHandle`** — a `NavigationHandle` that records every
+  operation executed on the handle. `createTestNavigationHandle(key)`
+  creates a `TestNavigationHandle` for a test of destination logic that
+  does not require a container.
+- **Backstack, path and operation assertions** — `assertBackstackKeys`,
   `assertBackstackSize`, `assertBackstackContains<T>`, `assertPathResolvesTo<T>`,
   `assertOperationSequence(*KClass)`, `lastOperationOfType<T>()`.
-- **Synthetic destination tester** — `testSyntheticDestination(key)` /
-  `testSyntheticDestination(key, provider)` plus an outcome DSL
-  (`assertOpens<T>`, `assertCompletesFrom<T>`, `assertCloses`,
-  `assertCompletes`, `assertSideEffect`). Lets you unit-test a synthetic's
-  decision without rendering it.
-- **Fixtures** — `NavigationContextFixtures`, `NavigationContainerFixtures`,
-  `NavigationKeyFixtures` for building the bits of state a test needs.
+- **Synthetic destination tester** — `testSyntheticDestination(key)` and
+  `testSyntheticDestination(key, provider)` run a synthetic destination
+  without rendering UI. The outcome assertions are `assertOpens<T>`,
+  `assertCompletesFrom<T>`, `assertCloses`, `assertCompletes` and
+  `assertSideEffect`.
+- **Fixtures** — `NavigationContextFixtures`, `NavigationContainerFixtures`
+  and `NavigationDestinationFixtures` create the contexts, containers
+  and destinations that a test requires.
 - **`installNavigationModule(module)` / `installPathBindings(vararg)`**
-  — one-line shortcuts for registering destinations or path bindings on
-  the test controller.
+  — register destinations or path bindings on the test controller.
 
-## Typical usage
+## Usage
 
 ```kotlin
 dependencies {
@@ -51,6 +50,6 @@ fun `profile button opens profile destination`() = runEnroTest {
 }
 ```
 
-For end-to-end Compose tests of `NavigationDisplay` and friends, pair
-this module with `androidx.compose.ui:ui-test` and `runComposeUiTest`
-— see `enro-runtime`'s `SceneIntegrationTests` for examples.
+For a Compose test of `NavigationDisplay`, use `enro-test` with
+`androidx.compose.ui:ui-test` and `runComposeUiTest`.
+`SceneIntegrationTests` in `enro-runtime` is an example.

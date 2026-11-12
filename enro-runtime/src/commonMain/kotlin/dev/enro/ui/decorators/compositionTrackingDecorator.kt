@@ -6,34 +6,17 @@ import androidx.compose.runtime.remember
 import dev.enro.NavigationKey
 
 /**
- * The **innermost** [NavigationDestinationDecorator] in the chain.
- * Registers a [DisposableEffect] keyed on the destination instance id
- * that tracks composition presence in `idsInComposition`, and fires
- * `onPop` on every other decorator (in reverse decoration order) when
- * the destination is both no longer in the backstack and no longer in
- * composition.
+ * Records each destination that is in the composition in [idsInComposition]. When a
+ * destination leaves the composition and is not in [idsInBackstack], calls `onPop` on each of
+ * [decoratorsToInvokeOnPop], last decorator first. `PrepareBackStack` in
+ * `rememberDecoratedDestinations` handles a destination that leaves the backstack after
+ * leaving the composition.
  *
- * Pairs with `PrepareBackStack` in `rememberDecoratedDestinations`
- * (which catches the inverse case: entry leaves the backstack while
- * its composition was already gone).
- *
- * **Why this lives inside the chain rather than in
- * `decorateNavigationDestination`'s outer wrap** — see
- * `docs/NAV3-COMPARISON.md`. In short: because it's the innermost
- * decorator, this `DisposableEffect` is composed inside the
- * `movableContent` set up by [movableContentDecorator]. Its
- * `onDispose` therefore fires in the same slot-table-teardown pass as
- * the inner `CompositionLocalProvider`s (saved state, view-model
- * store, navigation context). Some Enro decorators' `onPop` callbacks
- * tear down state that those inner providers expose — clearing the
- * destination's child `ViewModelStore`, transitioning a `LifecycleRegistry`
- * to `DESTROYED`. If `onPop` fired from an outer `DisposableEffect`
- * that disposes EARLIER than the movable content's discard (which is
- * deferred via `disposeUnusedMovableContent`), a recompose could land
- * between "onPop fired" and "inner chain disposed" and read state
- * mid-teardown. Doing the tracking from the innermost decorator
- * guarantees that everything happens in one synchronous slot-table
- * teardown.
+ * Must be the last decorator in the list (innermost). The decorator's [DisposableEffect] is
+ * then inside the movable content from [movableContentDecorator], and is disposed in the same
+ * pass as the providers of the other decorators. An effect outside the movable content is
+ * disposed earlier, and a recomposition could then read state that `onPop` has already
+ * cleared. See `docs/NAV3-COMPARISON.md`.
  */
 @Composable
 internal fun rememberCompositionTrackingDecorator(

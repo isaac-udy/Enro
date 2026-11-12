@@ -91,8 +91,8 @@ internal data class RecipeGroup(
 )
 
 /**
- * Recipes that only exist on the current platform, such as Fragment
- * destinations on Android. Each platform source set provides its own list.
+ * The recipes that run on the current platform only, such as Fragment
+ * destinations on Android.
  */
 internal expect val platformRecipes: List<RecipeEntry>
 

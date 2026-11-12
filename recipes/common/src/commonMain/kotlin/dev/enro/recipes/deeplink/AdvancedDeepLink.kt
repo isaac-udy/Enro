@@ -1,13 +1,13 @@
 /**
  * Enro Recipe: Advanced Deep Link
  *
- * Demonstrates a synthetic backstack for a deep link: when the link arrives,
- * the container's backstack is replaced with the target screen plus the
- * screens the user would have passed through, so Back behaves sensibly.
+ * Shows a synthetic backstack for a deep link. `updateBackstack` replaces the
+ * container's backstack with the target screen on top of the parent screens
+ * of the target, so Back from the target opens a parent screen.
  *
- * The recipe entry key has a `@NavigationPath` so the web platform plugin
- * writes `/advanced-deep-link` to the URL bar when active. Category and
- * Article have no registered path binding, so they leave the URL unchanged.
+ * The recipe entry key has a `@NavigationPath`, so on the web the URL bar
+ * shows `/advanced-deep-link` while the recipe is active. `Category` and
+ * `Article` have no registered path binding and do not change the URL.
  */
 @file:OptIn(ExperimentalEnroApi::class)
 
@@ -52,8 +52,8 @@ data class Category(val categoryId: String) : NavigationKey
 @Serializable
 data class Article(val articleId: String, val categoryId: String) : NavigationKey
 
-// Illustrative: nested hand-written path bindings for the manual API.
-// Not registered with the controller; shown for API reference only.
+// Examples of nested patterns with createPathBinding. No module registers
+// these two bindings with the controller.
 
 val categoryPathBinding: NavigationPathBinding<Category> = NavigationPathBinding.createPathBinding(
     pattern = "/categories/{categoryId}",
@@ -77,13 +77,12 @@ fun AdvancedDeepLinkRecipeScreen() {
         title = "Advanced Deep Link",
         navigation = navigation,
     ) { modifier ->
-        // A normal launch starts at home. When a deep link arrives, the buttons
-        // below replace this container's backstack with a synthetic one.
+        // `backstack` is the backstack for a normal launch. The buttons below
+        // replace the backstack of this container to simulate a deep link.
         val container = rememberNavigationContainer(
             backstack = backstackOf(AppHome.asInstance()),
         )
         Column(modifier = modifier) {
-            // Controls to "simulate" a deep link arrival
             Column(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -98,9 +97,8 @@ fun AdvancedDeepLinkRecipeScreen() {
                     Text("Normal launch")
                 }
                 Button(onClick = {
-                    // A deep link to an article. Put the screens the user would
-                    // have passed through underneath it, so Back goes to the
-                    // category and then home.
+                    // The new backstack contains the article's parent screens below
+                    // the article, so Back opens the category and then home.
                     // region docs:deep-links/synthetic-backstack
                     container.updateBackstack {
                         backstackOf(

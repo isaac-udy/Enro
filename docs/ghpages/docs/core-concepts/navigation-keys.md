@@ -6,13 +6,12 @@ nav_order: 1
 
 # Navigation Keys
 
-A `NavigationKey` is the contract for a screen — its function signature. The
-properties of the key are the inputs to the screen. If the screen produces a
-typed return value, the key implements `NavigationKey.WithResult<T>`.
+A `NavigationKey` is the contract for a screen. The properties of the key
+are the inputs to the screen. A key for a screen that returns a result
+implements `NavigationKey.WithResult<T>`.
 
-Keys are values: declarative, serializable, and decoupled from the screen
-they identify. Callers refer to screens only through their keys, never
-through their implementations.
+A key is a serializable value. A caller opens a screen by passing the
+screen's key, and does not reference the screen's implementation.
 
 <!-- snippet: navigation-keys/show-profile -->
 ```kotlin
@@ -20,7 +19,8 @@ through their implementations.
 data class ShowProfile(val userId: String) : NavigationKey
 ```
 
-Read that as `fun showProfile(userId: String): Unit`.
+`ShowProfile` is equivalent to the function signature
+`fun showProfile(userId: String): Unit`.
 
 <!-- snippet: navigation-keys/select-date -->
 ```kotlin
@@ -31,18 +31,20 @@ data class SelectDate(
 ) : NavigationKey.WithResult<LocalDate>
 ```
 
-Read that as `fun selectDate(minDate: LocalDate? = null, maxDate: LocalDate? = null): LocalDate`.
+`SelectDate` is equivalent to the function signature
+`fun selectDate(minDate: LocalDate? = null, maxDate: LocalDate? = null): LocalDate`.
 
 ## Serialization
 
-Keys must be `@Serializable` (kotlinx.serialization). Enro uses the serializer
-to persist backstacks across process death, to bridge instances between
-platforms, and to support deep links.
+A key must be annotated with `@Serializable` (kotlinx.serialization). Enro
+serializes keys to save and restore a container's backstack, including
+across process death, and to pass a key to an Android Activity or Fragment
+in a `Bundle`.
 
-Every property on the key needs a serializer too. Built-in Kotlin types
+Each property of a key requires a serializer. Built-in Kotlin types
 (`String`, `Int`, `Boolean`, `List<T>`, `Map<K, V>`, nullable types,
-`kotlin.uuid.Uuid`, etc.) work without configuration. For domain types you
-own, annotate them with `@Serializable`:
+`kotlin.uuid.Uuid`) require no configuration. Annotate your own types with
+`@Serializable`:
 
 <!-- snippet: navigation-keys/domain-type -->
 ```kotlin
@@ -53,8 +55,8 @@ data class UserId(val value: String)
 data class ShowProfile(val userId: UserId) : NavigationKey
 ```
 
-For types you don't own (or for polymorphic types in a sealed hierarchy),
-register a custom `SerializersModule` on your `NavigationComponent`:
+For types from other libraries, and for polymorphic types, register a
+`SerializersModule` on the `NavigationComponent`:
 
 <!-- snippet: navigation-keys/serializers-module -->
 ```kotlin
@@ -71,9 +73,9 @@ object MyComponent : NavigationComponentConfiguration(
 ## Keys with results
 
 A key that implements `NavigationKey.WithResult<T>` declares that the screen
-produces a value of type `T` to its caller. The screen returns the value by
-calling `navigation.complete(value)`. The caller receives it through a
-`registerForNavigationResult` channel — see [Results](../advanced/results.md).
+returns a value of type `T` to the caller. The screen returns the value by
+calling `navigation.complete(value)`. The caller receives the value in a
+`registerForNavigationResult` channel. See [Results](../advanced/results.md).
 
 <!-- snippet: navigation-keys/with-result -->
 ```kotlin
@@ -81,20 +83,17 @@ calling `navigation.complete(value)`. The caller receives it through a
 data class ConfirmDelete(val itemName: String) : NavigationKey.WithResult<Boolean>
 ```
 
-Whether a key implements `WithResult` only determines whether `complete`
-*requires* a value — every screen can still use both `close` and `complete`
-regardless. See [close vs complete](navigation-handles.md#closing-vs-completing)
-on the Navigation Handles page for the semantic distinction.
+`complete` requires a value only when the key implements `WithResult`. A
+screen with either kind of key can call `close` and `complete`. See
+[Closing vs completing](navigation-handles.md#closing-vs-completing).
 
 ## NavigationKey.Instance
 
-A key on its own is a value — the same key may appear in a backstack more
-than once (push the same profile, push another copy of the same profile). To
-distinguish individual appearances, Enro wraps every key in a
-`NavigationKey.Instance` when it enters a backstack. Each instance has a
-unique `id` and its own `metadata`.
+A backstack can contain the same key more than once. Enro wraps each key in
+a `NavigationKey.Instance` when the key is added to a backstack. Each
+`Instance` has a unique `id` and separate `metadata`.
 
-You'll usually only see `Instance` when building the initial backstack:
+Application code creates an `Instance` to build an initial backstack:
 
 <!-- snippet: navigation-keys/instance -->
 ```kotlin
@@ -104,44 +103,41 @@ val initial = backstackOf(
 )
 ```
 
-`asInstance()` is the standard way to wrap a key. Two instances of the same
-key are distinct values (different `id`s) — `Set<NavigationKey.Instance<*>>`
-will not collapse them.
+`asInstance()` wraps a key in an `Instance` with a new `id`. Two `Instance`
+values are equal only when the two `id`s are equal, so a
+`Set<NavigationKey.Instance<*>>` keeps two instances of the same key.
 
 ## Instance metadata
 
-`NavigationKey.Metadata` is a typed, serializable key-value bag attached to
-each `Instance` on the backstack. It's a place to carry data **about a
-particular appearance of a key** that isn't part of the key's contract.
+`NavigationKey.Metadata` is a typed, serializable key-value store. Each
+`Instance` has one `Metadata`. Instance metadata stores data about one
+`Instance` of a key that is not part of the key's contract.
 
-A few real-world uses for instance metadata:
+Examples of instance metadata:
 
-- The screen-space coordinates of the click that opened this destination,
-  so an animation can play from that point.
-- An analytics correlation id assigned at the moment the instance was
-  created, so events emitted while the destination is open can be linked
-  back to its origin.
-- A timestamp of when this instance was opened.
-- A note indicating which feature flow opened this destination.
+- The screen coordinates of the click that opened the destination, as the
+  origin of an animation.
+- An analytics correlation id assigned when the instance was created.
+- The time the instance was opened.
+- The feature flow that opened the destination.
 
-These are all things that *might be present, or might not*, and that don't
-change what the destination is or how it renders. They're closer to "extra
-parameters that any key might carry" than to anything in the key itself.
+Instance metadata is optional for every key and does not change how the
+destination is rendered.
 
-> **Don't confuse this with destination metadata.** A
-> `navigationDestination(metadata = { dialog() }) { ... }` block configures
-> *the destination* — it drives rendering decisions like "show this as a
-> dialog" or "render as an overlay." That's a separate system. See
+> **Instance metadata is not destination metadata.** A
+> `navigationDestination(metadata = { dialog() }) { ... }` block declares
+> destination metadata, which a scene strategy reads to decide how to
+> render the destination. See
 > [Navigation Destinations](navigation-destinations.md#destination-metadata-and-scene-strategies).
 
-Define a `MetadataKey<T>` to read and write a metadata value:
+Declare a `MetadataKey<T>` to read and write a metadata value:
 
 <!-- snippet: navigation-keys/metadata-key -->
 ```kotlin
 object OpenedAt : NavigationKey.MetadataKey<Long?>(default = null)
 ```
 
-Attach a value to a key for a single open via `withMetadata`:
+`withMetadata` sets a metadata value for one `open` call:
 
 <!-- snippet: navigation-keys/with-metadata -->
 ```kotlin
@@ -150,36 +146,36 @@ navigation.open(
 )
 ```
 
-Or set it from a [plugin](../advanced/plugins.md) on every instance globally
-— useful when you want metadata that applies uniformly across the app (an
-analytics correlation id, an origin point captured from the last user input,
-an opened-at timestamp, etc.). The
-[OpenedTimestampPlugin recipe][timestamp-recipe] is a small worked example
-of this.
+A [plugin](../advanced/plugins.md) can set a metadata value on every
+instance in the app. The [OpenedTimestampPlugin recipe][timestamp-recipe]
+sets an opened-at timestamp on every instance.
 
-A `MetadataKey`'s `name` is its `qualifiedName` — make it an `object` or a
-top-level singleton.
+Enro stores a metadata value under the `name` of the `MetadataKey`. The
+default `name` is the class name of the `MetadataKey`, so declare each
+`MetadataKey` as an `object`. On Kotlin/JS the class name is the simple
+name. Two `MetadataKey` classes with the same simple name throw on
+Kotlin/JS unless one class passes an explicit `name`.
 
-For metadata that should not be persisted across process death, use
-`TransientMetadataKey`. This is marked `@AdvancedEnroApi` because skipping
-persistence has consequences — your code has to tolerate the value being
-absent after the app is restored from saved state.
+Enro does not save a `TransientMetadataKey` value in saved state. After
+the app is restored from saved state, reading a `TransientMetadataKey`
+returns the default value. `TransientMetadataKey` requires an
+`@AdvancedEnroApi` opt-in.
 
 ## Naming conventions
 
-A `NavigationKey` should read like a verb-phrase or noun-phrase for a screen:
+Name a `NavigationKey` with a verb phrase or a noun phrase for the screen:
 
-- `ShowProfile`, `EditProfile`, `SelectDate`, `ConfirmDelete` ✅
-- `ProfileKey`, `ProfileScreenKey`, `ProfileNavigationKey` ❌ (the `Key`
-  suffix is redundant — the type already tells you what it is)
+- Use `ShowProfile`, `EditProfile`, `SelectDate`, `ConfirmDelete`.
+- Do not use `ProfileKey`, `ProfileScreenKey`, `ProfileNavigationKey`. The
+  `NavigationKey` type already states that the class is a key.
 
-For keys that produce results, the name often matches the result:
+Name a key that has a result after the result:
 
 - `SelectDate : NavigationKey.WithResult<LocalDate>`
 - `PickContact : NavigationKey.WithResult<Contact>`
 - `ConfirmDelete : NavigationKey.WithResult<Boolean>`
 
-A `data object` is the right choice for a key with no inputs:
+Declare a key that has no inputs as a `data object`:
 
 <!-- snippet: navigation-keys/data-object -->
 ```kotlin
@@ -190,29 +186,28 @@ data object Home : NavigationKey
 data object PickName : NavigationKey.WithResult<String>
 ```
 
-## Where keys live
+## Keys in a multi-module project
 
-In a multi-module project, a `NavigationKey` should live in the *contract*
-module for the feature it represents — not in the module that *implements*
-the screen. That's the whole point of the contract: callers depend on the
-key without depending on the implementation.
+In a multi-module project, declare each `NavigationKey` in the API module
+of the feature, not in the module that implements the screen. A caller
+module then depends on the key and not on the implementation.
 
-A common arrangement:
+Example module layout:
 
 ```
-:feature-profile-api          ← contains ShowProfile, EditProfile, etc.
-:feature-profile-impl         ← contains the Composables annotated with @NavigationDestination
-:app                          ← depends on both, plus :feature-other-impl, etc.
+:feature-profile-api          ← declares ShowProfile, EditProfile
+:feature-profile-impl         ← declares the Composables annotated with @NavigationDestination
+:app                          ← depends on both modules and on the other feature modules
 ```
 
-See the [modular navigation recipe][modular-recipe] for a worked example.
+See the [modular navigation recipe][modular-recipe].
 
 ## See also
 
-- [Navigation Destinations](navigation-destinations.md) — how a key is bound to a screen implementation.
-- [Navigation Handles](navigation-handles.md) — how a screen reads its own key.
-- [Results](../advanced/results.md) — how `WithResult` keys produce and consume values.
-- [Basic recipe][basic-recipe] — minimal end-to-end example.
+- [Navigation Destinations](navigation-destinations.md): binding a key to a screen implementation.
+- [Navigation Handles](navigation-handles.md): reading the key inside a screen.
+- [Results](../advanced/results.md): returning and receiving a result for a `WithResult` key.
+- [Basic recipe][basic-recipe]: a minimal app with two screens.
 
 [basic-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/basic/BasicNavigation.kt
 [modular-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/modular/ModularNavigation.kt

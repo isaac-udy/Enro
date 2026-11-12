@@ -28,16 +28,14 @@ import dev.enro.ui.animation.NavigationAnimatedVisibility
 import dev.enro.ui.scenes.isDirectOverlay
 
 /**
- * Renders a `directOverlay()`-tagged top entry as a shell overlay:
- * right-side drawer (with full-window scrim) on Medium / Wide breakpoints,
- * Material 3 [ModalBottomSheet] on Mobile. Tap-on-scrim / drag-to-dismiss
- * close the overlay.
+ * Renders a top entry with `directOverlay()` metadata as a
+ * [NavigationScene.Overlay]: a right-side drawer with a full-window scrim on
+ * the Medium and Wide breakpoints, and a Material 3 [ModalBottomSheet] on
+ * Mobile. A tap on the scrim or a sheet dismissal closes the entry.
  *
- * Reuses [dev.enro.ui.scenes.isDirectOverlay] so the recipe doesn't introduce
- * a new metadata key — destinations tagged with the existing
- * `directOverlay()` builder from `dev.enro.ui.scenes` work as-is. Register
- * this strategy before (or instead of) `DirectOverlaySceneStrategy` in the
- * chain.
+ * The strategy reads [dev.enro.ui.scenes.isDirectOverlay], the metadata that
+ * `DirectOverlaySceneStrategy` reads. Register this strategy before or in
+ * place of `DirectOverlaySceneStrategy`.
  */
 internal class ShellOverlaySceneStrategy : NavigationSceneStrategy {
     @Composable

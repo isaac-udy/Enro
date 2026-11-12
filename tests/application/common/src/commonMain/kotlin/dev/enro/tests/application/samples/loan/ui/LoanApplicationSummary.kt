@@ -105,7 +105,6 @@ fun LoanApplicationSummaryScreen() {
 
                 HorizontalDivider()
 
-                // Format number with thousands separator
                 val formattedAmount = application.amount.toString()
                     .reversed()
                     .chunked(3)

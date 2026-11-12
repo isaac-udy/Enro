@@ -8,9 +8,9 @@ import kotlinx.serialization.serializer
 import kotlin.reflect.typeOf
 
 /**
- * This exists for the purpose of supporting Parcelable NavigationKeys on Android.
- *
- * Platforms other than Android will always delegate to defaultSerializerForNavigationKey<T>().
+ * Returns the kotlinx.serialization serializer for [T]. On Android, when [T] has no
+ * kotlinx.serialization serializer, serializerForNavigationKey returns a serializer for a
+ * Parcelable NavigationKey.
  */
 @AdvancedEnroApi
 public expect inline fun <reified T : NavigationKey> serializerForNavigationKey(): KSerializer<T>
@@ -19,9 +19,8 @@ public expect inline fun <reified T : NavigationKey> serializerForNavigationKey(
 internal inline fun <reified T: NavigationKey> defaultSerializerForNavigationKey(): KSerializer<T> {
     val it = serializer(
         kClass = T::class,
-        // TODO need to support generic serialization, this probably needs to be done in the
-        //  annotation processor, and the serializer passed as an argument somewhere,
-        //  because using typeof here is likely slow
+        // TODO: support serializers for generic type arguments. typeOf is likely slow here;
+        //  the annotation processor could generate the serializer and pass the serializer in.
         typeArgumentsSerializers = typeOf<T>().arguments.map {
             PolymorphicSerializer(Any::class)
         },

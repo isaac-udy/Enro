@@ -74,7 +74,6 @@ fun RegistrationNameScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Progress indicator
             LinearProgressIndicator(
                 progress = { 0.25f },
                 modifier = Modifier
@@ -82,7 +81,6 @@ fun RegistrationNameScreen() {
                     .padding(bottom = 48.dp, top = 24.dp),
             )
 
-            // Header
             Text(
                 text = "👋",
                 fontSize = 56.sp,
@@ -103,7 +101,6 @@ fun RegistrationNameScreen() {
                 modifier = Modifier.padding(bottom = 40.dp)
             )
 
-            // Input field
             OutlinedTextField(
                 value = fullName,
                 onValueChange = { fullName = it },
@@ -116,7 +113,6 @@ fun RegistrationNameScreen() {
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
             )
 
-            // Encouragement message
             if (fullName.isNotBlank()) {
                 Card(
                     modifier = Modifier
@@ -146,7 +142,6 @@ fun RegistrationNameScreen() {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Continue button
             Button(
                 onClick = {
                     navigation.open(

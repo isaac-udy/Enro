@@ -7,13 +7,9 @@ nav_order: 1
 
 # Embedded Result Flows
 
-An *embedded result flow* is when a screen chains several result-producing
-destinations together, using each result to decide what to ask for next, all
-inside that screen's own logic. It's the simplest way to compose a short
-sequence of result-producing steps.
-
-The pattern is just `registerForNavigationResult` callbacks calling
-`open` on each other.
+In an embedded result flow, one screen opens several result destinations in
+sequence. The `onCompleted` callback of each `registerForNavigationResult`
+channel opens the next destination through the next channel.
 
 <!-- snippet: embedded-result-flows/flow -->
 ```kotlin
@@ -21,8 +17,8 @@ The pattern is just `registerForNavigationResult` callbacks calling
 @NavigationDestination(CreateAccount::class)
 fun CreateAccountScreen() {
     val navigation = navigationHandle<CreateAccount>()
-    var name by remember { mutableStateOf<String?>(null) }
-    var email by remember { mutableStateOf<String?>(null) }
+    var name by rememberSaveable { mutableStateOf<String?>(null) }
+    var email by rememberSaveable { mutableStateOf<String?>(null) }
 
     val askForEmail = registerForNavigationResult<String>(
         onCompleted = { result ->
@@ -44,39 +40,38 @@ fun CreateAccountScreen() {
 }
 ```
 
-This is the right shape for:
+Use an embedded result flow for:
 
-- Two or three steps where the screen logic is simple.
-- Cases where the next step depends on the previous result, but the branching is small.
-- A screen that already has its own UI and is only "augmenting" itself with a few sub-questions.
+- Two or three steps.
+- A next step that depends on the previous result through one small branch.
+- A screen that has UI of its own and opens a few result destinations.
 
-## When this pattern hurts
+## Limits
 
-The callback chain grows quickly. Once you have more than three or four
-steps, or once the branching is non-trivial ("if the user picked X, ask Y;
-otherwise ask Z and then W"), the chain becomes hard to read and harder to
-test. The state at any point is spread across `remember`-ed variables.
+Each added step adds a channel and a callback. Each branch adds a
+condition inside a callback. The screen stores each intermediate result in
+state that the screen declares.
 
-The pattern also doesn't survive *partial* progress well. If the user
-completes step two of four and then the process is killed, you've lost steps
-one and two unless you stash them somewhere persistent yourself.
+Enro does not save the intermediate results of an embedded result flow.
+The screen must store each intermediate result in state that is restored
+after process death; see [Saved State](../saved-state.md).
 
-For anything beyond a small handful of steps, prefer a
-[managed result flow](managed-result-flows.md) — same destinations, but the
-flow control is written as straight-line code and the intermediate state is
-managed for you.
+For more than three or four steps, or for more than one branch, use a
+[managed result flow](managed-result-flows.md). A managed result flow opens
+the same destinations, declares the steps as sequential code and saves the
+intermediate results.
 
-## Mixing the patterns
+## Combining embedded and managed flows
 
-You can mix the two. A managed flow can launch an embedded sub-flow inside
-a step, and an embedded flow can hand off to a managed flow at any point.
-The right question is: *for the next stretch, is the logic
-straight-line-able?* If yes, use a managed flow; if no, use callbacks.
+A step of a managed result flow can be a screen that contains an embedded
+result flow. An embedded result flow can open a managed flow destination
+through a channel.
 
 ## See also
 
-- [Managed result flows](managed-result-flows.md) — for longer or more
-  conditional sequences.
-- [Returning Results recipe][results-recipe] — the canonical small example.
+- [Managed result flows](managed-result-flows.md) — longer sequences and
+  sequences with branches.
+- [Returning Results recipe][results-recipe] —
+  `registerForNavigationResult` in a Composable and in a ViewModel.
 
 [results-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/results/ReturningResults.kt

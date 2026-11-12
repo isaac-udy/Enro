@@ -5,12 +5,10 @@ import dev.enro.ui.NavigationContainerState
 import dev.enro.ui.NavigationDisplay
 
 /**
- * Renders the navigation container.
- * 
- * @deprecated Use NavigationDisplay instead, which allows configuration of additional options
- * such as animations and modifiers. The modifier parameter in NavigationDisplay specifically
- * removes the need for the common pattern of wrapping container.Render() invocations in a
- * Box(modifier = Modifier).
+ * Renders the container with [NavigationDisplay] and the default parameters.
+ *
+ * @deprecated Call [NavigationDisplay], which takes a modifier and animations. The modifier
+ * parameter replaces a `Box(modifier = ...)` around `container.Render()`.
  */
 @Deprecated(
     message = "Use NavigationDisplay instead for more configuration options",

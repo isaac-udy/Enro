@@ -35,11 +35,12 @@ class OrdersViewModel(
     val orders: List<String> = repository.orders()
     val userName: String get() = session.userName
 
-    // The account screen is in another feature. It is opened by key.
+    // The account feature declares the destination for KoinAccount. The
+    // orders feature imports the key only.
     fun onAccountClicked() = navigation.open(KoinAccount)
 }
 
-// What this feature provides. KoinSession comes from the app's module.
+// The Koin module of the orders feature. The app's module provides KoinSession.
 val ordersModule = module {
     single { OrderRepository() }
     factory { OrdersViewModel(session = get(), repository = get()) }

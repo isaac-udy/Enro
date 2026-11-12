@@ -22,8 +22,8 @@ import kotlinx.serialization.Serializable
 
 
 /**
- * A NavigationContainer is an identifiable backstack (using navigation container key), which
- * provides the rendering context for a backstack.
+ * A backstack identified by [key]. A [NavigationContainer] applies each [NavigationOperation]
+ * to the backstack after the interceptors of the container and of the controller run.
  */
 public class NavigationContainer @AdvancedEnroApi constructor(
     public val key: Key,
@@ -78,8 +78,8 @@ public class NavigationContainer @AdvancedEnroApi constructor(
 
     private val executionMutex = Mutex(false)
 
-    // TODO Need to add documentation to explain what is accepted -> close/completes for instances in the backstack,
-    //  or opens which are accepted by the filter
+    // Accepts an operation when each Close and Complete targets an instance in the backstack and
+    // the filter accepts each Open.
     public fun accepts(fromContext: AnyNavigationContext, operation: NavigationOperation): Boolean {
         val operations = when(operation) {
             is NavigationOperation.AggregateOperation -> operation.operations
@@ -109,8 +109,8 @@ public class NavigationContainer @AdvancedEnroApi constructor(
         return true
     }
 
-    // TODO This skips the accept checking, need to add documentation to explain that accept checking is
-    //  performed by the navigation handle to find a container
+    // Does not call `accepts`. A NavigationHandle calls `accepts` to find a container, then
+    // calls `execute` on that container.
     @AdvancedEnroApi
     public fun execute(
         context: AnyNavigationContext,

@@ -1,17 +1,17 @@
 /**
  * Enro Recipes: Material List-Detail and Material Supporting Pane
  *
- * Two recipes that use the Material 3 Adaptive scaffolds as Enro scenes. The
- * scene strategies are in `MaterialAdaptiveScenes.kt`.
+ * Two recipes that render the Material 3 Adaptive scaffolds as Enro scenes.
+ * `MaterialAdaptiveScenes.kt` declares the two scene strategies.
  *
- * In both, destinations are ordinary Enro destinations with metadata that
- * says which pane they belong in, and navigation is ordinary `open` and
- * `close`. On a wide window the strategy shows two destinations side by
- * side; on a narrow window it steps aside and the same backstack is shown
- * one screen at a time.
+ * In both recipes, each destination sets metadata that names the pane of the
+ * destination, and navigation uses `open` and `close`. On a wide window the
+ * scene strategy shows two destinations side by side. On a narrow window the
+ * scene strategy returns `null`, and `SinglePaneSceneStrategy` shows the top
+ * destination of the same backstack.
  *
- * Use these when you want Material's pane sizing, spacing and animation.
- * The List-Detail (Scene) recipe lays out the panes by hand instead.
+ * The Material scaffolds set the pane sizes, spacing and animation. The
+ * List-Detail (Scene) recipe lays out the panes with a `Row`.
  *
  * Nav3 equivalents: the Material List-Detail and Material Supporting Pane
  * recipes.
@@ -52,10 +52,6 @@ import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import kotlinx.serialization.Serializable
 
-// ─────────────────────────────────────────────────────────────────────
-// Material List-Detail
-// ─────────────────────────────────────────────────────────────────────
-
 @Serializable
 object MaterialListDetailRecipe : NavigationKey
 
@@ -81,7 +77,8 @@ fun MaterialListDetailRecipeScreen() {
         NavigationDisplay(
             state = container,
             modifier = modifier,
-            // The Material strategy goes before the single-pane fallback.
+            // NavigationSceneStrategy.from uses the first strategy that returns a scene,
+            // so MaterialListDetailSceneStrategy is listed before SinglePaneSceneStrategy.
             sceneStrategy = NavigationSceneStrategy.from(
                 DialogSceneStrategy(),
                 DirectOverlaySceneStrategy(),
@@ -112,8 +109,8 @@ val mailListDestination: NavigationDestinationProvider<MailList> = navigationDes
         Text("Inbox", style = MaterialTheme.typography.titleLarge)
         mailSubjects.forEach { subject ->
             Button(onClick = {
-                // Keep one detail on the stack: selecting another message
-                // replaces the open one instead of stacking on top of it.
+                // The backstack contains at most one MailDetail: when a MailDetail
+                // is open, updateBackstack replaces that MailDetail with the new one.
                 val openDetail = container.backstack.lastOrNull()?.takeIf { it.key is MailDetail }
                 if (openDetail == null) {
                     navigation.open(MailDetail(subject))
@@ -140,10 +137,6 @@ val mailDetailDestination: NavigationDestinationProvider<MailDetail> = navigatio
         Button(onClick = { navigation.close() }) { Text("Close message") }
     }
 }
-
-// ─────────────────────────────────────────────────────────────────────
-// Material Supporting Pane
-// ─────────────────────────────────────────────────────────────────────
 
 @Serializable
 object MaterialSupportingPaneRecipe : NavigationKey
@@ -203,7 +196,8 @@ val articleRelatedDestination: NavigationDestinationProvider<ArticleRelated> = n
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text("Related: ${navigation.key.topic}", style = MaterialTheme.typography.titleLarge)
-        // Replaces this supporting destination with another one.
+        // closeAndReplaceWith keeps ArticleMain below the new supporting
+        // destination, so the scene still shows two panes.
         Button(onClick = { navigation.closeAndReplaceWith(ArticleRelated("Animations")) }) {
             Text("Show related: Animations")
         }

@@ -1,24 +1,25 @@
 /**
  * Enro Recipe: Nested Containers
  *
- * Demonstrates how `navigation.open(key)` picks a container when a screen
- * hosts more than one.
+ * Shows how `navigation.open(key)` selects a container when a screen hosts
+ * more than one container.
  *
- * This recipe's host screen has two containers side by side. Each has a
- * filter that says which keys it accepts:
+ * The host screen of the recipe has two containers side by side. The filter
+ * of each container states which keys the container accepts:
  *  - the "notes" container accepts `Note` keys
  *  - the "tasks" container accepts `Task` keys
  *
- * When a destination calls `open`, Enro looks for a container whose filter
- * accepts the key. It starts with the container the caller is in and its
- * siblings, then walks up through the parent containers. So:
- *  - opening a `Note` from the tasks pane lands in the notes pane
- *  - opening a `Task` from the notes pane lands in the tasks pane
- *  - opening `ContainersHelp`, which neither pane accepts, goes up to the
- *    recipe's own container and covers both panes
+ * When a destination calls `open`, Enro searches for a container whose filter
+ * accepts the key. The search covers the containers nested in the caller's
+ * container, then the caller's container and the sibling containers, then
+ * each parent container in turn:
+ *  - a `Note` opened from the tasks pane opens in the notes pane
+ *  - a `Task` opened from the notes pane opens in the tasks pane
+ *  - `ContainersHelp`, which neither pane accepts, opens in the recipe's
+ *    container and covers both panes
  *
- * A container with `acceptNone()` never receives a key from `open`; its
- * backstack only changes when you update it directly.
+ * A container with `acceptNone()` accepts no key from `open`. Only a direct
+ * backstack update changes the backstack of that container.
  */
 package dev.enro.recipes.containers
 
@@ -74,8 +75,8 @@ fun NestedContainersRecipeScreen() {
         title = "Nested Containers",
         navigation = navigation,
     ) { modifier ->
-        // The recipe's own container. It accepts every key, so it receives
-        // any key the two panes inside ContainersHost do not accept.
+        // This container has the default filter, which accepts every key. A key
+        // that neither pane inside ContainersHost accepts opens in this container.
         val container = rememberNavigationContainer(
             backstack = backstackOf(ContainersHost.asInstance()),
         )
@@ -94,7 +95,7 @@ fun ContainersHostDestination() {
         key = NavigationContainer.Key("notes"),
         backstack = backstackOf(Note(1).asInstance()),
         filter = accept { key<Note>() },
-        // Keep the first note: Back on it is not handled by this container.
+        // preventEmpty keeps the first note: this container does not handle Back on the first note.
         emptyBehavior = EmptyBehavior.preventEmpty(),
     )
     val tasks = rememberNavigationContainer(
@@ -125,15 +126,15 @@ fun NoteDestination() {
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text("Note $number", style = MaterialTheme.typography.titleLarge)
-        // Accepted by this pane's container.
+        // The notes container accepts Note keys.
         Button(onClick = { navigation.open(Note(number + 1)) }) {
             Text("Open note ${number + 1}")
         }
-        // Not accepted here; the tasks pane accepts it.
+        // The notes container rejects Task keys; the tasks container accepts Task keys.
         Button(onClick = { navigation.open(Task(number * 10)) }) {
             Text("Open task ${number * 10} in the other pane")
         }
-        // Accepted by neither pane; opens in the recipe's container.
+        // Neither pane accepts ContainersHelp, so the key opens in the recipe's container.
         Button(onClick = { navigation.open(ContainersHelp) }) {
             Text("Open help over both panes")
         }

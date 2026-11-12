@@ -20,17 +20,16 @@ object RecipesComponent : NavigationComponentConfiguration(
     module = createNavigationModule {
         plugin(OpenedTimestampPlugin())
 
-        // Path bindings for the Basic Deep Link recipe.
+        // deepLinkModule registers the path bindings of the Basic Deep Link recipe.
         module(deepLinkModule)
 
-        // Sees navigation in every container; see the Module Interceptor recipe.
+        // An interceptor registered here receives operations from every
+        // container; see the Module Interceptor recipe.
         interceptor(auditInterceptor)
 
-        // Wrap every regular destination in a Material-themed surface so that
-        // transitions (slide, fade, shared elements) animate over an opaque
-        // background instead of showing through to whatever is composed
-        // underneath. Dialogs and direct overlays are skipped — they're
-        // intentionally rendered on top of the underlying scene.
+        // The decorator wraps each destination in an opaque Surface, so a
+        // transition does not show the destination below. Dialogs and direct
+        // overlays are not wrapped, because the scene below must stay visible.
         decorator {
             navigationDestinationDecorator { destination ->
                 val isOverlay = destination.isDirectOverlay() ||

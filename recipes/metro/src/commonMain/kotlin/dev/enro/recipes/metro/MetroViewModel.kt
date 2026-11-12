@@ -4,18 +4,18 @@
  * Demonstrates a ViewModel whose dependencies come from a Metro dependency
  * graph and whose arguments come from its NavigationKey.
  *
- * A ViewModel reads its key with `by navigationHandle<Key>()`. For that to
- * work, the ViewModel has to be constructed inside `createEnroViewModel { }`,
- * which makes the destination's NavigationHandle available while the
- * constructor runs.
+ * A ViewModel reads the NavigationKey with `by navigationHandle<Key>()`.
+ * `by navigationHandle` requires the ViewModel to be constructed inside
+ * `createEnroViewModel { }`, which provides the destination's
+ * NavigationHandle while the constructor runs.
  *
  * The graph exposes the ViewModel as an accessor. The ViewModel has no scope,
  * so each read of the accessor constructs a new instance; the AndroidX
- * `viewModel()` call stores it. The destination reads the accessor inside
- * `createEnroViewModel { }`.
+ * `viewModel()` call stores the instance. The destination reads the accessor
+ * inside `createEnroViewModel { }`.
  *
  * The recipe's host screen is in `:recipes:common`
- * (`metro/MetroRecipes.kt`); this module has the Metro compiler plugin.
+ * (`metro/MetroRecipes.kt`); this module applies the Metro compiler plugin.
  *
  * Nav3 equivalent: the Metro injected ViewModel recipe.
  */
@@ -87,7 +87,6 @@ interface MetroRecipeGraph {
 // A real app creates its graph once at startup.
 private val recipeGraph: MetroRecipeGraph by lazy { createGraph<MetroRecipeGraph>() }
 
-/** The content of the Metro ViewModel recipe. */
 @Composable
 fun MetroViewModelRecipeContent(modifier: Modifier = Modifier) {
     val container = rememberNavigationContainer(

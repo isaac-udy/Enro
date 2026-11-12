@@ -28,8 +28,8 @@ private val recipesController by lazy {
 }
 
 /**
- * Runs [block] against a recipe, hosted the way the recipes app hosts it: a
- * root container whose backstack starts with the recipe's key.
+ * Runs [block] against a recipe hosted as in the recipes app: in a root
+ * container whose backstack starts with the recipe's key.
  */
 @OptIn(ExperimentalTestApi::class)
 internal fun runRecipeTest(
@@ -37,7 +37,8 @@ internal fun runRecipeTest(
     block: RecipeRobot.() -> Unit,
 ) = runComposeUiTest {
     recipesController
-    // Picks up the controller installed above, and leaves it installed.
+    // EnroTest reuses the controller that recipesController installed, and
+    // uninstallNavigationController does not uninstall a reused controller.
     EnroTest.installNavigationController()
     try {
         val rootContext = NavigationContextFixtures.createRootContext()

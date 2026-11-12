@@ -6,13 +6,13 @@ nav_order: 3
 
 # Navigation Containers
 
-A `NavigationContainer` is a region of your UI that hosts a backstack of
-destinations. Most apps have one root container; advanced layouts (tabs,
-list-detail, multiple back stacks) use several, often nested.
+A `NavigationContainer` stores a backstack of destinations and displays
+the backstack in one region of the UI. Most apps have one root container.
+Layouts such as tabs, list-detail and multiple back stacks use more than
+one container, and the containers can be nested.
 
-The container is created with `rememberNavigationContainer` and rendered
-with `NavigationDisplay`. Together they're the smallest amount of navigation
-infrastructure your app needs.
+`rememberNavigationContainer` creates a container. `NavigationDisplay`
+renders the container.
 
 <!-- snippet: navigation-containers/container -->
 ```kotlin
@@ -36,22 +36,24 @@ public fun rememberNavigationContainer(
 ): NavigationContainerState
 ```
 
-- **`key`** — identifies this container within its parent. The default is a
-  stable saveable UUID and is fine for most cases. Provide an explicit key
-  when you need to address the container from elsewhere (for example, when
-  programmatically pushing a destination into a specific container).
-- **`backstack`** — the initial contents. Most apps pass
+- **`key`**: identifies the container. The default `key` contains a random
+  UUID that `rememberSaveable` saves. Pass an explicit `key` to find the
+  container from other code, for example with `findContainerContext(key)`.
+- **`backstack`**: the initial backstack, for example
   `backstackOf(MyRootKey.asInstance())`.
-- **`emptyBehavior`** — what happens when the backstack becomes empty.
-- **`interceptor`** — observe or veto operations before they apply.
-- **`filter`** — restrict which keys this container will accept.
+- **`emptyBehavior`**: the action taken when the last destination closes.
+  See [Empty behaviour](#empty-behaviour).
+- **`interceptor`**: runs before each operation on the container. See
+  [Interceptors](#interceptors).
+- **`filter`**: decides which keys the container accepts. See
+  [Filters](#filters).
 
-The function returns a `NavigationContainerState` you pass to
-`NavigationDisplay`.
+`rememberNavigationContainer` returns a `NavigationContainerState`. Pass
+the `NavigationContainerState` to `NavigationDisplay`.
 
 ## Building a backstack
 
-`backstackOf` is the canonical way to build one:
+`backstackOf` creates a `NavigationBackstack` from instances:
 
 <!-- snippet: navigation-containers/backstack -->
 ```kotlin
@@ -61,11 +63,9 @@ val backstack = backstackOf(
 )
 ```
 
-If you already have a `List<NavigationKey.Instance<*>>`, call `.asBackstack()`.
-There's also `emptyBackstack()` if you want to start empty (and combine that
-with an `emptyBehavior` other than the default — see below).
-
-`MyKey.asInstance()` wraps a key into an `Instance` with a fresh id; see
+`asBackstack()` converts a `List<NavigationKey.Instance<*>>` to a
+`NavigationBackstack`. `emptyBackstack()` creates a backstack with no
+instances. `asInstance()` is described in
 [Navigation Keys](navigation-keys.md#navigationkeyinstance).
 
 ## NavigationDisplay
@@ -84,73 +84,72 @@ NavigationDisplay(
 )
 ```
 
-It watches the container's backstack and animates between destinations as it
-changes. `sceneStrategy` controls how the backstack is laid out
-(see [Navigation Destinations](navigation-destinations.md#scene-strategies));
-`animations` controls how destinations animate in and out
-(see [Animations](../advanced/animations.md)).
+`NavigationDisplay` reads the container's backstack and animates between
+destinations when the backstack changes. `sceneStrategy` sets the layout
+of the backstack; see
+[Navigation Destinations](navigation-destinations.md#scene-strategies).
+`animations` sets the enter and exit animations of destinations; see
+[Animations](../advanced/animations.md).
 
 ## Empty behaviour
 
-`EmptyBehavior` decides what happens when the user closes the last
-destination in the container.
+`EmptyBehavior` sets the action taken when the last destination in the
+container closes.
 
-| Helper | Effect |
+| Function | Effect |
 |---|---|
-| `EmptyBehavior.preventEmpty()` | Refuses the close — the bottom-most destination stays put. |
-| `EmptyBehavior.allowEmpty(onEmpty = { })` | Allows the container to become empty when its stack drains. The container stays mounted but renders nothing. The optional `onEmpty` lambda fires when this happens. |
-| `EmptyBehavior.closeParent()` | When the last destination is closed, closes the *parent* destination too. This is what a typical detail-stack inside a list-detail layout wants. |
-| `EmptyBehavior.default()` | An alias for the current default behaviour. Today that's `preventEmpty()`; future versions of Enro may change the default, so use this if you want to track whatever Enro considers most appropriate. |
-
-For custom behaviour, build an `EmptyBehavior` from a lambda (see
-`EmptyBehavior.kt` in the source).
+| `EmptyBehavior.preventEmpty()` | The container keeps the last destination. The container does not handle a back press on the last destination. |
+| `EmptyBehavior.allowEmpty(onEmpty = { })` | The container becomes empty and renders no destination. Enro calls the optional `onEmpty` lambda when the container becomes empty. |
+| `EmptyBehavior.closeParent()` | The container keeps the last destination, and Enro closes the destination that hosts the container. Use `closeParent()` for the detail container of a list-detail layout. |
+| `EmptyBehavior.default()` | Returns `preventEmpty()`. |
 
 ## Reading and changing the backstack
 
-`NavigationContainerState` exposes a few useful members:
+`NavigationContainerState` has these members:
 
 <!-- snippet: skip (API outline) -->
 ```kotlin
-val backstack: NavigationBackstack          // current contents, observable
+val backstack: NavigationBackstack
 fun updateBackstack(block: (NavigationBackstack) -> NavigationBackstack)
-fun execute(operation: NavigationOperation) // for advanced cases
+fun execute(operation: NavigationOperation)
 ```
 
-Reading `state.backstack` from a Composable is a normal Compose state read —
-the surrounding scope recomposes when the backstack changes. You can use this
-to drive a bottom bar, breadcrumbs, or any UI element that mirrors the stack.
+`backstack` is Compose state. A Composable that reads `state.backstack`
+recomposes when the backstack changes, for example to render a bottom bar
+or breadcrumbs.
 
-The block receives the current backstack and returns the new one. A
-`NavigationBackstack` is a list, so list operations work on it; call
-`asBackstack()` on the result:
+`updateBackstack` passes the current backstack to the block and sets the
+backstack that the block returns. A `NavigationBackstack` is a list. Call
+`asBackstack()` on the result of a list operation:
 
-- `updateBackstack { it.dropLast(1).asBackstack() }` removes the top entry.
-- `updateBackstack { it.take(1).asBackstack() }` goes back to the root.
-- `updateBackstack { backstackOf(NewRoot.asInstance()) }` replaces the whole
-  stack.
+- `updateBackstack { it.dropLast(1).asBackstack() }` removes the top
+  instance.
+- `updateBackstack { it.take(1).asBackstack() }` keeps only the root
+  instance.
+- `updateBackstack { backstackOf(NewRoot.asInstance()) }` replaces the
+  backstack.
 
-Inside a destination, `LocalNavigationContainer.current` is the container
-the destination is displayed in. The [back stack operations
-recipe][backstack-recipe] shows back to root, back to a specific screen, and
-clearing the stack.
+Inside a destination, `LocalNavigationContainer.current` returns the
+container that displays the destination. The [back stack operations
+recipe][backstack-recipe] closes to the root, closes to a chosen screen and
+replaces the backstack.
 
-Most navigation goes through `NavigationHandle` operations, not direct
-backstack edits — see [Navigation Handles](navigation-handles.md).
+For navigation from inside a screen, use the `NavigationHandle` operations
+instead of `updateBackstack`. See [Navigation Handles](navigation-handles.md).
 
 ## Filters
 
 A `NavigationContainerFilter` decides which keys a container accepts from
-`navigation.open(key)`. By default a container accepts every key
-(`acceptAll()`).
+`navigation.open(key)`. The default filter is `acceptAll()`.
 
 | Filter | Accepts |
 |---|---|
 | `acceptAll()` | every key |
-| `acceptNone()` | no key; the backstack only changes when you update it directly |
+| `acceptNone()` | no key; add instances to the container with `updateBackstack` |
 | `accept { key<T>() }` | keys of type `T` |
 | `accept { key { it is T && ... } }` | keys that match the predicate |
 | `doNotAccept { key<T>() }` | every key except those of type `T` |
-| `accept { ... }.fromChildrenOnly()` | matching keys, and only when opened from a destination inside this container |
+| `accept { ... }.fromChildrenOnly()` | matching keys, and only when opened from a destination inside the container |
 
 Two containers hosted by the same destination, each accepting one type of
 key:
@@ -161,7 +160,7 @@ val notes = rememberNavigationContainer(
     key = NavigationContainer.Key("notes"),
     backstack = backstackOf(Note(1).asInstance()),
     filter = accept { key<Note>() },
-    // Keep the first note: Back on it is not handled by this container.
+    // preventEmpty keeps the first note: this container does not handle Back on the first note.
     emptyBehavior = EmptyBehavior.preventEmpty(),
 )
 val tasks = rememberNavigationContainer(
@@ -174,38 +173,39 @@ val tasks = rememberNavigationContainer(
 
 ## Which container receives a key
 
-When a destination calls `navigation.open(key)`, Enro looks for a container
-that accepts the key. It checks containers in this order and uses the first
-one that accepts:
+When a destination calls `navigation.open(key)`, Enro checks containers in
+this order and opens the key in the first container whose filter accepts
+the key:
 
-1. Containers hosted by the calling destination: the active one first, then
-   the others.
+1. Containers hosted by the calling destination: the active container
+   first, then the other containers.
 2. Containers hosted by the other destinations on the caller's backstack.
 3. Containers hosted by the destination that hosts the caller's container:
-   the active one first, then the others. This includes the caller's own
-   container and its siblings.
+   the active container first, then the other containers. Step 3 includes
+   the caller's container and the sibling containers.
 4. Steps 2 and 3 again, one level further up each time, until the root.
 
-So a key is opened as close to the caller as a filter allows. In the example
-above, opening a `Task` from a note finds the tasks container, and a key that
-neither accepts goes up to the container that hosts both.
+In the filters example, `open(Task(2))` from a note opens the `Task` in the
+`tasks` container. A key that neither the `notes` filter nor the `tasks`
+filter accepts opens in the container that displays the host destination.
 
 The [nested containers recipe][nested-recipe] shows each of these cases.
 
 ## Interceptors
 
-A `NavigationInterceptor` runs before an operation is applied to the
-container's backstack, and can let it continue, cancel it, or run a
-different operation. Pass one to `rememberNavigationContainer` for one
-container, or register it on the `NavigationComponent` for all of them.
+A `NavigationInterceptor` runs before Enro applies an operation to the
+container's backstack. The interceptor can continue the operation, cancel
+the operation or run a different operation. Pass an interceptor to
+`rememberNavigationContainer` to intercept one container, or register an
+interceptor on the `NavigationComponent` to intercept every container.
 
 See [Interceptors](../advanced/interceptors.md).
 
 ## Nested containers
 
-A container can be created inside a destination — the resulting container
-is a *child* of that destination's context. This is how features like tabs,
-list-detail layouts, and per-flow back stacks are built.
+A destination can call `rememberNavigationContainer`. The new container is
+a child of the destination's context. Tabs, list-detail layouts and
+separate back stacks for each flow use nested containers.
 
 <!-- snippet: navigation-containers/nested -->
 ```kotlin
@@ -233,16 +233,16 @@ fun MainTabsDestination() {
 }
 ```
 
-Two recipes go deeper on this pattern:
+Recipes that use nested containers:
 
-- [Tab navigation][tabs-recipe] — a simple tabbed layout.
-- [Multiple back stacks][multistack-recipe] — independent saveable backstacks per tab, à la Material's `BottomNavigationView`.
+- [Tab navigation][tabs-recipe]: a tabbed layout.
+- [Multiple back stacks][multistack-recipe]: a separate saved backstack for each tab.
 
 ## See also
 
-- [Navigation Destinations](navigation-destinations.md) — what fills a container.
-- [Navigation Handles](navigation-handles.md) — how operations on a handle reach the container.
-- [Animations](../advanced/animations.md) — `NavigationAnimations` and per-element animation.
+- [Navigation Destinations](navigation-destinations.md): the destinations that a container displays.
+- [Navigation Handles](navigation-handles.md): the operations that change a container's backstack.
+- [Animations](../advanced/animations.md): `NavigationAnimations` and animating parts of a destination.
 - Recipes: [list-detail][listdetail-recipe], [tabs][tabs-recipe], [multiple back stacks][multistack-recipe].
 
 [backstack-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/backstack/BackStackOperations.kt

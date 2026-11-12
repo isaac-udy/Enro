@@ -25,22 +25,15 @@ import kotlinx.parcelize.Parcelize
 import kotlin.random.Random
 
 /**
- * There appears to be a bug on some OS versions (namely Android 34) with Enro's implementation
- * of some state saving mechanisims in Composable screens specifically when saving lists of primitives.
- * This screen is used to test and verify that those bugs don't exist.
+ * Checks that a container restores a `rememberSaveable` list of primitives.
+ * Restoring a saved list of primitives failed on some OS versions (API 34).
  *
- * To reproduce the original bug, there are two approaches:
- * First Approach:
- * 1. Set "Don't keep activities" in the developer options
- * 2. Open the app, navigate to this screen, and take note of the numbers displayed
- * 3. Background the app, and then open it again
- * 4. The numbers should be the same as they were before the app was backgrounded
+ * To check manually, open this screen, note the numbers displayed, then either:
+ * - with "Don't keep activities" enabled in the developer options, background
+ *   the app and open the app again; or
+ * - click "Save State", then click "Restore State".
  *
- * Second Approach:
- * 1. Open the app, navigate to this screen, and take note of the numbers displayed
- * 2. Click the "Save State" button
- * 3. Click the "Restore State" button
- * 4. The numbers should be the same as they were before the state was saved
+ * The screen must display the same numbers afterwards.
  */
 @Parcelize
 object ComposeSavePrimitives : Parcelable, NavigationKey.SupportsPush {
@@ -59,9 +52,9 @@ fun ComposeSavePrimitivesScreen() {
     TitledColumn("Compose Save Primitives") {
         if (savedBundle.value == null) {
             Button(onClick = {
-//                 We're going to force the container state to be fully serialized into a byte array
-//                 and then back again into a bundle, so that the restoration is "real", as opposed
-//                 to when a bundle isn't actually saved, where some references can be retained
+                // The container state is marshalled to a byte array and read back into a
+                // new Bundle. A Bundle that is not marshalled can retain object references,
+                // and retained references hide restoration failures.
                 val parcel = Parcel.obtain()
                 container.saveState().writeToParcel(parcel, 0)
                 val savedParcel = Parcel.obtain().apply {

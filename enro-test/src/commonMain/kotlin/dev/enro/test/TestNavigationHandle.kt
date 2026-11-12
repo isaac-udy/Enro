@@ -11,15 +11,15 @@ import dev.enro.NavigationOperation
 import dev.enro.asInstance
 
 /**
- * A [NavigationHandle] implementation that records every [NavigationOperation] executed
- * against it, instead of dispatching to a real navigation container.
+ * A [NavigationHandle] that records each executed [NavigationOperation] instead of
+ * executing the operation on a navigation container. Side effect operations are not
+ * recorded.
  *
- * Recorded operations are stored in [operations] and can be inspected with the typed
- * assertion helpers ([assertOpened], [assertClosed], [assertCompleted], etc.).
- * Call [clearOperationHistory] to reset the list for a subsequent scenario.
+ * The assertion functions ([assertOpened], [assertClosed], [assertCompleted] and others)
+ * read the recorded operations. [clearOperationHistory] removes the recorded operations.
  *
- * Once a [Close] or [Complete] targeting this handle's own [instance] has been recorded,
- * the handle rejects further operations until [clearOperationHistory] is called.
+ * After a Close or Complete for the handle's own [instance] is recorded, [execute] throws
+ * until [clearOperationHistory] is called.
  */
 public class TestNavigationHandle<out T : NavigationKey>(
     override val instance: NavigationKey.Instance<T>,
@@ -50,7 +50,6 @@ public class TestNavigationHandle<out T : NavigationKey>(
                 }
             }
             else -> {
-                // this is fine, continue
             }
         }
         when (operation) {
@@ -63,27 +62,18 @@ public class TestNavigationHandle<out T : NavigationKey>(
     }
 }
 
-/**
- * Create a TestNavigationHandle to be used in tests.
- */
 public fun <T : NavigationKey> createTestNavigationHandle(
     key: T,
 ): TestNavigationHandle<T> {
     return createTestNavigationHandle(key.asInstance())
 }
 
-/**
- * Create a TestNavigationHandle to be used in tests with a NavigationKey.WithMetadata.
- */
 public fun <T : NavigationKey> createTestNavigationHandle(
     key: NavigationKey.WithMetadata<T>,
 ): TestNavigationHandle<T> {
     return createTestNavigationHandle(key.asInstance())
 }
 
-/**
- * Create a TestNavigationHandle to be used in tests with a NavigationKey.Instance.
- */
 public fun <T : NavigationKey> createTestNavigationHandle(
     instance: NavigationKey.Instance<T>,
 ): TestNavigationHandle<T> {

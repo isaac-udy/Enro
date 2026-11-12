@@ -21,6 +21,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Mark a block that cannot be compiled (Gradle scripts, Enro 2 code) `<!-- snippet: skip (reason) -->`.
 - `checkDocsSnippets` fails on a Kotlin block that has neither marker.
 
+## Writing
+The rules for comments, KDoc, docs pages, READMEs, commit messages and PR descriptions are in
+[docs/writing-guidelines.md](./docs/writing-guidelines.md). Read the file before writing or
+reviewing docs prose. Summary:
+- **Wording.** State the component, the action and the condition, with a literal verb ("the
+  container requires a filter", not "the container wants a filter"). Repeat the noun in place of
+  "it", "this" and "they". Each sentence must be clear when quoted alone.
+- **Docs pages.** Short and literal. Name the API, state what the API does, then the condition or
+  limit. No benefit clauses, no reassurance ("simply", "just", "that's it"), no sales language.
+  Check each behaviour claim against the source.
+- **Comments.** Write none by default. A comment is one line, two at most, and states a
+  constraint, invariant or trap that the names cannot. A comment addresses the next reader of the
+  file, not the reviewer of the change. History belongs in the commit message.
+- **KDoc.** Public KDoc states contract (edge cases, ordering, failure, platform differences) and
+  does not restate the name.
+- **Before handing off a change**, re-read every comment and docs sentence the diff adds and fix
+  each one that breaks these rules.
+
 ## Code Style
 - Follow Kotlin official code style with explicit API mode
 - Use 4 space indentation

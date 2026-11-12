@@ -30,7 +30,7 @@ class AccountViewModel(
 
     val userName: String get() = session.userName
 
-    // Writes to the session the orders feature reads, then goes back.
+    // Writes the name to the MetroSession instance that the orders feature reads.
     fun onSignInClicked(name: String) {
         session.userName = name
         navigation.close()

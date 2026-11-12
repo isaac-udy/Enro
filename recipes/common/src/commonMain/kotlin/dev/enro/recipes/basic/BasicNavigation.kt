@@ -1,7 +1,8 @@
 /**
  * Enro Recipe: Basic Navigation
  *
- * Demonstrates simple forward/back navigation between screens.
+ * Shows forward and back navigation between screens with
+ * `navigation.open(key)` and `navigation.close()`.
  */
 package dev.enro.recipes.basic
 
@@ -26,12 +27,8 @@ import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
-// -- Root recipe key --
-
 @Serializable
 object BasicRecipe : NavigationKey
-
-// -- Internal navigation keys --
 
 @Serializable
 data object BasicHomeScreen : NavigationKey

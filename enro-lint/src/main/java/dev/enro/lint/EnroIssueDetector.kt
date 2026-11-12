@@ -31,14 +31,12 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
                 .toUElementOfType<UClassLiteralExpression>()
         }
 
-        // UCallExpression.receiverType is not always correct, so we need to manually resolve the receiver type,
-        // because "receiver" may be null when "receiverType" is not null, which likely indicates a "this.method()" call,
-        // which we need to resolve to be the containing class of the UCallExpression
+        // UCallExpression.receiverType is not reliable: "receiver" can be null when
+        // "receiverType" is not null, which likely indicates a static call or a call on "this".
+        // getActualReceiver resolves that call to the class that contains the UCallExpression.
         fun UCallExpression.getActualReceiver(): PsiClass? {
             return when (val receiver = receiver) {
-                // This is likely a static method call or a call on 'this'
                 null -> getParentOfType<UClass>()?.javaPsi
-                // This is likely a qualified call (e.g. object.method())
                 else -> context.evaluator.getTypeClass(receiver.getExpressionType());
             }
         }
@@ -128,7 +126,7 @@ class EnroIssueDetector : Detector(), Detector.UastScanner {
             val navigationDestinationType = navigationDestinationExpression?.type
 
             if (navigationDestinationExpression == null) {
-                // allow references like navigationHandle<NavigationKey> because these aren't dangerous
+                // navigationHandle<NavigationKey> is valid for every destination.
                 if (navigationHandleGenericType == navigationKeyType) return
 
                 val functionSource = composableParent.sourceElement?.text

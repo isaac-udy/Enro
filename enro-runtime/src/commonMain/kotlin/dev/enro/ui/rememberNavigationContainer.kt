@@ -108,7 +108,6 @@ public fun rememberNavigationContainer(
         )
     }
 
-    // Register/unregister with parent context
     DisposableEffect(container, parentContext) {
         parentContext.registerChild(context)
         onDispose {

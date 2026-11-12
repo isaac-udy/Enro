@@ -68,9 +68,8 @@ fun RegistrationSuccessfulScreen() {
     val container = LocalNavigationContainer.current
 
     LaunchedEffect(container ) {
-        // When the RegistrationSuccessfulDestination is launched,
-        // we're going to update the parent container's backstack to
-        // drop any of the previous registration/login destinations
+        // Removes the login and registration destinations from the backstack of
+        // the container that displays RegistrationSuccessfulDestination.
         container.updateBackstack { backstack ->
             backstack
                 .filterNot { instance ->
@@ -87,7 +86,6 @@ fun RegistrationSuccessfulScreen() {
     }
 
     LaunchedEffect(Unit) {
-        // Register the user
         TravelUserRepository.instance.registerUser(
             firstName = navigation.key.firstName,
             lastName = navigation.key.lastName,
@@ -96,13 +94,11 @@ fun RegistrationSuccessfulScreen() {
         )
     }
 
-    // Animate content appearance
     LaunchedEffect(Unit) {
         delay(1)
         showContent = true
     }
 
-    // Confetti animation
     val infiniteTransition = rememberInfiniteTransition(label = "confetti")
     val scale = infiniteTransition.animateFloat(
         initialValue = 0.8f,
@@ -132,7 +128,6 @@ fun RegistrationSuccessfulScreen() {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Celebration emoji
                     Text(
                         text = "🎉",
                         fontSize = 96.sp,
@@ -157,7 +152,6 @@ fun RegistrationSuccessfulScreen() {
                         modifier = Modifier.padding(bottom = 48.dp)
                     )
 
-                    // Success card
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -187,7 +181,6 @@ fun RegistrationSuccessfulScreen() {
                         }
                     }
 
-                    // What's next section
                     Column(
                         modifier = Modifier.padding(bottom = 48.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -210,7 +203,6 @@ fun RegistrationSuccessfulScreen() {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Continue button
             AnimatedVisibility(
                 visible = showContent,
                 enter = fadeIn(animationSpec = tween(500, delayMillis = 300)) +
