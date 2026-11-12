@@ -87,7 +87,19 @@ internal data class RecipeGroup(
     val recipes: List<RecipeEntry>,
 )
 
-private val recipeGroups: List<RecipeGroup> = listOf(
+/**
+ * Recipes that only exist on the current platform, such as Fragment
+ * destinations on Android. Each platform source set provides its own list.
+ */
+internal expect val platformRecipes: List<RecipeEntry>
+
+private val recipeGroups: List<RecipeGroup>
+    get() = commonRecipeGroups + listOfNotNull(
+        RecipeGroup(title = "This Platform", recipes = platformRecipes)
+            .takeIf { it.recipes.isNotEmpty() },
+    )
+
+private val commonRecipeGroups: List<RecipeGroup> = listOf(
     RecipeGroup(
         title = "Basic",
         recipes = listOf(

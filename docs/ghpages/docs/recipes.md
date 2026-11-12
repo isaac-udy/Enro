@@ -21,9 +21,7 @@ Clone the repository, then run one of these from its root:
 | Desktop | `./gradlew :recipes:app:desktop:run` |
 | Android | `./gradlew :recipes:app:android:installDebug`, then open "Enro Recipes" on the device |
 | Web | `./gradlew :recipes:app:web:wasmJsBrowserDevelopmentRun` |
-
-On iOS, the recipes build as the `RecipesApp` framework
-(`:recipes:app:ios`). The repository has no Xcode project for it yet.
+| iOS | Open [`EnroRecipes.xcodeproj`][ios-project] in Xcode and run it |
 
 ## Basic
 
@@ -102,6 +100,17 @@ On iOS, the recipes build as the `RecipesApp` framework
 |---|---|---|
 | [Native Interop][interop] | A platform view (`AndroidView`, `SwingPanel`) inside a destination | Fragment and View Interop |
 
+## Platform recipes
+
+Each of these is listed only in the app for its platform, under "This
+Platform".
+
+| Recipe | Platform | Shows | Navigation 3 recipe |
+|---|---|---|---|
+| [Fragment and Activity][fragment-activity] | Android | A Fragment and an Activity as destinations; the Activity returns a result | Fragment and View Interop |
+| [UIViewController][uiviewcontroller] | iOS | A `UIViewController` as a destination: embedded, presented modally, and pushed | — |
+| [Multiple Windows][windows] | Desktop | A destination that opens in its own window and returns a result | — |
+
 ## Tests
 
 [`RecipeSmokeTests`][smoke-tests] runs the recipes on desktop with Compose UI
@@ -111,6 +120,7 @@ through each recipe. Run it with `./gradlew :recipes:common:desktopTest`.
 
 [recipes-root]: https://github.com/isaac-udy/Enro/tree/main/recipes
 [nav3-recipes]: https://github.com/android/nav3-recipes
+[ios-project]: https://github.com/isaac-udy/Enro/tree/main/recipes/app/ios/xcode/EnroRecipes
 [basic]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/basic/BasicNavigation.kt
 [saveable]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/saveable/SaveableBackStack.kt
 [saved-state]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/saveable/SavedState.kt
@@ -152,4 +162,7 @@ through each recipe. Run it with `./gradlew :recipes:common:desktopTest`.
 [synthetic-auth]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/synthetic/AuthGateSynthetic.kt
 [synthetic-decider]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/synthetic/ProfileDeciderSynthetic.kt
 [interop]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/interop/NativeInterop.kt
+[fragment-activity]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/androidMain/kotlin/dev/enro/recipes/interop/FragmentAndActivity.kt
+[uiviewcontroller]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/iosMain/kotlin/dev/enro/recipes/interop/UIViewControllerInterop.kt
+[windows]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/desktopMain/kotlin/dev/enro/recipes/windows/MultipleWindows.kt
 [smoke-tests]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/desktopTest/kotlin/dev/enro/recipes/RecipeSmokeTests.kt

@@ -38,6 +38,12 @@ kotlin {
             implementation(libs.koin.compose)
         }
 
+        // For the Fragment and Activity recipe.
+        androidMain.dependencies {
+            implementation(libs.androidx.fragment)
+            implementation(libs.androidx.activity)
+        }
+
         desktopMain.dependencies {
             implementation(libs.kotlin.reflect)
             implementation(libs.kotlinx.coroutines.core)
