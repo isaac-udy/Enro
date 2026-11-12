@@ -31,6 +31,7 @@ it:
 
 **Per destination** — apply the background at the destination's root:
 
+<!-- snippet: animations/background-per-destination -->
 ```kotlin
 @Composable
 @NavigationDestination(MyScreen::class)
@@ -48,6 +49,7 @@ fun MyScreenDestination() {
 destination is wrapped automatically. This is what the recipes app does
 (see [`RecipesComponent`][recipes-component]):
 
+<!-- snippet: animations/background-decorator -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
@@ -80,6 +82,7 @@ top of another destination and need to stay transparent.
 A `NavigationAnimations` holds the transition specs for a `NavigationDisplay`.
 The two you set most often are forward navigation and pop:
 
+<!-- snippet: animations/navigation-animations -->
 ```kotlin
 NavigationDisplay(
     state = container,
@@ -120,13 +123,14 @@ the two helpers in `dev.enro.ui.animation`.
 The simplest hook. Attach it to any element that should have its own enter
 and exit transitions, tied to the destination's enter/exit.
 
+<!-- snippet: animations/enter-exit-modifier -->
 ```kotlin
 Box(
     Modifier
         .matchParentSize()
         .animateNavigationEnterExit(
             enter = fadeIn(tween(durationMillis = 320)),
-            exit  = fadeOut(tween(durationMillis = 220)),
+            exit = fadeOut(tween(durationMillis = 220)),
         )
         .background(Color.Black.copy(alpha = 0.5f)),
 )
@@ -141,10 +145,11 @@ When you want a child block to actually appear or disappear in step with
 the destination's enter/exit — with its own delay, its own curve, or both —
 use `NavigationAnimatedVisibility`:
 
+<!-- snippet: animations/animated-visibility -->
 ```kotlin
 NavigationAnimatedVisibility(
     enter = fadeIn(tween(durationMillis = 220, delayMillis = 140)),
-    exit  = fadeOut(tween(durationMillis = 100)),
+    exit = fadeOut(tween(durationMillis = 100)),
 ) {
     Row { /* action buttons that come in slightly later than the rest */ }
 }
@@ -175,6 +180,7 @@ pop transition also applies to the gesture.
 `NavigationEvent.SwipeEdge` value), so the transition can differ for left and
 right swipes:
 
+<!-- snippet: animations/predictive-back -->
 ```kotlin
 NavigationDisplay(
     state = container,
@@ -216,6 +222,7 @@ The pattern is always the same:
 2. On the **source** destination, tag the element with that key.
 3. On the **target** destination, tag the matching element with the same key.
 
+<!-- snippet: animations/shared-elements -->
 ```kotlin
 @Composable
 @NavigationDestination(ItemList::class)
@@ -223,19 +230,21 @@ fun ItemListDestination() {
     val sharedTransitionScope = LocalNavigationSharedTransitionScope.current
     val animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current
 
-    LazyColumn { items(myItems) { item ->
-        with(sharedTransitionScope) {
-            Image(
-                modifier = Modifier
-                    .sharedElement(
-                        rememberSharedContentState(key = "thumb-${item.id}"),
-                        animatedVisibilityScope = animatedVisibilityScope,
-                    )
-                    .size(48.dp),
-                // ...
-            )
+    LazyColumn {
+        items(myItems) { item ->
+            with(sharedTransitionScope) {
+                // The item's thumbnail.
+                Box(
+                    modifier = Modifier
+                        .sharedElement(
+                            rememberSharedContentState(key = "thumb-${item.id}"),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                        )
+                        .size(48.dp),
+                )
+            }
         }
-    }}
+    }
 }
 
 @Composable
@@ -246,14 +255,14 @@ fun ItemDetailDestination() {
     val animatedVisibilityScope = LocalNavigationAnimatedVisibilityScope.current
 
     with(sharedTransitionScope) {
-        Image(
+        // The same thumbnail, larger.
+        Box(
             modifier = Modifier
                 .sharedElement(
                     rememberSharedContentState(key = "thumb-${navigation.key.id}"),
                     animatedVisibilityScope = animatedVisibilityScope,
                 )
                 .size(160.dp),
-            // ...
         )
     }
 }
@@ -271,6 +280,7 @@ serializable to a stable string — the item's id is the usual choice.
 Mixing in a content type avoids accidental collisions when several
 sharable elements per item participate (a thumbnail and a title, say):
 
+<!-- snippet: animations/shared-element-keys -->
 ```kotlin
 private fun thumbKey(id: Int) = "thumb-$id"
 private fun titleKey(id: Int) = "title-$id"
@@ -287,17 +297,17 @@ navigationDestination<Key> { ... }`), the content lambda's receiver
 `SharedTransitionScope` and `AnimatedVisibilityScope`. You can call
 `sharedElement`, `sharedBounds`, and `rememberSharedContentState` directly
 on the receiver and pass `this` (or `this@navigationDestination`) as the
-`animatedVisibilityScope`:
+`animatedVisibilityScope`. The key is `navigation.key`:
 
+<!-- snippet: animations/shared-elements-provider -->
 ```kotlin
 @NavigationDestination(ItemDetail::class)
 val itemDetailDestination = navigationDestination<ItemDetail> {
-    Image(
+    Box(
         modifier = Modifier.sharedElement(
-            rememberSharedContentState(key = thumbKey(key.id)),
+            rememberSharedContentState(key = thumbKey(navigation.key.id)),
             animatedVisibilityScope = this@navigationDestination,
         ),
-        // ...
     )
 }
 ```

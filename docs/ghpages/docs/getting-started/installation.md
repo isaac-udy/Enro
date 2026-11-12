@@ -12,6 +12,7 @@ your platform below.
 
 ## Dependencies
 
+<!-- snippet: skip (gradle) -->
 ```kotlin
 plugins {
     id("com.google.devtools.ksp") version "<your-ksp-version>"
@@ -36,6 +37,7 @@ AGP 9.1.0 or later with compileSdk 37.
 In a Kotlin Multiplatform project, add `enro` to your `commonMain` source set,
 and add the `enro-processor` KSP dependency for each target you build:
 
+<!-- snippet: skip (gradle) -->
 ```kotlin
 kotlin {
     sourceSets {
@@ -62,6 +64,7 @@ targets you don't build.
 If you have an existing Android app that uses Fragments or Activities and want
 to adopt Enro incrementally, also add the compatibility module:
 
+<!-- snippet: skip (gradle) -->
 ```kotlin
 dependencies {
     implementation("dev.enro:enro-compat:3.0.0")
@@ -76,6 +79,7 @@ annotated with `@NavigationComponent`. KSP will generate an
 `installNavigationController` extension on that object for each platform you
 target.
 
+<!-- snippet: installation/component -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
@@ -100,6 +104,7 @@ common source set and use it from every target.
 
 Call `installNavigationController` from your `Application.onCreate`:
 
+<!-- snippet: your-first-screen/application -->
 ```kotlin
 class MyApp : Application() {
     override fun onCreate() {
@@ -113,6 +118,7 @@ Then host a backstack from any `Activity` or Composable. The typical pattern is
 to call `rememberNavigationContainer` and `NavigationDisplay` from your root
 Composable:
 
+<!-- snippet: your-first-screen/activity -->
 ```kotlin
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -136,6 +142,7 @@ screens working.
 On iOS, install the controller during app startup and expose a Composable view
 controller for Swift to display.
 
+<!-- snippet: installation/ios -->
 ```kotlin
 fun MainViewController(): UIViewController = EnroUIViewController {
     val container = rememberNavigationContainer(
@@ -154,10 +161,25 @@ boilerplate to bridge the generated view controller into your app.
 Call `installNavigationController(Unit)` to get an `EnroController`, then drive
 your windows through it:
 
+<!-- snippet: installation/desktop -->
 ```kotlin
 fun main() {
     val controller = MyComponent.installNavigationController(Unit)
-    controller.openWindow(/* a root window descriptor */)
+    controller.openWindow(
+        GenericRootWindow(
+            windowConfiguration = {
+                RootWindow.WindowConfiguration(
+                    title = "My App",
+                    onCloseRequest = { navigation.close() },
+                )
+            },
+        ) {
+            val container = rememberNavigationContainer(
+                backstack = backstackOf(Home.asInstance()),
+            )
+            NavigationDisplay(state = container)
+        },
+    )
 
     application {
         EnroApplicationContent(controller)
@@ -174,6 +196,7 @@ complete working example.
 Call `installNavigationController(document)` from your `main`, then render the
 backstack inside an `EnroBrowserContent`:
 
+<!-- snippet: installation/web -->
 ```kotlin
 fun main() {
     MyComponent.installNavigationController(document)

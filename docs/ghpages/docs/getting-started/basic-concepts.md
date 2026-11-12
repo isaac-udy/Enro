@@ -20,6 +20,7 @@ A `NavigationKey` is the contract for a screen — its function signature. The
 properties of the key are the inputs to the screen. If the screen produces a
 value, the key implements `NavigationKey.WithResult<T>`.
 
+<!-- snippet: basic-concepts/keys -->
 ```kotlin
 @Serializable
 data class ShowProfile(val userId: String) : NavigationKey
@@ -32,7 +33,8 @@ data class SelectDate(
 ```
 
 Keys are `@Serializable` (kotlinx.serialization) so Enro can persist the
-backstack across process death and across platforms.
+backstack across process death and across platforms. Every property of a key
+must be serializable too; `LocalDate` here is `kotlinx.datetime.LocalDate`.
 
 A key on its own doesn't do anything — it's a value. The system that *invokes*
 the contract is the navigation handle (below).
@@ -45,6 +47,7 @@ annotation. Two styles are supported:
 
 A regular Composable function:
 
+<!-- snippet: basic-concepts/composable-destination -->
 ```kotlin
 @Composable
 @NavigationDestination(ShowProfile::class)
@@ -57,6 +60,7 @@ fun ProfileScreen() {
 Or a destination provider, when the destination needs metadata (for example,
 to behave like a dialog or an overlay):
 
+<!-- snippet: basic-concepts/provider-destination -->
 ```kotlin
 @NavigationDestination(ShowProfile::class)
 val profileDestination = navigationDestination<ShowProfile> {
@@ -74,16 +78,18 @@ custom overlay — through the `metadata = { dialog() }` or
 A `NavigationHandle` is the control surface inside a screen — the variable
 you call `open`, `close`, or `complete` on.
 
+<!-- snippet: basic-concepts/handle -->
 ```kotlin
-val navigation = navigationHandle<ShowProfile>()
+val navigation = navigationHandle<SelectDate>()
 
-navigation.open(SelectDate(maxDate = LocalDate.now())) // open another screen
-navigation.close()                                     // close this screen
-navigation.complete(result)                            // close with a result
+navigation.open(ShowProfile("user-123")) // open another screen
+navigation.close()                       // close this screen
+navigation.complete(today)               // close with a result
 ```
 
-The typed parameter (`<ShowProfile>` above) gives you access to the key the
-screen was opened with via `navigation.key`.
+The typed parameter (`<SelectDate>` above) gives you access to the key the
+screen was opened with via `navigation.key`. `complete(result)` is available
+because `SelectDate` is a `NavigationKey.WithResult`.
 
 ## Navigation Container
 
@@ -92,6 +98,7 @@ destinations. You create one inside a Composable with
 `rememberNavigationContainer`, give it an initial backstack, and render it with
 `NavigationDisplay`.
 
+<!-- snippet: basic-concepts/container -->
 ```kotlin
 val container = rememberNavigationContainer(
     backstack = backstackOf(Home.asInstance()),
@@ -109,6 +116,7 @@ When a key is added to a backstack, Enro wraps it in a
 once, so each appearance gets a unique `id`. You'll mostly see `Instance` when
 building a backstack:
 
+<!-- snippet: basic-concepts/instance -->
 ```kotlin
 val initial = backstackOf(
     Home.asInstance(),
@@ -124,12 +132,13 @@ appearance behaves (animations, scene treatment, etc.).
 A `NavigationKey.WithResult<T>` screen returns a value to its caller. Callers
 register a result channel and call `open` on it.
 
+<!-- snippet: basic-concepts/results -->
 ```kotlin
 val getDate = registerForNavigationResult<LocalDate>(
     onCompleted = { date -> /* use date */ },
 )
 
-Button(onClick = { getDate.open(SelectDate(maxDate = LocalDate.now())) }) {
+Button(onClick = { getDate.open(SelectDate(maxDate = today)) }) {
     Text("Pick a date")
 }
 ```
@@ -143,6 +152,7 @@ A `NavigationComponent` is the configuration object for Enro in your
 application. It's declared once, annotated with `@NavigationComponent`, and
 installed at app startup.
 
+<!-- snippet: basic-concepts/component -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(

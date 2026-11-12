@@ -14,6 +14,8 @@ include(":recipes:app:desktop")
 include(":recipes:app:ios")
 include(":recipes:app:web")
 
+include(":docs:snippets")
+
 include(":tests:module-one")
 include(":tests:application:common")
 include(":tests:application:app:android")

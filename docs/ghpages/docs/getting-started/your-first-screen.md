@@ -18,6 +18,7 @@ If you'd rather read the finished code, the equivalent runnable example lives in
 
 A key is a contract — what does this screen need, and what does it produce?
 
+<!-- snippet: your-first-screen/keys -->
 ```kotlin
 @Serializable
 data object Home : NavigationKey
@@ -37,6 +38,7 @@ data object PickName : NavigationKey.WithResult<String>
 Each destination is annotated with `@NavigationDestination(KeyClass::class)`.
 The simplest form is a `@Composable` function.
 
+<!-- snippet: your-first-screen/destinations -->
 ```kotlin
 @Composable
 @NavigationDestination(Home::class)
@@ -106,6 +108,7 @@ A few things worth noticing:
 
 Declare a `NavigationComponent` once for your application:
 
+<!-- snippet: your-first-screen/component -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
@@ -116,6 +119,7 @@ object MyComponent : NavigationComponentConfiguration(
 KSP generates an `installNavigationController` extension on this object for
 each platform you target. On Android, install it in your `Application`:
 
+<!-- snippet: your-first-screen/application -->
 ```kotlin
 class MyApp : Application() {
     override fun onCreate() {
@@ -133,6 +137,7 @@ Web.
 Decide where your navigation lives in the UI. The minimal pattern is a single
 container at the root of your Compose tree:
 
+<!-- snippet: your-first-screen/activity -->
 ```kotlin
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
